@@ -2,14 +2,16 @@ package cluster
 
 import (
 	"context"
-	"fmt"
 	"io"
+	"os"
+	"text/template"
 
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
 	"github.com/giantswarm/kubectl-gs/pkg/template/cluster"
 )
@@ -76,8 +78,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Println(string(clusterCRYaml))
-	fmt.Println(string(awsClusterCRYaml))
+	type ClusterCRsOutput struct {
+		AWSClusterCR string
+		ClusterCR    string
+	}
+
+	clusterCRsOutput := ClusterCRsOutput{
+		AWSClusterCR: string(awsClusterCRYaml),
+		ClusterCR:    string(clusterCRYaml),
+	}
+
+	t := template.Must(template.New("clusterCR").Parse(key.ClusterCRsTemplate))
+
+	err = t.Execute(os.Stdout, clusterCRsOutput)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	return nil
 }

@@ -94,10 +94,10 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 			Name:      clusterID,
 			Namespace: metav1.NamespaceDefault,
 			Labels: map[string]string{
-				label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
-				label.Cluster:                clusterID,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            clusterID,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
 			},
 		},
 		Spec: infrastructurev1alpha2.AWSClusterSpec{
