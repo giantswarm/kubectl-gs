@@ -61,6 +61,20 @@ func New(c Config) (*GSRelease, error) {
 	return newReleases, nil
 }
 
+func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
+	releaseComponents := make(map[string]string)
+
+	for _, release := range r.releases {
+		if release.Version == releaseVersion {
+			for _, authority := range release.Authorities {
+				releaseComponents[authority.Name] = authority.Version
+			}
+		}
+	}
+
+	return releaseComponents
+}
+
 func (r *GSRelease) Validate(version string) bool {
 	for _, release := range r.releases {
 		if release.Version == version {
