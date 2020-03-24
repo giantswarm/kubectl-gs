@@ -1,7 +1,7 @@
 package key
 
 const ClusterCRsTemplate = `---
-{{ .ClusterCR }}
+{{ .ClusterCR -}}
 ---
-{{ .AWSClusterCR }}
+{{ .AWSClusterCR -}}
 `

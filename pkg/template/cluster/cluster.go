@@ -1,9 +1,11 @@
 package cluster
 
 import (
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
+	"time"
 
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	infrastructurev1alpha2scheme "github.com/giantswarm/apiextensions/pkg/clientset/versioned/scheme"
@@ -129,6 +131,7 @@ func generateID() string {
 	for {
 		letterRunes := []rune(idChars)
 		b := make([]rune, idLength)
+		rand.Seed(time.Now().UnixNano())
 		for i := range b {
 			b[i] = letterRunes[rand.Intn(len(letterRunes))]
 		}
@@ -145,7 +148,7 @@ func generateID() string {
 			// strings is letters only, which we also avoid
 			continue
 		}
-
+		fmt.Printf("Rendered id: %s\n", id)
 		return id
 	}
 }
