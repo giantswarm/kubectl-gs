@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/giantswarm/microerror"
@@ -33,6 +34,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+
+	fmt.Printf("Name %#q AZ %#q Owner %#q Release %#q", r.flag.Name, r.flag.MasterAZ, r.flag.Owner, r.flag.Release)
 
 	return nil
 }
