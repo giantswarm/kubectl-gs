@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -148,7 +147,7 @@ func generateID() string {
 			// strings is letters only, which we also avoid
 			continue
 		}
-		fmt.Printf("Rendered id: %s\n", id)
+
 		return id
 	}
 }

@@ -90,7 +90,7 @@ func ensureConfigDirExists() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	configPath := path.Join(usr.HomeDir, releasesConfigRelativePath)
+	configPath := path.Join(usr.HomeDir, configRelativePath)
 
 	_, err = os.Stat(configPath)
 	if os.IsNotExist(err) {

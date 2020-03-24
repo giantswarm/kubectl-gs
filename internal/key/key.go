@@ -1,6 +1,6 @@
 package key
 
-const ClusterCRsTemplate = `---
+const ClusterCRsTemplate = `
 {{ .ClusterCR -}}
 ---
 {{ .AWSClusterCR -}}
