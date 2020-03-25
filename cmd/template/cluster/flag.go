@@ -11,23 +11,25 @@ import (
 )
 
 const (
-	flagDomain   = "domain"
-	flagMasterAZ = "master-az"
-	flagName     = "name"
-	flagNoCache  = "no-cache"
-	flagOwner    = "owner"
-	flagRegion   = "region"
-	flagRelease  = "release"
+	flagDomain                  = "domain"
+	flagMasterAZ                = "master-az"
+	flagName                    = "name"
+	flagNoCache                 = "no-cache"
+	flagOwner                   = "owner"
+	flagRegion                  = "region"
+	flagRelease                 = "release"
+	flagTemplateDefaultNodepool = "create-default-nodepool"
 )
 
 type flag struct {
-	Domain   string
-	MasterAZ string
-	Name     string
-	NoCache  bool
-	Owner    string
-	Region   string
-	Release  string
+	Domain                  string
+	MasterAZ                string
+	Name                    string
+	NoCache                 bool
+	Owner                   string
+	Region                  string
+	Release                 string
+	TemplateDefaultNodepool bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -38,6 +40,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region(e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
+	cmd.Flags().BoolVar(&f.TemplateDefaultNodepool, flagTemplateDefaultNodepool, true, "Template default nodepool CRs with cluster CRs.")
 }
 
 func (f *flag) Validate() error {
