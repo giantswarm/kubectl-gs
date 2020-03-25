@@ -1,8 +1,6 @@
 package cluster
 
 import (
-	"strings"
-
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
@@ -64,8 +62,7 @@ func (f *flag) Validate() error {
 	if f.MasterAZ == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagMasterAZ)
 	}
-	// super basic AZ name validation
-	if len(strings.Split(f.MasterAZ, "-")) != 3 || !strings.Contains(f.MasterAZ, f.Region) {
+	if !aws.ValidateAZ(f.Region, f.MasterAZ) {
 		return microerror.Maskf(invalidFlagError, "--%s must be valid AZ name for selected region %s", flagMasterAZ, f.Region)
 	}
 

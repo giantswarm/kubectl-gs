@@ -79,8 +79,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	type ClusterCRsOutput struct {
-		AWSClusterCR string
-		ClusterCR    string
+		AWSClusterCR            string
+		ClusterCR               string
+		TemplateDefaultNodepool bool
 	}
 
 	clusterCRsOutput := ClusterCRsOutput{
