@@ -1,11 +1,6 @@
 package cluster
 
 import (
-	"math/rand"
-	"regexp"
-	"strconv"
-	"time"
-
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	infrastructurev1alpha2scheme "github.com/giantswarm/apiextensions/pkg/clientset/versioned/scheme"
 	"github.com/giantswarm/microerror"
@@ -14,16 +9,12 @@ import (
 	"k8s.io/client-go/tools/reference"
 	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
 const (
 	defaultMasterInstanceType = "m5.xlarge"
-	// IDChars represents the character set used to generate cluster IDs.
-	// (does not contain 1 and l, to avoid confusion)
-	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
-	// IDLength represents the number of characters used to create a cluster ID.
-	idLength = 5
 )
 
 type Config struct {
@@ -38,7 +29,7 @@ type Config struct {
 
 func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2.AWSCluster, error) {
 
-	clusterID := generateID()
+	clusterID := key.GenerateID()
 
 	awsClusterCR, err := newAWSClusterCR(clusterID, config)
 	if err != nil {
@@ -124,30 +115,4 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 	}
 
 	return awsClusterCR, nil
-}
-
-func generateID() string {
-	for {
-		letterRunes := []rune(idChars)
-		b := make([]rune, idLength)
-		rand.Seed(time.Now().UnixNano())
-		for i := range b {
-			b[i] = letterRunes[rand.Intn(len(letterRunes))]
-		}
-
-		id := string(b)
-
-		if _, err := strconv.Atoi(id); err == nil {
-			// string is numbers only, which we want to avoid
-			continue
-		}
-
-		matched, err := regexp.MatchString("^[a-z]+$", id)
-		if err == nil && matched == true {
-			// strings is letters only, which we also avoid
-			continue
-		}
-
-		return id
-	}
 }
