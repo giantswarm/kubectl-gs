@@ -18,6 +18,7 @@ const (
 	flagNodesMax             = "nodex-max"
 	flagNodesMin             = "nodex-min"
 	flagNumAvailabilityZones = "num-availability-zones"
+	flagOutput               = "output"
 	flagOwner                = "owner"
 	flagRegion               = "region"
 	flagRelease              = "release"
@@ -32,6 +33,7 @@ type flag struct {
 	NodesMax             int
 	NodesMin             int
 	NumAvailabilityZones int
+	Output               string
 	Owner                string
 	Region               string
 	Release              string
@@ -46,6 +48,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 10, "Maximum number of worker nodes for the node pool.")
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 3, "Minimum number of worker nodes for the node pool.")
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1.")
+	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region(e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")

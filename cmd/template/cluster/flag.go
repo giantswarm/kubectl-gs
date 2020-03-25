@@ -13,6 +13,7 @@ const (
 	flagMasterAZ                = "master-az"
 	flagName                    = "name"
 	flagNoCache                 = "no-cache"
+	flagOutput                  = "output"
 	flagOwner                   = "owner"
 	flagRegion                  = "region"
 	flagRelease                 = "release"
@@ -24,6 +25,7 @@ type flag struct {
 	MasterAZ                string
 	Name                    string
 	NoCache                 bool
+	Output                  string
 	Owner                   string
 	Region                  string
 	Release                 string
@@ -35,6 +37,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.MasterAZ, flagMasterAZ, "", "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
+	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region(e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")

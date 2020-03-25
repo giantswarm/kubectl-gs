@@ -103,9 +103,24 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	t := template.Must(template.New("nodepoolCR").Parse(key.MachineDeploymentCRsTemplate))
 
-	err = t.Execute(os.Stdout, nodepoolCRsOutput)
-	if err != nil {
-		return microerror.Mask(err)
+	var output *os.File
+	{
+		if r.flag.Output == "" {
+			output = os.Stdout
+		} else {
+			f, err := os.Create(r.flag.Output)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			defer f.Close()
+
+			output = f
+		}
+
+		err = t.Execute(output, nodepoolCRsOutput)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
