@@ -6,12 +6,12 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/ghodss/yaml"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 type runner struct {
