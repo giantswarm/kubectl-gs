@@ -1,6 +1,8 @@
 package appcatalog
 
 import (
+	"net/url"
+
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 )
@@ -33,6 +35,9 @@ func (f *flag) Validate() error {
 	}
 	if f.URL == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagURL)
+	}
+	if _, err := url.ParseRequestURI(f.URL); err != nil {
+		return microerror.Maskf(invalidFlagError, "--%s must be a valid URL", flagURL)
 	}
 
 	return nil

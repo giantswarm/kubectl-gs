@@ -1,6 +1,10 @@
 package key
 
 const AppCatalogCRTemplate = `
+{{ .ConfigmapCR -}}
+---
+{{ .SecretCR -}}
+---
 {{ .AppCatalogCR -}}
 `
 
