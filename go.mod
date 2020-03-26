@@ -10,6 +10,7 @@ require (
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/spf13/cobra v0.0.6
 	gopkg.in/yaml.v2 v2.2.8
+	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	sigs.k8s.io/cluster-api v0.3.2
