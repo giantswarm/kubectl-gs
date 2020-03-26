@@ -1,20 +1,37 @@
 package aws
 
-import (
-	"github.com/aws/aws-sdk-go/aws/endpoints"
-)
+func AvailableAZs(region string) int {
+	azs, ok := infrastructure[region]
+	if !ok {
+		return 0
+	}
+
+	return len(azs)
+}
+
+func GetAvailabilityZones(num int, region string) []string {
+	var azs []string
+	for i := 0; i < num; i++ {
+		azs = append(azs, infrastructure[region][i])
+	}
+
+	return azs
+}
 
 func ValidateRegion(region string) bool {
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
+	for r, _ := range infrastructure {
+		if r == region {
+			return true
+		}
+	}
 
-	for _, p := range partitions {
-		if p.ID() == "aws" {
-			for id := range p.Regions() {
-				if region == id {
-					return true
-				}
-			}
+	return false
+}
+
+func ValidateAZ(region, availabilityZone string) bool {
+	for _, az := range infrastructure[region] {
+		if az == availabilityZone {
+			return true
 		}
 	}
 
