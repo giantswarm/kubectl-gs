@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/ghodss/yaml"
@@ -12,8 +13,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/aws"
 	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
 	"github.com/giantswarm/kubectl-gs/pkg/template/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/template/nodepool"
 )
 
 type runner struct {
@@ -78,15 +81,59 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
+	var mdCRYaml, awsMDCRYaml []byte
+	{
+		if r.flag.TemplateDefaultNodepool {
+
+			var availabilityZones []string
+			{
+				if r.flag.AvailabilityZones != "" {
+					availabilityZones = strings.Split(r.flag.AvailabilityZones, ",")
+				} else {
+					availabilityZones = aws.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
+				}
+			}
+
+			nodepoolConfig := nodepool.Config{
+				AvailabilityZones: availabilityZones,
+				AWSInstanceType:   r.flag.AWSInstanceType,
+				ClusterID:         clusterCR.Name,
+				Name:              r.flag.NodepoolName,
+				NodesMax:          r.flag.NodesMax,
+				NodesMin:          r.flag.NodesMin,
+				Owner:             r.flag.Owner,
+				ReleaseComponents: releaseComponents,
+				ReleaseVersion:    r.flag.Release,
+			}
+
+			mdCR, awsMDCR, err := nodepool.NewMachineDeploymentCRs(nodepoolConfig)
+
+			mdCRYaml, err = yaml.Marshal(mdCR)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			awsMDCRYaml, err = yaml.Marshal(awsMDCR)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+	}
+
 	type ClusterCRsOutput struct {
 		AWSClusterCR            string
+		AWSMachineDeploymentCR  string
 		ClusterCR               string
+		MachineDeploymentCR     string
 		TemplateDefaultNodepool bool
 	}
 
 	clusterCRsOutput := ClusterCRsOutput{
-		AWSClusterCR: string(awsClusterCRYaml),
-		ClusterCR:    string(clusterCRYaml),
+		AWSClusterCR:            string(awsClusterCRYaml),
+		AWSMachineDeploymentCR:  string(awsMDCRYaml),
+		ClusterCR:               string(clusterCRYaml),
+		MachineDeploymentCR:     string(mdCRYaml),
+		TemplateDefaultNodepool: r.flag.TemplateDefaultNodepool,
 	}
 
 	t := template.Must(template.New("clusterCR").Parse(key.ClusterCRsTemplate))

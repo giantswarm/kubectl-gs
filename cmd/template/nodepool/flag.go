@@ -130,5 +130,6 @@ func (f *flag) Validate() error {
 	if !release.Validate(f.Release) {
 		return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
 	}
+
 	return nil
 }
