@@ -53,9 +53,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	var configMapData map[string]string
+	var configMapData string
 	if r.flag.ConfigMap != "" {
-		configMapData, err = readValuesFromFile(afero.NewOsFs(), r.flag.ConfigMap)
+		configMapData, err = readConfigMapYamlFromFile(afero.NewOsFs(), r.flag.ConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -67,7 +67,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
-	secretCR, err := appcatalog.NewSecretCR(config)
+	var secretData map[string][]byte
+	if r.flag.Secret != "" {
+		secretData, err = readSecretYamlFromFile(afero.NewOsFs(), r.flag.Secret)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+	secretCR, err := appcatalog.NewSecretCR(config, secretData)
 
 	secretCRYaml, err := yaml.Marshal(secretCR)
 	if err != nil {
@@ -96,25 +103,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-// readValuesFromFile reads a configmap from a YAML file.
-func readValuesFromFile(fs afero.Fs, path string) (map[string]string, error) {
+// readConfigMapFromFile reads a configmap from a YAML file.
+func readConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	rawMap := map[string]string{}
 	err = yaml.Unmarshal(data, &rawMap)
 	if err != nil {
+		return "", microerror.Maskf(unmashalToMapFailedError, err.Error())
+	}
+
+	return string(data), nil
+}
+
+// readSecretFromFile reads a configmap from a YAML file.
+func readSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error) {
+	data, err := afero.ReadFile(fs, path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	rawMap := map[string][]byte{}
+	err = yaml.Unmarshal(data, &rawMap)
+	if err != nil {
 		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
-	var configMapData map[string]string
-	{
-		configMapData = make(map[string]string)
-		configMapData["values"] = string(data)
-	}
-
-	return configMapData, nil
-
+	return rawMap, nil
 }
