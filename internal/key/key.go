@@ -4,7 +4,12 @@ import (
 	"math/rand"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/ghodss/yaml"
+	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 )
 
 const (
@@ -39,4 +44,40 @@ func GenerateID() string {
 
 		return id
 	}
+}
+
+func GenerateAssetName(values ...string) string {
+	return strings.Join(values, "-")
+}
+
+// readConfigMapFromFile reads a configmap from a YAML file.
+func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
+	data, err := afero.ReadFile(fs, path)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	rawMap := map[string]string{}
+	err = yaml.Unmarshal(data, &rawMap)
+	if err != nil {
+		return "", microerror.Maskf(unmashalToMapFailedError, err.Error())
+	}
+
+	return string(data), nil
+}
+
+// readSecretFromFile reads a configmap from a YAML file.
+func ReadSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error) {
+	data, err := afero.ReadFile(fs, path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	rawMap := map[string][]byte{}
+	err = yaml.Unmarshal(data, &rawMap)
+	if err != nil {
+		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
+	}
+
+	return rawMap, nil
 }
