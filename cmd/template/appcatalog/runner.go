@@ -41,6 +41,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	config := appcatalog.Config{
 		Description: r.flag.Description,
+		LogoURL:     r.flag.LogoURL,
 		ID:          key.GenerateID(),
 		Name:        r.flag.Name,
 		URL:         r.flag.URL,
