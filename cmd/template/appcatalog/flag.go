@@ -8,18 +8,21 @@ import (
 )
 
 const (
+	flagConfigMap   = "configmap"
 	flagDescription = "description"
 	flagName        = "name"
 	flagURL         = "url"
 )
 
 type flag struct {
+	ConfigMap   string
 	Description string
 	Name        string
 	URL         string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&f.ConfigMap, flagConfigMap, "", "Path to a configmap file.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "App Catalog description.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "App Catalog name.")
 	cmd.Flags().StringVar(&f.URL, flagURL, "", "Catalog storage URL.")

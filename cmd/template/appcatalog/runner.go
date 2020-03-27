@@ -11,6 +11,7 @@ import (
 	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
@@ -52,18 +53,25 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	configmapCR, err := appcatalog.NewConfigmapCR(config)
+	var configMapData map[string]string
+	if r.flag.ConfigMap != "" {
+		configMapData, err = readValuesFromFile(afero.NewOsFs(), r.flag.ConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+	configmapCR, err := appcatalog.NewConfigmapCR(config, configMapData)
 
 	configmapCRYaml, err := yaml.Marshal(configmapCR)
 	if err != nil {
-		return microerror.Mask(err)
+		return microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
 	secretCR, err := appcatalog.NewSecretCR(config)
 
 	secretCRYaml, err := yaml.Marshal(secretCR)
 	if err != nil {
-		return microerror.Mask(err)
+		return microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
 	type AppCatalogCROutput struct {
@@ -86,4 +94,24 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+// readValuesFromFile reads a configmap from a YAML file.
+func readValuesFromFile(fs afero.Fs, path string) (map[string]string, error) {
+	data, err := afero.ReadFile(fs, path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	rawMap := map[string]interface{}{}
+	err = yaml.Unmarshal(data, rawMap)
+	if err != nil {
+		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
+	}
+
+	var configMapData map[string]string
+	configMapData["values"] = string(data)
+
+	return configMapData, nil
+
 }
