@@ -10,6 +10,7 @@ type Config struct {
 	Description string
 	ID          string
 	Name        string
+	LogoURL     string
 	URL         string
 }
 
@@ -18,11 +19,14 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 	appCatalogCR := &applicationv1alpha1.AppCatalog{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AppCatalog",
-			APIVersion: "v1alpha1",
+			APIVersion: "application.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   config.Name,
-			Labels: map[string]string{},
+			Name: config.Name,
+			Labels: map[string]string{
+				"app-operator.giantswarm.io/version":     "1.0.0",
+				"application.giantswarm.io/catalog-type": "awesome",
+			},
 		},
 		Spec: applicationv1alpha1.AppCatalogSpec{
 			Config: applicationv1alpha1.AppCatalogSpecConfig{
@@ -36,6 +40,7 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 				},
 			},
 			Description: config.Description,
+			LogoURL:     config.LogoURL,
 			Storage: applicationv1alpha1.AppCatalogSpecStorage{
 				URL:  config.URL,
 				Type: "helm",

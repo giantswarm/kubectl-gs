@@ -10,6 +10,7 @@ import (
 const (
 	flagConfigMap   = "configmap"
 	flagDescription = "description"
+	flagLogoURL     = "logo"
 	flagName        = "name"
 	flagSecret      = "secret"
 	flagURL         = "url"
@@ -18,6 +19,7 @@ const (
 type flag struct {
 	ConfigMap   string
 	Description string
+	LogoURL     string
 	Name        string
 	Secret      string
 	URL         string
@@ -26,6 +28,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ConfigMap, flagConfigMap, "", "Path to a configmap file.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "App Catalog description.")
+	cmd.Flags().StringVar(&f.LogoURL, flagLogoURL, "", "Catalog logo URL.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "App Catalog name.")
 	cmd.Flags().StringVar(&f.Secret, flagSecret, "", "Path to a secret file.")
 	cmd.Flags().StringVar(&f.URL, flagURL, "", "Catalog storage URL.")
@@ -35,6 +38,12 @@ func (f *flag) Validate() error {
 
 	if f.Description == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDescription)
+	}
+	if f.LogoURL == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagLogoURL)
+	}
+	if _, err := url.ParseRequestURI(f.LogoURL); err != nil {
+		return microerror.Maskf(invalidFlagError, "--%s must be a valid URL", flagLogoURL)
 	}
 	if f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
