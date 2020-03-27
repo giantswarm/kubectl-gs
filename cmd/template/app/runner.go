@@ -57,7 +57,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		kubeConfigSecretCRYaml, err = yaml.Marshal(secretCR)
 		if err != nil {
-			return microerror.Maskf(unmashalToMapFailedError, err.Error())
+			return microerror.Mask(err)
 		}
 	}
 
@@ -94,7 +94,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	configmapCRYaml, err := yaml.Marshal(configmapCR)
 	if err != nil {
-		return microerror.Maskf(unmashalToMapFailedError, err.Error())
+		return microerror.Mask(err)
 	}
 
 	var secretData map[string][]byte
@@ -114,7 +114,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	secretCRYaml, err := yaml.Marshal(secretCR)
 	if err != nil {
-		return microerror.Maskf(unmashalToMapFailedError, err.Error())
+		return microerror.Mask(err)
 	}
 
 	type AppCROutput struct {
