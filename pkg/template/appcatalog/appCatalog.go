@@ -47,7 +47,7 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 	return appCatalogCR, nil
 }
 
-func NewConfigmapCR(config Config) (*apiv1.ConfigMap, error) {
+func NewConfigmapCR(config Config, data string) (*apiv1.ConfigMap, error) {
 
 	configMapCR := &apiv1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
@@ -60,14 +60,14 @@ func NewConfigmapCR(config Config) (*apiv1.ConfigMap, error) {
 			Labels:    map[string]string{},
 		},
 		Data: map[string]string{
-			"values": "",
+			"values": data,
 		},
 	}
 
 	return configMapCR, nil
 }
 
-func NewSecretCR(config Config) (*apiv1.Secret, error) {
+func NewSecretCR(config Config, data map[string][]byte) (*apiv1.Secret, error) {
 
 	secretCR := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -79,7 +79,7 @@ func NewSecretCR(config Config) (*apiv1.Secret, error) {
 			Namespace: metav1.NamespaceDefault,
 			Labels:    map[string]string{},
 		},
-		Data: map[string][]byte{},
+		Data: data,
 	}
 
 	return secretCR, nil
