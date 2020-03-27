@@ -103,14 +103,17 @@ func readValuesFromFile(fs afero.Fs, path string) (map[string]string, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	rawMap := map[string]interface{}{}
-	err = yaml.Unmarshal(data, rawMap)
+	rawMap := map[string]string{}
+	err = yaml.Unmarshal(data, &rawMap)
 	if err != nil {
 		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
 	var configMapData map[string]string
-	configMapData["values"] = string(data)
+	{
+		configMapData = make(map[string]string)
+		configMapData["values"] = string(data)
+	}
 
 	return configMapData, nil
 
