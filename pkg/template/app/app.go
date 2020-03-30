@@ -7,11 +7,15 @@ import (
 )
 
 type Config struct {
-	Catalog           string
-	ID                string
-	KubeConfigContext string
-	Name              string
-	Namespace         string
+	Catalog                 string
+	ID                      string
+	KubeConfigContext       string
+	KubeConfigSecretName    string
+	UserConfigConfigMapName string
+	UserConfigSecretName    string
+	Name                    string
+	Namespace               string
+	Version                 string
 }
 
 type SecretConfig struct {
@@ -41,7 +45,7 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 			Context:   applicationv1alpha1.AppSpecKubeConfigContext{},
 			InCluster: false,
 			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
-				Name:      config.Name + config.ID,
+				Name:      config.KubeConfigSecretName,
 				Namespace: config.Namespace,
 			},
 		}
@@ -74,7 +78,17 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 			KubeConfig: kubeconfig,
 			Name:       config.Name,
 			Namespace:  config.Namespace,
-			Version:    "1.0.0",
+			UserConfig: applicationv1alpha1.AppSpecUserConfig{
+				ConfigMap: applicationv1alpha1.AppSpecUserConfigConfigMap{
+					Name:      config.UserConfigConfigMapName,
+					Namespace: config.Namespace,
+				},
+				Secret: applicationv1alpha1.AppSpecUserConfigSecret{
+					Name:      config.UserConfigSecretName,
+					Namespace: config.Namespace,
+				},
+			},
+			Version: config.Version,
 		},
 	}
 
