@@ -7,12 +7,13 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 type runner struct {
@@ -56,7 +57,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var configMapData string
 	if r.flag.ConfigMap != "" {
-		configMapData, err = readConfigMapYamlFromFile(afero.NewOsFs(), r.flag.ConfigMap)
+		configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), r.flag.ConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -70,7 +71,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var secretData map[string][]byte
 	if r.flag.Secret != "" {
-		secretData, err = readSecretYamlFromFile(afero.NewOsFs(), r.flag.Secret)
+		secretData, err = key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.Secret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -102,36 +103,4 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
-}
-
-// readConfigMapFromFile reads a configmap from a YAML file.
-func readConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
-	data, err := afero.ReadFile(fs, path)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	rawMap := map[string]string{}
-	err = yaml.Unmarshal(data, &rawMap)
-	if err != nil {
-		return "", microerror.Maskf(unmashalToMapFailedError, err.Error())
-	}
-
-	return string(data), nil
-}
-
-// readSecretFromFile reads a configmap from a YAML file.
-func readSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error) {
-	data, err := afero.ReadFile(fs, path)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	rawMap := map[string][]byte{}
-	err = yaml.Unmarshal(data, &rawMap)
-	if err != nil {
-		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
-	}
-
-	return rawMap, nil
 }
