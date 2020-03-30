@@ -15,7 +15,7 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	k8s.io/kubernetes v1.18.0
-	sigs.k8s.io/cluster-api v0.3.2
+	sigs.k8s.io/cluster-api v0.3.3
 )
 
 replace (
