@@ -3,7 +3,7 @@ module github.com/giantswarm/kubectl-gs
 go 1.13
 
 require (
-	github.com/aws/aws-sdk-go v1.27.0
+	github.com/aws/aws-sdk-go v1.28.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions v0.2.0
 	github.com/giantswarm/microerror v0.2.0
@@ -14,6 +14,7 @@ require (
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
+	k8s.io/kubernetes v1.18.0
 	sigs.k8s.io/cluster-api v0.3.2
 )
 

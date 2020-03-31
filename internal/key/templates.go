@@ -1,5 +1,15 @@
 package key
 
+const AppCRTemplate = `
+{{ .ConfigmapCR -}}
+---
+{{ .SecretCR -}}
+---
+{{ .KubeConfigSecretCR -}}
+---
+{{ .AppCR -}}
+`
+
 const AppCatalogCRTemplate = `
 {{ .ConfigmapCR -}}
 ---
