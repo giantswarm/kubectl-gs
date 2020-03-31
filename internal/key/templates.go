@@ -7,6 +7,10 @@ const AppCRTemplate = `
 ---
 {{ .KubeConfigSecretCR -}}
 ---
+{{ .UserConfigConfigMapCR -}}
+---
+{{ .UserConfigSecretCR -}}
+---
 {{ .AppCR -}}
 `
 
