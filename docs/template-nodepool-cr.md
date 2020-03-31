@@ -7,7 +7,7 @@ Node pools are groups of worker nodes sharing common configuration. In terms of 
 
 ## Usage
 
-To create the manifests for a new node poo, use this command:
+To create the manifests for a new node pool, use this command:
 
     kubectl gs template nodepool
 
