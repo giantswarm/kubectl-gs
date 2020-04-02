@@ -1,6 +1,8 @@
 package gsrelease
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -8,7 +10,8 @@ import (
 	"os/user"
 	"path"
 
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v3"
+
 	"github.com/giantswarm/microerror"
 )
 
@@ -96,8 +99,9 @@ func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
 }
 
 func (r *GSRelease) Validate(version string) bool {
+	releaseVersion := fmt.Sprintf("v%s", version)
 	for _, release := range r.releases {
-		if release.Metadata.Name == version {
+		if release.Metadata.Name == releaseVersion {
 			return true
 		}
 	}
@@ -169,11 +173,16 @@ func readReleases() ([]Release, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	dec := yaml.NewDecoder(bytes.NewReader(data))
+
 	var releases []Release
 	{
-		err = yaml.Unmarshal(data, &releases)
-		if err != nil {
-			return nil, microerror.Mask(err)
+		for {
+			var release Release
+			if dec.Decode(&release) != nil {
+				break
+			}
+			releases = append(releases, release)
 		}
 	}
 
