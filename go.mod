@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions v0.2.0
+	github.com/giantswarm/gsctl v0.0.0-20200326073826-5730526c818e // indirect
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/spf13/afero v1.2.2
