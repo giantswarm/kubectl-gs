@@ -26,15 +26,35 @@ type GSRelease struct {
 	releases []Release
 }
 
-type Authority struct {
+type Release struct {
+	Kind     string          `json:"kind"`
+	Metadata ReleaseMetadata `json:"metadata"`
+	Spec     ReleaseSpec     `json:"spec"`
+	Version  string          `json:"apiVersion"`
+}
+
+type ReleaseMetadata struct {
+	Name        string            `json:"name"`
+	Annotations map[string]string `json:"annotations"`
+}
+
+type ReleaseSpec struct {
+	Date       string       `json:"date"`
+	Apps       []Apps       `json:"apps"`
+	Components []Components `json:"components"`
+	State      string       `json:"state"`
+	Version    string       `json:"version"`
+}
+
+type Components struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 }
 
-type Release struct {
-	Authorities []Authority `json:"authorities"`
-	State       string      `json:"state"`
-	Version     string      `json:"version"`
+type Apps struct {
+	ComponentVersion string `json:"componentVersion"`
+	Name             string `json:"name"`
+	Version          string `json:"version"`
 }
 
 func New(c Config) (*GSRelease, error) {
@@ -65,9 +85,9 @@ func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
 	releaseComponents := make(map[string]string)
 
 	for _, release := range r.releases {
-		if release.Version == releaseVersion {
-			for _, authority := range release.Authorities {
-				releaseComponents[authority.Name] = authority.Version
+		if release.Metadata.Name == releaseVersion {
+			for _, component := range release.Spec.Components {
+				releaseComponents[component.Name] = component.Version
 			}
 		}
 	}
@@ -77,7 +97,7 @@ func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
 
 func (r *GSRelease) Validate(version string) bool {
 	for _, release := range r.releases {
-		if release.Version == version {
+		if release.Metadata.Name == version {
 			return true
 		}
 	}
