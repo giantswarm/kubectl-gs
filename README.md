@@ -1,17 +1,24 @@
-# kubectl-gs
+# `kubectl-gs` - kubectl Plug-In for Giant Swarm custom resources
 
-kubectl plugin to render CRs for Giant Swarm clusters.
+Plug-in for `kubectl` to create manifests for creating/updating custom resources for:
+
+- Clusters - see [`docs/template-cluster-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-cluster-cr.md) for details
+- Node pools - see ['docs/template-nodepool-cr.md '](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md) for details
+- App catalogs
+- Apps
+
+
 Plugin supports rendering for CRs:
   - Tenat control-plane (AWS only):
-    - `Cluster` (API version `cluster.x-k8s.io/v1alpha2`)
-    - `AWSCluster` (API version `infrastructure.giantswarm.io/v1alpha2`)
+    
   - Nodepool (AWS only):
-    - `MachineDeployment` (API version `cluster.x-k8s.io/v1alpha2`)
-    - `AWSMachineDeployment` (API version `infrastructure.giantswarm.io/v1alpha2`)
+    
   - `AppCatalog`
   - `App`
 
-## How to install plugin
+## Installation
+
+Basically you need the executable in your `$PATH`. Here are ways to accomplish this on Linux and Mac OS:
 
 ### Linux
 
