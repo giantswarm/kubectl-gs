@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
@@ -84,7 +85,17 @@ func New(c Config) (*GSRelease, error) {
 	return newReleases, nil
 }
 
-func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
+func (r *GSRelease) ReleaseComponents(version string) map[string]string {
+	var releaseVersion string
+	{
+		if strings.HasPrefix(version, "v") {
+			releaseVersion = version
+		} else {
+			releaseVersion = fmt.Sprintf("v%s", version)
+		}
+
+	}
+
 	releaseComponents := make(map[string]string)
 
 	for _, release := range r.releases {
@@ -99,7 +110,16 @@ func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
 }
 
 func (r *GSRelease) Validate(version string) bool {
-	releaseVersion := fmt.Sprintf("v%s", version)
+	var releaseVersion string
+	{
+		if strings.HasPrefix(version, "v") {
+			releaseVersion = version
+		} else {
+			releaseVersion = fmt.Sprintf("v%s", version)
+		}
+
+	}
+
 	for _, release := range r.releases {
 		if release.Metadata.Name == releaseVersion {
 			return true
