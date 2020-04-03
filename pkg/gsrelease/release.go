@@ -1,14 +1,18 @@
 package gsrelease
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/user"
 	"path"
+	"strings"
 
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v3"
+
 	"github.com/giantswarm/microerror"
 )
 
@@ -26,15 +30,35 @@ type GSRelease struct {
 	releases []Release
 }
 
-type Authority struct {
+type Release struct {
+	Kind     string          `json:"kind"`
+	Metadata ReleaseMetadata `json:"metadata"`
+	Spec     ReleaseSpec     `json:"spec"`
+	Version  string          `json:"apiVersion"`
+}
+
+type ReleaseMetadata struct {
+	Name        string            `json:"name"`
+	Annotations map[string]string `json:"annotations"`
+}
+
+type ReleaseSpec struct {
+	Date       string       `json:"date"`
+	Apps       []Apps       `json:"apps"`
+	Components []Components `json:"components"`
+	State      string       `json:"state"`
+	Version    string       `json:"version"`
+}
+
+type Components struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 }
 
-type Release struct {
-	Authorities []Authority `json:"authorities"`
-	State       string      `json:"state"`
-	Version     string      `json:"version"`
+type Apps struct {
+	ComponentVersion string `json:"componentVersion"`
+	Name             string `json:"name"`
+	Version          string `json:"version"`
 }
 
 func New(c Config) (*GSRelease, error) {
@@ -61,13 +85,23 @@ func New(c Config) (*GSRelease, error) {
 	return newReleases, nil
 }
 
-func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
+func (r *GSRelease) ReleaseComponents(version string) map[string]string {
+	var releaseVersion string
+	{
+		if strings.HasPrefix(version, "v") {
+			releaseVersion = version
+		} else {
+			releaseVersion = fmt.Sprintf("v%s", version)
+		}
+
+	}
+
 	releaseComponents := make(map[string]string)
 
 	for _, release := range r.releases {
-		if release.Version == releaseVersion {
-			for _, authority := range release.Authorities {
-				releaseComponents[authority.Name] = authority.Version
+		if release.Metadata.Name == releaseVersion {
+			for _, component := range release.Spec.Components {
+				releaseComponents[component.Name] = component.Version
 			}
 		}
 	}
@@ -76,8 +110,18 @@ func (r *GSRelease) ReleaseComponents(releaseVersion string) map[string]string {
 }
 
 func (r *GSRelease) Validate(version string) bool {
+	var releaseVersion string
+	{
+		if strings.HasPrefix(version, "v") {
+			releaseVersion = version
+		} else {
+			releaseVersion = fmt.Sprintf("v%s", version)
+		}
+
+	}
+
 	for _, release := range r.releases {
-		if release.Version == version {
+		if release.Metadata.Name == releaseVersion {
 			return true
 		}
 	}
@@ -149,11 +193,16 @@ func readReleases() ([]Release, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	dec := yaml.NewDecoder(bytes.NewReader(data))
+
 	var releases []Release
 	{
-		err = yaml.Unmarshal(data, &releases)
-		if err != nil {
-			return nil, microerror.Mask(err)
+		for {
+			var release Release
+			if dec.Decode(&release) != nil {
+				break
+			}
+			releases = append(releases, release)
 		}
 	}
 

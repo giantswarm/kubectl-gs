@@ -3,18 +3,22 @@ module github.com/giantswarm/kubectl-gs
 go 1.13
 
 require (
-	github.com/aws/aws-sdk-go v1.30.3
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions v0.2.0
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
+	github.com/go-openapi/errors v0.19.3-0.20190617201723-9b273e805998 // indirect
+	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.7
-	gopkg.in/yaml.v2 v2.2.8
+	github.com/stretchr/testify v1.5.1 // indirect
+	google.golang.org/appengine v1.6.1 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
-	k8s.io/kubernetes v1.18.0
+	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
+	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 // indirect
 	sigs.k8s.io/cluster-api v0.3.3
 )
 
