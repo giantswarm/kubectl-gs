@@ -7,7 +7,6 @@ require (
 	github.com/giantswarm/apiextensions v0.2.1
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
-	github.com/go-openapi/errors v0.19.3-0.20190617201723-9b273e805998 // indirect
 	github.com/go-openapi/strfmt v0.19.5 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.7
