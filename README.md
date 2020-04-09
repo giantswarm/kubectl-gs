@@ -4,8 +4,8 @@ Plug-in for `kubectl` to create manifests for creating/updating custom resources
 
 - Clusters - see [`docs/template-cluster-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-cluster-cr.md) for details
 - Node pools - see ['docs/template-nodepool-cr.md '](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md) for details
-- App catalogs
-- Apps
+- App catalogs - see [`docs/template-catalog-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-catalog-cr.md) for details
+- Apps - see [`docs/template-app-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-app-cr.md) for details
 
 
 Plugin supports rendering for CRs:
