@@ -16,7 +16,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v0.17.2
+	k8s.io/client-go v0.18.1
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 // indirect
 	sigs.k8s.io/cluster-api v0.3.3
