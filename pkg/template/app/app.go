@@ -8,9 +8,7 @@ import (
 
 type Config struct {
 	Catalog                 string
-	ID                      string
-	KubeConfigContext       string
-	KubeConfigSecretName    string
+	Cluster                 string
 	UserConfigConfigMapName string
 	UserConfigSecretName    string
 	Name                    string
@@ -31,23 +29,19 @@ type ConfigMapConfig struct {
 }
 
 func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
-	var kubeconfig applicationv1alpha1.AppSpecKubeConfig
-	if config.KubeConfigContext != "" {
-		kubeconfig = applicationv1alpha1.AppSpecKubeConfig{
-			Context: applicationv1alpha1.AppSpecKubeConfigContext{
-				Name: config.KubeConfigContext,
-			},
-			InCluster: true,
-			Secret:    applicationv1alpha1.AppSpecKubeConfigSecret{},
+	userConfig := applicationv1alpha1.AppSpecUserConfig{}
+
+	if config.UserConfigConfigMapName != "" {
+		userConfig.ConfigMap = applicationv1alpha1.AppSpecUserConfigConfigMap{
+			Name:      config.UserConfigConfigMapName,
+			Namespace: config.Cluster,
 		}
-	} else {
-		kubeconfig = applicationv1alpha1.AppSpecKubeConfig{
-			Context:   applicationv1alpha1.AppSpecKubeConfigContext{},
-			InCluster: false,
-			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
-				Name:      config.KubeConfigSecretName,
-				Namespace: config.Namespace,
-			},
+	}
+
+	if config.UserConfigSecretName != "" {
+		userConfig.Secret = applicationv1alpha1.AppSpecUserConfigSecret{
+			Name:      config.UserConfigSecretName,
+			Namespace: config.Cluster,
 		}
 	}
 
@@ -64,31 +58,27 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 			},
 		},
 		Spec: applicationv1alpha1.AppSpec{
-			Catalog: config.Catalog,
+			Catalog:   config.Catalog,
+			Name:      config.Name,
+			Namespace: config.Cluster,
 			Config: applicationv1alpha1.AppSpecConfig{
 				ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
-					Name:      config.Name + config.ID,
-					Namespace: config.Namespace,
-				},
-				Secret: applicationv1alpha1.AppSpecConfigSecret{
-					Name:      config.Name + config.ID,
-					Namespace: config.Namespace,
+					Name:      config.Cluster + "-cluster-values",
+					Namespace: config.Cluster,
 				},
 			},
-			KubeConfig: kubeconfig,
-			Name:       config.Name,
-			Namespace:  config.Namespace,
-			UserConfig: applicationv1alpha1.AppSpecUserConfig{
-				ConfigMap: applicationv1alpha1.AppSpecUserConfigConfigMap{
-					Name:      config.UserConfigConfigMapName,
-					Namespace: config.Namespace,
+			KubeConfig: applicationv1alpha1.AppSpecKubeConfig{
+				Context: applicationv1alpha1.AppSpecKubeConfigContext{
+					Name: config.Cluster + "-kubeconfig",
 				},
-				Secret: applicationv1alpha1.AppSpecUserConfigSecret{
-					Name:      config.UserConfigSecretName,
-					Namespace: config.Namespace,
+				InCluster: false,
+				Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
+					Name:      config.Cluster + "-kubeconfig",
+					Namespace: config.Cluster,
 				},
 			},
-			Version: config.Version,
+			UserConfig: userConfig,
+			Version:    config.Version,
 		},
 	}
 
