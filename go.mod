@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.5.1 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
-	k8s.io/api v0.17.2
+	k8s.io/api v0.18.1
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
