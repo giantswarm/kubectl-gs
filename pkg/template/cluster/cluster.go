@@ -21,6 +21,7 @@ type Config struct {
 	Domain            string
 	MasterAZ          string
 	Name              string
+	PodsCIDR          string
 	Owner             string
 	Region            string
 	ReleaseComponents map[string]string
@@ -108,6 +109,9 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 				Master: infrastructurev1alpha2.AWSClusterSpecProviderMaster{
 					AvailabilityZone: c.MasterAZ,
 					InstanceType:     defaultMasterInstanceType,
+				},
+				Pods: infrastructurev1alpha2.AWSClusterSpecProviderPods{
+					CIDRBlock: c.PodsCIDR,
 				},
 				Region: c.Region,
 			},
