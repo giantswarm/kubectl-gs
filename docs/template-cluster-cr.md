@@ -15,6 +15,7 @@ It supports the following flags:
     Must be configured with AZ of the installation region. E.g. for region *eu-central-1* valid value is *eu-central-1a*.
   - `--domain`  - base domain of your installation. Customer solution engineer can provide this value.
   - `--name` - cluster name.
+  - `--pods-cidr` - CIDR applied to the pods. If you don't set any, the installation default will be applied. Only versions *11.1.4+ support this feature.
   - `--owner` - organization, owning tenant cluster. Must be configured with existing organization in installation.
   - `--region` - tenant cluster AWS region. Must be configured with installation region.
   - `--release` - valid release version.
@@ -33,6 +34,7 @@ gs template cluster \
   --master-az="eu-central-1a" \
   --domain="gauss.eu-central-1.aws.gigantic.io" \
   --name="Cluster #2" \
+  --pods-cids="10.2.0.0/16" \
   --owner="giantswarm" \
   --release="11.0.1" \
   --region="eu-central-1" \
@@ -92,6 +94,8 @@ spec:
     master:
       availabilityZone: eu-central-1a
       instanceType: m5.xlarge
+    pods:
+      cidrBlock: 10.2.0.0/16
     region: eu-central-1
 status:
   cluster:

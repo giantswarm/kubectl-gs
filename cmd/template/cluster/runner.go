@@ -63,6 +63,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Domain:            r.flag.Domain,
 		MasterAZ:          r.flag.MasterAZ,
 		Name:              r.flag.Name,
+		PodsCIDR:          r.flag.PodsCIDR,
 		Owner:             r.flag.Owner,
 		Region:            r.flag.Region,
 		ReleaseComponents: releaseComponents,

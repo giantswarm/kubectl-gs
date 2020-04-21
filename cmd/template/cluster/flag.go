@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"net"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -15,6 +16,7 @@ const (
 	flagMasterAZ                = "master-az"
 	flagName                    = "name"
 	flagNoCache                 = "no-cache"
+	flagPodsCIDR                = "pods-cidr"
 	flagOutput                  = "output"
 	flagOwner                   = "owner"
 	flagRegion                  = "region"
@@ -35,6 +37,7 @@ type flag struct {
 	MasterAZ                string
 	Name                    string
 	NoCache                 bool
+	PodsCIDR                string
 	Output                  string
 	Owner                   string
 	Region                  string
@@ -55,6 +58,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.MasterAZ, flagMasterAZ, "", "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
+	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region(e.g. eu-central-1).")
@@ -79,6 +83,11 @@ func (f *flag) Validate() error {
 	}
 	if f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
+	}
+	if f.PodsCIDR != "" {
+		if !validateCIDR(f.PodsCIDR) {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagPodsCIDR)
+		}
 	}
 	if f.Owner == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
@@ -160,4 +169,13 @@ func (f *flag) Validate() error {
 	}
 
 	return nil
+}
+
+func validateCIDR(cidr string) bool {
+	_, _, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
