@@ -34,7 +34,7 @@ gs template cluster \
   --master-az="eu-central-1a" \
   --domain="gauss.eu-central-1.aws.gigantic.io" \
   --name="Cluster #2" \
-  --pods-cids="10.2.0.0/16" \
+  --pods-cidr="10.2.0.0/16" \
   --owner="giantswarm" \
   --release="11.0.1" \
   --region="eu-central-1" \
