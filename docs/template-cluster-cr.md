@@ -36,7 +36,7 @@ gs template cluster \
   --name="Cluster #2" \
   --pods-cidr="10.2.0.0/16" \
   --owner="giantswarm" \
-  --release="11.0.1" \
+  --release="11.2.1" \
   --region="eu-central-1" \
   --template-default-nodepool=false
 ```
@@ -49,10 +49,10 @@ kind: Cluster
 metadata:
   creationTimestamp: null
   labels:
-    cluster-operator.giantswarm.io/version: 2.1.1
+    cluster-operator.giantswarm.io/version: 2.1.10
     giantswarm.io/cluster: o4omf
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/version: 11.0.1
+    release.giantswarm.io/version: 11.2.1
   name: o4omf
   namespace: default
 spec:
@@ -70,10 +70,10 @@ kind: AWSCluster
 metadata:
   creationTimestamp: null
   labels:
-    aws-operator.giantswarm.io/version: 8.1.1
+    aws-operator.giantswarm.io/version: 8.4.0
     giantswarm.io/cluster: o4omf
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/version: 11.0.1
+    release.giantswarm.io/version: 11.2.1
   name: o4omf
   namespace: default
 spec:
