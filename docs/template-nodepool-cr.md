@@ -32,11 +32,11 @@ kind: MachineDeployment
 metadata:
   creationTimestamp: null
   labels:
-    cluster-operator.giantswarm.io/version: 2.1.1
+    cluster-operator.giantswarm.io/version: 2.1.10
     giantswarm.io/cluster: o4omf
     giantswarm.io/machine-deployment: fo2xh
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/version: 11.0.1
+    release.giantswarm.io/version: 11.2.1
   name: fo2xh
   namespace: default
 spec:
@@ -58,11 +58,11 @@ kind: AWSMachineDeployment
 metadata:
   creationTimestamp: null
   labels:
-    aws-operator.giantswarm.io/version: 8.1.1
+    aws-operator.giantswarm.io/version: 8.4.0
     giantswarm.io/cluster: o4omf
     giantswarm.io/machine-deployment: fo2xh
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/version: 11.0.1
+    release.giantswarm.io/version: 11.2.1
   name: fo2xh
   namespace: default
 spec:
