@@ -15,15 +15,15 @@ import (
 const (
 	// IDChars represents the character set used to generate cluster IDs.
 	// (does not contain 1 and l, to avoid confusion)
-	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
+	IdChars = "023456789abcdefghijkmnopqrstuvwxyz"
 	// IDLength represents the number of characters used to create a cluster ID.
-	idLength = 5
+	IDLength = 5
 )
 
 func GenerateID() string {
 	for {
-		letterRunes := []rune(idChars)
-		b := make([]rune, idLength)
+		letterRunes := []rune(IdChars)
+		b := make([]rune, IDLength)
 		rand.Seed(time.Now().UnixNano())
 		for i := range b {
 			b[i] = letterRunes[rand.Intn(len(letterRunes))]
@@ -45,6 +45,7 @@ func GenerateID() string {
 		return id
 	}
 }
+
 
 func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")

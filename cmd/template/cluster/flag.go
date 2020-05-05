@@ -2,16 +2,20 @@ package cluster
 
 import (
 	"net"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/aws"
 	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
 )
 
 const (
+	flagClusterID               = "cluster-id"
 	flagDomain                  = "domain"
 	flagMasterAZ                = "master-az"
 	flagName                    = "name"
@@ -33,6 +37,7 @@ const (
 )
 
 type flag struct {
+	ClusterID               string
 	Domain                  string
 	MasterAZ                string
 	Name                    string
@@ -55,6 +60,7 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
+	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
 	cmd.Flags().StringVar(&f.MasterAZ, flagMasterAZ, "", "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
@@ -78,6 +84,33 @@ func (f *flag) Init(cmd *cobra.Command) {
 func (f *flag) Validate() error {
 	var err error
 
+	if f.ClusterID != "" {
+		if len(f.ClusterID) != key.IDLength {
+			return microerror.Maskf(invalidFlagError, "--%s must be length of %d", flagClusterID, key.IDLength)
+		}
+
+		if _, err := strconv.Atoi(f.ClusterID); err == nil {
+			// string is numbers only, which we want to avoid
+			return microerror.Maskf(invalidFlagError, "--%s must be alphanumeric", flagClusterID)
+		}
+
+		matched, err := regexp.MatchString("^[a-z]+$", f.ClusterID)
+		if err == nil && matched == true {
+			// strings is letters only, which we also avoid
+			return microerror.Maskf(invalidFlagError, "--%s must be alphanumeric", flagClusterID)
+		}
+
+		if strings.ContainsAny(f.ClusterID, "1l") {
+			return microerror.Maskf(invalidFlagError, "--%s cannot contain 1 or l", flagClusterID)
+		}
+
+		matched, err = regexp.MatchString("^[023456789abcdefghijkmnopqrstuvwxyz]+$", f.ClusterID)
+		if err == nil && matched == false {
+			return microerror.Maskf(invalidFlagError, "--%s must only contain [023456789abcdefghijkmnopqrstuvwxyz]", flagClusterID)
+		}
+
+		return nil
+	}
 	if f.Domain == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDomain)
 	}
