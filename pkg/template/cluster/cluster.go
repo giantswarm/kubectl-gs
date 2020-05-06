@@ -18,6 +18,7 @@ const (
 )
 
 type Config struct {
+	ClusterID         string
 	Domain            string
 	MasterAZ          string
 	Name              string
@@ -31,6 +32,9 @@ type Config struct {
 func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2.AWSCluster, error) {
 
 	clusterID := key.GenerateID()
+	if config.ClusterID != "" {
+		clusterID = config.ClusterID
+	}
 
 	awsClusterCR, err := newAWSClusterCR(clusterID, config)
 	if err != nil {

@@ -60,6 +60,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	releaseComponents := release.ReleaseComponents(r.flag.Release)
 
 	config := cluster.Config{
+		ClusterID:         r.flag.ClusterID,
 		Domain:            r.flag.Domain,
 		MasterAZ:          r.flag.MasterAZ,
 		Name:              r.flag.Name,
