@@ -52,7 +52,7 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
-			Namespace: config.Namespace,
+			Namespace: config.Cluster,
 			Labels: map[string]string{
 				"app-operator.giantswarm.io/version": "1.0.0",
 			},
@@ -60,7 +60,7 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 		Spec: applicationv1alpha1.AppSpec{
 			Catalog:   config.Catalog,
 			Name:      config.Name,
-			Namespace: config.Cluster,
+			Namespace: config.Namespace,
 			Config: applicationv1alpha1.AppSpecConfig{
 				ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
 					Name:      config.Cluster + "-cluster-values",
