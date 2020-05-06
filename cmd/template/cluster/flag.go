@@ -1,9 +1,9 @@
 package cluster
 
 import (
+	"fmt"
 	"net"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -89,24 +89,15 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be length of %d", flagClusterID, key.IDLength)
 		}
 
-		if _, err := strconv.Atoi(f.ClusterID); err == nil {
-			// string is numbers only, which we want to avoid
-			return microerror.Maskf(invalidFlagError, "--%s must be alphanumeric", flagClusterID)
-		}
-
-		matched, err := regexp.MatchString("^[a-z]+$", f.ClusterID)
+		matched, err := regexp.MatchString("^([a-z]+|[0-9]+)$", f.ClusterID)
 		if err == nil && matched == true {
 			// strings is letters only, which we also avoid
 			return microerror.Maskf(invalidFlagError, "--%s must be alphanumeric", flagClusterID)
 		}
 
-		if strings.ContainsAny(f.ClusterID, "1l") {
-			return microerror.Maskf(invalidFlagError, "--%s cannot contain 1 or l", flagClusterID)
-		}
-
-		matched, err = regexp.MatchString("^[023456789abcdefghijkmnopqrstuvwxyz]+$", f.ClusterID)
+		matched, err = regexp.MatchString(fmt.Sprintf("^[%s]+$", key.IDChars), f.ClusterID)
 		if err == nil && matched == false {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain [023456789abcdefghijkmnopqrstuvwxyz]", flagClusterID)
+			return microerror.Maskf(invalidFlagError, "--%s must only contain [%s]", flagClusterID, key.IDChars)
 		}
 
 		return nil
