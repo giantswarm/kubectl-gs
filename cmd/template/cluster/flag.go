@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -95,9 +94,9 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be alphanumeric", flagClusterID)
 		}
 
-		matched, err = regexp.MatchString(fmt.Sprintf("^[%s]+$", key.IDChars), f.ClusterID)
+		matched, err = regexp.MatchString("^[a-z0-9]+$", f.ClusterID)
 		if err == nil && matched == false {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain [%s]", flagClusterID, key.IDChars)
+			return microerror.Maskf(invalidFlagError, "--%s must only contain [a-z0-9]", flagClusterID)
 		}
 
 		return nil
