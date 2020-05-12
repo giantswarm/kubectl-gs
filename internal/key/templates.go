@@ -20,6 +20,10 @@ const ClusterCRsTemplate = `
 {{ .ClusterCR -}}
 ---
 {{ .AWSClusterCR -}}
+---
+{{ .G8sControlPlaneCR -}}
+---
+{{ .AWSControlPlaneCR -}}
 {{ if .TemplateDefaultNodepool}}
 ---
 {{ .MachineDeploymentCR -}}
