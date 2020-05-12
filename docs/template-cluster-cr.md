@@ -4,6 +4,8 @@ In order to create a cluster using custom resources, kubectl-gs will help you cr
 
 - `Cluster` (API version `cluster.x-k8s.io/v1alpha2`) - holds the base cluster specification.
 - `AWSCluster` (API version `infrastructure.giantswarm.io/v1alpha2`) - holds AWS-specific configuration.
+- `G8sControlPlane` (API version `infrastructure.giantswarm.io/v1alpha2`) - specifies the master nodes
+- `AWSControlPlane` (API version `infrastructure.giantswarm.io/v1alpha2`) - specifies the master nodes with AWS-specific details
 
 ## Usage
 
@@ -103,4 +105,43 @@ status:
   provider:
     network:
       cidr: ""
+---
+apiVersion: infrastructure.giantswarm.io/v1alpha2
+kind: G8sControlPlane
+metadata:
+  creationTimestamp: null
+  labels:
+    cluster-operator.giantswarm.io/version: 2.1.10
+    giantswarm.io/cluster: o4omf
+    giantswarm.io/control-plane: osss7
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 11.2.1
+  name: osss7
+  namespace: default
+spec:
+  infrastructureRef:
+    apiVersion: infrastructure.giantswarm.io/v1alpha2
+    kind: AWSControlPlane
+    name: osss7
+    namespace: default
+  replicas: 1
+status: {}
+---
+apiVersion: infrastructure.giantswarm.io/v1alpha2
+kind: AWSControlPlane
+metadata:
+  creationTimestamp: null
+  labels:
+    aws-operator.giantswarm.io/version: 8.4.0
+    giantswarm.io/cluster: o4omf
+    giantswarm.io/control-plane: osss7
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 11.2.1
+  name: osss7
+  namespace: default
+spec:
+  availabilityZones:
+  - eu-central-1a
+  instanceType: m5.xlarge
+status: {}
 ```
