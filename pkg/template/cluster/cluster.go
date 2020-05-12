@@ -146,6 +146,7 @@ func newAWSControlPlaneCR(clusterID string, controlPlaneID string, c Config) *in
 			Labels: map[string]string{
 				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
 				label.Cluster:            clusterID,
+				label.ControlPlane:       controlPlaneID,
 				label.Organization:       c.Owner,
 				label.ReleaseVersion:     c.ReleaseVersion,
 			},
@@ -176,6 +177,7 @@ func newG8sControlPlaneCR(obj interface{}, clusterID string, controlPlaneID stri
 			Labels: map[string]string{
 				label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
 				label.Cluster:                clusterID,
+				label.ControlPlane:           controlPlaneID,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
 			},
