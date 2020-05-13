@@ -38,7 +38,7 @@ const (
 type flag struct {
 	ClusterID               string
 	Domain                  string
-	MasterAZ                string
+	MasterAZ                []string
 	Name                    string
 	NoCache                 bool
 	PodsCIDR                string
@@ -60,7 +60,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
-	cmd.Flags().StringVar(&f.MasterAZ, flagMasterAZ, "", "Tenant master availability zone.")
+	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
@@ -121,11 +121,16 @@ func (f *flag) Validate() error {
 	if !aws.ValidateRegion(f.Region) {
 		return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
 	}
-	if f.MasterAZ == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagMasterAZ)
+	if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
+		return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availabiliy zone names", flagMasterAZ)
 	}
-	if !aws.ValidateAZ(f.Region, f.MasterAZ) {
-		return microerror.Maskf(invalidFlagError, "--%s must be valid AZ name for selected region %s", flagMasterAZ, f.Region)
+
+	// TODO: validate that len(f.MasterAZ) == 3 is occurring in releases >= v11.5.0
+
+	for _, az := range f.MasterAZ {
+		if !aws.ValidateAZ(f.Region, az) {
+			return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
+		}
 	}
 
 	if f.Release == "" {

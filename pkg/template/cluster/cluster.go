@@ -20,7 +20,7 @@ const (
 type Config struct {
 	ClusterID         string
 	Domain            string
-	MasterAZ          string
+	MasterAZ          []string
 	Name              string
 	PodsCIDR          string
 	Owner             string
@@ -119,16 +119,20 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 					Name:      "credential-default",
 					Namespace: "giantswarm",
 				},
-				Master: infrastructurev1alpha2.AWSClusterSpecProviderMaster{
-					AvailabilityZone: c.MasterAZ,
-					InstanceType:     defaultMasterInstanceType,
-				},
 				Pods: infrastructurev1alpha2.AWSClusterSpecProviderPods{
 					CIDRBlock: c.PodsCIDR,
 				},
 				Region: c.Region,
 			},
 		},
+	}
+
+	// Single master node
+	if len(c.MasterAZ) == 1 {
+		awsClusterCR.Spec.Provider.Master = infrastructurev1alpha2.AWSClusterSpecProviderMaster{
+			AvailabilityZone: c.MasterAZ[0],
+			InstanceType:     defaultMasterInstanceType,
+		}
 	}
 
 	return awsClusterCR, nil
@@ -152,7 +156,7 @@ func newAWSControlPlaneCR(clusterID string, controlPlaneID string, c Config) *in
 			},
 		},
 		Spec: infrastructurev1alpha2.AWSControlPlaneSpec{
-			AvailabilityZones: []string{c.MasterAZ},
+			AvailabilityZones: c.MasterAZ,
 			InstanceType:      defaultMasterInstanceType,
 		},
 	}
