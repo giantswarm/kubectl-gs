@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -28,6 +29,11 @@ type runner struct {
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
+
+	// Sorting is required before validation for uniqueness.
+	sort.Slice(r.flag.MasterAZ, func(i, j int) bool {
+		return r.flag.MasterAZ[i] < r.flag.MasterAZ[j]
+	})
 
 	err := r.flag.Validate()
 	if err != nil {

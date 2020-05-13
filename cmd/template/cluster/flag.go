@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/giantswarm/microerror"
+	"github.com/mpvl/unique"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -121,8 +122,13 @@ func (f *flag) Validate() error {
 	if !aws.ValidateRegion(f.Region) {
 		return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
 	}
+
+	// AZ name(s)
 	if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
 		return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availabiliy zone names", flagMasterAZ)
+	}
+	if !unique.StringsAreUnique(f.MasterAZ) {
+		return microerror.Maskf(invalidFlagError, "--%s values must contain each AZ name only once", flagMasterAZ)
 	}
 
 	// TODO: validate that len(f.MasterAZ) == 3 is occurring in releases >= v11.5.0
