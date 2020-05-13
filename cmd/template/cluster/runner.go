@@ -71,7 +71,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ReleaseVersion:    r.flag.Release,
 	}
 
-	clusterCR, awsClusterCR, err := cluster.NewClusterCRs(config)
+	clusterCR, awsClusterCR, g8sControlPlaneCR, awsControlPlaneCR, err := cluster.NewClusterCRs(config)
 
 	clusterCRYaml, err := yaml.Marshal(clusterCR)
 	if err != nil {
@@ -79,6 +79,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	awsClusterCRYaml, err := yaml.Marshal(awsClusterCR)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	g8sControlPlaneCRYaml, err := yaml.Marshal(g8sControlPlaneCR)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	awsControlPlaneCRYaml, err := yaml.Marshal(awsControlPlaneCR)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -124,8 +134,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	type ClusterCRsOutput struct {
 		AWSClusterCR            string
+		AWSControlPlaneCR       string
 		AWSMachineDeploymentCR  string
 		ClusterCR               string
+		G8sControlPlaneCR       string
 		MachineDeploymentCR     string
 		TemplateDefaultNodepool bool
 	}
@@ -135,6 +147,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		AWSMachineDeploymentCR:  string(awsMDCRYaml),
 		ClusterCR:               string(clusterCRYaml),
 		MachineDeploymentCR:     string(mdCRYaml),
+		G8sControlPlaneCR:       string(g8sControlPlaneCRYaml),
+		AWSControlPlaneCR:       string(awsControlPlaneCRYaml),
 		TemplateDefaultNodepool: r.flag.TemplateDefaultNodepool,
 	}
 

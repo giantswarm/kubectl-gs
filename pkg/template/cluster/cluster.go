@@ -29,7 +29,8 @@ type Config struct {
 	ReleaseVersion    string
 }
 
-func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2.AWSCluster, error) {
+// NewClusterCRs returns the custom resources to represent the given cluster.
+func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2.AWSCluster, *infrastructurev1alpha2.G8sControlPlane, *infrastructurev1alpha2.AWSControlPlane, error) {
 
 	clusterID := key.GenerateID()
 	if config.ClusterID != "" {
@@ -38,15 +39,23 @@ func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2
 
 	awsClusterCR, err := newAWSClusterCR(clusterID, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, nil, nil, nil, microerror.Mask(err)
 	}
 
 	clusterCR, err := newClusterCR(awsClusterCR, clusterID, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, nil, nil, nil, microerror.Mask(err)
 	}
 
-	return clusterCR, awsClusterCR, nil
+	controlPlaneID := key.GenerateID()
+
+	awsControlPlaneCR := newAWSControlPlaneCR(clusterID, controlPlaneID, config)
+	g8sControlPlaneCR, err := newG8sControlPlaneCR(awsControlPlaneCR, clusterID, controlPlaneID, config)
+	if err != nil {
+		return nil, nil, nil, nil, microerror.Mask(err)
+	}
+
+	return clusterCR, awsClusterCR, g8sControlPlaneCR, awsControlPlaneCR, nil
 }
 
 func newClusterCR(obj interface{}, clusterID string, c Config) (*apiv1alpha2.Cluster, error) {
@@ -123,4 +132,61 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 	}
 
 	return awsClusterCR, nil
+}
+
+func newAWSControlPlaneCR(clusterID string, controlPlaneID string, c Config) *infrastructurev1alpha2.AWSControlPlane {
+	return &infrastructurev1alpha2.AWSControlPlane{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AWSControlPlane",
+			APIVersion: "infrastructure.giantswarm.io/v1alpha2",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      controlPlaneID,
+			Namespace: metav1.NamespaceDefault,
+			Labels: map[string]string{
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            clusterID,
+				label.ControlPlane:       controlPlaneID,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
+			},
+		},
+		Spec: infrastructurev1alpha2.AWSControlPlaneSpec{
+			AvailabilityZones: []string{c.MasterAZ},
+			InstanceType:      defaultMasterInstanceType,
+		},
+	}
+}
+
+func newG8sControlPlaneCR(obj interface{}, clusterID string, controlPlaneID string, c Config) (*infrastructurev1alpha2.G8sControlPlane, error) {
+	runtimeObj, _ := obj.(runtime.Object)
+
+	infrastructureCRRef, err := reference.GetReference(infrastructurev1alpha2scheme.Scheme, runtimeObj)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	cr := &infrastructurev1alpha2.G8sControlPlane{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "G8sControlPlane",
+			APIVersion: "infrastructure.giantswarm.io/v1alpha2",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      controlPlaneID,
+			Namespace: metav1.NamespaceDefault,
+			Labels: map[string]string{
+				label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
+				label.Cluster:                clusterID,
+				label.ControlPlane:           controlPlaneID,
+				label.Organization:           c.Owner,
+				label.ReleaseVersion:         c.ReleaseVersion,
+			},
+		},
+		Spec: infrastructurev1alpha2.G8sControlPlaneSpec{
+			Replicas:          1,
+			InfrastructureRef: *infrastructureCRRef,
+		},
+	}
+
+	return cr, nil
 }
