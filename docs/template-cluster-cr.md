@@ -13,8 +13,11 @@ The command to execute is `kubectl gs template cluster`.
 
 It supports the following flags:
 
-  - `--master-az` - AWS availability zone of master instance.
+  - `--master-az` - AWS availability zone(s) of master instance.
     Must be configured with AZ of the installation region. E.g. for region *eu-central-1* valid value is *eu-central-1a*.
+    Use the flag once with a single value to create a cluster with one master node. For master node high availability,
+    specify three distinct availability zones instead. This can be done by separating AZ names with comma or using the flag
+    three times with a single AZ name.
   - `--domain`  - base domain of your installation. Customer solution engineer can provide this value.
   - `--name` - cluster name.
   - `--pods-cidr` - CIDR applied to the pods. If you don't set any, the installation default will be applied. Only versions *11.1.4+ support this feature.
