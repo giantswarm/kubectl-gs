@@ -187,7 +187,7 @@ func newG8sControlPlaneCR(obj interface{}, clusterID string, controlPlaneID stri
 			},
 		},
 		Spec: infrastructurev1alpha2.G8sControlPlaneSpec{
-			Replicas:          1,
+			Replicas:          len(c.MasterAZ),
 			InfrastructureRef: *infrastructureCRRef,
 		},
 	}
