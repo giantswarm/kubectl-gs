@@ -47,7 +47,7 @@ func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2
 		return nil, nil, nil, nil, microerror.Mask(err)
 	}
 
-	controlPlaneID := key.GenerateID()
+	controlPlaneID := "cp-" + key.GenerateID()
 
 	awsControlPlaneCR := newAWSControlPlaneCR(clusterID, controlPlaneID, config)
 	g8sControlPlaneCR, err := newG8sControlPlaneCR(awsControlPlaneCR, clusterID, controlPlaneID, config)
