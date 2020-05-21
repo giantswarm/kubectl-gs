@@ -19,7 +19,7 @@ It supports the following flags:
     specify three distinct availability zones instead. This can be done by separating AZ names with comma or using the flag
     three times with a single AZ name.
   - `--domain`  - base domain of your installation. Customer solution engineer can provide this value.
-  - `--external-snat` - AWS CNI configuration. Only versions *11.3.1+ support this feature.
+  - `--external-snat` - AWS CNI configuration to disable (is enabled by default) the [external source network address translation](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html). Only versions *11.3.1+ support this feature.
   - `--name` - cluster name.
   - `--pods-cidr` - CIDR applied to the pods. If you don't set any, the installation default will be applied. Only versions *11.1.4+ support this feature.
   - `--owner` - organization, owning tenant cluster. Must be configured with existing organization in installation.
