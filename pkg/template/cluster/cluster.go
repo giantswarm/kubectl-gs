@@ -20,6 +20,7 @@ const (
 type Config struct {
 	ClusterID         string
 	Domain            string
+	ExternalSNAT      bool
 	MasterAZ          []string
 	Name              string
 	PodsCIDR          string
@@ -120,7 +121,8 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 					Namespace: "giantswarm",
 				},
 				Pods: infrastructurev1alpha2.AWSClusterSpecProviderPods{
-					CIDRBlock: c.PodsCIDR,
+					CIDRBlock:    c.PodsCIDR,
+					ExternalSNAT: &c.ExternalSNAT,
 				},
 				Region: c.Region,
 			},

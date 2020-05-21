@@ -68,6 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	config := cluster.Config{
 		ClusterID:         r.flag.ClusterID,
 		Domain:            r.flag.Domain,
+		ExternalSNAT:      r.flag.ExternalSNAT,
 		MasterAZ:          r.flag.MasterAZ,
 		Name:              r.flag.Name,
 		PodsCIDR:          r.flag.PodsCIDR,

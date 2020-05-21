@@ -19,6 +19,7 @@ It supports the following flags:
     specify three distinct availability zones instead. This can be done by separating AZ names with comma or using the flag
     three times with a single AZ name.
   - `--domain`  - base domain of your installation. Customer solution engineer can provide this value.
+  - `--external-snat` - AWS CNI configuration to disable (is enabled by default) the [external source network address translation](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html). Only versions *11.3.1+ support this feature.
   - `--name` - cluster name.
   - `--pods-cidr` - CIDR applied to the pods. If you don't set any, the installation default will be applied. Only versions *11.1.4+ support this feature.
   - `--owner` - organization, owning tenant cluster. Must be configured with existing organization in installation.
@@ -38,6 +39,7 @@ Example command:
 gs template cluster \
   --master-az="eu-central-1a" \
   --domain="gauss.eu-central-1.aws.gigantic.io" \
+  --external-snat=true \
   --name="Cluster #2" \
   --pods-cidr="10.2.0.0/16" \
   --owner="giantswarm" \
@@ -101,6 +103,7 @@ spec:
       instanceType: m5.xlarge
     pods:
       cidrBlock: 10.2.0.0/16
+      externalSNAT: true
     region: eu-central-1
 status:
   cluster:

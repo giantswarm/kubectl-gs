@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions v0.3.0
+	github.com/giantswarm/apiextensions v0.4.0
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/go-openapi/strfmt v0.19.5 // indirect
@@ -18,7 +18,6 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
-	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89 // indirect
 	sigs.k8s.io/cluster-api v0.3.3
 )
 

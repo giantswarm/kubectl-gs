@@ -21,6 +21,7 @@ const (
 	flagName                    = "name"
 	flagNoCache                 = "no-cache"
 	flagPodsCIDR                = "pods-cidr"
+	flagExternalSNAT            = "external-snat"
 	flagOutput                  = "output"
 	flagOwner                   = "owner"
 	flagRegion                  = "region"
@@ -43,6 +44,7 @@ type flag struct {
 	Name                    string
 	NoCache                 bool
 	PodsCIDR                string
+	ExternalSNAT            bool
 	Output                  string
 	Owner                   string
 	Region                  string
@@ -61,6 +63,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
+	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
