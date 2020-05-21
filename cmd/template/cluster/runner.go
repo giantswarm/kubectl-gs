@@ -71,6 +71,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		MasterAZ:          r.flag.MasterAZ,
 		Name:              r.flag.Name,
 		PodsCIDR:          r.flag.PodsCIDR,
+		ExternalSNAT:      r.flag.ExternalSNAT,
 		Owner:             r.flag.Owner,
 		Region:            r.flag.Region,
 		ReleaseComponents: releaseComponents,
