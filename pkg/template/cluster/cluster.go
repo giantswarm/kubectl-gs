@@ -20,10 +20,10 @@ const (
 type Config struct {
 	ClusterID         string
 	Domain            string
+	ExternalSNAT      bool
 	MasterAZ          []string
 	Name              string
 	PodsCIDR          string
-	ExternalSNAT      bool
 	Owner             string
 	Region            string
 	ReleaseComponents map[string]string
