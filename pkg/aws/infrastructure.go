@@ -26,6 +26,7 @@ var infrastructure = map[string][]string{
 	},
 
 	"ap-southeast-1": []string{
+		"ap-southeast-1a",
 		"ap-southeast-1b",
 		"ap-southeast-1c",
 	},
