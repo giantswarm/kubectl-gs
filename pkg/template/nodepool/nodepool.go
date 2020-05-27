@@ -14,15 +14,17 @@ import (
 )
 
 type Config struct {
-	AvailabilityZones []string
-	AWSInstanceType   string
-	ClusterID         string
-	Name              string
-	NodesMax          int
-	NodesMin          int
-	Owner             string
-	ReleaseComponents map[string]string
-	ReleaseVersion    string
+	AvailabilityZones                   []string
+	AWSInstanceType                     string
+	ClusterID                           string
+	Name                                string
+	NodesMax                            int
+	NodesMin                            int
+	OnDemandBaseCapacity                int
+	OnDemandPercentageAboveBaseCapacity int
+	Owner                               string
+	ReleaseComponents                   map[string]string
+	ReleaseVersion                      string
 }
 
 func NewMachineDeploymentCRs(config Config) (*apiv1alpha2.MachineDeployment, *infrastructurev1alpha2.AWSMachineDeployment, error) {
@@ -114,8 +116,8 @@ func newAWSMachineDeploymentCR(clusterID, machineDeploymentID string, c Config) 
 					InstanceType: c.AWSInstanceType,
 				},
 				InstanceDistribution: infrastructurev1alpha2.AWSMachineDeploymentSpecInstanceDistribution{
-					OnDemandBaseCapacity:                0,
-					OnDemandPercentageAboveBaseCapacity: 100,
+					OnDemandBaseCapacity:                c.OnDemandBaseCapacity,
+					OnDemandPercentageAboveBaseCapacity: c.OnDemandPercentageAboveBaseCapacity,
 				},
 			},
 		},

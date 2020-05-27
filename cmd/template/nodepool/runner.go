@@ -68,15 +68,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	releaseComponents := release.ReleaseComponents(r.flag.Release)
 
 	config := nodepool.Config{
-		AvailabilityZones: availabilityZones,
-		AWSInstanceType:   r.flag.AWSInstanceType,
-		ClusterID:         r.flag.ClusterID,
-		Name:              r.flag.NodepoolName,
-		NodesMax:          r.flag.NodesMax,
-		NodesMin:          r.flag.NodesMin,
-		Owner:             r.flag.Owner,
-		ReleaseComponents: releaseComponents,
-		ReleaseVersion:    r.flag.Release,
+		AvailabilityZones:                   availabilityZones,
+		AWSInstanceType:                     r.flag.AWSInstanceType,
+		ClusterID:                           r.flag.ClusterID,
+		Name:                                r.flag.NodepoolName,
+		NodesMax:                            r.flag.NodesMax,
+		NodesMin:                            r.flag.NodesMin,
+		OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
+		OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
+		Owner:                               r.flag.Owner,
+		ReleaseComponents:                   releaseComponents,
+		ReleaseVersion:                      r.flag.Release,
 	}
 
 	mdCR, awsMDCR, err := nodepool.NewMachineDeploymentCRs(config)

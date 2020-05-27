@@ -29,12 +29,14 @@ const (
 	flagTemplateDefaultNodepool = "template-default-nodepool"
 
 	// nodepool flags
-	flagAvailabilityZones    = "availability-zones"
-	flagAWSInstanceType      = "aws-instance-type"
-	flagNodepoolName         = "nodepool-name"
-	flagNodesMax             = "nodex-max"
-	flagNodesMin             = "nodex-min"
-	flagNumAvailabilityZones = "num-availability-zones"
+	flagAvailabilityZones                   = "availability-zones"
+	flagAWSInstanceType                     = "aws-instance-type"
+	flagNodepoolName                        = "nodepool-name"
+	flagNodesMax                            = "nodex-max"
+	flagNodesMin                            = "nodex-min"
+	flagNumAvailabilityZones                = "num-availability-zones"
+	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
+	flagOnDemandPercentageAboveBaseCapacity = "on-demand-precentage-above-base-capacity"
 )
 
 type flag struct {
@@ -52,12 +54,14 @@ type flag struct {
 	TemplateDefaultNodepool bool
 
 	// nodepool fields
-	AvailabilityZones    string
-	AWSInstanceType      string
-	NodepoolName         string
-	NodesMax             int
-	NodesMin             int
-	NumAvailabilityZones int
+	AvailabilityZones                   string
+	AWSInstanceType                     string
+	NodepoolName                        string
+	NodesMax                            int
+	NodesMin                            int
+	NumAvailabilityZones                int
+	OnDemandBaseCapacity                int
+	OnDemandPercentageAboveBaseCapacity int
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -82,6 +86,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 10, "Maximum number of worker nodes for the node pool (when --template-default-nodepool=true).")
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 3, "Minimum number of worker nodes for the node pool (when --template-default-nodepool=true).")
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1 (when --template-default-nodepool=true).")
+	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0 (when --template-default-nodepool=true).")
+	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100 (when --template-default-nodepool=true).")
 }
 
 func (f *flag) Validate() error {
@@ -185,7 +191,7 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s must be configured with at least 1 AZ", flagAvailabilityZones)
 			}
 			if len(azs) > aws.AvailableAZs(f.Region) {
-				return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region)", flagAvailabilityZones)
+				return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region", flagAvailabilityZones)
 			}
 			for _, az := range azs {
 				if !aws.ValidateAZ(f.Region, az) {
@@ -196,12 +202,20 @@ func (f *flag) Validate() error {
 		} else {
 			if f.NumAvailabilityZones < 1 {
 				if f.AvailabilityZones == "" {
-					return microerror.Maskf(invalidFlagError, "--%s must be > 1 when --%s not specified)", flagNumAvailabilityZones, flagAvailabilityZones)
+					return microerror.Maskf(invalidFlagError, "--%s must be > 1 when --%s not specified", flagNumAvailabilityZones, flagAvailabilityZones)
 				}
 				if f.NumAvailabilityZones > aws.AvailableAZs(f.Region) {
-					return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region)", flagNumAvailabilityZones)
+					return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region", flagNumAvailabilityZones)
 				}
 			}
+		}
+
+		if f.OnDemandBaseCapacity < 0 {
+			return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagOnDemandBaseCapacity)
+		}
+
+		if f.OnDemandPercentageAboveBaseCapacity < 0 || f.OnDemandPercentageAboveBaseCapacity > 100 {
+			return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 and lower than 100", flagOnDemandPercentageAboveBaseCapacity)
 		}
 	}
 
