@@ -113,6 +113,10 @@ func newAWSMachineDeploymentCR(clusterID, machineDeploymentID string, c Config) 
 				Worker: infrastructurev1alpha2.AWSMachineDeploymentSpecProviderWorker{
 					InstanceType: c.AWSInstanceType,
 				},
+				InstanceDistribution: infrastructurev1alpha2.AWSMachineDeploymentSpecInstanceDistribution{
+					OnDemandBaseCapacity:                0,
+					OnDemandPercentageAboveBaseCapacity: 100,
+				},
 			},
 		},
 	}
