@@ -50,7 +50,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region(e.g. eu-central-1).")
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 }
 
