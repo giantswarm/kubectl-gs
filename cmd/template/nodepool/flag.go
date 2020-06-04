@@ -10,33 +10,37 @@ import (
 )
 
 const (
-	flagAvailabilityZones    = "availability-zones"
-	flagAWSInstanceType      = "aws-instance-type"
-	flagClusterID            = "cluster-id"
-	flagNodepoolName         = "nodepool-name"
-	flagNoCache              = "no-cache"
-	flagNodesMax             = "nodex-max"
-	flagNodesMin             = "nodex-min"
-	flagNumAvailabilityZones = "num-availability-zones"
-	flagOutput               = "output"
-	flagOwner                = "owner"
-	flagRegion               = "region"
-	flagRelease              = "release"
+	flagAvailabilityZones                   = "availability-zones"
+	flagAWSInstanceType                     = "aws-instance-type"
+	flagClusterID                           = "cluster-id"
+	flagNodepoolName                        = "nodepool-name"
+	flagNoCache                             = "no-cache"
+	flagNodesMax                            = "nodex-max"
+	flagNodesMin                            = "nodex-min"
+	flagNumAvailabilityZones                = "num-availability-zones"
+	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
+	flagOnDemandPercentageAboveBaseCapacity = "on-demand-precentage-above-base-capacity"
+	flagOutput                              = "output"
+	flagOwner                               = "owner"
+	flagRegion                              = "region"
+	flagRelease                             = "release"
 )
 
 type flag struct {
-	AvailabilityZones    string
-	AWSInstanceType      string
-	ClusterID            string
-	NodepoolName         string
-	NoCache              bool
-	NodesMax             int
-	NodesMin             int
-	NumAvailabilityZones int
-	Output               string
-	Owner                string
-	Region               string
-	Release              string
+	AvailabilityZones                   string
+	AWSInstanceType                     string
+	ClusterID                           string
+	NodepoolName                        string
+	NoCache                             bool
+	NodesMax                            int
+	NodesMin                            int
+	NumAvailabilityZones                int
+	OnDemandBaseCapacity                int
+	OnDemandPercentageAboveBaseCapacity int
+	Output                              string
+	Owner                               string
+	Region                              string
+	Release                             string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -48,6 +52,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 10, "Maximum number of worker nodes for the node pool.")
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 3, "Minimum number of worker nodes for the node pool.")
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1.")
+	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0.")
+	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
@@ -109,6 +115,14 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region)", flagNumAvailabilityZones)
 			}
 		}
+	}
+
+	if f.OnDemandBaseCapacity < 0 {
+		return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagOnDemandBaseCapacity)
+	}
+
+	if f.OnDemandPercentageAboveBaseCapacity < 0 || f.OnDemandPercentageAboveBaseCapacity > 100 {
+		return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 and lower than 100", flagOnDemandPercentageAboveBaseCapacity)
 	}
 
 	if f.Release == "" {
