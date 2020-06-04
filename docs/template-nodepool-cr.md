@@ -1,6 +1,6 @@
 # Creating a node pool based on custom resources using kubectl-gs
 
-Node pools are groups of worker nodes sharing common configuration. In terms of custom resources they consist of
+Node pools are groups of worker nodes sharing common configuration. In terms of custom resources they consist of custom resources of type
 
 - `MachineDeployment` (API version `cluster.x-k8s.io/v1alpha2`)
 - `AWSMachineDeployment` (API version `infrastructure.giantswarm.io/v1alpha2`)
