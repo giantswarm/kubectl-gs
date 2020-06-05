@@ -21,7 +21,7 @@ It supports the following flags:
 Example command:
 
 ```
-kubectl gs template template app \
+kubectl gs template app \
   --catalog pipo-catalog \
   --name my-app \
   --namespace default \
