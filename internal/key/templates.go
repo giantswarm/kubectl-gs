@@ -24,12 +24,6 @@ const ClusterCRsTemplate = `
 {{ .G8sControlPlaneCR -}}
 ---
 {{ .AWSControlPlaneCR -}}
-{{ if .TemplateDefaultNodepool}}
----
-{{ .MachineDeploymentCR -}}
----
-{{ .AWSMachineDeploymentCR -}}
-{{ end }}
 `
 
 const MachineDeploymentCRsTemplate = `
