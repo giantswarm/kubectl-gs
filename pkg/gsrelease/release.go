@@ -1,7 +1,6 @@
 package gsrelease
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,11 +18,16 @@ import (
 const (
 	configRelativePath         = ".kube/gs"
 	releasesConfigRelativePath = ".kube/gs/aws.yaml"
-	releasesConfigURL          = "https://raw.githubusercontent.com/giantswarm/releases/master/aws.yaml"
+	releasesAWSBaseURL         = "https://raw.githubusercontent.com/giantswarm/releases/master/aws/"
+	releasesConfigURL          = "https://raw.githubusercontent.com/giantswarm/releases/master/aws/kustomization.yaml"
 )
 
 type Config struct {
 	NoCache bool
+}
+
+type ReleaseListResource struct {
+	ReleaseList []string `yaml:"resources"`
 }
 
 type GSRelease struct {
@@ -193,15 +197,32 @@ func readReleases() ([]Release, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	dec := yaml.NewDecoder(bytes.NewReader(data))
+	rl := ReleaseListResource{}
+	err = yaml.Unmarshal(data, &rl)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	var releases []Release
 	{
-		for {
-			var release Release
-			if dec.Decode(&release) != nil {
-				break
+		for _, rv := range rl.ReleaseList {
+			resp, err := http.Get(releasesAWSBaseURL + rv + "/release.yaml")
+			if err != nil {
+				return nil, microerror.Mask(err)
 			}
+			defer resp.Body.Close()
+
+			bodyBytes, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			release := Release{}
+			err = yaml.Unmarshal(bodyBytes, &release)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 			releases = append(releases, release)
 		}
 	}
