@@ -24,7 +24,6 @@ var infrastructure = map[string][]string{
 		"us-west-2c",
 		"us-west-2d",
 	},
-
 	"ap-southeast-1": []string{
 		"ap-southeast-1a",
 		"ap-southeast-1b",
@@ -43,6 +42,5 @@ var infrastructure = map[string][]string{
 	"cn-north-1": []string{
 		"cn-north-1a",
 		"cn-north-1b",
-		"cn-north-1c",
 	},
 }
