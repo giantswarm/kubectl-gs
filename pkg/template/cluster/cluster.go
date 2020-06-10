@@ -19,6 +19,7 @@ const (
 
 type Config struct {
 	ClusterID         string
+	Credential        string
 	Domain            string
 	ExternalSNAT      bool
 	MasterAZ          []string
@@ -117,7 +118,7 @@ func newAWSClusterCR(clusterID string, c Config) (*infrastructurev1alpha2.AWSClu
 			},
 			Provider: infrastructurev1alpha2.AWSClusterSpecProvider{
 				CredentialSecret: infrastructurev1alpha2.AWSClusterSpecProviderCredentialSecret{
-					Name:      "credential-default",
+					Name:      c.Credential,
 					Namespace: "giantswarm",
 				},
 				Pods: infrastructurev1alpha2.AWSClusterSpecProviderPods{

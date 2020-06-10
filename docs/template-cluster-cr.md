@@ -18,6 +18,7 @@ It supports the following flags:
   Use the flag once with a single value to create a cluster with one master node. For master node high availability,
   specify three distinct availability zones instead. This can be done by separating AZ names with comma or using the flag
   three times with a single AZ name.
+- `--credential` - AWS cloud credentials that point to the AWS account used to spin up the cluster resources. To get this info run against the Control Plane API `kubectl -n giantswarm get secret -oyaml | grep ORG_NAME -A2 | tail -n 1 | awk '{print $2}'` replacing `ORG_NAME` for the name of the organization selected.
 - `--domain`  - base domain of your installation. Customer solution engineer can provide this value.
 - `--external-snat` - AWS CNI configuration to disable (is enabled by default) the [external source network address translation](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html). Only versions *11.3.1+ support this feature.
 - `--name` - cluster name.
@@ -41,6 +42,7 @@ kubectl gs template cluster \
   --name="Cluster #2" \
   --pods-cidr="10.2.0.0/16" \
   --owner="giantswarm" \
+  --credential="credential-34hg5" \
   --release="11.2.1" \
   --region="eu-central-1"
 ```
@@ -93,7 +95,7 @@ spec:
       issuerURL: ""
   provider:
     credentialSecret:
-      name: credential-default
+      name: credential-34hg5
       namespace: giantswarm
     master:
       availabilityZone: eu-central-1a

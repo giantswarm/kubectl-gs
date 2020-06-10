@@ -15,6 +15,7 @@ import (
 
 const (
 	flagClusterID    = "cluster-id"
+	flagCredential   = "credential"
 	flagDomain       = "domain"
 	flagMasterAZ     = "master-az"
 	flagName         = "name"
@@ -29,6 +30,7 @@ const (
 
 type flag struct {
 	ClusterID    string
+	Credential   string
 	Domain       string
 	MasterAZ     []string
 	Name         string
@@ -44,6 +46,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
+	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
