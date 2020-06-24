@@ -27,6 +27,7 @@ It supports the following flags:
 - `--region` - tenant cluster AWS region. Must be configured with installation region.
 - `--release` - valid release version.
   Can be retrieved with `gsctl list releases` for your installation. Only versions above *10.x.x*+ support cluster CRs.
+- `--label` - tenant cluster label in form of `key=value`. Can be specified multiple times. Only clusters with release version above *10.x.x*+ support tenant cluster labels.
 
 **Note:** The CRs generated won't trigger the creation of any worker nodes. Please see [node pools](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md) for instructions on how to create worker node pools.
 
@@ -44,7 +45,9 @@ kubectl gs template cluster \
   --owner="giantswarm" \
   --credential="credential-34hg5" \
   --release="11.2.1" \
-  --region="eu-central-1"
+  --region="eu-central-1" \
+  --label="environment=testing" \
+  --label="team=upstate"
 ```
 
 Generates output
@@ -59,6 +62,8 @@ metadata:
     giantswarm.io/cluster: o4omf
     giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 11.2.1
+    environment: testing
+    team: upstate
   name: o4omf
   namespace: default
 spec:
