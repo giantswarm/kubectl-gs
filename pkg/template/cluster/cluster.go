@@ -29,6 +29,7 @@ type Config struct {
 	Region            string
 	ReleaseComponents map[string]string
 	ReleaseVersion    string
+	Labels            map[string]string
 }
 
 // NewClusterCRs returns the custom resources to represent the given cluster.
@@ -68,6 +69,23 @@ func newClusterCR(obj interface{}, clusterID string, c Config) (*apiv1alpha2.Clu
 		return nil, microerror.Mask(err)
 	}
 
+	clusterLabels := map[string]string{}
+
+	for key, value := range c.Labels {
+		clusterLabels[key] = value
+	}
+
+	gsLabels := map[string]string{
+		label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
+		label.Cluster:                clusterID,
+		label.Organization:           c.Owner,
+		label.ReleaseVersion:         c.ReleaseVersion,
+	}
+
+	for key, value := range gsLabels {
+		clusterLabels[key] = value
+	}
+
 	clusterCR := &apiv1alpha2.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
@@ -76,12 +94,7 @@ func newClusterCR(obj interface{}, clusterID string, c Config) (*apiv1alpha2.Clu
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clusterID,
 			Namespace: metav1.NamespaceDefault,
-			Labels: map[string]string{
-				label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
-				label.Cluster:                clusterID,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
-			},
+			Labels:    clusterLabels,
 		},
 		Spec: apiv1alpha2.ClusterSpec{
 			InfrastructureRef: infrastructureCRRef,

@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"net"
 	"regexp"
 
@@ -26,6 +27,7 @@ const (
 	flagOwner        = "owner"
 	flagRegion       = "region"
 	flagRelease      = "release"
+	flagLabel        = "label"
 )
 
 type flag struct {
@@ -41,6 +43,7 @@ type flag struct {
 	Owner        string
 	Region       string
 	Release      string
+	Label        []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -56,6 +59,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
+	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Tenant cluster label.")
 }
 
 func (f *flag) Validate() error {
@@ -134,6 +138,11 @@ func (f *flag) Validate() error {
 
 	if !release.Validate(f.Release) {
 		return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
+	}
+
+	_, err = clusterlabels.Parse(f.Label)
+	if err != nil {
+		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
 	}
 
 	return nil

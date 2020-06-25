@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
 	"github.com/giantswarm/kubectl-gs/pkg/template/cluster"
 )
@@ -62,6 +63,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	releaseComponents := release.ReleaseComponents(r.flag.Release)
 
+	userLabels, _ := clusterlabels.Parse(r.flag.Label)
+
 	config := cluster.Config{
 		ClusterID:         r.flag.ClusterID,
 		Credential:        r.flag.Credential,
@@ -74,6 +77,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Region:            r.flag.Region,
 		ReleaseComponents: releaseComponents,
 		ReleaseVersion:    r.flag.Release,
+		Labels:            userLabels,
 	}
 
 	clusterCR, awsClusterCR, g8sControlPlaneCR, awsControlPlaneCR, err := cluster.NewClusterCRs(config)

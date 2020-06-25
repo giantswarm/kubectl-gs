@@ -22,3 +22,5 @@ const (
 const (
 	MachineDeploymentSubnet = "machine-deployment.giantswarm.io/subnet"
 )
+
+const ForbiddenLabelKeyPart = "giantswarm.io"
