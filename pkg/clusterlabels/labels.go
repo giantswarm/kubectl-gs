@@ -2,6 +2,7 @@ package clusterlabels
 
 import (
 	"fmt"
+	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"strings"
 
@@ -13,24 +14,20 @@ import (
 func Parse(rawLabels []string) (map[string]string, error) {
 	labels := map[string]string{}
 	for _, labelSpec := range rawLabels {
-		if strings.Contains(labelSpec, "=") {
-			parts := strings.Split(labelSpec, "=")
-			if len(parts) != 2 {
-				return nil, fmt.Errorf("invalid label spec: %v", labelSpec)
-			}
-			if strings.Contains(parts[0], label.ForbiddenLabelKeyPart) {
-				return nil, fmt.Errorf("invalid label key: %q: containing forbidden substring '%s'", labelSpec, label.ForbiddenLabelKeyPart)
-			}
-			if errs := validation.IsQualifiedName(parts[0]); len(errs) != 0 {
-				return nil, fmt.Errorf("invalid label key: %q: %s", labelSpec, strings.Join(errs, ";"))
-			}
-			if errs := validation.IsValidLabelValue(parts[1]); len(errs) != 0 {
-				return nil, fmt.Errorf("invalid label value: %q: %s", labelSpec, strings.Join(errs, ";"))
-			}
-			labels[parts[0]] = parts[1]
-		} else {
-			return nil, fmt.Errorf("unknown label spec: %v", labelSpec)
+		parts := strings.Split(labelSpec, "=")
+		if len(parts) != 2 {
+			return nil, microerror.Mask(fmt.Errorf("invalid label spec: %v", labelSpec))
 		}
+		if strings.Contains(parts[0], label.ForbiddenLabelKeyPart) {
+			return nil, microerror.Mask(fmt.Errorf("invalid label key: %q: containing forbidden substring '%s'", labelSpec, label.ForbiddenLabelKeyPart))
+		}
+		if errs := validation.IsQualifiedName(parts[0]); len(errs) != 0 {
+			return nil, microerror.Mask(fmt.Errorf("invalid label key: %q: %s", labelSpec, strings.Join(errs, ";")))
+		}
+		if errs := validation.IsValidLabelValue(parts[1]); len(errs) != 0 {
+			return nil, microerror.Mask(fmt.Errorf("invalid label value: %q: %s", labelSpec, strings.Join(errs, ";")))
+		}
+		labels[parts[0]] = parts[1]
 	}
 	return labels, nil
 }
