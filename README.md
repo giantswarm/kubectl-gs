@@ -1,43 +1,30 @@
-# `kubectl-gs` - kubectl Plug-In for Giant Swarm custom resources
+![header image](https://user-images.githubusercontent.com/273727/85553386-2ee41980-b624-11ea-91f9-a6bdfe4d10a8.png)
 
-Plug-in for `kubectl` to create manifests for creating/updating custom resources for:
+# The official Giant Swarm kubectl plug-in
 
-- Clusters - see [`docs/template-cluster-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-cluster-cr.md) for details
-- Node pools - see [`docs/template-nodepool-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md) for details
-- App catalogs - see [`docs/template-catalog-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-catalog-cr.md) for details
-- Apps - see [`docs/template-app-cr.md`](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-app-cr.md) for details
+## Quick start
 
-
-Plugin supports rendering for CRs:
-  - Tenat control-plane (AWS only):
-    
-  - Nodepool (AWS only):
-    
-  - `AppCatalog`
-  - `App`
-
-## Installation
-
-Basically you need the executable in your `$PATH`. Here are ways to accomplish this on Linux and Mac OS:
-
-### Linux
-
-```
-wget https://github.com/giantswarm/kubectl-gs/releases/download/v0.1.0/kubectl-gs-linux-amd64
-chmod +x kubectl-gs-linux-amd64
-# mv into /usr/local/bin/ might require sudo
-mv kubectl-gs-linux-amd64 /usr/local/bin/kubectl-gs
+```nohighlight
+$ kubectl krew update
+$ kubectl krew install gs
+$ alias kgs="kubectl gs"
+$ kgs info
 ```
 
-### MacOS
+Check the [installation docs](https://github.com/giantswarm/kubectl-gs/blob/master/docs/installation.md) for details on installation with and without Krew.
 
-```
-wget https://github.com/giantswarm/kubectl-gs/releases/download/v0.1.0/kubectl-gs-darwin-amd64
-chmod +x kubectl-gs-darwin-amd64
-# mv into /usr/local/bin/ might require sudo
-mv kubectl-gs-darwin-amd64 /usr/local/bin/kubectl-gs
-```
+## Features
 
-## How to template CR
+- **Custom resource templating**: create manifests for creating/updating custom resources for:
+  - Clusters
+  - Node pools
+  - App catalogs
+  - Apps
 
- - [cluster CRs](docs/template-cluster-cr.md)
+## Documentation
+
+- [Installation](https://github.com/giantswarm/kubectl-gs/blob/master/docs/installation.md)
+- [Creating a cluster](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-cluster-cr.md)
+- [Creating a node pool](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md)
+- [Installing an App](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-app-cr.md)
+- [Installing an App Catalog](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-catalog-cr.md)
