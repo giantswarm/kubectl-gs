@@ -46,7 +46,7 @@ package-linux: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-linux-amd64.tar.gz
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-%-amd64.tar.gz: DIR=$(PACKAGE_DIR)/$<
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-%-amd64.tar.gz: $(APPLICATION)-v$(VERSION)-%-amd64
 	mkdir -p $(DIR)
-	cp $< $(DIR)
+	cp $< $(DIR)/$(APPLICATION)
 	cp README.md LICENSE $(DIR)
 	tar -C $(PACKAGE_DIR) -cvzf $(PACKAGE_DIR)/$<.tar.gz $<
 	rm -rf $(DIR)
