@@ -1,8 +1,9 @@
 name: Push to Krew
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - '*'
 
 jobs:
   push-to-krew:
