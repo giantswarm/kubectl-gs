@@ -4,14 +4,15 @@ import (
 	"io"
 	"os"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/cmd/template"
 )
 
 const (
-	name        = "kubectl-gs"
+	name        = "kubectl" + string(0xA0) + "gs"
 	description = "Kubectl plugin for Giant Swarm CRs templating"
 )
 
