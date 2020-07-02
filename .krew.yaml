@@ -1,0 +1,24 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: gs
+spec:
+  version: {{ .TagName }}
+  homepage: https://github.com/giantswarm/kubectl-gs
+  shortDescription: Handle custom resources with Giant Swarm
+  description: |
+    Simplifies creating clusters and node pools via Giant Swarm Kubernetes
+    control planes, as well as installing app catalogs and apps.
+  platforms:
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-amd64.tar.gz" .TagName }}
+    bin: ./kubectl-gs
+  - selector:
+      matchLabels:
+        os: linux
+        arch: amd64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-amd64.tar.gz" .TagName }}
+    bin: ./kubectl-gs
