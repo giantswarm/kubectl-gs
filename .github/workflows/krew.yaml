@@ -3,7 +3,7 @@ name: Push to Krew
 on:
   push:
     tags:
-      - '*'
+      - 'v*.*.*'
 
 jobs:
   push-to-krew:
