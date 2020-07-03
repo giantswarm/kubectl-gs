@@ -17,8 +17,8 @@ jobs:
           echo "using krew-release-bot version ${KREW_RELEASE_BOT_VERSION}"
           curl -LO https://github.com/rajatjindal/krew-release-bot/releases/download/${KREW_RELEASE_BOT_VERSION}/krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
           tar -xvf krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
-          export GITHUB_REF=refs/tags/${CIRCLE_TAG}
-          export GITHUB_WORKSPACE=$(pwd)
+          echo export GITHUB_REF=refs/tags/${CIRCLE_TAG} >> "$BASH_ENV"
+          echo export GITHUB_WORKSPACE=$(pwd) >> "$BASH_ENV"
       - run: ./krew-release-bot action
 
 
@@ -28,6 +28,11 @@ workflows:
     jobs:
       - request-manual-approval:
           type: approval
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
       - update-krew-index:
           filters:
             branches:
