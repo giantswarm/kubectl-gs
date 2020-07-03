@@ -281,6 +281,7 @@ jobs:
       - create_and_upload_build_artifacts
     env:
       TAG: v${{ needs.gather_facts.outputs.version }}
+      GITHUB_REF: refs/tags/v${{ needs.gather_facts.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
