@@ -3,7 +3,7 @@ module github.com/giantswarm/kubectl-gs
 go 1.13
 
 require (
-	github.com/coreos/go-oidc v2.1.0+incompatible
+	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions v0.4.0
