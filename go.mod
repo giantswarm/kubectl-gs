@@ -4,12 +4,15 @@ go 1.13
 
 require (
 	github.com/coreos/go-oidc v2.1.0+incompatible
+	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions v0.4.0
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/go-openapi/strfmt v0.19.5 // indirect
+	github.com/markbates/pkger v0.17.0
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
+	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.7
 	github.com/stretchr/testify v1.5.1 // indirect
