@@ -22,7 +22,7 @@ Create a new release in just a few steps:
 
 4. Ask for a Pull Request review from your team or the project owners. After getting it approved and ready to go, squash and merge it.
 
-5. The release creation will trigger a GitHub workflow, which will create a tag, a new release, package the build artifacts and attach them to the newly created release.
+5. The PR merge will trigger a GitHub workflow, which will create a tag, a new release, package the build artifacts and attach them to the newly created release.
 
 6. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes. 
 
