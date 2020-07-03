@@ -24,15 +24,19 @@ jobs:
 
 workflows:
   version: 2
-  main:
+  update-krew:
     jobs:
-      - request-manual-approval:
-          type: approval
+      - tag-created:
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+      - request-manual-approval:
+          type: approval
+          requires:
+            - tag-created
       - update-krew-index:
           requires:
+            - tag-created
             - request-manual-approval
