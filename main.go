@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/kubectl-gs/cmd"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/giantswarm/kubectl-gs/cmd"
 )
 
 func main() {
@@ -30,10 +33,17 @@ func mainE(ctx context.Context) error {
 		}
 	}
 
+	fs := afero.NewOsFs()
+
+	k8sConfigAccess := clientcmd.NewDefaultPathOptions()
+
 	var rootCommand *cobra.Command
 	{
 		c := cmd.Config{
-			Logger: logger,
+			Logger:     logger,
+			FileSystem: fs,
+
+			K8sConfigAccess: k8sConfigAccess,
 		}
 
 		rootCommand, err = cmd.New(c)

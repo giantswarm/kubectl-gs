@@ -6,8 +6,11 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/cmd/login"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
 )
 
@@ -22,7 +25,11 @@ const (
 )
 
 type Config struct {
-	Logger micrologger.Logger
+	Logger     micrologger.Logger
+	FileSystem afero.Fs
+
+	K8sConfigAccess clientcmd.ConfigAccess
+
 	Stderr io.Writer
 	Stdout io.Writer
 }
@@ -30,6 +37,12 @@ type Config struct {
 func New(config Config) (*cobra.Command, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.FileSystem == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
+	}
+	if config.K8sConfigAccess == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
@@ -39,6 +52,24 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	var err error
+
+	var loginCmd *cobra.Command
+	{
+		c := login.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		loginCmd, err = login.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var templateCmd *cobra.Command
 	{
@@ -73,6 +104,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
+	c.AddCommand(loginCmd)
 	c.AddCommand(templateCmd)
 
 	return c, nil

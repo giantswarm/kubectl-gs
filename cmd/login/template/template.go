@@ -8,7 +8,7 @@ import (
 )
 
 func GetSuccessHTMLTemplateReader() (io.ReadSeeker, error) {
-	f, err := pkger.Open("/cmd/login/template/sso_complete.html")
+	f, err := pkger.Open("/cmd/login/template/internal/sso_complete.html")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -18,7 +18,7 @@ func GetSuccessHTMLTemplateReader() (io.ReadSeeker, error) {
 }
 
 func GetFailedHTMLTemplateReader() (io.ReadSeeker, error) {
-	f, err := pkger.Open("/cmd/login/template/sso_failed.html")
+	f, err := pkger.Open("/cmd/login/template/internal/sso_failed.html")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
