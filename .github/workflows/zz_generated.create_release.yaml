@@ -1,3 +1,7 @@
+# DO NOT EDIT. Generated with:
+#
+#    devctl gen workflows
+#
 name: Create Release
 on:
   push:
@@ -272,20 +276,3 @@ jobs:
           asset_path: ${{ env.ARTIFACT_DIR }}/${{ env.FILE_NAME }}
           asset_name: ${{ env.FILE_NAME }}
           asset_content_type: application/octet-stream
-
-  push-to-krew:
-    name: Push latest version to krew
-    runs-on: ubuntu-18.04
-    needs:
-      - gather_facts
-      - create_and_upload_build_artifacts
-    env:
-      TAG: v${{ needs.gather_facts.outputs.version }}
-      GITHUB_REF: refs/tags/v${{ needs.gather_facts.outputs.version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ env.TAG }}
-      - name: Update new version in krew-index
-        uses: rajatjindal/krew-release-bot@v0.0.38
