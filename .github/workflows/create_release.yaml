@@ -281,7 +281,14 @@ jobs:
     name: Push latest artifacts to krew
     runs-on: ubuntu-18.04
     needs:
+      - gather_facts
       - create_and_upload_build_artifacts
+    env:
+      TAG: v${{ needs.gather_facts.outputs.version }}
     steps:
+      - name: Checkout code
+          uses: actions/checkout@v2
+          with:
+            ref: ${{ env.TAG }}
       - name: Update new version in krew-index
         uses: rajatjindal/krew-release-bot@v0.0.38
