@@ -3,10 +3,11 @@ package nodepool
 import (
 	"strings"
 
-	"github.com/giantswarm/kubectl-gs/pkg/aws"
-	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/pkg/aws"
+	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
 )
 
 const (

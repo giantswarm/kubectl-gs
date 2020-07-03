@@ -4,13 +4,14 @@ import (
 	"io"
 	"os"
 
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/kubectl-gs/cmd/template/app"
 	"github.com/giantswarm/kubectl-gs/cmd/template/appcatalog"
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster"
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool"
-	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
-	"github.com/spf13/cobra"
 )
 
 const (

@@ -21,6 +21,8 @@ const (
 )
 
 func GenerateID() string {
+	compiledRegexp, _ := regexp.Compile("^[a-z]+$")
+
 	for {
 		letterRunes := []rune(IDChars)
 		b := make([]rune, IDLength)
@@ -32,13 +34,13 @@ func GenerateID() string {
 		id := string(b)
 
 		if _, err := strconv.Atoi(id); err == nil {
-			// string is numbers only, which we want to avoid
+			// ID is made up of numbers only, which we want to avoid.
 			continue
 		}
 
-		matched, err := regexp.MatchString("^[a-z]+$", id)
-		if err == nil && matched == true {
-			// strings is letters only, which we also avoid
+		matched := compiledRegexp.MatchString(id)
+		if matched {
+			// ID is made up of letters only, which we also avoid.
 			continue
 		}
 

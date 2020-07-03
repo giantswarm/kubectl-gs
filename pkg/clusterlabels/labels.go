@@ -1,9 +1,10 @@
 package clusterlabels
 
 import (
+	"strings"
+
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"strings"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )

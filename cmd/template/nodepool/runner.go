@@ -82,6 +82,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	mdCR, awsMDCR, err := nodepool.NewMachineDeploymentCRs(config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	mdCRYaml, err := yaml.Marshal(mdCR)
 	if err != nil {
