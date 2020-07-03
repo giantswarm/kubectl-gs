@@ -276,3 +276,12 @@ jobs:
           asset_path: ${{ env.ARTIFACT_DIR }}/${{ env.FILE_NAME }}
           asset_name: ${{ env.FILE_NAME }}
           asset_content_type: application/octet-stream
+
+  push-to-krew:
+    name: Push latest artifacts to krew
+    runs-on: ubuntu-18.04
+    needs:
+      - create_and_upload_build_artifacts
+    steps:
+      - name: Update new version in krew-index
+        uses: rajatjindal/krew-release-bot@v0.0.38
