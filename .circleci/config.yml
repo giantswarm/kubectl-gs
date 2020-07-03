@@ -44,7 +44,17 @@ workflows:
           type: approval
           requires:
             - debug-tag
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
       - update-krew-index:
           requires:
             - debug-tag
             - request-manual-approval
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
