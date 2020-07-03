@@ -19,7 +19,7 @@ func GetAvailabilityZones(num int, region string) []string {
 }
 
 func ValidateRegion(region string) bool {
-	for r, _ := range infrastructure {
+	for r := range infrastructure {
 		if r == region {
 			return true
 		}

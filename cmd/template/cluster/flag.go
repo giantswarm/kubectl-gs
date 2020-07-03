@@ -72,13 +72,13 @@ func (f *flag) Validate() error {
 		}
 
 		matched, err := regexp.MatchString("^([a-z]+|[0-9]+)$", f.ClusterID)
-		if err == nil && matched == true {
+		if err == nil && matched {
 			// strings is letters only, which we also avoid
 			return microerror.Maskf(invalidFlagError, "--%s must be alphanumeric", flagClusterID)
 		}
 
 		matched, err = regexp.MatchString("^[a-z0-9]+$", f.ClusterID)
-		if err == nil && matched == false {
+		if err == nil && !matched {
 			return microerror.Maskf(invalidFlagError, "--%s must only contain [a-z0-9]", flagClusterID)
 		}
 
@@ -151,9 +151,6 @@ func (f *flag) Validate() error {
 
 func validateCIDR(cidr string) bool {
 	_, _, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return false
-	}
 
-	return true
+	return err == nil
 }

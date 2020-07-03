@@ -81,6 +81,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	clusterCR, awsClusterCR, g8sControlPlaneCR, awsControlPlaneCR, err := cluster.NewClusterCRs(config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	clusterCRYaml, err := yaml.Marshal(clusterCR)
 	if err != nil {

@@ -67,6 +67,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Namespace: r.flag.Cluster,
 		}
 		userSecretCR, err = app.NewSecretCR(secretConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 		appConfig.UserConfigSecretName = userSecretCR.GetName()
 
 		userConfigSecretCRYaml, err = yaml.Marshal(userSecretCR)
@@ -89,6 +92,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Namespace: r.flag.Cluster,
 		}
 		userConfigMapCR, err = app.NewConfigmapCR(configMapConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 		appConfig.UserConfigConfigMapName = userConfigMapCR.GetName()
 
 		userConfigConfigMapCRYaml, err = yaml.Marshal(userConfigMapCR)
