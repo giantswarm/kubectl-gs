@@ -7,13 +7,14 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/template/app"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
 type runner struct {

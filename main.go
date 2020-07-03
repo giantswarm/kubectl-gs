@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/kubectl-gs/cmd"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/cmd"
 )
 
 func main() {

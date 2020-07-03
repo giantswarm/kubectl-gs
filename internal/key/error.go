@@ -24,4 +24,3 @@ var unmashalToMapFailedError = &microerror.Error{
 func IsUnmashalToMapFailed(err error) bool {
 	return microerror.Cause(err) == unmashalToMapFailedError
 }
-

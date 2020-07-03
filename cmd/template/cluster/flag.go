@@ -1,9 +1,10 @@
 package cluster
 
 import (
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"net"
 	"regexp"
+
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 
 	"github.com/giantswarm/microerror"
 	"github.com/mpvl/unique"

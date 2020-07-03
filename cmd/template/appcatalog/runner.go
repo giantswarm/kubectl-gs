@@ -7,11 +7,12 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
-	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+
+	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
