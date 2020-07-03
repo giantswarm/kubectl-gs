@@ -1,6 +1,14 @@
 version: 2
 
 jobs:
+  debug-tag:
+    docker:
+      - image: cimg/base:2020.01
+    steps:
+      - checkout
+      - run: |
+          echo "running for tag ${CIRCLE_TAG}"
+
   update-krew-index:
     docker:
       - image: circleci/golang:1.13
@@ -12,7 +20,7 @@ jobs:
       GITHUB_ACTOR: architectbot
 
     steps:
-      - checkout:
+      - checkout
       - run: |
           echo "using krew-release-bot version ${KREW_RELEASE_BOT_VERSION}"
           curl -LO https://github.com/rajatjindal/krew-release-bot/releases/download/${KREW_RELEASE_BOT_VERSION}/krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
@@ -26,7 +34,7 @@ workflows:
   version: 2
   update-krew:
     jobs:
-      - tag-created:
+      - debug-tag:
           filters:
             branches:
               ignore: /.*/
@@ -35,8 +43,8 @@ workflows:
       - request-manual-approval:
           type: approval
           requires:
-            - tag-created
+            - debug-tag
       - update-krew-index:
           requires:
-            - tag-created
+            - debug-tag
             - request-manual-approval
