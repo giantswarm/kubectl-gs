@@ -26,8 +26,9 @@ workflows:
   version: 2
   main:
     jobs:
-      - update-krew-index:
+      - request-manual-approval:
           type: approval
+      - update-krew-index:
           filters:
             branches:
               ignore: /.*/
