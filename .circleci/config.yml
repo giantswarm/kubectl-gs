@@ -4,11 +4,20 @@ jobs:
   update-krew-index:
     docker:
       - image: circleci/golang:1.13
-        environment:
-          KREW_RELEASE_BOT_VERSION: v0.0.38
+
+    working_directory: /home/circleci/kubectl-gs
+
+    environment:
+      KREW_RELEASE_BOT_VERSION: v0.0.38
+      GITHUB_ACTIONS: true
+      GITHUB_REPOSITORY: giantswarm/kubectl-gs
+      GITHUB_ACTOR: architectbot
+      GITHUB_REF: refs/tags/${CIRCLE_TAG}
+      GITHUB_WORKSPACE: ${CIRCLE_WORKING_DIRECTORY}
 
     steps:
-      - checkout
+      - checkout:
+          path: /home/circleci/kubectl-gs
       - run: |
           echo "using krew-release-bot version ${KREW_RELEASE_BOT_VERSION}"
           curl -LO https://github.com/rajatjindal/krew-release-bot/releases/download/${KREW_RELEASE_BOT_VERSION}/krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
