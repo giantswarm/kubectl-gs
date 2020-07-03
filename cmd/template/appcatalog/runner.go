@@ -7,11 +7,12 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
-	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+
+	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -49,6 +50,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	appCatalogCR, err := appcatalog.NewAppCatalogCR(config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	appCatalogCRYaml, err := yaml.Marshal(appCatalogCR)
 	if err != nil {
@@ -63,6 +67,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 	configmapCR, err := appcatalog.NewConfigmapCR(config, configMapData)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	configmapCRYaml, err := yaml.Marshal(configmapCR)
 	if err != nil {
@@ -77,6 +84,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 	secretCR, err := appcatalog.NewSecretCR(config, secretData)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	secretCRYaml, err := yaml.Marshal(secretCR)
 	if err != nil {
