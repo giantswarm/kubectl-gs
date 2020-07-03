@@ -28,3 +28,7 @@ Check the [installation docs](https://github.com/giantswarm/kubectl-gs/blob/mast
 - [Creating a node pool](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md)
 - [Installing an App](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-app-cr.md)
 - [Installing an App Catalog](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-catalog-cr.md)
+
+## Publishing a release
+
+See [docs/Release.md](https://github.com/giantswarm/kubectl-gs/blob/master/docs/Release.md)
