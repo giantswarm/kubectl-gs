@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  architect: giantswarm/architect@0.9.0
 
 jobs:
   debug-tag:
@@ -31,7 +34,14 @@ jobs:
 
 
 workflows:
-  version: 2
+  go-build:
+    jobs:
+      - architect/go-build:
+          name: go-build
+          binary: kubectl-gigantic
+          filters:
+            tags:
+              only: /^v.*/
   update-krew:
     jobs:
       - debug-tag:
