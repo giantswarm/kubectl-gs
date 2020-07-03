@@ -31,4 +31,4 @@ Check the [installation docs](https://github.com/giantswarm/kubectl-gs/blob/mast
 
 ## Publishing a release
 
-See [docs/release.md](https://github.com/giantswarm/kubectl-gs/blob/master/docs/Release.md)
+See [docs/Release.md](https://github.com/giantswarm/kubectl-gs/blob/master/docs/Release.md)
