@@ -15,10 +15,10 @@ spec:
         os: darwin
         arch: amd64
     {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-amd64.tar.gz" .TagName }}
-    bin: ./kubectl-gs
+    bin: ./kubectl-gs-{{ .TagName }}-darwin-amd64/kubectl-gs
   - selector:
       matchLabels:
         os: linux
         arch: amd64
     {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-amd64.tar.gz" .TagName }}
-    bin: ./kubectl-gs
+    bin: ./kubectl-gs-{{ .TagName }}-linux-amd64/kubectl-gs
