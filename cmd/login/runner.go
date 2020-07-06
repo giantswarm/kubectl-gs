@@ -61,7 +61,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if installation.GetUrlType(providedUrl) == installation.UrlTypeHappa {
-		fmt.Fprintf(r.stdout, color.YellowString("Note: deriving Control Plane API URl from web UI URL: %s\n", i.K8sApiURL))
+		fmt.Fprintf(r.stdout, color.YellowString("Note: deriving Control Plane API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
 	authResult, err := handleAuth(ctx, r.stdout, i)
