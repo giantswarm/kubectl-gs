@@ -128,7 +128,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	fmt.Fprintf(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
 
-	contextName := generateContextName(i, authResult)
+	contextName := generateContextName(i)
 	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
 	fmt.Fprintf(r.stdout, " ")
 	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
@@ -177,7 +177,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 	}
 
 	kUsername := fmt.Sprintf("%s-%s", authResult.Username, i.Codename)
-	contextName := generateContextName(i, authResult)
+	contextName := generateContextName(i)
 
 	{
 		// Create authenticated user.
@@ -247,6 +247,6 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 	return nil
 }
 
-func generateContextName(i *installation.Installation, authResult oidc.UserInfo) string {
-	return fmt.Sprintf("%s-%s", authResult.Username, i.Codename)
+func generateContextName(i *installation.Installation) string {
+	return fmt.Sprintf("gs-%s", i.Codename)
 }
