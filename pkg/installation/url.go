@@ -46,12 +46,11 @@ func getBasePath(u string) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	hostName := path.Host
-	switch GetUrlType(hostName) {
+	switch GetUrlType(path.Host) {
 	case UrlTypeK8sApi:
-		return hostName, nil
+		return path.Host, nil
 	case UrlTypeHappa:
-		basePath := strings.Replace(hostName, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
+		basePath := strings.Replace(path.Host, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
 		return basePath, nil
 	default:
 		return "", microerror.Mask(unknownUrlTypeError)

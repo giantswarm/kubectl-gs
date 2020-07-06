@@ -28,3 +28,12 @@ var invalidAuthResult = &microerror.Error{
 func IsInvalidAuthResult(err error) bool {
 	return microerror.Cause(err) == invalidAuthResult
 }
+
+var unknownUrlError = &microerror.Error{
+	Kind: "unknownUrlError",
+}
+
+// IsUnknownUrl asserts unknownUrlError.
+func IsUnknownUrl(err error) bool {
+	return microerror.Cause(err) == unknownUrlError
+}

@@ -68,11 +68,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if len(args) < 1 {
 		return microerror.Mask(invalidFlagError)
 	}
-	k8sApiURL := args[0]
+	providedUrl := args[0]
 
-	i, err := installation.New(k8sApiURL)
-	if err != nil {
+	i, err := installation.New(providedUrl)
+	if installation.IsUnknownUrlType(err) {
+		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Control Plane API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", providedUrl)
+	} else if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if installation.GetUrlType(providedUrl) == installation.UrlTypeHappa {
+		fmt.Fprintf(r.stdout, color.YellowString("Note: deriving Control Plane API URl from web UI URL: %s\n", i.K8sApiURL))
 	}
 
 	oidcConfig := oidc.Config{
