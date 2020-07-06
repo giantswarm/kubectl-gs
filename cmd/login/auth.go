@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -159,7 +160,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 
 	{
 		// Create authenticated context.
-		initialContext, exists := config.Contexts[kUsername]
+		initialContext, exists := config.Contexts[contextName]
 		if !exists {
 			initialContext = clientcmdapi.NewContext()
 		}
@@ -174,6 +175,27 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		// Select newly created context as current.
 		config.CurrentContext = contextName
 	}
+
+	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func switchContext(k8sConfigAccess clientcmd.ConfigAccess, newContextName string) error {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Check if the context exists.
+	if _, exists := config.Contexts[newContextName]; !exists {
+		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Control Plane API URL or the web UI URL of the installation as an argument.", newContextName)
+	}
+
+	config.CurrentContext = newContextName
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
 	if err != nil {

@@ -16,3 +16,7 @@ func generateKubeContextName(installationCodeName string) string {
 func isKubeContext(s string) bool {
 	return strings.HasPrefix(s, contextPrefix)
 }
+
+func getCodeNameFromKubeContext(c string) string {
+	return strings.TrimPrefix(c, contextPrefix)
+}

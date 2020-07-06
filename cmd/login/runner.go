@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	gooidc "github.com/coreos/go-oidc"
 	"github.com/fatih/color"
@@ -51,16 +52,41 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if len(args) < 1 {
 		return microerror.Mask(invalidFlagError)
 	}
-	providedUrl := args[0]
 
-	i, err := installation.New(providedUrl)
+	var err error
+
+	installationIdentifier := strings.ToLower(args[0])
+	if isKubeContext(installationIdentifier) {
+		codeName := getCodeNameFromKubeContext(installationIdentifier)
+		err = switchContext(r.k8sConfigAccess, installationIdentifier)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		fmt.Fprintf(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n"), contextPrefix, codeName)
+		fmt.Fprintf(r.stdout, "Switched to context '%s'\n", installationIdentifier)
+		fmt.Fprintf(r.stdout, color.GreenString("You are logged on installation '%s'.\n"), codeName)
+
+		return nil
+	}
+
+	err = r.loginWithURL(ctx, installationIdentifier)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (r *runner) loginWithURL(ctx context.Context, path string) error {
+	i, err := installation.New(path)
 	if installation.IsUnknownUrlType(err) {
-		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Control Plane API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", providedUrl)
+		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Control Plane API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if installation.GetUrlType(providedUrl) == installation.UrlTypeHappa {
+	if installation.GetUrlType(path) == installation.UrlTypeHappa {
 		fmt.Fprintf(r.stdout, color.YellowString("Note: deriving Control Plane API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 

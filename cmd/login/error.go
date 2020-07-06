@@ -37,3 +37,12 @@ var unknownUrlError = &microerror.Error{
 func IsUnknownUrl(err error) bool {
 	return microerror.Cause(err) == unknownUrlError
 }
+
+var contextDoesNotExistError = &microerror.Error{
+	Kind: "contextDoesNotExistError",
+}
+
+// IsContextDoesNotExist asserts contextDoesNotExistError.
+func IsContextDoesNotExist(err error) bool {
+	return microerror.Cause(err) == contextDoesNotExistError
+}
