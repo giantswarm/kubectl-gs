@@ -70,7 +70,7 @@ func getInstallationInfo(apiUrl string) (installationInfo, error) {
 	{
 		err = json.NewDecoder(res.Body).Decode(&result)
 		if err != nil {
-			return installationInfo{}, microerror.Mask(err)
+			return installationInfo{}, microerror.Maskf(cannotGetInstallationInfo, "make sure you're connected to the internet and behind a VPN")
 		}
 
 		result.Installation.K8sCaCert = parseCertificate(result.Installation.K8sCaCert)
