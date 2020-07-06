@@ -86,9 +86,9 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n"), contextPrefix, codeName)
+	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n", contextPrefix, codeName))
 	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
-	fmt.Fprintf(r.stdout, color.GreenString("You are logged on installation '%s'.\n"), codeName)
+	fmt.Fprint(r.stdout, color.GreenString("You are logged on installation '%s'.\n", codeName))
 
 	return nil
 }
@@ -101,7 +101,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	}
 
 	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
-	fmt.Fprintf(r.stdout, color.GreenString("You are logged on installation '%s'.\n"), codeName)
+	fmt.Fprint(r.stdout, color.GreenString("You are logged on installation '%s'.\n", codeName))
 
 	return nil
 }
@@ -115,7 +115,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 	}
 
 	if installation.GetUrlType(path) == installation.UrlTypeHappa {
-		fmt.Fprintf(r.stdout, color.YellowString("Note: deriving Control Plane API URL from web UI URL: %s\n", i.K8sApiURL))
+		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Control Plane API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
 	authResult, err := handleAuth(ctx, r.stdout, i)
@@ -129,7 +129,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
+	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
 
 	contextName := generateKubeContextName(i.Codename)
 	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
