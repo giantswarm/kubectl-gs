@@ -53,27 +53,55 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(invalidFlagError)
 	}
 
-	var err error
-
 	installationIdentifier := strings.ToLower(args[0])
-	if isKubeContext(installationIdentifier) {
-		codeName := getCodeNameFromKubeContext(installationIdentifier)
-		err = switchContext(r.k8sConfigAccess, installationIdentifier)
+
+	var err error
+	switch {
+	case isKubeContext(installationIdentifier):
+		err = r.loginWithKubeContextName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		fmt.Fprintf(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n"), contextPrefix, codeName)
-		fmt.Fprintf(r.stdout, "Switched to context '%s'\n", installationIdentifier)
-		fmt.Fprintf(r.stdout, color.GreenString("You are logged on installation '%s'.\n"), codeName)
+	case isCodeName(installationIdentifier):
+		err = r.loginWithCodeName(ctx, installationIdentifier)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-		return nil
+	default:
+		err = r.loginWithURL(ctx, installationIdentifier)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	err = r.loginWithURL(ctx, installationIdentifier)
+	return nil
+}
+
+func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
+	codeName := getCodeNameFromKubeContext(contextName)
+	err := switchContext(r.k8sConfigAccess, contextName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	fmt.Fprintf(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n"), contextPrefix, codeName)
+	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
+	fmt.Fprintf(r.stdout, color.GreenString("You are logged on installation '%s'.\n"), codeName)
+
+	return nil
+}
+
+func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
+	contextName := generateKubeContextName(codeName)
+	err := switchContext(r.k8sConfigAccess, contextName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
+	fmt.Fprintf(r.stdout, color.GreenString("You are logged on installation '%s'.\n"), codeName)
 
 	return nil
 }

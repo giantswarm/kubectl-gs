@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -19,4 +20,9 @@ func isKubeContext(s string) bool {
 
 func getCodeNameFromKubeContext(c string) string {
 	return strings.TrimPrefix(c, contextPrefix)
+}
+
+func isCodeName(s string) bool {
+	codeNameRegExp, _ := regexp.Compile("^[a-z]+$")
+	return codeNameRegExp.MatchString(s)
 }
