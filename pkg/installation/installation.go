@@ -4,13 +4,7 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-const (
-	apiURLPrefix  = "api"
-	authURLPrefix = "dex"
-)
-
 type Installation struct {
-	ApiURL    string
 	K8sApiURL string
 	AuthURL   string
 	Provider  string
@@ -23,7 +17,9 @@ func New(fromUrl string) (*Installation, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	apiUrl := getGiantSwarmAPIUrl(basePath)
+
+	k8sApiUrl := getK8sApiUrl(basePath)
+	apiUrl := getGiantSwarmApiUrl(basePath)
 	authUrl := getAuthUrl(basePath)
 
 	installationInfo, err := getInstallationInfo(apiUrl)
@@ -32,8 +28,7 @@ func New(fromUrl string) (*Installation, error) {
 	}
 
 	i := &Installation{
-		ApiURL:    apiUrl,
-		K8sApiURL: fromUrl,
+		K8sApiURL: k8sApiUrl,
 		AuthURL:   authUrl,
 		Provider:  installationInfo.Provider,
 		Codename:  installationInfo.Name,

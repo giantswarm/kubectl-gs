@@ -12,3 +12,12 @@ var cannotGetInstallationInfo = &microerror.Error{
 func IsCannotGetInstallationInfo(err error) bool {
 	return microerror.Cause(err) == cannotGetInstallationInfo
 }
+
+var unknownUrlTypeError = &microerror.Error{
+	Kind: "unknownUrlTypeError",
+}
+
+// IsUnknownUrlType asserts unknownUrlTypeError.
+func IsUnknownUrlType(err error) bool {
+	return microerror.Cause(err) == unknownUrlTypeError
+}

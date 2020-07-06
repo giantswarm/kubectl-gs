@@ -3,23 +3,69 @@ package installation
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 )
 
-func getBasePath(k8sAPIUrl string) (string, error) {
-	k8sURL, err := url.Parse(k8sAPIUrl)
+const (
+	apiUrlPrefix    = "api"
+	k8sApiUrlPrefix = "g8s"
+	happaUrlPrefix  = "happa"
+	authUrlPrefix   = "dex"
+)
+
+const (
+	UrlTypeInvalid = iota
+	UrlTypeK8sApi
+	UrlTypeHappa
+)
+
+func GetUrlType(u string) int {
+	switch {
+	case isHappaUrl(u):
+		return UrlTypeHappa
+	case isK8sApiUrl(u):
+		return UrlTypeK8sApi
+	default:
+		return UrlTypeInvalid
+	}
+}
+
+func isK8sApiUrl(u string) bool {
+	return strings.Contains(u, fmt.Sprintf("%s.", k8sApiUrlPrefix))
+}
+
+func isHappaUrl(u string) bool {
+	return strings.Contains(u, fmt.Sprintf("%s.", happaUrlPrefix))
+}
+
+func getBasePath(u string) (string, error) {
+	path, err := url.Parse(u)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return k8sURL.Host, nil
+	hostName := path.Host
+	switch GetUrlType(hostName) {
+	case UrlTypeK8sApi:
+		return hostName, nil
+	case UrlTypeHappa:
+		basePath := strings.Replace(hostName, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
+		return basePath, nil
+	default:
+		return "", microerror.Mask(unknownUrlTypeError)
+	}
 }
 
-func getGiantSwarmAPIUrl(basePath string) string {
-	return fmt.Sprintf("https://%s.%s", apiURLPrefix, basePath)
+func getGiantSwarmApiUrl(basePath string) string {
+	return fmt.Sprintf("https://%s.%s", apiUrlPrefix, basePath)
+}
+
+func getK8sApiUrl(basePath string) string {
+	return fmt.Sprintf("https://%s", basePath)
 }
 
 func getAuthUrl(basePath string) string {
-	return fmt.Sprintf("https://%s.%s", authURLPrefix, basePath)
+	return fmt.Sprintf("https://%s.%s", authUrlPrefix, basePath)
 }
