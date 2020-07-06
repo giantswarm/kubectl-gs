@@ -23,8 +23,8 @@ type Installation struct {
 	CACert    string
 }
 
-func New(k8sAPIUrl string) (*Installation, error) {
-	basePath, err := getBasePath(k8sAPIUrl)
+func New(fromUrl string) (*Installation, error) {
+	basePath, err := getBasePath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -38,7 +38,7 @@ func New(k8sAPIUrl string) (*Installation, error) {
 
 	i := &Installation{
 		ApiURL:    apiUrl,
-		K8sApiURL: k8sAPIUrl,
+		K8sApiURL: fromUrl,
 		AuthURL:   authUrl,
 		Provider:  installationInfo.Provider,
 		Codename:  installationInfo.Name,

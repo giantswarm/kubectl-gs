@@ -65,7 +65,12 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	i, err := installation.New(r.flag.K8sAPIURL)
+	if len(args) < 1 {
+		return microerror.Mask(invalidFlagError)
+	}
+	k8sApiURL := args[0]
+
+	i, err := installation.New(k8sApiURL)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -90,7 +95,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "\n%s\n", color.YellowString("Your browser should now be opening:"))
+	fmt.Fprintf(r.stdout, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
 	fmt.Fprintf(r.stdout, "%s\n\n", authURL)
 
 	p, err := callbackserver.RunCallbackServer(authCallbackPort, authCallbackPath, handleAuthCallback(ctx, auther))
@@ -110,12 +115,19 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	// Store kubeconfig.
-	err = storeCredentials(r.k8sConfigAccess, *i, authResult, r.fs)
+	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on '%s'.\n", authResult.Email, i.Codename))
+	fmt.Fprintf(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
+
+	contextName := generateContextName(i, authResult)
+	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
+	fmt.Fprintf(r.stdout, " ")
+	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+	fmt.Fprintf(r.stdout, "  kgs login %s\n", i.Codename)
+	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 
 	return nil
 }
@@ -147,7 +159,7 @@ func handleAuthCallback(ctx context.Context, a *oidc.Authenticator) func(w http.
 	}
 }
 
-func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i installation.Installation, authResult oidc.UserInfo, fs afero.Fs) error {
+func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult oidc.UserInfo, fs afero.Fs) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -229,6 +241,6 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i installation.Ins
 	return nil
 }
 
-func generateContextName(i installation.Installation, authResult oidc.UserInfo) string {
+func generateContextName(i *installation.Installation, authResult oidc.UserInfo) string {
 	return fmt.Sprintf("%s-%s", authResult.Username, i.Codename)
 }
