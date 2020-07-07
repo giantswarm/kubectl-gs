@@ -30,6 +30,7 @@ const (
 	authCallbackPath = "/oauth/callback"
 )
 
+// handleAuth executes the OIDC authentication against an installation's authentication provider.
 func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation) (oidc.UserInfo, error) {
 	oidcConfig := oidc.Config{
 		ClientID:     clientID,
@@ -56,6 +57,8 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 	fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
 	fmt.Fprintf(out, "%s\n\n", authURL)
 
+	// Create a local web server, for fetching all the authentication data from
+	// the authentication provider.
 	p, err := callbackserver.RunCallbackServer(authCallbackPort, authCallbackPath, handleAuthCallback(ctx, auther))
 	if err != nil {
 		return oidc.UserInfo{}, microerror.Mask(err)
@@ -75,6 +78,8 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 	return authResult, nil
 }
 
+// handleAuthCallback is the callback executed after the authentication response was
+// received from the authentication provider.
 func handleAuthCallback(ctx context.Context, a *oidc.Authenticator) func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	return func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 		res, err := a.HandleIssuerResponse(ctx, r.URL.Query().Get("state"), r.URL.Query().Get("code"))
@@ -102,12 +107,15 @@ func handleAuthCallback(ctx context.Context, a *oidc.Authenticator) func(w http.
 	}
 }
 
+// storeCredentials stores the installation's CA certificate, and
+// updates the kubeconfig with the configuration for the k8s api access.
 func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult oidc.UserInfo, fs afero.Fs) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	// Store CA certificate.
 	err = kubeconfig.WriteCertificate(i.CACert, i.Codename, fs)
 	if err != nil {
 		return microerror.Mask(err)
@@ -184,6 +192,8 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 	return nil
 }
 
+// switchContext modifies the existing kubeconfig, and switches the currently
+// active context to the one specified.
 func switchContext(k8sConfigAccess clientcmd.ConfigAccess, newContextName string) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {

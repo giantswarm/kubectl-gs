@@ -53,6 +53,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(invalidFlagError)
 	}
 
+	// This can be a kubernetes context name,
+	// installation code name, or happa/k8s api URL.
 	installationIdentifier := strings.ToLower(args[0])
 
 	var err error
@@ -79,6 +81,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
+// loginWithKubeContextName switches the active kubernetes context to
+// the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	codeName := getCodeNameFromKubeContext(contextName)
 	err := switchContext(r.k8sConfigAccess, contextName)
@@ -93,6 +97,8 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 	return nil
 }
 
+// loginWithCodeName switches the active kubernetes context to
+// one with the name derived from the installation code name.
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	contextName := generateKubeContextName(codeName)
 	err := switchContext(r.k8sConfigAccess, contextName)
@@ -106,6 +112,8 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	return nil
 }
 
+// loginWithURL performs the OIDC login into an installation's
+// k8s api with a happa/k8s api URL.
 func (r *runner) loginWithURL(ctx context.Context, path string) error {
 	i, err := installation.New(path)
 	if installation.IsUnknownUrlType(err) {
