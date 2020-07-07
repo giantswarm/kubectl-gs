@@ -35,7 +35,13 @@ func Test_getInstallationInfo(t *testing.T) {
 			errorMatcher:           IsCannotParseCertificate,
 		},
 		{
-			name:                   "case 2: fetch installation information, bad request",
+			name:                   "case 2: fetch installation information, empty certificate",
+			httpResponseStatusCode: http.StatusOK,
+			responsePath:           "testdata/get_installation_info_empty_certificate.in",
+			errorMatcher:           IsCannotParseCertificate,
+		},
+		{
+			name:                   "case 3: fetch installation information, bad request",
 			httpResponseStatusCode: http.StatusBadRequest,
 			errorMatcher:           IsCannotGetInstallationInfo,
 		},
@@ -73,7 +79,7 @@ func Test_getInstallationInfo(t *testing.T) {
 
 			diff := cmp.Diff(info, tc.expectedResult)
 			if diff != "" {
-				t.Fatalf("installation value not expected, got: %s", diff)
+				t.Fatalf("installation info not expected, got: %s", diff)
 			}
 		})
 	}

@@ -3,6 +3,7 @@ package installation
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -41,7 +42,13 @@ func isHappaUrl(u string) bool {
 }
 
 func getBasePath(u string) (string, error) {
-	path, err := url.Parse(u)
+	// Add https scheme if it doesn't exist.
+	urlRegexp, _ := regexp.Compile("http?(s)://.*")
+	if matched := urlRegexp.MatchString(u); !matched {
+		u = fmt.Sprintf("https://%s", u)
+	}
+
+	path, err := url.ParseRequestURI(u)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
