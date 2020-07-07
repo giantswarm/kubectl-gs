@@ -15,8 +15,30 @@ import (
 )
 
 const (
-	name        = "login"
-	description = "Logs in into the Kubernetes cluster."
+	name             = "login [K8s API URL | Web UI URL | Existing GS Context Name]"
+	shortDescription = "Logs into an installation's Kubernetes API"
+	longDescription  = `Log into an installation's Kubernetes API.
+
+You can use as an argument:
+  * Your installation's Kubernetes API URL as an argument (e. g. 'https://g8s.test.eu-west-1.aws.gigantic.io')
+  * Your Web UI URL (e. g. 'https://happa.g8s.test.eu-west-1.aws.gigantic.io')
+  * An existing Giant Swarm specific 'kubectl' context name (e. g. 'gs-test')
+`
+	examples = `  # See on which installation you're logged in currently.
+  kubectl gs login
+
+  # Log in using your K8s API URL.
+  kubectl gs login https://g8s.test.eu-west-1.aws.gigantic.io
+
+  # Log in using your Web UI URL.
+  kubectl gs login https://happa.g8s.test.eu-west-1.aws.gigantic.io
+
+  # Log in using a GS specific context name.
+  kubectl gs login gs-test
+
+  # Or even shorter
+  kubectl gs login test
+`
 )
 
 type Config struct {
@@ -60,10 +82,11 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  description,
-		RunE:  r.Run,
+		Use:     name,
+		Short:   shortDescription,
+		Long:    longDescription,
+		Example: examples,
+		RunE:    r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(config.K8sConfigAccess),
 		),
