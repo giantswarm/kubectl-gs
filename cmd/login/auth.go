@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	gooidc "github.com/coreos/go-oidc"
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 	"github.com/skratchdot/open-golang/open"
@@ -28,6 +29,10 @@ const (
 	authCallbackURL  = "http://localhost"
 	authCallbackPort = 8085
 	authCallbackPath = "/oauth/callback"
+)
+
+var (
+	authScopes = [...]string{gooidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "audience:server:client_id:dex-k8s-authenticator"}
 )
 
 // handleAuth executes the OIDC authentication against an installation's authentication provider.

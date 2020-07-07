@@ -6,7 +6,6 @@ import (
 	"io"
 	"strings"
 
-	gooidc "github.com/coreos/go-oidc"
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -15,10 +14,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
-)
-
-var (
-	authScopes = [...]string{gooidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "audience:server:client_id:dex-k8s-authenticator"}
 )
 
 type runner struct {
