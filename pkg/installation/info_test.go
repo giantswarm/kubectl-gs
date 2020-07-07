@@ -62,7 +62,7 @@ func Test_getInstallationInfo(t *testing.T) {
 
 			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tc.httpResponseStatusCode)
-				w.Write(res)
+				w.Write(res) // nolint:errcheck
 			}))
 			defer ts.Close()
 

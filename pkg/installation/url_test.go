@@ -61,7 +61,7 @@ func Test_getBasePath(t *testing.T) {
 }
 
 func Test_getGiantSwarmApiUrl(t *testing.T) {
-	basePath := "g8s.test.eu-west-1.aws.coolio.com"
+	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
 	expectedResult := "https://api.g8s.test.eu-west-1.aws.coolio.com"
 
 	if result := getGiantSwarmApiUrl(basePath); result != expectedResult {
@@ -70,7 +70,7 @@ func Test_getGiantSwarmApiUrl(t *testing.T) {
 }
 
 func Test_getK8sApiUrl(t *testing.T) {
-	basePath := "g8s.test.eu-west-1.aws.coolio.com"
+	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
 	expectedResult := "https://g8s.test.eu-west-1.aws.coolio.com"
 
 	if result := getK8sApiUrl(basePath); result != expectedResult {
@@ -79,7 +79,7 @@ func Test_getK8sApiUrl(t *testing.T) {
 }
 
 func Test_getAuthUrl(t *testing.T) {
-	basePath := "g8s.test.eu-west-1.aws.coolio.com"
+	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
 	expectedResult := "https://dex.g8s.test.eu-west-1.aws.coolio.com"
 
 	if result := getAuthUrl(basePath); result != expectedResult {
