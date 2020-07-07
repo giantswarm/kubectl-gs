@@ -44,15 +44,19 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	var err error
+
 	if len(args) < 1 {
-		return microerror.Mask(invalidFlagError)
+		err = r.tryToReuseExistingContext()
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// This can be a kubernetes context name,
 	// installation code name, or happa/k8s api URL.
 	installationIdentifier := strings.ToLower(args[0])
 
-	var err error
 	switch {
 	case isKubeContext(installationIdentifier):
 		err = r.loginWithKubeContextName(ctx, installationIdentifier)
@@ -74,6 +78,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func (r *runner) tryToReuseExistingContext() error {
+	if currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(r.k8sConfigAccess); isLoggedInWithKubeContext {
+		codeName := getCodeNameFromKubeContext(currentContext)
+		fmt.Fprint(r.stdout, color.GreenString("You are logged on installation '%s'.\n", codeName))
+
+		return nil
+	}
+
+	return microerror.Maskf(selectedContextNonCompatibleError, "The currently selected context is not compatible, please try to login using the Kubernetes API URL or the web UI URL.\nRun 'kgs login --help' to learn more.")
 }
 
 // loginWithKubeContextName switches the active kubernetes context to

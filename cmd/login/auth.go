@@ -247,3 +247,16 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 
 	return nil
 }
+
+func isLoggedWithGSContext(k8sConfigAccess clientcmd.ConfigAccess) (string, bool) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", false
+	}
+
+	if !isKubeContext(config.CurrentContext) {
+		return "", false
+	}
+
+	return config.CurrentContext, true
+}

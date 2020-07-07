@@ -64,3 +64,12 @@ var tokenRenewalFailedError = &microerror.Error{
 func IsTokenRenewalFailed(err error) bool {
 	return microerror.Cause(err) == tokenRenewalFailedError
 }
+
+var selectedContextNonCompatibleError = &microerror.Error{
+	Kind: "selectedContextNonCompatibleError",
+}
+
+// IsSelectedTokenNonCompatible asserts selectedContextNonCompatibleError.
+func IsSelectedTokenNonCompatible(err error) bool {
+	return microerror.Cause(err) == selectedContextNonCompatibleError
+}
