@@ -4,6 +4,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
+// GetAuthProvider fetches the authentication provider from kubeconfig,
+// for a desired context name.
 func GetAuthProvider(config *clientcmdapi.Config, contextName string) (*clientcmdapi.AuthProviderConfig, bool) {
 	if contextName == "" {
 		return nil, false
