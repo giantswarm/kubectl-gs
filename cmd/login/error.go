@@ -46,3 +46,21 @@ var contextDoesNotExistError = &microerror.Error{
 func IsContextDoesNotExist(err error) bool {
 	return microerror.Cause(err) == contextDoesNotExistError
 }
+
+var incorrectConfigurationError = &microerror.Error{
+	Kind: "incorrectConfigurationError",
+}
+
+// IsIncorrectConfiguration asserts incorrectConfigurationError.
+func IsIncorrectConfiguration(err error) bool {
+	return microerror.Cause(err) == incorrectConfigurationError
+}
+
+var tokenRenewalFailedError = &microerror.Error{
+	Kind: "tokenRenewalFailedError",
+}
+
+// IsTokenRenewalFailed asserts tokenRenewalFailedError.
+func IsTokenRenewalFailed(err error) bool {
+	return microerror.Cause(err) == tokenRenewalFailedError
+}

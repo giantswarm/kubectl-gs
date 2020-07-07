@@ -80,7 +80,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	codeName := getCodeNameFromKubeContext(contextName)
-	err := switchContext(r.k8sConfigAccess, contextName)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -96,7 +96,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 // one with the name derived from the installation code name.
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	contextName := generateKubeContextName(codeName)
-	err := switchContext(r.k8sConfigAccess, contextName)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if err != nil {
 		return microerror.Mask(err)
 	}

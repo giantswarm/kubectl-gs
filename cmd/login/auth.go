@@ -199,7 +199,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 
 // switchContext modifies the existing kubeconfig, and switches the currently
 // active context to the one specified.
-func switchContext(k8sConfigAccess clientcmd.ConfigAccess, newContextName string) error {
+func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -208,6 +208,34 @@ func switchContext(k8sConfigAccess clientcmd.ConfigAccess, newContextName string
 	// Check if the context exists.
 	if _, exists := config.Contexts[newContextName]; !exists {
 		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Control Plane API URL or the web UI URL of the installation as an argument.", newContextName)
+	}
+
+	authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
+	if !exists {
+		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
+	}
+
+	var auther *oidc.Authenticator
+	{
+		oidcConfig := oidc.Config{
+			Issuer:       authProvider.Config["idp-issuer-url"],
+			ClientID:     authProvider.Config["client-id"],
+			ClientSecret: authProvider.Config["client-secret"],
+		}
+		auther, err = oidc.New(ctx, oidcConfig)
+		if err != nil {
+			return microerror.Mask(incorrectConfigurationError)
+		}
+	}
+
+	// Renew authentication token.
+	{
+		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config["refresh-token"])
+		if err != nil {
+			return microerror.Mask(tokenRenewalFailedError)
+		}
+		authProvider.Config["refresh-token"] = rToken
+		authProvider.Config["id-token"] = idToken
 	}
 
 	config.CurrentContext = newContextName
