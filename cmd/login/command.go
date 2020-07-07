@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/giantswarm/kubectl-gs/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 )
 
 const (
@@ -61,6 +64,9 @@ func New(config Config) (*cobra.Command, error) {
 		Short: description,
 		Long:  description,
 		RunE:  r.Run,
+		PreRunE: middleware.Compose(
+			renewtoken.Middleware(config.K8sConfigAccess),
+		),
 	}
 
 	f.Init(c)

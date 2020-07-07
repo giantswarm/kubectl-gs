@@ -73,14 +73,20 @@ func (a *Authenticator) GetAuthURL() string {
 	return a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)
 }
 
-func (a *Authenticator) RenewToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
+func (a *Authenticator) RenewToken(ctx context.Context, refreshToken string) (idToken string, rToken string, err error) {
 	s := a.clientConfig.TokenSource(ctx, &oauth2.Token{RefreshToken: refreshToken})
 	t, err := s.Token()
 	if err != nil {
-		return nil, microerror.Maskf(cannotRenewTokenError, err.Error())
+		return "", "", microerror.Maskf(cannotRenewTokenError, err.Error())
 	}
 
-	return t, nil
+	idToken, err = ConvertTokenToRawIDToken(t)
+	if err != nil {
+		return "", "", microerror.Maskf(cannotRenewTokenError, err.Error())
+	}
+	rToken = t.RefreshToken
+
+	return idToken, rToken, nil
 }
 
 func (a *Authenticator) HandleIssuerResponse(ctx context.Context, challenge string, code string) (UserInfo, error) {
