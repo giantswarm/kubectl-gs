@@ -1,0 +1,7 @@
+{
+    "installation": {
+        "provider": "aws",
+        "k8s_cacert": "definitely-not-a-certificate",
+        "name": "test"
+    }
+}

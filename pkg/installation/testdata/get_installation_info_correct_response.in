@@ -1,0 +1,7 @@
+{
+    "installation": {
+        "provider": "aws",
+        "k8s_cacert": "        | -----BEGIN CERTIFICATE----- something otherthing lastthing -----END CERTIFICATE-----",
+        "name": "test"
+    }
+}

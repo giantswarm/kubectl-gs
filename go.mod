@@ -10,8 +10,10 @@ require (
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/go-openapi/strfmt v0.19.5 // indirect
+	github.com/google/go-cmp v0.4.0
 	github.com/markbates/pkger v0.17.0
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
+	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.7

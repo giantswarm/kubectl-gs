@@ -1,6 +1,8 @@
 package installation
 
 import (
+	"net/http"
+
 	"github.com/giantswarm/microerror"
 )
 
@@ -22,7 +24,8 @@ func New(fromUrl string) (*Installation, error) {
 	apiUrl := getGiantSwarmApiUrl(basePath)
 	authUrl := getAuthUrl(basePath)
 
-	installationInfo, err := getInstallationInfo(apiUrl)
+	client := http.DefaultClient
+	installationInfo, err := getInstallationInfo(client, apiUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
