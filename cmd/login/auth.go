@@ -206,6 +206,10 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		return microerror.Mask(err)
 	}
 
+	if newContextName == config.CurrentContext {
+		return microerror.Mask(contextAlreadySelectedError)
+	}
+
 	// Check if the context exists.
 	if _, exists := config.Contexts[newContextName]; !exists {
 		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Control Plane API URL or the web UI URL of the installation as an argument.", newContextName)

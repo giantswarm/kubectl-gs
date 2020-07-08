@@ -97,14 +97,24 @@ func (r *runner) tryToReuseExistingContext() error {
 // loginWithKubeContextName switches the active kubernetes context to
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
+	var contextAlreadySelected bool
+
 	codeName := getCodeNameFromKubeContext(contextName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
-	if err != nil {
+	if IsContextAlreadySelected(err) {
+		contextAlreadySelected = true
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
 	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n", contextPrefix, codeName))
-	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
+
+	if contextAlreadySelected {
+		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
+	} else {
+		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
+	}
+
 	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the control plane of installation '%s'.\n", codeName))
 
 	return nil
@@ -113,13 +123,22 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 // loginWithCodeName switches the active kubernetes context to
 // one with the name derived from the installation code name.
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
+	var contextAlreadySelected bool
+
 	contextName := generateKubeContextName(codeName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
-	if err != nil {
+	if IsContextAlreadySelected(err) {
+		contextAlreadySelected = true
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
+	if contextAlreadySelected {
+		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
+	} else {
+		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
+	}
+
 	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the control plane of installation '%s'.\n", codeName))
 
 	return nil

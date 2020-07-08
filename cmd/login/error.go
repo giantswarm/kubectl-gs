@@ -73,3 +73,12 @@ var selectedContextNonCompatibleError = &microerror.Error{
 func IsSelectedTokenNonCompatible(err error) bool {
 	return microerror.Cause(err) == selectedContextNonCompatibleError
 }
+
+var contextAlreadySelectedError = &microerror.Error{
+	Kind: "contextAlreadySelectedError",
+}
+
+// IsContextAlreadySelected asserts contextAlreadySelectedError.
+func IsContextAlreadySelected(err error) bool {
+	return microerror.Cause(err) == contextAlreadySelectedError
+}
