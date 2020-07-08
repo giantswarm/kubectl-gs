@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -11,12 +12,15 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd"
+	"github.com/giantswarm/kubectl-gs/pkg/errorprinter"
 )
 
 func main() {
 	err := mainE(context.Background())
 	if err != nil {
-		panic(fmt.Sprintf("%#v\n", microerror.JSON(err)))
+		ep := errorprinter.New()
+		fmt.Printf(ep.Format(err))
+		os.Exit(1)
 	}
 }
 
