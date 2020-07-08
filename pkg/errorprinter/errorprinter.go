@@ -3,6 +3,8 @@ package errorprinter
 import (
 	"strings"
 	"unicode"
+
+	"github.com/fatih/color"
 )
 
 const (
@@ -10,6 +12,7 @@ const (
 )
 
 type ErrorPrinter struct {
+	DisableColors bool
 }
 
 func New() *ErrorPrinter {
@@ -26,15 +29,9 @@ func (ep *ErrorPrinter) Format(pErr error) string {
 	errorRows := strings.Split(pErr.Error(), "\n")
 
 	var messageBuilder strings.Builder
-	messageBuilder.WriteString(prefix)
 
 	{
-		title := errorRows[0]
-		if title == "" {
-			return ""
-		}
-
-		title = ep.formatTitle(title)
+		title := ep.formatTitle(errorRows[0])
 		messageBuilder.WriteString(title)
 		messageBuilder.WriteString("\n")
 	}
@@ -51,6 +48,10 @@ func (ep *ErrorPrinter) Format(pErr error) string {
 }
 
 func (ep *ErrorPrinter) formatTitle(title string) string {
+	if title == "" {
+		return ""
+	}
+
 	microerrorTypeLastCharIdx := strings.Index(title, ":") + 2
 	if microerrorTypeLastCharIdx > 1 && len(title) > microerrorTypeLastCharIdx {
 		// Remove the microerror type from the error message, if
@@ -68,6 +69,12 @@ func (ep *ErrorPrinter) formatTitle(title string) string {
 		tmpTitle := []rune(title)
 		tmpTitle[0] = unicode.ToUpper(tmpTitle[0])
 		title = string(tmpTitle)
+	}
+
+	title = prefix + title
+
+	if !ep.DisableColors {
+		title = color.RedString(title)
 	}
 
 	return title
