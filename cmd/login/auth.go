@@ -126,8 +126,9 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		return microerror.Mask(err)
 	}
 
-	kUsername := fmt.Sprintf("%s-%s", authResult.Username, i.Codename)
+	kUsername := fmt.Sprintf("gs-%s-%s", authResult.Username, i.Codename)
 	contextName := generateKubeContextName(i.Codename)
+	clusterName := fmt.Sprintf("gs-%s", i.Codename)
 
 	{
 		// Create authenticated user.
@@ -153,7 +154,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 
 	{
 		// Create authenticated cluster.
-		initialCluster, exists := config.Clusters[i.Codename]
+		initialCluster, exists := config.Clusters[clusterName]
 		if !exists {
 			initialCluster = clientcmdapi.NewCluster()
 		}
@@ -161,14 +162,14 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		initialCluster.Server = i.K8sApiURL
 
 		var certPath string
-		certPath, err = kubeconfig.GetKubeCertFilePath(i.Codename)
+		certPath, err = kubeconfig.GetKubeCertFilePath(clusterName)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 		initialCluster.CertificateAuthority = certPath
 
 		// Add cluster configuration to config.
-		config.Clusters[i.Codename] = initialCluster
+		config.Clusters[clusterName] = initialCluster
 	}
 
 	{
@@ -178,7 +179,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 			initialContext = clientcmdapi.NewContext()
 		}
 
-		initialContext.Cluster = i.Codename
+		initialContext.Cluster = clusterName
 
 		initialContext.AuthInfo = kUsername
 

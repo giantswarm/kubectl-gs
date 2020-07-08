@@ -83,14 +83,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) tryToReuseExistingContext() error {
-	if currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(r.k8sConfigAccess); isLoggedInWithKubeContext {
+	currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(r.k8sConfigAccess)
+	if isLoggedInWithKubeContext {
 		codeName := getCodeNameFromKubeContext(currentContext)
-		fmt.Fprint(r.stdout, color.GreenString("You are logged on installation '%s'.\n", codeName))
+		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the control plane of installation '%s'.\n", codeName))
 
 		return nil
 	}
 
-	return microerror.Maskf(selectedContextNonCompatibleError, "The currently selected context is not compatible, please try to login using the Kubernetes API URL or the web UI URL.\nRun 'kgs login --help' to learn more.")
+	return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm control plane.\nPlease run 'kgs login --help' to find out how to log in to a particular control plane.", currentContext)
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
@@ -104,7 +105,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 
 	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n", contextPrefix, codeName))
 	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
-	fmt.Fprint(r.stdout, color.GreenString("You are logged on installation '%s'.\n", codeName))
+	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the control plane of installation '%s'.\n", codeName))
 
 	return nil
 }
@@ -119,7 +120,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	}
 
 	fmt.Fprintf(r.stdout, "Switched to context '%s'\n", contextName)
-	fmt.Fprint(r.stdout, color.GreenString("You are logged on installation '%s'.\n", codeName))
+	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the control plane of installation '%s'.\n", codeName))
 
 	return nil
 }
