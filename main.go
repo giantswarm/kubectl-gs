@@ -19,7 +19,7 @@ func main() {
 	err := mainE(context.Background())
 	if err != nil {
 		ep := errorprinter.New()
-		fmt.Printf(ep.Format(err))
+		fmt.Print(ep.Format(err))
 		os.Exit(1)
 	}
 }
