@@ -34,7 +34,9 @@ func GetUrlType(u string) int {
 }
 
 func isK8sApiUrl(u string) bool {
-	return strings.Contains(u, fmt.Sprintf("%s.", k8sApiUrlPrefix))
+	k8sApiURLRegexp, _ := regexp.Compile(fmt.Sprintf("^([^.]*)%s.*$", k8sApiUrlPrefix))
+
+	return k8sApiURLRegexp.MatchString(u)
 }
 
 func isHappaUrl(u string) bool {
@@ -43,7 +45,7 @@ func isHappaUrl(u string) bool {
 
 func getBasePath(u string) (string, error) {
 	// Add https scheme if it doesn't exist.
-	urlRegexp, _ := regexp.Compile("http?(s)://.*")
+	urlRegexp, _ := regexp.Compile("^http(s)?://.*$")
 	if matched := urlRegexp.MatchString(u); !matched {
 		u = fmt.Sprintf("https://%s", u)
 	}

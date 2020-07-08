@@ -38,6 +38,16 @@ func Test_getBasePath(t *testing.T) {
 			url:          "coolio.com",
 			errorMatcher: IsUnknownUrlType,
 		},
+		{
+			name:         "case 4: using empty url",
+			url:          "",
+			errorMatcher: IsUnknownUrlType,
+		},
+		{
+			name:         "case 5: using giant swarm api url",
+			url:          "https://api.g8s.test.eu-west-1.aws.coolio.com",
+			errorMatcher: IsUnknownUrlType,
+		},
 	}
 
 	for _, tc := range testCases {
