@@ -68,10 +68,12 @@ func (ep *ErrorPrinter) formatTitle(title string) string {
 		// Capitalize first letter.
 		tmpTitle := []rune(title)
 		tmpTitle[0] = unicode.ToUpper(tmpTitle[0])
+
+		// Add 'Error: ' prefix.
+		tmpTitle = append([]rune(prefix), tmpTitle...)
+
 		title = string(tmpTitle)
 	}
-
-	title = prefix + title
 
 	if !ep.DisableColors {
 		title = color.RedString(title)
