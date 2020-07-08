@@ -120,15 +120,15 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		return microerror.Mask(err)
 	}
 
-	// Store CA certificate.
-	err = kubeconfig.WriteCertificate(i.CACert, i.Codename, fs)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	kUsername := fmt.Sprintf("gs-%s-%s", authResult.Username, i.Codename)
 	contextName := generateKubeContextName(i.Codename)
 	clusterName := fmt.Sprintf("gs-%s", i.Codename)
+
+	// Store CA certificate.
+	err = kubeconfig.WriteCertificate(i.CACert, clusterName, fs)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	{
 		// Create authenticated user.
