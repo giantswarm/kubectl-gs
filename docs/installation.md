@@ -22,7 +22,7 @@ alias kgs="kubectl gs"
 
 (Best add this to your shell profile or config file.)
 
-Lastly, let's check that the plugin is working as it's supposed to.
+Lastly, let's check that the plug-in is working as it's supposed to.
 
 ```nohighlight
 kgs
