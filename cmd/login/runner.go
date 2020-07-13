@@ -95,7 +95,7 @@ func (r *runner) tryToReuseExistingContext() error {
 		return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm control plane.\nPlease run 'kgs login --help' to find out how to log in to a particular control plane.", currentContext)
 	}
 
-	return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm control plane.\nPlease run 'kgs login --help' to find out how to log in to a particular control plane.", currentContext)
+	return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm control plane.\nPlease run 'kgs login --help' to find out how to log in to a particular control plane.")
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
