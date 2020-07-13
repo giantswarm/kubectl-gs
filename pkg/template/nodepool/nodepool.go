@@ -81,7 +81,6 @@ func newMachineDeploymentCR(obj interface{}, clusterID, machineDeploymentID stri
 }
 
 func newAWSMachineDeploymentCR(clusterID, machineDeploymentID string, c Config) (*infrastructurev1alpha2.AWSMachineDeployment, error) {
-
 	awsMachineDeploymentCR := &infrastructurev1alpha2.AWSMachineDeployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AWSMachineDeployment",
@@ -117,7 +116,7 @@ func newAWSMachineDeploymentCR(clusterID, machineDeploymentID string, c Config) 
 				},
 				InstanceDistribution: infrastructurev1alpha2.AWSMachineDeploymentSpecInstanceDistribution{
 					OnDemandBaseCapacity:                c.OnDemandBaseCapacity,
-					OnDemandPercentageAboveBaseCapacity: c.OnDemandPercentageAboveBaseCapacity,
+					OnDemandPercentageAboveBaseCapacity: &c.OnDemandPercentageAboveBaseCapacity,
 				},
 			},
 		},
