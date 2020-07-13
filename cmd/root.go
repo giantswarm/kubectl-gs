@@ -22,7 +22,14 @@ const (
 	// space characters (' '), and we trick it by using a
 	// NBSP character (NBSP) between the 2 words.
 	name        = "kubectl\u00a0gs"
-	description = "Kubectl plugin for Giant Swarm CRs templating"
+	description = `Your user-friendly kubectl plug-in for the Giant Swarm control plane.
+
+Get more information at https://github.com/giantswarm/kubectl-gs
+
+Note: We highly recommend setting up 'kgs' as a shorthand.
+
+   alias kgs="kubectl gs"
+`
 )
 
 type Config struct {

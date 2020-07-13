@@ -5,21 +5,23 @@
 ## Quick start
 
 ```nohighlight
-$ kubectl krew update
-$ kubectl krew install gs
-$ alias kgs="kubectl gs"
-$ kgs info
+kubectl krew install gs
+alias kgs="kubectl gs"
+kgs
 ```
 
 Check the [installation docs](https://github.com/giantswarm/kubectl-gs/blob/master/docs/installation.md) for details on installation with and without Krew.
 
 ## Features
 
-- **Custom resource templating**: create manifests for creating/updating custom resources for:
+- **Custom resource templating**: using the `template` command lets you create manifests for
+  creating/updating custom resources for:
   - Clusters
   - Node pools
   - App catalogs
   - Apps
+- **SSO login**: with the `login` command you can quickly set up a `kubectl context` with
+  OIDC authentication for a Giant Swarm control plane.
 
 ## Documentation
 

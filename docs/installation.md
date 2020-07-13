@@ -1,21 +1,20 @@
 # Installation
 
-The recommended way to install the `kubectl-gs`, the `gs` plugin for `kubectl`, and for keeping it up-to-date, is using [Krew](https://krew.sigs.k8s.io/). However here we also explain how to do it without Krew.
+`kubectl-gs` is the Giant Swarm plug-in for `kubectl` with the official plug-in name `gs`.
+
+The simplest way to manage `kubectl` plug-ins accross platforms is using [Krew](https://krew.sigs.k8s.io/). If you don't have Krew installed, check the [Krew installation docs](https://krew.sigs.k8s.io/docs/user-guide/setup/install/) on how to get it installed.
+
+Further down you will also find instructions on installing the plug-in [without Krew](#without-krew).
 
 ## Using Krew
 
-If you don't have Krew installed, check the upstream [documentation](https://krew.sigs.k8s.io/docs/user-guide/setup/install/) on how to get it installed.
-
-With [Krew](https://krew.sigs.k8s.io/):
+To install the `gs` plug-in, simply execute this command:
 
 ```nohighlight
-kubectl krew update
 kubectl krew install gs
 ```
 
-Now you have the plugin installed.
-
-Let's make sure it is easy to invoke via the `kgs` alias. That's what we use in our documentation, too, to make things snappy.
+We highly recommend to set up the `kgs` shorthand as well:
 
 ```nohighlight
 alias kgs="kubectl gs"
@@ -23,15 +22,21 @@ alias kgs="kubectl gs"
 
 (Best add this to your shell profile or config file.)
 
-Lastly, let's check that the plugin is working as it's supposed to.
+Lastly, let's check that the plug-in is working as it's supposed to.
 
 ```nohighlight
-kgs info
+kgs
 ```
 
-You should see some friendly information.
+You should see information regarding the commands available.
 
-## Not using Krew
+To upgrade to the latest version of the plug-in, use this command:
+
+```nohighlight
+krew upgrade gs
+```
+
+## Without Krew
 
 The platform-agnostic description:
 
@@ -39,28 +44,48 @@ The platform-agnostic description:
 2. Unpack the archive
 3. Copy the executable to a location included in your `$PATH`
 4. Create an alias `kgs` for `kubectl gs`
-5. Check it's working by executing `kgs info`
+5. Check if it's working by executing `kgs`
 
-### Linux 64Bit
+### Linux
 
-For version 0.5.0:
+```bash
+# Determine the latest version
+VERSION=$(curl -I -sS https://github.com/giantswarm/kubectl-gs/releases/latest|grep 'location:'|awk -F '/' '{print $NF}'|tr -d '\n'|tr -d '\r')
 
-```nohighlight
-wget https://github.com/giantswarm/kubectl-gs/releases/download/v0.5.0/kubectl-gs_0.5.0_linux_amd64.tar.gz
-tar xzf kubectl-gs_0.5.0_linux_amd64.tar.gz
-cp ./kubectl-gs /usr/local/bin/
+# Download
+wget https://github.com/giantswarm/kubectl-gs/releases/download/${VERSION}/kubectl-gs-${VERSION}-linux-amd64.tar.gz
+
+# Unpack
+tar xzf kubectl-gs-${VERSION}-linux-amd64.tar.gz
+
+# Copy to a dir in $PATH
+cp kubectl-gs-${VERSION}-linux-amd64/kubectl-gs /usr/local/bin/
+
+# Set up alias
 alias kgs="kubectl gs"
-kgs info
+
+# Check
+kgs
 ```
 
 ### Mac OS
 
-For version 0.5.0:
+```bash
+# Determine the latest version
+VERSION=$(curl -I -sS https://github.com/giantswarm/kubectl-gs/releases/latest|grep 'location:'|awk -F '/' '{print $NF}'|tr -d '\n'|tr -d '\r')
 
-```nohighlight
-wget https://github.com/giantswarm/kubectl-gs/releases/download/v0.5.0/kubectl-gs_0.5.0_darwin_amd64.tar.gz
-tar xzf kubectl-gs_0.5.0_darwin_amd64.tar.gz
-cp ./kubectl-gs /usr/local/bin/
+# Download
+wget https://github.com/giantswarm/kubectl-gs/releases/download/${VERSION}/kubectl-gs-${VERSION}-darwin-amd64.tar.gz
+
+# Unpack
+tar xzf kubectl-gs-${VERSION}-darwin-amd64.tar.gz
+
+# Copy to a dir in $PATH
+cp kubectl-gs-${VERSION}-darwin-amd64/kubectl-gs /usr/local/bin/
+
+# Set up alias
 alias kgs="kubectl gs"
-kgs info
+
+# Check
+kgs
 ```
