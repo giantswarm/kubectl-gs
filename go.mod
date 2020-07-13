@@ -6,7 +6,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions v0.4.0
+	github.com/giantswarm/apiextensions v0.4.13
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/go-openapi/strfmt v0.19.5 // indirect
