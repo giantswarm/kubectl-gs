@@ -15,14 +15,10 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/errorprinter"
 )
 
-var (
-	DebugMode = false
-)
-
 func main() {
 	err := mainE(context.Background())
 	if err != nil {
-		if DebugMode {
+		if isDebugMode() {
 			panic(microerror.JSON(err))
 		} else {
 			ep := errorprinter.New()
@@ -55,8 +51,6 @@ func mainE(ctx context.Context) error {
 			Logger:     logger,
 			FileSystem: fs,
 
-			DebugModePtr: &DebugMode,
-
 			K8sConfigAccess: k8sConfigAccess,
 		}
 
@@ -72,4 +66,14 @@ func mainE(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func isDebugMode() bool {
+	for _, arg := range os.Args {
+		if arg == "--debug" {
+			return true
+		}
+	}
+
+	return false
 }

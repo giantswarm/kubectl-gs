@@ -9,11 +9,12 @@ const (
 )
 
 type flag struct {
-	debugMode *bool
+	debugMode bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.PersistentFlags().BoolVar(f.debugMode, flagDebugMode, false, "Toggle debug mode, for seeing full error output.")
+	// This value is ignored. The real value is handled inside 'main.go'.
+	cmd.PersistentFlags().BoolVar(&f.debugMode, flagDebugMode, false, "Toggle debug mode, for seeing full error output.")
 }
 
 func (f *flag) Validate() error {

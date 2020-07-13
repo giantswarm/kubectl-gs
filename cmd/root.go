@@ -36,7 +36,6 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	DebugModePtr    *bool
 	K8sConfigAccess clientcmd.ConfigAccess
 
 	Stderr io.Writer
@@ -94,9 +93,7 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
-	f := &flag{
-		debugMode: config.DebugModePtr,
-	}
+	f := &flag{}
 
 	r := &runner{
 		flag:   f,
