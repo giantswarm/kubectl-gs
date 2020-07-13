@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/giantswarm/microerror"
 )
 
 const (
@@ -17,18 +19,18 @@ var (
 	certRegexp = regexp.MustCompile(fmt.Sprintf(`%s (.*) %s`, certPrefix, certSuffix))
 )
 
-func parseCertificate(cert string) string {
+func parseCertificate(cert string) (string, error) {
 	var certWithoutPrefixAndSuffix string
 	{
 		// Remove yaml multi-line prefix.
 		if len(cert) < (yamlMultiLinePrefix) {
-			return ""
+			return "", microerror.Mask(cannotParseCertificateError)
 		}
 		cert = cert[yamlMultiLinePrefix:]
 
 		submatch := certRegexp.FindAllStringSubmatch(cert, -1)
 		if len(submatch) == 0 {
-			return ""
+			return "", microerror.Mask(cannotParseCertificateError)
 		}
 		certWithoutPrefixAndSuffix = submatch[0][1]
 	}
@@ -39,5 +41,5 @@ func parseCertificate(cert string) string {
 	// Add back suffix and prefix.
 	cert = fmt.Sprintf("%s\n%s\n%s", certPrefix, cert, certSuffix)
 
-	return cert
+	return cert, nil
 }
