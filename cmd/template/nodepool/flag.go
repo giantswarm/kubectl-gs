@@ -15,7 +15,6 @@ const (
 	flagAWSInstanceType                     = "aws-instance-type"
 	flagClusterID                           = "cluster-id"
 	flagNodepoolName                        = "nodepool-name"
-	flagNoCache                             = "no-cache"
 	flagNodesMax                            = "nodex-max"
 	flagNodesMin                            = "nodex-min"
 	flagNumAvailabilityZones                = "num-availability-zones"
@@ -32,7 +31,6 @@ type flag struct {
 	AWSInstanceType                     string
 	ClusterID                           string
 	NodepoolName                        string
-	NoCache                             bool
 	NodesMax                            int
 	NodesMin                            int
 	NumAvailabilityZones                int
@@ -49,7 +47,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWSInstanceType, flagAWSInstanceType, "m5.xlarge", "EC2 instance type to use for workers, e. g. 'm5.2xlarge'.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Tenant cluster ID.")
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
-	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 10, "Maximum number of worker nodes for the node pool.")
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 3, "Minimum number of worker nodes for the node pool.")
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1.")
@@ -132,9 +129,7 @@ func (f *flag) Validate() error {
 
 	var release *gsrelease.GSRelease
 	{
-		c := gsrelease.Config{
-			NoCache: f.NoCache,
-		}
+		c := gsrelease.Config{}
 
 		release, err = gsrelease.New(c)
 		if err != nil {

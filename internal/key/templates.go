@@ -1,7 +1,7 @@
 package key
 
 const AppCRTemplate = `
-{{ .UserConfigConfigMapCR -}}
+{{- .UserConfigConfigMapCR -}}
 ---
 {{ .UserConfigSecretCR -}}
 ---
@@ -9,7 +9,7 @@ const AppCRTemplate = `
 `
 
 const AppCatalogCRTemplate = `
-{{ .ConfigmapCR -}}
+{{- .ConfigmapCR -}}
 ---
 {{ .SecretCR -}}
 ---
@@ -17,7 +17,7 @@ const AppCatalogCRTemplate = `
 `
 
 const ClusterCRsTemplate = `
-{{ .ClusterCR -}}
+{{- .ClusterCR -}}
 ---
 {{ .AWSClusterCR -}}
 ---
@@ -27,7 +27,7 @@ const ClusterCRsTemplate = `
 `
 
 const MachineDeploymentCRsTemplate = `
-{{ .MachineDeploymentCR -}}
+{{- .MachineDeploymentCR -}}
 ---
 {{ .AWSMachineDeploymentCR -}}
 `

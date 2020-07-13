@@ -21,7 +21,6 @@ const (
 	flagDomain       = "domain"
 	flagMasterAZ     = "master-az"
 	flagName         = "name"
-	flagNoCache      = "no-cache"
 	flagPodsCIDR     = "pods-cidr"
 	flagExternalSNAT = "external-snat"
 	flagOutput       = "output"
@@ -37,7 +36,6 @@ type flag struct {
 	Domain       string
 	MasterAZ     []string
 	Name         string
-	NoCache      bool
 	PodsCIDR     string
 	ExternalSNAT bool
 	Output       string
@@ -54,7 +52,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
-	cmd.Flags().BoolVar(&f.NoCache, flagNoCache, false, "Force updating release folder.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
@@ -127,9 +124,7 @@ func (f *flag) Validate() error {
 
 	var release *gsrelease.GSRelease
 	{
-		c := gsrelease.Config{
-			NoCache: f.NoCache,
-		}
+		c := gsrelease.Config{}
 
 		release, err = gsrelease.New(c)
 		if err != nil {

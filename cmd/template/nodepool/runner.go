@@ -55,9 +55,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var release *gsrelease.GSRelease
 	{
-		c := gsrelease.Config{
-			NoCache: r.flag.NoCache,
-		}
+		c := gsrelease.Config{}
 
 		release, err = gsrelease.New(c)
 		if err != nil {
