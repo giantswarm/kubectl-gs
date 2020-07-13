@@ -44,7 +44,7 @@ The platform-agnostic description:
 2. Unpack the archive
 3. Copy the executable to a location included in your `$PATH`
 4. Create an alias `kgs` for `kubectl gs`
-5. Check it's working by executing `kgs`
+5. Check if it's working by executing `kgs`
 
 ### Linux
 
