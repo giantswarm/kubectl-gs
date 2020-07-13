@@ -15,12 +15,20 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/errorprinter"
 )
 
+var (
+	DebugMode = false
+)
+
 func main() {
 	err := mainE(context.Background())
 	if err != nil {
-		ep := errorprinter.New()
-		fmt.Print(ep.Format(err))
-		os.Exit(1)
+		if DebugMode {
+			panic(err)
+		} else {
+			ep := errorprinter.New()
+			fmt.Print(ep.Format(err))
+			os.Exit(1)
+		}
 	}
 }
 
@@ -46,6 +54,8 @@ func mainE(ctx context.Context) error {
 		c := cmd.Config{
 			Logger:     logger,
 			FileSystem: fs,
+
+			DebugModePtr: &DebugMode,
 
 			K8sConfigAccess: k8sConfigAccess,
 		}
