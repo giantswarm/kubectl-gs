@@ -16,8 +16,8 @@ const (
 )
 
 const (
-	releasesAWSBaseURLFmt   = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/"
-	releasesAWSConfigURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/kustomization.yaml"
+	releasesAWSIndexURLFmt   = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/kustomization.yaml"
+	releasesAWSReleaseURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/%s/release.yaml"
 )
 
 type Config struct {
@@ -91,7 +91,7 @@ func (g *GSRelease) Validate(version string) bool {
 func readReleases(branch string) ([]Release, error) {
 	var b []byte
 	{
-		resp, err := http.Get(fmt.Sprintf(releasesAWSConfigURLFmt, branch))
+		resp, err := http.Get(fmt.Sprintf(releasesAWSIndexURLFmt, branch))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -116,7 +116,7 @@ func readReleases(branch string) ([]Release, error) {
 	var releases []Release
 	{
 		for _, v := range r.Resources {
-			resp, err := http.Get(fmt.Sprintf(releasesAWSBaseURLFmt, branch) + v + "/release.yaml")
+			resp, err := http.Get(fmt.Sprintf(releasesAWSReleaseURLFmt, branch, v))
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
