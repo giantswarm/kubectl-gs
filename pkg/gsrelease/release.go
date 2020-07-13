@@ -2,12 +2,8 @@ package gsrelease
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"os/user"
-	"path"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -16,80 +12,40 @@ import (
 )
 
 const (
-	configRelativePath         = ".kube/gs"
-	releasesConfigRelativePath = ".kube/gs/aws.yaml"
-	releasesAWSBaseURL         = "https://raw.githubusercontent.com/giantswarm/releases/master/aws/"
-	releasesConfigURL          = "https://raw.githubusercontent.com/giantswarm/releases/master/aws/kustomization.yaml"
+	defaultBranch = "master"
+)
+
+const (
+	releasesAWSIndexURLFmt   = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/kustomization.yaml"
+	releasesAWSReleaseURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/%s/release.yaml"
 )
 
 type Config struct {
-	NoCache bool
-}
-
-type ReleaseListResource struct {
-	ReleaseList []string `yaml:"resources"`
+	Branch string
 }
 
 type GSRelease struct {
 	releases []Release
 }
 
-type Release struct {
-	Kind     string          `json:"kind"`
-	Metadata ReleaseMetadata `json:"metadata"`
-	Spec     ReleaseSpec     `json:"spec"`
-	Version  string          `json:"apiVersion"`
-}
+func New(config Config) (*GSRelease, error) {
+	if config.Branch == "" {
+		config.Branch = defaultBranch
+	}
 
-type ReleaseMetadata struct {
-	Name        string            `json:"name"`
-	Annotations map[string]string `json:"annotations"`
-}
-
-type ReleaseSpec struct {
-	Date       string       `json:"date"`
-	Apps       []Apps       `json:"apps"`
-	Components []Components `json:"components"`
-	State      string       `json:"state"`
-	Version    string       `json:"version"`
-}
-
-type Components struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
-}
-
-type Apps struct {
-	ComponentVersion string `json:"componentVersion"`
-	Name             string `json:"name"`
-	Version          string `json:"version"`
-}
-
-func New(c Config) (*GSRelease, error) {
-
-	err := ensureConfigDirExists()
+	releases, err := readReleases(config.Branch)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	err = ensureReleasesConfigExists(c.NoCache)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	releases, err := readReleases()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	newReleases := &GSRelease{
+	g := &GSRelease{
 		releases: releases,
 	}
 
-	return newReleases, nil
+	return g, nil
 }
 
-func (r *GSRelease) ReleaseComponents(version string) map[string]string {
+func (g *GSRelease) ReleaseComponents(version string) map[string]string {
 	var releaseVersion string
 	{
 		if strings.HasPrefix(version, "v") {
@@ -97,12 +53,11 @@ func (r *GSRelease) ReleaseComponents(version string) map[string]string {
 		} else {
 			releaseVersion = fmt.Sprintf("v%s", version)
 		}
-
 	}
 
 	releaseComponents := make(map[string]string)
 
-	for _, release := range r.releases {
+	for _, release := range g.releases {
 		if release.Metadata.Name == releaseVersion {
 			for _, component := range release.Spec.Components {
 				releaseComponents[component.Name] = component.Version
@@ -113,7 +68,7 @@ func (r *GSRelease) ReleaseComponents(version string) map[string]string {
 	return releaseComponents
 }
 
-func (r *GSRelease) Validate(version string) bool {
+func (g *GSRelease) Validate(version string) bool {
 	var releaseVersion string
 	{
 		if strings.HasPrefix(version, "v") {
@@ -124,7 +79,7 @@ func (r *GSRelease) Validate(version string) bool {
 
 	}
 
-	for _, release := range r.releases {
+	for _, release := range g.releases {
 		if release.Metadata.Name == releaseVersion {
 			return true
 		}
@@ -133,80 +88,35 @@ func (r *GSRelease) Validate(version string) bool {
 	return false
 }
 
-func ensureConfigDirExists() error {
-	usr, err := user.Current()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	configPath := path.Join(usr.HomeDir, configRelativePath)
-
-	_, err = os.Stat(configPath)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(configPath, 0700)
+func readReleases(branch string) ([]Release, error) {
+	var b []byte
+	{
+		resp, err := http.Get(fmt.Sprintf(releasesAWSIndexURLFmt, branch))
 		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func ensureReleasesConfigExists(noCache bool) error {
-	usr, err := user.Current()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	releasesConfigPath := path.Join(usr.HomeDir, releasesConfigRelativePath)
-
-	_, err = os.Stat(releasesConfigPath)
-	if os.IsNotExist(err) || noCache {
-		resp, err := http.Get(releasesConfigURL)
-		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 		defer resp.Body.Close()
 
-		out, err := os.Create(releasesConfigPath)
+		b, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
-		defer out.Close()
+	}
 
-		_, err = io.Copy(out, resp.Body)
+	r := struct {
+		Resources []string `yaml:"resources"`
+	}{}
+	{
+		err := yaml.Unmarshal(b, &r)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func readReleases() ([]Release, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	releasesConfigPath := path.Join(usr.HomeDir, releasesConfigRelativePath)
-
-	data, err := ioutil.ReadFile(releasesConfigPath)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	rl := ReleaseListResource{}
-	err = yaml.Unmarshal(data, &rl)
-	if err != nil {
-		return nil, microerror.Mask(err)
 	}
 
 	var releases []Release
 	{
-		for _, rv := range rl.ReleaseList {
-			resp, err := http.Get(releasesAWSBaseURL + rv + "/release.yaml")
+		for _, v := range r.Resources {
+			resp, err := http.Get(fmt.Sprintf(releasesAWSReleaseURLFmt, branch, v))
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
