@@ -18,9 +18,13 @@ import (
 func main() {
 	err := mainE(context.Background())
 	if err != nil {
-		ep := errorprinter.New()
-		fmt.Print(ep.Format(err))
-		os.Exit(1)
+		if isDebugMode() {
+			panic(microerror.JSON(err))
+		} else {
+			ep := errorprinter.New()
+			fmt.Print(ep.Format(err))
+			os.Exit(1)
+		}
 	}
 }
 
@@ -62,4 +66,14 @@ func mainE(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func isDebugMode() bool {
+	for _, arg := range os.Args {
+		if arg == "--debug" {
+			return true
+		}
+	}
+
+	return false
 }
