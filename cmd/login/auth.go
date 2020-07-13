@@ -260,7 +260,7 @@ func isLoggedWithGSContext(k8sConfigAccess clientcmd.ConfigAccess) (string, bool
 	}
 
 	if !isKubeContext(config.CurrentContext) {
-		return "", false
+		return config.CurrentContext, false
 	}
 
 	return config.CurrentContext, true
