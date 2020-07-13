@@ -23,7 +23,7 @@ func main() {
 	err := mainE(context.Background())
 	if err != nil {
 		if DebugMode {
-			panic(err)
+			panic(microerror.JSON(err))
 		} else {
 			ep := errorprinter.New()
 			fmt.Print(ep.Format(err))
