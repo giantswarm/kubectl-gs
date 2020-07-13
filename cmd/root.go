@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -20,7 +21,7 @@ const (
 	// only prints the first word. The splitting is done by
 	// space characters (' '), and we trick it by using a
 	// NBSP character (NBSP) between the 2 words.
-	name        = "kubectl" + string(0xA0) + "gs"
+	name        = "kubectl\u00a0gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm control plane.
 
 Get more information at https://github.com/giantswarm/kubectl-gs
@@ -102,11 +103,18 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:          name,
-		Short:        description,
-		Long:         description,
-		RunE:         r.Run,
-		SilenceUsage: true,
+		Use:           name,
+		Short:         description,
+		Long:          description,
+		RunE:          r.Run,
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
+			}
+			return nil
+		},
 	}
 
 	f.Init(c)
