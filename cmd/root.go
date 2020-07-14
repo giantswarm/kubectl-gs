@@ -99,8 +99,11 @@ func New(config Config) (*cobra.Command, error) {
 		c := get.Config{
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
-			Stderr:     config.Stderr,
-			Stdout:     config.Stdout,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
 		}
 
 		getCmd, err = get.New(c)
