@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	name        = "list"
-	description = "List various types of resources."
+	name        = "get"
+	description = "Get various types of resources."
 )
 
 type Config struct {

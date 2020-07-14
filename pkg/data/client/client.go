@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/client-go/rest"
+	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 )
 
 type Config struct {
@@ -38,6 +39,7 @@ func New(config Config) (*Client, error) {
 	{
 		c := k8sclient.ClientsConfig{
 			SchemeBuilder: k8sclient.SchemeBuilder{
+				apiv1alpha2.AddToScheme,
 				applicationv1alpha1.AddToScheme,
 				backupv1alpha1.AddToScheme,
 				corev1alpha1.AddToScheme,

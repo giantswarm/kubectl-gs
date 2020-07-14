@@ -19,6 +19,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
@@ -33,6 +34,7 @@ func NewFakeK8sClient() k8sclient.Interface {
 	var k8sClient k8sclient.Interface
 	{
 		schemeBuilder := runtime.SchemeBuilder(k8sclient.SchemeBuilder{
+			apiv1alpha2.AddToScheme,
 			applicationv1alpha1.AddToScheme,
 			backupv1alpha1.AddToScheme,
 			corev1alpha1.AddToScheme,
