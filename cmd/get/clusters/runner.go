@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 )
 
@@ -19,8 +19,8 @@ type runner struct {
 	logger micrologger.Logger
 	fs     afero.Fs
 
-	client  *dataClient.Client
-	service cluster.Interface
+	provider string
+	service  cluster.Interface
 
 	stdout io.Writer
 	stderr io.Writer
@@ -45,18 +45,20 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
+	config := commonconfig.New(r.flag.config)
+
 	{
-		err = r.getClient()
+		r.provider, err = config.GetProvider()
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = r.getService()
+		err = r.getService(config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	res, err := r.service.V4ListKVM(ctx, &cluster.ListOptions{})
+	res, err := r.service.V5ListAWS(ctx, &cluster.ListOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -65,39 +67,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) getClient() error {
-	if r.client != nil {
-		return nil
-	}
-
-	restConfig, err := r.flag.config.ToRESTConfig()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	config := dataClient.Config{
-		Logger:        r.logger,
-		K8sRestConfig: restConfig,
-	}
-
-	r.client, err = dataClient.New(config)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (r *runner) getService() error {
+func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	if r.service != nil {
 		return nil
 	}
 
-	config := cluster.Config{
-		Client: r.client,
+	client, err := config.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
 	}
-	var err error
-	r.service, err = cluster.New(config)
+
+	serviceConfig := cluster.Config{
+		Client: client,
+	}
+	r.service, err = cluster.New(serviceConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
