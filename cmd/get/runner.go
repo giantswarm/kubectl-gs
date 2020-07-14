@@ -17,14 +17,12 @@ type runner struct {
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-
 	err := r.flag.Validate()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.run(ctx, cmd, args)
+	err = r.run(cmd.Context(), cmd, args)
 	if err != nil {
 		return microerror.Mask(err)
 	}

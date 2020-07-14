@@ -60,7 +60,7 @@ func mainE(ctx context.Context) error {
 		}
 	}
 
-	err = rootCommand.Execute()
+	err = rootCommand.ExecuteContext(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
