@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
 type runner struct {
@@ -58,13 +59,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	installationIdentifier := strings.ToLower(args[0])
 
 	switch {
-	case isKubeContext(installationIdentifier):
+	case kubeconfig.IsKubeContext(installationIdentifier):
 		err = r.loginWithKubeContextName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-	case isCodeName(installationIdentifier):
+	case kubeconfig.IsCodeName(installationIdentifier):
 		err = r.loginWithCodeName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
@@ -83,7 +84,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 func (r *runner) tryToReuseExistingContext() error {
 	currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(r.k8sConfigAccess)
 	if isLoggedInWithKubeContext {
-		codeName := getCodeNameFromKubeContext(currentContext)
+		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
 		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the control plane of installation '%s'.\n", codeName))
 
 		return nil
@@ -101,7 +102,7 @@ func (r *runner) tryToReuseExistingContext() error {
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	var contextAlreadySelected bool
 
-	codeName := getCodeNameFromKubeContext(contextName)
+	codeName := kubeconfig.GetCodeNameFromKubeContext(contextName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
@@ -109,7 +110,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n", contextPrefix, codeName))
+	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
@@ -127,7 +128,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	var contextAlreadySelected bool
 
-	contextName := generateKubeContextName(codeName)
+	contextName := kubeconfig.GenerateKubeContextName(codeName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
@@ -173,7 +174,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 
 	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
 
-	contextName := generateKubeContextName(i.Codename)
+	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
 	fmt.Fprintf(r.stdout, " ")
 	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
