@@ -2,16 +2,17 @@ package clusters
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 type runner struct {
@@ -46,7 +47,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	config := commonconfig.New(r.flag.config)
-
 	{
 		r.provider, err = config.GetProvider()
 		if err != nil {
@@ -58,11 +58,25 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	res, err := r.service.V5ListAWS(ctx, &cluster.ListOptions{})
+	var resource runtime.Object
+	{
+		resource, err = r.service.ListForProvider(ctx, r.provider)
+		if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
+			pErr := r.printNoResourcesOutput()
+			if pErr != nil {
+				return microerror.Mask(err)
+			}
+
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err = r.printOutput(resource)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Println(len(res.Items))
 
 	return nil
 }

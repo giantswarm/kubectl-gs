@@ -3,17 +3,23 @@ package cluster
 import (
 	"context"
 
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
+type CommonClusterList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []runtime.Object `json:"items"`
+}
+
+func (in *CommonClusterList) DeepCopyObject() runtime.Object {
+	return in
+}
+
 type ListOptions struct {
-	Provider string
 }
 
 type Interface interface {
-	V4ListAzure(context.Context, *ListOptions) (*providerv1alpha1.AzureConfigList, error)
-	V4ListAWS(context.Context, *ListOptions) (*providerv1alpha1.AWSConfigList, error)
-	V5ListAWS(context.Context, *ListOptions) (*infrastructurev1alpha2.AWSClusterList, error)
-	V4ListKVM(context.Context, *ListOptions) (*providerv1alpha1.KVMConfigList, error)
+	ListForProvider(context.Context, string) (*CommonClusterList, error)
 }

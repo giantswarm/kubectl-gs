@@ -4,7 +4,10 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/runtime"
 	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 func (s *Service) getClusterIDs(ctx context.Context, options *ListOptions) (map[string]bool, error) {
@@ -24,4 +27,42 @@ func (s *Service) getClusterIDs(ctx context.Context, options *ListOptions) (map[
 	}
 
 	return clusterIDs, nil
+}
+
+func (s *Service) ListForProvider(ctx context.Context, provider string) (*CommonClusterList, error) {
+	var err error
+
+	var clusters []runtime.Object
+	{
+		listOptions := &ListOptions{}
+
+		switch provider {
+		case key.ProviderAWS:
+			clusters, err = s.GetAllAWSLists(ctx, listOptions)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderAzure:
+			clusters, err = s.GetAllAzureLists(ctx, listOptions)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderKVM:
+			clusters, err = s.GetAllKVMLists(ctx, listOptions)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+	}
+
+	clusterCR := &CommonClusterList{}
+	{
+		clusterCR.APIVersion = "v1"
+		clusterCR.Kind = "List"
+		clusterCR.Items = clusters
+	}
+
+	return clusterCR, nil
 }
