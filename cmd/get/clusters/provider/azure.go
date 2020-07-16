@@ -48,7 +48,7 @@ func getAzureClusterConfigRow(cr *corev1alpha1.AzureClusterConfig) metav1.TableR
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.Spec.Guest.ID,
-			cr.CreationTimestamp,
+			cr.CreationTimestamp.UTC(),
 			cr.Spec.Guest.ReleaseVersion,
 			cr.Spec.Guest.Owner,
 			cr.Spec.Guest.Name,

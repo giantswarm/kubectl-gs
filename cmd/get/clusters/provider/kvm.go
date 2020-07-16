@@ -48,7 +48,7 @@ func getKVMClusterConfigRow(cr *corev1alpha1.KVMClusterConfig) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.Spec.Guest.ID,
-			cr.CreationTimestamp,
+			cr.CreationTimestamp.UTC(),
 			cr.Spec.Guest.ReleaseVersion,
 			cr.Spec.Guest.Owner,
 			cr.Spec.Guest.Name,

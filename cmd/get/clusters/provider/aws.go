@@ -53,7 +53,7 @@ func getAWSClusterRow(cr *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.GetName(),
-			cr.CreationTimestamp,
+			cr.CreationTimestamp.UTC(),
 			cr.Labels[label.ReleaseVersion],
 			cr.Labels[label.Organization],
 			cr.Spec.Cluster.Description,
@@ -65,7 +65,7 @@ func getAWSClusterConfigRow(cr *corev1alpha1.AWSClusterConfig) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.Spec.Guest.ID,
-			cr.CreationTimestamp,
+			cr.CreationTimestamp.UTC(),
 			cr.Spec.Guest.ReleaseVersion,
 			cr.Spec.Guest.Owner,
 			cr.Spec.Guest.Name,
