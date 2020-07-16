@@ -2,7 +2,9 @@ package clusters
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -63,8 +65,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		options := &cluster.GetOptions{
 			Provider: r.provider,
 		}
+		if len(args) > 0 {
+			options.ID = strings.ToLower(args[0])
+		}
+
 		resource, err = r.service.Get(ctx, options)
-		if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
+		if cluster.IsNotFound(err) {
+			return microerror.Maskf(notFoundError, fmt.Sprintf("No cluster with ID '%s' found.\n", name))
+		} else if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			pErr := r.printNoResourcesOutput()
 			if pErr != nil {
 				return microerror.Mask(err)
