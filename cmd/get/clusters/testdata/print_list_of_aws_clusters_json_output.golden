@@ -7,6 +7,8 @@
             "kind": "AWSClusterConfig",
             "apiVersion": "core.giantswarm.io/v1alpha1",
             "metadata": {
+                "name": "1sad2-aws-cluster-config",
+                "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z"
             },
             "spec": {
@@ -30,6 +32,8 @@
             "kind": "AWSClusterConfig",
             "apiVersion": "core.giantswarm.io/v1alpha1",
             "metadata": {
+                "name": "2a03f-aws-cluster-config",
+                "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z"
             },
             "spec": {
@@ -53,6 +57,8 @@
             "kind": "AWSClusterConfig",
             "apiVersion": "core.giantswarm.io/v1alpha1",
             "metadata": {
+                "name": "asd29-aws-cluster-config",
+                "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z"
             },
             "spec": {
@@ -77,6 +83,7 @@
             "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
             "metadata": {
                 "name": "f930q",
+                "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "giantswarm.io/organization": "some-other",
@@ -119,6 +126,7 @@
             "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
             "metadata": {
                 "name": "9f012",
+                "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "giantswarm.io/organization": "test",
@@ -161,6 +169,7 @@
             "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
             "metadata": {
                 "name": "2f0as",
+                "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "giantswarm.io/organization": "random",

@@ -54,6 +54,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
 		err = r.getService(config)
 		if err != nil {
 			return microerror.Mask(err)

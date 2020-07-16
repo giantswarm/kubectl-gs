@@ -2,6 +2,8 @@
     "kind": "AzureClusterConfig",
     "apiVersion": "core.giantswarm.io/v1alpha1",
     "metadata": {
+        "name": "asd29-azure-cluster-config",
+        "namespace": "default",
         "creationTimestamp": "2021-01-02T15:04:32Z"
     },
     "spec": {

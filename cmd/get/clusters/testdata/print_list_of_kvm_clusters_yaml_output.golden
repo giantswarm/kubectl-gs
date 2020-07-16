@@ -4,6 +4,8 @@ items:
   kind: KVMClusterConfig
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
+    name: 1sad2-kvm-cluster-config
+    namespace: default
   spec:
     guest:
       dnsZone: ""
@@ -17,6 +19,8 @@ items:
   kind: KVMClusterConfig
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
+    name: 2a03f-kvm-cluster-config
+    namespace: default
   spec:
     guest:
       dnsZone: ""
@@ -30,6 +34,8 @@ items:
   kind: KVMClusterConfig
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
+    name: asd29-kvm-cluster-config
+    namespace: default
   spec:
     guest:
       dnsZone: ""

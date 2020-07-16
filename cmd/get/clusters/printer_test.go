@@ -3,6 +3,7 @@ package clusters
 import (
 	"bytes"
 	goflag "flag"
+	"fmt"
 	"testing"
 	"time"
 
@@ -272,6 +273,7 @@ func newAWSCluster(id, created, release, org, description string) *infrastructur
 	c := &infrastructurev1alpha2.AWSCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              id,
+			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
 				label.ReleaseVersion: release,
@@ -298,6 +300,8 @@ func newAWSClusterConfig(id, created, release, org, description string) *corev1a
 	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
 	c := &corev1alpha1.AWSClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
+			Name:              fmt.Sprintf("%s-aws-cluster-config", id),
+			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 		},
 		Spec: corev1alpha1.AWSClusterConfigSpec{
@@ -325,6 +329,8 @@ func newAzureClusterConfig(id, created, release, org, description string) *corev
 	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
 	c := &corev1alpha1.AzureClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
+			Name:              fmt.Sprintf("%s-azure-cluster-config", id),
+			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 		},
 		Spec: corev1alpha1.AzureClusterConfigSpec{
@@ -352,6 +358,8 @@ func newKVMClusterConfig(id, created, release, org, description string) *corev1a
 	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
 	c := &corev1alpha1.KVMClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
+			Name:              fmt.Sprintf("%s-kvm-cluster-config", id),
+			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 		},
 		Spec: corev1alpha1.KVMClusterConfigSpec{

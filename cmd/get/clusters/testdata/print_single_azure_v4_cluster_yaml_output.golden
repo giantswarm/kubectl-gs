@@ -2,6 +2,8 @@ apiVersion: core.giantswarm.io/v1alpha1
 kind: AzureClusterConfig
 metadata:
   creationTimestamp: "2021-01-02T15:04:32Z"
+  name: asd29-azure-cluster-config
+  namespace: default
 spec:
   guest:
     credentialSecret:

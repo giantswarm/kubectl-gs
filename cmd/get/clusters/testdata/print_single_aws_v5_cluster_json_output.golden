@@ -3,6 +3,7 @@
     "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
     "metadata": {
         "name": "f930q",
+        "namespace": "default",
         "creationTimestamp": "2021-01-02T15:04:32Z",
         "labels": {
             "giantswarm.io/organization": "some-other",
