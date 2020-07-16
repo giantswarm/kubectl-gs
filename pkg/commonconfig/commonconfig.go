@@ -12,10 +12,10 @@ import (
 )
 
 type CommonConfig struct {
-	configFlags *genericclioptions.ConfigFlags
+	configFlags genericclioptions.RESTClientGetter
 }
 
-func New(cf *genericclioptions.ConfigFlags) *CommonConfig {
+func New(cf genericclioptions.RESTClientGetter) *CommonConfig {
 	cc := &CommonConfig{
 		configFlags: cf,
 	}
