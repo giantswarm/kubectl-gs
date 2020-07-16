@@ -50,6 +50,14 @@ func (r *runner) printNoResourcesOutput() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	_, err = io.WriteString(r.stdout, "To create a cluster, please check\n\n")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	_, err = io.WriteString(r.stdout, "  kgs create cluster --help\n")
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	return nil
 }
