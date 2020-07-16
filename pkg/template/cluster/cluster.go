@@ -32,8 +32,15 @@ type Config struct {
 	Labels            map[string]string
 }
 
-// NewClusterCRs returns the custom resources to represent the given cluster.
-func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2.AWSCluster, *infrastructurev1alpha2.G8sControlPlane, *infrastructurev1alpha2.AWSControlPlane, error) {
+type CRs struct {
+	Cluster         *apiv1alpha2.Cluster
+	AWSCluster      *infrastructurev1alpha2.AWSCluster
+	G8sControlPlane *infrastructurev1alpha2.G8sControlPlane
+	AWSControlPlane *infrastructurev1alpha2.AWSControlPlane
+}
+
+// NewCRs returns the custom resources to represent the given cluster.
+func NewCRs(config Config) (CRs, error) {
 	// Default some essentials in case certain information are not given. E.g.
 	// the Tenant Cluster ID may be provided by the user.
 	{
@@ -48,16 +55,23 @@ func NewClusterCRs(config Config) (*apiv1alpha2.Cluster, *infrastructurev1alpha2
 	awsClusterCR := newAWSClusterCR(config)
 	clusterCR, err := newClusterCR(awsClusterCR, config)
 	if err != nil {
-		return nil, nil, nil, nil, microerror.Mask(err)
+		return CRs{}, microerror.Mask(err)
 	}
 
 	awsControlPlaneCR := newAWSControlPlaneCR(config)
 	g8sControlPlaneCR, err := newG8sControlPlaneCR(awsControlPlaneCR, config)
 	if err != nil {
-		return nil, nil, nil, nil, microerror.Mask(err)
+		return CRs{}, microerror.Mask(err)
 	}
 
-	return clusterCR, awsClusterCR, g8sControlPlaneCR, awsControlPlaneCR, nil
+	crs := CRs{
+		Cluster:         clusterCR,
+		AWSCluster:      awsClusterCR,
+		G8sControlPlane: g8sControlPlaneCR,
+		AWSControlPlane: awsControlPlaneCR,
+	}
+
+	return crs, nil
 }
 
 func newAWSClusterCR(c Config) *infrastructurev1alpha2.AWSCluster {

@@ -78,39 +78,37 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Labels:            userLabels,
 	}
 
-	clusterCR, awsClusterCR, g8sControlPlaneCR, awsControlPlaneCR, err := cluster.NewClusterCRs(config)
+	crs, err := cluster.NewCRs(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	clusterCRYaml, err := yaml.Marshal(clusterCR)
+	clusterCRYaml, err := yaml.Marshal(crs.Cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	awsClusterCRYaml, err := yaml.Marshal(awsClusterCR)
+	awsClusterCRYaml, err := yaml.Marshal(crs.AWSCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	g8sControlPlaneCRYaml, err := yaml.Marshal(g8sControlPlaneCR)
+	g8sControlPlaneCRYaml, err := yaml.Marshal(crs.G8sControlPlane)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	awsControlPlaneCRYaml, err := yaml.Marshal(awsControlPlaneCR)
+	awsControlPlaneCRYaml, err := yaml.Marshal(crs.AWSControlPlane)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	type ClusterCRsOutput struct {
+	data := struct {
 		AWSClusterCR      string
 		AWSControlPlaneCR string
 		ClusterCR         string
 		G8sControlPlaneCR string
-	}
-
-	clusterCRsOutput := ClusterCRsOutput{
+	}{
 		AWSClusterCR:      string(awsClusterCRYaml),
 		ClusterCR:         string(clusterCRYaml),
 		G8sControlPlaneCR: string(g8sControlPlaneCRYaml),
@@ -119,8 +117,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	t := template.Must(template.New("clusterCR").Parse(key.ClusterCRsTemplate))
 
-	var output *os.File
 	{
+		var output *os.File
+
 		if r.flag.Output == "" {
 			output = os.Stdout
 		} else {
@@ -133,7 +132,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			output = f
 		}
 
-		err = t.Execute(output, clusterCRsOutput)
+		err = t.Execute(output, data)
 		if err != nil {
 			return microerror.Mask(err)
 		}
