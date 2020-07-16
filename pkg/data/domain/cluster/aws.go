@@ -35,8 +35,11 @@ func (s *Service) v5ListAWS(ctx context.Context) (*infrastructurev1alpha2.AWSClu
 	}
 
 	awsClusters := &infrastructurev1alpha2.AWSClusterList{}
+	options := &runtimeClient.ListOptions{
+		Namespace: "default",
+	}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, awsClusters)
+		err = s.client.K8sClient.CtrlClient().List(ctx, awsClusters, options)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(awsClusters.Items) == 0 {
@@ -61,22 +64,32 @@ func (s *Service) getAllAWS(ctx context.Context) ([]runtime.Object, error) {
 		clusters []runtime.Object
 	)
 
-	var v4ClusterList *corev1alpha1.AWSClusterConfigList
-	v4ClusterList, err = s.v4ListAWS(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	for _, c := range v4ClusterList.Items {
-		clusters = append(clusters, &c)
-	}
-
 	var v5ClusterList *infrastructurev1alpha2.AWSClusterList
 	v5ClusterList, err = s.v5ListAWS(ctx)
-	if err != nil {
+	if err == nil {
+		for _, c := range v5ClusterList.Items {
+			clusters = append(clusters, &c)
+		}
+	} else if IsNoResources(err) {
+		// Fall through.
+	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	for _, c := range v5ClusterList.Items {
-		clusters = append(clusters, &c)
+
+	var v4ClusterList *corev1alpha1.AWSClusterConfigList
+	v4ClusterList, err = s.v4ListAWS(ctx)
+	if err == nil {
+		for _, c := range v4ClusterList.Items {
+			clusters = append(clusters, &c)
+		}
+	} else if IsNoResources(err) {
+		// Fall through.
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	if len(clusters) == 0 {
+		return nil, microerror.Mask(noResourcesError)
 	}
 
 	return clusters, err

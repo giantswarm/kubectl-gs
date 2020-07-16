@@ -14,7 +14,10 @@ import (
 
 func (s *Service) v4ListKVM(ctx context.Context) (*corev1alpha1.KVMClusterConfigList, error) {
 	clusters := &corev1alpha1.KVMClusterConfigList{}
-	err := s.client.K8sClient.CtrlClient().List(ctx, clusters)
+	options := &runtimeClient.ListOptions{
+		Namespace: "default",
+	}
+	err := s.client.K8sClient.CtrlClient().List(ctx, clusters, options)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	} else if len(clusters.Items) == 0 {
