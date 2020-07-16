@@ -69,19 +69,19 @@ func (s *Service) getAll(ctx context.Context, provider string) (runtime.Object, 
 	{
 		switch provider {
 		case key.ProviderAWS:
-			clusters, err = s.getAllListsAWS(ctx)
+			clusters, err = s.getAllAWS(ctx)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderAzure:
-			clusters, err = s.getAllListsAzure(ctx)
+			clusters, err = s.getAllAzure(ctx)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderKVM:
-			clusters, err = s.getAllListsKVM(ctx)
+			clusters, err = s.getAllKVM(ctx)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

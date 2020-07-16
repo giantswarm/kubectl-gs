@@ -33,11 +33,6 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 	table.Rows = make([]metav1.TableRow, 0, len(clusterLists))
 	for _, clusterList := range clusterLists {
 		switch c := clusterList.(type) {
-		case *corev1alpha1.AzureClusterConfigList:
-			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, getAzureClusterConfigRow(&currentCluster))
-			}
-
 		case *corev1alpha1.AzureClusterConfig:
 			table.Rows = append(table.Rows, getAzureClusterConfigRow(c))
 

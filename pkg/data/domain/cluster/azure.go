@@ -46,7 +46,7 @@ func (s *Service) v4GetByIdAzure(ctx context.Context, id string) (*corev1alpha1.
 	return cluster, nil
 }
 
-func (s *Service) getAllListsAzure(ctx context.Context) ([]runtime.Object, error) {
+func (s *Service) getAllAzure(ctx context.Context) ([]runtime.Object, error) {
 	var (
 		err      error
 		clusters []runtime.Object
@@ -57,7 +57,9 @@ func (s *Service) getAllListsAzure(ctx context.Context) ([]runtime.Object, error
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	clusters = append(clusters, v4ClusterList)
+	for _, c := range v4ClusterList.Items {
+		clusters = append(clusters, &c)
+	}
 
 	return clusters, err
 }

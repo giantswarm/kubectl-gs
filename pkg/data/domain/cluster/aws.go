@@ -55,7 +55,7 @@ func (s *Service) v5ListAWS(ctx context.Context) (*infrastructurev1alpha2.AWSClu
 	return awsClusters, nil
 }
 
-func (s *Service) getAllListsAWS(ctx context.Context) ([]runtime.Object, error) {
+func (s *Service) getAllAWS(ctx context.Context) ([]runtime.Object, error) {
 	var (
 		err      error
 		clusters []runtime.Object
@@ -66,14 +66,18 @@ func (s *Service) getAllListsAWS(ctx context.Context) ([]runtime.Object, error) 
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	clusters = append(clusters, v4ClusterList)
+	for _, c := range v4ClusterList.Items {
+		clusters = append(clusters, &c)
+	}
 
 	var v5ClusterList *infrastructurev1alpha2.AWSClusterList
 	v5ClusterList, err = s.v5ListAWS(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	clusters = append(clusters, v5ClusterList)
+	for _, c := range v5ClusterList.Items {
+		clusters = append(clusters, &c)
+	}
 
 	return clusters, err
 }

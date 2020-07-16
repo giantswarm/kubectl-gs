@@ -35,18 +35,8 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 	table.Rows = make([]metav1.TableRow, 0, len(clusterLists))
 	for _, clusterList := range clusterLists {
 		switch c := clusterList.(type) {
-		case *infrastructurev1alpha2.AWSClusterList:
-			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, getAWSClusterRow(&currentCluster))
-			}
-
 		case *infrastructurev1alpha2.AWSCluster:
 			table.Rows = append(table.Rows, getAWSClusterRow(c))
-
-		case *corev1alpha1.AWSClusterConfigList:
-			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, getAWSClusterConfigRow(&currentCluster))
-			}
 
 		case *corev1alpha1.AWSClusterConfig:
 			table.Rows = append(table.Rows, getAWSClusterConfigRow(c))
