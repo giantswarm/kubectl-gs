@@ -269,8 +269,8 @@ func Test_printOutput(t *testing.T) {
 }
 
 func newAWSCluster(id, created, release, org, description string) *infrastructurev1alpha2.AWSCluster {
-	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
-	parsedCreationDate = parsedCreationDate.UTC()
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	c := &infrastructurev1alpha2.AWSCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              id,
@@ -298,8 +298,8 @@ func newAWSCluster(id, created, release, org, description string) *infrastructur
 }
 
 func newAWSClusterConfig(id, created, release, org, description string) *corev1alpha1.AWSClusterConfig {
-	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
-	parsedCreationDate = parsedCreationDate.UTC()
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	c := &corev1alpha1.AWSClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              fmt.Sprintf("%s-aws-cluster-config", id),
@@ -328,8 +328,8 @@ func newAWSClusterConfig(id, created, release, org, description string) *corev1a
 }
 
 func newAzureClusterConfig(id, created, release, org, description string) *corev1alpha1.AzureClusterConfig {
-	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
-	parsedCreationDate = parsedCreationDate.UTC()
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	c := &corev1alpha1.AzureClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              fmt.Sprintf("%s-azure-cluster-config", id),
@@ -358,8 +358,8 @@ func newAzureClusterConfig(id, created, release, org, description string) *corev
 }
 
 func newKVMClusterConfig(id, created, release, org, description string) *corev1alpha1.KVMClusterConfig {
-	parsedCreationDate, _ := time.Parse(time.RFC3339, created)
-	parsedCreationDate = parsedCreationDate.UTC()
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	c := &corev1alpha1.KVMClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              fmt.Sprintf("%s-kvm-cluster-config", id),
