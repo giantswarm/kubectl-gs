@@ -60,7 +60,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var resource runtime.Object
 	{
-		resource, err = r.service.ListForProvider(ctx, r.provider)
+		options := &cluster.GetOptions{
+			Provider: r.provider,
+		}
+		resource, err = r.service.Get(ctx, options)
 		if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			pErr := r.printNoResourcesOutput()
 			if pErr != nil {

@@ -15,6 +15,8 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 		switch c := resource.(type) {
 		case *cluster.CommonClusterList:
 			clusterLists = c.Items
+		default:
+			clusterLists = []runtime.Object{resource}
 		}
 	}
 
@@ -31,23 +33,19 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 		switch c := clusterList.(type) {
 		case *infrastructurev1alpha2.AWSClusterList:
 			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, metav1.TableRow{
-					Cells: []interface{}{
-						currentCluster.GetName(),
-						currentCluster.Spec.Cluster.Description,
-					},
-				})
+				table.Rows = append(table.Rows, getAWSClusterRow(&currentCluster))
 			}
+
+		case *infrastructurev1alpha2.AWSCluster:
+			table.Rows = append(table.Rows, getAWSClusterRow(c))
 
 		case *corev1alpha1.AWSClusterConfigList:
 			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, metav1.TableRow{
-					Cells: []interface{}{
-						currentCluster.Spec.Guest.ID,
-						currentCluster.Spec.Guest.Name,
-					},
-				})
+				table.Rows = append(table.Rows, getAWSClusterConfigRow(&currentCluster))
 			}
+
+		case *corev1alpha1.AWSClusterConfig:
+			table.Rows = append(table.Rows, getAWSClusterConfigRow(c))
 
 		default:
 			continue
@@ -55,4 +53,22 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 	}
 
 	return table
+}
+
+func getAWSClusterRow(cr *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []interface{}{
+			cr.GetName(),
+			cr.Spec.Cluster.Description,
+		},
+	}
+}
+
+func getAWSClusterConfigRow(cr *corev1alpha1.AWSClusterConfig) metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []interface{}{
+			cr.Spec.Guest.ID,
+			cr.Spec.Guest.Name,
+		},
+	}
 }

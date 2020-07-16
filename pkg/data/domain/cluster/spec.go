@@ -17,9 +17,11 @@ func (in *CommonClusterList) DeepCopyObject() runtime.Object {
 	return in
 }
 
-type ListOptions struct {
+type GetOptions struct {
+	ID       string
+	Provider string
 }
 
 type Interface interface {
-	ListForProvider(context.Context, string) (*CommonClusterList, error)
+	Get(context.Context, *GetOptions) (runtime.Object, error)
 }

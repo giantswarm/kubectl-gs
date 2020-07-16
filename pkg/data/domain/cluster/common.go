@@ -4,13 +4,105 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func (s *Service) getClusterIDs(ctx context.Context, options *ListOptions) (map[string]bool, error) {
+func (s *Service) Get(ctx context.Context, options *GetOptions) (runtime.Object, error) {
+	var err error
+
+	var resource runtime.Object
+	if options.ID != "" {
+		resource, err = s.getById(ctx, options.Provider, options.ID)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else {
+		resource, err = s.getAll(ctx, options.Provider)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return resource, nil
+}
+
+func (s *Service) getById(ctx context.Context, provider string, id string) (runtime.Object, error) {
+	var err error
+
+	var resource runtime.Object
+	{
+		switch provider {
+		case key.ProviderAWS:
+			resource, err = s.getByIdAWS(ctx, id)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderAzure:
+			resource, err = s.getByIdAzure(ctx, id)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderKVM:
+			resource, err = s.getByIdKVM(ctx, id)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		default:
+			return nil, microerror.Mask(invalidProviderError)
+		}
+	}
+
+	return resource, nil
+}
+
+func (s *Service) getAll(ctx context.Context, provider string) (runtime.Object, error) {
+	var err error
+
+	var clusters []runtime.Object
+	{
+		switch provider {
+		case key.ProviderAWS:
+			clusters, err = s.getAllListsAWS(ctx)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderAzure:
+			clusters, err = s.getAllListsAzure(ctx)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderKVM:
+			clusters, err = s.getAllListsKVM(ctx)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		default:
+			return nil, microerror.Mask(invalidProviderError)
+		}
+	}
+
+	resource := &CommonClusterList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "List",
+			APIVersion: "v1",
+		},
+		Items: clusters,
+	}
+
+	return resource, nil
+}
+
+func (s *Service) getClusterIDs(ctx context.Context) (map[string]bool, error) {
 	var clusterIDs map[string]bool
 
 	apiClusters := &apiv1alpha2.ClusterList{}
@@ -27,42 +119,4 @@ func (s *Service) getClusterIDs(ctx context.Context, options *ListOptions) (map[
 	}
 
 	return clusterIDs, nil
-}
-
-func (s *Service) ListForProvider(ctx context.Context, provider string) (*CommonClusterList, error) {
-	var err error
-
-	var clusters []runtime.Object
-	{
-		listOptions := &ListOptions{}
-
-		switch provider {
-		case key.ProviderAWS:
-			clusters, err = s.GetAllAWSLists(ctx, listOptions)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderAzure:
-			clusters, err = s.GetAllAzureLists(ctx, listOptions)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderKVM:
-			clusters, err = s.GetAllKVMLists(ctx, listOptions)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		}
-	}
-
-	clusterCR := &CommonClusterList{}
-	{
-		clusterCR.APIVersion = "v1"
-		clusterCR.Kind = "List"
-		clusterCR.Items = clusters
-	}
-
-	return clusterCR, nil
 }

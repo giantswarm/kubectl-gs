@@ -22,11 +22,11 @@ func IsNotFound(err error) bool {
 	return microerror.Cause(err) == notFoundError
 }
 
-var providerInvalidError = &microerror.Error{
-	Kind: "providerInvalidError",
+var invalidProviderError = &microerror.Error{
+	Kind: "invalidProviderError",
 }
 
-// IsProviderInvalid asserts providerInvalidError.
-func IsProviderInvalid(err error) bool {
-	return microerror.Cause(err) == providerInvalidError
+// IsInvalidProvider asserts invalidProviderError.
+func IsInvalidProvider(err error) bool {
+	return microerror.Cause(err) == invalidProviderError
 }
