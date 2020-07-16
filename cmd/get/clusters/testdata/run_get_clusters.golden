@@ -1,3 +1,3 @@
 ID      CREATED                         RELEASE   ORGANIZATION   DESCRIPTION
-f930q   2021-01-02 16:04:32 +0100 CET   11.0.0    some-other     test cluster 4
-1sad2   2021-01-02 16:04:32 +0100 CET   12.0.0    test           test cluster 1
+f930q   2021-01-02 15:04:32 +0000 UTC   11.0.0    some-other     test cluster 4
+1sad2   2021-01-02 15:04:32 +0000 UTC   12.0.0    test           test cluster 1
