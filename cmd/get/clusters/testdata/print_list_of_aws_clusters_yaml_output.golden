@@ -1,0 +1,139 @@
+apiVersion: v1
+items:
+- apiVersion: core.giantswarm.io/v1alpha1
+  kind: AWSClusterConfig
+  metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+  spec:
+    guest:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      dnsZone: ""
+      id: 1sad2
+      name: test cluster 1
+      owner: test
+      releaseVersion: 12.0.0
+    versionBundle:
+      version: ""
+- apiVersion: core.giantswarm.io/v1alpha1
+  kind: AWSClusterConfig
+  metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+  spec:
+    guest:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      dnsZone: ""
+      id: 2a03f
+      name: test cluster 2
+      owner: test
+      releaseVersion: 11.0.0
+    versionBundle:
+      version: ""
+- apiVersion: core.giantswarm.io/v1alpha1
+  kind: AWSClusterConfig
+  metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+  spec:
+    guest:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      dnsZone: ""
+      id: asd29
+      name: test cluster 3
+      owner: test
+      releaseVersion: 10.5.0
+    versionBundle:
+      version: ""
+- apiVersion: infrastructure.giantswarm.io/v1alpha2
+  kind: AWSCluster
+  metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+    labels:
+      giantswarm.io/organization: some-other
+      release.giantswarm.io/version: 11.0.0
+    name: f930q
+  spec:
+    cluster:
+      description: test cluster 4
+      dns:
+        domain: ""
+      kubeProxy: {}
+      oidc:
+        claims: {}
+    provider:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      master:
+        availabilityZone: ""
+        instanceType: ""
+      pods: {}
+      region: ""
+  status:
+    cluster: {}
+    provider:
+      network: {}
+- apiVersion: infrastructure.giantswarm.io/v1alpha2
+  kind: AWSCluster
+  metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+    labels:
+      giantswarm.io/organization: test
+      release.giantswarm.io/version: 9.0.0
+    name: 9f012
+  spec:
+    cluster:
+      description: test cluster 5
+      dns:
+        domain: ""
+      kubeProxy: {}
+      oidc:
+        claims: {}
+    provider:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      master:
+        availabilityZone: ""
+        instanceType: ""
+      pods: {}
+      region: ""
+  status:
+    cluster: {}
+    provider:
+      network: {}
+- apiVersion: infrastructure.giantswarm.io/v1alpha2
+  kind: AWSCluster
+  metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+    labels:
+      giantswarm.io/organization: random
+      release.giantswarm.io/version: 10.5.0
+    name: 2f0as
+  spec:
+    cluster:
+      description: test cluster 6
+      dns:
+        domain: ""
+      kubeProxy: {}
+      oidc:
+        claims: {}
+    provider:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      master:
+        availabilityZone: ""
+        instanceType: ""
+      pods: {}
+      region: ""
+  status:
+    cluster: {}
+    provider:
+      network: {}
+kind: List
+metadata: {}

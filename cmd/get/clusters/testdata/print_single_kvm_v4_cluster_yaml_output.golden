@@ -1,0 +1,13 @@
+apiVersion: core.giantswarm.io/v1alpha1
+kind: KVMClusterConfig
+metadata:
+  creationTimestamp: "2021-01-02T15:04:32Z"
+spec:
+  guest:
+    dnsZone: ""
+    id: asd29
+    name: test cluster 3
+    owner: test
+    releaseVersion: 10.5.0
+  versionBundle:
+    version: ""

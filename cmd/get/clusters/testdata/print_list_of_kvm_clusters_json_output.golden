@@ -1,0 +1,64 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "kind": "KVMClusterConfig",
+            "apiVersion": "core.giantswarm.io/v1alpha1",
+            "metadata": {
+                "creationTimestamp": "2021-01-02T15:04:32Z"
+            },
+            "spec": {
+                "guest": {
+                    "dnsZone": "",
+                    "id": "1sad2",
+                    "name": "test cluster 1",
+                    "owner": "test",
+                    "releaseVersion": "12.0.0"
+                },
+                "versionBundle": {
+                    "version": ""
+                }
+            }
+        },
+        {
+            "kind": "KVMClusterConfig",
+            "apiVersion": "core.giantswarm.io/v1alpha1",
+            "metadata": {
+                "creationTimestamp": "2021-01-02T15:04:32Z"
+            },
+            "spec": {
+                "guest": {
+                    "dnsZone": "",
+                    "id": "2a03f",
+                    "name": "test cluster 2",
+                    "owner": "test",
+                    "releaseVersion": "11.0.0"
+                },
+                "versionBundle": {
+                    "version": ""
+                }
+            }
+        },
+        {
+            "kind": "KVMClusterConfig",
+            "apiVersion": "core.giantswarm.io/v1alpha1",
+            "metadata": {
+                "creationTimestamp": "2021-01-02T15:04:32Z"
+            },
+            "spec": {
+                "guest": {
+                    "dnsZone": "",
+                    "id": "asd29",
+                    "name": "test cluster 3",
+                    "owner": "test",
+                    "releaseVersion": "10.5.0"
+                },
+                "versionBundle": {
+                    "version": ""
+                }
+            }
+        }
+    ]
+}
