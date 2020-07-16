@@ -6,6 +6,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 )
 
@@ -25,6 +26,9 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "ID", Type: "string"},
+		{Name: "Created", Type: "string", Format: "date-time"},
+		{Name: "Release", Type: "string"},
+		{Name: "Organization", Type: "string"},
 		{Name: "Description", Type: "string"},
 	}
 
@@ -59,6 +63,9 @@ func getAWSClusterRow(cr *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.GetName(),
+			cr.CreationTimestamp,
+			cr.Labels[label.ReleaseVersion],
+			cr.Labels[label.Organization],
 			cr.Spec.Cluster.Description,
 		},
 	}
@@ -68,6 +75,9 @@ func getAWSClusterConfigRow(cr *corev1alpha1.AWSClusterConfig) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.Spec.Guest.ID,
+			cr.CreationTimestamp,
+			cr.Spec.Guest.ReleaseVersion,
+			cr.Spec.Guest.Owner,
 			cr.Spec.Guest.Name,
 		},
 	}

@@ -24,6 +24,9 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "ID", Type: "string"},
+		{Name: "Created", Type: "string", Format: "date-time"},
+		{Name: "Release", Type: "string"},
+		{Name: "Organization", Type: "string"},
 		{Name: "Description", Type: "string"},
 	}
 
@@ -50,6 +53,9 @@ func getAzureClusterConfigRow(cr *corev1alpha1.AzureClusterConfig) metav1.TableR
 	return metav1.TableRow{
 		Cells: []interface{}{
 			cr.Spec.Guest.ID,
+			cr.CreationTimestamp,
+			cr.Spec.Guest.ReleaseVersion,
+			cr.Spec.Guest.Owner,
 			cr.Spec.Guest.Name,
 		},
 	}
