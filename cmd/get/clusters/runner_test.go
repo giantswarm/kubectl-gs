@@ -10,13 +10,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/tools/clientcmd"
 	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
 // Test_run uses golden files.
@@ -69,15 +69,10 @@ func Test_run(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.TODO()
 
-			cfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-			defaultCfg := clientcmd.NewDefaultClientConfig(*cfg, &clientcmd.ConfigOverrides{})
-
+			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
 			flag := &flag{
 				print:  genericclioptions.NewPrintFlags("").WithDefaultOutput(output.OutputDefault),
-				config: genericclioptions.NewTestConfigFlags().WithClientConfig(defaultCfg),
+				config: genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig),
 			}
 			out := new(bytes.Buffer)
 			runner := &runner{
@@ -87,7 +82,7 @@ func Test_run(t *testing.T) {
 				provider: key.ProviderAWS,
 			}
 
-			err = runner.run(ctx, nil, tc.args)
+			err := runner.run(ctx, nil, tc.args)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))
