@@ -27,21 +27,30 @@ type Config struct {
 	ReleaseVersion                      string
 }
 
-func NewMachineDeploymentCRs(config Config) (*apiv1alpha2.MachineDeployment, *infrastructurev1alpha2.AWSMachineDeployment, error) {
+type CRs struct {
+	MachineDeployment    *apiv1alpha2.MachineDeployment
+	AWSMachineDeployment *infrastructurev1alpha2.AWSMachineDeployment
+}
 
+func NewCRs(config Config) (CRs, error) {
 	machineDeploymentID := key.GenerateID()
 
 	awsMachineDeploymentCR, err := newAWSMachineDeploymentCR(config.ClusterID, machineDeploymentID, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return CRs{}, microerror.Mask(err)
 	}
 
 	machineDeploymentCR, err := newMachineDeploymentCR(awsMachineDeploymentCR, config.ClusterID, machineDeploymentID, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return CRs{}, microerror.Mask(err)
 	}
 
-	return machineDeploymentCR, awsMachineDeploymentCR, nil
+	crs := CRs{
+		MachineDeployment:    machineDeploymentCR,
+		AWSMachineDeployment: awsMachineDeploymentCR,
+	}
+
+	return crs, nil
 }
 
 func newMachineDeploymentCR(obj interface{}, clusterID, machineDeploymentID string, c Config) (*apiv1alpha2.MachineDeployment, error) {

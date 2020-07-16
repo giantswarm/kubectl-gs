@@ -79,35 +79,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ReleaseVersion:                      r.flag.Release,
 	}
 
-	mdCR, awsMDCR, err := nodepool.NewMachineDeploymentCRs(config)
+	crs, err := nodepool.NewCRs(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	mdCRYaml, err := yaml.Marshal(mdCR)
+	mdCRYaml, err := yaml.Marshal(crs.MachineDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	awsMDCRYaml, err := yaml.Marshal(awsMDCR)
+	awsMDCRYaml, err := yaml.Marshal(crs.AWSMachineDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	type MachineDeploymentCRsOutput struct {
+	data := struct {
 		AWSMachineDeploymentCR string
 		MachineDeploymentCR    string
-	}
-
-	nodepoolCRsOutput := MachineDeploymentCRsOutput{
+	}{
 		AWSMachineDeploymentCR: string(awsMDCRYaml),
 		MachineDeploymentCR:    string(mdCRYaml),
 	}
 
 	t := template.Must(template.New("nodepoolCR").Parse(key.MachineDeploymentCRsTemplate))
 
-	var output *os.File
 	{
+		var output *os.File
+
 		if r.flag.Output == "" {
 			output = os.Stdout
 		} else {
@@ -120,7 +119,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			output = f
 		}
 
-		err = t.Execute(output, nodepoolCRsOutput)
+		err = t.Execute(output, data)
 		if err != nil {
 			return microerror.Mask(err)
 		}
