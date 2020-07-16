@@ -14,6 +14,8 @@ func GetKVMTable(resource runtime.Object) *metav1.Table {
 		switch c := resource.(type) {
 		case *cluster.CommonClusterList:
 			clusterLists = c.Items
+		default:
+			clusterLists = []runtime.Object{resource}
 		}
 	}
 
@@ -30,13 +32,11 @@ func GetKVMTable(resource runtime.Object) *metav1.Table {
 		switch c := clusterList.(type) {
 		case *corev1alpha1.KVMClusterConfigList:
 			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, metav1.TableRow{
-					Cells: []interface{}{
-						currentCluster.Spec.Guest.ID,
-						currentCluster.Spec.Guest.Name,
-					},
-				})
+				table.Rows = append(table.Rows, getKVMClusterConfigRow(&currentCluster))
 			}
+
+		case *corev1alpha1.KVMClusterConfig:
+			table.Rows = append(table.Rows, getKVMClusterConfigRow(c))
 
 		default:
 			continue
@@ -44,4 +44,13 @@ func GetKVMTable(resource runtime.Object) *metav1.Table {
 	}
 
 	return table
+}
+
+func getKVMClusterConfigRow(cr *corev1alpha1.KVMClusterConfig) metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []interface{}{
+			cr.Spec.Guest.ID,
+			cr.Spec.Guest.Name,
+		},
+	}
 }

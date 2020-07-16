@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -35,6 +36,12 @@ func (s *Service) v4GetByIdAzure(ctx context.Context, id string) (*corev1alpha1.
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
+	cluster.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   corev1alpha1.SchemeGroupVersion.Group,
+		Version: corev1alpha1.SchemeGroupVersion.Version,
+		Kind:    "AzureClusterConfig",
+	})
 
 	return cluster, nil
 }

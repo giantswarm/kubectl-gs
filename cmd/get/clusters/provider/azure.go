@@ -14,6 +14,8 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 		switch c := resource.(type) {
 		case *cluster.CommonClusterList:
 			clusterLists = c.Items
+		default:
+			clusterLists = []runtime.Object{resource}
 		}
 	}
 
@@ -30,13 +32,11 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 		switch c := clusterList.(type) {
 		case *corev1alpha1.AzureClusterConfigList:
 			for _, currentCluster := range c.Items {
-				table.Rows = append(table.Rows, metav1.TableRow{
-					Cells: []interface{}{
-						currentCluster.Spec.Guest.ID,
-						currentCluster.Spec.Guest.Name,
-					},
-				})
+				table.Rows = append(table.Rows, getAzureClusterConfigRow(&currentCluster))
 			}
+
+		case *corev1alpha1.AzureClusterConfig:
+			table.Rows = append(table.Rows, getAzureClusterConfigRow(c))
 
 		default:
 			continue
@@ -44,4 +44,13 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 	}
 
 	return table
+}
+
+func getAzureClusterConfigRow(cr *corev1alpha1.AzureClusterConfig) metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []interface{}{
+			cr.Spec.Guest.ID,
+			cr.Spec.Guest.Name,
+		},
+	}
 }
