@@ -4,79 +4,517 @@
     "metadata": {},
     "items": [
         {
-            "kind": "AWSClusterConfig",
-            "apiVersion": "core.giantswarm.io/v1alpha1",
-            "metadata": {
-                "name": "1sad2-aws-cluster-config",
-                "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z"
-            },
-            "spec": {
-                "guest": {
-                    "dnsZone": "",
-                    "id": "1sad2",
-                    "name": "test cluster 1",
-                    "owner": "test",
-                    "releaseVersion": "12.0.0",
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
+            "kind": "List",
+            "apiVersion": "v1",
+            "metadata": {},
+            "items": [
+                {
+                    "metadata": {
+                        "name": "1sad2-aws-cluster-config",
+                        "namespace": "default",
+                        "creationTimestamp": "2021-01-02T15:04:32Z"
+                    },
+                    "spec": {
+                        "guest": {
+                            "dnsZone": "",
+                            "id": "1sad2",
+                            "name": "test cluster 1",
+                            "owner": "test",
+                            "releaseVersion": "12.0.0",
+                            "credentialSecret": {
+                                "name": "",
+                                "namespace": ""
+                            }
+                        },
+                        "versionBundle": {
+                            "version": ""
+                        }
                     }
                 },
-                "versionBundle": {
-                    "version": ""
+                {
+                    "metadata": {
+                        "name": "1sad2",
+                        "namespace": "default",
+                        "creationTimestamp": "2021-01-02T15:04:32Z"
+                    },
+                    "spec": {
+                        "cluster": {
+                            "calico": {
+                                "cidr": 0,
+                                "mtu": 0,
+                                "subnet": ""
+                            },
+                            "customer": {
+                                "id": ""
+                            },
+                            "docker": {
+                                "daemon": {
+                                    "cidr": ""
+                                }
+                            },
+                            "etcd": {
+                                "altNames": "",
+                                "domain": "",
+                                "port": 0,
+                                "prefix": ""
+                            },
+                            "id": "1sad2",
+                            "kubernetes": {
+                                "api": {
+                                    "clusterIPRange": "",
+                                    "domain": "",
+                                    "securePort": 0
+                                },
+                                "cloudProvider": "",
+                                "dns": {
+                                    "ip": ""
+                                },
+                                "domain": "",
+                                "ingressController": {
+                                    "docker": {
+                                        "image": ""
+                                    },
+                                    "domain": "",
+                                    "wildcardDomain": "",
+                                    "insecurePort": 0,
+                                    "securePort": 0
+                                },
+                                "kubelet": {
+                                    "altNames": "",
+                                    "domain": "",
+                                    "labels": "",
+                                    "port": 0
+                                },
+                                "networkSetup": {
+                                    "docker": {
+                                        "image": ""
+                                    },
+                                    "kubeProxy": {
+                                        "conntrackMaxPerCore": 0
+                                    }
+                                },
+                                "ssh": {
+                                    "userList": null
+                                }
+                            },
+                            "masters": null,
+                            "scaling": {
+                                "max": 0,
+                                "min": 0
+                            },
+                            "version": ""
+                        },
+                        "aws": {
+                            "api": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "az": "",
+                            "availabilityZones": 0,
+                            "credentialSecret": {
+                                "name": "",
+                                "namespace": ""
+                            },
+                            "etcd": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "hostedZones": {
+                                "api": {
+                                    "name": ""
+                                },
+                                "etcd": {
+                                    "name": ""
+                                },
+                                "ingress": {
+                                    "name": ""
+                                }
+                            },
+                            "ingress": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "masters": null,
+                            "region": "",
+                            "vpc": {
+                                "cidr": "",
+                                "privateSubnetCidr": "",
+                                "publicSubnetCidr": "",
+                                "routeTableNames": null,
+                                "peerId": ""
+                            },
+                            "workers": null
+                        },
+                        "versionBundle": {
+                            "version": ""
+                        }
+                    },
+                    "status": {
+                        "aws": {
+                            "availabilityZones": null,
+                            "autoScalingGroup": {
+                                "name": ""
+                            }
+                        },
+                        "cluster": {
+                            "network": {
+                                "cidr": ""
+                            },
+                            "scaling": {
+                                "desiredCapacity": 0
+                            }
+                        }
+                    }
                 }
-            }
+            ]
         },
         {
-            "kind": "AWSClusterConfig",
-            "apiVersion": "core.giantswarm.io/v1alpha1",
-            "metadata": {
-                "name": "2a03f-aws-cluster-config",
-                "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z"
-            },
-            "spec": {
-                "guest": {
-                    "dnsZone": "",
-                    "id": "2a03f",
-                    "name": "test cluster 2",
-                    "owner": "test",
-                    "releaseVersion": "11.0.0",
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
+            "kind": "List",
+            "apiVersion": "v1",
+            "metadata": {},
+            "items": [
+                {
+                    "metadata": {
+                        "name": "2a03f-aws-cluster-config",
+                        "namespace": "default",
+                        "creationTimestamp": "2021-01-02T15:04:32Z"
+                    },
+                    "spec": {
+                        "guest": {
+                            "dnsZone": "",
+                            "id": "2a03f",
+                            "name": "test cluster 2",
+                            "owner": "test",
+                            "releaseVersion": "11.0.0",
+                            "credentialSecret": {
+                                "name": "",
+                                "namespace": ""
+                            }
+                        },
+                        "versionBundle": {
+                            "version": ""
+                        }
                     }
                 },
-                "versionBundle": {
-                    "version": ""
+                {
+                    "metadata": {
+                        "name": "2a03f",
+                        "namespace": "default",
+                        "creationTimestamp": "2021-01-02T15:04:32Z"
+                    },
+                    "spec": {
+                        "cluster": {
+                            "calico": {
+                                "cidr": 0,
+                                "mtu": 0,
+                                "subnet": ""
+                            },
+                            "customer": {
+                                "id": ""
+                            },
+                            "docker": {
+                                "daemon": {
+                                    "cidr": ""
+                                }
+                            },
+                            "etcd": {
+                                "altNames": "",
+                                "domain": "",
+                                "port": 0,
+                                "prefix": ""
+                            },
+                            "id": "2a03f",
+                            "kubernetes": {
+                                "api": {
+                                    "clusterIPRange": "",
+                                    "domain": "",
+                                    "securePort": 0
+                                },
+                                "cloudProvider": "",
+                                "dns": {
+                                    "ip": ""
+                                },
+                                "domain": "",
+                                "ingressController": {
+                                    "docker": {
+                                        "image": ""
+                                    },
+                                    "domain": "",
+                                    "wildcardDomain": "",
+                                    "insecurePort": 0,
+                                    "securePort": 0
+                                },
+                                "kubelet": {
+                                    "altNames": "",
+                                    "domain": "",
+                                    "labels": "",
+                                    "port": 0
+                                },
+                                "networkSetup": {
+                                    "docker": {
+                                        "image": ""
+                                    },
+                                    "kubeProxy": {
+                                        "conntrackMaxPerCore": 0
+                                    }
+                                },
+                                "ssh": {
+                                    "userList": null
+                                }
+                            },
+                            "masters": null,
+                            "scaling": {
+                                "max": 0,
+                                "min": 0
+                            },
+                            "version": ""
+                        },
+                        "aws": {
+                            "api": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "az": "",
+                            "availabilityZones": 0,
+                            "credentialSecret": {
+                                "name": "",
+                                "namespace": ""
+                            },
+                            "etcd": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "hostedZones": {
+                                "api": {
+                                    "name": ""
+                                },
+                                "etcd": {
+                                    "name": ""
+                                },
+                                "ingress": {
+                                    "name": ""
+                                }
+                            },
+                            "ingress": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "masters": null,
+                            "region": "",
+                            "vpc": {
+                                "cidr": "",
+                                "privateSubnetCidr": "",
+                                "publicSubnetCidr": "",
+                                "routeTableNames": null,
+                                "peerId": ""
+                            },
+                            "workers": null
+                        },
+                        "versionBundle": {
+                            "version": ""
+                        }
+                    },
+                    "status": {
+                        "aws": {
+                            "availabilityZones": null,
+                            "autoScalingGroup": {
+                                "name": ""
+                            }
+                        },
+                        "cluster": {
+                            "network": {
+                                "cidr": ""
+                            },
+                            "scaling": {
+                                "desiredCapacity": 0
+                            }
+                        }
+                    }
                 }
-            }
+            ]
         },
         {
-            "kind": "AWSClusterConfig",
-            "apiVersion": "core.giantswarm.io/v1alpha1",
-            "metadata": {
-                "name": "asd29-aws-cluster-config",
-                "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z"
-            },
-            "spec": {
-                "guest": {
-                    "dnsZone": "",
-                    "id": "asd29",
-                    "name": "test cluster 3",
-                    "owner": "test",
-                    "releaseVersion": "10.5.0",
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
+            "kind": "List",
+            "apiVersion": "v1",
+            "metadata": {},
+            "items": [
+                {
+                    "metadata": {
+                        "name": "asd29-aws-cluster-config",
+                        "namespace": "default",
+                        "creationTimestamp": "2021-01-02T15:04:32Z"
+                    },
+                    "spec": {
+                        "guest": {
+                            "dnsZone": "",
+                            "id": "asd29",
+                            "name": "test cluster 3",
+                            "owner": "test",
+                            "releaseVersion": "10.5.0",
+                            "credentialSecret": {
+                                "name": "",
+                                "namespace": ""
+                            }
+                        },
+                        "versionBundle": {
+                            "version": ""
+                        }
                     }
                 },
-                "versionBundle": {
-                    "version": ""
+                {
+                    "metadata": {
+                        "name": "asd29",
+                        "namespace": "default",
+                        "creationTimestamp": "2021-01-02T15:04:32Z"
+                    },
+                    "spec": {
+                        "cluster": {
+                            "calico": {
+                                "cidr": 0,
+                                "mtu": 0,
+                                "subnet": ""
+                            },
+                            "customer": {
+                                "id": ""
+                            },
+                            "docker": {
+                                "daemon": {
+                                    "cidr": ""
+                                }
+                            },
+                            "etcd": {
+                                "altNames": "",
+                                "domain": "",
+                                "port": 0,
+                                "prefix": ""
+                            },
+                            "id": "asd29",
+                            "kubernetes": {
+                                "api": {
+                                    "clusterIPRange": "",
+                                    "domain": "",
+                                    "securePort": 0
+                                },
+                                "cloudProvider": "",
+                                "dns": {
+                                    "ip": ""
+                                },
+                                "domain": "",
+                                "ingressController": {
+                                    "docker": {
+                                        "image": ""
+                                    },
+                                    "domain": "",
+                                    "wildcardDomain": "",
+                                    "insecurePort": 0,
+                                    "securePort": 0
+                                },
+                                "kubelet": {
+                                    "altNames": "",
+                                    "domain": "",
+                                    "labels": "",
+                                    "port": 0
+                                },
+                                "networkSetup": {
+                                    "docker": {
+                                        "image": ""
+                                    },
+                                    "kubeProxy": {
+                                        "conntrackMaxPerCore": 0
+                                    }
+                                },
+                                "ssh": {
+                                    "userList": null
+                                }
+                            },
+                            "masters": null,
+                            "scaling": {
+                                "max": 0,
+                                "min": 0
+                            },
+                            "version": ""
+                        },
+                        "aws": {
+                            "api": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "az": "",
+                            "availabilityZones": 0,
+                            "credentialSecret": {
+                                "name": "",
+                                "namespace": ""
+                            },
+                            "etcd": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "hostedZones": {
+                                "api": {
+                                    "name": ""
+                                },
+                                "etcd": {
+                                    "name": ""
+                                },
+                                "ingress": {
+                                    "name": ""
+                                }
+                            },
+                            "ingress": {
+                                "hostedZones": "",
+                                "elb": {
+                                    "idleTimeoutSeconds": 0
+                                }
+                            },
+                            "masters": null,
+                            "region": "",
+                            "vpc": {
+                                "cidr": "",
+                                "privateSubnetCidr": "",
+                                "publicSubnetCidr": "",
+                                "routeTableNames": null,
+                                "peerId": ""
+                            },
+                            "workers": null
+                        },
+                        "versionBundle": {
+                            "version": ""
+                        }
+                    },
+                    "status": {
+                        "aws": {
+                            "availabilityZones": null,
+                            "autoScalingGroup": {
+                                "name": ""
+                            }
+                        },
+                        "cluster": {
+                            "network": {
+                                "cidr": ""
+                            },
+                            "scaling": {
+                                "desiredCapacity": 0
+                            }
+                        }
+                    }
                 }
-            }
+            ]
         },
         {
             "kind": "AWSCluster",

@@ -1,18 +1,108 @@
-apiVersion: core.giantswarm.io/v1alpha1
-kind: AzureClusterConfig
-metadata:
-  creationTimestamp: "2021-01-02T15:04:32Z"
-  name: asd29-azure-cluster-config
-  namespace: default
-spec:
-  guest:
-    credentialSecret:
-      name: ""
-      namespace: ""
-    dnsZone: ""
-    id: asd29
-    name: test cluster 3
-    owner: test
-    releaseVersion: 10.5.0
-  versionBundle:
-    version: ""
+apiVersion: v1
+items:
+- metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+    name: asd29-azure-cluster-config
+    namespace: default
+  spec:
+    guest:
+      credentialSecret:
+        name: ""
+        namespace: ""
+      dnsZone: ""
+      id: asd29
+      name: test cluster 3
+      owner: test
+      releaseVersion: 10.5.0
+    versionBundle:
+      version: ""
+- metadata:
+    creationTimestamp: "2021-01-02T15:04:32Z"
+    name: asd29
+    namespace: default
+  spec:
+    azure:
+      availabilityZones: null
+      credentialSecret:
+        name: ""
+        namespace: ""
+      dnsZones:
+        api:
+          name: ""
+          resourceGroup: ""
+        etcd:
+          name: ""
+          resourceGroup: ""
+        ingress:
+          name: ""
+          resourceGroup: ""
+      masters: null
+      virtualNetwork:
+        calicoSubnetCIDR: ""
+        cidr: ""
+        masterSubnetCIDR: ""
+        workerSubnetCIDR: ""
+      workers: null
+    cluster:
+      calico:
+        cidr: 0
+        mtu: 0
+        subnet: ""
+      customer:
+        id: ""
+      docker:
+        daemon:
+          cidr: ""
+      etcd:
+        altNames: ""
+        domain: ""
+        port: 0
+        prefix: ""
+      id: asd29
+      kubernetes:
+        api:
+          clusterIPRange: ""
+          domain: ""
+          securePort: 0
+        cloudProvider: ""
+        dns:
+          ip: ""
+        domain: ""
+        ingressController:
+          docker:
+            image: ""
+          domain: ""
+          insecurePort: 0
+          securePort: 0
+          wildcardDomain: ""
+        kubelet:
+          altNames: ""
+          domain: ""
+          labels: ""
+          port: 0
+        networkSetup:
+          docker:
+            image: ""
+          kubeProxy:
+            conntrackMaxPerCore: 0
+        ssh:
+          userList: null
+      masters: null
+      scaling:
+        max: 0
+        min: 0
+      version: ""
+    versionBundle:
+      version: ""
+  status:
+    cluster:
+      network:
+        cidr: ""
+      scaling:
+        desiredCapacity: 0
+    provider:
+      ingress:
+        loadBalancer:
+          publicIPName: ""
+kind: List
+metadata: {}
