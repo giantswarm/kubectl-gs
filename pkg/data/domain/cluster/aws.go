@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -63,6 +64,19 @@ func (s *Service) v4ListAWS(ctx context.Context, namespace string) (*CommonClust
 			if correspondingConfig == nil {
 				continue
 			}
+			correspondingConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   providerv1alpha1.SchemeGroupVersion.Group,
+				Version: providerv1alpha1.SchemeGroupVersion.Version,
+				Kind:    "AWSConfig",
+			})
+		}
+
+		{
+			clusterConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   corev1alpha1.SchemeGroupVersion.Group,
+				Version: corev1alpha1.SchemeGroupVersion.Version,
+				Kind:    "AWSClusterConfig",
+			})
 		}
 
 		newCluster := &V4ClusterList{
@@ -103,6 +117,7 @@ func (s *Service) v5ListAWS(ctx context.Context, namespace string) (*infrastruct
 		var clusterList []infrastructurev1alpha2.AWSCluster
 		for _, cluster := range awsClusters.Items {
 			if _, exists := clusterIDs[cluster.Name]; exists {
+				cluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
 				clusterList = append(clusterList, cluster)
 			}
 		}
@@ -161,6 +176,11 @@ func (s *Service) v4GetByIdAWS(ctx context.Context, id, namespace string) (*V4Cl
 			return nil, microerror.Mask(err)
 		}
 	}
+	clusterConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   corev1alpha1.SchemeGroupVersion.Group,
+		Version: corev1alpha1.SchemeGroupVersion.Version,
+		Kind:    "AWSClusterConfig",
+	})
 
 	config := &providerv1alpha1.AWSConfig{}
 	{
@@ -175,6 +195,11 @@ func (s *Service) v4GetByIdAWS(ctx context.Context, id, namespace string) (*V4Cl
 			return nil, microerror.Mask(err)
 		}
 	}
+	config.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   providerv1alpha1.SchemeGroupVersion.Group,
+		Version: providerv1alpha1.SchemeGroupVersion.Version,
+		Kind:    "AWSConfig",
+	})
 
 	v4ClusterList := &V4ClusterList{
 		TypeMeta: metav1.TypeMeta{

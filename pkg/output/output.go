@@ -16,3 +16,7 @@ const (
 func IsOutputDefault(output *string) bool {
 	return output == nil || *output == OutputDefault
 }
+
+func IsOutputName(output *string) bool {
+	return output == nil || *output == OutputName
+}

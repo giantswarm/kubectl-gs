@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -62,6 +63,19 @@ func (s *Service) v4ListAzure(ctx context.Context, namespace string) (*CommonClu
 			if correspondingConfig == nil {
 				continue
 			}
+			correspondingConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   providerv1alpha1.SchemeGroupVersion.Group,
+				Version: providerv1alpha1.SchemeGroupVersion.Version,
+				Kind:    "AzureConfig",
+			})
+		}
+
+		{
+			clusterConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   corev1alpha1.SchemeGroupVersion.Group,
+				Version: corev1alpha1.SchemeGroupVersion.Version,
+				Kind:    "AzureClusterConfig",
+			})
 		}
 
 		newCluster := &V4ClusterList{
@@ -112,6 +126,11 @@ func (s *Service) v4GetByIdAzure(ctx context.Context, id, namespace string) (*V4
 			return nil, microerror.Mask(err)
 		}
 	}
+	clusterConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   corev1alpha1.SchemeGroupVersion.Group,
+		Version: corev1alpha1.SchemeGroupVersion.Version,
+		Kind:    "AzureClusterConfig",
+	})
 
 	config := &providerv1alpha1.AzureConfig{}
 	{
@@ -126,6 +145,11 @@ func (s *Service) v4GetByIdAzure(ctx context.Context, id, namespace string) (*V4
 			return nil, microerror.Mask(err)
 		}
 	}
+	config.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   providerv1alpha1.SchemeGroupVersion.Group,
+		Version: providerv1alpha1.SchemeGroupVersion.Version,
+		Kind:    "AzureConfig",
+	})
 
 	v4ClusterList := &V4ClusterList{
 		TypeMeta: metav1.TypeMeta{
