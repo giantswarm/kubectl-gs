@@ -54,7 +54,7 @@ func (s *Service) v4ListKVM(ctx context.Context) (*CommonClusterList, error) {
 		var correspondingConfig runtime.Object
 		{
 			for _, config := range configs.Items {
-				if cc.Name == fmt.Sprintf("%s-kvm-cluster-config", config.Name) {
+				if clusterConfig.Name == fmt.Sprintf("%s-kvm-cluster-config", config.Name) {
 					correspondingConfig = &config
 					break
 				}

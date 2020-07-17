@@ -9,6 +9,7 @@ import (
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,9 +40,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 0: print list of AWS clusters, with table output",
 			cr: newCommonClusterList([]runtime.Object{
-				newAWSClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newAWSClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newAWSClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newAWSV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newAWSV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newAWSV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4"),
 				newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5"),
 				newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6"),
@@ -53,9 +54,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 1: print list of AWS clusters, with JSON output",
 			cr: newCommonClusterList([]runtime.Object{
-				newAWSClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newAWSClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newAWSClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newAWSV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newAWSV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newAWSV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4"),
 				newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5"),
 				newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6"),
@@ -67,9 +68,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 2: print list of AWS clusters, with YAML output",
 			cr: newCommonClusterList([]runtime.Object{
-				newAWSClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newAWSClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newAWSClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newAWSV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newAWSV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newAWSV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4"),
 				newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5"),
 				newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6"),
@@ -81,9 +82,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 3: print list of Azure clusters, with table output",
 			cr: newCommonClusterList([]runtime.Object{
-				newAzureClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newAzureClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newAzureClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newAzureV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newAzureV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newAzureV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			}),
 			provider:           key.ProviderAzure,
 			outputType:         output.OutputDefault,
@@ -92,9 +93,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 4: print list of Azure clusters, with JSON output",
 			cr: newCommonClusterList([]runtime.Object{
-				newAzureClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newAzureClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newAzureClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newAzureV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newAzureV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newAzureV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			}),
 			provider:           key.ProviderAzure,
 			outputType:         output.OutputJSON,
@@ -103,9 +104,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 5: print list of Azure clusters, with YAML output",
 			cr: newCommonClusterList([]runtime.Object{
-				newAzureClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newAzureClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newAzureClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newAzureV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newAzureV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newAzureV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			}),
 			provider:           key.ProviderAzure,
 			outputType:         output.OutputYAML,
@@ -114,9 +115,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 6: print list of KVM clusters, with table output",
 			cr: newCommonClusterList([]runtime.Object{
-				newKVMClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newKVMClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newKVMClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newKVMV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newKVMV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newKVMV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			}),
 			provider:           key.ProviderKVM,
 			outputType:         output.OutputDefault,
@@ -125,9 +126,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 7: print list of KVM clusters, with JSON output",
 			cr: newCommonClusterList([]runtime.Object{
-				newKVMClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newKVMClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newKVMClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newKVMV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newKVMV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newKVMV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			}),
 			provider:           key.ProviderKVM,
 			outputType:         output.OutputJSON,
@@ -136,9 +137,9 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 8: print list of KVM clusters, with YAML output",
 			cr: newCommonClusterList([]runtime.Object{
-				newKVMClusterConfig("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
-				newKVMClusterConfig("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
-				newKVMClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+				newKVMV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1"),
+				newKVMV4ClusterList("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2"),
+				newKVMV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			}),
 			provider:           key.ProviderKVM,
 			outputType:         output.OutputYAML,
@@ -146,21 +147,21 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name:               "case 9: print single v4 AWS cluster, with table output",
-			cr:                 newAWSClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newAWSV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderAWS,
 			outputType:         output.OutputDefault,
 			expectedGoldenFile: "print_single_aws_v4_cluster_table_output.golden",
 		},
 		{
 			name:               "case 10: print single v4 AWS cluster, with JSON output",
-			cr:                 newAWSClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newAWSV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderAWS,
 			outputType:         output.OutputJSON,
 			expectedGoldenFile: "print_single_aws_v4_cluster_json_output.golden",
 		},
 		{
 			name:               "case 11: print single v4 AWS cluster, with YAML output",
-			cr:                 newAWSClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newAWSV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderAWS,
 			outputType:         output.OutputYAML,
 			expectedGoldenFile: "print_single_aws_v4_cluster_yaml_output.golden",
@@ -188,42 +189,42 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name:               "case 15: print single v4 Azure cluster, with table output",
-			cr:                 newAzureClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newAzureV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderAzure,
 			outputType:         output.OutputDefault,
 			expectedGoldenFile: "print_single_azure_v4_cluster_table_output.golden",
 		},
 		{
 			name:               "case 16: print single v4 Azure cluster, with JSON output",
-			cr:                 newAzureClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newAzureV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderAzure,
 			outputType:         output.OutputJSON,
 			expectedGoldenFile: "print_single_azure_v4_cluster_json_output.golden",
 		},
 		{
 			name:               "case 17: print single v4 Azure cluster, with YAML output",
-			cr:                 newAzureClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newAzureV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderAzure,
 			outputType:         output.OutputYAML,
 			expectedGoldenFile: "print_single_azure_v4_cluster_yaml_output.golden",
 		},
 		{
 			name:               "case 18: print single v4 KVM cluster, with table output",
-			cr:                 newKVMClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newKVMV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderKVM,
 			outputType:         output.OutputDefault,
 			expectedGoldenFile: "print_single_kvm_v4_cluster_table_output.golden",
 		},
 		{
 			name:               "case 19: print single v4 KVM cluster, with JSON output",
-			cr:                 newKVMClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newKVMV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderKVM,
 			outputType:         output.OutputJSON,
 			expectedGoldenFile: "print_single_kvm_v4_cluster_json_output.golden",
 		},
 		{
 			name:               "case 20: print single v4 KVM cluster, with YAML output",
-			cr:                 newKVMClusterConfig("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
+			cr:                 newKVMV4ClusterList("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3"),
 			provider:           key.ProviderKVM,
 			outputType:         output.OutputYAML,
 			expectedGoldenFile: "print_single_kvm_v4_cluster_yaml_output.golden",
@@ -297,10 +298,11 @@ func newAWSCluster(id, created, release, org, description string) *infrastructur
 	return c
 }
 
-func newAWSClusterConfig(id, created, release, org, description string) *corev1alpha1.AWSClusterConfig {
+func newAWSV4ClusterList(id, created, release, org, description string) *cluster.V4ClusterList {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &corev1alpha1.AWSClusterConfig{
+
+	cc := &corev1alpha1.AWSClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              fmt.Sprintf("%s-aws-cluster-config", id),
 			Namespace:         "default",
@@ -318,19 +320,35 @@ func newAWSClusterConfig(id, created, release, org, description string) *corev1a
 		},
 	}
 
-	c.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   corev1alpha1.SchemeGroupVersion.Group,
-		Version: corev1alpha1.SchemeGroupVersion.Version,
-		Kind:    "AWSClusterConfig",
-	})
+	c := &providerv1alpha1.AWSConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+		},
+		Spec: providerv1alpha1.AWSConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: id,
+			},
+		},
+	}
 
-	return c
+	newCluster := &cluster.V4ClusterList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "List",
+			APIVersion: "v1",
+		},
+		Items: []runtime.Object{cc, c},
+	}
+
+	return newCluster
 }
 
-func newAzureClusterConfig(id, created, release, org, description string) *corev1alpha1.AzureClusterConfig {
+func newAzureV4ClusterList(id, created, release, org, description string) *cluster.V4ClusterList {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &corev1alpha1.AzureClusterConfig{
+
+	cc := &corev1alpha1.AzureClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              fmt.Sprintf("%s-azure-cluster-config", id),
 			Namespace:         "default",
@@ -348,19 +366,35 @@ func newAzureClusterConfig(id, created, release, org, description string) *corev
 		},
 	}
 
-	c.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   corev1alpha1.SchemeGroupVersion.Group,
-		Version: corev1alpha1.SchemeGroupVersion.Version,
-		Kind:    "AzureClusterConfig",
-	})
+	c := &providerv1alpha1.AzureConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+		},
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: id,
+			},
+		},
+	}
 
-	return c
+	newCluster := &cluster.V4ClusterList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "List",
+			APIVersion: "v1",
+		},
+		Items: []runtime.Object{cc, c},
+	}
+
+	return newCluster
 }
 
-func newKVMClusterConfig(id, created, release, org, description string) *corev1alpha1.KVMClusterConfig {
+func newKVMV4ClusterList(id, created, release, org, description string) *cluster.V4ClusterList {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &corev1alpha1.KVMClusterConfig{
+
+	cc := &corev1alpha1.KVMClusterConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              fmt.Sprintf("%s-kvm-cluster-config", id),
 			Namespace:         "default",
@@ -378,13 +412,28 @@ func newKVMClusterConfig(id, created, release, org, description string) *corev1a
 		},
 	}
 
-	c.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   corev1alpha1.SchemeGroupVersion.Group,
-		Version: corev1alpha1.SchemeGroupVersion.Version,
-		Kind:    "KVMClusterConfig",
-	})
+	c := &providerv1alpha1.KVMConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+		},
+		Spec: providerv1alpha1.KVMConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: id,
+			},
+		},
+	}
 
-	return c
+	newCluster := &cluster.V4ClusterList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "List",
+			APIVersion: "v1",
+		},
+		Items: []runtime.Object{cc, c},
+	}
+
+	return newCluster
 }
 
 func newCommonClusterList(lists []runtime.Object) *cluster.CommonClusterList {

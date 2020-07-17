@@ -55,7 +55,7 @@ func (s *Service) v4ListAWS(ctx context.Context) (*CommonClusterList, error) {
 		var correspondingConfig runtime.Object
 		{
 			for _, config := range configs.Items {
-				if cc.Name == fmt.Sprintf("%s-aws-cluster-config", config.Name) {
+				if clusterConfig.Name == fmt.Sprintf("%s-aws-cluster-config", config.Name) {
 					correspondingConfig = &config
 					break
 				}
