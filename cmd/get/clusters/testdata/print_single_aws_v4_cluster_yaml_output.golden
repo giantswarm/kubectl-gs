@@ -112,6 +112,10 @@ items:
         name: ""
       availabilityZones: null
     cluster:
+      conditions:
+      - lastTransitionTime: null
+        status: ""
+        type: Deleting
       network:
         cidr: ""
       scaling:

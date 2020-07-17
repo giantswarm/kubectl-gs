@@ -25,6 +25,9 @@ spec:
     pods: {}
     region: ""
 status:
-  cluster: {}
+  cluster:
+    conditions:
+    - condition: Created
+      lastTransitionTime: null
   provider:
     network: {}

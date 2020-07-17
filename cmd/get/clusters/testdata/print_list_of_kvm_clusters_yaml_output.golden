@@ -188,6 +188,10 @@ items:
         version: ""
     status:
       cluster:
+        conditions:
+        - lastTransitionTime: null
+          status: ""
+          type: Deleting
         network:
           cidr: ""
         scaling:
@@ -286,6 +290,13 @@ items:
         version: ""
     status:
       cluster:
+        conditions:
+        - lastTransitionTime: null
+          status: ""
+          type: Deleting
+        - lastTransitionTime: null
+          status: ""
+          type: Created
         network:
           cidr: ""
         scaling:

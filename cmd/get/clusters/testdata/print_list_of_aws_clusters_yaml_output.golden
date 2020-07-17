@@ -234,6 +234,10 @@ items:
           name: ""
         availabilityZones: null
       cluster:
+        conditions:
+        - lastTransitionTime: null
+          status: ""
+          type: Created
         network:
           cidr: ""
         scaling:
@@ -354,6 +358,13 @@ items:
           name: ""
         availabilityZones: null
       cluster:
+        conditions:
+        - lastTransitionTime: null
+          status: ""
+          type: Created
+        - lastTransitionTime: null
+          status: ""
+          type: Creating
         network:
           cidr: ""
         scaling:
@@ -417,7 +428,10 @@ items:
       pods: {}
       region: ""
   status:
-    cluster: {}
+    cluster:
+      conditions:
+      - condition: Deleting
+        lastTransitionTime: null
     provider:
       network: {}
 - apiVersion: infrastructure.giantswarm.io/v1alpha2
@@ -447,7 +461,12 @@ items:
       pods: {}
       region: ""
   status:
-    cluster: {}
+    cluster:
+      conditions:
+      - condition: Deleting
+        lastTransitionTime: null
+      - condition: Created
+        lastTransitionTime: null
     provider:
       network: {}
 kind: List

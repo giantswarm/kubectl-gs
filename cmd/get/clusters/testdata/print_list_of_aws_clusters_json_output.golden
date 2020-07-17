@@ -334,6 +334,13 @@
                             }
                         },
                         "cluster": {
+                            "conditions": [
+                                {
+                                    "lastTransitionTime": null,
+                                    "status": "",
+                                    "type": "Created"
+                                }
+                            ],
                             "network": {
                                 "cidr": ""
                             },
@@ -505,6 +512,18 @@
                             }
                         },
                         "cluster": {
+                            "conditions": [
+                                {
+                                    "lastTransitionTime": null,
+                                    "status": "",
+                                    "type": "Created"
+                                },
+                                {
+                                    "lastTransitionTime": null,
+                                    "status": "",
+                                    "type": "Creating"
+                                }
+                            ],
                             "network": {
                                 "cidr": ""
                             },
@@ -596,7 +615,14 @@
                 }
             },
             "status": {
-                "cluster": {},
+                "cluster": {
+                    "conditions": [
+                        {
+                            "lastTransitionTime": null,
+                            "condition": "Deleting"
+                        }
+                    ]
+                },
                 "provider": {
                     "network": {}
                 }
@@ -639,7 +665,18 @@
                 }
             },
             "status": {
-                "cluster": {},
+                "cluster": {
+                    "conditions": [
+                        {
+                            "lastTransitionTime": null,
+                            "condition": "Deleting"
+                        },
+                        {
+                            "lastTransitionTime": null,
+                            "condition": "Created"
+                        }
+                    ]
+                },
                 "provider": {
                     "network": {}
                 }

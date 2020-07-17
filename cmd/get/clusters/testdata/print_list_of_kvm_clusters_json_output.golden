@@ -275,6 +275,13 @@
                     },
                     "status": {
                         "cluster": {
+                            "conditions": [
+                                {
+                                    "lastTransitionTime": null,
+                                    "status": "",
+                                    "type": "Deleting"
+                                }
+                            ],
                             "network": {
                                 "cidr": ""
                             },
@@ -418,6 +425,18 @@
                     },
                     "status": {
                         "cluster": {
+                            "conditions": [
+                                {
+                                    "lastTransitionTime": null,
+                                    "status": "",
+                                    "type": "Deleting"
+                                },
+                                {
+                                    "lastTransitionTime": null,
+                                    "status": "",
+                                    "type": "Created"
+                                }
+                            ],
                             "network": {
                                 "cidr": ""
                             },

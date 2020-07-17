@@ -35,7 +35,14 @@
         }
     },
     "status": {
-        "cluster": {},
+        "cluster": {
+            "conditions": [
+                {
+                    "lastTransitionTime": null,
+                    "condition": "Created"
+                }
+            ]
+        },
         "provider": {
             "network": {}
         }
