@@ -91,9 +91,7 @@ func (s *Service) getAllKVM(ctx context.Context) ([]runtime.Object, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	for _, c := range v4ClusterList.Items {
-		clusters = append(clusters, c)
-	}
+	clusters = append(clusters, v4ClusterList.Items...)
 
 	return clusters, err
 }

@@ -131,9 +131,7 @@ func (s *Service) getAllAWS(ctx context.Context) ([]runtime.Object, error) {
 
 	v4ClusterList, err := s.v4ListAWS(ctx)
 	if err == nil {
-		for _, c := range v4ClusterList.Items {
-			clusters = append(clusters, c)
-		}
+		clusters = append(clusters, v4ClusterList.Items...)
 	} else if IsNoResources(err) {
 		// Fall through.
 	} else if err != nil {
