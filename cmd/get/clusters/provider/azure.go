@@ -2,6 +2,7 @@ package provider
 
 import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -33,8 +34,8 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 	table.Rows = make([]metav1.TableRow, 0, len(clusterLists))
 	for _, clusterList := range clusterLists {
 		switch c := clusterList.(type) {
-		case *corev1alpha1.AzureClusterConfig:
-			table.Rows = append(table.Rows, getAzureClusterConfigRow(c))
+		case *cluster.V4ClusterList:
+			table.Rows = append(table.Rows, getAzureV4ClusterListRow(c))
 
 		default:
 			continue
@@ -44,14 +45,17 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 	return table
 }
 
-func getAzureClusterConfigRow(cr *corev1alpha1.AzureClusterConfig) metav1.TableRow {
+func getAzureV4ClusterListRow(res *cluster.V4ClusterList) metav1.TableRow {
+	clusterConfig := res.Items[0].(*corev1alpha1.AzureClusterConfig)
+	config := res.Items[1].(*providerv1alpha1.AzureConfig)
+
 	return metav1.TableRow{
 		Cells: []interface{}{
-			cr.Spec.Guest.ID,
-			cr.CreationTimestamp.UTC(),
-			cr.Spec.Guest.ReleaseVersion,
-			cr.Spec.Guest.Owner,
-			cr.Spec.Guest.Name,
+			config.Spec.Cluster.ID,
+			config.GetCreationTimestamp().UTC(),
+			clusterConfig.Spec.Guest.ReleaseVersion,
+			clusterConfig.Spec.Guest.Owner,
+			clusterConfig.Spec.Guest.Name,
 		},
 	}
 }

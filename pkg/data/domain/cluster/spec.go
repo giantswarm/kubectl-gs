@@ -17,6 +17,16 @@ func (in *CommonClusterList) DeepCopyObject() runtime.Object {
 	return in
 }
 
+type V4ClusterList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []runtime.Object `json:"items"`
+}
+
+func (in *V4ClusterList) DeepCopyObject() runtime.Object {
+	return in
+}
+
 type GetOptions struct {
 	ID       string
 	Provider string

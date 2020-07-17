@@ -3,6 +3,7 @@ package provider
 import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -38,8 +39,8 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 		case *infrastructurev1alpha2.AWSCluster:
 			table.Rows = append(table.Rows, getAWSClusterRow(c))
 
-		case *corev1alpha1.AWSClusterConfig:
-			table.Rows = append(table.Rows, getAWSClusterConfigRow(c))
+		case *cluster.V4ClusterList:
+			table.Rows = append(table.Rows, getAWSV4ClusterListRow(c))
 
 		default:
 			continue
@@ -61,14 +62,17 @@ func getAWSClusterRow(cr *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
 	}
 }
 
-func getAWSClusterConfigRow(cr *corev1alpha1.AWSClusterConfig) metav1.TableRow {
+func getAWSV4ClusterListRow(res *cluster.V4ClusterList) metav1.TableRow {
+	clusterConfig := res.Items[0].(*corev1alpha1.AWSClusterConfig)
+	config := res.Items[1].(*providerv1alpha1.AWSConfig)
+
 	return metav1.TableRow{
 		Cells: []interface{}{
-			cr.Spec.Guest.ID,
-			cr.CreationTimestamp.UTC(),
-			cr.Spec.Guest.ReleaseVersion,
-			cr.Spec.Guest.Owner,
-			cr.Spec.Guest.Name,
+			config.Spec.Cluster.ID,
+			config.GetCreationTimestamp().UTC(),
+			clusterConfig.Spec.Guest.ReleaseVersion,
+			clusterConfig.Spec.Guest.Owner,
+			clusterConfig.Spec.Guest.Name,
 		},
 	}
 }
