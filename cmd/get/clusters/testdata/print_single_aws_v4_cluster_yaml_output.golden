@@ -1,6 +1,8 @@
 apiVersion: v1
 items:
-- metadata:
+- apiVersion: provider.giantswarm.io/v1alpha1
+  kind: AWSClusterConfig
+  metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
     name: asd29-aws-cluster-config
     namespace: default
@@ -16,7 +18,9 @@ items:
       releaseVersion: 10.5.0
     versionBundle:
       version: ""
-- metadata:
+- apiVersion: provider.giantswarm.io/v1alpha1
+  kind: AWSConfig
+  metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
     name: asd29
     namespace: default

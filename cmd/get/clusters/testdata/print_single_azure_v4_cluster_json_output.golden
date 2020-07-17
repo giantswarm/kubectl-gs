@@ -4,6 +4,8 @@
     "metadata": {},
     "items": [
         {
+            "kind": "AzureClusterConfig",
+            "apiVersion": "provider.giantswarm.io/v1alpha1",
             "metadata": {
                 "name": "asd29-azure-cluster-config",
                 "namespace": "default",
@@ -27,6 +29,8 @@
             }
         },
         {
+            "kind": "AzureConfig",
+            "apiVersion": "provider.giantswarm.io/v1alpha1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",

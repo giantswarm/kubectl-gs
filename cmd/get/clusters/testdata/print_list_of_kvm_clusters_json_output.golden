@@ -9,6 +9,8 @@
             "metadata": {},
             "items": [
                 {
+                    "kind": "KVMClusterConfig",
+                    "apiVersion": "provider.giantswarm.io/v1alpha1",
                     "metadata": {
                         "name": "1sad2-kvm-cluster-config",
                         "namespace": "default",
@@ -28,6 +30,8 @@
                     }
                 },
                 {
+                    "kind": "KVMConfig",
+                    "apiVersion": "provider.giantswarm.io/v1alpha1",
                     "metadata": {
                         "name": "1sad2",
                         "namespace": "default",
@@ -152,6 +156,8 @@
             "metadata": {},
             "items": [
                 {
+                    "kind": "KVMClusterConfig",
+                    "apiVersion": "provider.giantswarm.io/v1alpha1",
                     "metadata": {
                         "name": "2a03f-kvm-cluster-config",
                         "namespace": "default",
@@ -171,6 +177,8 @@
                     }
                 },
                 {
+                    "kind": "KVMConfig",
+                    "apiVersion": "provider.giantswarm.io/v1alpha1",
                     "metadata": {
                         "name": "2a03f",
                         "namespace": "default",
@@ -302,6 +310,8 @@
             "metadata": {},
             "items": [
                 {
+                    "kind": "KVMClusterConfig",
+                    "apiVersion": "provider.giantswarm.io/v1alpha1",
                     "metadata": {
                         "name": "asd29-kvm-cluster-config",
                         "namespace": "default",
@@ -321,6 +331,8 @@
                     }
                 },
                 {
+                    "kind": "KVMConfig",
+                    "apiVersion": "provider.giantswarm.io/v1alpha1",
                     "metadata": {
                         "name": "asd29",
                         "namespace": "default",

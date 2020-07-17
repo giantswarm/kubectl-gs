@@ -4,6 +4,8 @@
     "metadata": {},
     "items": [
         {
+            "kind": "AWSClusterConfig",
+            "apiVersion": "provider.giantswarm.io/v1alpha1",
             "metadata": {
                 "name": "asd29-aws-cluster-config",
                 "namespace": "default",
@@ -27,6 +29,8 @@
             }
         },
         {
+            "kind": "AWSConfig",
+            "apiVersion": "provider.giantswarm.io/v1alpha1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
