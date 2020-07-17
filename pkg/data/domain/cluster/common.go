@@ -14,14 +14,19 @@ import (
 func (s *Service) Get(ctx context.Context, options *GetOptions) (runtime.Object, error) {
 	var err error
 
+	namespace := options.Namespace
+	if namespace == "" {
+		namespace = "default"
+	}
+
 	var resource runtime.Object
 	if options.ID != "" {
-		resource, err = s.getById(ctx, options.Provider, options.ID)
+		resource, err = s.getById(ctx, options.Provider, options.ID, namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	} else {
-		resource, err = s.getAll(ctx, options.Provider)
+		resource, err = s.getAll(ctx, options.Provider, namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -30,26 +35,26 @@ func (s *Service) Get(ctx context.Context, options *GetOptions) (runtime.Object,
 	return resource, nil
 }
 
-func (s *Service) getById(ctx context.Context, provider string, id string) (runtime.Object, error) {
+func (s *Service) getById(ctx context.Context, provider, id, namespace string) (runtime.Object, error) {
 	var err error
 
 	var resource runtime.Object
 	{
 		switch provider {
 		case key.ProviderAWS:
-			resource, err = s.getByIdAWS(ctx, id)
+			resource, err = s.getByIdAWS(ctx, id, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderAzure:
-			resource, err = s.getByIdAzure(ctx, id)
+			resource, err = s.getByIdAzure(ctx, id, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderKVM:
-			resource, err = s.getByIdKVM(ctx, id)
+			resource, err = s.getByIdKVM(ctx, id, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -62,26 +67,26 @@ func (s *Service) getById(ctx context.Context, provider string, id string) (runt
 	return resource, nil
 }
 
-func (s *Service) getAll(ctx context.Context, provider string) (runtime.Object, error) {
+func (s *Service) getAll(ctx context.Context, provider, namespace string) (runtime.Object, error) {
 	var err error
 
 	var clusters []runtime.Object
 	{
 		switch provider {
 		case key.ProviderAWS:
-			clusters, err = s.getAllAWS(ctx)
+			clusters, err = s.getAllAWS(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderAzure:
-			clusters, err = s.getAllAzure(ctx)
+			clusters, err = s.getAllAzure(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderKVM:
-			clusters, err = s.getAllKVM(ctx)
+			clusters, err = s.getAllKVM(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

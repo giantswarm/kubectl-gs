@@ -14,13 +14,13 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) v4ListAWS(ctx context.Context) (*CommonClusterList, error) {
+func (s *Service) v4ListAWS(ctx context.Context, namespace string) (*CommonClusterList, error) {
 	var err error
 
 	clusterConfigs := &corev1alpha1.AWSClusterConfigList{}
 	{
 		options := &runtimeClient.ListOptions{
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusterConfigs, options)
 		if err != nil {
@@ -33,7 +33,7 @@ func (s *Service) v4ListAWS(ctx context.Context) (*CommonClusterList, error) {
 	configs := &providerv1alpha1.AWSConfigList{}
 	{
 		options := &runtimeClient.ListOptions{
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().List(ctx, configs, options)
 		if err != nil {
@@ -82,7 +82,7 @@ func (s *Service) v4ListAWS(ctx context.Context) (*CommonClusterList, error) {
 	return clusters, nil
 }
 
-func (s *Service) v5ListAWS(ctx context.Context) (*infrastructurev1alpha2.AWSClusterList, error) {
+func (s *Service) v5ListAWS(ctx context.Context, namespace string) (*infrastructurev1alpha2.AWSClusterList, error) {
 	clusterIDs, err := s.getClusterIDs(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -90,7 +90,7 @@ func (s *Service) v5ListAWS(ctx context.Context) (*infrastructurev1alpha2.AWSClu
 
 	awsClusters := &infrastructurev1alpha2.AWSClusterList{}
 	options := &runtimeClient.ListOptions{
-		Namespace: "default",
+		Namespace: namespace,
 	}
 	{
 		err = s.client.K8sClient.CtrlClient().List(ctx, awsClusters, options)
@@ -112,13 +112,13 @@ func (s *Service) v5ListAWS(ctx context.Context) (*infrastructurev1alpha2.AWSClu
 	return awsClusters, nil
 }
 
-func (s *Service) getAllAWS(ctx context.Context) ([]runtime.Object, error) {
+func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]runtime.Object, error) {
 	var (
 		err      error
 		clusters []runtime.Object
 	)
 
-	v5ClusterList, err := s.v5ListAWS(ctx)
+	v5ClusterList, err := s.v5ListAWS(ctx, namespace)
 	if err == nil {
 		for _, c := range v5ClusterList.Items {
 			clusters = append(clusters, &c)
@@ -129,7 +129,7 @@ func (s *Service) getAllAWS(ctx context.Context) ([]runtime.Object, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	v4ClusterList, err := s.v4ListAWS(ctx)
+	v4ClusterList, err := s.v4ListAWS(ctx, namespace)
 	if err == nil {
 		clusters = append(clusters, v4ClusterList.Items...)
 	} else if IsNoResources(err) {
@@ -145,14 +145,14 @@ func (s *Service) getAllAWS(ctx context.Context) ([]runtime.Object, error) {
 	return clusters, err
 }
 
-func (s *Service) v4GetByIdAWS(ctx context.Context, id string) (*V4ClusterList, error) {
+func (s *Service) v4GetByIdAWS(ctx context.Context, id, namespace string) (*V4ClusterList, error) {
 	var err error
 
 	clusterConfig := &corev1alpha1.AWSClusterConfig{}
 	{
 		key := runtimeClient.ObjectKey{
 			Name:      fmt.Sprintf("%s-aws-cluster-config", id),
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, key, clusterConfig)
 		if errors.IsNotFound(err) {
@@ -166,7 +166,7 @@ func (s *Service) v4GetByIdAWS(ctx context.Context, id string) (*V4ClusterList, 
 	{
 		key := runtimeClient.ObjectKey{
 			Name:      id,
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, key, config)
 		if errors.IsNotFound(err) {
@@ -190,11 +190,11 @@ func (s *Service) v4GetByIdAWS(ctx context.Context, id string) (*V4ClusterList, 
 	return v4ClusterList, nil
 }
 
-func (s *Service) v5GetByIdAWS(ctx context.Context, id string) (*infrastructurev1alpha2.AWSCluster, error) {
+func (s *Service) v5GetByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
 	cluster := &infrastructurev1alpha2.AWSCluster{}
 	key := runtimeClient.ObjectKey{
 		Name:      id,
-		Namespace: "default",
+		Namespace: namespace,
 	}
 	err := s.client.K8sClient.CtrlClient().Get(ctx, key, cluster)
 	if errors.IsNotFound(err) {
@@ -208,13 +208,13 @@ func (s *Service) v5GetByIdAWS(ctx context.Context, id string) (*infrastructurev
 	return cluster, nil
 }
 
-func (s *Service) getByIdAWS(ctx context.Context, id string) (runtime.Object, error) {
+func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (runtime.Object, error) {
 	var (
 		err     error
 		cluster runtime.Object
 	)
 
-	cluster, err = s.v5GetByIdAWS(ctx, id)
+	cluster, err = s.v5GetByIdAWS(ctx, id, namespace)
 	if err == nil {
 		return cluster, nil
 	} else if IsNotFound(err) {
@@ -223,7 +223,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id string) (runtime.Object, er
 		return nil, microerror.Mask(err)
 	}
 
-	cluster, err = s.v4GetByIdAWS(ctx, id)
+	cluster, err = s.v4GetByIdAWS(ctx, id, namespace)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

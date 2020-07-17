@@ -13,13 +13,13 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) v4ListKVM(ctx context.Context) (*CommonClusterList, error) {
+func (s *Service) v4ListKVM(ctx context.Context, namespace string) (*CommonClusterList, error) {
 	var err error
 
 	clusterConfigs := &corev1alpha1.KVMClusterConfigList{}
 	{
 		options := &runtimeClient.ListOptions{
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusterConfigs, options)
 		if err != nil {
@@ -32,7 +32,7 @@ func (s *Service) v4ListKVM(ctx context.Context) (*CommonClusterList, error) {
 	configs := &providerv1alpha1.KVMConfigList{}
 	{
 		options := &runtimeClient.ListOptions{
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().List(ctx, configs, options)
 		if err != nil {
@@ -81,13 +81,13 @@ func (s *Service) v4ListKVM(ctx context.Context) (*CommonClusterList, error) {
 	return clusters, nil
 }
 
-func (s *Service) getAllKVM(ctx context.Context) ([]runtime.Object, error) {
+func (s *Service) getAllKVM(ctx context.Context, namespace string) ([]runtime.Object, error) {
 	var (
 		err      error
 		clusters []runtime.Object
 	)
 
-	v4ClusterList, err := s.v4ListKVM(ctx)
+	v4ClusterList, err := s.v4ListKVM(ctx, namespace)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -96,14 +96,14 @@ func (s *Service) getAllKVM(ctx context.Context) ([]runtime.Object, error) {
 	return clusters, err
 }
 
-func (s *Service) v4GetByIdKVM(ctx context.Context, id string) (*V4ClusterList, error) {
+func (s *Service) v4GetByIdKVM(ctx context.Context, id, namespace string) (*V4ClusterList, error) {
 	var err error
 
 	clusterConfig := &corev1alpha1.KVMClusterConfig{}
 	{
 		key := runtimeClient.ObjectKey{
 			Name:      fmt.Sprintf("%s-kvm-cluster-config", id),
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, key, clusterConfig)
 		if errors.IsNotFound(err) {
@@ -117,7 +117,7 @@ func (s *Service) v4GetByIdKVM(ctx context.Context, id string) (*V4ClusterList, 
 	{
 		key := runtimeClient.ObjectKey{
 			Name:      id,
-			Namespace: "default",
+			Namespace: namespace,
 		}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, key, config)
 		if errors.IsNotFound(err) {
@@ -141,8 +141,8 @@ func (s *Service) v4GetByIdKVM(ctx context.Context, id string) (*V4ClusterList, 
 	return v4ClusterList, nil
 }
 
-func (s *Service) getByIdKVM(ctx context.Context, id string) (runtime.Object, error) {
-	cluster, err := s.v4GetByIdKVM(ctx, id)
+func (s *Service) getByIdKVM(ctx context.Context, id, namespace string) (runtime.Object, error) {
+	cluster, err := s.v4GetByIdKVM(ctx, id, namespace)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

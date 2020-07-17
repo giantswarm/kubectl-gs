@@ -26,8 +26,9 @@ func createValidTestConfig() *clientcmdapi.Config {
 		Token: token,
 	}
 	config.Contexts["clean"] = &clientcmdapi.Context{
-		Cluster:  "clean",
-		AuthInfo: "clean",
+		Cluster:   "clean",
+		AuthInfo:  "clean",
+		Namespace: "default",
 	}
 	config.CurrentContext = "clean"
 

@@ -31,8 +31,9 @@ func (in *V4ClusterList) DeepCopyObject() runtime.Object {
 }
 
 type GetOptions struct {
-	ID       string
-	Provider string
+	ID        string
+	Provider  string
+	Namespace string
 }
 
 type Interface interface {

@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
@@ -68,8 +69,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		options := &cluster.GetOptions{
 			Provider: r.provider,
 		}
-		if len(args) > 0 {
-			options.ID = strings.ToLower(args[0])
+		{
+			if len(args) > 0 {
+				options.ID = strings.ToLower(args[0])
+			}
+			if cf, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok {
+				options.Namespace = *cf.Namespace
+			}
 		}
 
 		resource, err = r.service.Get(ctx, options)
