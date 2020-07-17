@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Implemented support for the `get cluster(s) <id>` command.
+
 ## [0.5.3] - 2020-07-13
 
 ## [0.5.2] - 2020-07-03

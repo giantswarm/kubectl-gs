@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	name  = "clusters [cluster-id]"
+	name  = "clusters <cluster-id>"
 	alias = "cluster"
 
 	shortDescription = "Display one or many clusters"
