@@ -38,14 +38,14 @@ func New(config Config) (*Release, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	g := &Release{
+	r := &Release{
 		releases: releases,
 	}
 
-	return g, nil
+	return r, nil
 }
 
-func (g *Release) ReleaseComponents(version string) map[string]string {
+func (r *Release) ReleaseComponents(version string) map[string]string {
 	var releaseVersion string
 	{
 		if strings.HasPrefix(version, "v") {
@@ -57,7 +57,7 @@ func (g *Release) ReleaseComponents(version string) map[string]string {
 
 	releaseComponents := make(map[string]string)
 
-	for _, release := range g.releases {
+	for _, release := range r.releases {
 		if release.Metadata.Name == releaseVersion {
 			for _, component := range release.Spec.Components {
 				releaseComponents[component.Name] = component.Version
@@ -68,7 +68,7 @@ func (g *Release) ReleaseComponents(version string) map[string]string {
 	return releaseComponents
 }
 
-func (g *Release) Validate(version string) bool {
+func (r *Release) Validate(version string) bool {
 	var releaseVersion string
 	{
 		if strings.HasPrefix(version, "v") {
@@ -79,7 +79,7 @@ func (g *Release) Validate(version string) bool {
 
 	}
 
-	for _, release := range g.releases {
+	for _, release := range r.releases {
 		if release.Metadata.Name == releaseVersion {
 			return true
 		}
