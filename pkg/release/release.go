@@ -1,4 +1,4 @@
-package gsrelease
+package release
 
 import (
 	"fmt"
@@ -24,11 +24,11 @@ type Config struct {
 	Branch string
 }
 
-type GSRelease struct {
-	releases []Release
+type Release struct {
+	releases []ReleaseObject
 }
 
-func New(config Config) (*GSRelease, error) {
+func New(config Config) (*Release, error) {
 	if config.Branch == "" {
 		config.Branch = defaultBranch
 	}
@@ -38,14 +38,14 @@ func New(config Config) (*GSRelease, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	g := &GSRelease{
+	g := &Release{
 		releases: releases,
 	}
 
 	return g, nil
 }
 
-func (g *GSRelease) ReleaseComponents(version string) map[string]string {
+func (g *Release) ReleaseComponents(version string) map[string]string {
 	var releaseVersion string
 	{
 		if strings.HasPrefix(version, "v") {
@@ -68,7 +68,7 @@ func (g *GSRelease) ReleaseComponents(version string) map[string]string {
 	return releaseComponents
 }
 
-func (g *GSRelease) Validate(version string) bool {
+func (g *Release) Validate(version string) bool {
 	var releaseVersion string
 	{
 		if strings.HasPrefix(version, "v") {
@@ -88,7 +88,7 @@ func (g *GSRelease) Validate(version string) bool {
 	return false
 }
 
-func readReleases(branch string) ([]Release, error) {
+func readReleases(branch string) ([]ReleaseObject, error) {
 	var b []byte
 	{
 		resp, err := http.Get(fmt.Sprintf(releasesAWSIndexURLFmt, branch))
@@ -113,7 +113,7 @@ func readReleases(branch string) ([]Release, error) {
 		}
 	}
 
-	var releases []Release
+	var releases []ReleaseObject
 	{
 		for _, v := range r.Resources {
 			resp, err := http.Get(fmt.Sprintf(releasesAWSReleaseURLFmt, branch, v))
@@ -127,7 +127,7 @@ func readReleases(branch string) ([]Release, error) {
 				return nil, microerror.Mask(err)
 			}
 
-			release := Release{}
+			release := ReleaseObject{}
 			err = yaml.Unmarshal(bodyBytes, &release)
 			if err != nil {
 				return nil, microerror.Mask(err)
