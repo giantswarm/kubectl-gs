@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/ghodss/yaml"
+	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -15,7 +16,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
-	"github.com/giantswarm/kubectl-gs/pkg/template/cluster"
 )
 
 type runner struct {
@@ -69,13 +69,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	config := cluster.Config{
+	config := v1alpha2.ClusterCRsConfig{
 		ClusterID:         r.flag.ClusterID,
 		Credential:        r.flag.Credential,
 		Domain:            r.flag.Domain,
 		ExternalSNAT:      r.flag.ExternalSNAT,
 		MasterAZ:          r.flag.MasterAZ,
-		Name:              r.flag.Name,
+		Description:       r.flag.Name,
 		PodsCIDR:          r.flag.PodsCIDR,
 		Owner:             r.flag.Owner,
 		Region:            r.flag.Region,
@@ -84,7 +84,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Labels:            userLabels,
 	}
 
-	crs, err := cluster.NewCRs(config)
+	crs, err := v1alpha2.NewClusterCRs(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
