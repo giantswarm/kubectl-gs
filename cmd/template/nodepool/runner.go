@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
+	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -15,7 +16,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/aws"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
-	"github.com/giantswarm/kubectl-gs/pkg/template/nodepool"
 )
 
 type runner struct {
@@ -65,11 +65,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		releaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 	}
 
-	config := nodepool.Config{
+	config := v1alpha2.NodePoolCRsConfig{
 		AvailabilityZones:                   availabilityZones,
 		AWSInstanceType:                     r.flag.AWSInstanceType,
 		ClusterID:                           r.flag.ClusterID,
-		Name:                                r.flag.NodepoolName,
+		Description:                         r.flag.NodepoolName,
 		NodesMax:                            r.flag.NodesMax,
 		NodesMin:                            r.flag.NodesMin,
 		OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
@@ -79,7 +79,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ReleaseVersion:                      r.flag.Release,
 	}
 
-	crs, err := nodepool.NewCRs(config)
+	crs, err := v1alpha2.NewNodePoolCRs(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
