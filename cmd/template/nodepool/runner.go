@@ -14,7 +14,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/aws"
-	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 	"github.com/giantswarm/kubectl-gs/pkg/template/nodepool"
 )
 
@@ -53,17 +53,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var release *gsrelease.GSRelease
+	var releaseComponents map[string]string
 	{
-		c := gsrelease.Config{}
+		c := release.Config{}
 
-		release, err = gsrelease.New(c)
+		releaseCollection, err := release.New(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
 
-	releaseComponents := release.ReleaseComponents(r.flag.Release)
+		releaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
+	}
 
 	config := nodepool.Config{
 		AvailabilityZones:                   availabilityZones,
