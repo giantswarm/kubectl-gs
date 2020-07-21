@@ -1,0 +1,33 @@
+apiVersion: infrastructure.giantswarm.io/v1alpha2
+kind: AWSCluster
+metadata:
+  creationTimestamp: "2021-01-02T15:04:32Z"
+  labels:
+    giantswarm.io/organization: some-other
+    release.giantswarm.io/version: 11.0.0
+  name: f930q
+  namespace: default
+spec:
+  cluster:
+    description: test cluster 4
+    dns:
+      domain: ""
+    kubeProxy: {}
+    oidc:
+      claims: {}
+  provider:
+    credentialSecret:
+      name: ""
+      namespace: ""
+    master:
+      availabilityZone: ""
+      instanceType: ""
+    pods: {}
+    region: ""
+status:
+  cluster:
+    conditions:
+    - condition: Created
+      lastTransitionTime: null
+  provider:
+    network: {}

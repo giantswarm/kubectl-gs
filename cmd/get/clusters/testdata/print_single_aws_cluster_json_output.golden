@@ -1,0 +1,50 @@
+{
+    "kind": "AWSCluster",
+    "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+    "metadata": {
+        "name": "f930q",
+        "namespace": "default",
+        "creationTimestamp": "2021-01-02T15:04:32Z",
+        "labels": {
+            "giantswarm.io/organization": "some-other",
+            "release.giantswarm.io/version": "11.0.0"
+        }
+    },
+    "spec": {
+        "cluster": {
+            "description": "test cluster 4",
+            "dns": {
+                "domain": ""
+            },
+            "kubeProxy": {},
+            "oidc": {
+                "claims": {}
+            }
+        },
+        "provider": {
+            "credentialSecret": {
+                "name": "",
+                "namespace": ""
+            },
+            "master": {
+                "availabilityZone": "",
+                "instanceType": ""
+            },
+            "pods": {},
+            "region": ""
+        }
+    },
+    "status": {
+        "cluster": {
+            "conditions": [
+                {
+                    "lastTransitionTime": null,
+                    "condition": "Created"
+                }
+            ]
+        },
+        "provider": {
+            "network": {}
+        }
+    }
+}
