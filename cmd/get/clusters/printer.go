@@ -1,12 +1,9 @@
 package clusters
 
 import (
-	"fmt"
 	"io"
-	"strings"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
@@ -32,7 +29,7 @@ func (r *runner) printOutput(resource runtime.Object) error {
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputName(r.flag.print.OutputFormat):
-		err = r.printResourceName(resource)
+		err = output.PrintResourceNames(r.stdout, resource)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -69,50 +66,4 @@ func (r *runner) printNoResourcesOutput() error {
 	}
 
 	return nil
-}
-
-func (r *runner) printResourceName(resource runtime.Object) error {
-	list, err := extractResourcesOutOfList(resource)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	printer := &printers.NamePrinter{}
-	var buf strings.Builder
-	for _, item := range list {
-		err = printer.PrintObj(item, &buf)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	_, err = fmt.Fprint(r.stdout, buf.String())
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func extractResourcesOutOfList(resource runtime.Object) ([]runtime.Object, error) {
-	if !meta.IsListType(resource) {
-		return []runtime.Object{resource}, nil
-	}
-
-	list, err := meta.ExtractList(resource)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var resources []runtime.Object
-	for _, item := range list {
-		list, err = extractResourcesOutOfList(item)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		resources = append(resources, list...)
-	}
-
-	return resources, nil
 }
