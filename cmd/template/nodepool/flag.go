@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/pkg/aws"
-	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
 const (
@@ -127,17 +127,17 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
-	var release *gsrelease.GSRelease
+	var r *release.Release
 	{
-		c := gsrelease.Config{}
+		c := release.Config{}
 
-		release, err = gsrelease.New(c)
+		r, err = release.New(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	if !release.Validate(f.Release) {
+	if !r.Validate(f.Release) {
 		return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
 	}
 

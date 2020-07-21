@@ -8,14 +8,14 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
+	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/aws"
-	"github.com/giantswarm/kubectl-gs/pkg/gsrelease"
-	"github.com/giantswarm/kubectl-gs/pkg/template/nodepool"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
 type runner struct {
@@ -53,23 +53,23 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var release *gsrelease.GSRelease
+	var releaseComponents map[string]string
 	{
-		c := gsrelease.Config{}
+		c := release.Config{}
 
-		release, err = gsrelease.New(c)
+		releaseCollection, err := release.New(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
+		releaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 	}
 
-	releaseComponents := release.ReleaseComponents(r.flag.Release)
-
-	config := nodepool.Config{
+	config := v1alpha2.NodePoolCRsConfig{
 		AvailabilityZones:                   availabilityZones,
 		AWSInstanceType:                     r.flag.AWSInstanceType,
 		ClusterID:                           r.flag.ClusterID,
-		Name:                                r.flag.NodepoolName,
+		Description:                         r.flag.NodepoolName,
 		NodesMax:                            r.flag.NodesMax,
 		NodesMin:                            r.flag.NodesMin,
 		OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
@@ -79,35 +79,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ReleaseVersion:                      r.flag.Release,
 	}
 
-	mdCR, awsMDCR, err := nodepool.NewMachineDeploymentCRs(config)
+	crs, err := v1alpha2.NewNodePoolCRs(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	mdCRYaml, err := yaml.Marshal(mdCR)
+	mdCRYaml, err := yaml.Marshal(crs.MachineDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	awsMDCRYaml, err := yaml.Marshal(awsMDCR)
+	awsMDCRYaml, err := yaml.Marshal(crs.AWSMachineDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	type MachineDeploymentCRsOutput struct {
+	data := struct {
 		AWSMachineDeploymentCR string
 		MachineDeploymentCR    string
-	}
-
-	nodepoolCRsOutput := MachineDeploymentCRsOutput{
+	}{
 		AWSMachineDeploymentCR: string(awsMDCRYaml),
 		MachineDeploymentCR:    string(mdCRYaml),
 	}
 
 	t := template.Must(template.New("nodepoolCR").Parse(key.MachineDeploymentCRsTemplate))
 
-	var output *os.File
 	{
+		var output *os.File
+
 		if r.flag.Output == "" {
 			output = os.Stdout
 		} else {
@@ -120,7 +119,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			output = f
 		}
 
-		err = t.Execute(output, nodepoolCRsOutput)
+		err = t.Execute(output, data)
 		if err != nil {
 			return microerror.Mask(err)
 		}

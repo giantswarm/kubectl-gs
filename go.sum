@@ -135,8 +135,8 @@ github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2H
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/giantswarm/apiextensions v0.4.8/go.mod h1:iMZLjyvqRIVPTAQGbjwTSqifwrGB41a4mW8MwC45mYI=
-github.com/giantswarm/apiextensions v0.4.13 h1:vQVspVaMlmNRsV7I2PITJTEBBY1PRa250XBeuRyYZis=
-github.com/giantswarm/apiextensions v0.4.13/go.mod h1:iMZLjyvqRIVPTAQGbjwTSqifwrGB41a4mW8MwC45mYI=
+github.com/giantswarm/apiextensions v0.4.16 h1:X5C6QzuupEWKx9I3IKCRgBQT0P2vgCfIURczSCU98y8=
+github.com/giantswarm/apiextensions v0.4.16/go.mod h1:dOiXE5ZQDN1vDpZjcCgKhPN/Id8BQKlI7mqYyn+mCJk=
 github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
 github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYasoY2OSfNOk=
 github.com/giantswarm/k8sclient/v3 v3.1.1 h1:iJYop1h59ItPzmroa7wGHrhXSzeh7QblViUMIQPm9dY=
@@ -202,9 +202,8 @@ github.com/go-openapi/spec v0.19.3/go.mod h1:FpwSN1ksY1eteniUU7X0N/BgJ7a4WvBFVA8
 github.com/go-openapi/strfmt v0.17.0/go.mod h1:P82hnJI0CXkErkXi8IKjPbNBM6lV6+5pLP5l494TcyU=
 github.com/go-openapi/strfmt v0.18.0/go.mod h1:P82hnJI0CXkErkXi8IKjPbNBM6lV6+5pLP5l494TcyU=
 github.com/go-openapi/strfmt v0.19.0/go.mod h1:+uW+93UVvGGq2qGaZxdDeJqSAqBqBdl+ZPMF/cC8nDY=
+github.com/go-openapi/strfmt v0.19.3 h1:eRfyY5SkaNJCAwmmMcADjY31ow9+N7MCLW7oRkbsINA=
 github.com/go-openapi/strfmt v0.19.3/go.mod h1:0yX7dbo8mKIvc3XSKp7MNfxw4JytCfCD6+bY1AVL9LU=
-github.com/go-openapi/strfmt v0.19.5 h1:0utjKrw+BAh8s57XE9Xz8DUBsVvPmRUB6styvl9wWIM=
-github.com/go-openapi/strfmt v0.19.5/go.mod h1:eftuHTlB/dI8Uq8JJOyRlieZf+WkkxUuk0dgdHXr2Qk=
 github.com/go-openapi/swag v0.0.0-20160704191624-1d0bd113de87/go.mod h1:DXUve3Dpr1UfpPtxFw+EFuQ41HhCWZfha5jSVRG7C7I=
 github.com/go-openapi/swag v0.17.0/go.mod h1:AByQ+nYG6gQg71GINrmuDXCPWdL640yX49/kXLo40Tg=
 github.com/go-openapi/swag v0.18.0/go.mod h1:AByQ+nYG6gQg71GINrmuDXCPWdL640yX49/kXLo40Tg=
@@ -249,6 +248,7 @@ github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5a
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+github.com/google/go-cmp v0.4.1/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.0 h1:/QaMHBdZ26BB3SSst0Iwl10Epc+xhTquomWX0oZEB6w=
 github.com/google/go-cmp v0.5.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-github v17.0.0+incompatible/go.mod h1:zLgOLi98H3fifZn+44m+umXrS52loVEgC2AApnigrVQ=
