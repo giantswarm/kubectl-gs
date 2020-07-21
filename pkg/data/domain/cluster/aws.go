@@ -2,220 +2,65 @@ package cluster
 
 import (
 	"context"
-	"fmt"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) v4ListAWS(ctx context.Context, namespace string) (*CommonClusterList, error) {
+func (s *Service) getAllAWS(ctx context.Context, namespace string) (*infrastructurev1alpha2.AWSClusterList, error) {
 	var err error
 
-	clusterConfigs := &corev1alpha1.AWSClusterConfigList{}
+	var clusterIDs map[string]bool
 	{
-		options := &runtimeClient.ListOptions{
-			Namespace: namespace,
-		}
-		err = s.client.K8sClient.CtrlClient().List(ctx, clusterConfigs, options)
+		apiClusters := &apiv1alpha2.ClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, apiClusters)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(clusterConfigs.Items) == 0 {
+		} else if len(apiClusters.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
 		}
-	}
 
-	configs := &providerv1alpha1.AWSConfigList{}
-	{
-		options := &runtimeClient.ListOptions{
-			Namespace: namespace,
-		}
-		err = s.client.K8sClient.CtrlClient().List(ctx, configs, options)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		} else if len(clusterConfigs.Items) == 0 {
-			return nil, microerror.Mask(noResourcesError)
+		clusterIDs = make(map[string]bool, len(apiClusters.Items))
+		for _, cluster := range apiClusters.Items {
+			clusterIDs[cluster.Name] = true
 		}
 	}
 
-	clusters := &CommonClusterList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "List",
-			APIVersion: "v1",
-		},
-	}
-	for _, cc := range clusterConfigs.Items {
-		clusterConfig := cc
-
-		var correspondingConfig runtime.Object
-		{
-			for _, config := range configs.Items {
-				if clusterConfig.Name == fmt.Sprintf("%s-aws-cluster-config", config.Name) {
-					correspondingConfig = &config
-					break
-				}
-			}
-			if correspondingConfig == nil {
-				continue
-			}
-			correspondingConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   providerv1alpha1.SchemeGroupVersion.Group,
-				Version: providerv1alpha1.SchemeGroupVersion.Version,
-				Kind:    "AWSConfig",
-			})
-		}
-
-		{
-			clusterConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-				Group:   corev1alpha1.SchemeGroupVersion.Group,
-				Version: corev1alpha1.SchemeGroupVersion.Version,
-				Kind:    "AWSClusterConfig",
-			})
-		}
-
-		newCluster := &V4ClusterList{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "List",
-				APIVersion: "v1",
-			},
-			Items: []runtime.Object{
-				&clusterConfig,
-				correspondingConfig,
-			},
-		}
-
-		clusters.Items = append(clusters.Items, newCluster)
-	}
-
-	return clusters, nil
-}
-
-func (s *Service) v5ListAWS(ctx context.Context, namespace string) (*infrastructurev1alpha2.AWSClusterList, error) {
-	clusterIDs, err := s.getClusterIDs(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	awsClusters := &infrastructurev1alpha2.AWSClusterList{}
+	clusterList := &infrastructurev1alpha2.AWSClusterList{}
 	options := &runtimeClient.ListOptions{
 		Namespace: namespace,
 	}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, awsClusters, options)
+		err = s.client.K8sClient.CtrlClient().List(ctx, clusterList, options)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(awsClusters.Items) == 0 {
+		} else if len(clusterList.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
 		}
 
-		var clusterList []infrastructurev1alpha2.AWSCluster
-		for _, cluster := range awsClusters.Items {
+		var clusters []infrastructurev1alpha2.AWSCluster
+		for _, cluster := range clusterList.Items {
 			if _, exists := clusterIDs[cluster.Name]; exists {
 				cluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
-				clusterList = append(clusterList, cluster)
+				clusters = append(clusters, cluster)
 			}
 		}
-		awsClusters.Items = clusterList
+		clusterList.Items = clusters
 	}
 
-	return awsClusters, nil
-}
-
-func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]runtime.Object, error) {
-	var (
-		err      error
-		clusters []runtime.Object
-	)
-
-	v5ClusterList, err := s.v5ListAWS(ctx, namespace)
-	if err == nil {
-		for _, c := range v5ClusterList.Items {
-			clusters = append(clusters, &c)
-		}
-	} else if IsNoResources(err) {
-		// Fall through.
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	v4ClusterList, err := s.v4ListAWS(ctx, namespace)
-	if err == nil {
-		clusters = append(clusters, v4ClusterList.Items...)
-	} else if IsNoResources(err) {
-		// Fall through.
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	if len(clusters) == 0 {
-		return nil, microerror.Mask(noResourcesError)
-	}
-
-	return clusters, err
-}
-
-func (s *Service) v4GetByIdAWS(ctx context.Context, id, namespace string) (*V4ClusterList, error) {
-	var err error
-
-	clusterConfig := &corev1alpha1.AWSClusterConfig{}
 	{
-		key := runtimeClient.ObjectKey{
-			Name:      fmt.Sprintf("%s-aws-cluster-config", id),
-			Namespace: namespace,
-		}
-		err = s.client.K8sClient.CtrlClient().Get(ctx, key, clusterConfig)
-		if errors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
-		} else if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-	clusterConfig.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   corev1alpha1.SchemeGroupVersion.Group,
-		Version: corev1alpha1.SchemeGroupVersion.Version,
-		Kind:    "AWSClusterConfig",
-	})
-
-	config := &providerv1alpha1.AWSConfig{}
-	{
-		key := runtimeClient.ObjectKey{
-			Name:      id,
-			Namespace: namespace,
-		}
-		err = s.client.K8sClient.CtrlClient().Get(ctx, key, config)
-		if errors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
-		} else if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-	config.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   providerv1alpha1.SchemeGroupVersion.Group,
-		Version: providerv1alpha1.SchemeGroupVersion.Version,
-		Kind:    "AWSConfig",
-	})
-
-	v4ClusterList := &V4ClusterList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "List",
-			APIVersion: "v1",
-		},
-		Items: []runtime.Object{
-			clusterConfig,
-			config,
-		},
+		clusterList.APIVersion = "v1"
+		clusterList.Kind = "List"
 	}
 
-	return v4ClusterList, nil
+	return clusterList, nil
 }
 
-func (s *Service) v5GetByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
+func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
+
 	cluster := &infrastructurev1alpha2.AWSCluster{}
 	key := runtimeClient.ObjectKey{
 		Name:      id,
@@ -229,29 +74,6 @@ func (s *Service) v5GetByIdAWS(ctx context.Context, id, namespace string) (*infr
 	}
 
 	cluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
-
-	return cluster, nil
-}
-
-func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (runtime.Object, error) {
-	var (
-		err     error
-		cluster runtime.Object
-	)
-
-	cluster, err = s.v5GetByIdAWS(ctx, id, namespace)
-	if err == nil {
-		return cluster, nil
-	} else if IsNotFound(err) {
-		// Fall through, try v4.
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	cluster, err = s.v4GetByIdAWS(ctx, id, namespace)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 
 	return cluster, nil
 }

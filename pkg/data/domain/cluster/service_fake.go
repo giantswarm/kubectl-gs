@@ -36,18 +36,6 @@ func NewFakeService(storage []runtime.Object) *FakeService {
 func (ms *FakeService) Get(ctx context.Context, options *GetOptions) (runtime.Object, error) {
 	var err error
 	for _, res := range ms.storage {
-		v4ClusterList, isV4ClusterList := res.(*V4ClusterList)
-		if isV4ClusterList {
-			for _, resource := range v4ClusterList.Items {
-				err = ms.service.client.K8sClient.CtrlClient().Create(ctx, resource)
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-			}
-
-			continue
-		}
-
 		err = ms.service.client.K8sClient.CtrlClient().Create(ctx, res)
 		if err != nil {
 			return nil, microerror.Mask(err)

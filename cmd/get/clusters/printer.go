@@ -26,10 +26,6 @@ func (r *runner) printOutput(resource runtime.Object) error {
 		switch r.provider {
 		case key.ProviderAWS:
 			resource = provider.GetAWSTable(resource)
-		case key.ProviderAzure:
-			resource = provider.GetAzureTable(resource)
-		case key.ProviderKVM:
-			resource = provider.GetKVMTable(resource)
 		}
 
 		printOptions := printers.PrintOptions{}

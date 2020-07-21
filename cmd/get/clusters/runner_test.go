@@ -34,7 +34,8 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
-				newAWSV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
+				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "1sad2", Namespace: "default"}},
+				newAWSCluster("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
 				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "f930q", Namespace: "default"}},
 				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
 			},
@@ -50,7 +51,8 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newAWSV4ClusterList("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
+				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "1sad2", Namespace: "default"}},
+				newAWSCluster("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
 				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "f930q", Namespace: "default"}},
 				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
 			},
