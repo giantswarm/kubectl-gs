@@ -39,7 +39,10 @@ func Middleware(k8sConfigAccess clientcmd.ConfigAccess) middleware.Middleware {
 		}
 
 		{
-			idToken, rToken, _ := auther.RenewToken(ctx, authProvider.Config["refresh-token"])
+			idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config["refresh-token"])
+			if err != nil {
+				return nil
+			}
 			authProvider.Config["refresh-token"] = rToken
 			authProvider.Config["id-token"] = idToken
 		}
