@@ -11,6 +11,7 @@ const (
 	Organization      = "giantswarm.io/organization"
 	Provider          = "giantswarm.io/provider"
 	VersionBundle     = "giantswarm.io/version-bundle"
+	Description       = "giantswarm.io/description"
 )
 
 const (

@@ -64,7 +64,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (*infrastruct
 func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
 	var err error
 
-	key := runtimeClient.ObjectKey{
+	objKey := runtimeClient.ObjectKey{
 		Name:      id,
 		Namespace: namespace,
 	}
@@ -72,7 +72,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infras
 	// The CAPI cluster has the labels. It can be used for filtering.
 	cluster := &capiv1alpha2.Cluster{}
 	{
-		err = s.client.K8sClient.CtrlClient().Get(ctx, key, cluster)
+		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, cluster)
 		if errors.IsNotFound(err) {
 			return nil, microerror.Mask(notFoundError)
 		} else if err != nil {
@@ -81,7 +81,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infras
 	}
 
 	awsCluster := &infrastructurev1alpha2.AWSCluster{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, key, awsCluster)
+	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, awsCluster)
 	if errors.IsNotFound(err) {
 		return nil, microerror.Mask(notFoundError)
 	} else if err != nil {

@@ -49,6 +49,12 @@ func (s *Service) getById(ctx context.Context, provider, id, namespace string) (
 				return nil, microerror.Mask(err)
 			}
 
+		case key.ProviderAzure:
+			resource, err = s.getByIdAzure(ctx, id, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 		default:
 			return nil, microerror.Mask(invalidProviderError)
 		}
@@ -65,6 +71,12 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (runti
 		switch provider {
 		case key.ProviderAWS:
 			clusterList, err = s.getAllAWS(ctx, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderAzure:
+			clusterList, err = s.getAllAzure(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

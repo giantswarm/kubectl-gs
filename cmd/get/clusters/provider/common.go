@@ -2,16 +2,19 @@ package provider
 
 import (
 	"strings"
-
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 )
 
-func getLatestCondition(conditions []infrastructurev1alpha2.CommonClusterStatusCondition) string {
-	if len(conditions) < 1 {
-		return "n/a"
-	}
+const (
+	ClusterStatusConditionCreated  = "Created"
+	ClusterStatusConditionCreating = "Creating"
 
-	condition := conditions[0].Condition
+	ClusterStatusConditionDeleted  = "Deleted"
+	ClusterStatusConditionDeleting = "Deleting"
 
+	ClusterStatusConditionUpdated  = "Updated"
+	ClusterStatusConditionUpdating = "Updating"
+)
+
+func formatCondition(condition string) string {
 	return strings.ToUpper(condition)
 }

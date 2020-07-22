@@ -23,6 +23,8 @@ func (r *runner) printOutput(resource runtime.Object) error {
 		switch r.provider {
 		case key.ProviderAWS:
 			resource = provider.GetAWSTable(resource)
+		case key.ProviderAzure:
+			resource = provider.GetAzureTable(resource)
 		}
 
 		printOptions := printers.PrintOptions{}

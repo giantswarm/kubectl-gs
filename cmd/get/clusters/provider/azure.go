@@ -1,14 +1,14 @@
 package provider
 
 import (
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
-func GetAWSTable(resource runtime.Object) *metav1.Table {
+func GetAzureTable(resource runtime.Object) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -22,37 +22,38 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 	}
 
 	switch c := resource.(type) {
-	case *infrastructurev1alpha2.AWSClusterList:
+	case *capiv1alpha3.ClusterList:
 		for _, cluster := range c.Items {
-			table.Rows = append(table.Rows, getAWSClusterRow(&cluster))
+			table.Rows = append(table.Rows, getAzureClusterRow(&cluster))
 		}
 
-	case *infrastructurev1alpha2.AWSCluster:
-		table.Rows = append(table.Rows, getAWSClusterRow(c))
+	case *capiv1alpha3.Cluster:
+		table.Rows = append(table.Rows, getAzureClusterRow(c))
 	}
 
 	return table
 }
 
-func getAWSClusterRow(res *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
+func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			res.GetName(),
 			res.CreationTimestamp.UTC(),
-			getLatestAWSCondition(res.Status.Cluster.Conditions),
+			getLatestAzureCondition(res),
 			res.Labels[label.ReleaseVersion],
 			res.Labels[label.Organization],
-			res.Spec.Cluster.Description,
+			res.Labels[label.Description],
+			"",
 		},
 	}
 }
 
-func getLatestAWSCondition(conditions []infrastructurev1alpha2.CommonClusterStatusCondition) string {
-	if len(conditions) < 1 {
-		return "n/a"
-	}
+func getLatestAzureCondition(res *capiv1alpha3.Cluster) string {
+	condition := ClusterStatusConditionCreating
 
-	condition := conditions[0].Condition
+	if res.Status.InfrastructureReady && res.Status.ControlPlaneInitialized && res.Status.ControlPlaneReady {
+		condition = ClusterStatusConditionCreated
+	}
 
 	return formatCondition(condition)
 }
