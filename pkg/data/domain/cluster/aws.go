@@ -6,17 +6,22 @@ import (
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
-	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (s *Service) getAllAWS(ctx context.Context, namespace string) (*infrastructurev1alpha2.AWSClusterList, error) {
 	var err error
 
+	options := &runtimeClient.ListOptions{
+		Namespace: namespace,
+	}
+
 	var clusterIDs map[string]bool
 	{
-		apiClusters := &apiv1alpha2.ClusterList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, apiClusters)
+		// The CAPI clusters have the labels. They can be used for filtering.
+		apiClusters := &capiv1alpha2.ClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, apiClusters, options)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(apiClusters.Items) == 0 {
@@ -30,9 +35,6 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (*infrastruct
 	}
 
 	clusterList := &infrastructurev1alpha2.AWSClusterList{}
-	options := &runtimeClient.ListOptions{
-		Namespace: namespace,
-	}
 	{
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusterList, options)
 		if err != nil {
@@ -60,20 +62,33 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (*infrastruct
 }
 
 func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
+	var err error
 
-	cluster := &infrastructurev1alpha2.AWSCluster{}
 	key := runtimeClient.ObjectKey{
 		Name:      id,
 		Namespace: namespace,
 	}
-	err := s.client.K8sClient.CtrlClient().Get(ctx, key, cluster)
+
+	// The CAPI cluster has the labels. It can be used for filtering.
+	cluster := &capiv1alpha2.Cluster{}
+	{
+		err = s.client.K8sClient.CtrlClient().Get(ctx, key, cluster)
+		if errors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	awsCluster := &infrastructurev1alpha2.AWSCluster{}
+	err = s.client.K8sClient.CtrlClient().Get(ctx, key, cluster)
 	if errors.IsNotFound(err) {
 		return nil, microerror.Mask(notFoundError)
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	cluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
+	awsCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
 
-	return cluster, nil
+	return awsCluster, nil
 }
