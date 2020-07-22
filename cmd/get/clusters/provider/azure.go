@@ -43,16 +43,15 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 			res.Labels[label.ReleaseVersion],
 			res.Labels[label.Organization],
 			getAzureClusterDescription(res),
-			"",
 		},
 	}
 }
 
 func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
-	description := res.Labels[label.Description]
+	description := "n/a"
 
-	if len(description) < 1 {
-		description = "n/a"
+	if desc, exists := res.Labels[label.Description]; exists {
+		description = desc
 	}
 
 	return description

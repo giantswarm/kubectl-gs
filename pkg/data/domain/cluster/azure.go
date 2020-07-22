@@ -42,7 +42,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alp
 			}
 			err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, &config)
 			if errors.IsNotFound(err) {
-				cluster.Labels[label.Description] = ""
+				// Fall through.
 			} else if err != nil {
 				return nil, microerror.Mask(err)
 			} else {
@@ -87,7 +87,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capi
 		}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, &config)
 		if errors.IsNotFound(err) {
-			cluster.Labels[label.Description] = ""
+			// Fall through.
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else {
