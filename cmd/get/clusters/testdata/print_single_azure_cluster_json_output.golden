@@ -1,0 +1,25 @@
+{
+    "kind": "Cluster",
+    "apiVersion": "v1alpha3",
+    "metadata": {
+        "name": "f930q",
+        "namespace": "default",
+        "creationTimestamp": "2021-01-02T15:04:32Z",
+        "labels": {
+            "giantswarm.io/description": "test cluster 4",
+            "giantswarm.io/organization": "some-other",
+            "release.giantswarm.io/version": "11.0.0"
+        }
+    },
+    "spec": {
+        "controlPlaneEndpoint": {
+            "host": "",
+            "port": 0
+        }
+    },
+    "status": {
+        "infrastructureReady": true,
+        "controlPlaneInitialized": true,
+        "controlPlaneReady": true
+    }
+}

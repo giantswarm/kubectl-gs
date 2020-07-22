@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
@@ -117,6 +118,90 @@ func Test_printOutput(t *testing.T) {
 			outputType:         output.OutputName,
 			expectedGoldenFile: "print_single_aws_cluster_name_output.golden",
 		},
+		{
+			name: "case 8: print list of Azure clusters, with table output",
+			cr: newAzureClusterList(
+				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
+				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
+				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputDefault,
+			expectedGoldenFile: "print_list_of_azure_clusters_table_output.golden",
+		},
+		{
+			name: "case 9: print list of Azure clusters, with JSON output",
+			cr: newAzureClusterList(
+				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
+				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
+				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputJSON,
+			expectedGoldenFile: "print_list_of_azure_clusters_json_output.golden",
+		},
+		{
+			name: "case 10: print list of Azure clusters, with YAML output",
+			cr: newAzureClusterList(
+				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
+				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
+				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputYAML,
+			expectedGoldenFile: "print_list_of_azure_clusters_yaml_output.golden",
+		},
+		{
+			name: "case 11: print list of Azure clusters, with name output",
+			cr: newAzureClusterList(
+				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
+				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
+				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputName,
+			expectedGoldenFile: "print_list_of_azure_clusters_name_output.golden",
+		},
+		{
+			name:               "case 12: print single Azure cluster, with table output",
+			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputDefault,
+			expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
+		},
+		{
+			name:               "case 13: print single Azure cluster, with JSON output",
+			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputJSON,
+			expectedGoldenFile: "print_single_azure_cluster_json_output.golden",
+		},
+		{
+			name:               "case 14: print single Azure cluster, with YAML output",
+			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputYAML,
+			expectedGoldenFile: "print_single_azure_cluster_yaml_output.golden",
+		},
+		{
+			name:               "case 15: print single Azure cluster, with name output",
+			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			provider:           key.ProviderAzure,
+			outputType:         output.OutputName,
+			expectedGoldenFile: "print_single_azure_cluster_name_output.golden",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -197,6 +282,46 @@ func newAWSCluster(id, created, release, org, description string, conditions []s
 		Version: infrastructurev1alpha2.SchemeGroupVersion.Version,
 		Kind:    infrastructurev1alpha2.NewAWSClusterTypeMeta().Kind,
 	})
+
+	return c
+}
+
+func newAzureClusterList(clusters ...capiv1alpha3.Cluster) *capiv1alpha3.ClusterList {
+	clusterList := &capiv1alpha3.ClusterList{}
+
+	clusterList.Items = clusters
+	clusterList.APIVersion = "v1"
+	clusterList.Kind = "List"
+
+	return clusterList
+}
+
+func newAzureCluster(id, created, release, org, description string, conditions []string) *capiv1alpha3.Cluster {
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+	c := &capiv1alpha3.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+			Labels: map[string]string{
+				label.ReleaseVersion: release,
+				label.Organization:   org,
+				label.Description:    description,
+			},
+		},
+	}
+
+	if len(conditions) > 0 && conditions[0] == "Created" {
+		c.Status.InfrastructureReady = true
+		c.Status.ControlPlaneInitialized = true
+		c.Status.ControlPlaneReady = true
+	}
+
+	{
+		c.APIVersion = "v1alpha3"
+		c.Kind = "Cluster"
+	}
 
 	return c
 }
