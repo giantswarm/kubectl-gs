@@ -81,7 +81,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infras
 	}
 
 	awsCluster := &infrastructurev1alpha2.AWSCluster{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, key, cluster)
+	err = s.client.K8sClient.CtrlClient().Get(ctx, key, awsCluster)
 	if errors.IsNotFound(err) {
 		return nil, microerror.Mask(notFoundError)
 	} else if err != nil {
