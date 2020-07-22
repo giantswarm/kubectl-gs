@@ -30,6 +30,27 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alp
 		}
 	}
 
+	var objKey runtimeClient.ObjectKey
+	for _, cluster := range clusterList.Items {
+		// FIXME(axbarsan): Remove once the name is stored in
+		// a label, rather than a config map.
+		var config corev1.ConfigMap
+		{
+			objKey = runtimeClient.ObjectKey{
+				Name:      fmt.Sprintf("%s-cluster-user-values", cluster.Name),
+				Namespace: cluster.Namespace,
+			}
+			err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, &config)
+			if errors.IsNotFound(err) {
+				cluster.Labels[label.Description] = ""
+			} else if err != nil {
+				return nil, microerror.Mask(err)
+			} else {
+				cluster.Labels[label.Description] = config.Data["cluster.description"]
+			}
+		}
+	}
+
 	{
 		clusterList.APIVersion = "v1"
 		clusterList.Kind = "List"
@@ -66,12 +87,12 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capi
 		}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, &config)
 		if errors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
+			cluster.Labels[label.Description] = ""
 		} else if err != nil {
 			return nil, microerror.Mask(err)
+		} else {
+			cluster.Labels[label.Description] = config.Data["cluster.description"]
 		}
-
-		cluster.Labels[label.Description] = config.Data["cluster.description"]
 	}
 
 	{

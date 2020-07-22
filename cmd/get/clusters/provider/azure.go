@@ -42,10 +42,20 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 			getLatestAzureCondition(res),
 			res.Labels[label.ReleaseVersion],
 			res.Labels[label.Organization],
-			res.Labels[label.Description],
+			getAzureClusterDescription(res),
 			"",
 		},
 	}
+}
+
+func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
+	description := res.Labels[label.Description]
+
+	if len(description) < 1 {
+		description = "n/a"
+	}
+
+	return description
 }
 
 func getLatestAzureCondition(res *capiv1alpha3.Cluster) string {
