@@ -11,6 +11,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Implemented support for the `get cluster(s) <id>` command.
 
+### Fixed
+- Prevent breaking the client's kubeconfig if token renewal fails.
+
 ## [0.5.3] - 2020-07-13
 
 ## [0.5.2] - 2020-07-03
