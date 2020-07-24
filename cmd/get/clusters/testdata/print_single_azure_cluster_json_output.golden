@@ -6,9 +6,11 @@
         "namespace": "default",
         "creationTimestamp": "2021-01-02T15:04:32Z",
         "labels": {
-            "giantswarm.io/description": "test cluster 4",
             "giantswarm.io/organization": "some-other",
             "release.giantswarm.io/version": "11.0.0"
+        },
+        "annotations": {
+            "cluster.giantswarm.io/description": "test cluster 4"
         }
     },
     "spec": {

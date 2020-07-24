@@ -11,9 +11,11 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
-                    "giantswarm.io/description": "test cluster 1",
                     "giantswarm.io/organization": "test",
                     "release.giantswarm.io/version": "12.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 1"
                 }
             },
             "spec": {
@@ -35,9 +37,11 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
-                    "giantswarm.io/description": "test cluster 2",
                     "giantswarm.io/organization": "test",
                     "release.giantswarm.io/version": "11.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 2"
                 }
             },
             "spec": {
@@ -60,9 +64,11 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
-                    "giantswarm.io/description": "test cluster 3",
                     "giantswarm.io/organization": "test",
                     "release.giantswarm.io/version": "10.5.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 3"
                 }
             },
             "spec": {
@@ -85,9 +91,11 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
-                    "giantswarm.io/description": "test cluster 4",
                     "giantswarm.io/organization": "some-other",
                     "release.giantswarm.io/version": "11.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 4"
                 }
             },
             "spec": {
@@ -109,9 +117,11 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
-                    "giantswarm.io/description": "test cluster 5",
                     "giantswarm.io/organization": "test",
                     "release.giantswarm.io/version": "9.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 5"
                 }
             },
             "spec": {
@@ -133,9 +143,11 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
-                    "giantswarm.io/description": "test cluster 6",
                     "giantswarm.io/organization": "random",
                     "release.giantswarm.io/version": "10.5.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 6"
                 }
             },
             "spec": {

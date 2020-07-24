@@ -307,7 +307,9 @@ func newAzureCluster(id, created, release, org, description string, conditions [
 			Labels: map[string]string{
 				label.ReleaseVersion: release,
 				label.Organization:   org,
-				label.Description:    description,
+			},
+			Annotations: map[string]string{
+				label.Description: description,
 			},
 		},
 	}

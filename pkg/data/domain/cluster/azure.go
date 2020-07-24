@@ -33,7 +33,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alp
 	var objKey runtimeClient.ObjectKey
 	for _, cluster := range clusterList.Items {
 		// FIXME(axbarsan): Remove once the name is stored in
-		// a label, rather than a config map.
+		// an annotation, rather than a config map.
 		var config corev1.ConfigMap
 		{
 			objKey = runtimeClient.ObjectKey{
@@ -46,7 +46,10 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alp
 			} else if err != nil {
 				return nil, microerror.Mask(err)
 			} else {
-				cluster.Labels[label.Description] = config.Data["cluster.description"]
+				if cluster.Annotations == nil {
+					cluster.Annotations = make(map[string]string)
+				}
+				cluster.Annotations[label.Description] = config.Data["cluster.description"]
 			}
 		}
 	}
@@ -78,7 +81,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capi
 	}
 
 	// FIXME(axbarsan): Remove once the name is stored in
-	// a label, rather than a config map.
+	// an annotation, rather than a config map.
 	var config corev1.ConfigMap
 	{
 		objKey = runtimeClient.ObjectKey{
@@ -91,7 +94,10 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capi
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else {
-			cluster.Labels[label.Description] = config.Data["cluster.description"]
+			if cluster.Annotations == nil {
+				cluster.Annotations = make(map[string]string)
+			}
+			cluster.Annotations[label.Description] = config.Data["cluster.description"]
 		}
 	}
 
