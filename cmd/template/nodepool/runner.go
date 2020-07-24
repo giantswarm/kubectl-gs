@@ -77,6 +77,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Owner:                               r.flag.Owner,
 		ReleaseComponents:                   releaseComponents,
 		ReleaseVersion:                      r.flag.Release,
+		UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 	}
 
 	crs, err := v1alpha2.NewNodePoolCRs(config)

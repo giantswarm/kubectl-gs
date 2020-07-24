@@ -24,6 +24,7 @@ const (
 	flagOwner                               = "owner"
 	flagRegion                              = "region"
 	flagRelease                             = "release"
+	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
 )
 
 type flag struct {
@@ -40,6 +41,7 @@ type flag struct {
 	Owner                               string
 	Region                              string
 	Release                             string
+	UseAlikeInstanceTypes               bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -56,6 +58,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
+	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
 }
 
 func (f *flag) Validate() error {

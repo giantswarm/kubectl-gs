@@ -24,8 +24,10 @@ Create a new release in just a few steps:
 
 5. The PR merge will trigger a GitHub workflow, which will create a tag, a new release, package the build artifacts and attach them to the newly created release.
 
-6. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes. 
+6. A new PR will be created, which will bump the `project.go` version to a development one. Approve it, merge it and move on.
 
-7. Update the `krew-index` repository automatically [by approving](https://app.circleci.com/pipelines/github/giantswarm/kubectl-gs) the `update-krew` CircleCI workflow. A Pull Request to the `krew-index` repository will be created and merged automatically (by robots 🤖).
+7. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes. 
 
-8. 🎉 Celebrate by announcing the fresh release on Slack! 
+8. Update the `krew-index` repository automatically [by approving](https://app.circleci.com/pipelines/github/giantswarm/kubectl-gs) the `update-krew` CircleCI workflow. A Pull Request to the `krew-index` repository will be created and merged automatically (by robots 🤖).
+
+9. 🎉 Celebrate by announcing the fresh release on Slack! 

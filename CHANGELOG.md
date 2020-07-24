@@ -11,8 +11,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Implemented support for the `get cluster(s) <id>` command.
 
+## [0.5.4] - 2020-07-24
+
 ### Fixed
 - Prevent breaking the client's kubeconfig if token renewal fails.
+
+### Added
+- Add `--use-alike-instance-types` for node pools. 
 
 ## [0.5.3] - 2020-07-13
 
@@ -54,7 +59,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.2.0] 2020-04-23
 
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.4...HEAD
+[0.5.4]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.0...v0.5.1
