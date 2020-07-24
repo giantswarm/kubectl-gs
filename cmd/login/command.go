@@ -39,8 +39,7 @@ You can use as an argument:
   # Or even shorter
   kgs login test
 
-  Note: 'kgs' is an alias for 'kubectl gs'.
-`
+  Note: 'kgs' is an alias for 'kubectl gs'.`
 )
 
 type Config struct {
