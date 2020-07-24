@@ -10,21 +10,21 @@ spec:
     Simplifies creating clusters and node pools via Giant Swarm Kubernetes
     control planes, as well as installing app catalogs and apps.
   platforms:
-    - selector:
-        matchLabels:
-          os: darwin
-          arch: amd64
-      {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-amd64.tar.gz" .TagName }}
-      files:
-        - from: ./kubectl-gs-*/*
-          to: .
-      bin: ./kubectl-gs
-    - selector:
-        matchLabels:
-          os: linux
-          arch: amd64
-      {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-amd64.tar.gz" .TagName }}
-      files:
-        - from: ./kubectl-gs-*/*
-          to: .
-      bin: ./kubectl-gs
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-amd64.tar.gz" .TagName }}
+    files:
+    - from: ./kubectl-gs-*/*
+      to: .
+    bin: ./kubectl-gs
+  - selector:
+      matchLabels:
+        os: linux
+        arch: amd64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-amd64.tar.gz" .TagName }}
+    files:
+    - from: ./kubectl-gs-*/*
+      to: .
+    bin: ./kubectl-gs
