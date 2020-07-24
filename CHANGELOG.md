@@ -11,7 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Prevent breaking the client's kubeconfig if token renewal fails.
 
 ### Added
-Adds `--use-alike-instance-types` for node pools
+- Add `--use-alike-instance-types` for node pools.
 
 ## [0.5.3] - 2020-07-13
 
