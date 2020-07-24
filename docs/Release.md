@@ -24,7 +24,7 @@ Create a new release in just a few steps:
 
 5. The PR merge will trigger a GitHub workflow, which will create a tag, a new release, package the build artifacts and attach them to the newly created release.
 
-6. A new PR will be created, which will bump the `project.go` version to a development one. Merge it and move on.
+6. A new PR will be created, which will bump the `project.go` version to a development one. Approve it, merge it and move on.
 
 7. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes. 
 
