@@ -1,22 +1,22 @@
 package output
 
 const (
-	OutputDefault        = ""
-	OutputJSON           = "json"
-	OutputYAML           = "yaml"
-	OutputName           = "name"
-	OutputGoTemplate     = "go-template"
-	OutputGoTemplateFile = "go-template-file"
-	OutputTemplate       = "template"
-	OutputTemplateFile   = "template-file"
-	OutputJsonPath       = "jsonpath"
-	OutputJsonPathFile   = "jsonpath-file"
+	TypeDefault        = ""
+	TypeJSON           = "json"
+	TypeYAML           = "yaml"
+	TypeName           = "name"
+	TypeGoTemplate     = "go-template"
+	TypeGoTemplateFile = "go-template-file"
+	TypeTemplate       = "template"
+	TypeTemplateFile   = "template-file"
+	TypeJsonPath       = "jsonpath"
+	TypeJsonPathFile   = "jsonpath-file"
 )
 
 func IsOutputDefault(output *string) bool {
-	return output == nil || *output == OutputDefault
+	return output == nil || *output == TypeDefault
 }
 
 func IsOutputName(output *string) bool {
-	return output == nil || *output == OutputName
+	return output == nil || *output == TypeName
 }

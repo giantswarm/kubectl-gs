@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func Test_generateKubeContextName(t *testing.T) {
+func TestGenerateKubeContextName(t *testing.T) {
 	codeName := "test"
 	result := GenerateKubeContextName(codeName)
 	expected := "gs-test"
@@ -14,7 +14,7 @@ func Test_generateKubeContextName(t *testing.T) {
 	}
 }
 
-func Test_isKubeContext(t *testing.T) {
+func TestIsKubeContext(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
@@ -48,7 +48,7 @@ func Test_isKubeContext(t *testing.T) {
 	}
 }
 
-func Test_getCodeNameFromKubeContext(t *testing.T) {
+func TestGetCodeNameFromKubeContext(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
@@ -82,7 +82,7 @@ func Test_getCodeNameFromKubeContext(t *testing.T) {
 	}
 }
 
-func Test_isCodeName(t *testing.T) {
+func TestIsCodeName(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
