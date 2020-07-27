@@ -6,6 +6,8 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 )
 
+var _ Interface = &Service{}
+
 type Config struct {
 	Client *client.Client
 }

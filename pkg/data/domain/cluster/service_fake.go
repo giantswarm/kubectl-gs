@@ -10,6 +10,8 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 )
 
+var _ Interface = &FakeService{}
+
 type FakeService struct {
 	service *Service
 	storage []runtime.Object
@@ -33,7 +35,7 @@ func NewFakeService(storage []runtime.Object) *FakeService {
 	return ms
 }
 
-func (ms *FakeService) Get(ctx context.Context, options *GetOptions) (runtime.Object, error) {
+func (ms *FakeService) Get(ctx context.Context, options GetOptions) (runtime.Object, error) {
 	var err error
 	for _, res := range ms.storage {
 		err = ms.service.client.K8sClient.CtrlClient().Create(ctx, res)
