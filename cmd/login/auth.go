@@ -121,7 +121,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 	}
 
 	kUsername := fmt.Sprintf("gs-%s-%s", authResult.Username, i.Codename)
-	contextName := generateKubeContextName(i.Codename)
+	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	clusterName := fmt.Sprintf("gs-%s", i.Codename)
 
 	// Store CA certificate.
@@ -259,7 +259,7 @@ func isLoggedWithGSContext(k8sConfigAccess clientcmd.ConfigAccess) (string, bool
 		return "", false
 	}
 
-	if !isKubeContext(config.CurrentContext) {
+	if !kubeconfig.IsKubeContext(config.CurrentContext) {
 		return config.CurrentContext, false
 	}
 

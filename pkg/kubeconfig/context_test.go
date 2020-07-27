@@ -1,12 +1,12 @@
-package login
+package kubeconfig
 
 import (
 	"testing"
 )
 
-func Test_generateKubeContextName(t *testing.T) {
+func TestGenerateKubeContextName(t *testing.T) {
 	codeName := "test"
-	result := generateKubeContextName(codeName)
+	result := GenerateKubeContextName(codeName)
 	expected := "gs-test"
 
 	if result != expected {
@@ -14,7 +14,7 @@ func Test_generateKubeContextName(t *testing.T) {
 	}
 }
 
-func Test_isKubeContext(t *testing.T) {
+func TestIsKubeContext(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
@@ -39,7 +39,7 @@ func Test_isKubeContext(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := isKubeContext(tc.input)
+			result := IsKubeContext(tc.input)
 
 			if result != tc.expected {
 				t.Fatalf("Value not expected, got: %t", result)
@@ -48,7 +48,7 @@ func Test_isKubeContext(t *testing.T) {
 	}
 }
 
-func Test_getCodeNameFromKubeContext(t *testing.T) {
+func TestGetCodeNameFromKubeContext(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
@@ -73,7 +73,7 @@ func Test_getCodeNameFromKubeContext(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := getCodeNameFromKubeContext(tc.input)
+			result := GetCodeNameFromKubeContext(tc.input)
 
 			if result != tc.expected {
 				t.Fatalf("Value not expected, got: %s", result)
@@ -82,7 +82,7 @@ func Test_getCodeNameFromKubeContext(t *testing.T) {
 	}
 }
 
-func Test_isCodeName(t *testing.T) {
+func TestIsCodeName(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    string
@@ -112,7 +112,7 @@ func Test_isCodeName(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := isCodeName(tc.input)
+			result := IsCodeName(tc.input)
 
 			if result != tc.expected {
 				t.Fatalf("Value not expected, got: %t", result)
