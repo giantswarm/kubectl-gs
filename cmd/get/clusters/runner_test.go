@@ -73,7 +73,7 @@ func Test_run(t *testing.T) {
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
 			flag := &flag{
-				print:  genericclioptions.NewPrintFlags("").WithDefaultOutput(output.OutputDefault),
+				print:  genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault),
 				config: genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig),
 			}
 			out := new(bytes.Buffer)
