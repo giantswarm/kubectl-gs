@@ -13,7 +13,7 @@ const (
 	defaultNamespace = "default"
 )
 
-func (s *Service) Get(ctx context.Context, options *GetOptions) (runtime.Object, error) {
+func (s *Service) Get(ctx context.Context, options GetOptions) (runtime.Object, error) {
 	var err error
 
 	namespace := options.Namespace

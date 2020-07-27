@@ -16,5 +16,5 @@ type GetOptions struct {
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
-	Get(context.Context, *GetOptions) (runtime.Object, error)
+	Get(context.Context, GetOptions) (runtime.Object, error)
 }
