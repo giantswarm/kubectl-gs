@@ -1,7 +1,8 @@
 package commonconfig
 
 import (
-	"strings"
+	"fmt"
+	"regexp"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -10,6 +11,10 @@ import (
 	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+)
+
+const (
+	providerRegexpPattern = `.+\.%s\..+`
 )
 
 type CommonConfig struct {
@@ -30,12 +35,15 @@ func (cc *CommonConfig) GetProvider() (string, error) {
 		return "", microerror.Mask(err)
 	}
 
+	awsRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderAWS))
+	azureRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderAzure))
+
 	var provider string
 	switch {
-	case strings.Contains(config.Host, key.ProviderAWS):
+	case awsRegexp.MatchString(config.Host):
 		provider = key.ProviderAWS
 
-	case strings.Contains(config.Host, key.ProviderAzure):
+	case azureRegexp.MatchString(config.Host):
 		provider = key.ProviderAzure
 
 	default:
