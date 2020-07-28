@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.5.5] - 2020-07-28
+
 ### Fixed
 - Make executable work on lightweight linux distributions, such as `alpine`.
 
@@ -58,7 +60,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.2.0] 2020-04-23
 
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.4...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.5...HEAD
+[0.5.5]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.1...v0.5.2
