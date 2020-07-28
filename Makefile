@@ -41,7 +41,7 @@ $(APPLICATION)-linux: $(APPLICATION)-v$(VERSION)-linux-amd64
 
 $(APPLICATION)-v$(VERSION)-%-amd64: $(SOURCES)
 	@echo "====> $@"
-	GOOS=$* GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $@ .
+	CGO_ENABLED=0 GOOS=$* GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o $@ .
 
 .PHONY: package-darwin package-linux
 ## package-darwin: prepares a packaged darwin/amd64 version
