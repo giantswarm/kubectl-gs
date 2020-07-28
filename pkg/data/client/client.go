@@ -31,7 +31,7 @@ type Client struct {
 
 func New(config Config) (*Client, error) {
 	if config.K8sRestConfig == nil {
-		return nil, microerror.Maskf(InvalidConfigError, "%T.K8sRestConfig must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sRestConfig must not be empty", config)
 	}
 
 	var err error
