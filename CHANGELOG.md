@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+- Make executable work on lightweight linux distributions, such as `alpine`.
+
 ## [0.5.4] - 2020-07-24
 
 ### Fixed
