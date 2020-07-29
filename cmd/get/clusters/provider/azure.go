@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/giantswarm/apiextensions/pkg/annotation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -51,8 +52,9 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
 	description := "n/a"
 
-	if desc, exists := res.GetAnnotations()[label.Description]; exists {
-		description = desc
+	annotations := res.GetAnnotations()
+	if annotations != nil && annotations[annotation.ClusterDescription] != "" {
+		description = annotations[annotation.ClusterDescription]
 	}
 
 	return description
