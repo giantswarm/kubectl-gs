@@ -52,7 +52,5 @@ func getLatestAWSCondition(conditions []infrastructurev1alpha2.CommonClusterStat
 		return "n/a"
 	}
 
-	condition := conditions[0].Condition
-
-	return formatCondition(condition)
+	return formatCondition(conditions[0].Condition)
 }
