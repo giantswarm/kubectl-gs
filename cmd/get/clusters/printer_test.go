@@ -336,6 +336,7 @@ func newAzureCluster(id, created, release, org, description string, conditions [
 func Test_printNoResourcesOutput(t *testing.T) {
 	expected := `No clusters found.
 To create a cluster, please check
+
   kgs create cluster --help
 `
 	out := new(bytes.Buffer)
