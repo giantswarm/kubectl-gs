@@ -20,7 +20,9 @@ const (
 
 	shortDescription = "Display one or many clusters"
 	longDescription  = `Display one or many clusters
+
 Output columns:
+
 - ID: Unique identifier of the cluster.
 - CREATED: Date and time of the Cluster CR creation.
 - CONDITION: Latest condition reported for the cluster. Can be "CREATING", "CREATED", "UPDATING", "UPDATED", "DELETING".
