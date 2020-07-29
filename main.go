@@ -13,6 +13,8 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd"
 	"github.com/giantswarm/kubectl-gs/pkg/errorprinter"
+
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
 func main() {
