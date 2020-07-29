@@ -5,6 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
@@ -58,10 +59,10 @@ func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
 }
 
 func getLatestAzureCondition(res *capiv1alpha3.Cluster) string {
-	condition := ClusterStatusConditionCreating
+	condition := key.ClusterStatusConditionCreating
 
 	if res.Status.InfrastructureReady && res.Status.ControlPlaneInitialized && res.Status.ControlPlaneReady {
-		condition = ClusterStatusConditionCreated
+		condition = key.ClusterStatusConditionCreated
 	}
 
 	return formatCondition(condition)
