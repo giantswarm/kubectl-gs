@@ -1,7 +1,7 @@
 package clusters
 
 import (
-	"io"
+	"fmt"
 
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -53,19 +53,8 @@ func (r *runner) printOutput(resource runtime.Object) error {
 	return nil
 }
 
-func (r *runner) printNoResourcesOutput() error {
-	_, err := io.WriteString(r.stdout, "No clusters found.\n")
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	_, err = io.WriteString(r.stdout, "To create a cluster, please check\n\n")
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	_, err = io.WriteString(r.stdout, "  kgs create cluster --help\n")
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
+func (r *runner) printNoResourcesOutput() {
+	fmt.Fprintf(r.stdout, "No clusters found.\n")
+	fmt.Fprintf(r.stdout, "To create a cluster, please check\n\n")
+	fmt.Fprintf(r.stdout, "  kgs create cluster --help\n")
 }

@@ -82,10 +82,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if cluster.IsNotFound(err) {
 			return microerror.Maskf(notFoundError, fmt.Sprintf("A cluster with ID '%s' cannot be found.\n", options.ID))
 		} else if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
-			pErr := r.printNoResourcesOutput()
-			if pErr != nil {
-				return microerror.Mask(err)
-			}
+			r.printNoResourcesOutput()
 
 			return nil
 		} else if err != nil {
