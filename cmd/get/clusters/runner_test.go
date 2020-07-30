@@ -65,6 +65,16 @@ func Test_run(t *testing.T) {
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
 		},
+		{
+			name: "case 4: get cluster by id, with no infrastructure cluster",
+			storage: []runtime.Object{
+				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "1sad2", Namespace: "default"}},
+				newAWSCluster("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
+				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "f930q", Namespace: "default"}},
+			},
+			args:         []string{"f930q"},
+			errorMatcher: IsNotFound,
+		},
 	}
 
 	for _, tc := range testCases {
