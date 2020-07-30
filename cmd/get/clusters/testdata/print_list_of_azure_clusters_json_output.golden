@@ -1,0 +1,165 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "kind": "Cluster",
+            "apiVersion": "v1alpha3",
+            "metadata": {
+                "name": "1sad2",
+                "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "labels": {
+                    "giantswarm.io/organization": "test",
+                    "release.giantswarm.io/version": "12.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 1"
+                }
+            },
+            "spec": {
+                "controlPlaneEndpoint": {
+                    "host": "",
+                    "port": 0
+                }
+            },
+            "status": {
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
+            }
+        },
+        {
+            "kind": "Cluster",
+            "apiVersion": "v1alpha3",
+            "metadata": {
+                "name": "2a03f",
+                "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "labels": {
+                    "giantswarm.io/organization": "test",
+                    "release.giantswarm.io/version": "11.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 2"
+                }
+            },
+            "spec": {
+                "controlPlaneEndpoint": {
+                    "host": "",
+                    "port": 0
+                }
+            },
+            "status": {
+                "infrastructureReady": true,
+                "controlPlaneInitialized": true,
+                "controlPlaneReady": true
+            }
+        },
+        {
+            "kind": "Cluster",
+            "apiVersion": "v1alpha3",
+            "metadata": {
+                "name": "asd29",
+                "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "labels": {
+                    "giantswarm.io/organization": "test",
+                    "release.giantswarm.io/version": "10.5.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 3"
+                }
+            },
+            "spec": {
+                "controlPlaneEndpoint": {
+                    "host": "",
+                    "port": 0
+                }
+            },
+            "status": {
+                "infrastructureReady": true,
+                "controlPlaneInitialized": true,
+                "controlPlaneReady": true
+            }
+        },
+        {
+            "kind": "Cluster",
+            "apiVersion": "v1alpha3",
+            "metadata": {
+                "name": "f930q",
+                "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "labels": {
+                    "giantswarm.io/organization": "some-other",
+                    "release.giantswarm.io/version": "11.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 4"
+                }
+            },
+            "spec": {
+                "controlPlaneEndpoint": {
+                    "host": "",
+                    "port": 0
+                }
+            },
+            "status": {
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
+            }
+        },
+        {
+            "kind": "Cluster",
+            "apiVersion": "v1alpha3",
+            "metadata": {
+                "name": "9f012",
+                "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "labels": {
+                    "giantswarm.io/organization": "test",
+                    "release.giantswarm.io/version": "9.0.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 5"
+                }
+            },
+            "spec": {
+                "controlPlaneEndpoint": {
+                    "host": "",
+                    "port": 0
+                }
+            },
+            "status": {
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
+            }
+        },
+        {
+            "kind": "Cluster",
+            "apiVersion": "v1alpha3",
+            "metadata": {
+                "name": "2f0as",
+                "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "labels": {
+                    "giantswarm.io/organization": "random",
+                    "release.giantswarm.io/version": "10.5.0"
+                },
+                "annotations": {
+                    "cluster.giantswarm.io/description": "test cluster 6"
+                }
+            },
+            "spec": {
+                "controlPlaneEndpoint": {
+                    "host": "",
+                    "port": 0
+                }
+            },
+            "status": {
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
+            }
+        }
+    ]
+}
