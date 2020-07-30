@@ -40,9 +40,9 @@ func (ep *ErrorPrinter) Format(err error) string {
 	rows := strings.SplitN(message, "\n", 2)
 	builder.WriteString(ep.formatTitle(rows[0]))
 
-	if len(rows) > 1 {
+	if len(rows) > 1 && len(rows[1]) > 0 {
 		builder.WriteString("\n")
-		builder.WriteString(rows[1])
+		builder.WriteString(ep.formatBody(rows[1]))
 	}
 
 	return builder.String()
@@ -57,4 +57,10 @@ func (ep *ErrorPrinter) formatTitle(title string) string {
 	}
 
 	return title
+}
+
+func (ep *ErrorPrinter) formatBody(body string) string {
+	body = strings.TrimPrefix(body, "\n")
+
+	return body
 }
