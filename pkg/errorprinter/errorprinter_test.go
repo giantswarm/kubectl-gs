@@ -21,6 +21,7 @@ func TestFormat(t *testing.T) {
 	testCases := []struct {
 		name               string
 		creator            func() error
+		stackTrace         bool
 		expectedGoldenFile string
 	}{
 		{
@@ -93,7 +94,7 @@ func TestFormat(t *testing.T) {
 			expectedGoldenFile: "print_custom_microerror_with_additional_multiline_message.golden",
 		},
 		{
-			name: "case 7: custom microerror, with stack trace",
+			name: "case 7: custom microerror, with deep stack trace",
 			creator: func() error {
 				err := &microerror.Error{
 					Kind: "somethingWentWrongError",
@@ -109,11 +110,67 @@ func TestFormat(t *testing.T) {
 			},
 			expectedGoldenFile: "print_custom_microerror_with_stack_trace.golden",
 		},
+		{
+			name: "case 8: custom microerror, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				return microerror.Mask(err)
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_stacktrace_output.golden",
+		},
+		{
+			name: "case 9: custom microerror, with additional message, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				return microerror.Maskf(err, "something bad happened, and we had to crash")
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_with_additional_message_stacktrace_output.golden",
+		},
+		{
+			name: "case 10: custom microerror, with additional multiline message, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				return microerror.Maskf(err, "something bad happened, and we had to crash\nthat's the first time it happened, really")
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_with_additional_multiline_message_stacktrace_output.golden",
+		},
+		{
+			name: "case 11: custom microerror, with deep stack trace, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				// Let's build up this stack trace.
+				newErr := microerror.Mask(err)
+				for i := 0; i < 10; i++ {
+					newErr = microerror.Mask(newErr)
+				}
+
+				return microerror.Mask(newErr)
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_with_stack_trace_stacktrace_output.golden",
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ep := New(Config{})
+			ep := New(Config{
+				StackTraces: tc.stackTrace,
+			})
 			newErr := tc.creator()
 			result := []byte(ep.Format(newErr))
 

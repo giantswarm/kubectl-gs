@@ -1,0 +1,13 @@
+Error: Something went wrong
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:157
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:159
+	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:162
