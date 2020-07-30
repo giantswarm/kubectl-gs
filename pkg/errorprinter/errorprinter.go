@@ -13,25 +13,25 @@ const (
 
 type Config struct {
 	DisableColors bool
-	StackTraces   bool
+	StackTrace    bool
 }
 
 type ErrorPrinter struct {
 	disableColors bool
-	stackTraces   bool
+	stackTrace    bool
 }
 
 func New(c Config) *ErrorPrinter {
 	ep := &ErrorPrinter{
 		disableColors: c.DisableColors,
-		stackTraces:   c.StackTraces,
+		stackTrace:    c.StackTrace,
 	}
 
 	return ep
 }
 
 func (ep *ErrorPrinter) Format(err error) string {
-	message := microerror.Pretty(err, ep.stackTraces)
+	message := microerror.Pretty(err, ep.stackTrace)
 	if len(message) < 1 {
 		return ""
 	}

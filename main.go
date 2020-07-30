@@ -21,7 +21,7 @@ func main() {
 	err := mainE(context.Background())
 	if err != nil {
 		ep := errorprinter.New(errorprinter.Config{
-			StackTraces: isDebugMode(),
+			StackTrace: isDebugMode(),
 		})
 		fmt.Println(ep.Format(err))
 		os.Exit(1)

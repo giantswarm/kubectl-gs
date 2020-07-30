@@ -169,7 +169,7 @@ func TestFormat(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ep := New(Config{
-				StackTraces: tc.stackTrace,
+				StackTrace: tc.stackTrace,
 			})
 			newErr := tc.creator()
 			result := []byte(ep.Format(newErr))
