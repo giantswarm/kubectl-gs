@@ -3,6 +3,7 @@ package errorprinter
 import (
 	"errors"
 	goflag "flag"
+	"regexp"
 	"testing"
 
 	"github.com/giantswarm/microerror"
@@ -173,6 +174,14 @@ func TestFormat(t *testing.T) {
 			})
 			newErr := tc.creator()
 			result := []byte(ep.Format(newErr))
+
+			// Change paths to avoid prefixes like
+			// "/Users/username/go/src/" so this can test can be
+			// executed on different machines.
+			{
+				r := regexp.MustCompile(`/.*(/.*\.go:\d+)`)
+				result = r.ReplaceAll(result, []byte("--REPLACED--$1"))
+			}
 
 			var (
 				err            error

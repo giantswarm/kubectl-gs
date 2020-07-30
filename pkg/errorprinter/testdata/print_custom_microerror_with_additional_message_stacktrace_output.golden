@@ -1,2 +1,2 @@
 Error: Something went wrong: something bad happened, and we had to crash
-	/Users/axbarsan/_dev/src/github.com/giantswarm/kubectl-gs/pkg/errorprinter/errorprinter_test.go:132
+	--REPLACED--/errorprinter_test.go:133
