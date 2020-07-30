@@ -2,6 +2,7 @@ package errorprinter
 
 import (
 	"errors"
+	goflag "flag"
 	"testing"
 
 	"github.com/giantswarm/microerror"
@@ -10,6 +11,12 @@ import (
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
 
+var update = goflag.Bool("update", false, "update .golden reference test files")
+
+// TestFormat uses golden files.
+//
+//  go test ./pkg/errorprinter -run TestFormat -update
+//
 func TestFormat(t *testing.T) {
 	testCases := []struct {
 		name               string
@@ -106,17 +113,31 @@ func TestFormat(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ep := New()
+			ep := New(Config{})
 			newErr := tc.creator()
-			result := ep.Format(newErr)
+			result := []byte(ep.Format(newErr))
 
-			gf := goldenfile.New("testdata", tc.expectedGoldenFile)
-			expectedResult, err := gf.Read()
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
+			var (
+				err            error
+				expectedResult []byte
+			)
+			{
+				gf := goldenfile.New("testdata", tc.expectedGoldenFile)
+				if *update {
+					err = gf.Update(result)
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err.Error())
+					}
+					expectedResult = result
+				} else {
+					expectedResult, err = gf.Read()
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err.Error())
+					}
+				}
 			}
 
-			diff := cmp.Diff(string(expectedResult), result)
+			diff := cmp.Diff(string(expectedResult), string(result))
 			if diff != "" {
 				t.Fatalf("value not expected, got:\n %s", diff)
 			}
