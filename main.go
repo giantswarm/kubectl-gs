@@ -20,13 +20,11 @@ import (
 func main() {
 	err := mainE(context.Background())
 	if err != nil {
-		if isDebugMode() {
-			panic(microerror.JSON(err))
-		} else {
-			ep := errorprinter.New()
-			fmt.Print(ep.Format(err))
-			os.Exit(1)
-		}
+		ep := errorprinter.New(errorprinter.Config{
+			StackTrace: isDebugMode(),
+		})
+		fmt.Println(ep.Format(err))
+		os.Exit(1)
 	}
 }
 
