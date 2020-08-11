@@ -2,82 +2,65 @@ package errorprinter
 
 import (
 	"strings"
-	"unicode"
 
 	"github.com/fatih/color"
+	"github.com/giantswarm/microerror"
 )
 
 const (
 	prefix = "Error: "
 )
 
-type ErrorPrinter struct {
+type Config struct {
 	DisableColors bool
+	StackTrace    bool
 }
 
-func New() *ErrorPrinter {
-	ep := &ErrorPrinter{}
+type ErrorPrinter struct {
+	disableColors bool
+	stackTrace    bool
+}
+
+func New(c Config) *ErrorPrinter {
+	ep := &ErrorPrinter{
+		disableColors: c.DisableColors,
+		stackTrace:    c.StackTrace,
+	}
 
 	return ep
 }
 
-func (ep *ErrorPrinter) Format(pErr error) string {
-	if pErr == nil {
+func (ep *ErrorPrinter) Format(err error) string {
+	message := microerror.Pretty(err, ep.stackTrace)
+	if len(message) < 1 {
 		return ""
 	}
 
-	errorRows := strings.Split(pErr.Error(), "\n")
+	var builder strings.Builder
+	rows := strings.SplitN(message, "\n", 2)
+	builder.WriteString(ep.formatTitle(rows[0]))
 
-	var messageBuilder strings.Builder
-
-	{
-		title := ep.formatTitle(errorRows[0])
-		messageBuilder.WriteString(title)
-		messageBuilder.WriteString("\n")
+	if len(rows) > 1 && len(rows[1]) > 0 {
+		builder.WriteString("\n")
+		builder.WriteString(ep.formatBody(rows[1]))
 	}
 
-	{
-		// Add subtitle, if it exists.
-		for _, row := range errorRows[1:] {
-			messageBuilder.WriteString(row)
-			messageBuilder.WriteString("\n")
-		}
-	}
-
-	return messageBuilder.String()
+	return builder.String()
 }
 
 func (ep *ErrorPrinter) formatTitle(title string) string {
-	if title == "" {
-		return ""
-	}
+	title = strings.TrimSuffix(title, "\n")
+	title = prefix + title
 
-	microerrorTypeLastCharIdx := strings.Index(title, ":") + 2
-	if microerrorTypeLastCharIdx > 1 && len(title) > microerrorTypeLastCharIdx {
-		// Remove the microerror type from the error message, if
-		// there's a custom message available after it.
-		title = title[microerrorTypeLastCharIdx:]
-	} else {
-		// Remove the 'error' suffix from errors that end with it.
-		// This is usually the case with microerrors that don't have
-		// any additional message.
-		title = strings.TrimSuffix(title, " error")
-	}
-
-	{
-		// Capitalize first letter.
-		tmpTitle := []rune(title)
-		tmpTitle[0] = unicode.ToUpper(tmpTitle[0])
-
-		// Add 'Error: ' prefix.
-		tmpTitle = append([]rune(prefix), tmpTitle...)
-
-		title = string(tmpTitle)
-	}
-
-	if !ep.DisableColors {
+	if !ep.disableColors {
 		title = color.RedString(title)
 	}
 
 	return title
+}
+
+func (ep *ErrorPrinter) formatBody(body string) string {
+	body = strings.TrimPrefix(body, "\n")
+
+	return body
 }

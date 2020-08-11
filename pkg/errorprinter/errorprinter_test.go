@@ -2,6 +2,8 @@ package errorprinter
 
 import (
 	"errors"
+	goflag "flag"
+	"regexp"
 	"testing"
 
 	"github.com/giantswarm/microerror"
@@ -10,10 +12,17 @@ import (
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
 
+var update = goflag.Bool("update", false, "update .golden reference test files")
+
+// TestFormat uses golden files.
+//
+//  go test ./pkg/errorprinter -run TestFormat -update
+//
 func TestFormat(t *testing.T) {
 	testCases := []struct {
 		name               string
 		creator            func() error
+		stackTrace         bool
 		expectedGoldenFile string
 	}{
 		{
@@ -86,7 +95,7 @@ func TestFormat(t *testing.T) {
 			expectedGoldenFile: "print_custom_microerror_with_additional_multiline_message.golden",
 		},
 		{
-			name: "case 7: custom microerror, with stack trace",
+			name: "case 7: custom microerror, with deep stack trace",
 			creator: func() error {
 				err := &microerror.Error{
 					Kind: "somethingWentWrongError",
@@ -102,21 +111,99 @@ func TestFormat(t *testing.T) {
 			},
 			expectedGoldenFile: "print_custom_microerror_with_stack_trace.golden",
 		},
+		{
+			name: "case 8: custom microerror, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				return microerror.Mask(err)
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_stacktrace_output.golden",
+		},
+		{
+			name: "case 9: custom microerror, with additional message, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				return microerror.Maskf(err, "something bad happened, and we had to crash")
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_with_additional_message_stacktrace_output.golden",
+		},
+		{
+			name: "case 10: custom microerror, with additional multiline message, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				return microerror.Maskf(err, "something bad happened, and we had to crash\nthat's the first time it happened, really")
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_with_additional_multiline_message_stacktrace_output.golden",
+		},
+		{
+			name: "case 11: custom microerror, with deep stack trace, with stack trace output",
+			creator: func() error {
+				err := &microerror.Error{
+					Kind: "somethingWentWrongError",
+				}
+
+				// Let's build up this stack trace.
+				newErr := microerror.Mask(err)
+				for i := 0; i < 10; i++ {
+					newErr = microerror.Mask(newErr)
+				}
+
+				return microerror.Mask(newErr)
+			},
+			stackTrace:         true,
+			expectedGoldenFile: "print_custom_microerror_with_stack_trace_stacktrace_output.golden",
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ep := New()
+			ep := New(Config{
+				StackTrace: tc.stackTrace,
+			})
 			newErr := tc.creator()
-			result := ep.Format(newErr)
+			result := []byte(ep.Format(newErr))
 
-			gf := goldenfile.New("testdata", tc.expectedGoldenFile)
-			expectedResult, err := gf.Read()
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
+			// Change paths to avoid prefixes like
+			// "/Users/username/go/src/" so this can test can be
+			// executed on different machines.
+			{
+				r := regexp.MustCompile(`/.*(/.*\.go:\d+)`)
+				result = r.ReplaceAll(result, []byte("--REPLACED--$1"))
 			}
 
-			diff := cmp.Diff(string(expectedResult), result)
+			var (
+				err            error
+				expectedResult []byte
+			)
+			{
+				gf := goldenfile.New("testdata", tc.expectedGoldenFile)
+				if *update {
+					err = gf.Update(result)
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err.Error())
+					}
+					expectedResult = result
+				} else {
+					expectedResult, err = gf.Read()
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err.Error())
+					}
+				}
+			}
+
+			diff := cmp.Diff(string(expectedResult), string(result))
 			if diff != "" {
 				t.Fatalf("value not expected, got:\n %s", diff)
 			}

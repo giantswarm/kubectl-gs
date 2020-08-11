@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 - Implemented support for the `get cluster(s) <id>` command.
+- Improved error printing formatting.
 
 ### Changed
 - Running the `template` command without any arguments how displays the command help output.
