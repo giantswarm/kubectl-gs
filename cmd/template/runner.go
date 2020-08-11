@@ -33,6 +33,10 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	err := cmd.Help()
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	return nil
 }
