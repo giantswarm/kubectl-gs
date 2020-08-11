@@ -11,6 +11,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Implemented support for the `get cluster(s) <id>` command.
 - Improved error printing formatting.
 
+### Changed
+- Running the `template` command without any arguments how displays the command help output.
+
 ## [0.5.5] - 2020-07-28
 
 ### Fixed
