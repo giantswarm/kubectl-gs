@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## Added
+- Add the `--version` flag for printing the current version. Run `kgs --version` to check which version you're running.
+
 ## [0.6.0] - 2020-08-11
 
 ### Added

@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
+	"github.com/giantswarm/kubectl-gs/pkg/project"
 )
 
 const (
@@ -128,6 +129,7 @@ func New(config Config) (*cobra.Command, error) {
 		RunE:          r.Run,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Version:       project.Version(),
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
