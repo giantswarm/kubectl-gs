@@ -1,4 +1,4 @@
-package app
+package apps
 
 import (
 	"github.com/giantswarm/microerror"

@@ -8,12 +8,12 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/cmd/validate/app"
+	"github.com/giantswarm/kubectl-gs/cmd/validate/apps"
 )
 
 const (
-	name        = "template"
-	description = "Template different types of CRs"
+	name        = "validate"
+	description = "Validate App CRs against a spec"
 )
 
 type Config struct {
@@ -35,15 +35,15 @@ func New(config Config) (*cobra.Command, error) {
 
 	var err error
 
-	var appCmd *cobra.Command
+	var appsCmd *cobra.Command
 	{
-		c := app.Config{
+		c := apps.Config{
 			Logger: config.Logger,
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}
 
-		appCmd, err = app.New(c)
+		appsCmd, err = apps.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -67,7 +67,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
-	c.AddCommand(appCmd)
+	c.AddCommand(appsCmd)
 
 	return c, nil
 }
