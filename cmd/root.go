@@ -14,11 +14,8 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
-<<<<<<< HEAD
-	"github.com/giantswarm/kubectl-gs/pkg/project"
-=======
 	"github.com/giantswarm/kubectl-gs/cmd/validate"
->>>>>>> 2a223a9... Add validate command
+	"github.com/giantswarm/kubectl-gs/pkg/project"
 )
 
 const (
@@ -120,9 +117,10 @@ func New(config Config) (*cobra.Command, error) {
 	var validateCmd *cobra.Command
 	{
 		c := validate.Config{
-			Logger: config.Logger,
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
+			Logger:          config.Logger,
+			K8sConfigAccess: config.K8sConfigAccess,
+			Stderr:          config.Stderr,
+			Stdout:          config.Stdout,
 		}
 
 		validateCmd, err = validate.New(c)
