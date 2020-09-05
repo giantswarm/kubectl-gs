@@ -11,6 +11,7 @@ const (
 	TypeTemplateFile   = "template-file"
 	TypeJsonPath       = "jsonpath"
 	TypeJsonPathFile   = "jsonpath-file"
+	TypeReport         = "report"
 )
 
 func IsOutputDefault(output *string) bool {
@@ -19,4 +20,8 @@ func IsOutputDefault(output *string) bool {
 
 func IsOutputName(output *string) bool {
 	return output == nil || *output == TypeName
+}
+
+func IsOutputReport(output *string) bool {
+	return *output == "report"
 }

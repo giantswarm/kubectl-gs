@@ -7,8 +7,7 @@ import (
 
 const (
 	flagAllNamespaces    = "all-namespaces"
-	flagNamespace        = "namespace"
-	flagOutput           = "output"
+	flagLabelSelector    = "selector"
 	flagQuiet            = "quiet"
 	flagValuesSchemaFile = "values-schema-file"
 )
@@ -18,12 +17,14 @@ type flag struct {
 	print  *genericclioptions.PrintFlags
 
 	AllNamespaces    bool
+	LabelSelector    string
 	Quiet            bool
 	ValuesSchemaFile string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.Quiet, flagQuiet, "q", false, "Suppress output and just return the exit code.")
+	cmd.Flags().StringVarP(&f.LabelSelector, flagLabelSelector, "l", "", "Specify label selector(s) to filter Apps by.")
 	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "Validate apps across all namespaces. This can take a long time.")
 	cmd.Flags().StringVarP(&f.ValuesSchemaFile, flagValuesSchemaFile, "f", "", "Provide your own schema file to validate app values against.")
 
