@@ -121,7 +121,7 @@ func readReleases(branch string) ([]ReleaseObject, error) {
 		for _, v := range r.Resources {
 			// skip legacy (< 10)
 			versionParts := strings.Split(strings.TrimPrefix(v, "v"), ".")
-			if i, _ := strconv.Atoi(versionParts[0]); i < firstAWSNodePoolsReleaseMajor {
+			if i, err := strconv.Atoi(versionParts[0]); i < firstAWSNodePoolsReleaseMajor || err != nil {
 				continue
 			}
 
