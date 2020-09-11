@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -18,6 +19,8 @@ const (
 const (
 	releasesAWSIndexURLFmt   = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/kustomization.yaml"
 	releasesAWSReleaseURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/%s/release.yaml"
+
+	firstAWSNodePoolsReleaseMajor = 10
 )
 
 type Config struct {
@@ -80,7 +83,7 @@ func (r *Release) Validate(version string) bool {
 	}
 
 	for _, release := range r.releases {
-		if release.Metadata.Name == releaseVersion {
+		if release.Metadata.Name == releaseVersion && release.Spec.State == "active" {
 			return true
 		}
 	}
@@ -116,6 +119,12 @@ func readReleases(branch string) ([]ReleaseObject, error) {
 	var releases []ReleaseObject
 	{
 		for _, v := range r.Resources {
+			// skip legacy (< 10)
+			versionParts := strings.Split(strings.TrimPrefix(v, "v"), ".")
+			if i, _ := strconv.Atoi(versionParts[0]); i < firstAWSNodePoolsReleaseMajor {
+				continue
+			}
+
 			resp, err := http.Get(fmt.Sprintf(releasesAWSReleaseURLFmt, branch, v))
 			if err != nil {
 				return nil, microerror.Mask(err)

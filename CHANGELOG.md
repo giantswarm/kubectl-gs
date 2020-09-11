@@ -7,8 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-## Added
+### Added
 - Add the `--version` flag for printing the current version. Run `kgs --version` to check which version you're running.
+
+### Changed
+
+- Disabled templating clusters with legacy or deprecated release versions.
 
 ## [0.6.0] - 2020-08-11
 
@@ -30,7 +34,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Prevent breaking the client's kubeconfig if token renewal fails.
 
 ### Added
-- Add `--use-alike-instance-types` for node pools. 
+- Add `--use-alike-instance-types` for node pools.
 
 ## [0.5.3] - 2020-07-13
 
