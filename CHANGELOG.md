@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.6.1] - 2020-09-14
+
 ### Added
 - Add the `--version` flag for printing the current version. Run `kgs --version` to check which version you're running.
 
@@ -76,7 +78,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.2.0] 2020-04-23
 
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.5...v0.6.0
 [0.5.5]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/giantswarm/kubectl-gs/compare/v0.5.3...v0.5.4
