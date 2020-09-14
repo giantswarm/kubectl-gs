@@ -65,6 +65,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		releaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 	}
 
+	// remove leading v from release flag input
+	sanitizedRelease := strings.TrimLeft(r.flag.Release, "v")
+
 	config := v1alpha2.NodePoolCRsConfig{
 		AvailabilityZones:                   availabilityZones,
 		AWSInstanceType:                     r.flag.AWSInstanceType,
@@ -76,7 +79,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
 		Owner:                               r.flag.Owner,
 		ReleaseComponents:                   releaseComponents,
-		ReleaseVersion:                      r.flag.Release,
+		ReleaseVersion:                      sanitizedRelease,
 		UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 	}
 

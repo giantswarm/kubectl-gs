@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/ghodss/yaml"
@@ -69,6 +70,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	// remove leading v from release flag input
+	sanitizedRelease := strings.TrimLeft(r.flag.Release, "v")
+
 	config := v1alpha2.ClusterCRsConfig{
 		ClusterID:         r.flag.ClusterID,
 		Credential:        r.flag.Credential,
@@ -80,7 +84,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Owner:             r.flag.Owner,
 		Region:            r.flag.Region,
 		ReleaseComponents: releaseComponents,
-		ReleaseVersion:    r.flag.Release,
+		ReleaseVersion:    sanitizedRelease,
 		Labels:            userLabels,
 	}
 
