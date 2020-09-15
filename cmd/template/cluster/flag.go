@@ -2,10 +2,12 @@ package cluster
 
 import (
 	"encoding/base64"
-	"github.com/giantswarm/kubectl-gs/pkg/azure"
-	"github.com/mpvl/unique"
 	"net"
 	"regexp"
+
+	"github.com/mpvl/unique"
+
+	"github.com/giantswarm/kubectl-gs/pkg/azure"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"

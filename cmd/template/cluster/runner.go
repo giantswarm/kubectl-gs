@@ -2,13 +2,15 @@ package cluster
 
 import (
 	"context"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
-	"github.com/spf13/cobra"
 	"io"
 	"os"
 	"sort"
+
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
+	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 const (

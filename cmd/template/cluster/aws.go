@@ -1,15 +1,17 @@
 package cluster
 
 import (
+	"io"
+	"strings"
+	"text/template"
+
 	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/yaml"
+
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
-	"github.com/giantswarm/microerror"
-	"io"
-	"sigs.k8s.io/yaml"
-	"strings"
-	"text/template"
 )
 
 func writeAWSTemplate(out io.Writer, name string, flags *flag) error {
