@@ -91,7 +91,6 @@ func writeAWSTemplate(out io.Writer, name string, flags *flag) error {
 	}
 
 	t := template.Must(template.New(name).Parse(key.ClusterAWSCRsTemplate))
-
 	err = t.Execute(out, data)
 	if err != nil {
 		return microerror.Mask(err)
