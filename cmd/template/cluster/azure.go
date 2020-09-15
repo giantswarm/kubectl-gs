@@ -237,7 +237,7 @@ func newAzureMasterMachineCR(config clusterCRConfig) *capzv1alpha3.AzureMachine 
 	machine := &capzv1alpha3.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachine",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-master-%d", config.ClusterID, 0),
