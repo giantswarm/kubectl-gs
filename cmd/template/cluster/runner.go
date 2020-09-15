@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -60,8 +61,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var err error
 	switch r.flag.Provider {
-	case providerAWS:
+	case key.ProviderAWS:
 		err = writeAWSTemplate(output, clusterCRName, r.flag)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	case key.ProviderAzure:
+		err = writeAzureTemplate(output, clusterCRName, r.flag)
 		if err != nil {
 			return microerror.Mask(err)
 		}

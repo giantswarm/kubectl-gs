@@ -21,3 +21,12 @@ var invalidFlagError = &microerror.Error{
 func IsInvalidFlag(err error) bool {
 	return microerror.Cause(err) == invalidFlagError
 }
+
+var invalidObjectDefinitionError = &microerror.Error{
+	Kind: "invalidObjectDefinitionError",
+}
+
+// IsInvalidObjectDefinition asserts invalidObjectDefinitionError.
+func IsInvalidObjectDefinition(err error) bool {
+	return microerror.Cause(err) == invalidObjectDefinitionError
+}

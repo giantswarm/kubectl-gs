@@ -26,6 +26,14 @@ const ClusterAWSCRsTemplate = `
 {{ .AWSControlPlaneCR -}}
 `
 
+const ClusterAzureCRsTemplate = `
+{{- .AzureClusterCR -}}
+---
+{{ .ClusterCR -}}
+---
+{{ .AzureMasterMachine -}}
+`
+
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
