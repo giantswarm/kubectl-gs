@@ -16,7 +16,7 @@ const AppCatalogCRTemplate = `
 {{ .AppCatalogCR -}}
 `
 
-const ClusterCRsTemplate = `
+const ClusterAWSCRsTemplate = `
 {{- .ClusterCR -}}
 ---
 {{ .AWSClusterCR -}}
