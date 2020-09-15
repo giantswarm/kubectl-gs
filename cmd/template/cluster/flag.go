@@ -16,25 +16,26 @@ import (
 )
 
 const (
-	providerAWS   = "aws"
-	providerAzure = "azure"
-)
-
-const (
 	flagProvider = "provider"
 
-	flagClusterID    = "cluster-id"
-	flagCredential   = "credential"
-	flagDomain       = "domain"
-	flagMasterAZ     = "master-az"
-	flagName         = "name"
-	flagPodsCIDR     = "pods-cidr"
+	// AWS only.
 	flagExternalSNAT = "external-snat"
-	flagOutput       = "output"
-	flagOwner        = "owner"
-	flagRegion       = "region"
-	flagRelease      = "release"
-	flagLabel        = "label"
+	flagPodsCIDR     = "pods-cidr"
+
+	// Azure only.
+	flagPublicSSHKey = "public-ssh-key"
+
+	// Common.
+	flagClusterID  = "cluster-id"
+	flagCredential = "credential"
+	flagDomain     = "domain"
+	flagMasterAZ   = "master-az"
+	flagName       = "name"
+	flagOutput     = "output"
+	flagOwner      = "owner"
+	flagRegion     = "region"
+	flagRelease    = "release"
+	flagLabel      = "label"
 )
 
 type flag struct {
@@ -42,6 +43,10 @@ type flag struct {
 
 	// AWS only.
 	ExternalSNAT bool
+	PodsCIDR     string
+
+	// Azure only.
+	PublicSSHKey string
 
 	// Common.
 	ClusterID  string
@@ -49,7 +54,6 @@ type flag struct {
 	Domain     string
 	MasterAZ   []string
 	Name       string
-	PodsCIDR   string
 	Output     string
 	Owner      string
 	Region     string
@@ -62,6 +66,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// AWS only.
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
+
+	// Azure only.
+	cmd.Flags().StringVar(&f.PublicSSHKey, flagExternalSNAT, "", "Raw Azure public SSH key.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
@@ -69,7 +77,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
-	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1 or westeurope).")
@@ -80,8 +87,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 func (f *flag) Validate() error {
 	var err error
 
-	if f.Provider != providerAWS && f.Provider != providerAzure {
-		return microerror.Maskf(invalidFlagError, "--%s must be either aws or azure", flagProvider)
+	if f.Provider != key.ProviderAWS && f.Provider != key.ProviderAzure {
+		return microerror.Maskf(invalidFlagError, "--%s must be either AWS or Azure", flagProvider)
 	}
 
 	if f.ClusterID != "" {
@@ -124,11 +131,11 @@ func (f *flag) Validate() error {
 		}
 
 		switch f.Provider {
-		case providerAWS:
+		case key.ProviderAWS:
 			if !aws.ValidateRegion(f.Region) {
 				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
 			}
-		case providerAzure:
+		case key.ProviderAzure:
 			if !azure.ValidateRegion(f.Region) {
 				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
 			}
@@ -136,9 +143,15 @@ func (f *flag) Validate() error {
 	}
 
 	{
+		if f.Provider == key.ProviderAzure && len(f.PublicSSHKey) < 1 {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
+		}
+	}
+
+	{
 		// Validate Master AZs.
 		switch f.Provider {
-		case providerAWS:
+		case key.ProviderAWS:
 			if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagMasterAZ)
 			}
@@ -151,7 +164,7 @@ func (f *flag) Validate() error {
 					return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
 				}
 			}
-		case providerAzure:
+		case key.ProviderAzure:
 			if len(f.MasterAZ) != 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must define a single availability zone on Azure", flagMasterAZ)
 			}
