@@ -1,13 +1,13 @@
 package cluster
 
 import (
-	"github.com/ghodss/yaml"
 	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
 	"github.com/giantswarm/microerror"
 	"io"
+	"sigs.k8s.io/yaml"
 	"strings"
 	"text/template"
 )
