@@ -118,6 +118,7 @@ func (f *flag) Validate() error {
 	}
 
 	{
+		// Validate installation region.
 		if f.Region == "" {
 			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRegion)
 		}
