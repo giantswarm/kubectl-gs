@@ -1,11 +1,12 @@
 package cluster
 
 import (
+	"github.com/giantswarm/kubectl-gs/pkg/azure"
+	"github.com/mpvl/unique"
 	"net"
 	"regexp"
 
 	"github.com/giantswarm/microerror"
-	"github.com/mpvl/unique"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -15,6 +16,13 @@ import (
 )
 
 const (
+	providerAWS   = "aws"
+	providerAzure = "azure"
+)
+
+const (
+	flagProvider = "provider"
+
 	flagClusterID    = "cluster-id"
 	flagCredential   = "credential"
 	flagDomain       = "domain"
@@ -30,6 +38,8 @@ const (
 )
 
 type flag struct {
+	Provider string
+
 	ClusterID    string
 	Credential   string
 	Domain       string
@@ -45,6 +55,8 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&f.Provider, flagProvider, "aws", "Installation infrastructure provider (e.g. aws or azure).")
+
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
 	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
@@ -61,6 +73,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 func (f *flag) Validate() error {
 	var err error
+
+	if f.Provider != providerAWS && f.Provider != providerAzure {
+		return microerror.Maskf(invalidFlagError, "--%s must be either aws or azure", flagProvider)
+	}
 
 	if f.ClusterID != "" {
 		if len(f.ClusterID) != key.IDLength {
@@ -94,45 +110,71 @@ func (f *flag) Validate() error {
 	if f.Owner == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
 	}
-	if f.Region == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRegion)
-	}
-	if !aws.ValidateRegion(f.Region) {
-		return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-	}
 
-	// AZ name(s)
-	if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
-		return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availabiliy zone names", flagMasterAZ)
-	}
-	if !unique.StringsAreUnique(f.MasterAZ) {
-		return microerror.Maskf(invalidFlagError, "--%s values must contain each AZ name only once", flagMasterAZ)
-	}
-
-	// TODO: validate that len(f.MasterAZ) == 3 is occurring in releases >= v11.5.0
-
-	for _, az := range f.MasterAZ {
-		if !aws.ValidateAZ(f.Region, az) {
-			return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
-		}
-	}
-
-	if f.Release == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
-	}
-
-	var r *release.Release
 	{
-		c := release.Config{}
+		if f.Region == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRegion)
+		}
 
-		r, err = release.New(c)
-		if err != nil {
-			return microerror.Mask(err)
+		switch f.Provider {
+		case providerAWS:
+			if !aws.ValidateRegion(f.Region) {
+				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
+			}
+		case providerAzure:
+			if !azure.ValidateRegion(f.Region) {
+				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
+			}
 		}
 	}
 
-	if !r.Validate(f.Release) {
-		return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
+	{
+		// Validate Master AZs.
+		switch f.Provider {
+		case providerAWS:
+			if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
+				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagMasterAZ)
+			}
+			if !unique.StringsAreUnique(f.MasterAZ) {
+				return microerror.Maskf(invalidFlagError, "--%s values must contain each AZ name only once", flagMasterAZ)
+			}
+			// TODO: validate that len(f.MasterAZ) == 3 is occurring in releases >= v11.5.0
+			for _, az := range f.MasterAZ {
+				if !aws.ValidateAZ(f.Region, az) {
+					return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
+				}
+			}
+		case providerAzure:
+			if len(f.MasterAZ) != 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must define a single availability zone on Azure", flagMasterAZ)
+			}
+			for _, az := range f.MasterAZ {
+				if !azure.ValidateAZ(f.Region, az) {
+					return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
+				}
+			}
+		}
+	}
+
+	{
+		// Validate release version.
+		if f.Release == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+		}
+
+		var r *release.Release
+		{
+			c := release.Config{}
+
+			r, err = release.New(c)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		if !r.Validate(f.Release) {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
+		}
 	}
 
 	_, err = clusterlabels.Parse(f.Label)
