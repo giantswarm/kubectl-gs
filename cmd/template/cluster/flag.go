@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"encoding/base64"
 	"github.com/giantswarm/kubectl-gs/pkg/azure"
 	"github.com/mpvl/unique"
 	"net"
@@ -69,7 +70,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 
 	// Azure only.
-	cmd.Flags().StringVar(&f.PublicSSHKey, flagExternalSNAT, "", "Raw Azure public SSH key.")
+	cmd.Flags().StringVar(&f.PublicSSHKey, flagPublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
@@ -143,8 +144,16 @@ func (f *flag) Validate() error {
 	}
 
 	{
-		if f.Provider == key.ProviderAzure && len(f.PublicSSHKey) < 1 {
-			return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
+		if f.Provider == key.ProviderAzure {
+			if len(f.PublicSSHKey) < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
+			} else {
+				var dest []byte
+				_, err = base64.StdEncoding.Decode(dest, []byte(f.PublicSSHKey))
+				if err != nil {
+					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagPublicSSHKey)
+				}
+			}
 		}
 	}
 

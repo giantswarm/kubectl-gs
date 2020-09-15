@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"encoding/base64"
 	"fmt"
 	"github.com/giantswarm/apiextensions/pkg/annotation"
 	"github.com/giantswarm/apiextensions/pkg/id"
@@ -232,8 +231,6 @@ func newCAPIV1Alpha3ClusterCR(config clusterCRConfig, infrastructureObj interfac
 }
 
 func newAzureMasterMachineCR(config clusterCRConfig) *capzv1alpha3.AzureMachine {
-	publicSSHKeyEncoded := base64.StdEncoding.EncodeToString([]byte(config.PublicSSHKey))
-
 	machine := &capzv1alpha3.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachine",
@@ -270,7 +267,7 @@ func newAzureMasterMachineCR(config clusterCRConfig) *capzv1alpha3.AzureMachine 
 				},
 			},
 			Location:     config.Region,
-			SSHPublicKey: publicSSHKeyEncoded,
+			SSHPublicKey: config.PublicSSHKey,
 		},
 	}
 
