@@ -6,4 +6,9 @@ var infrastructure = map[string][]string{
 		"2",
 		"3",
 	},
+	"germanywestcentral": {
+		"1",
+		"2",
+		"3",
+	},
 }
