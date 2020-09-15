@@ -11,7 +11,7 @@ import (
 
 const (
 	name        = "cluster"
-	description = "Template Cluster and AWSCluster CRs."
+	description = "Template Giant Swarm clusters."
 )
 
 type Config struct {
