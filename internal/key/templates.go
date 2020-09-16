@@ -41,7 +41,9 @@ const MachineDeploymentCRsTemplate = `
 `
 
 const MachinePoolAzureCRsTemplate = `
-{{- .MachinePoolCR -}}
+{{- .ProviderMachinePoolCR -}}
 ---
-{{ .ProviderMachinePoolCR -}}
+{{ .MachinePoolCR -}}
+---
+{{ .SparkCR -}}
 `

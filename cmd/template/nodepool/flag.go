@@ -1,10 +1,13 @@
 package nodepool
 
 import (
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/release"
+	"encoding/base64"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/azure"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 
 	"github.com/giantswarm/kubectl-gs/pkg/aws"
 )
@@ -17,6 +20,10 @@ const (
 	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
 	flagOnDemandPercentageAboveBaseCapacity = "on-demand-percentage-above-base-capacity"
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
+
+	// Azure only.
+	flagPublicSSHKey = "public-ssh-key"
+	flagAzureVMSize  = "azure-vm-size"
 
 	// Common.
 	flagAvailabilityZones    = "availability-zones"
@@ -40,6 +47,10 @@ type flag struct {
 	OnDemandPercentageAboveBaseCapacity int
 	UseAlikeInstanceTypes               bool
 
+	// Azure only.
+	PublicSSHKey string
+	AzureVMSize  string
+
 	// Common.
 	AvailabilityZones    []string
 	ClusterID            string
@@ -61,6 +72,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0.")
 	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100.")
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
+
+	// Azure only.
+	cmd.Flags().StringVar(&f.PublicSSHKey, flagPublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
+	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4_v3", "Azure VM size to use for workers, e.g. 'Standard_D4_v3'.")
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
@@ -88,6 +103,10 @@ func (f *flag) Validate() error {
 		case key.ProviderAWS:
 			if f.AWSInstanceType == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagAWSInstanceType)
+			}
+		case key.ProviderAzure:
+			if f.AzureVMSize == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagAzureVMSize)
 			}
 		}
 	}
@@ -123,6 +142,24 @@ func (f *flag) Validate() error {
 			if !aws.ValidateRegion(f.Region) {
 				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
 			}
+		case key.ProviderAzure:
+			if !azure.ValidateRegion(f.Region) {
+				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
+			}
+		}
+	}
+
+	{
+		if f.Provider == key.ProviderAzure {
+			if len(f.PublicSSHKey) < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
+			} else {
+				var dest []byte
+				_, err = base64.StdEncoding.Decode(dest, []byte(f.PublicSSHKey))
+				if err != nil {
+					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagPublicSSHKey)
+				}
+			}
 		}
 	}
 
@@ -147,7 +184,9 @@ func (f *flag) Validate() error {
 			}
 		}
 
-		if numOfAZs < 1 {
+		// XXX: The availability zones can be set to nil on Azure.
+		// https://github.com/giantswarm/giantswarm/issues/12860
+		if f.Provider == key.ProviderAWS && numOfAZs < 1 {
 			return microerror.Maskf(invalidFlagError, "--%s must be configured with at least 1 AZ", flagAvailabilityZones)
 		}
 		if numOfAZs > numOfAvailableAZs {
@@ -158,6 +197,12 @@ func (f *flag) Validate() error {
 		case key.ProviderAWS:
 			for _, az := range azs {
 				if !aws.ValidateAZ(f.Region, az) {
+					return microerror.Maskf(invalidFlagError, "--%s must be a list with valid AZs for selected region", flagAvailabilityZones)
+				}
+			}
+		case key.ProviderAzure:
+			for _, az := range azs {
+				if !azure.ValidateAZ(f.Region, az) {
 					return microerror.Maskf(invalidFlagError, "--%s must be a list with valid AZs for selected region", flagAvailabilityZones)
 				}
 			}

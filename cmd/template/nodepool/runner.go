@@ -2,12 +2,14 @@ package nodepool
 
 import (
 	"context"
-	"github.com/giantswarm/apiextensions/pkg/id"
-	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/giantswarm/apiextensions/pkg/id"
+
+	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
+	"github.com/giantswarm/kubectl-gs/internal/key"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -52,14 +54,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config := provider.NodePoolCRsConfig{
 			AWSInstanceType:                     r.flag.AWSInstanceType,
 			FileName:                            nodePoolCRFileName,
-			NodePoolID:                          r.flag.NodepoolName,
 			ClusterID:                           r.flag.ClusterID,
 			Description:                         r.flag.NodepoolName,
+			VMSize:                              r.flag.AzureVMSize,
 			NodesMax:                            r.flag.NodesMax,
 			NodesMin:                            r.flag.NodesMin,
 			OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
 			OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
 			Owner:                               r.flag.Owner,
+			PublicSSHKey:                        r.flag.PublicSSHKey,
+			Region:                              r.flag.Region,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 		}
 
@@ -104,6 +108,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	switch r.flag.Provider {
 	case key.ProviderAWS:
 		err = provider.WriteAWSTemplate(output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	case key.ProviderAzure:
+		err = provider.WriteAzureTemplate(output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -37,8 +37,10 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
 
 		clusterCR := newCAPIV1Alpha3ClusterCR(config, infrastructureRef)
-		// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-		clusterCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
+		{
+			// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
+			clusterCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
+		}
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
