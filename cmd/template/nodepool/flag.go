@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"encoding/base64"
+
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
