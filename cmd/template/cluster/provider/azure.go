@@ -25,7 +25,7 @@ const (
 	defaultMasterVMSize = "Standard_D4_v3"
 )
 
-func WriteAzureTemplate(out io.Writer, config ClusterCRConfig) error {
+func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	var azureClusterCRYaml, clusterCRYaml, azureMasterMachineCRYaml []byte
@@ -72,7 +72,7 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRConfig) error {
 	return nil
 }
 
-func newAzureClusterCR(config ClusterCRConfig) *capzv1alpha3.AzureCluster {
+func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 	cr := &capzv1alpha3.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
@@ -101,7 +101,7 @@ func newAzureClusterCR(config ClusterCRConfig) *capzv1alpha3.AzureCluster {
 	return cr
 }
 
-func newCAPIV1Alpha3ClusterCR(config ClusterCRConfig, infrastructureObj interface{}) (*capiv1alpha3.Cluster, error) {
+func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interface{}) (*capiv1alpha3.Cluster, error) {
 	runtimeObj, ok := infrastructureObj.(runtime.Object)
 	if !ok {
 		panic(fmt.Sprintf("cannot alias %T as runtime.Object", infrastructureObj))
@@ -169,7 +169,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRConfig, infrastructureObj interfac
 	return cluster, nil
 }
 
-func newAzureMasterMachineCR(config ClusterCRConfig) *capzv1alpha3.AzureMachine {
+func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
 	machine := &capzv1alpha3.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachine",

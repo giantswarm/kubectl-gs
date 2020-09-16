@@ -54,9 +54,9 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	var config provider.ClusterCRConfig
+	var config provider.ClusterCRsConfig
 	{
-		config = provider.ClusterCRConfig{
+		config = provider.ClusterCRsConfig{
 			FileName:       clusterCRName,
 			ClusterID:      r.flag.ClusterID,
 			Credential:     r.flag.Credential,

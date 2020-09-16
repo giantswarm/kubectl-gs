@@ -1,6 +1,6 @@
 package provider
 
-type ClusterCRConfig struct {
+type ClusterCRsConfig struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string

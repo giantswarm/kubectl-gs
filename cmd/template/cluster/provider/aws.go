@@ -9,7 +9,7 @@ import (
 	"text/template"
 )
 
-func WriteAWSTemplate(out io.Writer, config ClusterCRConfig) error {
+func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	crsConfig := v1alpha2.ClusterCRsConfig{
