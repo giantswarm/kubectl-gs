@@ -46,8 +46,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var availabilityZones []string
 	{
-		if r.flag.AvailabilityZones != "" {
-			availabilityZones = strings.Split(r.flag.AvailabilityZones, ",")
+		if len(r.flag.AvailabilityZones) > 0 {
+			availabilityZones = r.flag.AvailabilityZones
 		} else {
 			availabilityZones = aws.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
 		}

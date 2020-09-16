@@ -3,8 +3,6 @@ package nodepool
 import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
-	"strings"
-
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
@@ -43,7 +41,7 @@ type flag struct {
 	UseAlikeInstanceTypes               bool
 
 	// Common.
-	AvailabilityZones    string
+	AvailabilityZones    []string
 	ClusterID            string
 	NodepoolName         string
 	NodesMax             int
@@ -65,7 +63,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
 
 	// Common.
-	cmd.Flags().StringVar(&f.AvailabilityZones, flagAvailabilityZones, "", "List of availability zones to use, instead of setting a number. Use comma to separate values.")
+	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Tenant cluster ID.")
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 10, "Maximum number of worker nodes for the node pool.")
@@ -133,8 +131,8 @@ func (f *flag) Validate() error {
 		var azs []string
 		var numOfAZs int
 		{
-			if f.AvailabilityZones != "" {
-				azs = strings.Split(f.AvailabilityZones, ",")
+			if len(f.AvailabilityZones) > 0 {
+				azs = f.AvailabilityZones
 				numOfAZs = len(azs)
 			} else {
 				numOfAZs = f.NumAvailabilityZones
@@ -156,13 +154,11 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region)", flagAvailabilityZones)
 		}
 
-		if len(azs) > 0 {
-			switch f.Provider {
-			case key.ProviderAWS:
-				for _, az := range azs {
-					if !aws.ValidateAZ(f.Region, az) {
-						return microerror.Maskf(invalidFlagError, "--%s must be a list with valid AZs for selected region", flagAvailabilityZones)
-					}
+		switch f.Provider {
+		case key.ProviderAWS:
+			for _, az := range azs {
+				if !aws.ValidateAZ(f.Region, az) {
+					return microerror.Maskf(invalidFlagError, "--%s must be a list with valid AZs for selected region", flagAvailabilityZones)
 				}
 			}
 		}
