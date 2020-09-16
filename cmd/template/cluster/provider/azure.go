@@ -143,23 +143,17 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 	return machine
 }
 
-func newCAPZClusterInfraRef(obj interface{}) *corev1.ObjectReference {
+func newCAPZClusterInfraRef(obj runtime.Object) *corev1.ObjectReference {
 	var err error
-
-	runtimeObj, ok := obj.(runtime.Object)
-	if !ok {
-		panic(fmt.Sprintf("cannot alias %T as runtime.Object", obj))
-	}
-
 	var infrastructureCRRef *corev1.ObjectReference
 	{
 		s := runtime.NewScheme()
 		err = capzv1alpha3.AddToScheme(s)
 		if err != nil {
-			panic(fmt.Sprintf("capzv1alph3.AddToScheme: %+v", err))
+			panic(fmt.Sprintf("capzv1alpha3.AddToScheme: %+v", err))
 		}
 
-		infrastructureCRRef, err = reference.GetReference(s, runtimeObj)
+		infrastructureCRRef, err = reference.GetReference(s, obj)
 		if err != nil {
 			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
 		}
