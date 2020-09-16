@@ -183,6 +183,8 @@ func (f *flag) Validate() error {
 			switch f.Provider {
 			case key.ProviderAWS:
 				numOfAvailableAZs = aws.AvailableAZs(f.Region)
+			case key.ProviderAzure:
+				numOfAvailableAZs = azure.AvailableAZs(f.Region)
 			}
 		}
 
@@ -192,7 +194,7 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be configured with at least 1 AZ", flagAvailabilityZones)
 		}
 		if numOfAZs > numOfAvailableAZs {
-			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region)", flagAvailabilityZones)
+			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region", flagAvailabilityZones)
 		}
 
 		switch f.Provider {

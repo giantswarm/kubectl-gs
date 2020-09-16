@@ -146,7 +146,7 @@ func readReleases(branch, provider string) ([]ReleaseObject, error) {
 	{
 		for _, v := range r.Resources {
 			var releaseVersion semver.Version
-			if releaseVersion, err = semver.ParseTolerant(v); firstNPReleaseVersion.Compare(releaseVersion) < 0 || err != nil {
+			if releaseVersion, err = semver.ParseTolerant(v); firstNPReleaseVersion.Compare(releaseVersion) > 0 || err != nil {
 				continue
 			}
 

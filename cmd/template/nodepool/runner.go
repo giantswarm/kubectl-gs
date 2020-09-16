@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/giantswarm/kubectl-gs/pkg/azure"
+
 	"github.com/giantswarm/apiextensions/v2/pkg/id"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
@@ -51,7 +53,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var config provider.NodePoolCRsConfig
 	{
-		config := provider.NodePoolCRsConfig{
+		config = provider.NodePoolCRsConfig{
 			AWSInstanceType:                     r.flag.AWSInstanceType,
 			FileName:                            nodePoolCRFileName,
 			ClusterID:                           r.flag.ClusterID,
@@ -65,6 +67,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			PublicSSHKey:                        r.flag.PublicSSHKey,
 			Region:                              r.flag.Region,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
+			ReleaseVersion:                      r.flag.Release,
 		}
 
 		if config.NodePoolID == "" {
@@ -77,7 +80,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if len(r.flag.AvailabilityZones) > 0 {
 			config.AvailabilityZones = r.flag.AvailabilityZones
 		} else {
-			config.AvailabilityZones = aws.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
+			switch r.flag.Provider {
+			case key.ProviderAWS:
+				config.AvailabilityZones = aws.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
+			case key.ProviderAzure:
+				config.AvailabilityZones = azure.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
+			}
 		}
 
 		var releaseCollection *release.Release

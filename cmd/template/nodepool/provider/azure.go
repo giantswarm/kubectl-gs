@@ -76,6 +76,10 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachinePool {
 	azureMp := &expcapzv1alpha3.AzureMachinePool{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AzureMachinePool",
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolID,
 			Namespace: config.Namespace,
