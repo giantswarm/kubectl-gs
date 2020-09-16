@@ -65,7 +65,7 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&f.Provider, flagProvider, "aws", "Installation infrastructure provider (e.g. aws or azure).")
+	cmd.Flags().StringVar(&f.Provider, flagProvider, key.ProviderAWS, "Installation infrastructure provider (e.g. aws or azure).")
 
 	// AWS only.
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
@@ -91,7 +91,7 @@ func (f *flag) Validate() error {
 	var err error
 
 	if f.Provider != key.ProviderAWS && f.Provider != key.ProviderAzure {
-		return microerror.Maskf(invalidFlagError, "--%s must be either AWS or Azure", flagProvider)
+		return microerror.Maskf(invalidFlagError, "--%s must be either aws or azure", flagProvider)
 	}
 
 	if f.ClusterID != "" {
