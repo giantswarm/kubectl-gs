@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/pkg/id"
+	"github.com/giantswarm/apiextensions/v2/pkg/id"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"

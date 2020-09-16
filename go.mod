@@ -6,8 +6,8 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions v0.4.20
-	github.com/giantswarm/k8sclient/v3 v3.1.2
+	github.com/giantswarm/apiextensions/v2 v2.3.0
+	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/google/go-cmp v0.5.2
@@ -20,13 +20,18 @@ require (
 	github.com/stretchr/testify v1.5.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
-	k8s.io/api v0.17.9
-	k8s.io/apiextensions-apiserver v0.17.9
-	k8s.io/apimachinery v0.17.9
-	k8s.io/cli-runtime v0.17.2
-	k8s.io/client-go v0.17.9
+	k8s.io/api v0.18.6
+	k8s.io/apiextensions-apiserver v0.18.6
+	k8s.io/apimachinery v0.18.6
+	k8s.io/cli-runtime v0.18.6
+	k8s.io/client-go v0.18.6
 	sigs.k8s.io/cluster-api v0.3.9
-	sigs.k8s.io/cluster-api-provider-azure v0.4.5
-	sigs.k8s.io/controller-runtime v0.5.10
+	sigs.k8s.io/cluster-api-provider-azure v0.4.7
+	sigs.k8s.io/controller-runtime v0.6.2
 	sigs.k8s.io/yaml v1.2.0
+)
+
+replace (
+	sigs.k8s.io/cluster-api v0.3.9 => github.com/giantswarm/cluster-api v0.3.9-gs
+	sigs.k8s.io/cluster-api-provider-azure v0.4.7 => github.com/giantswarm/cluster-api-provider-azure v0.4.7-gs
 )

@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/pkg/id"
+	"github.com/giantswarm/apiextensions/v2/pkg/id"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"

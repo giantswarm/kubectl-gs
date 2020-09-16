@@ -3,8 +3,8 @@ package provider
 import (
 	"fmt"
 
-	"github.com/giantswarm/apiextensions/pkg/annotation"
-	"github.com/giantswarm/apiextensions/pkg/label"
+	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
