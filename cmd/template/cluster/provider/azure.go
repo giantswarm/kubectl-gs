@@ -52,13 +52,13 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	data := struct {
-		AzureClusterCR       string
-		AzureMasterMachineCR string
-		ClusterCR            string
+		ProviderClusterCR string
+		MasterMachineCR   string
+		ClusterCR         string
 	}{
-		AzureClusterCR:       string(azureClusterCRYaml),
-		AzureMasterMachineCR: string(azureMasterMachineCRYaml),
-		ClusterCR:            string(clusterCRYaml),
+		ProviderClusterCR: string(azureClusterCRYaml),
+		MasterMachineCR:   string(azureMasterMachineCRYaml),
+		ClusterCR:         string(clusterCRYaml),
 	}
 
 	t := template.Must(template.New(config.FileName).Parse(key.ClusterAzureCRsTemplate))

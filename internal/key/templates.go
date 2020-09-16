@@ -27,15 +27,21 @@ const ClusterAWSCRsTemplate = `
 `
 
 const ClusterAzureCRsTemplate = `
-{{- .AzureClusterCR -}}
+{{- .ProviderClusterCR -}}
 ---
 {{ .ClusterCR -}}
 ---
-{{ .AzureMasterMachine -}}
+{{ .MasterMachineCR -}}
 `
 
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
 {{ .AWSMachineDeploymentCR -}}
+`
+
+const MachinePoolAzureCRsTemplate = `
+{{- .MachinePoolCR -}}
+---
+{{ .ProviderMachinePoolCR -}}
 `
