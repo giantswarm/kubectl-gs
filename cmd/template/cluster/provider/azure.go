@@ -36,11 +36,7 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 			return microerror.Mask(err)
 		}
 
-		var clusterCR *capiv1alpha3.Cluster
-		clusterCR, err = newCAPIV1Alpha3ClusterCR(config, azureClusterCR)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		clusterCR := newCAPIV1Alpha3ClusterCR(config, azureClusterCR)
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -101,7 +97,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 	return cr
 }
 
-func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interface{}) (*capiv1alpha3.Cluster, error) {
+func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interface{}) *capiv1alpha3.Cluster {
 	runtimeObj, ok := infrastructureObj.(runtime.Object)
 	if !ok {
 		panic(fmt.Sprintf("cannot alias %T as runtime.Object", infrastructureObj))
@@ -109,7 +105,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interfa
 
 	infraCR, err := meta.Accessor(infrastructureObj)
 	if err != nil {
-		return nil, microerror.Maskf(invalidObjectDefinitionError, fmt.Sprintf("cannot get metav1.Object from %T", infrastructureObj))
+		panic(fmt.Sprintf("cannot get metav1.Object from %T", infrastructureObj))
 	}
 
 	var infrastructureCRRef *corev1.ObjectReference
@@ -117,12 +113,12 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interfa
 		s := runtime.NewScheme()
 		err = capzv1alpha3.AddToScheme(s)
 		if err != nil {
-			return nil, microerror.Maskf(invalidObjectDefinitionError, fmt.Sprintf("capzv1alph3.AddToScheme: %+v", err))
+			panic(fmt.Sprintf("capzv1alph3.AddToScheme: %+v", err))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, runtimeObj)
 		if err != nil {
-			return nil, microerror.Maskf(invalidObjectDefinitionError, fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
+			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
 		}
 	}
 
@@ -166,7 +162,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interfa
 		},
 	}
 
-	return cluster, nil
+	return cluster
 }
 
 func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
