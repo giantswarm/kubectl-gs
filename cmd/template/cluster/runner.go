@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	clusterCRName = "clusterCR"
+	clusterCRFileName = "clusterCR"
 )
 
 type runner struct {
@@ -57,7 +57,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
-			FileName:       clusterCRName,
+			FileName:       clusterCRFileName,
 			ClusterID:      r.flag.ClusterID,
 			Credential:     r.flag.Credential,
 			Domain:         r.flag.Domain,
@@ -76,12 +76,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Remove leading 'v' from release flag input.
 		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
 
-		c := release.Config{}
-		releaseCollection, err := release.New(c)
-		if err != nil {
-			return microerror.Mask(err)
+		var releaseCollection *release.Release
+		{
+			releaseCollection, err = release.New(release.Config{})
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
-
 		config.ReleaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 
 		config.Labels, err = clusterlabels.Parse(r.flag.Label)
