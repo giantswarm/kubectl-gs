@@ -2,10 +2,11 @@ package provider
 
 import (
 	"fmt"
-	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	"io"
 	"strconv"
 	"text/template"
+
+	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
