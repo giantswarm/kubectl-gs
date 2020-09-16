@@ -155,8 +155,9 @@ func (f *flag) Validate() error {
 			if len(f.PublicSSHKey) < 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
 			} else {
-				var dest []byte
-				_, err = base64.StdEncoding.Decode(dest, []byte(f.PublicSSHKey))
+				sshKey := []byte(f.PublicSSHKey)
+				dest := make([]byte, base64.StdEncoding.EncodedLen(len(sshKey)))
+				_, err = base64.StdEncoding.Decode(dest, sshKey)
 				if err != nil {
 					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagPublicSSHKey)
 				}
