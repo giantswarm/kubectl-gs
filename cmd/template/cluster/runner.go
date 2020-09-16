@@ -2,9 +2,15 @@ package cluster
 
 import (
 	"context"
+	"github.com/giantswarm/apiextensions/pkg/id"
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 	"io"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -46,6 +52,44 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	var err error
+
+	var config provider.ClusterCRConfig
+	{
+		config = provider.ClusterCRConfig{
+			FileName:       clusterCRName,
+			ClusterID:      r.flag.ClusterID,
+			Credential:     r.flag.Credential,
+			Domain:         r.flag.Domain,
+			MasterAZ:       r.flag.MasterAZ,
+			Description:    r.flag.Name,
+			Owner:          r.flag.Owner,
+			Region:         r.flag.Region,
+			ReleaseVersion: r.flag.Release,
+			Namespace:      metav1.NamespaceDefault,
+		}
+
+		if config.ClusterID == "" {
+			config.ClusterID = id.Generate()
+		}
+
+		// Remove leading 'v' from release flag input.
+		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
+
+		c := release.Config{}
+		releaseCollection, err := release.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.ReleaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
+
+		config.Labels, err = clusterlabels.Parse(r.flag.Label)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var output *os.File
 	{
 		if r.flag.Output == "" {
@@ -61,15 +105,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var err error
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = writeAWSTemplate(output, clusterCRName, r.flag)
+		err = provider.WriteAWSTemplate(output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = writeAzureTemplate(output, clusterCRName, r.flag)
+		err = provider.WriteAzureTemplate(output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
