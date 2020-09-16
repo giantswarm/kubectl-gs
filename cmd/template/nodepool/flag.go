@@ -211,14 +211,20 @@ func (f *flag) Validate() error {
 	}
 
 	{
-		// Spot instances.
-		if f.Provider == key.ProviderAWS {
+		// Validate Spot instances.
+
+		switch f.Provider {
+		case key.ProviderAWS:
 			if f.OnDemandBaseCapacity < 0 {
 				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagOnDemandBaseCapacity)
 			}
 
 			if f.OnDemandPercentageAboveBaseCapacity < 0 || f.OnDemandPercentageAboveBaseCapacity > 100 {
 				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 and lower than 100", flagOnDemandPercentageAboveBaseCapacity)
+			}
+		case key.ProviderAzure:
+			if f.OnDemandBaseCapacity != 0 || f.OnDemandPercentageAboveBaseCapacity != 100 || f.UseAlikeInstanceTypes {
+				return microerror.Maskf(invalidFlagError, "--%s, --%s and --%s spot instances flags are not supported on Azure.", flagOnDemandBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, flagUseAlikeInstanceTypes)
 			}
 		}
 	}
