@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	"io"
 	"strconv"
 	"text/template"
@@ -38,8 +39,8 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 			// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 			machinePoolCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
 			// Autoscaler configuration.
-			machinePoolCR.GetAnnotations()[key.AnnotationNodePoolMinSize] = strconv.Itoa(config.NodesMin)
-			machinePoolCR.GetAnnotations()[key.AnnotationNodePoolMaxSize] = strconv.Itoa(config.NodesMax)
+			machinePoolCR.GetAnnotations()[annotation.NodePoolMinSize] = strconv.Itoa(config.NodesMin)
+			machinePoolCR.GetAnnotations()[annotation.NodePoolMaxSize] = strconv.Itoa(config.NodesMax)
 		}
 		machinePoolCRYaml, err = yaml.Marshal(machinePoolCR)
 		if err != nil {
