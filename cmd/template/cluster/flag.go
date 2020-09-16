@@ -24,21 +24,21 @@ const (
 	// AWS only.
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
+	flagCredential   = "credential"
 
 	// Azure only.
-	flagPublicSSHKey = "public-ssh-key"
+	flagAzurePublicSSHKey = "azure-public-ssh-key"
 
 	// Common.
-	flagClusterID  = "cluster-id"
-	flagCredential = "credential"
-	flagDomain     = "domain"
-	flagMasterAZ   = "master-az"
-	flagName       = "name"
-	flagOutput     = "output"
-	flagOwner      = "owner"
-	flagRegion     = "region"
-	flagRelease    = "release"
-	flagLabel      = "label"
+	flagClusterID = "cluster-id"
+	flagDomain    = "domain"
+	flagMasterAZ  = "master-az"
+	flagName      = "name"
+	flagOutput    = "output"
+	flagOwner     = "owner"
+	flagRegion    = "region"
+	flagRelease   = "release"
+	flagLabel     = "label"
 )
 
 type flag struct {
@@ -47,21 +47,21 @@ type flag struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
+	Credential   string
 
 	// Azure only.
-	PublicSSHKey string
+	AzurePublicSSHKey string
 
 	// Common.
-	ClusterID  string
-	Credential string
-	Domain     string
-	MasterAZ   []string
-	Name       string
-	Output     string
-	Owner      string
-	Region     string
-	Release    string
-	Label      []string
+	ClusterID string
+	Domain    string
+	MasterAZ  []string
+	Name      string
+	Output    string
+	Owner     string
+	Region    string
+	Release   string
+	Label     []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -70,14 +70,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// AWS only.
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
+	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
 
 	// Azure only.
-	cmd.Flags().StringVar(&f.PublicSSHKey, flagPublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
+	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
-	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
@@ -147,14 +147,14 @@ func (f *flag) Validate() error {
 
 	{
 		if f.Provider == key.ProviderAzure {
-			if len(f.PublicSSHKey) < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
+			if len(f.AzurePublicSSHKey) < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagAzurePublicSSHKey)
 			} else {
-				sshKey := []byte(f.PublicSSHKey)
+				sshKey := []byte(f.AzurePublicSSHKey)
 				dest := make([]byte, base64.StdEncoding.EncodedLen(len(sshKey)))
 				_, err = base64.StdEncoding.Decode(dest, sshKey)
 				if err != nil {
-					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagPublicSSHKey)
+					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagAzurePublicSSHKey)
 				}
 			}
 		}

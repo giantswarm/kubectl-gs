@@ -23,8 +23,8 @@ const (
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
 
 	// Azure only.
-	flagPublicSSHKey = "public-ssh-key"
-	flagAzureVMSize  = "azure-vm-size"
+	flagAzurePublicSSHKey = "azure-public-ssh-key"
+	flagAzureVMSize       = "azure-vm-size"
 
 	// Common.
 	flagAvailabilityZones    = "availability-zones"
@@ -49,8 +49,8 @@ type flag struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	PublicSSHKey string
-	AzureVMSize  string
+	AzurePublicSSHKey string
+	AzureVMSize       string
 
 	// Common.
 	AvailabilityZones    []string
@@ -75,7 +75,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
 
 	// Azure only.
-	cmd.Flags().StringVar(&f.PublicSSHKey, flagPublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
+	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
 	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4_v3", "Azure VM size to use for workers, e.g. 'Standard_D4_v3'.")
 
 	// Common.
@@ -152,14 +152,14 @@ func (f *flag) Validate() error {
 
 	{
 		if f.Provider == key.ProviderAzure {
-			if len(f.PublicSSHKey) < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagPublicSSHKey)
+			if len(f.AzurePublicSSHKey) < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagAzurePublicSSHKey)
 			} else {
-				sshKey := []byte(f.PublicSSHKey)
+				sshKey := []byte(f.AzurePublicSSHKey)
 				dest := make([]byte, base64.StdEncoding.EncodedLen(len(sshKey)))
 				_, err = base64.StdEncoding.Decode(dest, sshKey)
 				if err != nil {
-					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagPublicSSHKey)
+					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagAzurePublicSSHKey)
 				}
 			}
 		}

@@ -14,6 +14,7 @@ type ClusterCRsConfig struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
+	Credential   string
 
 	// Azure only.
 	PublicSSHKey string
@@ -21,7 +22,6 @@ type ClusterCRsConfig struct {
 	// Common.
 	FileName          string
 	ClusterID         string
-	Credential        string
 	Domain            string
 	MasterAZ          []string
 	Description       string
