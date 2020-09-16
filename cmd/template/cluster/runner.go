@@ -62,12 +62,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			FileName:       clusterCRFileName,
 			ClusterID:      r.flag.ClusterID,
 			Credential:     r.flag.Credential,
+			ExternalSNAT:   r.flag.ExternalSNAT,
 			Domain:         r.flag.Domain,
 			MasterAZ:       r.flag.MasterAZ,
 			Description:    r.flag.Name,
 			Owner:          r.flag.Owner,
 			Region:         r.flag.Region,
 			ReleaseVersion: r.flag.Release,
+			PublicSSHKey:   r.flag.PublicSSHKey,
 			Namespace:      metav1.NamespaceDefault,
 		}
 
@@ -80,7 +82,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		var releaseCollection *release.Release
 		{
-			releaseCollection, err = release.New(release.Config{})
+			c := release.Config{
+				Provider: r.flag.Provider,
+			}
+			releaseCollection, err = release.New(c)
 			if err != nil {
 				return microerror.Mask(err)
 			}

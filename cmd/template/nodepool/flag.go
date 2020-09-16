@@ -237,7 +237,9 @@ func (f *flag) Validate() error {
 
 		var r *release.Release
 		{
-			c := release.Config{}
+			c := release.Config{
+				Provider: f.Provider,
+			}
 
 			r, err = release.New(c)
 			if err != nil {

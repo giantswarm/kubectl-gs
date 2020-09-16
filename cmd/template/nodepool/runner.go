@@ -82,7 +82,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		var releaseCollection *release.Release
 		{
-			releaseCollection, err = release.New(release.Config{})
+			c := release.Config{
+				Provider: r.flag.Provider,
+			}
+			releaseCollection, err = release.New(c)
 			if err != nil {
 				return microerror.Mask(err)
 			}
