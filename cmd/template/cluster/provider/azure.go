@@ -5,11 +5,9 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/pkg/annotation"
 	"github.com/giantswarm/apiextensions/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
@@ -36,7 +34,11 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 			return microerror.Mask(err)
 		}
 
-		clusterCR := newCAPIV1Alpha3ClusterCR(config, azureClusterCR)
+		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
+
+		clusterCR := newCAPIV1Alpha3ClusterCR(config, infrastructureRef)
+		// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
+		clusterCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -97,74 +99,6 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 	return cr
 }
 
-func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureObj interface{}) *capiv1alpha3.Cluster {
-	runtimeObj, ok := infrastructureObj.(runtime.Object)
-	if !ok {
-		panic(fmt.Sprintf("cannot alias %T as runtime.Object", infrastructureObj))
-	}
-
-	infraCR, err := meta.Accessor(infrastructureObj)
-	if err != nil {
-		panic(fmt.Sprintf("cannot get metav1.Object from %T", infrastructureObj))
-	}
-
-	var infrastructureCRRef *corev1.ObjectReference
-	{
-		s := runtime.NewScheme()
-		err = capzv1alpha3.AddToScheme(s)
-		if err != nil {
-			panic(fmt.Sprintf("capzv1alph3.AddToScheme: %+v", err))
-		}
-
-		infrastructureCRRef, err = reference.GetReference(s, runtimeObj)
-		if err != nil {
-			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
-		}
-	}
-
-	httpsPort := int32(443)
-	cluster := &capiv1alpha3.Cluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.ClusterID,
-			Namespace: infraCR.GetNamespace(),
-			Labels: map[string]string{
-				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
-				label.ClusterOperatorVersion:  config.ReleaseComponents["cluster-operator"],
-				label.Cluster:                 config.ClusterID,
-				capiv1alpha3.ClusterLabelName: config.ClusterID,
-				label.Organization:            config.Owner,
-				label.ReleaseVersion:          config.ReleaseVersion,
-			},
-			Annotations: map[string]string{
-				annotation.ClusterDescription: config.Description,
-			},
-		},
-		Spec: capiv1alpha3.ClusterSpec{
-			ClusterNetwork: &capiv1alpha3.ClusterNetwork{
-				APIServerPort: &httpsPort,
-				Services: &capiv1alpha3.NetworkRanges{
-					CIDRBlocks: []string{
-						serviceNetworkCIDR,
-					},
-				},
-				ServiceDomain: fmt.Sprintf("%s.k8s.%s", config.ClusterID, config.Domain),
-			},
-			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
-				Host: fmt.Sprintf("api.%s.k8s.%s", config.ClusterID, config.Domain),
-				Port: 443,
-			},
-			InfrastructureRef: infrastructureCRRef,
-		},
-	}
-
-	return cluster
-}
-
 func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
 	machine := &capzv1alpha3.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
@@ -207,4 +141,29 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 	}
 
 	return machine
+}
+
+func newCAPZClusterInfraRef(obj interface{}) *corev1.ObjectReference {
+	var err error
+
+	runtimeObj, ok := obj.(runtime.Object)
+	if !ok {
+		panic(fmt.Sprintf("cannot alias %T as runtime.Object", obj))
+	}
+
+	var infrastructureCRRef *corev1.ObjectReference
+	{
+		s := runtime.NewScheme()
+		err = capzv1alpha3.AddToScheme(s)
+		if err != nil {
+			panic(fmt.Sprintf("capzv1alph3.AddToScheme: %+v", err))
+		}
+
+		infrastructureCRRef, err = reference.GetReference(s, runtimeObj)
+		if err != nil {
+			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
+		}
+	}
+
+	return infrastructureCRRef
 }

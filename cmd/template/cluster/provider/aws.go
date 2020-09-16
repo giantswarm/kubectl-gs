@@ -1,12 +1,14 @@
 package provider
 
 import (
-	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/microerror"
 	"io"
-	"sigs.k8s.io/yaml"
 	"text/template"
+
+	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {

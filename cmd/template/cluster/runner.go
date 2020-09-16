@@ -2,15 +2,17 @@ package cluster
 
 import (
 	"context"
-	"github.com/giantswarm/apiextensions/pkg/id"
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
-	"github.com/giantswarm/kubectl-gs/pkg/release"
 	"io"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/giantswarm/apiextensions/pkg/id"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
