@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+- Add support for templating clusters and node pools on Azure.
+
 ## [0.6.1] - 2020-09-14
 
 ### Added
