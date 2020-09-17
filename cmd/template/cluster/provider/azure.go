@@ -90,11 +90,12 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			},
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
-			Location: config.Region,
 			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
 				Host: fmt.Sprintf("api.%s.k8s.%s", config.ClusterID, config.Domain),
 				Port: 443,
 			},
+			Location:      config.Region,
+			ResourceGroup: config.ClusterID,
 		},
 	}
 
