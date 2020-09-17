@@ -11,7 +11,7 @@ import (
 
 const (
 	name        = "nodepool"
-	description = "Template MachineDeployment and AWSMachineDeployment CRs."
+	description = "Template Giant Swarm Node Pool CRs."
 )
 
 type Config struct {

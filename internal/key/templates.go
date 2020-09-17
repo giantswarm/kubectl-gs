@@ -16,7 +16,7 @@ const AppCatalogCRTemplate = `
 {{ .AppCatalogCR -}}
 `
 
-const ClusterCRsTemplate = `
+const ClusterAWSCRsTemplate = `
 {{- .ClusterCR -}}
 ---
 {{ .AWSClusterCR -}}
@@ -26,8 +26,24 @@ const ClusterCRsTemplate = `
 {{ .AWSControlPlaneCR -}}
 `
 
+const ClusterAzureCRsTemplate = `
+{{- .ProviderClusterCR -}}
+---
+{{ .ClusterCR -}}
+---
+{{ .MasterMachineCR -}}
+`
+
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
 {{ .AWSMachineDeploymentCR -}}
+`
+
+const MachinePoolAzureCRsTemplate = `
+{{- .ProviderMachinePoolCR -}}
+---
+{{ .MachinePoolCR -}}
+---
+{{ .SparkCR -}}
 `

@@ -2,8 +2,14 @@
 
 Node pools are groups of worker nodes sharing common configuration. In terms of custom resources they consist of custom resources of type
 
+*On AWS*
 - `MachineDeployment` (API version `cluster.x-k8s.io/v1alpha2`)
 - `AWSMachineDeployment` (API version `infrastructure.giantswarm.io/v1alpha2`)
+
+*On Azure*
+- `MachinePpool` (API version `cluster.x-k8s.io/v1alpha3`)
+- `AzureMachinePool` (API version `exp.infrastructure.cluster.x-k8s.io/v1alpha3`)
+- `Spark` (API version `core.giantswarm.io/v1alpha1`)
 
 ## Usage
 
@@ -13,6 +19,7 @@ To create the manifests for a new node pool, use this command:
 
 Here are the supported flags:
 
+  - `--provider` - The infrastructure provider (e.g *aws* or *azure*)
   - `--availability-zones` - list of availability zones to use, instead of setting a number. Use comma to separate values. (e.g. `eu-central-1a,eu-central-1b`)
   - `--aws-instance-type`- EC2 instance type to use for workers, e. g. *m5.2xlarge*. (default *m5.xlarge*)
   - `--cluster-id` - tenant cluster ID, generated during running `kubectl gs template cluster`.
@@ -24,6 +31,8 @@ Here are the supported flags:
   - `--region` - tenant cluster AWS region. Must be configured with installation region.
   - `--release` - valid release version.
     Can be retrieved with `gsctl list releases` for your installation. Only versions *10.x.x*+ support cluster CRs.
+  - `--azure-vm-size` - Azure VM size to use for workers (e.g. *Standard_D4_v3*).
+  - `--azure-public-ssh-key` - Azure master machines Base64-encoded public key used for SSH.
 
 ```yaml
 ---

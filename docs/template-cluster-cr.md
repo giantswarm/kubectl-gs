@@ -2,10 +2,16 @@
 
 In order to create a cluster using custom resources, kubectl-gs will help you create manifests for these resource types:
 
+*On AWS*
 - `Cluster` (API version `cluster.x-k8s.io/v1alpha2`) - holds the base cluster specification.
 - `AWSCluster` (API version `infrastructure.giantswarm.io/v1alpha2`) - holds AWS-specific configuration.
 - `G8sControlPlane` (API version `infrastructure.giantswarm.io/v1alpha2`) - specifies the master nodes
 - `AWSControlPlane` (API version `infrastructure.giantswarm.io/v1alpha2`) - specifies the master nodes with AWS-specific details
+
+*On Azure*
+- `Cluster` (API version `cluster.x-k8s.io/v1alpha3`) - holds the base cluster specification.
+- `AzureCluster` (API version `infrastructure.cluster.x-k8s.io/v1alpha3`) - holds Azure-specific configuration.
+- `AzureMachine` (API version `infrastructure.cluster.x-k8s.io/v1alpha3`) - specifies the master nodes.
 
 ## Usage
 
@@ -13,6 +19,7 @@ The command to execute is `kubectl gs template cluster`.
 
 It supports the following flags:
 
+- `--provider` - The infrastructure provider (e.g *aws* or *azure*)
 - `--master-az` - AWS availability zone(s) of master instance.
   Must be configured with AZ of the installation region. E.g. for region *eu-central-1* valid value is *eu-central-1a*.
   Use the flag once with a single value to create a cluster with one master node. For master node high availability,
@@ -28,6 +35,7 @@ It supports the following flags:
 - `--release` - valid release version.
   Can be retrieved with `gsctl list releases` for your installation. Only versions above *10.x.x*+ support cluster CRs.
 - `--label` - tenant cluster label in the form of `key=value`. Can be specified multiple times. Only clusters with release version above *10.x.x*+ support tenant cluster labels.
+- `--azure-public-ssh-key` - Azure master machines Base64-encoded public key used for SSH.
 
 **Note:** The CRs generated won't trigger the creation of any worker nodes. Please see [node pools](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md) for instructions on how to create worker node pools.
 

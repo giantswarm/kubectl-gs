@@ -6,17 +6,23 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"text/template"
 
-	"github.com/ghodss/yaml"
-	"github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/apiextensions/v2/pkg/id"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
-	"github.com/giantswarm/kubectl-gs/pkg/release"
+)
+
+const (
+	clusterCRFileName = "clusterCR"
 )
 
 type runner struct {
@@ -50,86 +56,50 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	var releaseComponents map[string]string
+	var config provider.ClusterCRsConfig
 	{
-		c := release.Config{}
+		config = provider.ClusterCRsConfig{
+			FileName:       clusterCRFileName,
+			ClusterID:      r.flag.ClusterID,
+			Credential:     r.flag.Credential,
+			ExternalSNAT:   r.flag.ExternalSNAT,
+			Domain:         r.flag.Domain,
+			MasterAZ:       r.flag.MasterAZ,
+			Description:    r.flag.Name,
+			Owner:          r.flag.Owner,
+			Region:         r.flag.Region,
+			ReleaseVersion: r.flag.Release,
+			PublicSSHKey:   r.flag.AzurePublicSSHKey,
+			Namespace:      metav1.NamespaceDefault,
+		}
 
-		releaseCollection, err := release.New(c)
+		if config.ClusterID == "" {
+			config.ClusterID = id.Generate()
+		}
+
+		// Remove leading 'v' from release flag input.
+		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
+
+		var releaseCollection *release.Release
+		{
+			c := release.Config{
+				Provider: r.flag.Provider,
+			}
+			releaseCollection, err = release.New(c)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+		config.ReleaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
+
+		config.Labels, err = clusterlabels.Parse(r.flag.Label)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		releaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 	}
 
-	var userLabels map[string]string
+	var output *os.File
 	{
-		userLabels, err = clusterlabels.Parse(r.flag.Label)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	// remove leading v from release flag input
-	sanitizedRelease := strings.TrimLeft(r.flag.Release, "v")
-
-	config := v1alpha2.ClusterCRsConfig{
-		ClusterID:         r.flag.ClusterID,
-		Credential:        r.flag.Credential,
-		Domain:            r.flag.Domain,
-		ExternalSNAT:      r.flag.ExternalSNAT,
-		MasterAZ:          r.flag.MasterAZ,
-		Description:       r.flag.Name,
-		PodsCIDR:          r.flag.PodsCIDR,
-		Owner:             r.flag.Owner,
-		Region:            r.flag.Region,
-		ReleaseComponents: releaseComponents,
-		ReleaseVersion:    sanitizedRelease,
-		Labels:            userLabels,
-	}
-
-	crs, err := v1alpha2.NewClusterCRs(config)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	clusterCRYaml, err := yaml.Marshal(crs.Cluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	awsClusterCRYaml, err := yaml.Marshal(crs.AWSCluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	g8sControlPlaneCRYaml, err := yaml.Marshal(crs.G8sControlPlane)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	awsControlPlaneCRYaml, err := yaml.Marshal(crs.AWSControlPlane)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	data := struct {
-		AWSClusterCR      string
-		AWSControlPlaneCR string
-		ClusterCR         string
-		G8sControlPlaneCR string
-	}{
-		AWSClusterCR:      string(awsClusterCRYaml),
-		ClusterCR:         string(clusterCRYaml),
-		G8sControlPlaneCR: string(g8sControlPlaneCRYaml),
-		AWSControlPlaneCR: string(awsControlPlaneCRYaml),
-	}
-
-	t := template.Must(template.New("clusterCR").Parse(key.ClusterCRsTemplate))
-
-	{
-		var output *os.File
-
 		if r.flag.Output == "" {
 			output = os.Stdout
 		} else {
@@ -141,8 +111,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			output = f
 		}
+	}
 
-		err = t.Execute(output, data)
+	switch r.flag.Provider {
+	case key.ProviderAWS:
+		err = provider.WriteAWSTemplate(output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	case key.ProviderAzure:
+		err = provider.WriteAzureTemplate(output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

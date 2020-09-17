@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
+
+	"github.com/blang/semver"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 
 	"gopkg.in/yaml.v3"
 
@@ -20,11 +23,16 @@ const (
 	releasesAWSIndexURLFmt   = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/kustomization.yaml"
 	releasesAWSReleaseURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/aws/%s/release.yaml"
 
-	firstAWSNodePoolsReleaseMajor = 10
+	releasesAzureIndexURLFmt   = "https://raw.githubusercontent.com/giantswarm/releases/%s/azure/kustomization.yaml"
+	releasesAzureReleaseURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/azure/%s/release.yaml"
+
+	firstAWSNodePoolsRelease   = "10.0.0"
+	firstAzureNodePoolsRelease = "12.2.0"
 )
 
 type Config struct {
-	Branch string
+	Branch   string
+	Provider string
 }
 
 type Release struct {
@@ -36,7 +44,7 @@ func New(config Config) (*Release, error) {
 		config.Branch = defaultBranch
 	}
 
-	releases, err := readReleases(config.Branch)
+	releases, err := readReleases(config.Branch, config.Provider)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -91,10 +99,28 @@ func (r *Release) Validate(version string) bool {
 	return false
 }
 
-func readReleases(branch string) ([]ReleaseObject, error) {
+func readReleases(branch, provider string) ([]ReleaseObject, error) {
+	var err error
+
+	var firstNPReleaseVersion semver.Version
+	var releasesIndexURLFmt string
+	var releaseURLFmt string
+	{
+		switch provider {
+		case key.ProviderAWS:
+			firstNPReleaseVersion = semver.MustParse(firstAWSNodePoolsRelease)
+			releasesIndexURLFmt = releasesAWSIndexURLFmt
+			releaseURLFmt = releasesAWSReleaseURLFmt
+		case key.ProviderAzure:
+			firstNPReleaseVersion = semver.MustParse(firstAzureNodePoolsRelease)
+			releasesIndexURLFmt = releasesAzureIndexURLFmt
+			releaseURLFmt = releasesAzureReleaseURLFmt
+		}
+	}
+
 	var b []byte
 	{
-		resp, err := http.Get(fmt.Sprintf(releasesAWSIndexURLFmt, branch))
+		resp, err := http.Get(fmt.Sprintf(releasesIndexURLFmt, branch))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -119,13 +145,12 @@ func readReleases(branch string) ([]ReleaseObject, error) {
 	var releases []ReleaseObject
 	{
 		for _, v := range r.Resources {
-			// skip legacy (< 10)
-			versionParts := strings.Split(strings.TrimPrefix(v, "v"), ".")
-			if i, err := strconv.Atoi(versionParts[0]); i < firstAWSNodePoolsReleaseMajor || err != nil {
+			var releaseVersion semver.Version
+			if releaseVersion, err = semver.ParseTolerant(v); firstNPReleaseVersion.Compare(releaseVersion) > 0 || err != nil {
 				continue
 			}
 
-			resp, err := http.Get(fmt.Sprintf(releasesAWSReleaseURLFmt, branch, v))
+			resp, err := http.Get(fmt.Sprintf(releaseURLFmt, branch, v))
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
