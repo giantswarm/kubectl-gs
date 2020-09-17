@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"encoding/base64"
-	"fmt"
 	"net"
 	"regexp"
 
