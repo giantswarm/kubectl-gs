@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	serviceNetworkCIDR  = "172.31.0.0/16"
-	defaultMasterVMSize = "Standard_D4_v3"
+	serviceNetworkCIDR       = "172.31.0.0/16"
+	defaultMasterVMSize      = "Standard_D4_v3"
+	organizationNamespaceFmt = "org-%s"
 )
 
 func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
@@ -80,7 +81,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.ClusterID,
-			Namespace: config.Namespace,
+			Namespace: fmt.Sprintf(organizationNamespaceFmt, config.Owner),
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 				label.Cluster:                 config.ClusterID,
