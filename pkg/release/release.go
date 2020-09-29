@@ -27,7 +27,7 @@ const (
 	releasesAzureReleaseURLFmt = "https://raw.githubusercontent.com/giantswarm/releases/%s/azure/%s/release.yaml"
 
 	firstAWSNodePoolsRelease   = "10.0.0"
-	firstAzureNodePoolsRelease = "12.2.0"
+	firstAzureNodePoolsRelease = "13.0.0-alpha"
 )
 
 type Config struct {
