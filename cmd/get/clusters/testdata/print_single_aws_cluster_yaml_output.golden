@@ -22,6 +22,7 @@ spec:
     master:
       availabilityZone: ""
       instanceType: ""
+    nodes: {}
     pods: {}
     region: ""
 status:

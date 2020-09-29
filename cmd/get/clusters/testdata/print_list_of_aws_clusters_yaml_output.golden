@@ -24,6 +24,7 @@ items:
       master:
         availabilityZone: ""
         instanceType: ""
+      nodes: {}
       pods: {}
       region: ""
   status:
@@ -54,6 +55,7 @@ items:
       master:
         availabilityZone: ""
         instanceType: ""
+      nodes: {}
       pods: {}
       region: ""
   status:
@@ -87,6 +89,7 @@ items:
       master:
         availabilityZone: ""
         instanceType: ""
+      nodes: {}
       pods: {}
       region: ""
   status:
@@ -122,6 +125,7 @@ items:
       master:
         availabilityZone: ""
         instanceType: ""
+      nodes: {}
       pods: {}
       region: ""
   status:
@@ -152,6 +156,7 @@ items:
       master:
         availabilityZone: ""
         instanceType: ""
+      nodes: {}
       pods: {}
       region: ""
   status:
@@ -185,6 +190,7 @@ items:
       master:
         availabilityZone: ""
         instanceType: ""
+      nodes: {}
       pods: {}
       region: ""
   status:
