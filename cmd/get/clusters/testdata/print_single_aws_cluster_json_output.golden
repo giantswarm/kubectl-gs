@@ -30,6 +30,7 @@
                 "availabilityZone": "",
                 "instanceType": ""
             },
+            "nodes": {},
             "pods": {},
             "region": ""
         }
