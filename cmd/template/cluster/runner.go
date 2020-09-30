@@ -99,7 +99,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if r.flag.Provider == key.ProviderAzure {
-			config.Namespace = fmt.Sprintf(organizationNamespaceFmt, config.Owner)
+			config.Namespace = fmt.Sprintf("org-%s", config.Owner)
 		}
 	}
 
