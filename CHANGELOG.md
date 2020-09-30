@@ -17,6 +17,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 - Add the `--version` flag for printing the current version. Run `kgs --version` to check which version you're running.
 
+### Fixed
+- Store all Azure resources in the organization-specific namespace.
+
 ### Changed
 - Disabled templating clusters with legacy or deprecated release versions.
 - Allow specifying the `--release` flag for templating clusters and node pools with leading `v`.
