@@ -47,8 +47,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.NetworkPoolCRsConfig
 	{
 		config = provider.NetworkPoolCRsConfig{
-			NetworkPoolName: r.flag.NetworkPoolName,
 			CIDRBlock:       r.flag.CIDRBlock,
+			FileName:        networkPoolCRFileName,
+			NetworkPoolName: r.flag.NetworkPoolName,
 			Owner:           r.flag.Owner,
 		}
 
@@ -72,7 +73,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	provider.WriteTemplate(output, config)
+	err = provider.WriteTemplate(output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
