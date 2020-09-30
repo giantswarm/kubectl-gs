@@ -35,6 +35,7 @@
                         "availabilityZone": "",
                         "instanceType": ""
                     },
+                    "nodes": {},
                     "pods": {},
                     "region": ""
                 }
@@ -78,6 +79,7 @@
                         "availabilityZone": "",
                         "instanceType": ""
                     },
+                    "nodes": {},
                     "pods": {},
                     "region": ""
                 }
@@ -128,6 +130,7 @@
                         "availabilityZone": "",
                         "instanceType": ""
                     },
+                    "nodes": {},
                     "pods": {},
                     "region": ""
                 }
@@ -182,6 +185,7 @@
                         "availabilityZone": "",
                         "instanceType": ""
                     },
+                    "nodes": {},
                     "pods": {},
                     "region": ""
                 }
@@ -225,6 +229,7 @@
                         "availabilityZone": "",
                         "instanceType": ""
                     },
+                    "nodes": {},
                     "pods": {},
                     "region": ""
                 }
@@ -275,6 +280,7 @@
                         "availabilityZone": "",
                         "instanceType": ""
                     },
+                    "nodes": {},
                     "pods": {},
                     "region": ""
                 }

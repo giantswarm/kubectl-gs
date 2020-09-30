@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"io"
 	"text/template"
 
@@ -52,6 +53,8 @@ func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		AWSMachineDeploymentCR: string(awsMDCRYaml),
 		MachineDeploymentCR:    string(mdCRYaml),
 	}
+
+	fmt.Println(data.AWSMachineDeploymentCR)
 
 	t := template.Must(template.New(config.FileName).Parse(key.MachineDeploymentCRsTemplate))
 	err = t.Execute(out, data)
