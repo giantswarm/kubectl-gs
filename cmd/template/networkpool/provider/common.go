@@ -9,7 +9,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/microerror"
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 type NetworkPoolCRsConfig struct {
