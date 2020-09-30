@@ -24,7 +24,6 @@ import (
 
 const (
 	clusterCRFileName        = "clusterCR"
-	organizationNamespaceFmt = "org-%s"
 )
 
 type runner struct {
