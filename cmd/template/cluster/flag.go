@@ -30,15 +30,16 @@ const (
 	flagAzurePublicSSHKey = "azure-public-ssh-key"
 
 	// Common.
-	flagClusterID = "cluster-id"
-	flagDomain    = "domain"
-	flagMasterAZ  = "master-az"
-	flagName      = "name"
-	flagOutput    = "output"
-	flagOwner     = "owner"
-	flagRegion    = "region"
-	flagRelease   = "release"
-	flagLabel     = "label"
+	flagClusterID     = "cluster-id"
+	flagDomain        = "domain"
+	flagMasterAZ      = "master-az"
+	flagName          = "name"
+	flagOutput        = "output"
+	flagOwner         = "owner"
+	flagRegion        = "region"
+	flagRelease       = "release"
+	flagLabel         = "label"
+	flagReleaseBranch = "release-branch"
 )
 
 type flag struct {
@@ -53,15 +54,16 @@ type flag struct {
 	AzurePublicSSHKey string
 
 	// Common.
-	ClusterID string
-	Domain    string
-	MasterAZ  []string
-	Name      string
-	Output    string
-	Owner     string
-	Region    string
-	Release   string
-	Label     []string
+	ClusterID     string
+	Domain        string
+	MasterAZ      []string
+	Name          string
+	Output        string
+	Owner         string
+	Region        string
+	Release       string
+	Label         []string
+	ReleaseBranch string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -85,6 +87,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1 or westeurope).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Tenant cluster label.")
+	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "", "Release branch to use.")
 }
 
 func (f *flag) Validate() error {
@@ -196,6 +199,7 @@ func (f *flag) Validate() error {
 		{
 			c := release.Config{
 				Provider: f.Provider,
+				Branch:   f.ReleaseBranch,
 			}
 			r, err = release.New(c)
 			if err != nil {
