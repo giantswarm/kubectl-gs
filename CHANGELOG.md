@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+- Add support for using a custom release branch when templating clusters or node pools.
+
 ## [0.7.0] - 2020-09-30
 
 ### Added

@@ -33,6 +33,7 @@ Here are the supported flags:
     Can be retrieved with `gsctl list releases` for your installation. Only versions *10.x.x*+ support cluster CRs.
   - `--azure-vm-size` - Azure VM size to use for workers (e.g. *Standard_D4_v3*).
   - `--azure-public-ssh-key` - Azure master machines Base64-encoded public key used for SSH.
+  - `--release-branch` - The Giant Swarm releases repository branch to use. (default *master*)
 
 ```yaml
 ---
