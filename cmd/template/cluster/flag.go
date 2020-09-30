@@ -87,7 +87,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1 or westeurope).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Tenant cluster label.")
-	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "", "Release branch to use.")
+	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
 }
 
 func (f *flag) Validate() error {
