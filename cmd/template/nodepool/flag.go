@@ -78,7 +78,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
-	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4_v3", "Azure VM size to use for workers, e.g. 'Standard_D4_v3'.")
+	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")

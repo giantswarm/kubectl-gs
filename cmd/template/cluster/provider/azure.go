@@ -20,7 +20,7 @@ import (
 
 const (
 	serviceNetworkCIDR  = "172.31.0.0/16"
-	defaultMasterVMSize = "Standard_D4_v3"
+	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
 func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
