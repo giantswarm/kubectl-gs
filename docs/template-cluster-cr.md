@@ -36,6 +36,7 @@ It supports the following flags:
   Can be retrieved with `gsctl list releases` for your installation. Only versions above *10.x.x*+ support cluster CRs.
 - `--label` - tenant cluster label in the form of `key=value`. Can be specified multiple times. Only clusters with release version above *10.x.x*+ support tenant cluster labels.
 - `--azure-public-ssh-key` - Azure master machines Base64-encoded public key used for SSH.
+- `--release-branch` - The Giant Swarm releases repository branch to use. (default *master*)
 
 **Note:** The CRs generated won't trigger the creation of any worker nodes. Please see [node pools](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md) for instructions on how to create worker node pools.
 
