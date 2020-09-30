@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	clusterCRFileName        = "clusterCR"
+	clusterCRFileName = "clusterCR"
 )
 
 type runner struct {
