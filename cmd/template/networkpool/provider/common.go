@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"io"
 	"text/template"
 
@@ -44,8 +43,6 @@ func WriteTemplate(out io.Writer, config NetworkPoolCRsConfig) error {
 	}{
 		NetworkPoolCR: string(npCRYaml),
 	}
-
-	fmt.Println(data.NetworkPoolCR)
 
 	t := template.Must(template.New(config.FileName).Parse(key.NetworkPoolCRsTemplate))
 	err = t.Execute(out, data)
