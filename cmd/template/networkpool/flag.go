@@ -31,7 +31,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-
 	if f.NetworkPoolName == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagNetworkPoolName)
 	}
