@@ -13,7 +13,6 @@ import (
 )
 
 type NetworkPoolCRsConfig struct {
-	// Common.
 	CIDRBlock       string
 	NetworkPoolName string
 	Owner           string
