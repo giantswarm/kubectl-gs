@@ -37,6 +37,7 @@ const (
 	flagOwner                = "owner"
 	flagRegion               = "region"
 	flagRelease              = "release"
+	flagReleaseBranch        = "release-branch"
 )
 
 type flag struct {
@@ -63,6 +64,7 @@ type flag struct {
 	Owner                string
 	Region               string
 	Release              string
+	ReleaseBranch        string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -76,7 +78,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
-	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4_v3", "Azure VM size to use for workers, e.g. 'Standard_D4_v3'.")
+	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
@@ -89,6 +91,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
+	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
 }
 
 func (f *flag) Validate() error {
@@ -239,6 +242,7 @@ func (f *flag) Validate() error {
 		{
 			c := release.Config{
 				Provider: f.Provider,
+				Branch:   f.ReleaseBranch,
 			}
 
 			r, err = release.New(c)
