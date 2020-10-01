@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+- Show full error output when the OIDC configuration is incorrect while running the `login` command.
+
 ### Fixed
 - Use the custom releases branch when fetching release components.
 

@@ -229,7 +229,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		}
 		auther, err = oidc.New(ctx, oidcConfig)
 		if err != nil {
-			return microerror.Mask(incorrectConfigurationError)
+			return microerror.Maskf(incorrectConfigurationError, "\n%v", err.Error())
 		}
 	}
 
