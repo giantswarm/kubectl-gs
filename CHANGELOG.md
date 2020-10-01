@@ -7,10 +7,20 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+- Use the custom releases branch when fetching release components.
+
 ## [0.7.1] - 2020-09-30
 
 ### Added
 - Add support for using a custom release branch when templating clusters or node pools.
+
+### Changed
+- Change the default Azure VM size to `Standard_D4s_v3`
+
+### Fixed
+- Store all Azure resources in the organization-specific namespace.
+- Use correct K8s API version for Cluster API Machine Pools.
 
 ## [0.7.0] - 2020-09-30
 
@@ -21,13 +31,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 - Add the `--version` flag for printing the current version. Run `kgs --version` to check which version you're running.
-
-## Changed
-- Change the default Azure VM size to `Standard_D4s_v3`
-
-### Fixed
-- Store all Azure resources in the organization-specific namespace.
-- Use correct K8s API version for Cluster API Machine Pools.
 
 ### Changed
 - Disabled templating clusters with legacy or deprecated release versions.

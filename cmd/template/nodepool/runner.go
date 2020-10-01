@@ -92,6 +92,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		{
 			c := release.Config{
 				Provider: r.flag.Provider,
+				Branch:   r.flag.ReleaseBranch,
 			}
 			releaseCollection, err = release.New(c)
 			if err != nil {
