@@ -170,6 +170,8 @@ github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeME
 github.com/giantswarm/apiextensions/v2 v2.0.0/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
 github.com/giantswarm/apiextensions/v2 v2.5.2-0.20200930093023-1bafb04837c5 h1:bu6+5P7haObEj645MWAQqsFnG+OXxE28OzyMcxIbZEA=
 github.com/giantswarm/apiextensions/v2 v2.5.2-0.20200930093023-1bafb04837c5/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
+github.com/giantswarm/apiextensions/v2 v2.5.2 h1:I4XTlXFUQZ5FD6QW8ZmKG58839auXeN1RmeSgAdbjfo=
+github.com/giantswarm/apiextensions/v2 v2.5.2/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
 github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
 github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYasoY2OSfNOk=
 github.com/giantswarm/cluster-api v0.3.9-gs h1:KHKlGaJX2ysrm1dwwqZ6wMRA8nYdOZdtBZ1XHXSFc3k=
