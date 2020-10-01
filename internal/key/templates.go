@@ -40,6 +40,9 @@ const MachineDeploymentCRsTemplate = `
 {{ .AWSMachineDeploymentCR -}}
 `
 
+const NetworkPoolCRsTemplate = `
+{{- .NetworkPoolCR -}}
+`
 const MachinePoolAzureCRsTemplate = `
 {{- .ProviderMachinePoolCR -}}
 ---
