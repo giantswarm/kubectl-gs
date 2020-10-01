@@ -20,10 +20,10 @@ type installationInfo struct {
 func getInstallationInfo(httpClient *http.Client, apiUrl string) (installationInfo, error) {
 	res, err := httpClient.Get(apiUrl) // #nosec G107
 	if err != nil {
-		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfo, "Make sure you're connected to the internet and that the Giant Swarm API is up and running\n%v", err.Error())
+		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfo, "make sure you're connected to the internet and that the Giant Swarm API is up and running\n%v", err.Error())
 	}
 	if res.StatusCode != http.StatusOK {
-		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfo, "Make sure you're behind the correct VPN")
+		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfo, "make sure you're behind the correct VPN")
 	}
 
 	defer res.Body.Close()
