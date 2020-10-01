@@ -1,3 +1,4 @@
 kubectl-gs*
 bin-dist
+.vscode
 .DS_Store
