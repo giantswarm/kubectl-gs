@@ -8,6 +8,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [Unreleased]
 
 ### Changed
+- Store Azure node pools resources in the organization-specific namespace.
 - Display full error output when getting installation info fails or when the OIDC configuration is incorrect, while running the `login` command fails.
 
 ### Fixed
