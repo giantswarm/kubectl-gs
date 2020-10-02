@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -100,6 +101,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 		}
 		config.ReleaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
+
+		if r.flag.Provider == key.ProviderAzure {
+			config.Namespace = fmt.Sprintf("org-%s", config.Owner)
+		}
 	}
 
 	var output *os.File
