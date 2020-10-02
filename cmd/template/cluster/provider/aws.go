@@ -27,6 +27,7 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		ReleaseComponents: config.ReleaseComponents,
 		ReleaseVersion:    config.ReleaseVersion,
 		Labels:            config.Labels,
+		NetworkPool:       config.NetworkPool,
 	}
 
 	crs, err := v1alpha2.NewClusterCRs(crsConfig)

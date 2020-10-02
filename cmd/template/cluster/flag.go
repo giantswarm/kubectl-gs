@@ -25,6 +25,7 @@ const (
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
 	flagCredential   = "credential"
+	flagNetworkPool  = "networkpool"
 
 	// Azure only.
 	flagAzurePublicSSHKey = "azure-public-ssh-key"
@@ -49,6 +50,7 @@ type flag struct {
 	ExternalSNAT bool
 	PodsCIDR     string
 	Credential   string
+	NetworkPool  string
 
 	// Azure only.
 	AzurePublicSSHKey string
@@ -73,6 +75,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
+	cmd.Flags().StringVar(&f.NetworkPool, flagNetworkPool, "", "NetworkPool for the subnets of the nodes.")
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")

@@ -15,6 +15,7 @@ type ClusterCRsConfig struct {
 	ExternalSNAT bool
 	PodsCIDR     string
 	Credential   string
+	NetworkPool  string
 
 	// Azure only.
 	PublicSSHKey string
