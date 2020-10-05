@@ -72,6 +72,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ReleaseVersion: r.flag.Release,
 			PublicSSHKey:   r.flag.AzurePublicSSHKey,
 			Namespace:      metav1.NamespaceDefault,
+			NetworkPool:    r.flag.NetworkPool,
 		}
 
 		if config.ClusterID == "" {
