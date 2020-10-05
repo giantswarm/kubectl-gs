@@ -4,7 +4,7 @@ Create a new release in just a few steps:
 
 1. Make sure you're on the master branch, and pull the latest changes.
 
-    ```
+    ```nohighlight
     git checkout master
     git pull origin master
     ```
@@ -13,7 +13,7 @@ Create a new release in just a few steps:
 
     For example, for the `v1.0.0` version:
 
-    ```
+    ```nohighlight
     git checkout -b master#release#v1.0.0
     git push origin master#release#v1.0.0
     ```
@@ -26,8 +26,8 @@ Create a new release in just a few steps:
 
 6. A new PR will be created, which will bump the `project.go` version to a development one. Approve it, merge it and move on.
 
-7. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes. 
+7. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes.
 
 8. Update the `krew-index` repository automatically [by approving](https://app.circleci.com/pipelines/github/giantswarm/kubectl-gs) the `update-krew` CircleCI workflow. A Pull Request to the `krew-index` repository will be created and merged automatically (by robots 🤖).
 
-9. 🎉 Celebrate by announcing the fresh release on Slack! 
+9. 🎉 Celebrate by announcing the fresh release on Slack!
