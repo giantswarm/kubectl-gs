@@ -10,7 +10,7 @@ alias kgs="kubectl gs"
 kgs
 ```
 
-Check the [installation docs](https://github.com/giantswarm/kubectl-gs/blob/master/docs/installation.md) for details on installation with and without Krew.
+Check the [installation docs](https://docs.giantswarm.io/reference/kubectl-gs/installation/) for details on installation with and without Krew.
 
 ## Features
 
@@ -25,11 +25,7 @@ Check the [installation docs](https://github.com/giantswarm/kubectl-gs/blob/mast
 
 ## Documentation
 
-- [Installation](https://github.com/giantswarm/kubectl-gs/blob/master/docs/installation.md)
-- [Creating a cluster](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-cluster-cr.md)
-- [Creating a node pool](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-nodepool-cr.md)
-- [Installing an App](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-app-cr.md)
-- [Installing an App Catalog](https://github.com/giantswarm/kubectl-gs/blob/master/docs/template-catalog-cr.md)
+Find the [kubectl gs reference](https://docs.giantswarm.io/reference/kubectl-gs/) in our documentation site.
 
 ## Publishing a release
 
