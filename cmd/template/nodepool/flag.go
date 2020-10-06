@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"encoding/base64"
+	"fmt"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -38,6 +39,14 @@ const (
 	flagRegion               = "region"
 	flagRelease              = "release"
 	flagReleaseBranch        = "release-branch"
+)
+
+const (
+	minNodesAWS = 3
+	maxNodesAWS = 10
+
+	minNodesAzure = 3
+	maxNodesAzure = 3
 )
 
 type flag struct {
@@ -84,8 +93,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Tenant cluster ID.")
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
-	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 10, "Maximum number of worker nodes for the node pool.")
-	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 3, "Minimum number of worker nodes for the node pool.")
+	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 0, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %q on AWS, or %q on Azure)", maxNodesAWS, maxNodesAzure))
+	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 0, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %q on AWS, or %q on Azure)", minNodesAWS, minNodesAzure))
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
@@ -121,14 +130,26 @@ func (f *flag) Validate() error {
 	if f.NodepoolName == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagNodepoolName)
 	}
-	if f.NodesMax < 1 {
-		return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMax)
-	}
-	if f.NodesMin < 1 {
-		return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMin)
-	}
-	if f.NodesMin > f.NodesMax {
-		return microerror.Maskf(invalidFlagError, "--%s must be <= --%s", flagNodesMin, flagNodesMax)
+
+	{
+		// Validate scaling.
+		if f.NodesMax < 1 {
+			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMax)
+		}
+		if f.NodesMin < 1 {
+			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMin)
+		}
+
+		switch f.Provider {
+		case key.ProviderAWS:
+			if f.NodesMin > f.NodesMax {
+				return microerror.Maskf(invalidFlagError, "--%s must be <= --%s on AWS", flagNodesMin, flagNodesMax)
+			}
+		case key.ProviderAzure:
+			if f.NodesMin != f.NodesMax {
+				return microerror.Maskf(invalidFlagError, "--%s must be equal to --%s on Azure", flagNodesMin, flagNodesMax)
+			}
+		}
 	}
 
 	if f.Owner == "" {

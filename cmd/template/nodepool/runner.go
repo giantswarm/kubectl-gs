@@ -36,6 +36,26 @@ type runner struct {
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
+	// Set defaults based on provider.
+	{
+		switch r.flag.Provider {
+		case key.ProviderAWS:
+			if !cmd.Flags().Changed(flagNodesMin) {
+				r.flag.NodesMin = minNodesAWS
+			}
+			if !cmd.Flags().Changed(flagNodesMax) {
+				r.flag.NodesMax = maxNodesAWS
+			}
+		case key.ProviderAzure:
+			if !cmd.Flags().Changed(flagNodesMin) {
+				r.flag.NodesMin = minNodesAzure
+			}
+			if !cmd.Flags().Changed(flagNodesMax) {
+				r.flag.NodesMax = maxNodesAzure
+			}
+		}
+	}
+
 	err := r.flag.Validate()
 	if err != nil {
 		return microerror.Mask(err)
