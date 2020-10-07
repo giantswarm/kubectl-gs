@@ -3,10 +3,7 @@ package provider
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"text/template"
-
-	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -39,9 +36,6 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		{
 			// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 			machinePoolCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
-			// Autoscaler configuration.
-			machinePoolCR.GetAnnotations()[annotation.NodePoolMinSize] = strconv.Itoa(config.NodesMin)
-			machinePoolCR.GetAnnotations()[annotation.NodePoolMaxSize] = strconv.Itoa(config.NodesMax)
 		}
 		machinePoolCRYaml, err = yaml.Marshal(machinePoolCR)
 		if err != nil {
