@@ -7,7 +7,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions/v2 v2.5.3
+	github.com/giantswarm/apiextensions/v2 v2.6.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/micrologger v0.3.3
@@ -16,7 +16,7 @@ require (
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
-	github.com/spf13/afero v1.4.0
+	github.com/spf13/afero v1.4.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
