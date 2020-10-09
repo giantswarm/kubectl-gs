@@ -34,9 +34,12 @@ items:
       host: ""
       port: 0
   status:
-    controlPlaneInitialized: true
-    controlPlaneReady: true
-    infrastructureReady: true
+    conditions:
+    - lastTransitionTime: null
+      status: "True"
+      type: Created
+    controlPlaneInitialized: false
+    infrastructureReady: false
 - apiVersion: v1alpha3
   kind: Cluster
   metadata:
@@ -53,9 +56,15 @@ items:
       host: ""
       port: 0
   status:
-    controlPlaneInitialized: true
-    controlPlaneReady: true
-    infrastructureReady: true
+    conditions:
+    - lastTransitionTime: null
+      status: "True"
+      type: Created
+    - lastTransitionTime: null
+      status: "True"
+      type: Creating
+    controlPlaneInitialized: false
+    infrastructureReady: false
 - apiVersion: v1alpha3
   kind: Cluster
   metadata:
@@ -90,6 +99,10 @@ items:
       host: ""
       port: 0
   status:
+    conditions:
+    - lastTransitionTime: null
+      status: "True"
+      type: Deleting
     controlPlaneInitialized: false
     infrastructureReady: false
 - apiVersion: v1alpha3
@@ -108,6 +121,13 @@ items:
       host: ""
       port: 0
   status:
+    conditions:
+    - lastTransitionTime: null
+      status: "True"
+      type: Deleting
+    - lastTransitionTime: null
+      status: "True"
+      type: Created
     controlPlaneInitialized: false
     infrastructureReady: false
 kind: List

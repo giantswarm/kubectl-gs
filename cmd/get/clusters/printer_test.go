@@ -319,11 +319,14 @@ func newAzureCluster(id, created, release, org, description string, conditions [
 		},
 	}
 
-	if len(conditions) > 0 && conditions[0] == "Created" {
-		c.Status.InfrastructureReady = true
-		c.Status.ControlPlaneInitialized = true
-		c.Status.ControlPlaneReady = true
+	resConditions := make([]capiv1alpha3.Condition, 0, len(conditions))
+	for _, condition := range conditions {
+		resConditions = append(resConditions, capiv1alpha3.Condition{
+			Type:   capiv1alpha3.ConditionType(condition),
+			Status: "True",
+		})
 	}
+	c.SetConditions(resConditions)
 
 	{
 		c.APIVersion = "v1alpha3"

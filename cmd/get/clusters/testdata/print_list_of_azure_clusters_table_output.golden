@@ -1,7 +1,7 @@
 ID      CREATED                         CONDITION   RELEASE   ORGANIZATION   DESCRIPTION
-1sad2   2021-01-02 15:04:32 +0000 UTC   CREATING    12.0.0    test           test cluster 1
+1sad2   2021-01-02 15:04:32 +0000 UTC   CREATED     12.0.0    test           test cluster 1
 2a03f   2021-01-02 15:04:32 +0000 UTC   CREATED     11.0.0    test           test cluster 2
-asd29   2021-01-02 15:04:32 +0000 UTC   CREATED     10.5.0    test           test cluster 3
-f930q   2021-01-02 15:04:32 +0000 UTC   CREATING    11.0.0    some-other     test cluster 4
-9f012   2021-01-02 15:04:32 +0000 UTC   CREATING    9.0.0     test           test cluster 5
-2f0as   2021-01-02 15:04:32 +0000 UTC   CREATING    10.5.0    random         test cluster 6
+asd29   2021-01-02 15:04:32 +0000 UTC   CREATING    10.5.0    test           test cluster 3
+f930q   2021-01-02 15:04:32 +0000 UTC   CREATED     11.0.0    some-other     test cluster 4
+9f012   2021-01-02 15:04:32 +0000 UTC   CREATED     9.0.0     test           test cluster 5
+2f0as   2021-01-02 15:04:32 +0000 UTC   CREATED     10.5.0    random         test cluster 6

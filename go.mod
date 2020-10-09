@@ -8,6 +8,7 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions/v2 v2.6.0
+	github.com/giantswarm/apiextensions/v3 v3.1.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/micrologger v0.3.3
@@ -21,11 +22,11 @@ require (
 	github.com/stretchr/testify v1.5.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71
-	k8s.io/api v0.18.6
-	k8s.io/apiextensions-apiserver v0.18.6
-	k8s.io/apimachinery v0.18.6
-	k8s.io/cli-runtime v0.18.6
-	k8s.io/client-go v0.18.6
+	k8s.io/api v0.18.9
+	k8s.io/apiextensions-apiserver v0.18.9
+	k8s.io/apimachinery v0.18.9
+	k8s.io/cli-runtime v0.18.9
+	k8s.io/client-go v0.18.9
 	sigs.k8s.io/cluster-api v0.3.10
 	sigs.k8s.io/cluster-api-provider-azure v0.4.9
 	sigs.k8s.io/controller-runtime v0.6.3

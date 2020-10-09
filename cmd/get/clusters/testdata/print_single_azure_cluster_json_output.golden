@@ -20,8 +20,14 @@
         }
     },
     "status": {
-        "infrastructureReady": true,
-        "controlPlaneInitialized": true,
-        "controlPlaneReady": true
+        "infrastructureReady": false,
+        "controlPlaneInitialized": false,
+        "conditions": [
+            {
+                "type": "Created",
+                "status": "True",
+                "lastTransitionTime": null
+            }
+        ]
     }
 }
