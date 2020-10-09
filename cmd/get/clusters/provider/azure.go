@@ -49,7 +49,7 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 }
 
 func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
-	description := "n/a"
+	description := naValue
 
 	annotations := res.GetAnnotations()
 	if annotations != nil && annotations[annotation.ClusterDescription] != "" {
@@ -61,7 +61,7 @@ func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
 
 func getLatestAzureCondition(conditions []capiv1alpha3.Condition) string {
 	if len(conditions) < 1 {
-		return "n/a"
+		return naValue
 	}
 
 	return formatCondition(string(conditions[0].Type))
