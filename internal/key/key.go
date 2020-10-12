@@ -1,6 +1,7 @@
 package key
 
 import (
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -18,6 +19,8 @@ const (
 	IDChars = "023456789abcdefghijkmnopqrstuvwxyz"
 	// IDLength represents the number of characters used to create a cluster ID.
 	IDLength = 5
+
+	organizationNamespaceFormat = "org-%s"
 )
 
 func GenerateID() string {
@@ -82,4 +85,11 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error)
 	}
 
 	return rawMap, nil
+}
+
+func OrganizationNamespaceFromName(name string) string {
+	name = strings.ToLower(strings.ReplaceAll(name, "_", "-"))
+	name = fmt.Sprintf(organizationNamespaceFormat, name)
+
+	return name
 }

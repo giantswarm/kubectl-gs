@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Normalize organization name when used as a namespace, to match company requirements.
+
 ## [0.7.2] - 2020-10-12
 
 ### Changed

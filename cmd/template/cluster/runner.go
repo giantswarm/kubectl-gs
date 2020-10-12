@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"sort"
@@ -100,7 +99,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if r.flag.Provider == key.ProviderAzure {
-			config.Namespace = fmt.Sprintf("org-%s", config.Owner)
+			config.Namespace = key.OrganizationNamespaceFromName(config.Owner)
 		}
 	}
 
