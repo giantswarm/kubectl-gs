@@ -8,7 +8,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [Unreleased]
 
 ### Changed
-- Allow using inactive release versions for templating clusters. This especially useful for testing cluster upgrades.
+- Allow using inactive release versions for templating clusters. This is especially useful for testing cluster upgrades.
 
 ## [0.7.2] - 2020-10-12
 
