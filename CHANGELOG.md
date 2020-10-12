@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Normalize organization name when used as a namespace, to match company requirements.
+- Allow using inactive release versions for templating clusters. This is especially useful for testing cluster upgrades.
 
 ## [0.7.2] - 2020-10-12
 
