@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.7.2] - 2020-10-12
+
 ### Changed
 - Store Azure node pools resources in the organization-specific namespace.
 - Display full error output when getting installation info fails or when the OIDC configuration is incorrect, while running the `login` command fails.
@@ -104,7 +106,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.2.0] 2020-04-23
 
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v0.6.0...v0.6.1
