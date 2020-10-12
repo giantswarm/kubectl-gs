@@ -91,7 +91,7 @@ func (r *Release) Validate(version string) bool {
 	}
 
 	for _, release := range r.releases {
-		if release.Metadata.Name == releaseVersion && release.Spec.State == "active" {
+		if release.Metadata.Name == releaseVersion {
 			return true
 		}
 	}
