@@ -51,9 +51,15 @@
                 }
             },
             "status": {
-                "infrastructureReady": true,
-                "controlPlaneInitialized": true,
-                "controlPlaneReady": true
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false,
+                "conditions": [
+                    {
+                        "type": "Created",
+                        "status": "True",
+                        "lastTransitionTime": null
+                    }
+                ]
             }
         },
         {
@@ -78,9 +84,20 @@
                 }
             },
             "status": {
-                "infrastructureReady": true,
-                "controlPlaneInitialized": true,
-                "controlPlaneReady": true
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false,
+                "conditions": [
+                    {
+                        "type": "Created",
+                        "status": "True",
+                        "lastTransitionTime": null
+                    },
+                    {
+                        "type": "Creating",
+                        "status": "True",
+                        "lastTransitionTime": null
+                    }
+                ]
             }
         },
         {
@@ -132,7 +149,14 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneInitialized": false,
+                "conditions": [
+                    {
+                        "type": "Deleting",
+                        "status": "True",
+                        "lastTransitionTime": null
+                    }
+                ]
             }
         },
         {
@@ -158,7 +182,19 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneInitialized": false,
+                "conditions": [
+                    {
+                        "type": "Deleting",
+                        "status": "True",
+                        "lastTransitionTime": null
+                    },
+                    {
+                        "type": "Created",
+                        "status": "True",
+                        "lastTransitionTime": null
+                    }
+                ]
             }
         }
     ]

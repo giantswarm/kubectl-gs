@@ -14,6 +14,9 @@ spec:
     host: ""
     port: 0
 status:
-  controlPlaneInitialized: true
-  controlPlaneReady: true
-  infrastructureReady: true
+  conditions:
+  - lastTransitionTime: null
+    status: "True"
+    type: Created
+  controlPlaneInitialized: false
+  infrastructureReady: false

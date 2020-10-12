@@ -6,7 +6,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
@@ -41,7 +40,7 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 		Cells: []interface{}{
 			res.GetName(),
 			res.CreationTimestamp.UTC(),
-			getLatestAzureCondition(res),
+			getLatestAzureCondition(res.GetConditions()),
 			res.Labels[label.ReleaseVersion],
 			res.Labels[label.Organization],
 			getAzureClusterDescription(res),
@@ -50,7 +49,7 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 }
 
 func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
-	description := "n/a"
+	description := naValue
 
 	annotations := res.GetAnnotations()
 	if annotations != nil && annotations[annotation.ClusterDescription] != "" {
@@ -60,12 +59,10 @@ func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
 	return description
 }
 
-func getLatestAzureCondition(res *capiv1alpha3.Cluster) string {
-	condition := key.ClusterStatusConditionCreating
-
-	if res.Status.InfrastructureReady && res.Status.ControlPlaneInitialized && res.Status.ControlPlaneReady {
-		condition = key.ClusterStatusConditionCreated
+func getLatestAzureCondition(conditions []capiv1alpha3.Condition) string {
+	if len(conditions) < 1 {
+		return naValue
 	}
 
-	return formatCondition(condition)
+	return formatCondition(string(conditions[0].Type))
 }

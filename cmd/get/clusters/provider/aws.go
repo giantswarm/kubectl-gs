@@ -49,7 +49,7 @@ func getAWSClusterRow(res *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
 
 func getLatestAWSCondition(conditions []infrastructurev1alpha2.CommonClusterStatusCondition) string {
 	if len(conditions) < 1 {
-		return "n/a"
+		return naValue
 	}
 
 	return formatCondition(conditions[0].Condition)
