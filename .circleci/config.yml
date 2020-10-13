@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@0.10.0
+  architect: giantswarm/architect@0.13.0
 
 jobs:
   debug-tag:
@@ -40,6 +40,18 @@ workflows:
           name: go-build
           binary: kubectl-gs
           filters:
+            tags:
+              only: /^v.*/
+      - architect/push-to-docker:
+          name: push-kgs-to-quay
+          context: architect
+          image: "quay.io/giantswarm/kubectl-gs"
+          username_envar: "QUAY_USERNAME"
+          password_envar: "QUAY_PASSWORD"
+          requires:
+            - go-build
+          filters:
+            # Needed to trigger job also on git tag.
             tags:
               only: /^v.*/
   update-krew:
