@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	"github.com/giantswarm/kubectl-gs/pkg/normalize"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+
+	"github.com/giantswarm/kubectl-gs/pkg/normalize"
 )
 
 const (
