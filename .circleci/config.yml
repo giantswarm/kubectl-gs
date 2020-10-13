@@ -42,6 +42,18 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      - architect/push-to-docker:
+          name: push-kgs-to-quay
+          context: architect
+          image: "quay.io/giantswarm/kubectl-gs"
+          username_envar: "QUAY_USERNAME"
+          password_envar: "QUAY_PASSWORD"
+          requires:
+            - go-build
+          filters:
+            # Needed to trigger job also on git tag.
+            tags:
+              only: /^v.*/
   update-krew:
     jobs:
       - debug-tag:

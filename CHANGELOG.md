@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+- Start publishing a container image of kubectl-gs as giantswarm/kubectl-gs
+
 ### Changed
 - Allow using inactive release versions for templating clusters. This is especially useful for testing cluster upgrades.
 
