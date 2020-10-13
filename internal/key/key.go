@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/giantswarm/kubectl-gs/pkg/normalize"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 )
@@ -88,8 +89,7 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error)
 }
 
 func OrganizationNamespaceFromName(name string) string {
-	name = strings.ToLower(strings.ReplaceAll(name, "_", "-"))
-	name = fmt.Sprintf(organizationNamespaceFormat, name)
+	name = fmt.Sprintf(organizationNamespaceFormat, normalize.AsDNSLabelName(name))
 
 	return name
 }
