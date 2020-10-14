@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.8.0] - 2020-10-14
+
 ### Added
 - Start publishing a container image of kubectl-gs as giantswarm/kubectl-gs
 
@@ -114,7 +116,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.2.0] 2020-04-23
 
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.6.1...v0.7.0
