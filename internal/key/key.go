@@ -90,7 +90,7 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error)
 }
 
 func OrganizationNamespaceFromName(name string) string {
-	name = fmt.Sprintf(organizationNamespaceFormat, normalize.AsDNSLabelName(name))
+	name = normalize.AsDNSLabelName(fmt.Sprintf(organizationNamespaceFormat, name))
 
 	return name
 }
