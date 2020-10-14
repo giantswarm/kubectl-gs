@@ -1,6 +1,7 @@
 package key
 
 import (
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -10,6 +11,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+
+	"github.com/giantswarm/kubectl-gs/pkg/normalize"
 )
 
 const (
@@ -18,6 +21,8 @@ const (
 	IDChars = "023456789abcdefghijkmnopqrstuvwxyz"
 	// IDLength represents the number of characters used to create a cluster ID.
 	IDLength = 5
+
+	organizationNamespaceFormat = "org-%s"
 )
 
 func GenerateID() string {
@@ -82,4 +87,10 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error)
 	}
 
 	return rawMap, nil
+}
+
+func OrganizationNamespaceFromName(name string) string {
+	name = normalize.AsDNSLabelName(fmt.Sprintf(organizationNamespaceFormat, name))
+
+	return name
 }
