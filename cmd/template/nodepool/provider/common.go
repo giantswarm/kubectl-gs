@@ -18,8 +18,7 @@ type NodePoolCRsConfig struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	PublicSSHKey string
-	VMSize       string
+	VMSize string
 
 	// Common.
 	FileName          string

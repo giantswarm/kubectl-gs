@@ -16,9 +16,6 @@ type ClusterCRsConfig struct {
 	PodsCIDR     string
 	Credential   string
 
-	// Azure only.
-	PublicSSHKey string
-
 	// Common.
 	FileName          string
 	ClusterID         string

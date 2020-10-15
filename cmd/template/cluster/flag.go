@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"encoding/base64"
 	"net"
 	"regexp"
 
@@ -26,9 +25,6 @@ const (
 	flagPodsCIDR     = "pods-cidr"
 	flagCredential   = "credential"
 
-	// Azure only.
-	flagAzurePublicSSHKey = "azure-public-ssh-key"
-
 	// Common.
 	flagClusterID     = "cluster-id"
 	flagDomain        = "domain"
@@ -50,9 +46,6 @@ type flag struct {
 	PodsCIDR     string
 	Credential   string
 
-	// Azure only.
-	AzurePublicSSHKey string
-
 	// Common.
 	ClusterID     string
 	Domain        string
@@ -73,9 +66,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
-
-	// Azure only.
-	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
@@ -144,19 +134,6 @@ func (f *flag) Validate() error {
 		case key.ProviderAzure:
 			if !azure.ValidateRegion(f.Region) {
 				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-			}
-		}
-	}
-
-	{
-		if f.Provider == key.ProviderAzure {
-			if len(f.AzurePublicSSHKey) < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagAzurePublicSSHKey)
-			} else {
-				_, err := base64.StdEncoding.DecodeString(f.AzurePublicSSHKey)
-				if err != nil {
-					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagAzurePublicSSHKey)
-				}
 			}
 		}
 	}
