@@ -1,7 +1,6 @@
 package nodepool
 
 import (
-	"encoding/base64"
 	"fmt"
 
 	"github.com/giantswarm/microerror"
@@ -24,8 +23,7 @@ const (
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
 
 	// Azure only.
-	flagAzurePublicSSHKey = "azure-public-ssh-key"
-	flagAzureVMSize       = "azure-vm-size"
+	flagAzureVMSize = "azure-vm-size"
 
 	// Common.
 	flagAvailabilityZones    = "availability-zones"
@@ -59,8 +57,7 @@ type flag struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	AzurePublicSSHKey string
-	AzureVMSize       string
+	AzureVMSize string
 
 	// Common.
 	AvailabilityZones    []string
@@ -86,7 +83,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
 
 	// Azure only.
-	cmd.Flags().StringVar(&f.AzurePublicSSHKey, flagAzurePublicSSHKey, "", "Base64-encoded Azure machine public SSH key.")
 	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
 
 	// Common.
@@ -170,19 +166,6 @@ func (f *flag) Validate() error {
 		case key.ProviderAzure:
 			if !azure.ValidateRegion(f.Region) {
 				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-			}
-		}
-	}
-
-	{
-		if f.Provider == key.ProviderAzure {
-			if len(f.AzurePublicSSHKey) < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty on Azure", flagAzurePublicSSHKey)
-			} else {
-				_, err = base64.StdEncoding.DecodeString(f.AzurePublicSSHKey)
-				if err != nil {
-					return microerror.Maskf(invalidFlagError, "--%s must be Base64-encoded", flagAzurePublicSSHKey)
-				}
 			}
 		}
 	}

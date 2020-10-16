@@ -69,7 +69,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Owner:          r.flag.Owner,
 			Region:         r.flag.Region,
 			ReleaseVersion: r.flag.Release,
-			PublicSSHKey:   r.flag.AzurePublicSSHKey,
 			Namespace:      metav1.NamespaceDefault,
 		}
 

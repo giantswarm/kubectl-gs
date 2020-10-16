@@ -139,7 +139,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 				},
 			},
 			Location:     config.Region,
-			SSHPublicKey: config.PublicSSHKey,
+			SSHPublicKey: "",
 		},
 	}
 

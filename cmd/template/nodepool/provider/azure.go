@@ -89,7 +89,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
 			Location: config.Region,
 			Template: expcapzv1alpha3.AzureMachineTemplate{
-				SSHPublicKey: config.PublicSSHKey,
+				SSHPublicKey: "",
 				VMSize:       config.VMSize,
 			},
 		},
