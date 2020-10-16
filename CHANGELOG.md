@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove SSH key parameter for azure in the template command.
+
 ## [0.8.0] - 2020-10-14
 
 ### Added
