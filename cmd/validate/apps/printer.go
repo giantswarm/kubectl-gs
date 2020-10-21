@@ -9,6 +9,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/pkg/pluralize"
 )
 
 func (r *runner) printOutput(results app.ValidationResults) error {
@@ -18,11 +19,11 @@ func (r *runner) printOutput(results app.ValidationResults) error {
 	)
 
 	switch {
-	case output.IsOutputDefault(r.flag.print.OutputFormat):
+	case output.IsOutputDefault(&r.flag.OutputFormat):
 		printOptions := printers.PrintOptions{}
 		printer = printers.NewTablePrinter(printOptions)
 
-	case output.IsOutputReport(r.flag.print.OutputFormat):
+	case output.IsOutputReport(&r.flag.OutputFormat):
 		err = PrintReport(results)
 		if err != nil {
 			return microerror.Mask(err)
@@ -30,10 +31,7 @@ func (r *runner) printOutput(results app.ValidationResults) error {
 		return nil
 
 	default:
-		printer, err = r.flag.print.ToPrinter()
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		return microerror.Maskf(invalidFlagError, "Unknown output format: %s", r.flag.OutputFormat)
 	}
 
 	resource := getTable(results)
@@ -53,7 +51,7 @@ func getTable(results app.ValidationResults) *metav1.Table {
 		{Name: "NAMESPACE", Type: "string"},
 		{Name: "NAME", Type: "string"},
 		{Name: "VERSION", Type: "string"},
-		{Name: "ERRORS", Type: "string"},
+		{Name: "RESULT", Type: "string"},
 	}
 
 	for _, result := range results {
@@ -66,7 +64,8 @@ func getTable(results app.ValidationResults) *metav1.Table {
 func getAppRow(validationResult *app.ValidationResult) metav1.TableRow {
 	var errorCount string
 
-	errorCount = fmt.Sprintf("%d", len(validationResult.ValidationErrors))
+	pluralizedError := pluralize.Pluralize("error", len(validationResult.ValidationErrors))
+	errorCount = fmt.Sprintf("%d %s", len(validationResult.ValidationErrors), pluralizedError)
 
 	if app.IsNoSchema(validationResult.Err) {
 		errorCount = "n/a: app has no values schema"

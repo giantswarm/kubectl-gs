@@ -81,6 +81,8 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 			ValuesSchema: nil,
 			Err:          microerror.Mask(err),
 		})
+
+		return results, nil
 	}
 
 	results = append(results, &ValidationResult{
