@@ -34,8 +34,21 @@ func mainE(ctx context.Context) error {
 	var logger micrologger.Logger
 	{
 		c := micrologger.Config{}
-
 		logger, err = micrologger.New(c)
+	}
+
+	var activationLogger micrologger.Logger
+	{
+		c := micrologger.ActivationLoggerConfig{
+			Underlying: logger,
+
+			Activations: map[string]interface{}{
+				micrologger.KeyLevel:     "error",
+				micrologger.KeyVerbosity: 1,
+			},
+		}
+
+		activationLogger, err = micrologger.NewActivation(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -48,7 +61,7 @@ func mainE(ctx context.Context) error {
 	var rootCommand *cobra.Command
 	{
 		c := cmd.Config{
-			Logger:     logger,
+			Logger:     activationLogger,
 			FileSystem: fs,
 
 			K8sConfigAccess: k8sConfigAccess,
