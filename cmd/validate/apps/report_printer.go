@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/pkg/pluralize"
 )
 
 // PrintReport prints app validation
@@ -32,13 +33,20 @@ func PrintReport(results app.ValidationResults) error {
 	resultCount := len(results)
 	namespaceCount := len(namespaceSet)
 
+	pluralizedApps := pluralize.Pluralize("app", resultCount)
+	pluralizedNamespaces := pluralize.Pluralize("namespace", namespaceCount)
+
 	fmt.Print("\n")
-	fmt.Printf("Validated %d apps across %d namespaces", resultCount, namespaceCount)
+	fmt.Printf("Validated %d %s across %d %s", resultCount, pluralizedApps, namespaceCount, pluralizedNamespaces)
 	fmt.Print("\n")
 	fmt.Print("\n")
 
 	for namespace, validationResults := range namespaceSet {
-		fmt.Printf("%s [%d apps, %d errors]", namespace, len(validationResults), namespaceErrorCount[namespace])
+
+		pluralizedApps := pluralize.Pluralize("app", len(validationResults))
+		pluralizedErrors := pluralize.Pluralize("error", namespaceErrorCount[namespace])
+
+		fmt.Printf("%s [%d %s, %d %s]", namespace, len(validationResults), pluralizedApps, namespaceErrorCount[namespace], pluralizedErrors)
 		fmt.Print("\n")
 
 		if namespaceErrorCount[namespace] == 0 {
