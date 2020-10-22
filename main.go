@@ -35,6 +35,9 @@ func mainE(ctx context.Context) error {
 	{
 		c := micrologger.Config{}
 		logger, err = micrologger.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	var activationLogger micrologger.Logger
