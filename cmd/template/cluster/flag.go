@@ -24,10 +24,10 @@ const (
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
 	flagCredential   = "credential"
+	flagDomain        = "domain"
 
 	// Common.
 	flagClusterID     = "cluster-id"
-	flagDomain        = "domain"
 	flagMasterAZ      = "master-az"
 	flagName          = "name"
 	flagOutput        = "output"
@@ -112,6 +112,10 @@ func (f *flag) Validate() error {
 			if f.Domain == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDomain)
 			}
+		case key.ProviderAzure:
+			if f.Domain != "" {
+			        return microerror.Maskf(invalidFlagError, "--%s is not supported for provider 'azure'", flagDomain)
+		        }
 		}
 	}
 	if f.Name == "" {
