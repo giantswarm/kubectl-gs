@@ -24,7 +24,7 @@ const (
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
 	flagCredential   = "credential"
-	flagDomain        = "domain"
+	flagDomain       = "domain"
 
 	// Common.
 	flagClusterID     = "cluster-id"
