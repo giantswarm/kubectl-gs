@@ -45,10 +45,10 @@ type flag struct {
 	ExternalSNAT bool
 	PodsCIDR     string
 	Credential   string
+	Domain       string
 
 	// Common.
 	ClusterID     string
-	Domain        string
 	MasterAZ      []string
 	Name          string
 	Output        string
@@ -66,9 +66,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
+	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 
 	// Common.
-	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
@@ -105,8 +105,14 @@ func (f *flag) Validate() error {
 
 		return nil
 	}
-	if f.Domain == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDomain)
+	{
+		// Validate domain.
+		switch f.Provider {
+		case key.ProviderAWS:
+			if f.Domain == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDomain)
+			}
+		}
 	}
 	if f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)

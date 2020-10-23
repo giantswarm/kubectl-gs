@@ -1,8 +1,6 @@
 package provider
 
 import (
-	"fmt"
-
 	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +29,6 @@ type ClusterCRsConfig struct {
 }
 
 func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
-	httpsPort := int32(443)
 	cluster := &capiv1alpha3.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
@@ -52,19 +49,6 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{
-			ClusterNetwork: &capiv1alpha3.ClusterNetwork{
-				APIServerPort: &httpsPort,
-				Services: &capiv1alpha3.NetworkRanges{
-					CIDRBlocks: []string{
-						serviceNetworkCIDR,
-					},
-				},
-				ServiceDomain: fmt.Sprintf("%s.k8s.%s", config.ClusterID, config.Domain),
-			},
-			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
-				Host: fmt.Sprintf("api.%s.k8s.%s", config.ClusterID, config.Domain),
-				Port: 443,
-			},
 			InfrastructureRef: infrastructureRef,
 		},
 	}
