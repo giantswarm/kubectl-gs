@@ -210,7 +210,7 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be configured with at least 1 AZ", flagAvailabilityZones)
 		}
 		if numOfAZs > numOfAvailableAZs {
-			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region (%s has %d regions)", flagAvailabilityZones, f.Region, numOfAvailableAZs)
+			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region (%s region has %d availability zones)", flagAvailabilityZones, f.Region, numOfAvailableAZs)
 		}
 
 		switch f.Provider {
