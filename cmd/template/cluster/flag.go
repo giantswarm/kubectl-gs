@@ -114,8 +114,8 @@ func (f *flag) Validate() error {
 			}
 		case key.ProviderAzure:
 			if f.Domain != "" {
-			        return microerror.Maskf(invalidFlagError, "--%s is not supported for provider 'azure'", flagDomain)
-		        }
+				return microerror.Maskf(invalidFlagError, "--%s is not supported for provider 'azure'", flagDomain)
+			}
 		}
 	}
 	if f.Name == "" {
