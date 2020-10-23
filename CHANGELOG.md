@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Removed availability zones for `GermanyWestCentral` in `Azure`.
+
 ## [0.9.0] - 2020-10-16
 
 ### Removed

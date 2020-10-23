@@ -91,7 +91,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 0, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d on AWS, or %d on Azure)", maxNodesAWS, maxNodesAzure))
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 0, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d on AWS, or %d on Azure)", minNodesAWS, minNodesAzure))
-	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 1, "Number of availability zones to use. Default is 1.")
+	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 0, "Number of availability zones to use. Default is 1 on AWS and 0 on Azure.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
@@ -179,7 +179,18 @@ func (f *flag) Validate() error {
 				azs = f.AvailabilityZones
 				numOfAZs = len(azs)
 			} else {
-				numOfAZs = f.NumAvailabilityZones
+				if f.NumAvailabilityZones > 0 {
+					numOfAZs = f.NumAvailabilityZones
+				} else {
+					// Customer didn't specify explicit availability zones nor a number of desired AZs.
+					// Default for AWS is 1, for Azure is 0 (automated selection).
+					switch f.Provider {
+					case key.ProviderAWS:
+						numOfAZs = 1
+					case key.ProviderAzure:
+						numOfAZs = 0
+					}
+				}
 			}
 		}
 
@@ -199,7 +210,7 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be configured with at least 1 AZ", flagAvailabilityZones)
 		}
 		if numOfAZs > numOfAvailableAZs {
-			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region", flagAvailabilityZones)
+			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region (%s region has %d availability zones)", flagAvailabilityZones, f.Region, numOfAvailableAZs)
 		}
 
 		switch f.Provider {
