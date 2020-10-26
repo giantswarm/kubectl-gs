@@ -4,7 +4,7 @@ import (
 	"context"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
-	"github.com/qri-io/jsonschema"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 const (
@@ -16,7 +16,7 @@ type ValidateOptions struct {
 	LabelSelector string
 	Name          string
 	Namespace     string
-	ValuesSchema  *jsonschema.Schema
+	ValuesSchema  string
 }
 
 // ValidationResults contains multiple validation results. The printer takes
@@ -28,15 +28,16 @@ type ValidationResults []*ValidationResult
 type ValidationResult struct {
 	App applicationv1alpha1.App
 
-	// The schema.values.json file, unmarshalled, from the
+	// The schema.values.json file, fetched from the
 	// 'application.giantswarm.io/values-schema' annotation.
-	ValuesSchema *jsonschema.Schema
+	// Or provided by the -f flag.
+	ValuesSchema string
 
 	// An array of validation errors that surfaced after validating the merged
 	// values against the schema.values.json file. In the context of this struct,
 	// this is the money maker. This is what we really care about, it holds the
 	// actual validation errors (if any) that we want to show the user.
-	ValidationErrors []jsonschema.KeyError
+	ValidationErrors []gojsonschema.ResultError
 
 	// Any error that occured while attempting to validate the values of this
 	// app. This is not a validation error, this is any actual error occured
@@ -53,7 +54,7 @@ type CatalogFetchResult struct {
 }
 
 type SchemaFetchResult struct {
-	schema *jsonschema.Schema
+	schema string
 	err    error
 }
 

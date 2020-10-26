@@ -57,9 +57,9 @@ func PrintReport(results app.ValidationResults) error {
 			fmt.Printf("  %s:", r.App.Name)
 			fmt.Print("\n")
 			for _, e := range r.ValidationErrors {
-				fmt.Printf("    %s", e.PropertyPath)
-				fmt.Printf("    %v", e.InvalidValue)
-				fmt.Printf("    %s", e.Message)
+				fmt.Printf("    %s", e.Field())
+				fmt.Printf(" - %v", e.Description())
+				fmt.Printf(" - %s", e.Value())
 				fmt.Print("\n")
 			}
 			fmt.Print("\n")
