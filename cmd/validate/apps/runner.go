@@ -2,13 +2,11 @@ package apps
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"io/ioutil"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/qri-io/jsonschema"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
@@ -52,17 +50,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	valuesSchemaFilePath := r.flag.ValuesSchemaFile
 
-	var valuesSchema *jsonschema.Schema
+	var valuesSchema string
 	if valuesSchemaFilePath != "" {
 		valuesSchemaFile, err := ioutil.ReadFile(valuesSchemaFilePath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = json.Unmarshal(valuesSchemaFile, &valuesSchema)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		valuesSchema = string(valuesSchemaFile)
 	}
 
 	config := commonconfig.New(r.flag.config)

@@ -2,20 +2,19 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
 	"path"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
-	"gopkg.in/yaml.v2"
+	"github.com/xeipuuv/gojsonschema"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/giantswarm/microerror"
-	"github.com/qri-io/jsonschema"
 
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -60,7 +59,7 @@ func (s *Service) Validate(ctx context.Context, options ValidateOptions) (Valida
 	return results, nil
 }
 
-func (s *Service) validateByName(ctx context.Context, name, namespace string, customValuesSchema *jsonschema.Schema) (ValidationResults, error) {
+func (s *Service) validateByName(ctx context.Context, name, namespace string, customValuesSchema string) (ValidationResults, error) {
 	results := ValidationResults{}
 
 	namespacedName := types.NamespacedName{
@@ -78,7 +77,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	if err != nil {
 		results = append(results, &ValidationResult{
 			App:          *app,
-			ValuesSchema: nil,
+			ValuesSchema: "",
 			Err:          microerror.Mask(err),
 		})
 
@@ -88,14 +87,14 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	results = append(results, &ValidationResult{
 		App:              *app,
 		ValuesSchema:     valuesSchema,
-		ValidationErrors: *schemaValidationResult.Errs,
+		ValidationErrors: schemaValidationResult.Errors(),
 	})
 
 	return results, nil
 
 }
 
-func (s *Service) validateMultiple(ctx context.Context, namespace string, labelSelector string, customValuesSchema *jsonschema.Schema) (ValidationResults, error) {
+func (s *Service) validateMultiple(ctx context.Context, namespace string, labelSelector string, customValuesSchema string) (ValidationResults, error) {
 	var err error
 
 	parsedSelector, err := labels.Parse(labelSelector)
@@ -124,7 +123,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 		if err != nil {
 			results = append(results, &ValidationResult{
 				App:          app,
-				ValuesSchema: nil,
+				ValuesSchema: "",
 				Err:          microerror.Mask(err),
 			})
 
@@ -135,24 +134,24 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 		results = append(results, &ValidationResult{
 			App:              app,
 			ValuesSchema:     valuesSchema,
-			ValidationErrors: *schemaValidationResult.Errs,
+			ValidationErrors: schemaValidationResult.Errors(),
 		})
 	}
 
 	return results, nil
 }
 
-func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, customValuesSchema *jsonschema.Schema) (*jsonschema.Schema, *jsonschema.ValidationState, error) {
+func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, customValuesSchema string) (string, *gojsonschema.Result, error) {
 	catalogName := app.Spec.Catalog
 
 	// Fetch the catalog's index.yaml if we haven't tried to yet.
 	index, catalog, err := s.fetchCatalogIndex(ctx, catalogName)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return "", nil, microerror.Mask(err)
 	}
 
-	var valuesSchema *jsonschema.Schema
-	if customValuesSchema != nil {
+	var valuesSchema string
+	if customValuesSchema != "" {
 		valuesSchema = customValuesSchema
 	} else {
 		// Check if the catalog metadata defines a schema.values.json for the specific
@@ -162,7 +161,7 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 		// that I'd be downloading the Tarball anyways.
 		valuesSchema, err = s.fetchValuesSchema(index.Entries[app.Spec.Name], app.Spec.Version)
 		if err != nil {
-			return nil, nil, microerror.Mask(err)
+			return "", nil, microerror.Mask(err)
 		}
 	}
 
@@ -172,13 +171,13 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 	url := findTarballURL(index.Entries[app.Spec.Name], app.Spec.Version)
 	tmpDir, err := ioutil.TempDir("", app.Spec.Name+"-"+app.Spec.Version+"-")
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return "", nil, microerror.Mask(err)
 	}
 
-	cmd := exec.Command("helm", "pull", url, "--untar", "-d", tmpDir)
+	cmd := exec.Command("helm3", "pull", url, "--untar", "-d", tmpDir)
 	_, err = cmd.CombinedOutput()
 	if err != nil {
-		return nil, nil, microerror.Maskf(commandError, "failed to execute: %s, %s", cmd.String(), err.Error())
+		return "", nil, microerror.Maskf(commandError, "failed to execute: %s, %s", cmd.String(), err.Error())
 	}
 
 	// Gather all the values that we want to merge together. (1,2,3,4)
@@ -187,13 +186,13 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 	valuesFilePath := path.Join(tmpDir, app.Spec.Name, "values.yaml")
 	chartValuesYamlFile, err := ioutil.ReadFile(valuesFilePath)
 	if err != nil {
-		return nil, nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
+		return "", nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
 	}
 
 	chartValues := make(map[string]interface{})
 	err = yaml.Unmarshal(chartValuesYamlFile, &chartValues)
 	if err != nil {
-		return nil, nil, microerror.Maskf(ioError, "failed to unmarshal yaml file: %s", err.Error())
+		return "", nil, microerror.Maskf(ioError, "failed to unmarshal yaml file: %s", err.Error())
 	}
 
 	// Use MergeAll from the values package in app-operator to fetch and merge the
@@ -204,24 +203,30 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 	// 4. User values (configmap & secret)
 	providedValues, err := s.valuesService.MergeAll(ctx, app, *catalog)
 	if err != nil {
-		return nil, nil, microerror.Maskf(ioError, "failed fetch and/or merge user provided values: %s", err.Error())
+		return "", nil, microerror.Maskf(ioError, "failed fetch and/or merge user provided values: %s", err.Error())
 	}
 
 	// Finally, merge the user & admin provided values with the chart values.
 	mergedData := mergeValues(chartValues, providedValues)
 
-	// Validate the merged values against the jsonschema.
-	schemaValidationResult := valuesSchema.Validate(ctx, mergedData)
+	// Validate the merged values against the schema using gojsonschema.
+	schemaLoader := gojsonschema.NewStringLoader(valuesSchema)
+	documentLoader := gojsonschema.NewGoLoader(mergedData)
 
-	return valuesSchema, schemaValidationResult, nil
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return "", nil, microerror.Mask(err)
+	}
+
+	return valuesSchema, result, nil
 }
 
-func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (*jsonschema.Schema, error) {
+func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (string, error) {
 	valuesSchemaURL := findValuesSchemaURL(entries, version)
 
 	// Don't try to fetch something that isn't defined.
 	if valuesSchemaURL == "" {
-		return nil, microerror.Maskf(noSchemaError, "app has no url to 'values.schema.json' defined in the 'application.giantswarm.io/values-schema' annotation")
+		return "", microerror.Maskf(noSchemaError, "app has no url to 'values.schema.json' defined in the 'application.giantswarm.io/values-schema' annotation")
 	}
 
 	// Skip all the HTTP requests and Unmarshalling if we already fetched this schema.
@@ -238,7 +243,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (*jso
 		s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
 			err: err,
 		}
-		return nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -248,26 +253,15 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (*jso
 		s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
 			err: err,
 		}
-		return nil, err
-	}
-
-	// Unmarshal values.schema.json file into a jsonschema.Schema.
-	valuesSchema := jsonschema.Schema{}
-	err = json.Unmarshal(body, &valuesSchema)
-	if err != nil {
-		err = microerror.Maskf(fetchError, "unable to unmarshal values.schema.json: %s", err.Error())
-		s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
-			err: err,
-		}
-		return nil, err
+		return "", err
 	}
 
 	// Cache the result.
 	s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
-		schema: &valuesSchema,
+		schema: string(body),
 	}
 
-	return &valuesSchema, nil
+	return string(body), nil
 }
 
 func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*IndexFile, *applicationv1alpha1.AppCatalog, error) {
