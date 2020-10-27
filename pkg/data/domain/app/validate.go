@@ -174,7 +174,7 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 		return "", nil, microerror.Mask(err)
 	}
 
-	cmd := exec.Command("helm3", "pull", url, "--untar", "-d", tmpDir)
+	cmd := exec.Command("helm", "pull", url, "--untar", "-d", tmpDir)
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		return "", nil, microerror.Maskf(commandError, "failed to execute: %s, %s", cmd.String(), err.Error())
