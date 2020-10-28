@@ -68,7 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var resource runtime.Object
 	{
 		options := cluster.GetOptions{
-			Provider: r.provider,
+			Provider:  r.provider,
 			Namespace: metav1.NamespaceDefault,
 		}
 		{
@@ -76,7 +76,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				options.ID = strings.ToLower(args[0])
 			}
 
-			if (r.flag.AllNamespaces) {
+			if r.flag.AllNamespaces {
 				options.Namespace = metav1.NamespaceAll
 			} else if cf, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok {
 				options.Namespace, _, err = cf.ToRawKubeConfigLoader().Namespace()
