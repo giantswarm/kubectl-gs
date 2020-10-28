@@ -74,7 +74,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				options.ID = strings.ToLower(args[0])
 			}
 			if cf, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok {
-				options.Namespace = *cf.Namespace
+				n, _, err := cf.ToRawKubeConfigLoader().Namespace()
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				options.Namespace = n
 			}
 		}
 
