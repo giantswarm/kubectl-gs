@@ -68,7 +68,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	{
 		options := cluster.GetOptions{
 			Provider:  r.provider,
-			Namespace: metav1.NamespaceDefault,
 		}
 		{
 			if len(args) > 0 {
