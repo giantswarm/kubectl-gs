@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
@@ -68,17 +69,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	{
 		options := cluster.GetOptions{
 			Provider: r.provider,
+			Namespace: metav1.NamespaceDefault,
 		}
 		{
 			if len(args) > 0 {
 				options.ID = strings.ToLower(args[0])
 			}
-			if cf, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok {
-				n, _, err := cf.ToRawKubeConfigLoader().Namespace()
+
+			if (r.flag.AllNamespaces) {
+				options.Namespace = metav1.NamespaceAll
+			} else if cf, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok {
+				options.Namespace, _, err = cf.ToRawKubeConfigLoader().Namespace()
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				options.Namespace = n
 			}
 		}
 

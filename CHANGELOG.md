@@ -9,7 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Added support for using a custom namespace set for a specific Kubernetes context in the Kubeconfig file.
+- Add support for using a custom namespace set for a specific Kubernetes context in the Kubeconfig file.
+- Add support for using the `--all-namespaces, -A` flag for listing resources in all namespaces.
 
 ## [0.10.0] - 2020-10-23
 
