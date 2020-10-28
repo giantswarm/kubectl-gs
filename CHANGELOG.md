@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for using a custom namespace set for a specific Kubernetes context in the Kubeconfig file.
+- Add support for using the `--all-namespaces, -A` flag for listing resources in all namespaces.
+
 ## [0.10.0] - 2020-10-23
 
 ### Removed
@@ -23,6 +28,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.8.0] - 2020-10-14
 
 ### Added
+
 - Start publishing a container image of kubectl-gs as giantswarm/kubectl-gs
 
 ### Changed
@@ -33,60 +39,73 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [0.7.2] - 2020-10-12
 
 ### Changed
+
 - Store Azure node pools resources in the organization-specific namespace.
 - Display full error output when getting installation info fails or when the OIDC configuration is incorrect, while running the `login` command fails.
 - Use proper CAPI conditions to determine Azure Cluster status.
 
 ### Fixed
+
 - Use the custom releases branch when fetching release components.
 
 ## [0.7.1] - 2020-09-30
 
 ### Added
+
 - Add support for using a custom release branch when templating clusters or node pools.
 
 ### Changed
+
 - Change the default Azure VM size to `Standard_D4s_v3`
 
 ### Fixed
+
 - Store all Azure resources in the organization-specific namespace.
 - Use correct K8s API version for Cluster API Machine Pools.
 
 ## [0.7.0] - 2020-09-30
 
 ### Added
+
 - Add support for templating clusters and node pools on Azure.
 - Add support for templating NetworkPools.
 
 ## [0.6.1] - 2020-09-14
 
 ### Added
+
 - Add the `--version` flag for printing the current version. Run `kgs --version` to check which version you're running.
 
 ### Changed
+
 - Disabled templating clusters with legacy or deprecated release versions.
 - Allow specifying the `--release` flag for templating clusters and node pools with leading `v`.
 
 ## [0.6.0] - 2020-08-11
 
 ### Added
+
 - Implemented support for the `get cluster(s) <id>` command.
 - Improved error printing formatting.
 
 ### Changed
+
 - Running the `template` command without any arguments how displays the command help output.
 
 ## [0.5.5] - 2020-07-28
 
 ### Fixed
+
 - Make executable work on lightweight linux distributions, such as `alpine`.
 
 ## [0.5.4] - 2020-07-24
 
 ### Fixed
+
 - Prevent breaking the client's kubeconfig if token renewal fails.
 
 ### Added
+
 - Add `--use-alike-instance-types` for node pools.
 
 ## [0.5.3] - 2020-07-13
@@ -95,41 +114,29 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [0.5.1] - 2020-07-03
 
-
 ## [0.5.0] 2020-06-10
-
 
 ## [0.4.0] 2020-06-09
 
-
 ## [0.3.5] 2020-06-04
-
 
 ## [0.3.4] 2020-05-27
 
-
 ## [0.3.3] 2020-05-21
-
 
 ## [0.3.2] 2020-05-08
 
-
 ## [0.3.1] 2020-05-06
-
 
 ## [0.3.0] 2020-05-06
 
-
 ## [0.2.0] 2020-03-26
-
 
 ## [0.1.0] 2020-03-26
 
-
 ## [0.2.0] 2020-04-23
 
-
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.10.0...HEAD
+[unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.10.0...HEAD
 [0.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.7.2...v0.8.0

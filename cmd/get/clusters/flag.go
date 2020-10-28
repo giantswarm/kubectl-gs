@@ -5,12 +5,20 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
+const (
+	flagAllNamespaces = "all-namespaces"
+)
+
 type flag struct {
+	AllNamespaces bool
+
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
 
