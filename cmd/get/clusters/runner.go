@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
@@ -78,8 +77,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			if r.flag.AllNamespaces {
 				options.Namespace = metav1.NamespaceAll
-			} else if cf, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok {
-				options.Namespace, _, err = cf.ToRawKubeConfigLoader().Namespace()
+			} else {
+				options.Namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
 				if err != nil {
 					return microerror.Mask(err)
 				}
