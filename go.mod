@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/fatih/color v1.9.0
+	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
 	github.com/giantswarm/k8sclient/v4 v4.0.0
