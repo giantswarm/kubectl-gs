@@ -107,9 +107,8 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	}
 
 	serviceConfig := app.Config{
-		Client:         client,
-		Logger:         r.logger,
-		HelmBinaryPath: r.flag.HelmBinaryPath,
+		Client: client,
+		Logger: r.logger,
 	}
 	r.service, err = app.New(serviceConfig)
 	if err != nil {

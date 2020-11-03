@@ -11,7 +11,6 @@ const (
 	flagQuiet            = "quiet"
 	flagOutputFormat     = "output"
 	flagValuesSchemaFile = "values-schema-file"
-	flagHelmBinaryPath   = "helm-binary-path"
 )
 
 type flag struct {
@@ -22,7 +21,6 @@ type flag struct {
 	OutputFormat     string
 	Quiet            bool
 	ValuesSchemaFile string
-	HelmBinaryPath   string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -31,7 +29,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "Validate apps across all namespaces. This can take a long time.")
 	cmd.Flags().StringVarP(&f.ValuesSchemaFile, flagValuesSchemaFile, "f", "", "Provide your own schema file to validate app values against.")
 	cmd.Flags().StringVarP(&f.OutputFormat, flagOutputFormat, "o", "", "Output format. Use 'report' to get a human readable report of validation issues.")
-	cmd.Flags().StringVar(&f.HelmBinaryPath, flagHelmBinaryPath, "helm", "Optional path to your helm binary if 'helm' is not in your $PATH.")
 
 	f.config = genericclioptions.NewConfigFlags(true)
 
