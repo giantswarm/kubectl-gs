@@ -41,8 +41,11 @@ require (
 )
 
 replace (
+	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	github.com/coreos/etcd => github.com/coreos/etcd v3.3.24+incompatible
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
+	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
+	k8s.io/kubernetes v1.13.0 => k8s.io/kubernetes v1.16.13
 	sigs.k8s.io/cluster-api v0.3.10 => github.com/giantswarm/cluster-api v0.3.10-gs
 	sigs.k8s.io/cluster-api-provider-azure v0.4.9 => github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2
 )
