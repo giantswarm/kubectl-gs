@@ -12,13 +12,15 @@ import (
 var _ Interface = &Service{}
 
 type Config struct {
-	Client *client.Client
-	Logger micrologger.Logger
+	Client         *client.Client
+	Logger         micrologger.Logger
+	HelmBinaryPath string
 }
 
 type Service struct {
-	client        *client.Client
-	valuesService *values.Values
+	client         *client.Client
+	valuesService  *values.Values
+	helmBinaryPath string
 
 	catalogFetchResults map[string]CatalogFetchResult
 	schemaFetchResults  map[string]SchemaFetchResult
@@ -29,6 +31,10 @@ func New(config Config) (Interface, error) {
 
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
+	}
+
+	if config.HelmBinaryPath == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.HelmBinaryPath must not be empty", config)
 	}
 
 	var valuesService *values.Values
@@ -47,6 +53,7 @@ func New(config Config) (Interface, error) {
 	s := &Service{
 		client:              config.Client,
 		valuesService:       valuesService,
+		helmBinaryPath:      config.HelmBinaryPath,
 		catalogFetchResults: make(map[string]CatalogFetchResult),
 		schemaFetchResults:  make(map[string]SchemaFetchResult),
 	}

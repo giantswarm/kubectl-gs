@@ -29,6 +29,9 @@ Without any flags it provides a quick overview of all apps installed across
 all clusters. Use flags to narrow down which apps are being validated, or to
 get more detailed information about any validation errors.
 
+This command requires a helm 3 binary. It will find 'helm' in your $PATH, or
+otherwise you can provide the path to the binary using --helm-binary-path
+
 Output columns:
 
 - NAMESPACE: Namespace the App CR is installed in. Corresponds to a Cluster ID.
