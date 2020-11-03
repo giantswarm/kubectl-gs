@@ -25,6 +25,7 @@ func (r *runner) printOutput(results app.ValidationResults) error {
 
 	case output.IsOutputReport(&r.flag.OutputFormat):
 		err = PrintReport(results)
+
 		if err != nil {
 			return microerror.Mask(err)
 		}

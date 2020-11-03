@@ -24,7 +24,13 @@ func PrintReport(results app.ValidationResults) error {
 		count := 0
 
 		for _, r := range validationResults {
+			// Add any validation errors to the error count.
 			count += len(r.ValidationErrors)
+
+			// Add any execution errors to the error count.
+			if r.Err != nil {
+				count++
+			}
 		}
 
 		namespaceErrorCount[namespace] = count
@@ -62,6 +68,12 @@ func PrintReport(results app.ValidationResults) error {
 				fmt.Printf(" - %s", e.Value())
 				fmt.Print("\n")
 			}
+
+			if r.Err != nil {
+				fmt.Printf("    %s", r.Err.Error())
+				fmt.Print("\n")
+			}
+
 			fmt.Print("\n")
 		}
 
