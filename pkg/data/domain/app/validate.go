@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -195,9 +195,9 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 		return "", nil, microerror.Maskf(ioError, "failed to unmarshal yaml file: %s", err.Error())
 	}
 
-	// Use MergeAll from the values package in app-operator to fetch and merge the
-	// various values that users and admins can provide in the three configuration
-	// levels and merges them together into a single result.
+	// Use MergeAll from the values package in the app library repo to fetch and
+	// merge the various values that users and admins can provide in the three
+	// configuration levels and merges them together into a single result.
 	// 2. Catalog values (configmap & secret)
 	// 3. Cluster values (configmap & secret)
 	// 4. User values (configmap & secret)
