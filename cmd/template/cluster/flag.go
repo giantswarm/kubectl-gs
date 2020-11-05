@@ -6,13 +6,10 @@ import (
 
 	"github.com/mpvl/unique"
 
-	"github.com/giantswarm/kubectl-gs/pkg/azure"
-
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/aws"
 	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
@@ -32,7 +29,6 @@ const (
 	flagName          = "name"
 	flagOutput        = "output"
 	flagOwner         = "owner"
-	flagRegion        = "region"
 	flagRelease       = "release"
 	flagLabel         = "label"
 	flagReleaseBranch = "release-branch"
@@ -53,7 +49,6 @@ type flag struct {
 	Name          string
 	Output        string
 	Owner         string
-	Region        string
 	Release       string
 	Label         []string
 	ReleaseBranch string
@@ -74,7 +69,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1 or westeurope).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Tenant cluster label.")
 	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
@@ -131,24 +125,6 @@ func (f *flag) Validate() error {
 	}
 
 	{
-		// Validate installation region.
-		if f.Region == "" {
-			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRegion)
-		}
-
-		switch f.Provider {
-		case key.ProviderAWS:
-			if !aws.ValidateRegion(f.Region) {
-				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-			}
-		case key.ProviderAzure:
-			if !azure.ValidateRegion(f.Region) {
-				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-			}
-		}
-	}
-
-	{
 		// Validate Master AZs.
 		switch f.Provider {
 		case key.ProviderAWS:
@@ -158,20 +134,9 @@ func (f *flag) Validate() error {
 			if !unique.StringsAreUnique(f.MasterAZ) {
 				return microerror.Maskf(invalidFlagError, "--%s values must contain each AZ name only once", flagMasterAZ)
 			}
-			// TODO: validate that len(f.MasterAZ) == 3 is occurring in releases >= v11.5.0
-			for _, az := range f.MasterAZ {
-				if !aws.ValidateAZ(f.Region, az) {
-					return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
-				}
-			}
 		case key.ProviderAzure:
-			if len(f.MasterAZ) != 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must define a single availability zone on Azure", flagMasterAZ)
-			}
-			for _, az := range f.MasterAZ {
-				if !azure.ValidateAZ(f.Region, az) {
-					return microerror.Maskf(invalidFlagError, "The AZ name %q passed via --%s is not a valid AZ name for region %s", az, flagMasterAZ, f.Region)
-				}
+			if len(f.MasterAZ) > 1 {
+				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagMasterAZ)
 			}
 		}
 	}

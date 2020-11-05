@@ -7,10 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/azure"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
-
-	"github.com/giantswarm/kubectl-gs/pkg/aws"
 )
 
 const (
@@ -34,7 +31,6 @@ const (
 	flagNumAvailabilityZones = "num-availability-zones"
 	flagOutput               = "output"
 	flagOwner                = "owner"
-	flagRegion               = "region"
 	flagRelease              = "release"
 	flagReleaseBranch        = "release-branch"
 )
@@ -68,7 +64,6 @@ type flag struct {
 	NumAvailabilityZones int
 	Output               string
 	Owner                string
-	Region               string
 	Release              string
 	ReleaseBranch        string
 }
@@ -94,7 +89,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 0, "Number of availability zones to use. Default is 1 on AWS and 0 on Azure.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
 }
@@ -153,24 +147,6 @@ func (f *flag) Validate() error {
 	}
 
 	{
-		// Validate installation region.
-		if f.Region == "" {
-			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRegion)
-		}
-
-		switch f.Provider {
-		case key.ProviderAWS:
-			if !aws.ValidateRegion(f.Region) {
-				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-			}
-		case key.ProviderAzure:
-			if !azure.ValidateRegion(f.Region) {
-				return microerror.Maskf(invalidFlagError, "--%s must be valid region name", flagRegion)
-			}
-		}
-	}
-
-	{
 		// Validate Availability Zones.
 		var azs []string
 		var numOfAZs int
@@ -194,38 +170,10 @@ func (f *flag) Validate() error {
 			}
 		}
 
-		var numOfAvailableAZs int
-		{
-			switch f.Provider {
-			case key.ProviderAWS:
-				numOfAvailableAZs = aws.AvailableAZs(f.Region)
-			case key.ProviderAzure:
-				numOfAvailableAZs = azure.AvailableAZs(f.Region)
-			}
-		}
-
 		// XXX: The availability zones can be set to nil on Azure.
 		// https://github.com/giantswarm/giantswarm/issues/12860
 		if f.Provider == key.ProviderAWS && numOfAZs < 1 {
 			return microerror.Maskf(invalidFlagError, "--%s must be configured with at least 1 AZ", flagAvailabilityZones)
-		}
-		if numOfAZs > numOfAvailableAZs {
-			return microerror.Maskf(invalidFlagError, "--%s must be less than number of available AZs in selected region (%s region has %d availability zones)", flagAvailabilityZones, f.Region, numOfAvailableAZs)
-		}
-
-		switch f.Provider {
-		case key.ProviderAWS:
-			for _, az := range azs {
-				if !aws.ValidateAZ(f.Region, az) {
-					return microerror.Maskf(invalidFlagError, "--%s must be a list with valid AZs for selected region", flagAvailabilityZones)
-				}
-			}
-		case key.ProviderAzure:
-			for _, az := range azs {
-				if !azure.ValidateAZ(f.Region, az) {
-					return microerror.Maskf(invalidFlagError, "--%s must be a list with valid AZs for selected region", flagAvailabilityZones)
-				}
-			}
 		}
 	}
 

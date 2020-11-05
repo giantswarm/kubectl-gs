@@ -21,7 +21,6 @@ type ClusterCRsConfig struct {
 	MasterAZ          []string
 	Description       string
 	Owner             string
-	Region            string
 	ReleaseComponents map[string]string
 	ReleaseVersion    string
 	Labels            map[string]string
