@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/id"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/pkg/aws"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
@@ -82,32 +82,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
 			Owner:                               r.flag.Owner,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
-			ReleaseVersion:                      r.flag.Release,
 		}
 
 		if config.NodePoolID == "" {
 			config.NodePoolID = id.Generate()
 		}
 
-		// Remove leading 'v' from release flag input.
-		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
-
 		if len(r.flag.AvailabilityZones) > 0 {
 			config.AvailabilityZones = r.flag.AvailabilityZones
 		}
-
-		var releaseCollection *release.Release
-		{
-			c := release.Config{
-				Provider: r.flag.Provider,
-				Branch:   r.flag.ReleaseBranch,
-			}
-			releaseCollection, err = release.New(c)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-		config.ReleaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 
 		if r.flag.Provider == key.ProviderAzure {
 			config.Namespace = key.OrganizationNamespaceFromName(config.Owner)
