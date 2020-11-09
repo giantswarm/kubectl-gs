@@ -11,6 +11,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add `cluster-admin` flag to `login` command, which allows full access for Giant Swarm staff.
 
+### Removed
+
+- Remove client-side validation of the GS `release` when creating a `Cluster`'s template. 
+
+
 ## [0.13.0] - 2020-11-20
 
 ### Removed

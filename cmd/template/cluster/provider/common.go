@@ -15,16 +15,15 @@ type ClusterCRsConfig struct {
 	Credential   string
 
 	// Common.
-	FileName          string
-	ClusterID         string
-	Domain            string
-	MasterAZ          []string
-	Description       string
-	Owner             string
-	ReleaseComponents map[string]string
-	ReleaseVersion    string
-	Labels            map[string]string
-	Namespace         string
+	FileName       string
+	ClusterID      string
+	Domain         string
+	MasterAZ       []string
+	Description    string
+	Owner          string
+	ReleaseVersion string
+	Labels         map[string]string
+	Namespace      string
 }
 
 func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
@@ -37,7 +36,6 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 			Name:      config.ClusterID,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.ClusterOperatorVersion:  config.ReleaseComponents["cluster-operator"],
 				label.Cluster:                 config.ClusterID,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
 				label.Organization:            config.Owner,

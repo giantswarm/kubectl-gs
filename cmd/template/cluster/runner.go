@@ -10,13 +10,12 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/id"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
-	"github.com/giantswarm/kubectl-gs/pkg/release"
-
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -77,19 +76,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Remove leading 'v' from release flag input.
 		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
-
-		var releaseCollection *release.Release
-		{
-			c := release.Config{
-				Provider: r.flag.Provider,
-				Branch:   r.flag.ReleaseBranch,
-			}
-			releaseCollection, err = release.New(c)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-		config.ReleaseComponents = releaseCollection.ReleaseComponents(r.flag.Release)
 
 		config.Labels, err = clusterlabels.Parse(r.flag.Label)
 		if err != nil {
