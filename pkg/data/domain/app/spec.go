@@ -7,12 +7,7 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-const (
-	defaultNamespace = "default"
-)
-
 type ValidateOptions struct {
-	AllNamespaces bool
 	LabelSelector string
 	Name          string
 	Namespace     string
@@ -78,8 +73,5 @@ type ChartVersion struct {
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
-	// GetAllInNamespace(context.Context, GetAllInNamespaceOptions) (runtime.Object, error)
-	// GetByName(context.Context, GetByNameOptions) (runtime.Object, error)
-	// GetAll(context.Contect, GetAllOptions) (runtime.Object, error)
 	Validate(context.Context, ValidateOptions) (ValidationResults, error)
 }

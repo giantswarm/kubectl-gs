@@ -8,9 +8,14 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+)
+
+const (
+	defaultNamespace = metav1.NamespaceDefault
 )
 
 type runner struct {
@@ -45,7 +50,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	allNamespaces := r.flag.AllNamespaces
+	// If the namespace is empty, set it to "default".
+	if namespace == "" {
+		namespace = defaultNamespace
+	}
+
+	// BUT if we want all namespaces, set it to 'metav1.NamespaceAll', aka ""
+	// again so the client gets all namespaces.
+	if r.flag.AllNamespaces {
+		namespace = metav1.NamespaceAll
+	}
+
 	labelSelector := r.flag.LabelSelector
 
 	valuesSchemaFilePath := r.flag.ValuesSchemaFile
@@ -77,7 +92,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 
 			options.Namespace = namespace
-			options.AllNamespaces = allNamespaces
 			options.LabelSelector = labelSelector
 			options.ValuesSchema = valuesSchema
 		}
