@@ -24,7 +24,7 @@ func (r *runner) printOutput(results app.ValidationResults) error {
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputReport(&r.flag.OutputFormat):
-		err = PrintReport(results)
+		err = PrintReport(results, r.stdout)
 
 		if err != nil {
 			return microerror.Mask(err)
