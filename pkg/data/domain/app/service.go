@@ -31,6 +31,10 @@ func New(config Config) (Interface, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}
 
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
 	var valuesService *values.Values
 	{
 		c := values.Config{
