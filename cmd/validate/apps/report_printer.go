@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/pkg/app"
 	"github.com/giantswarm/kubectl-gs/pkg/pluralize"
 )
 

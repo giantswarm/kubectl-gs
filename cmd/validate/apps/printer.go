@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/pkg/app"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/pkg/pluralize"
 )

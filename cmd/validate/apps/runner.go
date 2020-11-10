@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/kubectl-gs/pkg/app"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 )
 
 const (
