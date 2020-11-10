@@ -29,8 +29,10 @@ const (
 	flagAvailabilityZones    = "availability-zones"
 	flagClusterID            = "cluster-id"
 	flagNodepoolName         = "nodepool-name"
-	flagNodesMax             = "nodex-max"
-	flagNodesMin             = "nodex-min"
+	flagNodesMax             = "nodes-max"
+	flagNodesMin             = "nodes-min"
+	flagNodexMax             = "nodex-max"
+	flagNodexMin             = "nodex-min"
 	flagNumAvailabilityZones = "num-availability-zones"
 	flagOutput               = "output"
 	flagOwner                = "owner"
@@ -97,6 +99,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
+	
+	cmd.Flags().IntVar(&f.NodesMax, flagNodexMax, 0, "", maxNodesAWS, maxNodesAzure))
+	cmd.Flags().IntVar(&f.NodesMin, flagNodexMin, 0, "", minNodesAWS, minNodesAzure))
 }
 
 func (f *flag) Validate() error {
