@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
@@ -9,9 +10,9 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
-	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/microerror"
 
@@ -156,7 +157,8 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 	// Why? There are actually a lot of little security details that go into
 	// unpacking this tarball. Checkout https://github.com/helm/helm/blob/master/pkg/chart/loader/archive.go#L101
 	url := findTarballURL(index.Entries[app.Spec.Name], app.Spec.Version)
-	tmpDir, err := ioutil.TempDir("", app.Spec.Name+"-"+app.Spec.Version+"-")
+	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("%s-%s-", app.Spec.Name, app.Spec.Version))
+
 	if err != nil {
 		return "", nil, microerror.Mask(err)
 	}
