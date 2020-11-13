@@ -8,15 +8,14 @@ import (
 	"os/exec"
 	"path"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
+	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/microerror"
-
-	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -50,13 +49,12 @@ func (s *Service) Validate(ctx context.Context, options ValidateOptions) (Valida
 func (s *Service) validateByName(ctx context.Context, name, namespace string, customValuesSchema string) (ValidationResults, error) {
 	results := ValidationResults{}
 
-	namespacedName := types.NamespacedName{
+	options := appdata.GetOptions{
 		Namespace: namespace,
 		Name:      name,
 	}
 
-	app := &applicationv1alpha1.App{}
-	err := s.client.K8sClient.CtrlClient().Get(ctx, namespacedName, app)
+	app, err := s.appDataService.Get(ctx, options)
 	if err != nil {
 		return results, microerror.Mask(err)
 	}
