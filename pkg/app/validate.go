@@ -13,8 +13,9 @@ import (
 	"sigs.k8s.io/yaml"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/microerror"
+
+	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 )
 
 const (
