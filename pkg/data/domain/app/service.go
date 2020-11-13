@@ -5,7 +5,9 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 )
@@ -49,4 +51,26 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (*applicationv1al
 	}
 
 	return app, nil
+}
+
+// List returns a list of App CRs in a namespace, optionally filtered by a label selector.
+func (s *Service) List(ctx context.Context, options ListOptions) (*applicationv1alpha1.AppList, error) {
+	parsedSelector, err := labels.Parse(options.LabelSelector)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	o := &runtimeclient.ListOptions{
+		Namespace:     options.Namespace,
+		LabelSelector: parsedSelector,
+	}
+
+	appList := &applicationv1alpha1.AppList{}
+	err = s.client.K8sClient.CtrlClient().List(ctx, appList, o)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return appList, nil
+
 }

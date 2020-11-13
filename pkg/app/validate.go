@@ -9,7 +9,6 @@ import (
 	"path"
 
 	"github.com/xeipuuv/gojsonschema"
-	"k8s.io/apimachinery/pkg/labels"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
@@ -83,19 +82,12 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 func (s *Service) validateMultiple(ctx context.Context, namespace string, labelSelector string, customValuesSchema string) (ValidationResults, error) {
 	var err error
 
-	parsedSelector, err := labels.Parse(labelSelector)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	options := &runtimeClient.ListOptions{
+	options := appdata.ListOptions{
 		Namespace:     namespace,
-		LabelSelector: parsedSelector,
+		LabelSelector: labelSelector,
 	}
 
-	results := ValidationResults{}
-	apps := &applicationv1alpha1.AppList{}
-	err = s.client.K8sClient.CtrlClient().List(ctx, apps, options)
+	apps, err := s.appDataService.List(ctx, options)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	} else if len(apps.Items) == 0 {
@@ -104,6 +96,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 
 	// Iterate over all apps and fetch the AppCatalog CR, index.yaml, and
 	// corresponding values.schema.json if it is defined for that app's version.
+	results := ValidationResults{}
 	for _, app := range apps.Items {
 		valuesSchema, schemaValidationResult, err := s.validateApp(ctx, app, customValuesSchema)
 		if err != nil {

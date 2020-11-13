@@ -12,9 +12,15 @@ type GetOptions struct {
 	Namespace string
 }
 
+type ListOptions struct {
+	LabelSelector string
+	Namespace     string
+}
+
 // Interface represents the contract for the app data service.
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (*applicationv1alpha1.App, error)
+	List(context.Context, ListOptions) (*applicationv1alpha1.AppList, error)
 }
