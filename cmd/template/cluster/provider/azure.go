@@ -89,7 +89,6 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			},
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
-			Location:      config.Region,
 			ResourceGroup: config.ClusterID,
 		},
 	}
@@ -98,6 +97,11 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 }
 
 func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
+	var failureDomain *string
+	if len(config.MasterAZ) > 0 {
+		failureDomain = &config.MasterAZ[0]
+	}
+
 	machine := &capzv1alpha3.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachine",
@@ -117,7 +121,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 		},
 		Spec: capzv1alpha3.AzureMachineSpec{
 			VMSize:        defaultMasterVMSize,
-			FailureDomain: &config.MasterAZ[0],
+			FailureDomain: failureDomain,
 			Image: &capzv1alpha3.Image{
 				Marketplace: &capzv1alpha3.AzureMarketplaceImage{
 					Publisher: "kinvolk",
@@ -133,7 +137,6 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 					StorageAccountType: "Premium_LRS",
 				},
 			},
-			Location:     config.Region,
 			SSHPublicKey: "",
 		},
 	}

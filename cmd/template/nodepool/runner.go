@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/giantswarm/kubectl-gs/pkg/azure"
-
 	"github.com/giantswarm/apiextensions/v3/pkg/id"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
@@ -17,7 +15,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/pkg/aws"
 	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
@@ -84,7 +81,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
 			OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
 			Owner:                               r.flag.Owner,
-			Region:                              r.flag.Region,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 			ReleaseVersion:                      r.flag.Release,
 		}
@@ -98,13 +94,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		if len(r.flag.AvailabilityZones) > 0 {
 			config.AvailabilityZones = r.flag.AvailabilityZones
-		} else {
-			switch r.flag.Provider {
-			case key.ProviderAWS:
-				config.AvailabilityZones = aws.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
-			case key.ProviderAzure:
-				config.AvailabilityZones = azure.GetAvailabilityZones(r.flag.NumAvailabilityZones, r.flag.Region)
-			}
 		}
 
 		var releaseCollection *release.Release
