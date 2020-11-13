@@ -11,8 +11,12 @@ func AvailableAZs(region string) int {
 
 func GetAvailabilityZones(num int, region string) []string {
 	var azs []string
+	available := infrastructure[region]
+	if len(available) == 0 {
+		return azs
+	}
 	for i := 0; i < num; i++ {
-		azs = append(azs, infrastructure[region][i])
+		azs = append(azs, available[i%len(available)])
 	}
 
 	return azs

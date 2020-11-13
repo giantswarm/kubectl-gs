@@ -9,26 +9,17 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-const (
-	defaultNamespace = "default"
-)
-
 func (s *Service) Get(ctx context.Context, options GetOptions) (runtime.Object, error) {
 	var err error
 
-	namespace := options.Namespace
-	if namespace == "" {
-		namespace = defaultNamespace
-	}
-
 	var resource runtime.Object
 	if options.ID != "" {
-		resource, err = s.getById(ctx, options.Provider, options.ID, namespace)
+		resource, err = s.getById(ctx, options.Provider, options.ID, options.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	} else {
-		resource, err = s.getAll(ctx, options.Provider, namespace)
+		resource, err = s.getAll(ctx, options.Provider, options.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

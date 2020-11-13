@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/pkg/app"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/pkg/pluralize"
 )
@@ -24,7 +24,8 @@ func (r *runner) printOutput(results app.ValidationResults) error {
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputReport(&r.flag.OutputFormat):
-		err = PrintReport(results)
+		err = PrintReport(results, r.stdout)
+
 		if err != nil {
 			return microerror.Mask(err)
 		}

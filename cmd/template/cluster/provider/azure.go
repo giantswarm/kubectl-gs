@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +19,6 @@ import (
 )
 
 const (
-	serviceNetworkCIDR  = "172.31.0.0/16"
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
@@ -90,10 +89,6 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			},
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
-			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
-				Host: fmt.Sprintf("api.%s.k8s.%s", config.ClusterID, config.Domain),
-				Port: 443,
-			},
 			Location:      config.Region,
 			ResourceGroup: config.ClusterID,
 		},
