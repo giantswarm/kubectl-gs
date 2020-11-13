@@ -23,7 +23,6 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		Description:       config.Description,
 		PodsCIDR:          config.PodsCIDR,
 		Owner:             config.Owner,
-		Region:            config.Region,
 		ReleaseComponents: config.ReleaseComponents,
 		ReleaseVersion:    config.ReleaseVersion,
 		Labels:            config.Labels,
