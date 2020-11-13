@@ -74,6 +74,7 @@ Output columns:
       --values-schema-file=values.schema.json`
 )
 
+// Config are the configuration that New takes to create an instance of this command.
 type Config struct {
 	Logger micrologger.Logger
 
@@ -83,6 +84,7 @@ type Config struct {
 	Stdout io.Writer
 }
 
+// New takes a Config and returns an instance of this command.
 func New(config Config) (*cobra.Command, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
