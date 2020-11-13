@@ -9,15 +9,14 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions/v2 v2.6.2
 	github.com/giantswarm/apiextensions/v3 v3.6.0
-	github.com/giantswarm/app-operator/v2 v2.7.0
 	github.com/giantswarm/app/v3 v3.0.0-20201104142815-217bc60dc14d
 	github.com/giantswarm/k8sclient/v5 v5.0.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/micrologger v0.3.4
 	github.com/google/go-cmp v0.5.2
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo v1.14.1 // indirect
