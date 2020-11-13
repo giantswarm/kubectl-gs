@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.12.0] - 2020-11-13
+
 ### Removed
 
 - Removed the `--region` flag from the `kubectl-gs template` commands. Region gets set automatically according to the control plane the cluster is created in.
@@ -142,7 +144,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [0.2.0] 2020-04-23
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.8.0...v0.9.0
