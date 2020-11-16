@@ -7,23 +7,28 @@ import (
 	"github.com/giantswarm/app/v3/pkg/values"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
+	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 )
 
 var _ Interface = &Service{}
 
+// Config represents the values that New() needs in order to create a valid app service.
 type Config struct {
 	Client *client.Client
 	Logger micrologger.Logger
 }
 
+// Service represents an instance of the App service.
 type Service struct {
-	client        *client.Client
-	valuesService *values.Values
+	client         *client.Client
+	appDataService appdata.Interface
+	valuesService  *values.Values
 
 	catalogFetchResults map[string]CatalogFetchResult
 	schemaFetchResults  map[string]SchemaFetchResult
 }
 
+// New returns an app service given a certain Config.
 func New(config Config) (Interface, error) {
 	var err error
 
@@ -33,6 +38,18 @@ func New(config Config) (Interface, error) {
 
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
+	var appDataService appdata.Interface
+	{
+		c := appdata.Config{
+			Client: config.Client,
+		}
+
+		appDataService, err = appdata.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var valuesService *values.Values
@@ -50,6 +67,7 @@ func New(config Config) (Interface, error) {
 
 	s := &Service{
 		client:              config.Client,
+		appDataService:      appDataService,
 		valuesService:       valuesService,
 		catalogFetchResults: make(map[string]CatalogFetchResult),
 		schemaFetchResults:  make(map[string]SchemaFetchResult),
