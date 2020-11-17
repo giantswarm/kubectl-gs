@@ -9,13 +9,13 @@ import (
 	"path"
 
 	"github.com/xeipuuv/gojsonschema"
-	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
 )
 
 const (
@@ -259,12 +259,11 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 	}
 
 	// Fetch the catalog.
-	objKey := runtimeClient.ObjectKey{
+	options := appcatalogdata.GetOptions{
 		Name: catalogName,
 	}
 
-	catalog := &applicationv1alpha1.AppCatalog{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, catalog)
+	catalog, err := s.appcatalogDataService.Get(ctx, options)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch AppCatalog: %s", err.Error())
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
