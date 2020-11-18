@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"os/exec"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 )
 
 var _ Interface = &Service{}
