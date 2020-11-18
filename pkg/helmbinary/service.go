@@ -55,7 +55,7 @@ func (s *Service) Pull(ctx context.Context, options PullOptions) (tmpDir string,
 	// app catalog index entry. We verified this is actually a URL earlier in this
 	// method.
 	cmd := exec.Command("helm", "pull", parsedURL.String(), "--untar", "-d", tmpDir) // #nosec G204
-	_, err = cmd.CombinedOutput()
+	err = cmd.Run()
 	if err != nil {
 		return "", microerror.Maskf(commandError, "failed to execute: %s, %s", cmd.String(), err.Error())
 	}
