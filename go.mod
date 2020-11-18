@@ -35,7 +35,7 @@ require (
 	k8s.io/client-go v0.18.9
 	k8s.io/utils v0.0.0-20200912215256-4140de9c8800 // indirect
 	sigs.k8s.io/cluster-api v0.3.10
-	sigs.k8s.io/cluster-api-provider-azure v0.4.8
+	sigs.k8s.io/cluster-api-provider-azure v0.4.9
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )
