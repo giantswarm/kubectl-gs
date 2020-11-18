@@ -2,10 +2,8 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os/exec"
 	"path"
 
 	"github.com/xeipuuv/gojsonschema"
@@ -16,6 +14,7 @@ import (
 
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
+	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
 )
 
 const (
@@ -145,20 +144,13 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 		}
 	}
 
-	// Use the helm binary to fetch and untar the chart tarball.
-	// Why? There are actually a lot of little security details that go into
-	// unpacking this tarball. Checkout https://github.com/helm/helm/blob/master/pkg/chart/loader/archive.go#L101
-	url := findTarballURL(index.Entries[app.Spec.Name], app.Spec.Version)
-	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("%s-%s-", app.Spec.Name, app.Spec.Version))
-
+	// Fetch and untar the chart tarball.
+	pullOptions := helmbinary.PullOptions{
+		URL: findTarballURL(index.Entries[app.Spec.Name], app.Spec.Version),
+	}
+	tmpDir, err := s.helmbinaryService.Pull(ctx, pullOptions)
 	if err != nil {
 		return "", nil, microerror.Mask(err)
-	}
-
-	cmd := exec.Command("helm", "pull", url, "--untar", "-d", tmpDir)
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		return "", nil, microerror.Maskf(commandError, "failed to execute: %s, %s", cmd.String(), err.Error())
 	}
 
 	// Gather all the values that we want to merge together. (1,2,3,4)

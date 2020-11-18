@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
+	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
 )
 
 var _ Interface = &Service{}
@@ -24,6 +25,7 @@ type Service struct {
 	client                *client.Client
 	appDataService        appdata.Interface
 	appcatalogDataService appcatalogdata.Interface
+	helmbinaryService     helmbinary.Interface
 	valuesService         *values.Values
 
 	catalogFetchResults map[string]CatalogFetchResult
@@ -66,6 +68,18 @@ func New(config Config) (Interface, error) {
 		}
 	}
 
+	var helmbinaryService helmbinary.Interface
+	{
+		c := helmbinary.Config{
+			Client: config.Client,
+		}
+
+		helmbinaryService, err = helmbinary.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var valuesService *values.Values
 	{
 		c := values.Config{
@@ -83,6 +97,7 @@ func New(config Config) (Interface, error) {
 		client:                config.Client,
 		appDataService:        appDataService,
 		appcatalogDataService: appcatalogDataService,
+		helmbinaryService:     helmbinaryService,
 		valuesService:         valuesService,
 		catalogFetchResults:   make(map[string]CatalogFetchResult),
 		schemaFetchResults:    make(map[string]SchemaFetchResult),
