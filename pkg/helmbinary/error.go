@@ -13,6 +13,15 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var argumentError = &microerror.Error{
+	Kind: "argumentError",
+}
+
+// IsArgument asserts argumentError.
+func IsArgument(err error) bool {
+	return microerror.Cause(err) == argumentError
+}
+
 var commandError = &microerror.Error{
 	Kind: "commandError",
 }
