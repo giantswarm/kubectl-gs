@@ -13,6 +13,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Removed the `--region` flag from the `kubectl-gs template` commands. Region gets set automatically according to the control plane the cluster is created in.
 
+### Added
+
 - Added the `validate apps` command for validating the values of apps against the `values.schema.json` in their chart, or against a `values.schema.json` locally via a path provided through the command line.
 
 ## [0.11.0] - 2020-10-29
