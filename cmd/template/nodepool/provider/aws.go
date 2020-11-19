@@ -25,6 +25,8 @@ func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		OnDemandBaseCapacity:                config.OnDemandBaseCapacity,
 		OnDemandPercentageAboveBaseCapacity: config.OnDemandPercentageAboveBaseCapacity,
 		Owner:                               config.Owner,
+		ReleaseComponents:                   config.ReleaseComponents,
+		ReleaseVersion:                      config.ReleaseVersion,
 		UseAlikeInstanceTypes:               config.UseAlikeInstanceTypes,
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
 const (
@@ -93,6 +94,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
+	var err error
+
 	if f.Provider != key.ProviderAWS && f.Provider != key.ProviderAzure {
 		return microerror.Maskf(invalidFlagError, "--%s must be either aws or azure", flagProvider)
 	}
@@ -190,6 +193,29 @@ func (f *flag) Validate() error {
 			if f.OnDemandBaseCapacity != 0 || f.OnDemandPercentageAboveBaseCapacity != 100 || f.UseAlikeInstanceTypes {
 				return microerror.Maskf(invalidFlagError, "--%s, --%s and --%s spot instances flags are not supported on Azure.", flagOnDemandBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, flagUseAlikeInstanceTypes)
 			}
+		}
+	}
+
+	{
+		if f.Release == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+		}
+
+		var r *release.Release
+		{
+			c := release.Config{
+				Provider: f.Provider,
+				Branch:   f.ReleaseBranch,
+			}
+
+			r, err = release.New(c)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		if !r.Validate(f.Release) {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
 		}
 	}
 

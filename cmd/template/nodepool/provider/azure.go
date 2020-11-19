@@ -33,6 +33,10 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
 
 		machinePoolCR := newCAPIV1Alpha3MachinePoolCR(config, infrastructureRef)
+		{
+			// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
+			machinePoolCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
+		}
 		machinePoolCRYaml, err = yaml.Marshal(machinePoolCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -76,8 +80,10 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterID,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Owner,
+				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
