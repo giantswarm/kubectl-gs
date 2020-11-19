@@ -7,9 +7,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/aws"
-	"github.com/giantswarm/kubectl-gs/pkg/azure"
-	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
 const (
@@ -33,7 +30,6 @@ const (
 	flagNumAvailabilityZones = "num-availability-zones"
 	flagOutput               = "output"
 	flagOwner                = "owner"
-	flagRegion               = "region"
 	flagRelease              = "release"
 	flagReleaseBranch        = "release-branch"
 )
@@ -67,7 +63,6 @@ type flag struct {
 	NumAvailabilityZones int
 	Output               string
 	Owner                string
-	Region               string
 	Release              string
 	ReleaseBranch        string
 }
@@ -93,7 +88,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 0, "Number of availability zones to use. Default is 1 on AWS and 0 on Azure.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "Installation region (e.g. eu-central-1).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
 }

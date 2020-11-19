@@ -29,7 +29,6 @@ type NodePoolCRsConfig struct {
 	NodesMax          int
 	NodesMin          int
 	Owner             string
-	Region            string
 	ReleaseComponents map[string]string
 	ReleaseVersion    string
 	Namespace         string
