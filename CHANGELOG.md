@@ -126,33 +126,74 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [0.5.3] - 2020-07-13
 
+- Add `kubectl gs login` command (#85, #86, #87)
+
 ## [0.5.2] - 2020-07-03
+
+No changes
 
 ## [0.5.1] - 2020-07-03
 
+- Several changes regarding the use as a kubectl plugin
+- Remove non-existing AZ cn-north-1c (#54)
+- Allow specifying tenant cluster labels through --label flags (#55)
+- Update main README, Installation docs for Krew (#56)
+
 ## [0.5.0] 2020-06-10
+
+- Add support for organization credentials
 
 ## [0.4.0] 2020-06-09
 
+- Add support for new release info structure
+
 ## [0.3.5] 2020-06-04
+
+- Add goreleaser github action
+- Add instance distribution (#48)
+- Remove default node pool creation (#49)
 
 ## [0.3.4] 2020-05-27
 
+- Add support for AWS China https://github.com/giantswarm/kubectl-gs/pull/47
+- add AWS availability zone `ap-southeast-1a` https://github.com/giantswarm/kubectl-gs/pull/46
+
 ## [0.3.3] 2020-05-21
+
+- Add External SNAT option
 
 ## [0.3.2] 2020-05-08
 
+- Allow user to create cluster with cluster ID containing `[a-z0-9]`
+
 ## [0.3.1] 2020-05-06
+
+- Fix mixed namespace/cluster namespaces usage in App CR
 
 ## [0.3.0] 2020-05-06
 
+- Allow user to specify Cluster ID
+
 ## [0.2.0] 2020-03-26
+
+- Added `pods-cidr` flag to generate pods CIDR in Cluster CRs
+- Added support for new Release CR
 
 ## [0.1.0] 2020-03-26
 
-## [0.2.0] 2020-04-23
+This release supports rendering for CRs:
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.11.0...HEAD
+- Tenant cluster control plane:
+  - `Cluster` (API version `cluster.x-k8s.io/v1alpha2`) 
+  - `AWSCluster` (API version `infrastructure.giantswarm.io/v1alpha2`)
+- Node pool:
+  - `MachineDeployment` (API version `cluster.x-k8s.io/v1alpha2`)
+  - `AWSMachineDeployment` (API version `infrastructure.giantswarm.io/v1alpha2`)
+- `AppCatalog`
+- `App`
+
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.8.0...v0.9.0
