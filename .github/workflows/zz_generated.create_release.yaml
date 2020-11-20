@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-18.04
     outputs:
       project_go_path: ${{ steps.get_project_go_path.outputs.path }}
+      ref_version: ${{ steps.ref_version.outputs.refversion }}
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Get version
@@ -59,6 +60,21 @@ jobs:
           fi
           echo "path=\"$path\""
           echo "::set-output name=path::${path}"
+      - name: Check if reference version
+        id: ref_version
+        run: |
+          title="$(echo "${{ github.event.head_commit.message }}" | head -n 1 -)"
+          if echo $title | grep -qE '^release v[0-9]+\.[0-9]+\.[0-9]+([.-][^ .-][^ ]*)?( \(#[0-9]+\))?$' ; then
+            version=$(echo $title | cut -d ' ' -f 2)
+          fi
+          version=$(echo $title | cut -d ' ' -f 2)
+          version="${version#v}" # Strip "v" prefix.
+          refversion=false
+          if [[ "${version}" =~ ^[0-9]+.[0-9]+.[0-9]+-[0-9]+$ ]]; then
+            refversion=true
+          fi
+          echo "refversion =\"$refversion\""
+          echo "::set-output name=refversion::$refversion"
   install_semver:
     name: Install semver
     runs-on: ubuntu-18.04
@@ -77,7 +93,7 @@ jobs:
           echo "::set-output name=url::${URL}"
       - name: Cache
         id: cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2.1.1
         with:
           key: "${{ steps.key.outputs.cache_key }}"
           path: "${{ steps.key.outputs.cache_dir }}"
@@ -95,14 +111,14 @@ jobs:
         run: |
           ${{ steps.key.outputs.cache_dir }}/${{ steps.key.outputs.binary }} --version
       - name: Upload artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2.2.0
         with:
           name: "${{ steps.key.outputs.binary }}"
           path: "${{ steps.key.outputs.cache_dir }}/${{ steps.key.outputs.binary }}"
   update_project_go:
     name: Update project.go
     runs-on: ubuntu-18.04
-    if: ${{ needs.gather_facts.outputs.version != '' && needs.gather_facts.outputs.project_go_path != ''}}
+    if: ${{ needs.gather_facts.outputs.version != '' && needs.gather_facts.outputs.project_go_path != '' && needs.gather_facts.outputs.ref_version != 'true' }}
     needs:
       - gather_facts
       - install_semver
@@ -170,7 +186,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
       - name: Ensure correct version in project.go
-        if: ${{ needs.gather_facts.outputs.project_go_path != ''}}
+        if: ${{ needs.gather_facts.outputs.project_go_path != '' && needs.gather_facts.outputs.ref_version != 'true' }}
         run: |
           file="${{ needs.gather_facts.outputs.project_go_path }}"
           version="${{ needs.gather_facts.outputs.version }}"
@@ -257,7 +273,7 @@ jobs:
       DIR: "/opt/cache"
       IMAGE: "quay.io/giantswarm/architect"
       IMAGE_PATH: "/usr/bin/architect"
-      VERSION: "1.2.0"
+      VERSION: "3.0.2"
     outputs:
       cache_key: "${{ steps.get_cache_key.outputs.cache_key }}"
     steps:
@@ -268,7 +284,7 @@ jobs:
           echo "::set-output name=cache_key::${cache_key}"
       - name: Cache
         id: cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2.1.1
         with:
           key: "${{ steps.get_cache_key.outputs.cache_key }}"
           path: "${{ env.DIR }}"
@@ -283,7 +299,7 @@ jobs:
         run: |
           ${{ env.DIR }}/${{ env.BINARY }} version
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.0
         with:
           name: "${{ env.BINARY }}"
           path: "${{ env.DIR }}/${{ env.BINARY }}"
@@ -307,7 +323,7 @@ jobs:
     steps:
       - name: Cache
         id: cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2.1.1
         with:
           key: "${{ needs.install_architect.outputs.cache_key }}"
           path: /opt/bin
