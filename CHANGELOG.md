@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Removed the `--release` and `--release-branch` version from `kubectl-gs template nodepool` command.
+
 ## [0.12.0] - 2020-11-13
 
 ### Removed
