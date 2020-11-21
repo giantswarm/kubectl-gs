@@ -61,7 +61,7 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 			connectorID = customerConnectorID
 		}
 	}
-	authURL := fmt.Sprintf("%s&connector_id=%s", auther.GetAuthURL(), connectorID)
+	authURL := auther.GetAuthURL(connectorID)
 	{
 		// Open the authorization url in the user's browser, which will eventually
 		// redirect the user to the local web server we'll create next.

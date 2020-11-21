@@ -2,6 +2,7 @@ package oidc
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	gooidc "github.com/coreos/go-oidc"
@@ -69,8 +70,15 @@ func New(ctx context.Context, c Config) (*Authenticator, error) {
 	return a, nil
 }
 
-func (a *Authenticator) GetAuthURL() string {
-	return a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)
+func (a *Authenticator) GetAuthURL(connectorID string) string {
+
+	authURL := a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)
+
+	// connector_id is specific to dex (https://github.com/dexidp/dex) parameter.
+	// It allows user directly select connector to use in authentication flow.
+	authURLWithConnectorID := fmt.Sprintf("%s&connector_id=%s", authURL, connectorID)
+
+	return authURLWithConnectorID
 }
 
 func (a *Authenticator) RenewToken(ctx context.Context, refreshToken string) (idToken string, rToken string, err error) {
