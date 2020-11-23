@@ -29,6 +29,9 @@ const (
 	authCallbackURL  = "http://localhost"
 	authCallbackPort = 8085
 	authCallbackPath = "/oauth/callback"
+
+	customerConnectorID   = "customer"
+	giantswarmConnectorID = "giantswarm"
 )
 
 var (
@@ -36,7 +39,7 @@ var (
 )
 
 // handleAuth executes the OIDC authentication against an installation's authentication provider.
-func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation) (oidc.UserInfo, error) {
+func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
 	oidcConfig := oidc.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
@@ -49,7 +52,16 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 		return oidc.UserInfo{}, microerror.Mask(err)
 	}
 
-	authURL := auther.GetAuthURL()
+	// select dex connector_id based on clusterAdmin value
+	var connectorID string
+	{
+		if clusterAdmin {
+			connectorID = giantswarmConnectorID
+		} else {
+			connectorID = customerConnectorID
+		}
+	}
+	authURL := auther.GetAuthURL(connectorID)
 	{
 		// Open the authorization url in the user's browser, which will eventually
 		// redirect the user to the local web server we'll create next.
