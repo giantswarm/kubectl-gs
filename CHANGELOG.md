@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add `cluster-admin` flag to `login` command, which allows full access for GiantSwarm staff.
+- Add `cluster-admin` flag to `login` command, which allows full access for Giant Swarm staff.
 
 ## [0.13.0] - 2020-11-20
 
