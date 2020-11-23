@@ -45,6 +45,9 @@ func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
 			res.Labels[label.Organization],
 			getAzureClusterDescription(res),
 		},
+		Object: runtime.RawExtension{
+			Object: res,
+		},
 	}
 }
 
