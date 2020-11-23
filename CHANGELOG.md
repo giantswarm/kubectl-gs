@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add `cluster-admin` flag to `login` command, which allows full access for Giant Swarm staff.
+- Print namespace when using the `get clusters` command with the `--all-namespaces` flag.
 
 ## [0.13.0] - 2020-11-20
 
@@ -190,7 +191,7 @@ No changes
 This release supports rendering for CRs:
 
 - Tenant cluster control plane:
-  - `Cluster` (API version `cluster.x-k8s.io/v1alpha2`) 
+  - `Cluster` (API version `cluster.x-k8s.io/v1alpha2`)
   - `AWSCluster` (API version `infrastructure.giantswarm.io/v1alpha2`)
 - Node pool:
   - `MachineDeployment` (API version `cluster.x-k8s.io/v1alpha2`)
