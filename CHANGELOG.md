@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.14.0] - 2020-11-24
+
 ### Added
 
 - Add `cluster-admin` flag to `login` command, which allows full access for Giant Swarm staff.
@@ -204,7 +206,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.10.0...v0.11.0
