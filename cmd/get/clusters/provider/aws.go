@@ -44,6 +44,9 @@ func getAWSClusterRow(res *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
 			res.Labels[label.Organization],
 			res.Spec.Cluster.Description,
 		},
+		Object: runtime.RawExtension{
+			Object: res,
+		},
 	}
 }
 
