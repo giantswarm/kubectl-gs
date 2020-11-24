@@ -11,7 +11,6 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
-	"github.com/giantswarm/kubectl-gs/pkg/release"
 )
 
 const (
@@ -24,14 +23,13 @@ const (
 	flagDomain       = "domain"
 
 	// Common.
-	flagClusterID     = "cluster-id"
-	flagMasterAZ      = "master-az"
-	flagName          = "name"
-	flagOutput        = "output"
-	flagOwner         = "owner"
-	flagRelease       = "release"
-	flagLabel         = "label"
-	flagReleaseBranch = "release-branch"
+	flagClusterID = "cluster-id"
+	flagMasterAZ  = "master-az"
+	flagName      = "name"
+	flagOutput    = "output"
+	flagOwner     = "owner"
+	flagRelease   = "release"
+	flagLabel     = "label"
 )
 
 type flag struct {
@@ -44,14 +42,13 @@ type flag struct {
 	Domain       string
 
 	// Common.
-	ClusterID     string
-	MasterAZ      []string
-	Name          string
-	Output        string
-	Owner         string
-	Release       string
-	Label         []string
-	ReleaseBranch string
+	ClusterID string
+	MasterAZ  []string
+	Name      string
+	Output    string
+	Owner     string
+	Release   string
+	Label     []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -71,7 +68,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Tenant cluster label.")
-	cmd.Flags().StringVar(&f.ReleaseBranch, flagReleaseBranch, "master", "Release branch to use.")
 }
 
 func (f *flag) Validate() error {
@@ -141,27 +137,9 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	{
-		// Validate release version.
-		if f.Release == "" {
-			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
-		}
-
-		var r *release.Release
-		{
-			c := release.Config{
-				Provider: f.Provider,
-				Branch:   f.ReleaseBranch,
-			}
-			r, err = release.New(c)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		if !r.Validate(f.Release) {
-			return microerror.Maskf(invalidFlagError, "--%s must be a valid release", flagRelease)
-		}
+	// Validate release version.
+	if f.Release == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
 	_, err = clusterlabels.Parse(f.Label)

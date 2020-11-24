@@ -15,17 +15,16 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	crsConfig := v1alpha2.ClusterCRsConfig{
-		ClusterID:         config.ClusterID,
-		Credential:        config.Credential,
-		Domain:            config.Domain,
-		ExternalSNAT:      config.ExternalSNAT,
-		MasterAZ:          config.MasterAZ,
-		Description:       config.Description,
-		PodsCIDR:          config.PodsCIDR,
-		Owner:             config.Owner,
-		ReleaseComponents: config.ReleaseComponents,
-		ReleaseVersion:    config.ReleaseVersion,
-		Labels:            config.Labels,
+		ClusterID:      config.ClusterID,
+		Credential:     config.Credential,
+		Domain:         config.Domain,
+		ExternalSNAT:   config.ExternalSNAT,
+		MasterAZ:       config.MasterAZ,
+		Description:    config.Description,
+		PodsCIDR:       config.PodsCIDR,
+		Owner:          config.Owner,
+		ReleaseVersion: config.ReleaseVersion,
+		Labels:         config.Labels,
 	}
 
 	crs, err := v1alpha2.NewClusterCRs(crsConfig)
