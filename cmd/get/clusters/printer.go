@@ -27,7 +27,9 @@ func (r *runner) printOutput(resource runtime.Object) error {
 			resource = provider.GetAzureTable(resource)
 		}
 
-		printOptions := printers.PrintOptions{}
+		printOptions := printers.PrintOptions{
+			WithNamespace: r.flag.AllNamespaces,
+		}
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputName(r.flag.print.OutputFormat):
