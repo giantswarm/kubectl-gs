@@ -11,7 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add `cluster-admin` flag to `login` command, which allows full access for Giant Swarm staff.
+- Add `--cluster-admin` flag to `login` command, which allows full access for Giant Swarm staff.
 - Print namespace when using the `get clusters` command with the `--all-namespaces` flag.
 
 ### Removed
