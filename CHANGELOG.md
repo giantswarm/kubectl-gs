@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for fetching installation information using non-standard Giant Swarm API URLs.
+
 ## [0.14.0] - 2020-11-24
 
 ### Added
@@ -16,7 +20,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Removed
 
-- Remove client-side validation of the GS `release` when creating a `Cluster`'s template. 
+- Remove client-side validation of the GS `release` when creating a `Cluster`'s template.
 
 
 ## [0.13.0] - 2020-11-20
