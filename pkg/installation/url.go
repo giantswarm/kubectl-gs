@@ -66,8 +66,8 @@ func getBasePath(u string) (string, error) {
 	}
 }
 
-func getGiantSwarmApiUrl(basePath string) string {
-	return fmt.Sprintf("https://%s.%s", apiUrlPrefix, basePath)
+func getGiantSwarmApiUrls(basePath string) []string {
+	return []string{fmt.Sprintf("https://%s.%s", apiUrlPrefix, basePath)}
 }
 
 func getK8sApiUrl(basePath string) string {

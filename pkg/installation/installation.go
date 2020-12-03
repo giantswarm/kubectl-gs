@@ -21,11 +21,11 @@ func New(fromUrl string) (*Installation, error) {
 	}
 
 	k8sApiUrl := getK8sApiUrl(basePath)
-	apiUrl := getGiantSwarmApiUrl(basePath)
+	apiUrls := getGiantSwarmApiUrls(basePath)
 	authUrl := getAuthUrl(basePath)
 
 	client := http.DefaultClient
-	installationInfo, err := getInstallationInfo(client, apiUrl)
+	installationInfo, err := getInstallationInfo(client, apiUrls[0])
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
