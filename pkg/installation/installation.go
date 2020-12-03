@@ -24,10 +24,24 @@ func New(fromUrl string) (*Installation, error) {
 	apiUrls := getGiantSwarmApiUrls(basePath)
 	authUrl := getAuthUrl(basePath)
 
-	client := http.DefaultClient
-	installationInfo, err := getInstallationInfo(client, apiUrls[0])
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var installationInfo installationInfo
+	{
+		client := http.DefaultClient
+		for _, apiUrl := range apiUrls {
+			installationInfo, err = getInstallationInfo(client, apiUrl)
+			if IsCannotGetInstallationInfo(err) {
+				continue
+			} else if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			break
+		}
+
+		// None of the urls was correct. Let's throw an error.
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	i := &Installation{
