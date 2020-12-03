@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Removed the `--credential` flag, now it is managed by admission controller.
+
 ## [0.14.0] - 2020-11-24
 
 ### Added

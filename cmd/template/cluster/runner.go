@@ -60,7 +60,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config = provider.ClusterCRsConfig{
 			FileName:       clusterCRFileName,
 			ClusterID:      r.flag.ClusterID,
-			Credential:     r.flag.Credential,
 			ExternalSNAT:   r.flag.ExternalSNAT,
 			Domain:         r.flag.Domain,
 			MasterAZ:       r.flag.MasterAZ,

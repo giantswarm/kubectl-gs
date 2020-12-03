@@ -12,7 +12,6 @@ type ClusterCRsConfig struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
-	Credential   string
 
 	// Common.
 	FileName       string
