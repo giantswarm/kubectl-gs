@@ -13,13 +13,13 @@ func IsCannotParseCertificate(err error) bool {
 	return microerror.Cause(err) == cannotParseCertificateError
 }
 
-var cannotGetInstallationInfo = &microerror.Error{
-	Kind: "cannotGetInstallationInfo",
+var cannotGetInstallationInfoError = &microerror.Error{
+	Kind: "cannotGetInstallationInfoError",
 }
 
-// IsCannotGetInstallationInfo asserts cannotGetInstallationInfo.
+// IsCannotGetInstallationInfo asserts cannotGetInstallationInfoError.
 func IsCannotGetInstallationInfo(err error) bool {
-	return microerror.Cause(err) == cannotGetInstallationInfo
+	return microerror.Cause(err) == cannotGetInstallationInfoError
 }
 
 var unknownUrlTypeError = &microerror.Error{

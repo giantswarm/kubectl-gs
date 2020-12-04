@@ -3,6 +3,7 @@ package installation
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 )
 
@@ -70,12 +71,15 @@ func Test_getBasePath(t *testing.T) {
 	}
 }
 
-func Test_getGiantSwarmApiUrl(t *testing.T) {
+func Test_getGiantSwarmApiUrls(t *testing.T) {
 	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
-	expectedResult := "https://api.g8s.test.eu-west-1.aws.coolio.com"
+	expectedResult := []string{
+		"https://api.g8s.test.eu-west-1.aws.coolio.com",
+		"https://gs-api.g8s.test.eu-west-1.aws.coolio.com",
+	}
 
-	if result := getGiantSwarmApiUrl(basePath); result != expectedResult {
-		t.Fatalf("url not expected, got: %s", result)
+	if result := getGiantSwarmApiUrls(basePath); len(cmp.Diff(result, expectedResult)) > 0 {
+		t.Fatalf("urls not expected, got: %s", result)
 	}
 }
 
