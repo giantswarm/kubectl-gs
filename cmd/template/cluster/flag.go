@@ -19,7 +19,6 @@ const (
 	// AWS only.
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
-	flagCredential   = "credential"
 	flagDomain       = "domain"
 
 	// Common.
@@ -38,7 +37,6 @@ type flag struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
-	Credential   string
 	Domain       string
 
 	// Common.
@@ -57,7 +55,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// AWS only.
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
-	cmd.Flags().StringVar(&f.Credential, flagCredential, "credential-default", "Cloud provider credentials used to spin up the cluster.")
 	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 
 	// Common.
