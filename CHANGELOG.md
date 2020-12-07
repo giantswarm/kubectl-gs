@@ -9,8 +9,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [0.15.0] - 2020-12-07
 
-- Removed the `--credential` flag, now it is managed by admission controller.
+### Added
+
 - Add support for fetching installation information using non-standard Giant Swarm API URLs.
+
+### Removed
+
+- Removed the `--credential` flag, now it is managed by admission controller.
 
 ## [0.14.0] - 2020-11-24
 
