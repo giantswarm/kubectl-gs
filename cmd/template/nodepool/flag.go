@@ -65,6 +65,7 @@ type flag struct {
 	Owner                string
 
 	// Deprecated
+	// Can be removed in a future version around March 2021 or later.
 	NodexMin int
 	NodexMax int
 }
@@ -91,10 +92,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
 
+	// This can be removed in a future version around March 2021 or later.
 	cmd.Flags().IntVar(&f.NodexMax, flagNodexMax, 0, "")
 	cmd.Flags().IntVar(&f.NodexMin, flagNodexMin, 0, "")
-	cmd.Flags().MarkDeprecated(flagNodexMax, "please use --nodes-max.")
-	cmd.Flags().MarkDeprecated(flagNodexMin, "please use --nodes-min.")
+	_ = cmd.Flags().MarkDeprecated(flagNodexMax, "please use --nodes-max.")
+	_ = cmd.Flags().MarkDeprecated(flagNodexMin, "please use --nodes-min.")
 }
 
 func (f *flag) Validate() error {
