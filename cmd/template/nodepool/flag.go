@@ -95,8 +95,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// This can be removed in a future version around March 2021 or later.
 	cmd.Flags().IntVar(&f.NodexMax, flagNodexMax, 0, "")
 	cmd.Flags().IntVar(&f.NodexMin, flagNodexMin, 0, "")
-	_ = cmd.Flags().MarkDeprecated(flagNodexMax, "please use --nodes-max.")
-	_ = cmd.Flags().MarkDeprecated(flagNodexMin, "please use --nodes-min.")
+	_ = cmd.Flags().MarkDeprecated(flagNodexMax, "")
+	_ = cmd.Flags().MarkDeprecated(flagNodexMin, "")
 }
 
 func (f *flag) Validate() error {
@@ -126,6 +126,13 @@ func (f *flag) Validate() error {
 	}
 
 	{
+		if f.NodexMin > 0 {
+			return microerror.Maskf(invalidFlagError, "please use --nodes-min instead of --nodex-min")
+		}
+		if f.NodexMax > 0 {
+			return microerror.Maskf(invalidFlagError, "please use --nodes-max instead of --nodex-max")
+		}
+
 		// Validate scaling.
 		if f.NodesMax < 1 {
 			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMax)
