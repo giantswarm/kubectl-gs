@@ -1,7 +1,7 @@
 package provider
 
 import (
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v2/pkg/apis/infrastructure/v1alpha2"
+	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -43,6 +43,9 @@ func getAWSClusterRow(res *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
 			res.Labels[label.ReleaseVersion],
 			res.Labels[label.Organization],
 			res.Spec.Cluster.Description,
+		},
+		Object: runtime.RawExtension{
+			Object: res,
 		},
 	}
 }

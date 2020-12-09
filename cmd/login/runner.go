@@ -163,7 +163,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Control Plane API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
-	authResult, err := handleAuth(ctx, r.stdout, i)
+	authResult, err := handleAuth(ctx, r.stdout, i, r.flag.ClusterAdmin)
 	if err != nil {
 		return microerror.Mask(err)
 	}

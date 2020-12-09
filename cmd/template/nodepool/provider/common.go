@@ -1,9 +1,9 @@
 package provider
 
 import (
-	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -29,7 +29,6 @@ type NodePoolCRsConfig struct {
 	NodesMax          int
 	NodesMin          int
 	Owner             string
-	Region            string
 	ReleaseComponents map[string]string
 	ReleaseVersion    string
 	Namespace         string
@@ -47,10 +46,8 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterID,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
-				label.ClusterOperatorVersion:  config.ReleaseComponents["cluster-operator"],
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Owner,
-				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 			Annotations: map[string]string{
 				annotation.MachinePoolName: config.Description,
@@ -83,7 +80,6 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterID,
-				label.ReleaseVersion:          config.ReleaseVersion,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
 			},
 		},

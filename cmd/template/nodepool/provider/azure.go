@@ -8,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,10 +33,6 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
 
 		machinePoolCR := newCAPIV1Alpha3MachinePoolCR(config, infrastructureRef)
-		{
-			// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-			machinePoolCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
-		}
 		machinePoolCRYaml, err = yaml.Marshal(machinePoolCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -80,14 +76,11 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterID,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
-				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Owner,
-				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
-			Location: config.Region,
 			Template: expcapzv1alpha3.AzureMachineTemplate{
 				SSHPublicKey: "",
 				VMSize:       config.VMSize,

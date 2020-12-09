@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,10 +36,6 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
 
 		clusterCR := newCAPIV1Alpha3ClusterCR(config, infrastructureRef)
-		{
-			// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-			clusterCR.GetLabels()[label.AzureOperatorVersion] = config.ReleaseComponents["azure-operator"]
-		}
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -81,7 +77,6 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			Name:      config.ClusterID,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 				label.Cluster:                 config.ClusterID,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
 				label.Organization:            config.Owner,
@@ -89,7 +84,6 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			},
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
-			Location:      config.Region,
 			ResourceGroup: config.ClusterID,
 		},
 	}
@@ -98,6 +92,11 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 }
 
 func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
+	var failureDomain *string
+	if len(config.MasterAZ) > 0 {
+		failureDomain = &config.MasterAZ[0]
+	}
+
 	machine := &capzv1alpha3.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachine",
@@ -107,7 +106,6 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 			Name:      fmt.Sprintf("%s-master-%d", config.ClusterID, 0),
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.AzureOperatorVersion:                config.ReleaseComponents["azure-operator"],
 				label.Cluster:                             config.ClusterID,
 				capiv1alpha3.ClusterLabelName:             config.ClusterID,
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
@@ -117,7 +115,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 		},
 		Spec: capzv1alpha3.AzureMachineSpec{
 			VMSize:        defaultMasterVMSize,
-			FailureDomain: &config.MasterAZ[0],
+			FailureDomain: failureDomain,
 			Image: &capzv1alpha3.Image{
 				Marketplace: &capzv1alpha3.AzureMarketplaceImage{
 					Publisher: "kinvolk",
@@ -133,7 +131,6 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 					StorageAccountType: "Premium_LRS",
 				},
 			},
-			Location:     config.Region,
 			SSHPublicKey: "",
 		},
 	}

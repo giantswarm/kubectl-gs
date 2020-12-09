@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -12,20 +12,17 @@ type ClusterCRsConfig struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
-	Credential   string
 
 	// Common.
-	FileName          string
-	ClusterID         string
-	Domain            string
-	MasterAZ          []string
-	Description       string
-	Owner             string
-	Region            string
-	ReleaseComponents map[string]string
-	ReleaseVersion    string
-	Labels            map[string]string
-	Namespace         string
+	FileName       string
+	ClusterID      string
+	Domain         string
+	MasterAZ       []string
+	Description    string
+	Owner          string
+	ReleaseVersion string
+	Labels         map[string]string
+	Namespace      string
 }
 
 func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
@@ -38,7 +35,6 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 			Name:      config.ClusterID,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.ClusterOperatorVersion:  config.ReleaseComponents["cluster-operator"],
 				label.Cluster:                 config.ClusterID,
 				capiv1alpha3.ClusterLabelName: config.ClusterID,
 				label.Organization:            config.Owner,
