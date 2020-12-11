@@ -105,7 +105,8 @@ func (f *flag) Validate() error {
 			}
 		}
 	}
-	if f.Name == "" {
+	// Validate name for non-aws clusters.
+	if f.Provider != key.ProviderAWS && f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
 	}
 	if f.PodsCIDR != "" {
