@@ -134,8 +134,8 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate release version.
-	if f.Release == "" {
+	// Validate release version for non-aws clusters.
+	if f.Provider != key.ProviderAWS && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

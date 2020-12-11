@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Allow for empty `--release` flag in AWS since it is defaulted in the admission controller.
+
 ## [0.16.0] - 2020-12-09
 
 - In the `template nodepool` command, the flags `--nodex-min` and `--nodex-max` have been renamed to `--nodes-min` and `--nodes-max`.
