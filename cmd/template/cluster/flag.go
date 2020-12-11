@@ -121,7 +121,7 @@ func (f *flag) Validate() error {
 		// Validate Master AZs.
 		switch f.Provider {
 		case key.ProviderAWS:
-			if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
+			if len(f.MasterAZ) != 0 && len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagMasterAZ)
 			}
 			if !unique.StringsAreUnique(f.MasterAZ) {
