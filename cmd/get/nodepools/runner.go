@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
@@ -24,7 +24,7 @@ type runner struct {
 	fs     afero.Fs
 
 	provider string
-	service  cluster.Interface
+	service  nodepool.Interface
 
 	stdout io.Writer
 	stderr io.Writer
@@ -66,7 +66,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var resource runtime.Object
 	{
-		options := cluster.GetOptions{
+		options := nodepool.GetOptions{
 			Provider: r.provider,
 		}
 		{
@@ -85,9 +85,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		resource, err = r.service.Get(ctx, options)
-		if cluster.IsNotFound(err) {
+		if nodepool.IsNotFound(err) {
 			return microerror.Maskf(notFoundError, fmt.Sprintf("A node pool with ID '%s' cannot be found.\n", options.ID))
-		} else if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
+		} else if nodepool.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 
 			return nil
@@ -114,10 +114,10 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 		return microerror.Mask(err)
 	}
 
-	serviceConfig := cluster.Config{
+	serviceConfig := nodepool.Config{
 		Client: client,
 	}
-	r.service, err = cluster.New(serviceConfig)
+	r.service, err = nodepool.New(serviceConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
