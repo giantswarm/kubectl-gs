@@ -16,7 +16,6 @@ type ClusterCRsConfig struct {
 	// Common.
 	FileName       string
 	ClusterID      string
-	Domain         string
 	MasterAZ       []string
 	Description    string
 	Owner          string

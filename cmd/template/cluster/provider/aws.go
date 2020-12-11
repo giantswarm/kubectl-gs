@@ -16,7 +16,6 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 
 	crsConfig := v1alpha2.ClusterCRsConfig{
 		ClusterID:      config.ClusterID,
-		Domain:         config.Domain,
 		ExternalSNAT:   config.ExternalSNAT,
 		MasterAZ:       config.MasterAZ,
 		Description:    config.Description,
