@@ -71,7 +71,7 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&f.Provider, flagProvider, key.ProviderAWS, "Installation infrastructure provider.")
+	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWSInstanceType, flagAWSInstanceType, "m5.xlarge", "EC2 instance type to use for workers, e. g. 'm5.2xlarge'.")
