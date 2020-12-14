@@ -61,7 +61,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			FileName:       clusterCRFileName,
 			ClusterID:      r.flag.ClusterID,
 			ExternalSNAT:   r.flag.ExternalSNAT,
-			Domain:         r.flag.Domain,
 			MasterAZ:       r.flag.MasterAZ,
 			Description:    r.flag.Name,
 			Owner:          r.flag.Owner,
