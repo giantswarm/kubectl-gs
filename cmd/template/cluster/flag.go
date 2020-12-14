@@ -19,7 +19,6 @@ const (
 	// AWS only.
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
-	flagDomain       = "domain"
 
 	// Common.
 	flagClusterID = "cluster-id"
@@ -37,7 +36,6 @@ type flag struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
-	Domain       string
 
 	// Common.
 	ClusterID string
@@ -55,7 +53,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// AWS only.
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
-	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
@@ -91,19 +88,6 @@ func (f *flag) Validate() error {
 		}
 
 		return nil
-	}
-	{
-		// Validate domain.
-		switch f.Provider {
-		case key.ProviderAWS:
-			if f.Domain == "" {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDomain)
-			}
-		case key.ProviderAzure:
-			if f.Domain != "" {
-				return microerror.Maskf(invalidFlagError, "--%s is not supported for provider 'azure'", flagDomain)
-			}
-		}
 	}
 	if f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
