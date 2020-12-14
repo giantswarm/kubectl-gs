@@ -18,7 +18,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Removed
 
 - Removed the `--domain` flag since it is managed by admission controller.
-
+- Removed defaulting of the `--provider` flag for `template cluster` and `template nodepool` commands.
 
 ## [0.16.0] - 2020-12-09
 
