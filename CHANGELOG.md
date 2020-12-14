@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Allow for empty `--name` flag in AWS since it is defaulted in the admission controller.
+
 ### Removed
 
 - Removed the `--domain` flag since it is managed by admission controller.
