@@ -140,16 +140,8 @@ func (f *flag) Validate() error {
 		if f.NodesMin < 1 {
 			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMin)
 		}
-
-		switch f.Provider {
-		case key.ProviderAWS:
-			if f.NodesMin > f.NodesMax {
-				return microerror.Maskf(invalidFlagError, "--%s must be <= --%s on AWS", flagNodesMin, flagNodesMax)
-			}
-		case key.ProviderAzure:
-			if f.NodesMin != f.NodesMax {
-				return microerror.Maskf(invalidFlagError, "--%s must be equal to --%s on Azure", flagNodesMin, flagNodesMax)
-			}
+		if f.NodesMin > f.NodesMax {
+			return microerror.Maskf(invalidFlagError, "--%s must be <= --%s", flagNodesMin, flagNodesMax)
 		}
 	}
 
