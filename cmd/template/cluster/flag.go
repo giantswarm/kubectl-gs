@@ -19,7 +19,6 @@ const (
 	// AWS only.
 	flagExternalSNAT = "external-snat"
 	flagPodsCIDR     = "pods-cidr"
-	flagDomain       = "domain"
 
 	// Common.
 	flagClusterID = "cluster-id"
@@ -37,7 +36,6 @@ type flag struct {
 	// AWS only.
 	ExternalSNAT bool
 	PodsCIDR     string
-	Domain       string
 
 	// Common.
 	ClusterID string
@@ -50,12 +48,11 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&f.Provider, flagProvider, key.ProviderAWS, "Installation infrastructure provider.")
+	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
-	cmd.Flags().StringVar(&f.Domain, flagDomain, "", "Installation base domain.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
@@ -92,20 +89,8 @@ func (f *flag) Validate() error {
 
 		return nil
 	}
-	{
-		// Validate domain.
-		switch f.Provider {
-		case key.ProviderAWS:
-			if f.Domain == "" {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDomain)
-			}
-		case key.ProviderAzure:
-			if f.Domain != "" {
-				return microerror.Maskf(invalidFlagError, "--%s is not supported for provider 'azure'", flagDomain)
-			}
-		}
-	}
-	if f.Name == "" {
+	// Validate name for non-aws clusters.
+	if f.Provider != key.ProviderAWS && f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
 	}
 	if f.PodsCIDR != "" {
@@ -121,7 +106,7 @@ func (f *flag) Validate() error {
 		// Validate Master AZs.
 		switch f.Provider {
 		case key.ProviderAWS:
-			if len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
+			if len(f.MasterAZ) != 0 && len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagMasterAZ)
 			}
 			if !unique.StringsAreUnique(f.MasterAZ) {
@@ -134,8 +119,8 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate release version.
-	if f.Release == "" {
+	// Validate release version for non-aws clusters.
+	if f.Provider != key.ProviderAWS && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

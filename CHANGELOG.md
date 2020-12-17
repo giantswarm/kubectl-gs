@@ -7,6 +7,21 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [0.18.0] - 2020-12-14
+
+## [0.17.0] - 2020-12-14
+
+### Changed
+
+- Allow for empty `--release` flag in AWS since it is defaulted in the admission controller.
+- Allow for empty `--master-az` flag in AWS since it is defaulted in the admission controller.
+- Allow for empty `--name` flag in AWS since it is defaulted in the admission controller.
+
+### Removed
+
+- Removed the `--domain` flag since it is managed by admission controller.
+- Removed defaulting of the `--provider` flag for `template cluster` and `template nodepool` commands.
+
 ## [0.16.0] - 2020-12-09
 
 - In the `template nodepool` command, the flags `--nodex-min` and `--nodex-max` have been renamed to `--nodes-min` and `--nodes-max`.
@@ -220,7 +235,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.17.0...v0.18.0
+[0.17.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.13.0...v0.14.0
