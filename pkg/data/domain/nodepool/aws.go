@@ -6,26 +6,16 @@ import (
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAWS(ctx context.Context, namespace string) (runtime.Object, error) {
+func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]Nodepool, error) {
 	var err error
 
 	options := &runtimeClient.ListOptions{
 		Namespace: namespace,
-	}
-
-	machineDeployments := &capiv1alpha2.MachineDeploymentList{}
-	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, machineDeployments, options)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		} else if len(machineDeployments.Items) == 0 {
-			return nil, microerror.Mask(noResourcesError)
-		}
 	}
 
 	var awsMDs map[string]*infrastructurev1alpha2.AWSMachineDeployment
@@ -45,55 +35,70 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (runtime.Obje
 		}
 	}
 
-	var mdCollection runtime.Object
+	machineDeployments := &capiv1alpha2.MachineDeploymentList{}
 	{
-		var mds []runtime.Object
-		for _, cr := range machineDeployments.Items {
-			r := cr
-
-			if awsMD, exists := awsMDs[cr.GetName()]; exists {
-				md := []runtime.Object{
-					&r,
-					awsMD,
-				}
-				mds = append(mds, toV1List(md))
-			}
+		err = s.client.K8sClient.CtrlClient().List(ctx, machineDeployments, options)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		} else if len(machineDeployments.Items) == 0 {
+			return nil, microerror.Mask(noResourcesError)
 		}
-
-		mdCollection = toV1List(mds)
 	}
 
-	return mdCollection, nil
+	var npCollection []Nodepool
+	{
+		for _, cr := range machineDeployments.Items {
+			o := cr
+
+			if awsMD, exists := awsMDs[cr.GetName()]; exists {
+				cr.TypeMeta = metav1.TypeMeta{
+					APIVersion: "cluster.x-k8s.io/v1alpha2",
+					Kind:       "MachineDeployment",
+				}
+				awsMD.TypeMeta = infrastructurev1alpha2.NewAWSMachineDeploymentTypeMeta()
+
+				np := Nodepool{
+					MachineDeployment:    &o,
+					AWSMachineDeployment: awsMD,
+				}
+				npCollection = append(npCollection, np)
+			}
+		}
+	}
+
+	return npCollection, nil
 }
 
-func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
+func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Nodepool, error) {
 	var err error
+	var np Nodepool
 
 	objKey := runtimeClient.ObjectKey{
 		Name:      id,
 		Namespace: namespace,
 	}
 
-	// The CAPI cluster has the labels. It can be used for filtering.
-	cluster := &capiv1alpha2.Cluster{}
+	np.MachineDeployment = &capiv1alpha2.MachineDeployment{}
 	{
-		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, cluster)
+		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, np.MachineDeployment)
 		if errors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
+			return Nodepool{}, microerror.Mask(notFoundError)
 		} else if err != nil {
-			return nil, microerror.Mask(err)
+			return Nodepool{}, microerror.Mask(err)
 		}
 	}
 
-	awsCluster := &infrastructurev1alpha2.AWSCluster{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, awsCluster)
-	if errors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
+	np.AWSMachineDeployment = &infrastructurev1alpha2.AWSMachineDeployment{}
+	{
+		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, np.AWSMachineDeployment)
+		if errors.IsNotFound(err) {
+			return Nodepool{}, microerror.Mask(notFoundError)
+		} else if err != nil {
+			return Nodepool{}, microerror.Mask(err)
+		}
+
+		np.AWSMachineDeployment.TypeMeta = infrastructurev1alpha2.NewAWSMachineDeploymentTypeMeta()
 	}
 
-	awsCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
-
-	return awsCluster, nil
+	return np, nil
 }

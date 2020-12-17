@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
@@ -64,7 +63,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var resource runtime.Object
+	var npCollection nodepool.NodepoolCollection
 	{
 		options := nodepool.GetOptions{
 			Provider: r.provider,
@@ -84,7 +83,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 		}
 
-		resource, err = r.service.Get(ctx, options)
+		npCollection, err = r.service.Get(ctx, options)
 		if nodepool.IsNotFound(err) {
 			return microerror.Maskf(notFoundError, fmt.Sprintf("A node pool with ID '%s' cannot be found.\n", options.ID))
 		} else if nodepool.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
@@ -96,7 +95,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	err = r.printOutput(resource)
+	err = r.printOutput(npCollection)
 	if err != nil {
 		return microerror.Mask(err)
 	}

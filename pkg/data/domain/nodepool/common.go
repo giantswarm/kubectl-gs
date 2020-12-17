@@ -4,45 +4,72 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	v1 "k8s.io/api/core/v1"
 )
 
-func (s *Service) Get(ctx context.Context, options GetOptions) (runtime.Object, error) {
-	var err error
+func (s *Service) Get(ctx context.Context, options GetOptions) (NodepoolCollection, error) {
+	var npCollection NodepoolCollection
 
-	var resource runtime.Object
-	if options.ID != "" {
-		resource, err = s.getById(ctx, options.Provider, options.ID, options.Namespace)
+	if len(options.ID) > 0 {
+		np, err := s.getById(ctx, options.Provider, options.ID, options.Namespace)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return NodepoolCollection{}, microerror.Mask(err)
 		}
+
+		npCollection.Items = append(npCollection.Items, np)
 	} else {
-		resource, err = s.getAll(ctx, options.Provider, options.Namespace)
+		npList, err := s.getAll(ctx, options.Provider, options.Namespace)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return NodepoolCollection{}, microerror.Mask(err)
 		}
+
+		npCollection.Items = npList
 	}
 
-	return resource, nil
+	return npCollection, nil
 }
 
-func (s *Service) getById(ctx context.Context, provider, id, namespace string) (runtime.Object, error) {
+func (s *Service) getById(ctx context.Context, provider, id, namespace string) (Nodepool, error) {
 	var err error
 
-	var resource runtime.Object
+	var np Nodepool
 	{
 		switch provider {
 		case key.ProviderAWS:
-			resource, err = s.getByIdAWS(ctx, id, namespace)
+			np, err = s.getByIdAWS(ctx, id, namespace)
+			if err != nil {
+				return Nodepool{}, microerror.Mask(err)
+			}
+
+		case key.ProviderAzure:
+			np, err = s.getByIdAzure(ctx, id, namespace)
+			if err != nil {
+				return Nodepool{}, microerror.Mask(err)
+			}
+
+		default:
+			return Nodepool{}, microerror.Mask(invalidProviderError)
+		}
+	}
+
+	return np, nil
+}
+
+func (s *Service) getAll(ctx context.Context, provider, namespace string) ([]Nodepool, error) {
+	var err error
+
+	var npCollection []Nodepool
+	{
+		switch provider {
+		case key.ProviderAWS:
+			npCollection, err = s.getAllAWS(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderAzure:
-			resource, err = s.getByIdAzure(ctx, id, namespace)
+			npCollection, err = s.getAllAzure(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -52,44 +79,5 @@ func (s *Service) getById(ctx context.Context, provider, id, namespace string) (
 		}
 	}
 
-	return resource, nil
-}
-
-func (s *Service) getAll(ctx context.Context, provider, namespace string) (runtime.Object, error) {
-	var err error
-
-	var clusterList runtime.Object
-	{
-		switch provider {
-		case key.ProviderAWS:
-			clusterList, err = s.getAllAWS(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderAzure:
-			clusterList, err = s.getAllAzure(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		default:
-			return nil, microerror.Mask(invalidProviderError)
-		}
-	}
-
-	return clusterList, nil
-}
-
-func toV1List(objects []runtime.Object) runtime.Object {
-	raw := []runtime.RawExtension{}
-	for _, o := range objects {
-		raw = append(raw, runtime.RawExtension{Object: o})
-	}
-
-	list := &v1.List{
-		Items: raw,
-	}
-
-	return list
+	return npCollection, nil
 }

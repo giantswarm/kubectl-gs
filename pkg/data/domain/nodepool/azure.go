@@ -9,7 +9,7 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alpha3.ClusterList, error) {
+func (s *Service) getAllAzure(ctx context.Context, namespace string) ([]Nodepool, error) {
 	var err error
 
 	options := &runtimeClient.ListOptions{
@@ -31,10 +31,10 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alp
 		clusterList.Kind = "List"
 	}
 
-	return clusterList, nil
+	return nil, nil
 }
 
-func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capiv1alpha3.Cluster, error) {
+func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (Nodepool, error) {
 	var (
 		err    error
 		objKey runtimeClient.ObjectKey
@@ -47,9 +47,9 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capi
 	cluster := &capiv1alpha3.Cluster{}
 	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, cluster)
 	if errors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
+		return Nodepool{}, microerror.Mask(notFoundError)
 	} else if err != nil {
-		return nil, microerror.Mask(err)
+		return Nodepool{}, microerror.Mask(err)
 	}
 
 	{
@@ -57,5 +57,5 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capi
 		cluster.Kind = "Cluster"
 	}
 
-	return cluster, nil
+	return Nodepool{}, nil
 }

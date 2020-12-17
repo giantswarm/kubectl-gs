@@ -9,20 +9,20 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd/get/nodepools/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
-func (r *runner) printOutput(resource runtime.Object) error {
-	var (
-		err     error
-		printer printers.ResourcePrinter
-	)
+func (r *runner) printOutput(npCollection nodepool.NodepoolCollection) error {
+	var err error
+	var printer printers.ResourcePrinter
+	var resource runtime.Object
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
 		switch r.provider {
 		case key.ProviderAWS:
-			resource = provider.GetAWSTable(resource)
+			resource = provider.GetAWSTable(npCollection)
 		case key.ProviderAzure:
 			resource = provider.GetAzureTable(resource)
 		}
