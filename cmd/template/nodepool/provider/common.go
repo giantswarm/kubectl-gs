@@ -55,7 +55,7 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
 			ClusterName:    config.ClusterID,
-			Replicas:       toInt32Ptr(int32(config.NodesMax)),
+			Replicas:       toInt32Ptr(int32(config.NodesMin)),
 			FailureDomains: config.AvailabilityZones,
 			Template: capiv1alpha3.MachineTemplateSpec{
 				Spec: capiv1alpha3.MachineSpec{
