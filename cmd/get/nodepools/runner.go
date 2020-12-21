@@ -63,16 +63,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	var id string
+	{
+		if len(args) > 0 {
+			id = strings.ToLower(args[0])
+		}
+	}
+
 	var npCollection nodepool.NodepoolCollection
 	{
 		options := nodepool.GetOptions{
 			Provider: r.provider,
+			ID:       id,
 		}
 		{
-			if len(args) > 0 {
-				options.ID = strings.ToLower(args[0])
-			}
-
 			if r.flag.AllNamespaces {
 				options.Namespace = metav1.NamespaceAll
 			} else {
@@ -95,7 +99,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	err = r.printOutput(npCollection)
+	options := PrintOptions{
+		ID: id,
+	}
+	err = r.printOutput(npCollection, options)
 	if err != nil {
 		return microerror.Mask(err)
 	}

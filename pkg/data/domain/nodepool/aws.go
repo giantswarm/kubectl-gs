@@ -86,6 +86,11 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Nodepoo
 		} else if err != nil {
 			return Nodepool{}, microerror.Mask(err)
 		}
+
+		np.MachineDeployment.TypeMeta = metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha2",
+			Kind:       "MachineDeployment",
+		}
 	}
 
 	np.AWSMachineDeployment = &infrastructurev1alpha2.AWSMachineDeployment{}

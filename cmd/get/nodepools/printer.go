@@ -13,7 +13,11 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
-func (r *runner) printOutput(npCollection nodepool.NodepoolCollection) error {
+type PrintOptions struct {
+	ID string
+}
+
+func (r *runner) printOutput(npCollection nodepool.NodepoolCollection, options PrintOptions) error {
 	var err error
 	var printer printers.ResourcePrinter
 	var resource runtime.Object
@@ -33,7 +37,7 @@ func (r *runner) printOutput(npCollection nodepool.NodepoolCollection) error {
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputName(r.flag.print.OutputFormat):
-		resource = npCollection.List()
+		resource = r.getResourceFromCollection(npCollection, options)
 		err = output.PrintResourceNames(r.stdout, resource)
 		if err != nil {
 			return microerror.Mask(err)
@@ -42,7 +46,7 @@ func (r *runner) printOutput(npCollection nodepool.NodepoolCollection) error {
 		return nil
 
 	default:
-		resource = npCollection.List()
+		resource = r.getResourceFromCollection(npCollection, options)
 		printer, err = r.flag.print.ToPrinter()
 		if err != nil {
 			return microerror.Mask(err)
@@ -61,4 +65,12 @@ func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "No node pools found.\n")
 	fmt.Fprintf(r.stdout, "To create a node pool, please check\n\n")
 	fmt.Fprintf(r.stdout, "  kgs template nodepool --help\n")
+}
+
+func (r *runner) getResourceFromCollection(collection nodepool.NodepoolCollection, options PrintOptions) runtime.Object {
+	if len(options.ID) > 0 && len(collection.Items) > 0 {
+		return collection.Items[0].Object()
+	}
+
+	return collection.List()
 }
