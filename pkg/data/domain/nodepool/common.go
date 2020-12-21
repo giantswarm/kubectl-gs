@@ -8,58 +8,54 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func (s *Service) Get(ctx context.Context, options GetOptions) (NodepoolCollection, error) {
-	var npCollection NodepoolCollection
-
-	if len(options.ID) > 0 {
-		np, err := s.getById(ctx, options.Provider, options.ID, options.Namespace)
-		if err != nil {
-			return NodepoolCollection{}, microerror.Mask(err)
-		}
-
-		npCollection.Items = append(npCollection.Items, np)
-	} else {
-		npList, err := s.getAll(ctx, options.Provider, options.Namespace)
-		if err != nil {
-			return NodepoolCollection{}, microerror.Mask(err)
-		}
-
-		npCollection.Items = npList
-	}
-
-	return npCollection, nil
-}
-
-func (s *Service) getById(ctx context.Context, provider, id, namespace string) (Nodepool, error) {
+func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
+	var resource Resource
 	var err error
 
-	var np Nodepool
+	if len(options.ID) > 0 {
+		resource, err = s.getById(ctx, options.Provider, options.ID, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else {
+		resource, err = s.getAll(ctx, options.Provider, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return resource, nil
+}
+
+func (s *Service) getById(ctx context.Context, provider, id, namespace string) (Resource, error) {
+	var err error
+
+	var np Resource
 	{
 		switch provider {
 		case key.ProviderAWS:
 			np, err = s.getByIdAWS(ctx, id, namespace)
 			if err != nil {
-				return Nodepool{}, microerror.Mask(err)
+				return nil, microerror.Mask(err)
 			}
-
 		case key.ProviderAzure:
 			np, err = s.getByIdAzure(ctx, id, namespace)
 			if err != nil {
-				return Nodepool{}, microerror.Mask(err)
+				return nil, microerror.Mask(err)
 			}
-
 		default:
-			return Nodepool{}, microerror.Mask(invalidProviderError)
+			return nil, microerror.Mask(invalidProviderError)
 		}
+
 	}
 
 	return np, nil
 }
 
-func (s *Service) getAll(ctx context.Context, provider, namespace string) ([]Nodepool, error) {
+func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resource, error) {
 	var err error
 
-	var npCollection []Nodepool
+	var npCollection Resource
 	{
 		switch provider {
 		case key.ProviderAWS:

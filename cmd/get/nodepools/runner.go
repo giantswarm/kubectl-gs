@@ -63,20 +63,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var id string
-	{
-		if len(args) > 0 {
-			id = strings.ToLower(args[0])
-		}
-	}
-
-	var npCollection nodepool.NodepoolCollection
+	var resource nodepool.Resource
 	{
 		options := nodepool.GetOptions{
 			Provider: r.provider,
-			ID:       id,
 		}
 		{
+			if len(args) > 0 {
+				options.ID = strings.ToLower(args[0])
+			}
+
 			if r.flag.AllNamespaces {
 				options.Namespace = metav1.NamespaceAll
 			} else {
@@ -87,7 +83,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 		}
 
-		npCollection, err = r.service.Get(ctx, options)
+		resource, err = r.service.Get(ctx, options)
 		if nodepool.IsNotFound(err) {
 			return microerror.Maskf(notFoundError, fmt.Sprintf("A node pool with ID '%s' cannot be found.\n", options.ID))
 		} else if nodepool.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
@@ -99,10 +95,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	options := PrintOptions{
-		ID: id,
-	}
-	err = r.printOutput(npCollection, options)
+	err = r.printOutput(resource)
 	if err != nil {
 		return microerror.Mask(err)
 	}

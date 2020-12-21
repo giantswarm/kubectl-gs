@@ -16,7 +16,11 @@ type GetOptions struct {
 }
 
 type Interface interface {
-	Get(context.Context, GetOptions) (NodepoolCollection, error)
+	Get(context.Context, GetOptions) (Resource, error)
+}
+
+type Resource interface {
+	Object() runtime.Object
 }
 
 type Nodepool struct {
@@ -32,11 +36,11 @@ func (n *Nodepool) Object() runtime.Object {
 	return nil
 }
 
-type NodepoolCollection struct {
+type Collection struct {
 	Items []Nodepool
 }
 
-func (nc *NodepoolCollection) List() *metav1.List {
+func (nc *Collection) Object() runtime.Object {
 	list := &metav1.List{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "List",

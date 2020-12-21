@@ -7,15 +7,20 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 )
 
-func GetAWSTable(npCollection nodepool.NodepoolCollection) *metav1.Table {
+func GetAWSTable(npResource nodepool.Resource) *metav1.Table {
 	table := &metav1.Table{}
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "ID", Type: "string"},
 	}
 
-	for _, nodePool := range npCollection.Items {
-		table.Rows = append(table.Rows, getAWSNodePoolRow(nodePool))
+	switch n := npResource.(type) {
+	case *nodepool.Nodepool:
+		table.Rows = append(table.Rows, getAWSNodePoolRow(*n))
+	case *nodepool.Collection:
+		for _, nodePool := range n.Items {
+			table.Rows = append(table.Rows, getAWSNodePoolRow(nodePool))
+		}
 	}
 
 	return table

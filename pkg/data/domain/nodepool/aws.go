@@ -11,7 +11,7 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]Nodepool, error) {
+func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, error) {
 	var err error
 
 	options := &runtimeClient.ListOptions{
@@ -45,7 +45,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]Nodepool, 
 		}
 	}
 
-	var npCollection []Nodepool
+	npCollection := &Collection{}
 	{
 		for _, cr := range machineDeployments.Items {
 			o := cr
@@ -61,7 +61,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]Nodepool, 
 					MachineDeployment:    &o,
 					AWSMachineDeployment: awsMD,
 				}
-				npCollection = append(npCollection, np)
+				npCollection.Items = append(npCollection.Items, np)
 			}
 		}
 	}
@@ -69,9 +69,9 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) ([]Nodepool, 
 	return npCollection, nil
 }
 
-func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Nodepool, error) {
+func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Resource, error) {
 	var err error
-	var np Nodepool
+	np := &Nodepool{}
 
 	objKey := runtimeClient.ObjectKey{
 		Name:      id,
@@ -82,9 +82,9 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Nodepoo
 	{
 		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, np.MachineDeployment)
 		if errors.IsNotFound(err) {
-			return Nodepool{}, microerror.Mask(notFoundError)
+			return nil, microerror.Mask(notFoundError)
 		} else if err != nil {
-			return Nodepool{}, microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 
 		np.MachineDeployment.TypeMeta = metav1.TypeMeta{
@@ -97,9 +97,9 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Nodepoo
 	{
 		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, np.AWSMachineDeployment)
 		if errors.IsNotFound(err) {
-			return Nodepool{}, microerror.Mask(notFoundError)
+			return nil, microerror.Mask(notFoundError)
 		} else if err != nil {
-			return Nodepool{}, microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 
 		np.AWSMachineDeployment.TypeMeta = infrastructurev1alpha2.NewAWSMachineDeploymentTypeMeta()
