@@ -7,6 +7,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/giantswarm/apiextensions/v2 v2.6.2 // indirect
 	github.com/giantswarm/apiextensions/v3 v3.6.0
 	github.com/giantswarm/app/v3 v3.0.0-20201104142815-217bc60dc14d
 	github.com/giantswarm/k8sclient/v5 v5.0.0
