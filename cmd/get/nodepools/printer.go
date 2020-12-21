@@ -33,6 +33,7 @@ func (r *runner) printOutput(npCollection nodepool.NodepoolCollection) error {
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputName(r.flag.print.OutputFormat):
+		resource = npCollection.List()
 		err = output.PrintResourceNames(r.stdout, resource)
 		if err != nil {
 			return microerror.Mask(err)
@@ -41,6 +42,7 @@ func (r *runner) printOutput(npCollection nodepool.NodepoolCollection) error {
 		return nil
 
 	default:
+		resource = npCollection.List()
 		printer, err = r.flag.print.ToPrinter()
 		if err != nil {
 			return microerror.Mask(err)
