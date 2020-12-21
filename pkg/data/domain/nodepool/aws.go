@@ -71,12 +71,13 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 
 func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Resource, error) {
 	var err error
-	np := &Nodepool{}
 
 	objKey := runtimeClient.ObjectKey{
 		Name:      id,
 		Namespace: namespace,
 	}
+
+	np := &Nodepool{}
 
 	np.MachineDeployment = &capiv1alpha2.MachineDeployment{}
 	{
