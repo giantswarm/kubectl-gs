@@ -8,6 +8,7 @@ import (
 	"k8s.io/cli-runtime/pkg/printers"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get/nodepools/provider"
+	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
@@ -26,9 +27,11 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
 		switch r.provider {
 		case key.ProviderAWS:
-			resource = provider.GetAWSTable(npResource)
+			capabilities := feature.New(feature.ProviderAWS)
+			resource = provider.GetAWSTable(npResource, capabilities)
 		case key.ProviderAzure:
-			resource = provider.GetAzureTable(npResource)
+			capabilities := feature.New(feature.ProviderAzure)
+			resource = provider.GetAzureTable(npResource, capabilities)
 		}
 
 		printOptions := printers.PrintOptions{

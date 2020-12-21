@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 )
 
-func GetAzureTable(npResource nodepool.Resource) *metav1.Table {
+func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "ID", Type: "string"},
@@ -24,7 +24,6 @@ func GetAzureTable(npResource nodepool.Resource) *metav1.Table {
 		},
 	}
 
-	capabilities := feature.New(feature.ProviderAzure)
 	switch n := npResource.(type) {
 	case *nodepool.Nodepool:
 		table.Rows = append(table.Rows, getAzureNodePoolRow(*n, capabilities))
