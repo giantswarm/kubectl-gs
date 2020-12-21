@@ -62,7 +62,7 @@ func getAWSNodePoolRow(
 
 func getAWSLatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
 	releaseVersion := key.ReleaseVersion(nodePool.MachineDeployment)
-	isSupported := capabilities.Supports(feature.Conditions, releaseVersion)
+	isSupported := capabilities.Supports(feature.NodePoolConditions, releaseVersion)
 	if !isSupported {
 		return naValue
 	}

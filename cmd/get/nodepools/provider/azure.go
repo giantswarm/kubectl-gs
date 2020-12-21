@@ -59,7 +59,7 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 
 func getAzureLatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
 	releaseVersion := key.ReleaseVersion(nodePool.MachinePool)
-	isSupported := capabilities.Supports(feature.Conditions, releaseVersion)
+	isSupported := capabilities.Supports(feature.NodePoolConditions, releaseVersion)
 	if !isSupported {
 		return naValue
 	}

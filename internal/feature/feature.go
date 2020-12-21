@@ -13,8 +13,8 @@ func New(provider string) *Service {
 	s := &Service{
 		provider: provider,
 		features: Map{
-			Autoscaling: autoscaling,
-			Conditions:  conditions,
+			Autoscaling:        autoscaling,
+			NodePoolConditions: nodePoolConditions,
 		},
 	}
 

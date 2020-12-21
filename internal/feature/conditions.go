@@ -1,10 +1,10 @@
 package feature
 
 const (
-	Conditions = "conditions"
+	NodePoolConditions = "nodepool-conditions"
 )
 
-var conditions = Feature{
+var nodePoolConditions = Feature{
 	ProviderAzure: Capability{
 		MinVersion: "13.0.0",
 	},
