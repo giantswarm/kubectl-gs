@@ -7,7 +7,6 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions/v2 v2.6.2 // indirect
 	github.com/giantswarm/apiextensions/v3 v3.6.0
 	github.com/giantswarm/app/v3 v3.0.0-20201104142815-217bc60dc14d
 	github.com/giantswarm/k8sclient/v5 v5.0.0
@@ -29,6 +28,7 @@ require (
 	k8s.io/apimachinery v0.18.9
 	k8s.io/cli-runtime v0.18.9
 	k8s.io/client-go v0.18.9
+	k8s.io/kube-openapi v0.0.0-20200410145947-bcb3869e6f29 // indirect
 	sigs.k8s.io/cluster-api v0.3.10
 	sigs.k8s.io/cluster-api-provider-azure v0.4.9
 	sigs.k8s.io/controller-runtime v0.6.3
