@@ -13,11 +13,11 @@ func ReleaseVersion(getter LabelsGetter) string {
 
 func MachinePoolName(getter AnnotationsGetter) string {
 	annotations := getter.GetAnnotations()
-	if annotations != nil && len(annotations[annotation.MachinePoolName]) > 0 {
-		return annotations[annotation.MachinePoolName]
+	if annotations == nil {
+		return ""
 	}
 
-	return ""
+	return annotations[annotation.MachinePoolName]
 }
 
 func MachinePoolScaling(getter AnnotationsGetter) (int, int) {
