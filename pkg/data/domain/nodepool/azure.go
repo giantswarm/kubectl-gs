@@ -5,7 +5,9 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -16,46 +18,99 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 		Namespace: namespace,
 	}
 
-	clusterList := &capiv1alpha3.ClusterList{}
+	var azureMPs map[string]*capzexpv1alpha3.AzureMachinePool
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, clusterList, options)
+		mpCollection := &capzexpv1alpha3.AzureMachinePoolList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, mpCollection, options)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(clusterList.Items) == 0 {
+		} else if len(mpCollection.Items) == 0 {
+			return nil, microerror.Mask(noResourcesError)
+		}
+
+		azureMPs = make(map[string]*capzexpv1alpha3.AzureMachinePool, len(mpCollection.Items))
+		for _, machineDeployment := range mpCollection.Items {
+			md := machineDeployment
+			azureMPs[machineDeployment.GetName()] = &md
+		}
+	}
+
+	machinePools := &capiexpv1alpha3.MachinePoolList{}
+	{
+		err = s.client.K8sClient.CtrlClient().List(ctx, machinePools, options)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		} else if len(machinePools.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
 		}
 	}
 
+	npCollection := &Collection{}
 	{
-		clusterList.APIVersion = "v1"
-		clusterList.Kind = "List"
+		for _, cr := range machinePools.Items {
+			o := cr
+
+			if azureMP, exists := azureMPs[cr.GetName()]; exists {
+				cr.TypeMeta = metav1.TypeMeta{
+					APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
+					Kind:       "MachinePool",
+				}
+				azureMP.TypeMeta = metav1.TypeMeta{
+					APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+					Kind:       "AzureMachinePool",
+				}
+
+				np := Nodepool{
+					MachinePool:      &o,
+					AzureMachinePool: azureMP,
+				}
+				npCollection.Items = append(npCollection.Items, np)
+			}
+		}
 	}
 
-	return nil, nil
+	return npCollection, nil
 }
 
 func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (Resource, error) {
-	var (
-		err    error
-		objKey runtimeClient.ObjectKey
-	)
+	var err error
 
-	objKey = runtimeClient.ObjectKey{
+	objKey := runtimeClient.ObjectKey{
 		Name:      id,
 		Namespace: namespace,
 	}
-	cluster := &capiv1alpha3.Cluster{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, cluster)
-	if errors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
 
+	np := &Nodepool{}
+
+	np.MachinePool = &capiexpv1alpha3.MachinePool{}
 	{
-		cluster.APIVersion = "v1alpha3"
-		cluster.Kind = "Cluster"
+		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, np.MachinePool)
+		if errors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		np.MachinePool.TypeMeta = metav1.TypeMeta{
+			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
+			Kind:       "MachinePool",
+		}
 	}
 
-	return nil, nil
+	np.AzureMachinePool = &capzexpv1alpha3.AzureMachinePool{}
+	{
+		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, np.AzureMachinePool)
+		if errors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		np.AzureMachinePool.TypeMeta = metav1.TypeMeta{
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+			Kind:       "AzureMachinePool",
+		}
+	}
+
+	return np, nil
 }

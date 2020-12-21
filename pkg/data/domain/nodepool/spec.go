@@ -6,7 +6,9 @@ import (
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
 type GetOptions struct {
@@ -25,12 +27,16 @@ type Resource interface {
 
 type Nodepool struct {
 	MachineDeployment    *capiv1alpha2.MachineDeployment
+	MachinePool          *capiexpv1alpha3.MachinePool
 	AWSMachineDeployment *infrastructurev1alpha2.AWSMachineDeployment
+	AzureMachinePool     *capzexpv1alpha3.AzureMachinePool
 }
 
 func (n *Nodepool) Object() runtime.Object {
 	if n.MachineDeployment != nil {
 		return n.MachineDeployment
+	} else if n.MachinePool != nil {
+		return n.MachinePool
 	}
 
 	return nil

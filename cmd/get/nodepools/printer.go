@@ -28,7 +28,7 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 		case key.ProviderAWS:
 			resource = provider.GetAWSTable(npResource)
 		case key.ProviderAzure:
-			resource = provider.GetAzureTable(resource)
+			resource = provider.GetAzureTable(npResource)
 		}
 
 		printOptions := printers.PrintOptions{
