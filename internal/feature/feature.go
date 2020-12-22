@@ -4,15 +4,16 @@ import (
 	"github.com/blang/semver"
 )
 
+// Service is used to compute different provider capabilities.
 type Service struct {
 	provider string
-	features Map
+	features map[string]Feature
 }
 
 func New(provider string) *Service {
 	s := &Service{
 		provider: provider,
-		features: Map{
+		features: map[string]Feature{
 			Autoscaling:        autoscaling,
 			NodePoolConditions: nodePoolConditions,
 		},
@@ -21,6 +22,7 @@ func New(provider string) *Service {
 	return s
 }
 
+// Supports checks if a certain feature is supported or not on a given release version.
 func (s *Service) Supports(featureName string, releaseVersion string) bool {
 	feature, exists := s.features[featureName]
 	if !exists {
