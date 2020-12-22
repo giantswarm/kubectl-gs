@@ -25,9 +25,12 @@ type Resource interface {
 	Object() runtime.Object
 }
 
+// Nodepool abstracts away provider-specific
+// node pool resources.
 type Nodepool struct {
-	MachineDeployment    *capiv1alpha2.MachineDeployment
-	MachinePool          *capiexpv1alpha3.MachinePool
+	MachineDeployment *capiv1alpha2.MachineDeployment
+	MachinePool       *capiexpv1alpha3.MachinePool
+
 	AWSMachineDeployment *infrastructurev1alpha2.AWSMachineDeployment
 	AzureMachinePool     *capzexpv1alpha3.AzureMachinePool
 }
@@ -42,6 +45,7 @@ func (n *Nodepool) Object() runtime.Object {
 	return nil
 }
 
+// Collection wraps a list of nodepools.
 type Collection struct {
 	Items []Nodepool
 }
