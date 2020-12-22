@@ -1,0 +1,2 @@
+ID      CREATED                         CONDITION   NODES MIN/MAX   NODES DESIRED   NODES READY   DESCRIPTION
+f930q   2021-01-02 15:04:32 +0000 UTC   n/a         3/3             3               1             test nodepool 4

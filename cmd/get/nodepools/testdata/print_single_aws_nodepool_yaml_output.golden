@@ -1,0 +1,20 @@
+apiVersion: cluster.x-k8s.io/v1alpha2
+kind: MachineDeployment
+metadata:
+  creationTimestamp: "2021-01-02T15:04:32Z"
+  labels:
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 11.0.0
+  name: f930q
+  namespace: default
+spec:
+  selector: {}
+  template:
+    metadata: {}
+    spec:
+      bootstrap: {}
+      infrastructureRef: {}
+      metadata: {}
+status:
+  readyReplicas: 1
+  replicas: 3
