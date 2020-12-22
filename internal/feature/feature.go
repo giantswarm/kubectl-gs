@@ -1,6 +1,8 @@
 package feature
 
 import (
+	"strings"
+
 	"github.com/blang/semver"
 )
 
@@ -34,6 +36,7 @@ func (s *Service) Supports(featureName string, releaseVersion string) bool {
 		return false
 	}
 
+	releaseVersion = strings.TrimPrefix(releaseVersion, "v")
 	inputVersion := semver.MustParse(releaseVersion)
 	featureMinVersion := semver.MustParse(capability.MinVersion)
 
