@@ -123,7 +123,7 @@ func Test_printOutput(t *testing.T) {
 			expectedGoldenFile: "print_single_aws_nodepool_name_output.golden",
 		},
 		{
-			name: "case 8: print list of Azure clusters, with table output",
+			name: "case 8: print list of Azure nodepools, with table output",
 			np: newNodePoolCollection(
 				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
 				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
@@ -134,10 +134,10 @@ func Test_printOutput(t *testing.T) {
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
-			expectedGoldenFile: "print_list_of_azure_clusters_table_output.golden",
+			expectedGoldenFile: "print_list_of_azure_nodepools_table_output.golden",
 		},
 		{
-			name: "case 9: print list of Azure clusters, with JSON output",
+			name: "case 9: print list of Azure nodepools, with JSON output",
 			np: newNodePoolCollection(
 				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
 				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
@@ -148,10 +148,10 @@ func Test_printOutput(t *testing.T) {
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeJSON,
-			expectedGoldenFile: "print_list_of_azure_clusters_json_output.golden",
+			expectedGoldenFile: "print_list_of_azure_nodepools_json_output.golden",
 		},
 		{
-			name: "case 10: print list of Azure clusters, with YAML output",
+			name: "case 10: print list of Azure nodepools, with YAML output",
 			np: newNodePoolCollection(
 				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
 				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
@@ -162,10 +162,10 @@ func Test_printOutput(t *testing.T) {
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeYAML,
-			expectedGoldenFile: "print_list_of_azure_clusters_yaml_output.golden",
+			expectedGoldenFile: "print_list_of_azure_nodepools_yaml_output.golden",
 		},
 		{
-			name: "case 11: print list of Azure clusters, with name output",
+			name: "case 11: print list of Azure nodepools, with name output",
 			np: newNodePoolCollection(
 				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
 				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
@@ -176,35 +176,35 @@ func Test_printOutput(t *testing.T) {
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeName,
-			expectedGoldenFile: "print_list_of_azure_clusters_name_output.golden",
+			expectedGoldenFile: "print_list_of_azure_nodepools_name_output.golden",
 		},
 		{
-			name:               "case 12: print single Azure cluster, with table output",
+			name:               "case 12: print single Azure nodepool, with table output",
 			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
-			expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
+			expectedGoldenFile: "print_single_azure_nodepool_table_output.golden",
 		},
 		{
-			name:               "case 13: print single Azure cluster, with JSON output",
+			name:               "case 13: print single Azure nodepool, with JSON output",
 			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeJSON,
-			expectedGoldenFile: "print_single_azure_cluster_json_output.golden",
+			expectedGoldenFile: "print_single_azure_nodepool_json_output.golden",
 		},
 		{
-			name:               "case 14: print single Azure cluster, with YAML output",
+			name:               "case 14: print single Azure nodepool, with YAML output",
 			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeYAML,
-			expectedGoldenFile: "print_single_azure_cluster_yaml_output.golden",
+			expectedGoldenFile: "print_single_azure_nodepool_yaml_output.golden",
 		},
 		{
-			name:               "case 15: print single Azure cluster, with name output",
+			name:               "case 15: print single Azure nodepool, with name output",
 			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 4", 3, 3, -1, -1),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeName,
-			expectedGoldenFile: "print_single_azure_cluster_name_output.golden",
+			expectedGoldenFile: "print_single_azure_nodepool_name_output.golden",
 		},
 	}
 
