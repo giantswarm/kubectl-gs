@@ -3,9 +3,11 @@ package nodepools
 import (
 	"bytes"
 	goflag "flag"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
@@ -16,7 +18,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")
@@ -117,90 +121,90 @@ func Test_printOutput(t *testing.T) {
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_aws_nodepool_name_output.golden",
 		},
-		// {
-		// 	name: "case 8: print list of Azure clusters, with table output",
-		// 	np: newNodePoolCollection(
-		// 		*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test nodepool 1", nil),
-		// 		*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test nodepool 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 		*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test nodepool 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
-		// 		*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", nil),
-		// 		*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test nodepool 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
-		// 		*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test nodepool 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeDefault,
-		// 	expectedGoldenFile: "print_list_of_azure_clusters_table_output.golden",
-		// },
-		// {
-		// 	name: "case 9: print list of Azure clusters, with JSON output",
-		// 	np: newNodePoolCollection(
-		// 		*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test nodepool 1", nil),
-		// 		*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test nodepool 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 		*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test nodepool 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
-		// 		*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", nil),
-		// 		*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test nodepool 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
-		// 		*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test nodepool 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeJSON,
-		// 	expectedGoldenFile: "print_list_of_azure_clusters_json_output.golden",
-		// },
-		// {
-		// 	name: "case 10: print list of Azure clusters, with YAML output",
-		// 	np: newNodePoolCollection(
-		// 		*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test nodepool 1", nil),
-		// 		*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test nodepool 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 		*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test nodepool 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
-		// 		*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", nil),
-		// 		*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test nodepool 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
-		// 		*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test nodepool 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeYAML,
-		// 	expectedGoldenFile: "print_list_of_azure_clusters_yaml_output.golden",
-		// },
-		// {
-		// 	name: "case 11: print list of Azure clusters, with name output",
-		// 	np: newNodePoolCollection(
-		// 		*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test nodepool 1", nil),
-		// 		*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test nodepool 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 		*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test nodepool 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
-		// 		*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", nil),
-		// 		*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test nodepool 5", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting}),
-		// 		*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test nodepool 6", []string{infrastructurev1alpha2.ClusterStatusConditionDeleting, infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeName,
-		// 	expectedGoldenFile: "print_list_of_azure_clusters_name_output.golden",
-		// },
-		// {
-		// 	name:               "case 12: print single Azure cluster, with table output",
-		// 	np:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeDefault,
-		// 	expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
-		// },
-		// {
-		// 	name:               "case 13: print single Azure cluster, with JSON output",
-		// 	np:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeJSON,
-		// 	expectedGoldenFile: "print_single_azure_cluster_json_output.golden",
-		// },
-		// {
-		// 	name:               "case 14: print single Azure cluster, with YAML output",
-		// 	np:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeYAML,
-		// 	expectedGoldenFile: "print_single_azure_cluster_yaml_output.golden",
-		// },
-		// {
-		// 	name:               "case 15: print single Azure cluster, with name output",
-		// 	np:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test nodepool 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
-		// 	provider:           key.ProviderAzure,
-		// 	outputType:         output.TypeName,
-		// 	expectedGoldenFile: "print_single_azure_cluster_name_output.golden",
-		// },
+		{
+			name: "case 8: print list of Azure clusters, with table output",
+			np: newNodePoolCollection(
+				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
+				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
+				*newAzureNodePool("asd29", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 3", 10, 10, 10, 10),
+				*newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+				*newAzureNodePool("9f012", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 5", 0, 3, 1, 1),
+				*newAzureNodePool("2f0as", "2021-01-02T15:04:32Z", "13.1.0", "test nodepool 6", 2, 5, -1, -1),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeDefault,
+			expectedGoldenFile: "print_list_of_azure_clusters_table_output.golden",
+		},
+		{
+			name: "case 9: print list of Azure clusters, with JSON output",
+			np: newNodePoolCollection(
+				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
+				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
+				*newAzureNodePool("asd29", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 3", 10, 10, 10, 10),
+				*newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+				*newAzureNodePool("9f012", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 5", 0, 3, 1, 1),
+				*newAzureNodePool("2f0as", "2021-01-02T15:04:32Z", "13.1.0", "test nodepool 6", 2, 5, -1, -1),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeJSON,
+			expectedGoldenFile: "print_list_of_azure_clusters_json_output.golden",
+		},
+		{
+			name: "case 10: print list of Azure clusters, with YAML output",
+			np: newNodePoolCollection(
+				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
+				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
+				*newAzureNodePool("asd29", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 3", 10, 10, 10, 10),
+				*newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+				*newAzureNodePool("9f012", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 5", 0, 3, 1, 1),
+				*newAzureNodePool("2f0as", "2021-01-02T15:04:32Z", "13.1.0", "test nodepool 6", 2, 5, -1, -1),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeYAML,
+			expectedGoldenFile: "print_list_of_azure_clusters_yaml_output.golden",
+		},
+		{
+			name: "case 11: print list of Azure clusters, with name output",
+			np: newNodePoolCollection(
+				*newAzureNodePool("1sad2", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 1", 1, 3, -1, -1),
+				*newAzureNodePool("2a03f", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 2", 3, 10, -1, -1),
+				*newAzureNodePool("asd29", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 3", 10, 10, 10, 10),
+				*newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+				*newAzureNodePool("9f012", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 5", 0, 3, 1, 1),
+				*newAzureNodePool("2f0as", "2021-01-02T15:04:32Z", "13.1.0", "test nodepool 6", 2, 5, -1, -1),
+			),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeName,
+			expectedGoldenFile: "print_list_of_azure_clusters_name_output.golden",
+		},
+		{
+			name:               "case 12: print single Azure cluster, with table output",
+			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeDefault,
+			expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
+		},
+		{
+			name:               "case 13: print single Azure cluster, with JSON output",
+			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeJSON,
+			expectedGoldenFile: "print_single_azure_cluster_json_output.golden",
+		},
+		{
+			name:               "case 14: print single Azure cluster, with YAML output",
+			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeYAML,
+			expectedGoldenFile: "print_single_azure_cluster_yaml_output.golden",
+		},
+		{
+			name:               "case 15: print single Azure cluster, with name output",
+			np:                 newAzureNodePool("f930q", "2021-01-02T15:04:32Z", "13.2.0", "test nodepool 4", 3, 3, -1, -1),
+			provider:           key.ProviderAzure,
+			outputType:         output.TypeName,
+			expectedGoldenFile: "print_single_azure_cluster_name_output.golden",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -248,7 +252,7 @@ func Test_printOutput(t *testing.T) {
 func newAWSMachineDeployment(id, created, release, description string, nodesMin, nodesMax int) *infrastructurev1alpha2.AWSMachineDeployment {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &infrastructurev1alpha2.AWSMachineDeployment{
+	n := &infrastructurev1alpha2.AWSMachineDeployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              id,
 			Namespace:         "default",
@@ -269,19 +273,19 @@ func newAWSMachineDeployment(id, created, release, description string, nodesMin,
 		},
 	}
 
-	c.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
+	n.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   infrastructurev1alpha2.SchemeGroupVersion.Group,
 		Version: infrastructurev1alpha2.SchemeGroupVersion.Version,
 		Kind:    infrastructurev1alpha2.NewAWSMachineDeploymentTypeMeta().Kind,
 	})
 
-	return c
+	return n
 }
 
 func newCAPIv1alpha2MachineDeployment(id, created, release string, nodesDesired, nodesReady int) *capiv1alpha2.MachineDeployment {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &capiv1alpha2.MachineDeployment{
+	n := &capiv1alpha2.MachineDeployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cluster.x-k8s.io/v1alpha2",
 			Kind:       "MachineDeployment",
@@ -301,7 +305,7 @@ func newCAPIv1alpha2MachineDeployment(id, created, release string, nodesDesired,
 		},
 	}
 
-	return c
+	return n
 }
 
 func newAWSNodePool(id, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
@@ -311,6 +315,71 @@ func newAWSNodePool(id, created, release, description string, nodesMin, nodesMax
 	np := &nodepool.Nodepool{
 		MachineDeployment:    md,
 		AWSMachineDeployment: awsMD,
+	}
+
+	return np
+}
+
+func newAzureMachinePool(id, created, release string) *capzexpv1alpha3.AzureMachinePool {
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+	n := &capzexpv1alpha3.AzureMachinePool{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+			Kind:       "AzureMachinePool",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "org-giantswarm",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+			Labels: map[string]string{
+				label.ReleaseVersion: release,
+				label.Organization:   "giantswarm",
+			},
+		},
+	}
+
+	return n
+}
+
+func newCAPIexpv1alpha3MachinePool(id, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexpv1alpha3.MachinePool {
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+	n := &capiexpv1alpha3.MachinePool{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
+			Kind:       "MachinePool",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "org-giantswarm",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+			Labels: map[string]string{
+				label.ReleaseVersion: release,
+				label.Organization:   "giantswarm",
+			},
+			Annotations: map[string]string{
+				annotation.NodePoolMinSize: fmt.Sprintf("%d", nodesMin),
+				annotation.NodePoolMaxSize: fmt.Sprintf("%d", nodesMax),
+				annotation.MachinePoolName: description,
+			},
+		},
+		Status: capiexpv1alpha3.MachinePoolStatus{
+			Replicas:      int32(nodesDesired),
+			ReadyReplicas: int32(nodesReady),
+		},
+	}
+
+	return n
+}
+
+func newAzureNodePool(id, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
+	azureMP := newAzureMachinePool(id, created, release)
+	mp := newCAPIexpv1alpha3MachinePool(id, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
+
+	np := &nodepool.Nodepool{
+		MachinePool:      mp,
+		AzureMachinePool: azureMP,
 	}
 
 	return np
