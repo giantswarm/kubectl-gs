@@ -9,11 +9,6 @@ import (
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/internal/label"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -21,6 +16,12 @@ import (
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")
