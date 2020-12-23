@@ -66,7 +66,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var resource nodepool.Resource
 	{
 		options := nodepool.GetOptions{
-			Provider: r.provider,
+			Provider:  r.provider,
+			ClusterID: r.flag.ClusterID,
 		}
 		{
 			if len(args) > 0 {

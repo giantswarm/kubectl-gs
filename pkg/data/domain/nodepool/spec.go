@@ -13,6 +13,7 @@ import (
 
 type GetOptions struct {
 	ID        string
+	ClusterID string
 	Provider  string
 	Namespace string
 }

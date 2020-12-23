@@ -4,6 +4,7 @@ import (
 	"context"
 
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,17 +12,19 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, error) {
+func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (Resource, error) {
 	var err error
 
-	options := &runtimeClient.ListOptions{
-		Namespace: namespace,
+	o := runtimeClient.MatchingLabels{
+		label.Cluster: clusterID,
 	}
+
+	inNamespace := runtimeClient.InNamespace(namespace)
 
 	var awsMDs map[string]*infrastructurev1alpha2.AWSMachineDeployment
 	{
 		mdCollection := &infrastructurev1alpha2.AWSMachineDeploymentList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, mdCollection, options)
+		err = s.client.K8sClient.CtrlClient().List(ctx, mdCollection, o, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(mdCollection.Items) == 0 {
@@ -37,7 +40,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 
 	machineDeployments := &capiv1alpha2.MachineDeploymentList{}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, machineDeployments, options)
+		err = s.client.K8sClient.CtrlClient().List(ctx, machineDeployments, o, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(machineDeployments.Items) == 0 {
@@ -69,7 +72,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 	return npCollection, nil
 }
 
-func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Resource, error) {
+func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID string) (Resource, error) {
 	var err error
 
 	objKey := runtimeClient.ObjectKey{

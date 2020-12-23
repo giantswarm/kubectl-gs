@@ -3,6 +3,7 @@ package nodepool
 import (
 	"context"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,17 +12,19 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, error) {
+func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) (Resource, error) {
 	var err error
 
-	options := &runtimeClient.ListOptions{
-		Namespace: namespace,
+	o := runtimeClient.MatchingLabels{
+		label.Cluster: clusterID,
 	}
+
+	inNamespace := runtimeClient.InNamespace(namespace)
 
 	var azureMPs map[string]*capzexpv1alpha3.AzureMachinePool
 	{
 		mpCollection := &capzexpv1alpha3.AzureMachinePoolList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, mpCollection, options)
+		err = s.client.K8sClient.CtrlClient().List(ctx, mpCollection, o, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(mpCollection.Items) == 0 {
@@ -37,7 +40,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 
 	machinePools := &capiexpv1alpha3.MachinePoolList{}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, machinePools, options)
+		err = s.client.K8sClient.CtrlClient().List(ctx, machinePools, o, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(machinePools.Items) == 0 {
@@ -72,7 +75,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 	return npCollection, nil
 }
 
-func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (Resource, error) {
+func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID string) (Resource, error) {
 	var err error
 
 	objKey := runtimeClient.ObjectKey{
