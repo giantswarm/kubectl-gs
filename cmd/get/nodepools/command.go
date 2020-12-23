@@ -24,6 +24,7 @@ const (
 Output columns:
 
 - ID: Unique identifier of the node pool.
+- CLUSTER ID: Unique identifier of the cluster that the node pool belongs to.
 - CREATED: Date and time of the node pool CR creation.
 - CONDITION: Latest condition reported for the node pool.
 - NODES MIN/MAX: Node pool autoscaler settings (if supported).

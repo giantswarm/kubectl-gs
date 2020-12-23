@@ -15,6 +15,7 @@ func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) 
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "ID", Type: "string"},
+			{Name: "Cluster ID", Type: "string"},
 			{Name: "Created", Type: "string", Format: "date-time"},
 			{Name: "Condition", Type: "string"},
 			{Name: "Nodes Min/Max", Type: "string"},
@@ -44,6 +45,7 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachinePool.GetName(),
+			key.ClusterID(nodePool.MachinePool),
 			nodePool.MachinePool.CreationTimestamp.UTC(),
 			getAzureLatestCondition(nodePool, capabilities),
 			getAzureAutoscaling(nodePool, capabilities),

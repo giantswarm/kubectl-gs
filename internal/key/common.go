@@ -11,6 +11,10 @@ func ReleaseVersion(getter LabelsGetter) string {
 	return getter.GetLabels()[label.ReleaseVersion]
 }
 
+func ClusterID(getter LabelsGetter) string {
+	return getter.GetLabels()[label.Cluster]
+}
+
 func MachinePoolName(getter AnnotationsGetter) string {
 	annotations := getter.GetAnnotations()
 	if annotations == nil {

@@ -15,6 +15,7 @@ func GetAWSTable(npResource nodepool.Resource, capabilities *feature.Service) *m
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "ID", Type: "string"},
+			{Name: "Cluster ID", Type: "string"},
 			{Name: "Created", Type: "string", Format: "date-time"},
 			{Name: "Condition", Type: "string"},
 			{Name: "Nodes Min/Max", Type: "string"},
@@ -47,6 +48,7 @@ func getAWSNodePoolRow(
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachineDeployment.GetName(),
+			key.ClusterID(nodePool.MachineDeployment),
 			nodePool.MachineDeployment.CreationTimestamp.UTC(),
 			getAWSLatestCondition(nodePool, capabilities),
 			getAWSAutoscaling(nodePool, capabilities),
