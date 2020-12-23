@@ -32,10 +32,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get nodepools",
 			storage: []runtime.Object{
-				newCAPIv1alpha2MachineDeployment("1sad2", "2021-01-02T15:04:32Z", "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha2MachineDeployment("f930q", "2021-01-02T15:04:32Z", "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "2021-01-02T15:04:32Z", "11.0.0", "test nodepool 4", 5, 8),
+				newCAPIv1alpha2MachineDeployment("1sad2", "s921a", "2021-01-02T15:04:32Z", "10.5.0", 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "2021-01-01T15:04:32Z", "10.5.0", "test nodepool 3", 1, 3),
+				newCAPIv1alpha2MachineDeployment("f930q", "s921a", "2021-01-02T15:04:32Z", "11.0.0", 6, 6),
+				newAWSMachineDeployment("f930q", "s921a", "2021-01-02T15:04:32Z", "11.0.0", "test nodepool 4", 5, 8),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools.golden",
@@ -49,10 +49,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get nodepool by id",
 			storage: []runtime.Object{
-				newCAPIv1alpha2MachineDeployment("1sad2", "2021-01-02T15:04:32Z", "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha2MachineDeployment("f930q", "2021-01-02T15:04:32Z", "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "2021-01-02T15:04:32Z", "11.0.0", "test nodepool 4", 5, 8),
+				newCAPIv1alpha2MachineDeployment("1sad2", "s921a", "2021-01-02T15:04:32Z", "10.5.0", 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "2021-01-01T15:04:32Z", "10.5.0", "test nodepool 3", 1, 3),
+				newCAPIv1alpha2MachineDeployment("f930q", "s921a", "2021-01-02T15:04:32Z", "11.0.0", 6, 6),
+				newAWSMachineDeployment("f930q", "s921a", "2021-01-02T15:04:32Z", "11.0.0", "test nodepool 4", 5, 8),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_nodepool_by_id.golden",
@@ -66,9 +66,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 4: get nodepool by id, with no infrastructure ref",
 			storage: []runtime.Object{
-				newCAPIv1alpha2MachineDeployment("1sad2", "2021-01-02T15:04:32Z", "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha2MachineDeployment("f930q", "2021-01-02T15:04:32Z", "11.0.0", 6, 6),
+				newCAPIv1alpha2MachineDeployment("1sad2", "s921a", "2021-01-02T15:04:32Z", "10.5.0", 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "2021-01-01T15:04:32Z", "10.5.0", "test nodepool 3", 1, 3),
+				newCAPIv1alpha2MachineDeployment("f930q", "s921a", "2021-01-02T15:04:32Z", "11.0.0", 6, 6),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,

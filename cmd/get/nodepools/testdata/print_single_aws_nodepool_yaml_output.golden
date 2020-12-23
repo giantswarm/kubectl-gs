@@ -3,6 +3,8 @@ kind: MachineDeployment
 metadata:
   creationTimestamp: "2021-01-02T15:04:32Z"
   labels:
+    giantswarm.io/cluster: s921a
+    giantswarm.io/machine-deployment: f930q
     giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 11.0.0
   name: f930q

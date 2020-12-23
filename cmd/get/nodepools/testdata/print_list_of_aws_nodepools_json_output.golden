@@ -11,6 +11,8 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
+                    "giantswarm.io/cluster": "s921a",
+                    "giantswarm.io/machine-deployment": "1sad2",
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": "12.0.0"
                 }
@@ -39,6 +41,8 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
+                    "giantswarm.io/cluster": "3a0d1",
+                    "giantswarm.io/machine-deployment": "2a03f",
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": "11.0.0"
                 }
@@ -67,6 +71,8 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
+                    "giantswarm.io/cluster": "s0a10",
+                    "giantswarm.io/machine-deployment": "asd29",
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": "10.5.0"
                 }
@@ -95,6 +101,8 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
+                    "giantswarm.io/cluster": "s921a",
+                    "giantswarm.io/machine-deployment": "f930q",
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": "11.0.0"
                 }
@@ -123,6 +131,8 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
+                    "giantswarm.io/cluster": "29sa0",
+                    "giantswarm.io/machine-deployment": "9f012",
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": "9.0.0"
                 }
@@ -151,6 +161,8 @@
                 "namespace": "default",
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
+                    "giantswarm.io/cluster": "s00sn",
+                    "giantswarm.io/machine-deployment": "2f0as",
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": "10.5.0"
                 }

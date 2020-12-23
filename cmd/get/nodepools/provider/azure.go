@@ -5,6 +5,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -45,7 +46,7 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachinePool.GetName(),
-			key.ClusterID(nodePool.MachinePool),
+			nodePool.MachinePool.Labels[capiv1alpha3.ClusterLabelName],
 			nodePool.MachinePool.CreationTimestamp.UTC(),
 			getAzureLatestCondition(nodePool, capabilities),
 			getAzureAutoscaling(nodePool, capabilities),
