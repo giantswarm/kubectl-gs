@@ -27,7 +27,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.NetworkPoolName, flagNetworkPoolName, "", "NetworkPool identifier.")
 	cmd.Flags().StringVar(&f.CIDRBlock, flagCIDRBlock, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
+	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 }
 
 func (f *flag) Validate() error {

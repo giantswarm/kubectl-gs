@@ -56,12 +56,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
-	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Tenant master availability zone.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "Tenant cluster name.")
+	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, []string{}, "Workload master node availability zone.")
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Workload cluster name.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
-	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Tenant cluster release.")
-	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Tenant cluster label.")
+	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
+	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 }
 
 func (f *flag) Validate() error {

@@ -84,13 +84,13 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
-	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Tenant cluster ID.")
+	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Workload cluster ID.")
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 0, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d on AWS, or %d on Azure)", maxNodesAWS, maxNodesAzure))
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 0, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d on AWS, or %d on Azure)", minNodesAWS, minNodesAzure))
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 0, "Number of availability zones to use. Default is 1 on AWS and 0 on Azure.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Tenant cluster owner organization.")
+	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 
 	// This can be removed in a future version around March 2021 or later.
 	cmd.Flags().IntVar(&f.NodexMax, flagNodexMax, 0, "")
