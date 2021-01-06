@@ -25,7 +25,7 @@ const (
 	// space characters (' '), and we trick it by using a
 	// NBSP character (NBSP) between the 2 words.
 	name        = "kubectl\u00a0gs"
-	description = `Your user-friendly kubectl plug-in for the Giant Swarm control plane.
+	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
 Get more information at https://github.com/giantswarm/kubectl-gs
 

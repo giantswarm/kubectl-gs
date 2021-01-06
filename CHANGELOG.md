@@ -58,7 +58,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Removed
 
-- Removed the `--region` flag from the `kubectl-gs template` commands. Region gets set automatically according to the control plane the cluster is created in.
+- Removed the `--region` flag from the `kubectl-gs template` commands. Region gets set automatically according to the installation the cluster is created in.
 
 ### Added
 
