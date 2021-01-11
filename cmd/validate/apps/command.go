@@ -45,7 +45,7 @@ Output columns:
 
   kubectl gs validate apps
 
-  # Narrow down by namespace to validate apps on a specific tenant cluster
+  # Narrow down by namespace to validate apps on a specific workload cluster
 
     kubectl gs validate apps \
       -n oby63
@@ -57,7 +57,7 @@ Output columns:
       -n oby63 \
       -o report
 
-  # Get a detailed validation report of a specific app across all tenant clusters
+  # Get a detailed validation report of a specific app across all workload clusters
   # the "app" label contains the name of the app in the App Catalog, so we can use --selector for that.
 
     kubectl gs validate apps \

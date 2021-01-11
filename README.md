@@ -21,7 +21,7 @@ Check the [installation docs](https://docs.giantswarm.io/reference/kubectl-gs/in
   - App catalogs
   - Apps
 - **SSO login**: with the `login` command you can quickly set up a `kubectl context` with
-  OIDC authentication for a Giant Swarm control plane.
+  OIDC authentication for a Giant Swarm management cluster.
 
 ## Documentation
 
