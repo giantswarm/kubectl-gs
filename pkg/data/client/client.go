@@ -14,8 +14,10 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/client-go/rest"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
 type Config struct {
@@ -42,6 +44,8 @@ func New(config Config) (*Client, error) {
 			SchemeBuilder: k8sclient.SchemeBuilder{
 				capiv1alpha2.AddToScheme,
 				capiv1alpha3.AddToScheme,
+				capiexpv1alpha3.AddToScheme,
+				capzexpv1alpha3.AddToScheme,
 				applicationv1alpha1.AddToScheme,
 				backupv1alpha1.AddToScheme,
 				corev1alpha1.AddToScheme,
