@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.19.0] - 2021-01-12
+
 ### Added
 
 - Add support for node pool autoscaling on Azure.
@@ -239,7 +241,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.19.0...HEAD
+[1.19.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.18.0...v1.19.0
 [0.18.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.15.0...v0.16.0
