@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for node pool autoscaling on Azure.
+
 ## [0.18.0] - 2020-12-14
 
 ## [0.17.0] - 2020-12-14

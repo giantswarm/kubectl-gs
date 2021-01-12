@@ -35,11 +35,8 @@ const (
 )
 
 const (
-	minNodesAWS = 3
-	maxNodesAWS = 10
-
-	minNodesAzure = 3
-	maxNodesAzure = 3
+	minNodes = 3
+	maxNodes = 10
 )
 
 type flag struct {
@@ -86,8 +83,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Workload cluster ID.")
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
-	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, 0, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d on AWS, or %d on Azure)", maxNodesAWS, maxNodesAzure))
-	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, 0, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d on AWS, or %d on Azure)", minNodesAWS, minNodesAzure))
+	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, maxNodes, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d)", maxNodes))
+	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, minNodes, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d)", minNodes))
 	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 0, "Number of availability zones to use. Default is 1 on AWS and 0 on Azure.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
@@ -140,16 +137,8 @@ func (f *flag) Validate() error {
 		if f.NodesMin < 1 {
 			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMin)
 		}
-
-		switch f.Provider {
-		case key.ProviderAWS:
-			if f.NodesMin > f.NodesMax {
-				return microerror.Maskf(invalidFlagError, "--%s must be <= --%s on AWS", flagNodesMin, flagNodesMax)
-			}
-		case key.ProviderAzure:
-			if f.NodesMin != f.NodesMax {
-				return microerror.Maskf(invalidFlagError, "--%s must be equal to --%s on Azure", flagNodesMin, flagNodesMax)
-			}
+		if f.NodesMin > f.NodesMax {
+			return microerror.Maskf(invalidFlagError, "--%s must be <= --%s", flagNodesMin, flagNodesMax)
 		}
 	}
 

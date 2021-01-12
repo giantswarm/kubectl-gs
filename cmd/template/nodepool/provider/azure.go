@@ -3,11 +3,13 @@ package provider
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"text/template"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -33,6 +35,10 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
 
 		machinePoolCR := newCAPIV1Alpha3MachinePoolCR(config, infrastructureRef)
+		{
+			machinePoolCR.GetAnnotations()[annotation.NodePoolMinSize] = strconv.Itoa(config.NodesMin)
+			machinePoolCR.GetAnnotations()[annotation.NodePoolMaxSize] = strconv.Itoa(config.NodesMax)
+		}
 		machinePoolCRYaml, err = yaml.Marshal(machinePoolCR)
 		if err != nil {
 			return microerror.Mask(err)
