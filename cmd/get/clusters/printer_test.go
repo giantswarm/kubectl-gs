@@ -340,7 +340,7 @@ func Test_printNoResourcesOutput(t *testing.T) {
 	expected := `No clusters found.
 To create a cluster, please check
 
-  kgs create cluster --help
+  kgs template cluster --help
 `
 	out := new(bytes.Buffer)
 	runner := &runner{

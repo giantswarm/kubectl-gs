@@ -58,5 +58,5 @@ func (r *runner) printOutput(resource runtime.Object) error {
 func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "No clusters found.\n")
 	fmt.Fprintf(r.stdout, "To create a cluster, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kgs create cluster --help\n")
+	fmt.Fprintf(r.stdout, "  kgs template cluster --help\n")
 }
