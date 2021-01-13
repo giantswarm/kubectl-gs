@@ -7,7 +7,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Added
+### Removed
 
 - Remove the mention of the unexistent 'create cluster' command.
 
