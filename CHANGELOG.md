@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for getting nodepools.
+
 ## [1.19.0] - 2021-01-12
 
 ### Added
