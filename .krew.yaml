@@ -7,8 +7,8 @@ spec:
   homepage: https://github.com/giantswarm/kubectl-gs
   shortDescription: Handle custom resources with Giant Swarm
   description: |
-    Simplifies creating clusters and node pools via Giant Swarm Kubernetes
-    control planes, as well as installing app catalogs and apps.
+    Simplifies creating clusters and node pools via Giant Swarm
+    management clusters, as well as installing app catalogs and apps.
   platforms:
   - selector:
       matchLabels:

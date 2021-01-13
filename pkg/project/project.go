@@ -1,11 +1,11 @@
 package project
 
 var (
-	description = "Kubectl plugin to render CRs for Giant Swarm tenant clusters."
+	description = "Kubectl plugin to render CRs for Giant Swarm workload clusters."
 	gitSHA      = "n/a"
 	name        = "kubectl-gs"
 	source      = "https://github.com/giantswarm/kubectl-gs"
-	version     = "0.18.1-dev"
+	version     = "1.19.1-dev"
 )
 
 func Description() string {
