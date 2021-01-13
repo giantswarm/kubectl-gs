@@ -1,4 +1,4 @@
 No clusters found.
 To create a cluster, please check
 
-  kgs create cluster --help
+  kgs template cluster --help

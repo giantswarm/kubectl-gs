@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove the mention of the unexistent 'create cluster' command.
+
 ## [1.19.0] - 2021-01-12
 
 ### Added
