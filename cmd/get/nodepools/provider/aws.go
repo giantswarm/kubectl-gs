@@ -2,6 +2,8 @@ package provider
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,6 +31,19 @@ func GetAWSTable(npResource nodepool.Resource, capabilities *feature.Service) *m
 	case *nodepool.Nodepool:
 		table.Rows = append(table.Rows, getAWSNodePoolRow(*n, capabilities))
 	case *nodepool.Collection:
+		// Sort ASC by Cluster ID.
+		sort.Slice(n.Items, func(i, j int) bool {
+			var iClusterID, jClusterID string
+
+			if n.Items[i].MachineDeployment != nil && n.Items[i].MachineDeployment.Labels != nil {
+				iClusterID = key.ClusterID(n.Items[i].MachineDeployment)
+			}
+			if n.Items[j].MachineDeployment != nil && n.Items[j].MachineDeployment.Labels != nil {
+				jClusterID = key.ClusterID(n.Items[j].MachineDeployment)
+			}
+
+			return strings.Compare(iClusterID, jClusterID) > 0
+		})
 		for _, nodePool := range n.Items {
 			table.Rows = append(table.Rows, getAWSNodePoolRow(nodePool, capabilities))
 		}

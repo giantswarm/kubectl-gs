@@ -1,7 +1,7 @@
 ID      CLUSTER ID   CREATED                         CONDITION   NODES MIN/MAX   NODES DESIRED   NODES READY   DESCRIPTION
 1sad2   s921a        2021-01-02 15:04:32 +0000 UTC   n/a         n/a             1               3             test nodepool 1
-2a03f   3a0d1        2021-01-02 15:04:32 +0000 UTC   n/a         n/a             3               10            test nodepool 2
-asd29   s0a10        2021-01-02 15:04:32 +0000 UTC   n/a         10/10           10              10            test nodepool 3
 f930q   s921a        2021-01-02 15:04:32 +0000 UTC   n/a         n/a             3               3             test nodepool 4
-9f012   29sa0        2021-01-02 15:04:32 +0000 UTC   n/a         1/1             0               3             test nodepool 5
+asd29   s0a10        2021-01-02 15:04:32 +0000 UTC   n/a         10/10           10              10            test nodepool 3
 2f0as   s00sn        2021-01-02 15:04:32 +0000 UTC   n/a         n/a             2               5             test nodepool 6
+2a03f   3a0d1        2021-01-02 15:04:32 +0000 UTC   n/a         n/a             3               10            test nodepool 2
+9f012   29sa0        2021-01-02 15:04:32 +0000 UTC   n/a         1/1             0               3             test nodepool 5
