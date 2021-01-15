@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	name  = "nodepools <nodepool-id>"
+	name  = "nodepools [nodepool-id]"
 	alias = "nodepool"
 
 	shortDescription = "Display one or many node pools"
