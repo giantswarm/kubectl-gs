@@ -36,7 +36,7 @@ Output columns:
   kgs get nodepools
 
   # Get one specific nodepool by its ID
-  kgs get nodepools 3f01a
+  kgs get nodepool 3f01a
 
   Note: 'kgs' is an alias for 'kubectl gs'.`
 )
