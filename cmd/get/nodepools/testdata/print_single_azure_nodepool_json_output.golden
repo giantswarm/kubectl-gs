@@ -1,0 +1,37 @@
+{
+    "kind": "MachinePool",
+    "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+    "metadata": {
+        "name": "f930q",
+        "namespace": "org-giantswarm",
+        "creationTimestamp": "2021-01-02T15:04:32Z",
+        "labels": {
+            "cluster.x-k8s.io/cluster-name": "s921a",
+            "giantswarm.io/machine-pool": "f930q",
+            "giantswarm.io/organization": "giantswarm",
+            "release.giantswarm.io/version": "13.0.0"
+        },
+        "annotations": {
+            "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
+            "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "-1",
+            "machine-pool.giantswarm.io/name": "test nodepool 4"
+        }
+    },
+    "spec": {
+        "clusterName": "",
+        "template": {
+            "metadata": {},
+            "spec": {
+                "clusterName": "",
+                "bootstrap": {},
+                "infrastructureRef": {}
+            }
+        }
+    },
+    "status": {
+        "replicas": 3,
+        "readyReplicas": 3,
+        "bootstrapReady": false,
+        "infrastructureReady": false
+    }
+}
