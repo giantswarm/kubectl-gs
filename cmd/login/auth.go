@@ -282,17 +282,17 @@ func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
 	var err error
 
-	switch {
-	case len(provider.Config[ClientID]) == 0:
-		fallthrough
-	case len(provider.Config[ClientSecret]) == 0:
-		fallthrough
-	case len(provider.Config[IDToken]) == 0:
-		fallthrough
-	case len(provider.Config[Issuer]) == 0:
-		fallthrough
-	case len(provider.Config[RefreshToken]) == 0:
-		return microerror.Mask(invalidAuthConfigurationError)
+	keys := []string{
+		ClientID,
+		ClientSecret,
+		IDToken,
+		Issuer,
+		RefreshToken,
+	}
+	for _, k := range keys {
+		if len(provider.Config[k]) == 0 {
+			return microerror.Mask(invalidAuthConfigurationError)
+		}
 	}
 
 	if _, err = url.ParseRequestURI(provider.Config[Issuer]); err != nil {
