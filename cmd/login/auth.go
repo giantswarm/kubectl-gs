@@ -153,11 +153,11 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		initialUser.AuthProvider = &clientcmdapi.AuthProviderConfig{
 			Name: "oidc",
 			Config: map[string]string{
-				"client-id":      authResult.ClientID,
-				"client-secret":  authResult.ClientSecret,
-				"id-token":       authResult.IDToken,
-				"idp-issuer-url": i.AuthURL,
-				"refresh-token":  authResult.RefreshToken,
+				ClientID:     authResult.ClientID,
+				ClientSecret: authResult.ClientSecret,
+				IDToken:      authResult.IDToken,
+				Issuer:       i.AuthURL,
+				RefreshToken: authResult.RefreshToken,
 			},
 		}
 
