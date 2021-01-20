@@ -235,9 +235,9 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	var auther *oidc.Authenticator
 	{
 		oidcConfig := oidc.Config{
-			Issuer:       authProvider.Config["idp-issuer-url"],
-			ClientID:     authProvider.Config["client-id"],
-			ClientSecret: authProvider.Config["client-secret"],
+			Issuer:       authProvider.Config[Issuer],
+			ClientID:     authProvider.Config[ClientID],
+			ClientSecret: authProvider.Config[ClientSecret],
 		}
 		auther, err = oidc.New(ctx, oidcConfig)
 		if err != nil {
@@ -247,12 +247,12 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 
 	// Renew authentication token.
 	{
-		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config["refresh-token"])
+		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config[RefreshToken])
 		if err != nil {
 			return microerror.Mask(tokenRenewalFailedError)
 		}
-		authProvider.Config["refresh-token"] = rToken
-		authProvider.Config["id-token"] = idToken
+		authProvider.Config[RefreshToken] = rToken
+		authProvider.Config[IDToken] = idToken
 	}
 
 	config.CurrentContext = newContextName
