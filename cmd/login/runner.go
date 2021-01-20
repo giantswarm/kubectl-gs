@@ -84,8 +84,23 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) tryToReuseExistingContext() error {
-	currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(r.k8sConfigAccess)
+	config, err := r.k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(config)
 	if isLoggedInWithKubeContext {
+		authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
+		if !exists {
+			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
+		}
+
+		err = validateAuthProvider(authProvider)
+		if err != nil {
+			return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+		}
+
 		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
 		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 

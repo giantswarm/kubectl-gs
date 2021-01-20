@@ -271,17 +271,12 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	return nil
 }
 
-func isLoggedWithGSContext(k8sConfigAccess clientcmd.ConfigAccess) (string, bool) {
-	config, err := k8sConfigAccess.GetStartingConfig()
-	if err != nil {
-		return "", false
+func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
+	if !kubeconfig.IsKubeContext(k8sConfig.CurrentContext) {
+		return k8sConfig.CurrentContext, false
 	}
 
-	if !kubeconfig.IsKubeContext(config.CurrentContext) {
-		return config.CurrentContext, false
-	}
-
-	return config.CurrentContext, true
+	return k8sConfig.CurrentContext, true
 }
 
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
