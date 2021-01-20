@@ -231,7 +231,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 
 	err = validateAuthProvider(authProvider)
 	if err != nil {
-		return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again.")
+		return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
 	}
 
 	if newContextName == config.CurrentContext {
