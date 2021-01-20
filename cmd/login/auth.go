@@ -203,7 +203,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		config.CurrentContext = contextName
 	}
 
-	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
+	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
 	if err != nil {
 		return microerror.Mask(err)
 	}
