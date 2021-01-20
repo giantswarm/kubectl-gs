@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Make the `login` command validate the current context before considering it good to go.
+- Compute pod CIDR flag for AWS provider.
 
 ## [1.20.0] - 2021-01-18
 
