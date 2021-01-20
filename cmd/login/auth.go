@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	gooidc "github.com/coreos/go-oidc"
@@ -232,6 +233,11 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
 
+	err = validateAuthProvider(authProvider)
+	if err != nil {
+		return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again.")
+	}
+
 	var auther *oidc.Authenticator
 	{
 		oidcConfig := oidc.Config{
@@ -276,4 +282,27 @@ func isLoggedWithGSContext(k8sConfigAccess clientcmd.ConfigAccess) (string, bool
 	}
 
 	return config.CurrentContext, true
+}
+
+func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
+	var err error
+
+	switch {
+	case len(provider.Config[ClientID]) == 0:
+		fallthrough
+	case len(provider.Config[ClientSecret]) == 0:
+		fallthrough
+	case len(provider.Config[IDToken]) == 0:
+		fallthrough
+	case len(provider.Config[Issuer]) == 0:
+		fallthrough
+	case len(provider.Config[RefreshToken]) == 0:
+		return microerror.Mask(invalidAuthConfigurationError)
+	}
+
+	if _, err = url.ParseRequestURI(provider.Config[Issuer]); err != nil {
+		return microerror.Mask(invalidAuthConfigurationError)
+	}
+
+	return nil
 }

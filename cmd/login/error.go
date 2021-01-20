@@ -82,3 +82,12 @@ var contextAlreadySelectedError = &microerror.Error{
 func IsContextAlreadySelected(err error) bool {
 	return microerror.Cause(err) == contextAlreadySelectedError
 }
+
+var invalidAuthConfigurationError = &microerror.Error{
+	Kind: "invalidAuthConfigurationError",
+}
+
+// IsInvalidAuthConfiguration asserts invalidAuthConfigurationError.
+func IsInvalidAuthConfiguration(err error) bool {
+	return microerror.Cause(err) == invalidAuthConfigurationError
+}
