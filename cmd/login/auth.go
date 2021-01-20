@@ -280,8 +280,6 @@ func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
 }
 
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
-	var err error
-
 	keys := []string{
 		ClientID,
 		ClientSecret,
@@ -295,7 +293,8 @@ func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
 		}
 	}
 
-	if _, err = url.ParseRequestURI(provider.Config[Issuer]); err != nil {
+	_, err := url.ParseRequestURI(provider.Config[Issuer])
+	if err != nil {
 		return microerror.Mask(invalidAuthConfigurationError)
 	}
 
