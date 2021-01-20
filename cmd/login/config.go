@@ -3,7 +3,7 @@ package login
 const (
 	ClientID     = "client-id"
 	ClientSecret = "client-secret"
-	Issuer       = "issuer"
+	Issuer       = "idp-issuer-url"
 	IDToken      = "id-token"
 	RefreshToken = "refresh-token"
 )
