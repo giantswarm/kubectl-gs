@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	gooidc "github.com/coreos/go-oidc"
@@ -152,11 +153,11 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		initialUser.AuthProvider = &clientcmdapi.AuthProviderConfig{
 			Name: "oidc",
 			Config: map[string]string{
-				"client-id":      authResult.ClientID,
-				"client-secret":  authResult.ClientSecret,
-				"id-token":       authResult.IDToken,
-				"idp-issuer-url": i.AuthURL,
-				"refresh-token":  authResult.RefreshToken,
+				ClientID:     authResult.ClientID,
+				ClientSecret: authResult.ClientSecret,
+				IDToken:      authResult.IDToken,
+				Issuer:       i.AuthURL,
+				RefreshToken: authResult.RefreshToken,
 			},
 		}
 
@@ -218,10 +219,6 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		return microerror.Mask(err)
 	}
 
-	if newContextName == config.CurrentContext {
-		return microerror.Mask(contextAlreadySelectedError)
-	}
-
 	// Check if the context exists.
 	if _, exists := config.Contexts[newContextName]; !exists {
 		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Control Plane API URL or the web UI URL of the installation as an argument.", newContextName)
@@ -232,12 +229,21 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
 
+	err = validateAuthProvider(authProvider)
+	if err != nil {
+		return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+	}
+
+	if newContextName == config.CurrentContext {
+		return microerror.Mask(contextAlreadySelectedError)
+	}
+
 	var auther *oidc.Authenticator
 	{
 		oidcConfig := oidc.Config{
-			Issuer:       authProvider.Config["idp-issuer-url"],
-			ClientID:     authProvider.Config["client-id"],
-			ClientSecret: authProvider.Config["client-secret"],
+			Issuer:       authProvider.Config[Issuer],
+			ClientID:     authProvider.Config[ClientID],
+			ClientSecret: authProvider.Config[ClientSecret],
 		}
 		auther, err = oidc.New(ctx, oidcConfig)
 		if err != nil {
@@ -247,12 +253,12 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 
 	// Renew authentication token.
 	{
-		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config["refresh-token"])
+		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config[RefreshToken])
 		if err != nil {
 			return microerror.Mask(tokenRenewalFailedError)
 		}
-		authProvider.Config["refresh-token"] = rToken
-		authProvider.Config["id-token"] = idToken
+		authProvider.Config[RefreshToken] = rToken
+		authProvider.Config[IDToken] = idToken
 	}
 
 	config.CurrentContext = newContextName
@@ -265,15 +271,32 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	return nil
 }
 
-func isLoggedWithGSContext(k8sConfigAccess clientcmd.ConfigAccess) (string, bool) {
-	config, err := k8sConfigAccess.GetStartingConfig()
+func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
+	if !kubeconfig.IsKubeContext(k8sConfig.CurrentContext) {
+		return k8sConfig.CurrentContext, false
+	}
+
+	return k8sConfig.CurrentContext, true
+}
+
+func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
+	keys := []string{
+		ClientID,
+		ClientSecret,
+		IDToken,
+		Issuer,
+		RefreshToken,
+	}
+	for _, k := range keys {
+		if len(provider.Config[k]) == 0 {
+			return microerror.Mask(invalidAuthConfigurationError)
+		}
+	}
+
+	_, err := url.ParseRequestURI(provider.Config[Issuer])
 	if err != nil {
-		return "", false
+		return microerror.Mask(invalidAuthConfigurationError)
 	}
 
-	if !kubeconfig.IsKubeContext(config.CurrentContext) {
-		return config.CurrentContext, false
-	}
-
-	return config.CurrentContext, true
+	return nil
 }
