@@ -1,10 +1,11 @@
-apiVersion: v1alpha3
+apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Cluster
 metadata:
   annotations:
     cluster.giantswarm.io/description: test cluster 4
   creationTimestamp: "2021-01-02T15:04:32Z"
   labels:
+    cluster.x-k8s.io/cluster-name: f930q
     giantswarm.io/organization: some-other
     release.giantswarm.io/version: 11.0.0
   name: f930q

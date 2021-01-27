@@ -251,6 +251,10 @@ func Test_printOutput(t *testing.T) {
 
 func newCAPIV1alpha2Cluster(id, namespace string) *capiv1alpha2.Cluster {
 	c := &capiv1alpha2.Cluster{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha2",
+			Kind:       "Cluster",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      id,
 			Namespace: namespace,
@@ -267,6 +271,10 @@ func newCAPIV1alpha3Cluster(id, created, release, org, description string, condi
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	c := &capiv1alpha3.Cluster{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			Kind:       "Cluster",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              id,
 			Namespace:         "default",
@@ -291,11 +299,6 @@ func newCAPIV1alpha3Cluster(id, created, release, org, description string, condi
 	}
 	c.SetConditions(resConditions)
 
-	{
-		c.APIVersion = "v1alpha3"
-		c.Kind = "Cluster"
-	}
-
 	return c
 }
 
@@ -310,6 +313,7 @@ func newAWSClusterResource(id, created, release, org, description string, condit
 			Labels: map[string]string{
 				label.ReleaseVersion: release,
 				label.Organization:   org,
+				label.Cluster:        id,
 			},
 		},
 		Spec: infrastructurev1alpha2.AWSClusterSpec{
@@ -347,6 +351,10 @@ func newAWSCluster(id, created, release, org, description string, conditions []s
 
 func newAzureClusterResource(id, namespace string) *capzv1alpha3.AzureCluster {
 	c := &capzv1alpha3.AzureCluster{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			Kind:       "AzureCluster",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      id,
 			Namespace: namespace,
