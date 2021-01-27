@@ -4,11 +4,12 @@ import (
 	"context"
 
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
-	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
 func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, error) {
