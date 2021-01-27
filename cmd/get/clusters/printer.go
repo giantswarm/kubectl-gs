@@ -9,22 +9,24 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd/get/clusters/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
-func (r *runner) printOutput(resource runtime.Object) error {
+func (r *runner) printOutput(clusterResource cluster.Resource) error {
 	var (
-		err     error
-		printer printers.ResourcePrinter
+		err      error
+		printer  printers.ResourcePrinter
+		resource runtime.Object
 	)
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
 		switch r.provider {
 		case key.ProviderAWS:
-			resource = provider.GetAWSTable(resource)
+			resource = provider.GetAWSTable(clusterResource)
 		case key.ProviderAzure:
-			resource = provider.GetAzureTable(resource)
+			resource = provider.GetAzureTable(clusterResource)
 		}
 
 		printOptions := printers.PrintOptions{
@@ -33,6 +35,7 @@ func (r *runner) printOutput(resource runtime.Object) error {
 		printer = printers.NewTablePrinter(printOptions)
 
 	case output.IsOutputName(r.flag.print.OutputFormat):
+		resource = clusterResource.Object()
 		err = output.PrintResourceNames(r.stdout, resource)
 		if err != nil {
 			return microerror.Mask(err)
@@ -41,6 +44,7 @@ func (r *runner) printOutput(resource runtime.Object) error {
 		return nil
 
 	default:
+		resource = clusterResource.Object()
 		printer, err = r.flag.print.ToPrinter()
 		if err != nil {
 			return microerror.Mask(err)

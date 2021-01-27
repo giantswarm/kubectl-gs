@@ -7,9 +7,10 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 )
 
-func GetAzureTable(resource runtime.Object) *metav1.Table {
+func GetAzureTable(clusterResource cluster.Resource) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -22,31 +23,34 @@ func GetAzureTable(resource runtime.Object) *metav1.Table {
 		{Name: "Description", Type: "string"},
 	}
 
-	switch c := resource.(type) {
-	case *capiv1alpha3.ClusterList:
-		for _, cluster := range c.Items {
-			table.Rows = append(table.Rows, getAzureClusterRow(&cluster))
+	switch c := clusterResource.(type) {
+	case *cluster.Cluster:
+		table.Rows = append(table.Rows, getAzureClusterRow(*c))
+	case *cluster.Collection:
+		for _, clusterItem := range c.Items {
+			table.Rows = append(table.Rows, getAzureClusterRow(clusterItem))
 		}
-
-	case *capiv1alpha3.Cluster:
-		table.Rows = append(table.Rows, getAzureClusterRow(c))
 	}
 
 	return table
 }
 
-func getAzureClusterRow(res *capiv1alpha3.Cluster) metav1.TableRow {
+func getAzureClusterRow(c cluster.Cluster) metav1.TableRow {
+	if c.Cluster == nil || c.AzureCluster == nil {
+		return metav1.TableRow{}
+	}
+
 	return metav1.TableRow{
 		Cells: []interface{}{
-			res.GetName(),
-			res.CreationTimestamp.UTC(),
-			getLatestAzureCondition(res.GetConditions()),
-			res.Labels[label.ReleaseVersion],
-			res.Labels[label.Organization],
-			getAzureClusterDescription(res),
+			c.Cluster.GetName(),
+			c.Cluster.CreationTimestamp.UTC(),
+			getLatestAzureCondition(c.Cluster.GetConditions()),
+			c.Cluster.Labels[label.ReleaseVersion],
+			c.Cluster.Labels[label.Organization],
+			getAzureClusterDescription(c.Cluster),
 		},
 		Object: runtime.RawExtension{
-			Object: res,
+			Object: c.Cluster,
 		},
 	}
 }
