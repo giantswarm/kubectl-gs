@@ -4,91 +4,111 @@ import (
 	"context"
 
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAWS(ctx context.Context, namespace string) (*infrastructurev1alpha2.AWSClusterList, error) {
+func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, error) {
 	var err error
 
-	options := &runtimeClient.ListOptions{
-		Namespace: namespace,
-	}
+	inNamespace := runtimeClient.InNamespace(namespace)
 
-	var clusterIDs map[string]bool
+	var awsClusters map[string]*infrastructurev1alpha2.AWSCluster
 	{
-		// The CAPI clusters have the labels. They can be used for filtering.
-		apiClusters := &capiv1alpha2.ClusterList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, apiClusters, options)
+		clusterCollection := &infrastructurev1alpha2.AWSClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, clusterCollection, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(apiClusters.Items) == 0 {
+		} else if len(clusterCollection.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
 		}
 
-		clusterIDs = make(map[string]bool, len(apiClusters.Items))
-		for _, cluster := range apiClusters.Items {
-			clusterIDs[cluster.Name] = true
+		awsClusters = make(map[string]*infrastructurev1alpha2.AWSCluster, len(clusterCollection.Items))
+		for _, cluster := range clusterCollection.Items {
+			c := cluster
+			awsClusters[cluster.GetName()] = &c
 		}
 	}
 
-	clusterList := &infrastructurev1alpha2.AWSClusterList{}
+	clusters := &capiv1alpha2.ClusterList{}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, clusterList, options)
+		err = s.client.K8sClient.CtrlClient().List(ctx, clusters, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(clusterList.Items) == 0 {
+		} else if len(clusters.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
 		}
+	}
 
-		var clusters []infrastructurev1alpha2.AWSCluster
-		for _, cluster := range clusterList.Items {
-			if _, exists := clusterIDs[cluster.Name]; exists {
-				cluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
-				clusters = append(clusters, cluster)
+	clusterCollection := &Collection{}
+	{
+		for _, cr := range clusters.Items {
+			o := cr
+
+			if awsCluster, exists := awsClusters[cr.GetName()]; exists {
+				cr.TypeMeta = metav1.TypeMeta{
+					APIVersion: "cluster.x-k8s.io/v1alpha2",
+					Kind:       "Cluster",
+				}
+				awsCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
+
+				c := Cluster{
+					V1Alpha2Cluster: &o,
+					AWSCluster:      awsCluster,
+				}
+				clusterCollection.Items = append(clusterCollection.Items, c)
 			}
 		}
-		clusterList.Items = clusters
 	}
 
-	{
-		clusterList.APIVersion = "v1"
-		clusterList.Kind = "List"
-	}
-
-	return clusterList, nil
+	return clusterCollection, nil
 }
 
-func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (*infrastructurev1alpha2.AWSCluster, error) {
+func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Resource, error) {
 	var err error
 
-	objKey := runtimeClient.ObjectKey{
-		Name:      id,
-		Namespace: namespace,
+	labelSelector := runtimeClient.MatchingLabels{
+		label.Cluster: id,
 	}
+	inNamespace := runtimeClient.InNamespace(namespace)
 
-	// The CAPI cluster has the labels. It can be used for filtering.
-	cluster := &capiv1alpha2.Cluster{}
+	cluster := &Cluster{}
+
 	{
-		err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, cluster)
-		if errors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
-		} else if err != nil {
+		crs := &capiv1alpha2.ClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		if err != nil {
 			return nil, microerror.Mask(err)
+		}
+
+		if len(crs.Items) < 1 {
+			return nil, microerror.Mask(notFoundError)
+		}
+		cluster.V1Alpha2Cluster = &crs.Items[0]
+
+		cluster.V1Alpha2Cluster.TypeMeta = metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha2",
+			Kind:       "Cluster",
 		}
 	}
 
-	awsCluster := &infrastructurev1alpha2.AWSCluster{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, awsCluster)
-	if errors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
+	{
+		crs := &infrastructurev1alpha2.AWSClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if len(crs.Items) < 1 {
+			return nil, microerror.Mask(notFoundError)
+		}
+		cluster.AWSCluster = &crs.Items[0]
+
+		cluster.AWSCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
 	}
 
-	awsCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
-
-	return awsCluster, nil
+	return cluster, nil
 }
