@@ -1,6 +1,6 @@
-cluster/1sad2
-cluster/2a03f
-cluster/asd29
-cluster/f930q
-cluster/9f012
-cluster/2f0as
+cluster.cluster.x-k8s.io/1sad2
+cluster.cluster.x-k8s.io/2a03f
+cluster.cluster.x-k8s.io/asd29
+cluster.cluster.x-k8s.io/f930q
+cluster.cluster.x-k8s.io/9f012
+cluster.cluster.x-k8s.io/2f0as

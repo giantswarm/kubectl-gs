@@ -10,13 +10,15 @@ import (
 	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
@@ -30,14 +32,14 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string
-		cr                 runtime.Object
+		clusterRes         cluster.Resource
 		provider           string
 		outputType         string
 		expectedGoldenFile string
 	}{
 		{
 			name: "case 0: print list of AWS clusters, with table output",
-			cr: newAWSClusterList(
+			clusterRes: newClusterCollection(
 				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -51,7 +53,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 1: print list of AWS clusters, with JSON output",
-			cr: newAWSClusterList(
+			clusterRes: newClusterCollection(
 				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -65,7 +67,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 2: print list of AWS clusters, with YAML output",
-			cr: newAWSClusterList(
+			clusterRes: newClusterCollection(
 				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -79,7 +81,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 3: print list of AWS clusters, with name output",
-			cr: newAWSClusterList(
+			clusterRes: newClusterCollection(
 				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -93,35 +95,35 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name:               "case 4: print single AWS cluster, with table output",
-			cr:                 newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_aws_cluster_table_output.golden",
 		},
 		{
 			name:               "case 5: print single AWS cluster, with JSON output",
-			cr:                 newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_single_aws_cluster_json_output.golden",
 		},
 		{
 			name:               "case 6: print single AWS cluster, with YAML output",
-			cr:                 newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_single_aws_cluster_yaml_output.golden",
 		},
 		{
 			name:               "case 7: print single AWS cluster, with name output",
-			cr:                 newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_aws_cluster_name_output.golden",
 		},
 		{
 			name: "case 8: print list of Azure clusters, with table output",
-			cr: newAzureClusterList(
+			clusterRes: newClusterCollection(
 				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -135,7 +137,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 9: print list of Azure clusters, with JSON output",
-			cr: newAzureClusterList(
+			clusterRes: newClusterCollection(
 				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -149,7 +151,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 10: print list of Azure clusters, with YAML output",
-			cr: newAzureClusterList(
+			clusterRes: newClusterCollection(
 				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -163,7 +165,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 11: print list of Azure clusters, with name output",
-			cr: newAzureClusterList(
+			clusterRes: newClusterCollection(
 				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", nil),
 				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", []string{infrastructurev1alpha2.ClusterStatusConditionCreated, infrastructurev1alpha2.ClusterStatusConditionCreating}),
@@ -177,28 +179,28 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name:               "case 12: print single Azure cluster, with table output",
-			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
 		},
 		{
 			name:               "case 13: print single Azure cluster, with JSON output",
-			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_single_azure_cluster_json_output.golden",
 		},
 		{
 			name:               "case 14: print single Azure cluster, with YAML output",
-			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_single_azure_cluster_yaml_output.golden",
 		},
 		{
 			name:               "case 15: print single Azure cluster, with name output",
-			cr:                 newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", []string{infrastructurev1alpha2.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_azure_cluster_name_output.golden",
@@ -217,7 +219,7 @@ func Test_printOutput(t *testing.T) {
 				provider: tc.provider,
 			}
 
-			err := runner.printOutput(tc.cr)
+			err := runner.printOutput(tc.clusterRes)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -247,17 +249,60 @@ func Test_printOutput(t *testing.T) {
 	}
 }
 
-func newAWSClusterList(clusters ...infrastructurev1alpha2.AWSCluster) *infrastructurev1alpha2.AWSClusterList {
-	clusterList := &infrastructurev1alpha2.AWSClusterList{}
+func newCAPIV1alpha2Cluster(id, namespace string) *capiv1alpha2.Cluster {
+	c := &capiv1alpha2.Cluster{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha2",
+			Kind:       "Cluster",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      id,
+			Namespace: namespace,
+			Labels: map[string]string{
+				label.Cluster: id,
+			},
+		},
+	}
 
-	clusterList.Items = clusters
-	clusterList.APIVersion = "v1"
-	clusterList.Kind = "List"
-
-	return clusterList
+	return c
 }
 
-func newAWSCluster(id, created, release, org, description string, conditions []string) *infrastructurev1alpha2.AWSCluster {
+func newCAPIV1alpha3Cluster(id, created, release, org, description string, conditions []string) *capiv1alpha3.Cluster {
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+	c := &capiv1alpha3.Cluster{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			Kind:       "Cluster",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              id,
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+			Labels: map[string]string{
+				label.ReleaseVersion:          release,
+				label.Organization:            org,
+				capiv1alpha3.ClusterLabelName: id,
+			},
+			Annotations: map[string]string{
+				annotation.ClusterDescription: description,
+			},
+		},
+	}
+
+	resConditions := make([]capiv1alpha3.Condition, 0, len(conditions))
+	for _, condition := range conditions {
+		resConditions = append(resConditions, capiv1alpha3.Condition{
+			Type:   capiv1alpha3.ConditionType(condition),
+			Status: "True",
+		})
+	}
+	c.SetConditions(resConditions)
+
+	return c
+}
+
+func newAWSClusterResource(id, created, release, org, description string, conditions []string) *infrastructurev1alpha2.AWSCluster {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	c := &infrastructurev1alpha2.AWSCluster{
@@ -268,6 +313,7 @@ func newAWSCluster(id, created, release, org, description string, conditions []s
 			Labels: map[string]string{
 				label.ReleaseVersion: release,
 				label.Organization:   org,
+				label.Cluster:        id,
 			},
 		},
 		Spec: infrastructurev1alpha2.AWSClusterSpec{
@@ -291,49 +337,53 @@ func newAWSCluster(id, created, release, org, description string, conditions []s
 	return c
 }
 
-func newAzureClusterList(clusters ...capiv1alpha3.Cluster) *capiv1alpha3.ClusterList {
-	clusterList := &capiv1alpha3.ClusterList{}
+func newAWSCluster(id, created, release, org, description string, conditions []string) *cluster.Cluster {
+	awsCluster := newAWSClusterResource(id, created, release, org, description, conditions)
+	capiCluster := newCAPIV1alpha2Cluster(id, "default")
 
-	clusterList.Items = clusters
-	clusterList.APIVersion = "v1"
-	clusterList.Kind = "List"
-
-	return clusterList
-}
-
-func newAzureCluster(id, created, release, org, description string, conditions []string) *capiv1alpha3.Cluster {
-	location, _ := time.LoadLocation("UTC")
-	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &capiv1alpha3.Cluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              id,
-			Namespace:         "default",
-			CreationTimestamp: metav1.NewTime(parsedCreationDate),
-			Labels: map[string]string{
-				label.ReleaseVersion: release,
-				label.Organization:   org,
-			},
-			Annotations: map[string]string{
-				annotation.ClusterDescription: description,
-			},
-		},
-	}
-
-	resConditions := make([]capiv1alpha3.Condition, 0, len(conditions))
-	for _, condition := range conditions {
-		resConditions = append(resConditions, capiv1alpha3.Condition{
-			Type:   capiv1alpha3.ConditionType(condition),
-			Status: "True",
-		})
-	}
-	c.SetConditions(resConditions)
-
-	{
-		c.APIVersion = "v1alpha3"
-		c.Kind = "Cluster"
+	c := &cluster.Cluster{
+		AWSCluster:      awsCluster,
+		V1Alpha2Cluster: capiCluster,
 	}
 
 	return c
+}
+
+func newAzureClusterResource(id, namespace string) *capzv1alpha3.AzureCluster {
+	c := &capzv1alpha3.AzureCluster{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			Kind:       "AzureCluster",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      id,
+			Namespace: namespace,
+			Labels: map[string]string{
+				capiv1alpha3.ClusterLabelName: id,
+			}},
+	}
+
+	return c
+}
+
+func newAzureCluster(id, created, release, org, description string, conditions []string) *cluster.Cluster {
+	azureCluster := newAzureClusterResource(id, "default")
+	capiCluster := newCAPIV1alpha3Cluster(id, created, release, org, description, conditions)
+
+	c := &cluster.Cluster{
+		AzureCluster: azureCluster,
+		Cluster:      capiCluster,
+	}
+
+	return c
+}
+
+func newClusterCollection(clusters ...cluster.Cluster) *cluster.Collection {
+	collection := &cluster.Collection{
+		Items: clusters,
+	}
+
+	return collection
 }
 
 func Test_printNoResourcesOutput(t *testing.T) {

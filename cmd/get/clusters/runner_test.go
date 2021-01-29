@@ -7,10 +7,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	apiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
@@ -34,10 +32,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
-				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "1sad2", Namespace: "default"}},
-				newAWSCluster("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
-				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "f930q", Namespace: "default"}},
-				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
+				newCAPIV1alpha2Cluster("1sad2", "default"),
+				newAWSClusterResource("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
+				newCAPIV1alpha2Cluster("f930q", "default"),
+				newAWSClusterResource("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_clusters.golden",
@@ -51,10 +49,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "1sad2", Namespace: "default"}},
-				newAWSCluster("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
-				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "f930q", Namespace: "default"}},
-				newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
+				newCAPIV1alpha2Cluster("1sad2", "default"),
+				newAWSClusterResource("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
+				newCAPIV1alpha2Cluster("f930q", "default"),
+				newAWSClusterResource("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_cluster_by_id.golden",
@@ -68,9 +66,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 4: get cluster by id, with no infrastructure cluster",
 			storage: []runtime.Object{
-				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "1sad2", Namespace: "default"}},
-				newAWSCluster("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
-				&apiv1alpha2.Cluster{ObjectMeta: metav1.ObjectMeta{Name: "f930q", Namespace: "default"}},
+				newCAPIV1alpha2Cluster("1sad2", "default"),
+				newAWSClusterResource("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
+				newCAPIV1alpha2Cluster("f930q", "default"),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,

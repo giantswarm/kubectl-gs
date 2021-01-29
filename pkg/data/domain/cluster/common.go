@@ -4,16 +4,15 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func (s *Service) Get(ctx context.Context, options GetOptions) (runtime.Object, error) {
+func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
+	var resource Resource
 	var err error
 
-	var resource runtime.Object
-	if options.ID != "" {
+	if len(options.ID) > 0 {
 		resource, err = s.getById(ctx, options.Provider, options.ID, options.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -28,20 +27,20 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (runtime.Object, 
 	return resource, nil
 }
 
-func (s *Service) getById(ctx context.Context, provider, id, namespace string) (runtime.Object, error) {
+func (s *Service) getById(ctx context.Context, provider, id, namespace string) (Resource, error) {
 	var err error
 
-	var resource runtime.Object
+	var cluster Resource
 	{
 		switch provider {
 		case key.ProviderAWS:
-			resource, err = s.getByIdAWS(ctx, id, namespace)
+			cluster, err = s.getByIdAWS(ctx, id, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderAzure:
-			resource, err = s.getByIdAzure(ctx, id, namespace)
+			cluster, err = s.getByIdAzure(ctx, id, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -51,23 +50,23 @@ func (s *Service) getById(ctx context.Context, provider, id, namespace string) (
 		}
 	}
 
-	return resource, nil
+	return cluster, nil
 }
 
-func (s *Service) getAll(ctx context.Context, provider, namespace string) (runtime.Object, error) {
+func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resource, error) {
 	var err error
 
-	var clusterList runtime.Object
+	var clusterCollection Resource
 	{
 		switch provider {
 		case key.ProviderAWS:
-			clusterList, err = s.getAllAWS(ctx, namespace)
+			clusterCollection, err = s.getAllAWS(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
 		case key.ProviderAzure:
-			clusterList, err = s.getAllAzure(ctx, namespace)
+			clusterCollection, err = s.getAllAzure(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -77,5 +76,5 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (runti
 		}
 	}
 
-	return clusterList, nil
+	return clusterCollection, nil
 }

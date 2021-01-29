@@ -1,6 +1,6 @@
-awscluster.infrastructure.giantswarm.io/1sad2
-awscluster.infrastructure.giantswarm.io/2a03f
-awscluster.infrastructure.giantswarm.io/asd29
-awscluster.infrastructure.giantswarm.io/f930q
-awscluster.infrastructure.giantswarm.io/9f012
-awscluster.infrastructure.giantswarm.io/2f0as
+cluster.cluster.x-k8s.io/1sad2
+cluster.cluster.x-k8s.io/2a03f
+cluster.cluster.x-k8s.io/asd29
+cluster.cluster.x-k8s.io/f930q
+cluster.cluster.x-k8s.io/9f012
+cluster.cluster.x-k8s.io/2f0as

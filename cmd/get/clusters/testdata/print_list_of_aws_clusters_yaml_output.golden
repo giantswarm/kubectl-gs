@@ -1,206 +1,76 @@
 apiVersion: v1
 items:
-- apiVersion: infrastructure.giantswarm.io/v1alpha2
-  kind: AWSCluster
+- apiVersion: cluster.x-k8s.io/v1alpha2
+  kind: Cluster
   metadata:
-    creationTimestamp: "2021-01-02T15:04:32Z"
+    creationTimestamp: null
     labels:
-      giantswarm.io/organization: test
-      release.giantswarm.io/version: 12.0.0
+      giantswarm.io/cluster: 1sad2
     name: 1sad2
     namespace: default
-  spec:
-    cluster:
-      description: test cluster 1
-      dns:
-        domain: ""
-      kubeProxy: {}
-      oidc:
-        claims: {}
-    provider:
-      credentialSecret:
-        name: ""
-        namespace: ""
-      master:
-        availabilityZone: ""
-        instanceType: ""
-      nodes: {}
-      pods: {}
-      region: ""
+  spec: {}
   status:
-    cluster: {}
-    provider:
-      network: {}
-- apiVersion: infrastructure.giantswarm.io/v1alpha2
-  kind: AWSCluster
+    controlPlaneInitialized: false
+    infrastructureReady: false
+- apiVersion: cluster.x-k8s.io/v1alpha2
+  kind: Cluster
   metadata:
-    creationTimestamp: "2021-01-02T15:04:32Z"
+    creationTimestamp: null
     labels:
-      giantswarm.io/organization: test
-      release.giantswarm.io/version: 11.0.0
+      giantswarm.io/cluster: 2a03f
     name: 2a03f
     namespace: default
-  spec:
-    cluster:
-      description: test cluster 2
-      dns:
-        domain: ""
-      kubeProxy: {}
-      oidc:
-        claims: {}
-    provider:
-      credentialSecret:
-        name: ""
-        namespace: ""
-      master:
-        availabilityZone: ""
-        instanceType: ""
-      nodes: {}
-      pods: {}
-      region: ""
+  spec: {}
   status:
-    cluster:
-      conditions:
-      - condition: Created
-        lastTransitionTime: null
-    provider:
-      network: {}
-- apiVersion: infrastructure.giantswarm.io/v1alpha2
-  kind: AWSCluster
+    controlPlaneInitialized: false
+    infrastructureReady: false
+- apiVersion: cluster.x-k8s.io/v1alpha2
+  kind: Cluster
   metadata:
-    creationTimestamp: "2021-01-02T15:04:32Z"
+    creationTimestamp: null
     labels:
-      giantswarm.io/organization: test
-      release.giantswarm.io/version: 10.5.0
+      giantswarm.io/cluster: asd29
     name: asd29
     namespace: default
-  spec:
-    cluster:
-      description: test cluster 3
-      dns:
-        domain: ""
-      kubeProxy: {}
-      oidc:
-        claims: {}
-    provider:
-      credentialSecret:
-        name: ""
-        namespace: ""
-      master:
-        availabilityZone: ""
-        instanceType: ""
-      nodes: {}
-      pods: {}
-      region: ""
+  spec: {}
   status:
-    cluster:
-      conditions:
-      - condition: Created
-        lastTransitionTime: null
-      - condition: Creating
-        lastTransitionTime: null
-    provider:
-      network: {}
-- apiVersion: infrastructure.giantswarm.io/v1alpha2
-  kind: AWSCluster
+    controlPlaneInitialized: false
+    infrastructureReady: false
+- apiVersion: cluster.x-k8s.io/v1alpha2
+  kind: Cluster
   metadata:
-    creationTimestamp: "2021-01-02T15:04:32Z"
+    creationTimestamp: null
     labels:
-      giantswarm.io/organization: some-other
-      release.giantswarm.io/version: 11.0.0
+      giantswarm.io/cluster: f930q
     name: f930q
     namespace: default
-  spec:
-    cluster:
-      description: test cluster 4
-      dns:
-        domain: ""
-      kubeProxy: {}
-      oidc:
-        claims: {}
-    provider:
-      credentialSecret:
-        name: ""
-        namespace: ""
-      master:
-        availabilityZone: ""
-        instanceType: ""
-      nodes: {}
-      pods: {}
-      region: ""
+  spec: {}
   status:
-    cluster: {}
-    provider:
-      network: {}
-- apiVersion: infrastructure.giantswarm.io/v1alpha2
-  kind: AWSCluster
+    controlPlaneInitialized: false
+    infrastructureReady: false
+- apiVersion: cluster.x-k8s.io/v1alpha2
+  kind: Cluster
   metadata:
-    creationTimestamp: "2021-01-02T15:04:32Z"
+    creationTimestamp: null
     labels:
-      giantswarm.io/organization: test
-      release.giantswarm.io/version: 9.0.0
+      giantswarm.io/cluster: 9f012
     name: 9f012
     namespace: default
-  spec:
-    cluster:
-      description: test cluster 5
-      dns:
-        domain: ""
-      kubeProxy: {}
-      oidc:
-        claims: {}
-    provider:
-      credentialSecret:
-        name: ""
-        namespace: ""
-      master:
-        availabilityZone: ""
-        instanceType: ""
-      nodes: {}
-      pods: {}
-      region: ""
+  spec: {}
   status:
-    cluster:
-      conditions:
-      - condition: Deleting
-        lastTransitionTime: null
-    provider:
-      network: {}
-- apiVersion: infrastructure.giantswarm.io/v1alpha2
-  kind: AWSCluster
+    controlPlaneInitialized: false
+    infrastructureReady: false
+- apiVersion: cluster.x-k8s.io/v1alpha2
+  kind: Cluster
   metadata:
-    creationTimestamp: "2021-01-02T15:04:32Z"
+    creationTimestamp: null
     labels:
-      giantswarm.io/organization: random
-      release.giantswarm.io/version: 10.5.0
+      giantswarm.io/cluster: 2f0as
     name: 2f0as
     namespace: default
-  spec:
-    cluster:
-      description: test cluster 6
-      dns:
-        domain: ""
-      kubeProxy: {}
-      oidc:
-        claims: {}
-    provider:
-      credentialSecret:
-        name: ""
-        namespace: ""
-      master:
-        availabilityZone: ""
-        instanceType: ""
-      nodes: {}
-      pods: {}
-      region: ""
+  spec: {}
   status:
-    cluster:
-      conditions:
-      - condition: Deleting
-        lastTransitionTime: null
-      - condition: Created
-        lastTransitionTime: null
-    provider:
-      network: {}
+    controlPlaneInitialized: false
+    infrastructureReady: false
 kind: List
 metadata: {}

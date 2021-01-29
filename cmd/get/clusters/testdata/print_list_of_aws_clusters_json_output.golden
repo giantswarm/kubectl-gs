@@ -4,303 +4,105 @@
     "metadata": {},
     "items": [
         {
-            "kind": "AWSCluster",
-            "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+            "kind": "Cluster",
+            "apiVersion": "cluster.x-k8s.io/v1alpha2",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "creationTimestamp": null,
                 "labels": {
-                    "giantswarm.io/organization": "test",
-                    "release.giantswarm.io/version": "12.0.0"
+                    "giantswarm.io/cluster": "1sad2"
                 }
             },
-            "spec": {
-                "cluster": {
-                    "description": "test cluster 1",
-                    "dns": {
-                        "domain": ""
-                    },
-                    "kubeProxy": {},
-                    "oidc": {
-                        "claims": {}
-                    }
-                },
-                "provider": {
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
-                    },
-                    "master": {
-                        "availabilityZone": "",
-                        "instanceType": ""
-                    },
-                    "nodes": {},
-                    "pods": {},
-                    "region": ""
-                }
-            },
+            "spec": {},
             "status": {
-                "cluster": {},
-                "provider": {
-                    "network": {}
-                }
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
             }
         },
         {
-            "kind": "AWSCluster",
-            "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+            "kind": "Cluster",
+            "apiVersion": "cluster.x-k8s.io/v1alpha2",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "creationTimestamp": null,
                 "labels": {
-                    "giantswarm.io/organization": "test",
-                    "release.giantswarm.io/version": "11.0.0"
+                    "giantswarm.io/cluster": "2a03f"
                 }
             },
-            "spec": {
-                "cluster": {
-                    "description": "test cluster 2",
-                    "dns": {
-                        "domain": ""
-                    },
-                    "kubeProxy": {},
-                    "oidc": {
-                        "claims": {}
-                    }
-                },
-                "provider": {
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
-                    },
-                    "master": {
-                        "availabilityZone": "",
-                        "instanceType": ""
-                    },
-                    "nodes": {},
-                    "pods": {},
-                    "region": ""
-                }
-            },
+            "spec": {},
             "status": {
-                "cluster": {
-                    "conditions": [
-                        {
-                            "lastTransitionTime": null,
-                            "condition": "Created"
-                        }
-                    ]
-                },
-                "provider": {
-                    "network": {}
-                }
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
             }
         },
         {
-            "kind": "AWSCluster",
-            "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+            "kind": "Cluster",
+            "apiVersion": "cluster.x-k8s.io/v1alpha2",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "creationTimestamp": null,
                 "labels": {
-                    "giantswarm.io/organization": "test",
-                    "release.giantswarm.io/version": "10.5.0"
+                    "giantswarm.io/cluster": "asd29"
                 }
             },
-            "spec": {
-                "cluster": {
-                    "description": "test cluster 3",
-                    "dns": {
-                        "domain": ""
-                    },
-                    "kubeProxy": {},
-                    "oidc": {
-                        "claims": {}
-                    }
-                },
-                "provider": {
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
-                    },
-                    "master": {
-                        "availabilityZone": "",
-                        "instanceType": ""
-                    },
-                    "nodes": {},
-                    "pods": {},
-                    "region": ""
-                }
-            },
+            "spec": {},
             "status": {
-                "cluster": {
-                    "conditions": [
-                        {
-                            "lastTransitionTime": null,
-                            "condition": "Created"
-                        },
-                        {
-                            "lastTransitionTime": null,
-                            "condition": "Creating"
-                        }
-                    ]
-                },
-                "provider": {
-                    "network": {}
-                }
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
             }
         },
         {
-            "kind": "AWSCluster",
-            "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+            "kind": "Cluster",
+            "apiVersion": "cluster.x-k8s.io/v1alpha2",
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "creationTimestamp": null,
                 "labels": {
-                    "giantswarm.io/organization": "some-other",
-                    "release.giantswarm.io/version": "11.0.0"
+                    "giantswarm.io/cluster": "f930q"
                 }
             },
-            "spec": {
-                "cluster": {
-                    "description": "test cluster 4",
-                    "dns": {
-                        "domain": ""
-                    },
-                    "kubeProxy": {},
-                    "oidc": {
-                        "claims": {}
-                    }
-                },
-                "provider": {
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
-                    },
-                    "master": {
-                        "availabilityZone": "",
-                        "instanceType": ""
-                    },
-                    "nodes": {},
-                    "pods": {},
-                    "region": ""
-                }
-            },
+            "spec": {},
             "status": {
-                "cluster": {},
-                "provider": {
-                    "network": {}
-                }
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
             }
         },
         {
-            "kind": "AWSCluster",
-            "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+            "kind": "Cluster",
+            "apiVersion": "cluster.x-k8s.io/v1alpha2",
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "creationTimestamp": null,
                 "labels": {
-                    "giantswarm.io/organization": "test",
-                    "release.giantswarm.io/version": "9.0.0"
+                    "giantswarm.io/cluster": "9f012"
                 }
             },
-            "spec": {
-                "cluster": {
-                    "description": "test cluster 5",
-                    "dns": {
-                        "domain": ""
-                    },
-                    "kubeProxy": {},
-                    "oidc": {
-                        "claims": {}
-                    }
-                },
-                "provider": {
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
-                    },
-                    "master": {
-                        "availabilityZone": "",
-                        "instanceType": ""
-                    },
-                    "nodes": {},
-                    "pods": {},
-                    "region": ""
-                }
-            },
+            "spec": {},
             "status": {
-                "cluster": {
-                    "conditions": [
-                        {
-                            "lastTransitionTime": null,
-                            "condition": "Deleting"
-                        }
-                    ]
-                },
-                "provider": {
-                    "network": {}
-                }
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
             }
         },
         {
-            "kind": "AWSCluster",
-            "apiVersion": "infrastructure.giantswarm.io/v1alpha2",
+            "kind": "Cluster",
+            "apiVersion": "cluster.x-k8s.io/v1alpha2",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",
-                "creationTimestamp": "2021-01-02T15:04:32Z",
+                "creationTimestamp": null,
                 "labels": {
-                    "giantswarm.io/organization": "random",
-                    "release.giantswarm.io/version": "10.5.0"
+                    "giantswarm.io/cluster": "2f0as"
                 }
             },
-            "spec": {
-                "cluster": {
-                    "description": "test cluster 6",
-                    "dns": {
-                        "domain": ""
-                    },
-                    "kubeProxy": {},
-                    "oidc": {
-                        "claims": {}
-                    }
-                },
-                "provider": {
-                    "credentialSecret": {
-                        "name": "",
-                        "namespace": ""
-                    },
-                    "master": {
-                        "availabilityZone": "",
-                        "instanceType": ""
-                    },
-                    "nodes": {},
-                    "pods": {},
-                    "region": ""
-                }
-            },
+            "spec": {},
             "status": {
-                "cluster": {
-                    "conditions": [
-                        {
-                            "lastTransitionTime": null,
-                            "condition": "Deleting"
-                        },
-                        {
-                            "lastTransitionTime": null,
-                            "condition": "Created"
-                        }
-                    ]
-                },
-                "provider": {
-                    "network": {}
-                }
+                "infrastructureReady": false,
+                "controlPlaneInitialized": false
             }
         }
     ]

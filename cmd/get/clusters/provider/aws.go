@@ -6,9 +6,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 )
 
-func GetAWSTable(resource runtime.Object) *metav1.Table {
+func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -21,31 +22,34 @@ func GetAWSTable(resource runtime.Object) *metav1.Table {
 		{Name: "Description", Type: "string"},
 	}
 
-	switch c := resource.(type) {
-	case *infrastructurev1alpha2.AWSClusterList:
-		for _, cluster := range c.Items {
-			table.Rows = append(table.Rows, getAWSClusterRow(&cluster))
+	switch c := clusterResource.(type) {
+	case *cluster.Cluster:
+		table.Rows = append(table.Rows, getAWSClusterRow(*c))
+	case *cluster.Collection:
+		for _, clusterItem := range c.Items {
+			table.Rows = append(table.Rows, getAWSClusterRow(clusterItem))
 		}
-
-	case *infrastructurev1alpha2.AWSCluster:
-		table.Rows = append(table.Rows, getAWSClusterRow(c))
 	}
 
 	return table
 }
 
-func getAWSClusterRow(res *infrastructurev1alpha2.AWSCluster) metav1.TableRow {
+func getAWSClusterRow(c cluster.Cluster) metav1.TableRow {
+	if c.V1Alpha2Cluster == nil || c.AWSCluster == nil {
+		return metav1.TableRow{}
+	}
+
 	return metav1.TableRow{
 		Cells: []interface{}{
-			res.GetName(),
-			res.CreationTimestamp.UTC(),
-			getLatestAWSCondition(res.Status.Cluster.Conditions),
-			res.Labels[label.ReleaseVersion],
-			res.Labels[label.Organization],
-			res.Spec.Cluster.Description,
+			c.AWSCluster.GetName(),
+			c.AWSCluster.CreationTimestamp.UTC(),
+			getLatestAWSCondition(c.AWSCluster.Status.Cluster.Conditions),
+			c.AWSCluster.Labels[label.ReleaseVersion],
+			c.AWSCluster.Labels[label.Organization],
+			c.AWSCluster.Spec.Cluster.Description,
 		},
 		Object: runtime.RawExtension{
-			Object: res,
+			Object: c.AWSCluster,
 		},
 	}
 }

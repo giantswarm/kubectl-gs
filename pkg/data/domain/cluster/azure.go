@@ -4,57 +4,115 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllAzure(ctx context.Context, namespace string) (*capiv1alpha3.ClusterList, error) {
+func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, error) {
 	var err error
 
-	options := &runtimeClient.ListOptions{
-		Namespace: namespace,
-	}
+	inNamespace := runtimeClient.InNamespace(namespace)
 
-	clusterList := &capiv1alpha3.ClusterList{}
+	var azureClusters map[string]*capzv1alpha3.AzureCluster
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, clusterList, options)
+		clusterCollection := &capzv1alpha3.AzureClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, clusterCollection, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(clusterList.Items) == 0 {
+		} else if len(clusterCollection.Items) == 0 {
+			return nil, microerror.Mask(noResourcesError)
+		}
+
+		azureClusters = make(map[string]*capzv1alpha3.AzureCluster, len(clusterCollection.Items))
+		for _, cluster := range clusterCollection.Items {
+			c := cluster
+			azureClusters[cluster.GetName()] = &c
+		}
+	}
+
+	clusters := &capiv1alpha3.ClusterList{}
+	{
+		err = s.client.K8sClient.CtrlClient().List(ctx, clusters, inNamespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		} else if len(clusters.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
 		}
 	}
 
+	clusterCollection := &Collection{}
 	{
-		clusterList.APIVersion = "v1"
-		clusterList.Kind = "List"
+		for _, cr := range clusters.Items {
+			o := cr
+
+			if azureCluster, exists := azureClusters[cr.GetName()]; exists {
+				cr.TypeMeta = metav1.TypeMeta{
+					APIVersion: "cluster.x-k8s.io/v1alpha3",
+					Kind:       "Cluster",
+				}
+				azureCluster.TypeMeta = metav1.TypeMeta{
+					APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+					Kind:       "AzureCluster",
+				}
+
+				c := Cluster{
+					Cluster:      &o,
+					AzureCluster: azureCluster,
+				}
+				clusterCollection.Items = append(clusterCollection.Items, c)
+			}
+		}
 	}
 
-	return clusterList, nil
+	return clusterCollection, nil
 }
 
-func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (*capiv1alpha3.Cluster, error) {
-	var (
-		err    error
-		objKey runtimeClient.ObjectKey
-	)
+func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (Resource, error) {
+	var err error
 
-	objKey = runtimeClient.ObjectKey{
-		Name:      id,
-		Namespace: namespace,
+	labelSelector := runtimeClient.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: id,
 	}
-	cluster := &capiv1alpha3.Cluster{}
-	err = s.client.K8sClient.CtrlClient().Get(ctx, objKey, cluster)
-	if errors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
+	inNamespace := runtimeClient.InNamespace(namespace)
+
+	cluster := &Cluster{}
+
+	{
+		crs := &capiv1alpha3.ClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if len(crs.Items) < 1 {
+			return nil, microerror.Mask(notFoundError)
+		}
+		cluster.Cluster = &crs.Items[0]
+
+		cluster.Cluster.TypeMeta = metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			Kind:       "Cluster",
+		}
 	}
 
 	{
-		cluster.APIVersion = "v1alpha3"
-		cluster.Kind = "Cluster"
+		crs := &capzv1alpha3.AzureClusterList{}
+		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if len(crs.Items) < 1 {
+			return nil, microerror.Mask(notFoundError)
+		}
+		cluster.AzureCluster = &crs.Items[0]
+
+		cluster.AzureCluster.TypeMeta = metav1.TypeMeta{
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			Kind:       "AzureCluster",
+		}
 	}
 
 	return cluster, nil
