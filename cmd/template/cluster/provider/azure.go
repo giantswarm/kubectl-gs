@@ -85,6 +85,18 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
 			ResourceGroup: config.ClusterID,
+			NetworkSpec: capzv1alpha3.NetworkSpec{
+				APIServerLB: capzv1alpha3.LoadBalancerSpec{
+					Name: "LB",
+					SKU:  "Standard",
+					Type: "Public",
+					FrontendIPs: []capzv1alpha3.FrontendIP{
+						{
+							Name: "LB",
+						},
+					},
+				},
+			},
 		},
 	}
 
