@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - The `MachinePool` CRs now hold a reference to the `Spark` CR in their `spec.template.spec.bootstrap.configRef` field.
+- Add missing fields when templating `AzureMachine` and `AzureCluster`, in order to pass CAPZ validation.
 
 ## [1.21.0] - 2021-01-29
 
