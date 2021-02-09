@@ -1,0 +1,87 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureCluster
+metadata:
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/cluster-name: 4xipb
+    giantswarm.io/cluster: 4xipb
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 14.1.0
+  name: 4xipb
+  namespace: org-giantswarm
+spec:
+  controlPlaneEndpoint:
+    host: ""
+    port: 0
+  location: ""
+  networkSpec:
+    apiServerLB:
+      frontendIPs:
+      - name: Frontend
+      name: LB
+      sku: Standard
+      type: Public
+    vnet:
+      name: ""
+  resourceGroup: 4xipb
+status:
+  ready: false
+---
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  annotations:
+    cluster.giantswarm.io/description: Adrian test
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/cluster-name: 4xipb
+    giantswarm.io/cluster: 4xipb
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 14.1.0
+  name: 4xipb
+  namespace: org-giantswarm
+spec:
+  controlPlaneEndpoint:
+    host: ""
+    port: 0
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: AzureCluster
+    name: 4xipb
+    namespace: org-giantswarm
+status:
+  controlPlaneInitialized: false
+  infrastructureReady: false
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureMachine
+metadata:
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/cluster-name: 4xipb
+    cluster.x-k8s.io/control-plane: "true"
+    giantswarm.io/cluster: 4xipb
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 14.1.0
+  name: 4xipb-master-0
+  namespace: org-giantswarm
+spec:
+  availabilityZone: {}
+  image:
+    marketplace:
+      offer: flatcar-container-linux-free
+      publisher: kinvolk
+      sku: stable
+      thirdPartyImage: false
+      version: 2345.3.1
+  location: ""
+  osDisk:
+    cachingType: None
+    diskSizeGB: 50
+    managedDisk:
+      storageAccountType: Premium_LRS
+    osType: Linux
+  sshPublicKey: ""
+  vmSize: Standard_D4s_v3
+status:
+  ready: false
