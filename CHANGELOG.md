@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- The `MachinePool` CRs now hold a reference to the `Spark` CR in their `spec.template.spec.bootstrap.configRef` field.
+
 ## [1.21.0] - 2021-01-29
 
 ### Changed
