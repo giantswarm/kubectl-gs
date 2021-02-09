@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"text/template"
 
+	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
@@ -32,20 +33,21 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 			return microerror.Mask(err)
 		}
 
-		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
+		sparkCR := newSparkCR(config)
+		sparkCRYaml, err = yaml.Marshal(sparkCR)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-		machinePoolCR := newCAPIV1Alpha3MachinePoolCR(config, infrastructureRef)
+		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
+		bootstrapConfigRef := newSparkCRRef(sparkCR)
+
+		machinePoolCR := newCAPIV1Alpha3MachinePoolCR(config, infrastructureRef, bootstrapConfigRef)
 		{
 			machinePoolCR.GetAnnotations()[annotation.NodePoolMinSize] = strconv.Itoa(config.NodesMin)
 			machinePoolCR.GetAnnotations()[annotation.NodePoolMaxSize] = strconv.Itoa(config.NodesMax)
 		}
 		machinePoolCRYaml, err = yaml.Marshal(machinePoolCR)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		sparkCR := newSparkCR(config)
-		sparkCRYaml, err = yaml.Marshal(sparkCR)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -104,6 +106,24 @@ func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
 		err := expcapzv1alpha3.AddToScheme(s)
 		if err != nil {
 			panic(fmt.Sprintf("expcapzv1alpha3.AddToScheme: %+v", err))
+		}
+
+		infrastructureCRRef, err = reference.GetReference(s, obj)
+		if err != nil {
+			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
+		}
+	}
+
+	return infrastructureCRRef
+}
+
+func newSparkCRRef(obj runtime.Object) *corev1.ObjectReference {
+	var infrastructureCRRef *corev1.ObjectReference
+	{
+		s := runtime.NewScheme()
+		err := corev1alpha1.AddToScheme(s)
+		if err != nil {
+			panic(fmt.Sprintf("corev1alpha1.AddToScheme: %+v", err))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)

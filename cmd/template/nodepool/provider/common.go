@@ -34,7 +34,7 @@ type NodePoolCRsConfig struct {
 	Namespace         string
 }
 
-func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference) *expcapiv1alpha3.MachinePool {
+func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *expcapiv1alpha3.MachinePool {
 	mp := &expcapiv1alpha3.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
@@ -61,6 +61,9 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 				Spec: capiv1alpha3.MachineSpec{
 					ClusterName:       config.ClusterID,
 					InfrastructureRef: *infrastructureRef,
+					Bootstrap: capiv1alpha3.Bootstrap{
+						ConfigRef: bootstrapConfigRef,
+					},
 				},
 			},
 		},
