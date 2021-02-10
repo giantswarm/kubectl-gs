@@ -138,7 +138,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 			},
 			OSDisk: capzv1alpha3.OSDisk{
 				OSType:      "Linux",
-				CachingType: "None",
+				CachingType: "ReadWrite",
 				DiskSizeGB:  int32(50),
 				ManagedDisk: capzv1alpha3.ManagedDisk{
 					StorageAccountType: "Premium_LRS",
