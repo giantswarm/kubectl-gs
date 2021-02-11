@@ -85,6 +85,18 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
 			ResourceGroup: config.ClusterID,
+			NetworkSpec: capzv1alpha3.NetworkSpec{
+				APIServerLB: capzv1alpha3.LoadBalancerSpec{
+					Name: fmt.Sprintf("%s-%s-%s", config.ClusterID, "API", "PublicLoadBalancer"),
+					SKU:  "Standard",
+					Type: "Public",
+					FrontendIPs: []capzv1alpha3.FrontendIP{
+						{
+							Name: fmt.Sprintf("%s-%s-%s-%s", config.ClusterID, "API", "PublicLoadBalancer", "Frontend"),
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -125,8 +137,9 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 				},
 			},
 			OSDisk: capzv1alpha3.OSDisk{
-				OSType:     "Linux",
-				DiskSizeGB: int32(50),
+				OSType:      "Linux",
+				CachingType: "ReadWrite",
+				DiskSizeGB:  int32(50),
 				ManagedDisk: capzv1alpha3.ManagedDisk{
 					StorageAccountType: "Premium_LRS",
 				},
