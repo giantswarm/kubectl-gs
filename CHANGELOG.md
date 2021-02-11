@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.22.0] - 2021-02-11
+
 ### Changed
 
 - The `MachinePool` CRs now hold a reference to the `Spark` CR in their `spec.template.spec.bootstrap.configRef` field.
@@ -264,7 +266,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.21.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.22.0...HEAD
+[1.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/giantswarm/kubectl-gs/compare/v0.18.0...v1.19.0
