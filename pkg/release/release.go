@@ -1,3 +1,4 @@
+// Package release facilitates handling of workload cluster releases.
 package release
 
 import (
