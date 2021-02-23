@@ -26,7 +26,7 @@ Output columns:
 - ID: Unique identifier of the cluster.
 - CREATED: Date and time of the Cluster CR creation.
 - CONDITION: Latest condition reported for the cluster. Can be "CREATING", "CREATED", "UPDATING", "UPDATED", "DELETING".
-- RELEASE: Release version of the cluster.
+- RELEASE: Workload cluster release used by the cluster.
 - ORGANIZATION: Organization owning the cluster.
 - DESCRIPTION: User friendly description for the cluster.`
 
