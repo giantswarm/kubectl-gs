@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@4.2.1
+#    devctl@4.3.0
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -107,4 +107,5 @@ test:
 ## build-docker: builds docker image to registry
 build-docker: build-linux
 	@echo "====> $@"
+	cp -a $(APPLICATION)-linux $(APPLICATION)
 	docker build -t ${APPLICATION}:${VERSION} .
