@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.21.0] - 2021-02-24
+
 ### Changed
 
 - Allow having node pools with the scaling set to `0`.
@@ -270,7 +272,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.22.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.21.0...HEAD
+[1.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.22.0...v1.21.0
 [1.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.19.0...v1.20.0
