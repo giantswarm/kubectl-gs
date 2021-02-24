@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Allow having node pools with the scaling set to `0`.
+
 ## [1.22.0] - 2021-02-11
 
 ### Changed
