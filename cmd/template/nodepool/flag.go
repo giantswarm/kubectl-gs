@@ -131,11 +131,11 @@ func (f *flag) Validate() error {
 		}
 
 		// Validate scaling.
-		if f.NodesMax < 1 {
-			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMax)
+		if f.NodesMax < 0 {
+			return microerror.Maskf(invalidFlagError, "--%s must be >= 0", flagNodesMax)
 		}
-		if f.NodesMin < 1 {
-			return microerror.Maskf(invalidFlagError, "--%s must be > 0", flagNodesMin)
+		if f.NodesMin < 0 {
+			return microerror.Maskf(invalidFlagError, "--%s must be >= 0", flagNodesMin)
 		}
 		if f.NodesMin > f.NodesMax {
 			return microerror.Maskf(invalidFlagError, "--%s must be <= --%s", flagNodesMin, flagNodesMax)
