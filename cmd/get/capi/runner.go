@@ -173,7 +173,7 @@ var (
 			Provider:      providerAll,
 		},
 		{
-			DisplayName:   "Kubadm Control Plane",
+			DisplayName:   "Kubeadm Control Plane",
 			LabelSelector: "app.kubernetes.io/name=cluster-api-control-plane",
 			ContainerName: "manager",
 			Provider:      providerAll,
