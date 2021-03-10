@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Add support for showing information about Cluster API CRDs and controllers.
+
 ## [1.23.0] - 2021-02-24
 
 ### Changed
