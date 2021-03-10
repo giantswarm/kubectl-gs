@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for showing information about Cluster API CRDs and controllers.
+
 ### Fixed
 
 - If the CLI quits with an error, display the error via the default OS error stream.
