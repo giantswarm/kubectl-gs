@@ -7,7 +7,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Changed
+### Fixed
 
 - If the CLI quits with an error, display the error via the default OS error stream.
 
