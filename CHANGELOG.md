@@ -7,9 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.24.0] - 2021-03-10
+
 ### Added
 
 - Add support for showing information about Cluster API CRDs and controllers.
+
+### Changed
+
+- Switch to a PKCE authentication flow.
 
 ### Fixed
 
@@ -280,7 +286,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.23.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.24.0...HEAD
+[1.24.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.20.0...v1.21.0
