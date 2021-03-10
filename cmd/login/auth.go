@@ -24,8 +24,7 @@ import (
 )
 
 const (
-	clientID     = "zQiFLUnrTFQwrybYzeY53hWWfhOKWRAU"
-	clientSecret = "TVHzVPin2WTiCma6bqp5hdxgKbWZKRbz" // #nosec G101
+	clientID = "zQiFLUnrTFQwrybYzeY53hWWfhOKWRAU"
 
 	authCallbackURL  = "http://localhost"
 	authCallbackPort = 8085
@@ -42,11 +41,10 @@ var (
 // handleAuth executes the OIDC authentication against an installation's authentication provider.
 func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
 	oidcConfig := oidc.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Issuer:       i.AuthURL,
-		RedirectURL:  fmt.Sprintf("%s:%d%s", authCallbackURL, authCallbackPort, authCallbackPath),
-		AuthScopes:   authScopes[:],
+		ClientID:    clientID,
+		Issuer:      i.AuthURL,
+		RedirectURL: fmt.Sprintf("%s:%d%s", authCallbackURL, authCallbackPort, authCallbackPath),
+		AuthScopes:  authScopes[:],
 	}
 	auther, err := oidc.New(ctx, oidcConfig)
 	if err != nil {
@@ -90,7 +88,6 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 			return oidc.UserInfo{}, microerror.Mask(invalidAuthResult)
 		}
 		authResult.ClientID = clientID
-		authResult.ClientSecret = clientSecret
 	}
 
 	return authResult, nil
@@ -154,7 +151,6 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 			Name: "oidc",
 			Config: map[string]string{
 				ClientID:     authResult.ClientID,
-				ClientSecret: authResult.ClientSecret,
 				IDToken:      authResult.IDToken,
 				Issuer:       i.AuthURL,
 				RefreshToken: authResult.RefreshToken,
@@ -241,10 +237,10 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	var auther *oidc.Authenticator
 	{
 		oidcConfig := oidc.Config{
-			Issuer:       authProvider.Config[Issuer],
-			ClientID:     authProvider.Config[ClientID],
-			ClientSecret: authProvider.Config[ClientSecret],
+			Issuer:   authProvider.Config[Issuer],
+			ClientID: authProvider.Config[ClientID],
 		}
+
 		auther, err = oidc.New(ctx, oidcConfig)
 		if err != nil {
 			return microerror.Maskf(incorrectConfigurationError, "\n%v", err.Error())
@@ -282,7 +278,6 @@ func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
 	keys := []string{
 		ClientID,
-		ClientSecret,
 		IDToken,
 		Issuer,
 		RefreshToken,

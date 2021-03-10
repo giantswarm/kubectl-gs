@@ -28,9 +28,8 @@ func Middleware(k8sConfigAccess clientcmd.ConfigAccess) middleware.Middleware {
 		var auther *oidc.Authenticator
 		{
 			oidcConfig := oidc.Config{
-				Issuer:       authProvider.Config["idp-issuer-url"],
-				ClientID:     authProvider.Config["client-id"],
-				ClientSecret: authProvider.Config["client-secret"],
+				Issuer:   authProvider.Config["idp-issuer-url"],
+				ClientID: authProvider.Config["client-id"],
 			}
 			auther, err = oidc.New(ctx, oidcConfig)
 			if err != nil {
