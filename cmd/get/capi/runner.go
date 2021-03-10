@@ -271,8 +271,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		if len(podList.Items) == 1 {
-			for _, container := range podList.Items[0].Spec.Containers {
+		for _, pod := range podList.Items {
+			for _, container := range pod.Spec.Containers {
 				if container.Name == "manager" {
 					version = strings.Split(container.Image, ":")[1]
 				}
