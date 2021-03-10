@@ -23,7 +23,7 @@ func main() {
 		ep := errorprinter.New(errorprinter.Config{
 			StackTrace: isDebugMode(),
 		})
-		fmt.Println(ep.Format(err))
+		fmt.Fprintln(os.Stderr, ep.Format(err))
 		os.Exit(1)
 	}
 }
