@@ -88,9 +88,9 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must contain at least one digit", flagClusterID)
 		}
 
-		matched, err := regexp.MatchString("^[a-z0-9]+$", f.ClusterID)
+		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.ClusterID)
 		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain [a-z0-9]", flagClusterID)
+			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagClusterID)
 		}
 
 		return nil
