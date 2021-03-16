@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.25.0] - 2021-03-16
+
 ### Changed
 
 - Disallow provided cluster IDs from starting with a letter.
@@ -290,7 +292,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.24.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.25.0...HEAD
+[1.25.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.24.0...v1.25.0
 [1.24.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.21.0...v1.22.0
