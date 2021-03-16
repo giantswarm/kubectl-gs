@@ -11,7 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Disallow provided cluster IDs from starting with a letter.
+- Disallow provided cluster IDs from starting with a digit.
 
 ## [1.24.0] - 2021-03-10
 
