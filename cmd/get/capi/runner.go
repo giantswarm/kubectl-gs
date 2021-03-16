@@ -99,7 +99,7 @@ var (
 		},
 		{
 			DisplayName: "AWS Machine Pools",
-			Name:        "awsmachinepools.exp.infrastructure.cluster.x-k8s.io",
+			Name:        "awsmachinepools.infrastructure.cluster.x-k8s.io",
 			Provider:    providerAWS,
 		},
 		{
