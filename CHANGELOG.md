@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add clusterresourcesets and clusterresourcesetbindings CRDs to the information about Cluster API CRDs and controllers.
+
 ## [1.25.0] - 2021-03-16
 
 ### Changed
