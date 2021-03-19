@@ -53,6 +53,16 @@ var (
 			Provider:    providerAll,
 		},
 		{
+			DisplayName: "ClusterResourceSet",
+			Name:        "clusterresourcesets.addons.cluster.x-k8s.io",
+			Provider:    providerAll,
+		},
+		{
+			DisplayName: "ClusterResourceSetBinding",
+			Name:        "clusterresourcesetbindings.addons.cluster.x-k8s.io",
+			Provider:    providerAll,
+		},
+		{
 			DisplayName: "Machine Pool",
 			Name:        "machinepools.exp.cluster.x-k8s.io",
 			Provider:    providerAll,
