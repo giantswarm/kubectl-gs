@@ -1,6 +1,6 @@
 module github.com/giantswarm/kubectl-gs
 
-go 1.14
+go 1.16
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
@@ -14,7 +14,6 @@ require (
 	github.com/giantswarm/micrologger v0.3.4
 	github.com/google/go-cmp v0.5.4
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/markbates/pkger v0.17.1
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
