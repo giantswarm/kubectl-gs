@@ -1,26 +1,33 @@
 package template
 
 import (
+	"embed"
 	"io"
 
 	"github.com/giantswarm/microerror"
-	"github.com/markbates/pkger"
+)
+
+var (
+	//go:embed internal/*
+	templates embed.FS
 )
 
 func GetSuccessHTMLTemplateReader() (io.ReadSeeker, error) {
-	f, err := pkger.Open("/cmd/login/template/internal/sso_complete.html")
+	f, err := templates.Open("internal/sso_complete.html")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	defer f.Close()
 
-	return f, nil
+	return f.(io.ReadSeeker), nil
 }
 
 func GetFailedHTMLTemplateReader() (io.ReadSeeker, error) {
-	f, err := pkger.Open("/cmd/login/template/internal/sso_failed.html")
+	f, err := templates.Open("internal/sso_failed.html")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	defer f.Close()
 
-	return f, nil
+	return f.(io.ReadSeeker), nil
 }
