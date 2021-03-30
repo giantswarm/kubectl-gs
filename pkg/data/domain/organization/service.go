@@ -2,7 +2,6 @@ package organization
 
 import (
 	"context"
-
 	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -10,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var _ Interface = (*Service)(nil)
+var _ Interface = &Service{}
 
 type Config struct {
 	Client client.Client
@@ -20,7 +19,7 @@ type Service struct {
 	client client.Client
 }
 
-func New(config Config) (*Service, error) {
+func New(config Config) (Interface, error) {
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}
@@ -67,7 +66,6 @@ func (s *Service) getByName(ctx context.Context, name string) (Resource, error) 
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
 	return org, nil
 }
 
@@ -98,3 +96,4 @@ func (s *Service) getAll(ctx context.Context) (Resource, error) {
 
 	return orgCollection, nil
 }
+
