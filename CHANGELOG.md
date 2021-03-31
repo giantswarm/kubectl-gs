@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add clusterresourcesets and clusterresourcesetbindings CRDs to the information about Cluster API CRDs and controllers.
 
+### Changed
+
+- Build release binaries using go 1.16. Kubectl-gs is now available for Linux and Darwin ARM64 machines including Apple M1 Macs.
+
 ## [1.25.0] - 2021-03-16
 
 ### Changed
