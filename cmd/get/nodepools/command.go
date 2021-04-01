@@ -33,12 +33,10 @@ Output columns:
 - DESCRIPTION: User friendly description for the node pool.`
 
 	examples = `  # List all node pools you have access to
-  kgs get nodepools
+  kubectl gs get nodepools
 
   # Get one specific nodepool by its ID
-  kgs get nodepool 3f01a
-
-  Note: 'kgs' is an alias for 'kubectl gs'.`
+  kubectl gs get nodepool 3f01a`
 )
 
 type Config struct {

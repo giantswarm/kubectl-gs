@@ -25,21 +25,19 @@ You can use as an argument:
   * An existing Giant Swarm specific kubectl context name, e. g. 'gs-test'
 `
 	examples = `  # See on which installation you're logged in currently.
-  kgs login
+  kubectl gs login
 
   # Log in using your K8s API URL.
-  kgs login https://g8s.test.eu-west-1.aws.gigantic.io
+  kubectl gs login https://g8s.test.eu-west-1.aws.gigantic.io
 
   # Log in using your Web UI URL.
-  kgs login https://happa.g8s.test.eu-west-1.aws.gigantic.io
+  kubectl gs login https://happa.g8s.test.eu-west-1.aws.gigantic.io
 
   # Log in using a GS specific context name.
-  kgs login gs-test
+  kubectl gs login gs-test
 
   # Or even shorter
-  kgs login test
-
-  Note: 'kgs' is an alias for 'kubectl gs'.`
+  kubectl gs login test`
 )
 
 type Config struct {

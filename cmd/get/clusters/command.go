@@ -31,12 +31,10 @@ Output columns:
 - DESCRIPTION: User friendly description for the cluster.`
 
 	examples = `  # List all clusters you have access to
-  kgs get clusters
+  kubectl gs get clusters
   
   # Get one specific cluster by its ID
-  kgs get clusters f83ir
-  
-  Note: 'kgs' is an alias for 'kubectl gs'.`
+  kubectl gs get clusters f83ir`
 )
 
 type Config struct {

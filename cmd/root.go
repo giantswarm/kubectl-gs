@@ -27,11 +27,7 @@ const (
 	name        = "kubectl\u00a0gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
-Get more information at https://github.com/giantswarm/kubectl-gs
-
-Note: We highly recommend setting up 'kgs' as a shorthand.
-
-   alias kgs="kubectl gs"
+Get more information at https://docs.giantswarm.io/ui-api/kubectl-gs/
 `
 )
 
