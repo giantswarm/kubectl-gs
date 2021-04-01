@@ -1,4 +1,4 @@
 No clusters found.
 To create a cluster, please check
 
-  kgs template cluster --help
+  kubectl gs template cluster --help

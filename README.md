@@ -6,11 +6,10 @@
 
 ```nohighlight
 kubectl krew install gs
-alias kgs="kubectl gs"
-kgs
+kubectl gs
 ```
 
-Check the [installation docs](https://docs.giantswarm.io/reference/kubectl-gs/installation/) for details on installation with and without Krew.
+Check the [installation docs](https://docs.giantswarm.io/ui-api/kubectl-gs/installation/) for details on installation with and without Krew.
 
 ## Features
 
@@ -25,7 +24,7 @@ Check the [installation docs](https://docs.giantswarm.io/reference/kubectl-gs/in
 
 ## Documentation
 
-Find the [kubectl gs reference](https://docs.giantswarm.io/reference/kubectl-gs/) in our documentation site.
+Find the [kubectl gs reference](https://docs.giantswarm.io/ui-api/kubectl-gs/) in our documentation site.
 
 ## Publishing a release
 

@@ -108,10 +108,10 @@ func (r *runner) tryToReuseExistingContext() error {
 	}
 
 	if currentContext != "" {
-		return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kgs login --help' to find out how to log in to a particular management cluster.", currentContext)
+		return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.", currentContext)
 	}
 
-	return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kgs login --help' to find out how to log in to a particular management cluster.")
+	return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
@@ -127,7 +127,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kgs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
+	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
@@ -195,7 +195,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
 	fmt.Fprintf(r.stdout, " ")
 	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
-	fmt.Fprintf(r.stdout, "  kgs login %s\n", i.Codename)
+	fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
 	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 
 	return nil
