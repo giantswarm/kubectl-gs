@@ -8,12 +8,11 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions/v3 v3.22.0
-	github.com/giantswarm/app/v3 v3.0.0-20201104142815-217bc60dc14d
+	github.com/giantswarm/app/v4 v4.9.0
 	github.com/giantswarm/k8sclient/v5 v5.11.0
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0
 	github.com/google/go-cmp v0.5.5
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
