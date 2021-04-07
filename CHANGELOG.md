@@ -15,6 +15,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Build release binaries using go 1.16. Kubectl-gs is now available for Linux and Darwin ARM64 machines including Apple M1 Macs.
 - Upgrade dependency github.com/giantswarm/app to 4.9.0
+- Fetch installation information using a new service, instead of relying on the Giant Swarm REST API.
 
 ## [1.25.0] - 2021-03-16
 
