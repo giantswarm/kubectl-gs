@@ -1,7 +1,13 @@
 {
-    "installation": {
-        "provider": "aws",
-        "k8s_cacert": "        | -----BEGIN CERTIFICATE----- something otherthing lastthing -----END CERTIFICATE-----",
-        "name": "test"
+    "data": {
+        "identity": {
+            "provider": "aws",
+            "codename": "test"
+        },
+        "kubernetes": {
+            "apiUrl": "https://g8s.test.eu-west-1.aws.gigantic.io",
+            "authUrl": "https://dex.g8s.test.eu-west-1.aws.gigantic.io",
+            "caCert": "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----"
+        }
     }
 }

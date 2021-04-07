@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 )
@@ -23,27 +24,16 @@ func Test_getInstallationInfo(t *testing.T) {
 			httpResponseStatusCode: http.StatusOK,
 			responsePath:           "testdata/get_installation_info_correct_response.in",
 			expectedResult: installationInfo{
-				Provider:  "aws",
-				K8sCaCert: "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----",
-				Name:      "test",
+				Identity: installationInfoIdentity{
+					Provider: "aws",
+					Codename: "test",
+				},
+				Kubernetes: installationInfoKubernetes{
+					ApiUrl:  "https://g8s.test.eu-west-1.aws.gigantic.io",
+					AuthUrl: "https://dex.g8s.test.eu-west-1.aws.gigantic.io",
+					CaCert:  "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----",
+				},
 			},
-		},
-		{
-			name:                   "case 1: fetch installation information, invalid certificate",
-			httpResponseStatusCode: http.StatusOK,
-			responsePath:           "testdata/get_installation_info_invalid_certificate.in",
-			errorMatcher:           IsCannotParseCertificate,
-		},
-		{
-			name:                   "case 2: fetch installation information, empty certificate",
-			httpResponseStatusCode: http.StatusOK,
-			responsePath:           "testdata/get_installation_info_empty_certificate.in",
-			errorMatcher:           IsCannotParseCertificate,
-		},
-		{
-			name:                   "case 3: fetch installation information, bad request",
-			httpResponseStatusCode: http.StatusBadRequest,
-			errorMatcher:           IsCannotGetInstallationInfo,
 		},
 	}
 
@@ -66,7 +56,21 @@ func Test_getInstallationInfo(t *testing.T) {
 			}))
 			defer ts.Close()
 
-			info, err := getInstallationInfo(ts.Client(), ts.URL)
+			var gqlClient graphql.Client
+			{
+				httpClient := ts.Client()
+
+				config := graphql.ClientImplConfig{
+					HttpClient: httpClient,
+					Url:        ts.URL,
+				}
+				gqlClient, err = graphql.NewClient(config)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err.Error())
+				}
+			}
+
+			info, err := getInstallationInfo(gqlClient)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))

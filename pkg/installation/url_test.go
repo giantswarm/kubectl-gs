@@ -3,7 +3,6 @@ package installation
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 )
 
@@ -71,32 +70,11 @@ func Test_getBasePath(t *testing.T) {
 	}
 }
 
-func Test_getGiantSwarmApiUrls(t *testing.T) {
+func Test_getAthenaUrl(t *testing.T) {
 	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
-	expectedResult := []string{
-		"https://api.g8s.test.eu-west-1.aws.coolio.com",
-		"https://gs-api.g8s.test.eu-west-1.aws.coolio.com",
-	}
+	expectedResult := "https://athena.g8s.test.eu-west-1.aws.coolio.com"
 
-	if result := getGiantSwarmApiUrls(basePath); len(cmp.Diff(result, expectedResult)) > 0 {
-		t.Fatalf("urls not expected, got: %s", result)
-	}
-}
-
-func Test_getK8sApiUrl(t *testing.T) {
-	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
-	expectedResult := "https://g8s.test.eu-west-1.aws.coolio.com"
-
-	if result := getK8sApiUrl(basePath); result != expectedResult {
-		t.Fatalf("url not expected, got: %s", result)
-	}
-}
-
-func Test_getAuthUrl(t *testing.T) {
-	basePath := "g8s.test.eu-west-1.aws.coolio.com" // nolint:goconst
-	expectedResult := "https://dex.g8s.test.eu-west-1.aws.coolio.com"
-
-	if result := getAuthUrl(basePath); result != expectedResult {
+	if result := getAthenaUrl(basePath); result != expectedResult {
 		t.Fatalf("url not expected, got: %s", result)
 	}
 }

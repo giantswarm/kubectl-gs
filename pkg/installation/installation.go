@@ -1,9 +1,16 @@
 package installation
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 	"github.com/giantswarm/microerror"
+)
+
+const (
+	requestTimeout = 15 * time.Second
 )
 
 type Installation struct {
@@ -20,36 +27,33 @@ func New(fromUrl string) (*Installation, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	k8sApiUrl := getK8sApiUrl(basePath)
-	apiUrls := getGiantSwarmApiUrls(basePath)
-	authUrl := getAuthUrl(basePath)
-
-	var installationInfo installationInfo
+	var gqlClient graphql.Client
 	{
-		client := http.DefaultClient
-		for _, apiUrl := range apiUrls {
-			installationInfo, err = getInstallationInfo(client, apiUrl)
-			if IsCannotGetInstallationInfo(err) {
-				continue
-			} else if err != nil {
-				return nil, microerror.Mask(err)
-			}
+		httpClient := http.DefaultClient
+		httpClient.Timeout = requestTimeout
 
-			break
+		athenaUrl := getAthenaUrl(basePath)
+		config := graphql.ClientImplConfig{
+			HttpClient: httpClient,
+			Url:        fmt.Sprintf("%s/graphql", athenaUrl),
 		}
-
-		// None of the urls was correct. Let's throw an error.
+		gqlClient, err = graphql.NewClient(config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
+	info, err := getInstallationInfo(gqlClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	i := &Installation{
-		K8sApiURL: k8sApiUrl,
-		AuthURL:   authUrl,
-		Provider:  installationInfo.Provider,
-		Codename:  installationInfo.Name,
-		CACert:    installationInfo.K8sCaCert,
+		K8sApiURL: info.Kubernetes.ApiUrl,
+		AuthURL:   info.Kubernetes.AuthUrl,
+		Provider:  info.Identity.Provider,
+		Codename:  info.Identity.Codename,
+		CACert:    info.Kubernetes.CaCert,
 	}
 
 	return i, nil

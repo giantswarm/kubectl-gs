@@ -4,15 +4,6 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var cannotParseCertificateError = &microerror.Error{
-	Kind: "cannotParseCertificateError",
-}
-
-// IsCannotParseCertificate asserts cannotParseCertificateError.
-func IsCannotParseCertificate(err error) bool {
-	return microerror.Cause(err) == cannotParseCertificateError
-}
-
 var cannotGetInstallationInfoError = &microerror.Error{
 	Kind: "cannotGetInstallationInfoError",
 }
