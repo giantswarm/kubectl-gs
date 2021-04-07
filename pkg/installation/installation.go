@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 )
 
 const (

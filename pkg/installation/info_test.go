@@ -6,9 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+
+	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 )
 
 func Test_getInstallationInfo(t *testing.T) {
