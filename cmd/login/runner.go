@@ -169,13 +169,13 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 func (r *runner) loginWithURL(ctx context.Context, path string) error {
 	i, err := installation.New(path)
 	if installation.IsUnknownUrlType(err) {
-		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Control Plane API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
+		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Management API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
 	if installation.GetUrlType(path) == installation.UrlTypeHappa {
-		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Control Plane API URL from web UI URL: %s\n", i.K8sApiURL))
+		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
 	authResult, err := handleAuth(ctx, r.stdout, i, r.flag.ClusterAdmin)
