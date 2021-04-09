@@ -22,16 +22,15 @@ const (
 	flagAzureVMSize = "azure-vm-size"
 
 	// Common.
-	flagAvailabilityZones    = "availability-zones"
-	flagClusterID            = "cluster-id"
-	flagNodepoolName         = "nodepool-name"
-	flagNodesMax             = "nodes-max"
-	flagNodesMin             = "nodes-min"
-	flagNodexMax             = "nodex-max"
-	flagNodexMin             = "nodex-min"
-	flagNumAvailabilityZones = "num-availability-zones"
-	flagOutput               = "output"
-	flagOwner                = "owner"
+	flagAvailabilityZones = "availability-zones"
+	flagClusterID         = "cluster-id"
+	flagNodepoolName      = "nodepool-name"
+	flagNodesMax          = "nodes-max"
+	flagNodesMin          = "nodes-min"
+	flagNodexMax          = "nodex-max"
+	flagNodexMin          = "nodex-min"
+	flagOutput            = "output"
+	flagOwner             = "owner"
 )
 
 const (
@@ -52,14 +51,13 @@ type flag struct {
 	AzureVMSize string
 
 	// Common.
-	AvailabilityZones    []string
-	ClusterID            string
-	NodepoolName         string
-	NodesMax             int
-	NodesMin             int
-	NumAvailabilityZones int
-	Output               string
-	Owner                string
+	AvailabilityZones []string
+	ClusterID         string
+	NodepoolName      string
+	NodesMax          int
+	NodesMin          int
+	Output            string
+	Owner             string
 
 	// Deprecated
 	// Can be removed in a future version around March 2021 or later.
@@ -85,7 +83,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, maxNodes, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d)", maxNodes))
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, minNodes, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d)", minNodes))
-	cmd.Flags().IntVar(&f.NumAvailabilityZones, flagNumAvailabilityZones, 0, "Number of availability zones to use. Default is 1 on AWS and 0 on Azure.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 
@@ -154,19 +151,6 @@ func (f *flag) Validate() error {
 			if len(f.AvailabilityZones) > 0 {
 				azs = f.AvailabilityZones
 				numOfAZs = len(azs)
-			} else {
-				if f.NumAvailabilityZones > 0 {
-					numOfAZs = f.NumAvailabilityZones
-				} else {
-					// Customer didn't specify explicit availability zones nor a number of desired AZs.
-					// Default for AWS is 1, for Azure is 0 (automated selection).
-					switch f.Provider {
-					case key.ProviderAWS:
-						numOfAZs = 1
-					case key.ProviderAzure:
-						numOfAZs = 0
-					}
-				}
 			}
 		}
 
