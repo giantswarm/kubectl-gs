@@ -9,9 +9,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+
+	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
 
 var update = flag.Bool("update", false, "update .golden reference test files")
