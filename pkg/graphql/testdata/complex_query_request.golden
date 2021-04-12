@@ -1,0 +1,1 @@
+{"query":"\nquery GetSomething {\n\tsomething(name: $test) {\n\t\tsomething1\n\t\tsomething2\n\t}\n}\n\t\t\t","variables":{"test":"some-test-value"}}

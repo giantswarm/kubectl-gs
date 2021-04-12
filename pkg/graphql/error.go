@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -62,4 +63,10 @@ func (r ResponseErrorCollection) Error() string {
 	}
 
 	return builder.String()
+}
+
+func IsResponseErrorCollection(err error) bool {
+	responseErrorCollection := &ResponseErrorCollection{}
+
+	return errors.As(err, responseErrorCollection)
 }

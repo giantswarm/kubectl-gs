@@ -39,6 +39,10 @@ func NewClient(config ClientImplConfig) (*ClientImpl, error) {
 func (c *ClientImpl) ExecuteQuery(query string, variables map[string]string) (*json.RawMessage, error) {
 	var err error
 
+	if len(query) < 1 {
+		return nil, microerror.Maskf(queryError, "empty query")
+	}
+
 	var req *http.Request
 	{
 		body := requestBody{

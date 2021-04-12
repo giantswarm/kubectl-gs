@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "something": {
+        "something1": true,
+        "something2": "test"
+      }
+    }
+  ]
+}
