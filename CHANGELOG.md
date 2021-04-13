@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.26.0] - 2021-04-13
+
 ### Added
 
 - Add clusterresourcesets and clusterresourcesetbindings CRDs to the information about Cluster API CRDs and controllers.
@@ -307,7 +309,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.25.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.26.0...HEAD
+[1.26.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.25.0...v1.26.0
 [1.25.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.24.0...v1.25.0
 [1.24.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.22.0...v1.23.0
