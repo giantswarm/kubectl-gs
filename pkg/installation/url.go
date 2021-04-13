@@ -12,7 +12,7 @@ import (
 const (
 	k8sApiUrlPrefix = "g8s"
 	happaUrlPrefix  = "happa"
-	authUrlPrefix   = "dex"
+	athenaUrlPrefix = "athena"
 )
 
 const (
@@ -20,14 +20,6 @@ const (
 	UrlTypeK8sApi
 	UrlTypeHappa
 )
-
-// This list contains the most common GS API prefixes out there.
-// We need this hacky approach because some installations have
-// different prefixes.
-var gsApiUrlPrefixes = [...]string{
-	"api",
-	"gs-api",
-}
 
 func GetUrlType(u string) int {
 	switch {
@@ -73,21 +65,6 @@ func getBasePath(u string) (string, error) {
 	}
 }
 
-func getGiantSwarmApiUrls(basePath string) []string {
-	var urls []string
-	{
-		for _, prefix := range gsApiUrlPrefixes {
-			urls = append(urls, fmt.Sprintf("https://%s.%s", prefix, basePath))
-		}
-	}
-
-	return urls
-}
-
-func getK8sApiUrl(basePath string) string {
-	return fmt.Sprintf("https://%s", basePath)
-}
-
-func getAuthUrl(basePath string) string {
-	return fmt.Sprintf("https://%s.%s", authUrlPrefix, basePath)
+func getAthenaUrl(basePath string) string {
+	return fmt.Sprintf("https://%s.%s", athenaUrlPrefix, basePath)
 }
