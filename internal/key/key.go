@@ -28,6 +28,7 @@ const (
 func GenerateID() string {
 	compiledRegexp, _ := regexp.Compile("^[a-z]+$")
 
+	/* #nosec G404 */
 	for {
 		letterRunes := []rune(IDChars)
 		b := make([]rune, IDLength)

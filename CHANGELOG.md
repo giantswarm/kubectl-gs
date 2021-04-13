@@ -11,6 +11,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add clusterresourcesets and clusterresourcesetbindings CRDs to the information about Cluster API CRDs and controllers.
 
+### Removed
+
+- Removed the `--num-availability-zones` flag from the `kubectl-gs template` commands. The `--availability-zones` flag
+should be used to specify a list of availability zones.
+
 ### Changed
 
 - Build release binaries using go 1.16. Kubectl-gs is now available for Linux and Darwin ARM64 machines including Apple M1 Macs.
