@@ -1,6 +1,7 @@
 package installation
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -22,7 +23,7 @@ type Installation struct {
 	CACert    string
 }
 
-func New(fromUrl string) (*Installation, error) {
+func New(ctx context.Context, fromUrl string) (*Installation, error) {
 	basePath, err := getBasePath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -44,7 +45,7 @@ func New(fromUrl string) (*Installation, error) {
 		}
 	}
 
-	info, err := getInstallationInfo(gqlClient)
+	info, err := getInstallationInfo(ctx, gqlClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -36,7 +37,7 @@ func NewClient(config ClientImplConfig) (*ClientImpl, error) {
 	return c, nil
 }
 
-func (c *ClientImpl) ExecuteQuery(query string, variables map[string]string, v interface{}) error {
+func (c *ClientImpl) ExecuteQuery(ctx context.Context, query string, variables map[string]string, v interface{}) error {
 	var err error
 
 	if len(query) < 1 {

@@ -1,5 +1,7 @@
 package graphql
 
+import "context"
+
 type Client interface {
-	ExecuteQuery(query string, variables map[string]string, v interface{}) error
+	ExecuteQuery(ctx context.Context, query string, variables map[string]string, v interface{}) error
 }

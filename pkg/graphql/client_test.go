@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	"context"
 	"flag"
 	"io"
 	"net/http"
@@ -195,7 +196,7 @@ query GetSomething {
 			}
 
 			var result map[string]interface{}
-			err = gqlClient.ExecuteQuery(tc.query, tc.variables, &result)
+			err = gqlClient.ExecuteQuery(context.Background(), tc.query, tc.variables, &result)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))

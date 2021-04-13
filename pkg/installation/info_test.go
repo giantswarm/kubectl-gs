@@ -1,6 +1,7 @@
 package installation
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -71,7 +72,7 @@ func Test_getInstallationInfo(t *testing.T) {
 				}
 			}
 
-			info, err := getInstallationInfo(gqlClient)
+			info, err := getInstallationInfo(context.Background(), gqlClient)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))

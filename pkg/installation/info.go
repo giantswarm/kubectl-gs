@@ -1,6 +1,8 @@
 package installation
 
 import (
+	"context"
+
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/kubectl-gs/pkg/graphql"
@@ -37,9 +39,9 @@ type installationInfo struct {
 	Kubernetes installationInfoKubernetes `json:"kubernetes"`
 }
 
-func getInstallationInfo(gqlClient graphql.Client) (installationInfo, error) {
+func getInstallationInfo(ctx context.Context, gqlClient graphql.Client) (installationInfo, error) {
 	var info installationInfo
-	err := gqlClient.ExecuteQuery(infoQuery, nil, &info)
+	err := gqlClient.ExecuteQuery(ctx, infoQuery, nil, &info)
 	if err != nil {
 		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfoError, "make sure you're connected to the internet and that the Athena service is up and running\n%s", err.Error())
 	}
