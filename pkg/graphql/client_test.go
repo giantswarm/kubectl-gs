@@ -1,7 +1,6 @@
 package graphql
 
 import (
-	"encoding/json"
 	"flag"
 	"io"
 	"net/http"
@@ -195,7 +194,8 @@ query GetSomething {
 				}
 			}
 
-			serializedResult, err := gqlClient.ExecuteQuery(tc.query, tc.variables)
+			var result map[string]interface{}
+			err = gqlClient.ExecuteQuery(tc.query, tc.variables, &result)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))
@@ -203,12 +203,6 @@ query GetSomething {
 
 				return
 			} else if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-
-			var result map[string]interface{}
-			err = json.Unmarshal(*serializedResult, &result)
-			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 

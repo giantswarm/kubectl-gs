@@ -1,7 +1,5 @@
 package graphql
 
-import "encoding/json"
-
 type Client interface {
-	ExecuteQuery(query string, variables map[string]string) (*json.RawMessage, error)
+	ExecuteQuery(query string, variables map[string]string, v interface{}) error
 }

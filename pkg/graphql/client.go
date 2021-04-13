@@ -36,11 +36,11 @@ func NewClient(config ClientImplConfig) (*ClientImpl, error) {
 	return c, nil
 }
 
-func (c *ClientImpl) ExecuteQuery(query string, variables map[string]string) (*json.RawMessage, error) {
+func (c *ClientImpl) ExecuteQuery(query string, variables map[string]string, v interface{}) error {
 	var err error
 
 	if len(query) < 1 {
-		return nil, microerror.Maskf(queryError, "empty query")
+		return microerror.Maskf(queryError, "empty query")
 	}
 
 	var req *http.Request
@@ -52,12 +52,12 @@ func (c *ClientImpl) ExecuteQuery(query string, variables map[string]string) (*j
 		buf := &bytes.Buffer{}
 		err = json.NewEncoder(buf).Encode(body)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 
 		req, err = http.NewRequest(http.MethodPost, c.url, buf)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -65,29 +65,34 @@ func (c *ClientImpl) ExecuteQuery(query string, variables map[string]string) (*j
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, microerror.Mask(httpError)
+		return microerror.Mask(httpError)
 	}
 
 	var resBody responseBody
 	{
 		err = json.NewDecoder(res.Body).Decode(&resBody)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 
 		if len(resBody.Errors) > 0 {
-			return nil, microerror.Mask(resBody.Errors)
+			return microerror.Mask(resBody.Errors)
 		}
 
 		if resBody.Data == nil {
-			return nil, microerror.Maskf(queryError, "empty response")
+			return microerror.Maskf(queryError, "empty response")
+		}
+
+		err = json.Unmarshal(*resBody.Data, &v)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 
-	return resBody.Data, nil
+	return nil
 }
