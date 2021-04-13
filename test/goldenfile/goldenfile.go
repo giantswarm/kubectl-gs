@@ -33,7 +33,7 @@ func (gf *GoldenFile) Read() ([]byte, error) {
 }
 
 func (gf *GoldenFile) Update(data []byte) error {
-	err := ioutil.WriteFile(gf.path, data, 0644)
+	err := ioutil.WriteFile(gf.path, data, 0600)
 	if err != nil {
 		return microerror.Mask(err)
 	}
