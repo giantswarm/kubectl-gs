@@ -21,9 +21,27 @@ spec:
     bin: ./kubectl-gs
   - selector:
       matchLabels:
+        os: darwin
+        arch: arm64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-arm64.tar.gz" .TagName }}
+    files:
+    - from: ./kubectl-gs-*/*
+      to: .
+    bin: ./kubectl-gs
+  - selector:
+      matchLabels:
         os: linux
         arch: amd64
     {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-amd64.tar.gz" .TagName }}
+    files:
+    - from: ./kubectl-gs-*/*
+      to: .
+    bin: ./kubectl-gs
+  - selector:
+      matchLabels:
+        os: linux
+        arch: arm64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-arm64.tar.gz" .TagName }}
     files:
     - from: ./kubectl-gs-*/*
       to: .
