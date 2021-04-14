@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Publish darwin and linux arm64 to krew index.
+
 ## [1.26.0] - 2021-04-13
 
 ### Added
