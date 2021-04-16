@@ -19,7 +19,7 @@ require (
 	github.com/spf13/afero v1.6.0
 	github.com/spf13/cobra v1.1.3
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558
+	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
@@ -35,13 +35,12 @@ require (
 replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	github.com/coreos/etcd => github.com/etcd-io/etcd v3.3.25+incompatible
-	// Use moby v20.10.0-beta1 to fix build issue on darwin.
-	github.com/docker/docker => github.com/moby/moby v20.10.5+incompatible
-	// [CVE-2021-3121]
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+	github.com/docker/docker => github.com/moby/moby v20.10.6+incompatible // Use moby v20.10.x to fix build issue on darwin.
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
-	k8s.io/kubernetes v1.13.0 => k8s.io/kubernetes v1.16.13
+	k8s.io/client-go => k8s.io/client-go v0.18.9
+	//k8s.io/kubernetes v1.13.0 => k8s.io/kubernetes v1.16.3
 	sigs.k8s.io/cluster-api v0.3.13 => github.com/giantswarm/cluster-api v0.3.13-gs
 	sigs.k8s.io/cluster-api-provider-azure v0.4.11 => github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3
 )
