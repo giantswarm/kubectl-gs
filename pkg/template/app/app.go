@@ -17,7 +17,7 @@ type Config struct {
 }
 
 type SecretConfig struct {
-	Data      map[string][]byte
+	Data      []byte
 	Name      string
 	Namespace string
 }
@@ -117,7 +117,9 @@ func NewSecretCR(config SecretConfig) (*apiv1.Secret, error) {
 			Namespace: config.Namespace,
 			Labels:    map[string]string{},
 		},
-		Data: config.Data,
+		Data: map[string][]byte{
+			"values": config.Data,
+		},
 	}
 
 	return secretCR, nil
