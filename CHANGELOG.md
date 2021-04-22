@@ -13,7 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- Fix templating related configmaps and secrets for App and AppCatalog CRs.
+- Fix templating nested YAML for configmaps and secrets referenced in App and AppCatalog CRs.
 
 ## [1.26.0] - 2021-04-13
 
