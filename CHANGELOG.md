@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Publish darwin and linux arm64 to krew index.
 
+### Fixed
+
+- Fix templating nested YAML for configmaps and secrets referenced in App and AppCatalog CRs.
+
 ## [1.26.0] - 2021-04-13
 
 ### Added

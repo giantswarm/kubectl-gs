@@ -76,7 +76,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
-	var secretData map[string][]byte
+	var secretData []byte
 	if r.flag.Secret != "" {
 		secretData, err = key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.Secret)
 		if err != nil {

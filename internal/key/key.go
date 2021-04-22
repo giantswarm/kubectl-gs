@@ -65,7 +65,7 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	rawMap := map[string]string{}
+	rawMap := map[string]interface{}{}
 	err = yaml.Unmarshal(data, &rawMap)
 	if err != nil {
 		return "", microerror.Maskf(unmashalToMapFailedError, err.Error())
@@ -75,19 +75,18 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 }
 
 // readSecretFromFile reads a configmap from a YAML file.
-func ReadSecretYamlFromFile(fs afero.Fs, path string) (map[string][]byte, error) {
+func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	rawMap := map[string][]byte{}
-	err = yaml.Unmarshal(data, &rawMap)
+	err = yaml.Unmarshal(data, &map[string]interface{}{})
 	if err != nil {
 		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
-	return rawMap, nil
+	return data, nil
 }
 
 func OrganizationNamespaceFromName(name string) string {

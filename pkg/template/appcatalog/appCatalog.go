@@ -72,7 +72,7 @@ func NewConfigmapCR(config Config, data string) (*apiv1.ConfigMap, error) {
 	return configMapCR, nil
 }
 
-func NewSecretCR(config Config, data map[string][]byte) (*apiv1.Secret, error) {
+func NewSecretCR(config Config, data []byte) (*apiv1.Secret, error) {
 
 	secretCR := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -84,7 +84,9 @@ func NewSecretCR(config Config, data map[string][]byte) (*apiv1.Secret, error) {
 			Namespace: metav1.NamespaceDefault,
 			Labels:    map[string]string{},
 		},
-		Data: data,
+		Data: map[string][]byte{
+			"values": data,
+		},
 	}
 
 	return secretCR, nil
