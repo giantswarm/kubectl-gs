@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/giantswarm/microerror"
@@ -57,8 +56,7 @@ func New(ctx context.Context, fromUrl string) (*Installation, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	baseEndpoint := strings.Split(info.Kubernetes.ApiUrl, urlDelimiter)[1:]
-	k8sInternalAPI := fmt.Sprintf("https://%s.%s", internalAPIPrefix, strings.Join(baseEndpoint, urlDelimiter))
+	k8sInternalAPI := fmt.Sprintf("https://%s.%s", internalAPIPrefix, basePath)
 	i := &Installation{
 		K8sApiURL:         info.Kubernetes.ApiUrl,
 		K8sInternalApiURL: k8sInternalAPI,
