@@ -4,8 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const ()
-
 type flag struct {
 }
 

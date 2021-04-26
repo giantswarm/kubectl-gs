@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/microerror"
@@ -13,14 +14,20 @@ import (
 
 const (
 	requestTimeout = 15 * time.Second
+
+	// management cluster internal api prefix
+	internalAPIPrefix = "internal-g8s"
+
+	urlDelimiter = "."
 )
 
 type Installation struct {
-	K8sApiURL string
-	AuthURL   string
-	Provider  string
-	Codename  string
-	CACert    string
+	K8sApiURL         string
+	K8sInternalApiURL string
+	AuthURL           string
+	Provider          string
+	Codename          string
+	CACert            string
 }
 
 func New(ctx context.Context, fromUrl string) (*Installation, error) {
@@ -50,12 +57,15 @@ func New(ctx context.Context, fromUrl string) (*Installation, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	baseEndpoint := strings.Split(info.Kubernetes.ApiUrl, urlDelimiter)[1:]
+	k8sInternalAPI := fmt.Sprintf("https://%s.%s", internalAPIPrefix, strings.Join(baseEndpoint, urlDelimiter))
 	i := &Installation{
-		K8sApiURL: info.Kubernetes.ApiUrl,
-		AuthURL:   info.Kubernetes.AuthUrl,
-		Provider:  info.Identity.Provider,
-		Codename:  info.Identity.Codename,
-		CACert:    info.Kubernetes.CaCert,
+		K8sApiURL:         info.Kubernetes.ApiUrl,
+		K8sInternalApiURL: k8sInternalAPI,
+		AuthURL:           info.Kubernetes.AuthUrl,
+		Provider:          info.Identity.Provider,
+		Codename:          info.Identity.Codename,
+		CACert:            info.Kubernetes.CaCert,
 	}
 
 	return i, nil

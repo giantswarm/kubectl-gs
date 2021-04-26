@@ -184,7 +184,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 	}
 
 	// Store kubeconfig and CA certificate.
-	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs)
+	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI)
 	if err != nil {
 		return microerror.Mask(err)
 	}
