@@ -16,8 +16,6 @@ const (
 
 	// management cluster internal api prefix
 	internalAPIPrefix = "internal-g8s"
-
-	urlDelimiter = "."
 )
 
 type Installation struct {
