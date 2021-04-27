@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Publish darwin and linux arm64 to krew index.
+- Login command now supports internal API.
 
 ### Fixed
 

@@ -124,7 +124,7 @@ func handleAuthCallback(ctx context.Context, a *oidc.Authenticator) func(w http.
 
 // storeCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult oidc.UserInfo, fs afero.Fs) error {
+func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult oidc.UserInfo, fs afero.Fs, internalAPI bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -168,7 +168,11 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 			initialCluster = clientcmdapi.NewCluster()
 		}
 
-		initialCluster.Server = i.K8sApiURL
+		if internalAPI {
+			initialCluster.Server = i.K8sInternalApiURL
+		} else {
+			initialCluster.Server = i.K8sApiURL
+		}
 
 		var certPath string
 		certPath, err = kubeconfig.GetKubeCertFilePath(clusterName)
