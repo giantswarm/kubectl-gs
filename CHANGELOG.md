@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Bug fixed on the internal API URL composition.
+
 ## [1.27.0] - 2021-04-27
 
 ### Added
