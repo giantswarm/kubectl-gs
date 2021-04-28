@@ -81,6 +81,21 @@ func (a *Authenticator) GetAuthURL(connectorID string) string {
 	return authURLWithConnectorID
 }
 
+func (a *Authenticator) AuthWithPassword(ctx context.Context, username, password string) (string, string, error) {
+	token, err := a.clientConfig.PasswordCredentialsToken(ctx, username, password)
+	if err != nil {
+		return "", "", microerror.Mask(err)
+	}
+
+	idToken, err := ConvertTokenToRawIDToken(token)
+	if err != nil {
+		return "", "", microerror.Mask(err)
+	}
+	rToken := token.RefreshToken
+
+	return idToken, rToken, nil
+}
+
 func (a *Authenticator) RenewToken(ctx context.Context, refreshToken string) (idToken string, rToken string, err error) {
 	s := a.clientConfig.TokenSource(ctx, &oauth2.Token{RefreshToken: refreshToken})
 	t, err := s.Token()
