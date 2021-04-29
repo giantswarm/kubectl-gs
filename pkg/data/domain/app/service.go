@@ -53,6 +53,27 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (*applicationv1al
 	return app, nil
 }
 
+// GetObject fetches a list of app CRs filtered by namespace and optionally by
+// name.
+func (s *Service) GetObject(ctx context.Context, options GetOptions) (Resource, error) {
+	var resource Resource
+	var err error
+
+	if len(options.Name) > 0 {
+		resource, err = s.getByName(ctx, options.Name, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else {
+		resource, err = s.getAll(ctx, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return resource, nil
+}
+
 // List returns a list of App CRs in a namespace, optionally filtered by a label selector.
 func (s *Service) List(ctx context.Context, options ListOptions) (*applicationv1alpha1.AppList, error) {
 	parsedSelector, err := labels.Parse(options.LabelSelector)
@@ -73,4 +94,66 @@ func (s *Service) List(ctx context.Context, options ListOptions) (*applicationv1
 
 	return appList, nil
 
+}
+
+func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {
+	var err error
+
+	appCollection := &Collection{}
+
+	{
+		lo := &runtimeclient.ListOptions{
+			Namespace: namespace,
+		}
+
+		apps := &applicationv1alpha1.AppList{}
+		{
+			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			} else if len(apps.Items) == 0 {
+				return nil, microerror.Mask(noResourcesError)
+			}
+		}
+
+		for _, app := range apps.Items {
+			a := App{
+				CR: app.DeepCopy(),
+			}
+			appCollection.Items = append(appCollection.Items, a)
+		}
+	}
+
+	return appCollection, nil
+}
+
+func (s *Service) getByName(ctx context.Context, name, namespace string) (Resource, error) {
+	var err error
+
+	appCollection := &Collection{}
+
+	{
+		lo := &runtimeclient.ListOptions{
+			Namespace: namespace,
+		}
+
+		apps := &applicationv1alpha1.AppList{}
+		{
+			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			} else if len(apps.Items) == 0 {
+				return nil, microerror.Mask(noResourcesError)
+			}
+		}
+
+		for _, app := range apps.Items {
+			a := App{
+				CR: app.DeepCopy(),
+			}
+			appCollection.Items = append(appCollection.Items, a)
+		}
+	}
+
+	return appCollection, nil
 }
