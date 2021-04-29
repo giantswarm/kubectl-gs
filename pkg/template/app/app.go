@@ -28,7 +28,7 @@ type ConfigMapConfig struct {
 	Namespace string
 }
 
-func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
+func NewAppCR(config Config, defaultingEnabled bool) ([]byte, error) {
 	userConfig := applicationv1alpha1.AppSpecUserConfig{}
 
 	if config.UserConfigConfigMapName != "" {
@@ -53,40 +53,45 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Cluster,
-			Labels: map[string]string{
-				"app-operator.giantswarm.io/version": "1.0.0",
-			},
 		},
 		Spec: applicationv1alpha1.AppSpec{
 			Catalog:   config.Catalog,
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			Config: applicationv1alpha1.AppSpecConfig{
-				ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
-					Name:      config.Cluster + "-cluster-values",
-					Namespace: config.Cluster,
-				},
-			},
 			KubeConfig: applicationv1alpha1.AppSpecKubeConfig{
-				Context: applicationv1alpha1.AppSpecKubeConfigContext{
-					Name: config.Cluster + "-kubeconfig",
-				},
 				InCluster: false,
-				Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
-					Name:      config.Cluster + "-kubeconfig",
-					Namespace: config.Cluster,
-				},
 			},
 			UserConfig: userConfig,
 			Version:    config.Version,
 		},
 	}
 
-	return appCR, nil
+	if !defaultingEnabled {
+		appCR.ObjectMeta.Labels = map[string]string{
+			"app-operator.giantswarm.io/version": "1.0.0",
+		}
+		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
+			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
+				Name:      config.Cluster + "-cluster-values",
+				Namespace: config.Cluster,
+			},
+		}
+		appCR.Spec.KubeConfig = applicationv1alpha1.AppSpecKubeConfig{
+			Context: applicationv1alpha1.AppSpecKubeConfigContext{
+				Name: config.Cluster + "-kubeconfig",
+			},
+			InCluster: false,
+			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
+				Name:      config.Cluster + "-kubeconfig",
+				Namespace: config.Cluster,
+			},
+		}
+	}
+
+	return printAppCR(appCR, defaultingEnabled)
 }
 
 func NewConfigmapCR(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
-
 	configMapCR := &apiv1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
@@ -95,7 +100,6 @@ func NewConfigmapCR(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			Labels:    map[string]string{},
 		},
 		Data: map[string]string{
 			"values": config.Data,
@@ -106,7 +110,6 @@ func NewConfigmapCR(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
 }
 
 func NewSecretCR(config SecretConfig) (*apiv1.Secret, error) {
-
 	secretCR := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
@@ -115,7 +118,6 @@ func NewSecretCR(config SecretConfig) (*apiv1.Secret, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			Labels:    map[string]string{},
 		},
 		Data: map[string][]byte{
 			"values": config.Data,

@@ -103,12 +103,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	appCR, err := app.NewAppCR(appConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	defaultingEnabled := true
 
-	appCRYaml, err := yaml.Marshal(appCR)
+	appCRYaml, err := app.NewAppCR(appConfig, defaultingEnabled)
 	if err != nil {
 		return microerror.Mask(err)
 	}
