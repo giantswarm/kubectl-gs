@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.27.1] - 2021-04-28
+
+### Fixed
+
+- Bug fixed on the internal API URL composition.
+
 ## [1.27.0] - 2021-04-27
 
 ### Added
@@ -320,7 +326,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.1...HEAD
+[1.27.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.0...v1.27.1
 [1.27.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.26.0...v1.27.0
 [1.26.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.25.0...v1.26.0
 [1.25.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.24.0...v1.25.0
