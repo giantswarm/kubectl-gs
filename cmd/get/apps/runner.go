@@ -50,13 +50,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	config := commonconfig.New(r.flag.config)
 	{
-		if r.provider == "" {
-			r.provider, err = config.GetProvider()
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
 		err = r.getService(config)
 		if err != nil {
 			return microerror.Mask(err)

@@ -5,6 +5,7 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -117,6 +118,9 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 		}
 
 		for _, app := range apps.Items {
+			// TODO: Move this so its less hacky.
+			app.ManagedFields = nil
+
 			a := App{
 				CR: app.DeepCopy(),
 			}
@@ -130,29 +134,29 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 func (s *Service) getByName(ctx context.Context, name, namespace string) (Resource, error) {
 	var err error
 
-	appCollection := &Collection{}
-
+	app := &applicationv1alpha1.App{}
 	{
-		lo := &runtimeclient.ListOptions{
+		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
 			Namespace: namespace,
+			Name:      name,
+		}, app)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		} else if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(noResourcesError)
 		}
 
-		apps := &applicationv1alpha1.AppList{}
-		{
-			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			} else if len(apps.Items) == 0 {
-				return nil, microerror.Mask(noResourcesError)
-			}
+		// TODO: Move this so its less hacky.
+		app.ManagedFields = nil
+	}
+
+	appCollection := &Collection{}
+	{
+		appResource := App{
+			CR: app.DeepCopy(),
 		}
 
-		for _, app := range apps.Items {
-			a := App{
-				CR: app.DeepCopy(),
-			}
-			appCollection.Items = append(appCollection.Items, a)
-		}
+		appCollection.Items = append(appCollection.Items, appResource)
 	}
 
 	return appCollection, nil
