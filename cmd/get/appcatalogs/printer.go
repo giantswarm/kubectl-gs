@@ -3,12 +3,12 @@ package appcatalogs
 import (
 	"fmt"
 
+	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/microerror"
 )
 
 func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
