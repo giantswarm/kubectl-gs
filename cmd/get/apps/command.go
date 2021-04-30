@@ -23,7 +23,11 @@ const (
 
 Output columns:
 
-- TODO: Todo.`
+- NAME: Name of the app.
+- APP VERSION: Version of the upstream app that is being deployed.
+- VERSION: Version of the Helm chart.
+- LAST DEPLOYED: When the app was last deployed.
+- STATUS: Status of the app.`
 
 	examples = `  # List all apps for the current namespace
   kubectl gs get apps

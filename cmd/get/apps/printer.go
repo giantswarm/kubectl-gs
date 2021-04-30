@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
@@ -20,7 +21,7 @@ func (r *runner) printOutput(appResource app.Resource) error {
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
-		resource = appResource.Object()
+		resource = getTable(appResource)
 		printOptions := printers.PrintOptions{
 			WithNamespace: r.flag.AllNamespaces,
 		}
@@ -55,4 +56,43 @@ func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "No apps found.\n")
 	fmt.Fprintf(r.stdout, "To create an app, please check\n\n")
 	fmt.Fprintf(r.stdout, "  kubectl gs template app --help\n")
+}
+
+func getTable(appResource app.Resource) *metav1.Table {
+	// Creating a custom table resource.
+	table := &metav1.Table{}
+
+	table.ColumnDefinitions = []metav1.TableColumnDefinition{
+		{Name: "Name", Type: "string"},
+		{Name: "Version", Type: "string"},
+		{Name: "Last Deployed", Type: "string", Format: "date-time"},
+		{Name: "Status", Type: "string"},
+	}
+
+	switch c := appResource.(type) {
+	case *app.Collection:
+		for _, appItem := range c.Items {
+			table.Rows = append(table.Rows, getAppRow(appItem))
+		}
+	}
+
+	return table
+}
+
+func getAppRow(a app.App) metav1.TableRow {
+	if a.CR == nil {
+		return metav1.TableRow{}
+	}
+
+	return metav1.TableRow{
+		Cells: []interface{}{
+			a.CR.Name,
+			a.CR.Status.Version,
+			a.CR.Status.Release.LastDeployed,
+			a.CR.Status.Release.Status,
+		},
+		Object: runtime.RawExtension{
+			Object: a.CR,
+		},
+	}
 }

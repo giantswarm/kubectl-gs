@@ -23,7 +23,9 @@ const (
 
 Output columns:
 
-- TODO: Todo.`
+- NAME: Name of the appcatalog.
+- URL: URL for the Helm chart repository.
+- AGE: How long ago the appcatalog was created.`
 
 	examples = `  # List all public app catalogs
   kubectl gs get appcatalogs
