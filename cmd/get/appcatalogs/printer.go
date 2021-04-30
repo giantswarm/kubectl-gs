@@ -2,6 +2,7 @@ package appcatalogs
 
 import (
 	"fmt"
+	"time"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -66,7 +67,7 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 			ace.Spec.AppName,
 			ace.Spec.AppVersion,
 			ace.Spec.Version,
-			ace.CreationTimestamp,
+			ace.CreationTimestamp.Format(time.RFC822),
 		},
 	}
 }
@@ -80,7 +81,7 @@ func getAppCatalogEntryTable(appCatalogResource appcatalog.Resource) *metav1.Tab
 		{Name: "App Name", Type: "string"},
 		{Name: "App Version", Type: "string"},
 		{Name: "Version", Type: "string"},
-		{Name: "Age", Type: "string"},
+		{Name: "Created", Type: "string"},
 	}
 
 	switch c := appCatalogResource.(type) {
@@ -106,7 +107,7 @@ func getAppCatalogRow(a appcatalog.AppCatalog) metav1.TableRow {
 		Cells: []interface{}{
 			a.CR.Name,
 			a.CR.Spec.Storage.URL,
-			a.CR.CreationTimestamp,
+			a.CR.CreationTimestamp.Format(time.RFC822),
 		},
 		Object: runtime.RawExtension{
 			Object: a.CR,
@@ -121,7 +122,7 @@ func getAppCatalogTable(appCatalogResource appcatalog.Resource) *metav1.Table {
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
 		{Name: "Catalog URL", Type: "string"},
-		{Name: "Age", Type: "string", Format: "date-time"},
+		{Name: "Created", Type: "string", Format: "date-time"},
 	}
 
 	switch c := appCatalogResource.(type) {

@@ -2,6 +2,7 @@ package apps
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -88,7 +89,7 @@ func getAppRow(a app.App) metav1.TableRow {
 		Cells: []interface{}{
 			a.CR.Name,
 			a.CR.Status.Version,
-			a.CR.Status.Release.LastDeployed,
+			a.CR.Status.Release.LastDeployed.Format(time.RFC822),
 			a.CR.Status.Release.Status,
 		},
 		Object: runtime.RawExtension{
