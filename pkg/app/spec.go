@@ -21,7 +21,7 @@ type ValidationResults []*ValidationResult
 // ValidationResult contains everything we need to show information about a
 // validation attempt.
 type ValidationResult struct {
-	App applicationv1alpha1.App
+	App *applicationv1alpha1.App
 
 	// The schema.values.json file, fetched from the
 	// 'application.giantswarm.io/values-schema' annotation.

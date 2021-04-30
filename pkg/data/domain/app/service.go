@@ -5,8 +5,7 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
@@ -37,40 +36,82 @@ func New(config Config) (Interface, error) {
 	return s, nil
 }
 
-// Get fetches an App CR by name and namespace.
-func (s *Service) Get(ctx context.Context, options GetOptions) (*applicationv1alpha1.App, error) {
-	namespacedName := types.NamespacedName{
-		Namespace: options.Namespace,
-		Name:      options.Name,
+// Get fetches a list of app CRs filtered by namespace and optionally by
+// name.
+func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
+	var resource Resource
+	var err error
+
+	if len(options.Name) > 0 {
+		resource, err = s.getByName(ctx, options.Name, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else {
+		resource, err = s.getAll(ctx, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
-	app := &applicationv1alpha1.App{}
-	err := s.client.K8sClient.CtrlClient().Get(ctx, namespacedName, app)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return app, nil
+	return resource, nil
 }
 
-// List returns a list of App CRs in a namespace, optionally filtered by a label selector.
-func (s *Service) List(ctx context.Context, options ListOptions) (*applicationv1alpha1.AppList, error) {
-	parsedSelector, err := labels.Parse(options.LabelSelector)
-	if err != nil {
-		return nil, microerror.Mask(err)
+func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {
+	var err error
+
+	appCollection := &Collection{}
+
+	{
+		lo := &runtimeclient.ListOptions{
+			Namespace: namespace,
+		}
+
+		apps := &applicationv1alpha1.AppList{}
+		{
+			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			} else if len(apps.Items) == 0 {
+				return nil, microerror.Mask(noResourcesError)
+			}
+		}
+
+		for _, app := range apps.Items {
+			a := App{
+				CR: app.DeepCopy(),
+			}
+			appCollection.Items = append(appCollection.Items, a)
+		}
 	}
 
-	o := &runtimeclient.ListOptions{
-		Namespace:     options.Namespace,
-		LabelSelector: parsedSelector,
+	return appCollection, nil
+}
+
+func (s *Service) getByName(ctx context.Context, name, namespace string) (Resource, error) {
+	var err error
+
+	app := &applicationv1alpha1.App{}
+	{
+		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
+			Namespace: namespace,
+			Name:      name,
+		}, app)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		} else if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(noResourcesError)
+		}
 	}
 
-	appList := &applicationv1alpha1.AppList{}
-	err = s.client.K8sClient.CtrlClient().List(ctx, appList, o)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	appCollection := &Collection{}
+	{
+		appResource := App{
+			CR: app.DeepCopy(),
+		}
+
+		appCollection.Items = append(appCollection.Items, appResource)
 	}
 
-	return appList, nil
-
+	return appCollection, nil
 }

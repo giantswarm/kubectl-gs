@@ -1,10 +1,9 @@
 package app
 
 import (
+	"github.com/giantswarm/app/v4/pkg/values"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-
-	"github.com/giantswarm/app/v4/pkg/values"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
