@@ -22,8 +22,7 @@ type runner struct {
 	logger micrologger.Logger
 	fs     afero.Fs
 
-	provider string
-	service  appcatalog.Interface
+	service appcatalog.Interface
 
 	stdout io.Writer
 	stderr io.Writer
