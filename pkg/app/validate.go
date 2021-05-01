@@ -14,6 +14,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
 	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
 	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
 )
@@ -276,7 +277,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 		Name: catalogName,
 	}
 
-	catalog, err := s.appcatalogDataService.Get(ctx, options)
+	catalogResource, err := s.appcatalogDataService.Get(ctx, options)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch AppCatalog: %s", err.Error())
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
@@ -284,6 +285,13 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 		}
 
 		return nil, nil, err
+	}
+
+	var catalog *applicationv1alpha1.AppCatalog
+
+	switch c := catalogResource.(type) {
+	case *appcatalog.AppCatalog:
+		catalog = c.CR
 	}
 
 	// Error for catalogs where we for sure can't fetch the index because we don't
