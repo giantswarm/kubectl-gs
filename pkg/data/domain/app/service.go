@@ -118,11 +118,8 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 		}
 
 		for _, app := range apps.Items {
-			// TODO: Move this so its less hacky.
-			app.ManagedFields = nil
-
 			a := App{
-				CR: app.DeepCopy(),
+				CR: removeManagedFields(app.DeepCopy()),
 			}
 			appCollection.Items = append(appCollection.Items, a)
 		}
@@ -145,19 +142,23 @@ func (s *Service) getByName(ctx context.Context, name, namespace string) (Resour
 		} else if apierrors.IsNotFound(err) {
 			return nil, microerror.Mask(noResourcesError)
 		}
-
-		// TODO: Move this so its less hacky.
-		app.ManagedFields = nil
 	}
 
 	appCollection := &Collection{}
 	{
 		appResource := App{
-			CR: app.DeepCopy(),
+			CR: removeManagedFields(app.DeepCopy()),
 		}
 
 		appCollection.Items = append(appCollection.Items, appResource)
 	}
 
 	return appCollection, nil
+}
+
+// removeManagedFields clears managed fields to make YAML output easier to read.
+// With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
+func removeManagedFields(app *applicationv1alpha1.App) *applicationv1alpha1.App {
+	app.ManagedFields = nil
+	return app
 }

@@ -2,7 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +26,6 @@ func (r *runner) printOutput(appResource app.Resource) error {
 			WithNamespace: r.flag.AllNamespaces,
 		}
 		printer = printers.NewTablePrinter(printOptions)
-
 	case output.IsOutputName(r.flag.print.OutputFormat):
 		resource = appResource.Object()
 		err = output.PrintResourceNames(r.stdout, resource)
@@ -89,7 +87,7 @@ func getAppRow(a app.App) metav1.TableRow {
 		Cells: []interface{}{
 			a.CR.Name,
 			a.CR.Status.Version,
-			a.CR.Status.Release.LastDeployed.Format(time.RFC822),
+			output.TranslateTimestampSince(a.CR.Status.Release.LastDeployed),
 			a.CR.Status.Release.Status,
 		},
 		Object: runtime.RawExtension{
