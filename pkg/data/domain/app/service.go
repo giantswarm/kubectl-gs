@@ -114,5 +114,3 @@ func (s *Service) getByName(ctx context.Context, name, namespace string) (Resour
 
 	return app, nil
 }
-
-}
