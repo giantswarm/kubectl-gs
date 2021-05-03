@@ -102,7 +102,7 @@ func (s *Service) getByName(ctx context.Context, name, namespace string) (Resour
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if apierrors.IsNotFound(err) {
-			return nil, microerror.Mask(noResourcesError)
+			return nil, microerror.Mask(notFoundError)
 		}
 
 		app.CR = appCR
