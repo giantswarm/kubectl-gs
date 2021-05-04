@@ -82,7 +82,7 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 
 		for _, app := range apps.Items {
 			a := App{
-				CR: removeManagedFields(app.DeepCopy()),
+				CR: omitManagedFields(app.DeepCopy()),
 			}
 			appCollection.Items = append(appCollection.Items, a)
 		}
@@ -107,7 +107,7 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 			return nil, microerror.Mask(err)
 		}
 
-		app.CR = appCR
+		app.CR = omitManagedFields(appCR)
 		app.CR.TypeMeta = metav1.TypeMeta{
 			APIVersion: "app.application.giantswarm.io/v1alpha1",
 			Kind:       "App",
@@ -117,9 +117,9 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 	return app, nil
 }
 
-// removeManagedFields clears managed fields to make YAML output easier to read.
+// omitManagedFields removes managed fields to make YAML output easier to read.
 // With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
-func removeManagedFields(app *applicationv1alpha1.App) *applicationv1alpha1.App {
+func omitManagedFields(app *applicationv1alpha1.App) *applicationv1alpha1.App {
 	app.ManagedFields = nil
 	return app
 }
