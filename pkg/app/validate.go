@@ -296,6 +296,8 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 	switch c := catalogResource.(type) {
 	case *appcatalog.AppCatalog:
 		catalog = c.CR
+	default:
+		return nil, nil, microerror.Maskf(invalidTypeError, "unexpected type %T found", c)
 	}
 
 	// Error for catalogs where we for sure can't fetch the index because we don't
