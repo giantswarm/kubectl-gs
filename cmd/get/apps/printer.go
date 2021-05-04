@@ -69,6 +69,8 @@ func getTable(appResource app.Resource) *metav1.Table {
 	}
 
 	switch c := appResource.(type) {
+	case *app.App:
+		table.Rows = append(table.Rows, getAppRow(*c))
 	case *app.Collection:
 		for _, appItem := range c.Items {
 			table.Rows = append(table.Rows, getAppRow(appItem))
