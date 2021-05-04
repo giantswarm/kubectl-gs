@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/cmd/get/apps"
 	"github.com/giantswarm/kubectl-gs/cmd/get/capi"
 	"github.com/giantswarm/kubectl-gs/cmd/get/clusters"
 	"github.com/giantswarm/kubectl-gs/cmd/get/nodepools"
@@ -48,6 +49,24 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	var err error
+
+	var appsCmd *cobra.Command
+	{
+		c := apps.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		appsCmd, err = apps.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var clusterApiCmd *cobra.Command
 	{
@@ -117,6 +136,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
+	c.AddCommand(appsCmd)
 	c.AddCommand(clusterApiCmd)
 	c.AddCommand(clustersCmd)
 	c.AddCommand(nodepoolsCmd)

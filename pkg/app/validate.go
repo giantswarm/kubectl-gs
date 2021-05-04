@@ -102,7 +102,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 
 	appResource, err := s.appDataService.Get(ctx, options)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return results, microerror.Mask(err)
 	}
 
 	var apps []*applicationv1alpha1.App
@@ -117,7 +117,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 	}
 
 	if len(apps) == 0 {
-		return nil, microerror.Mask(noResourcesError)
+		return results, microerror.Mask(noResourcesError)
 	}
 
 	// Iterate over all apps and fetch the AppCatalog CR, index.yaml, and

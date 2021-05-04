@@ -6,6 +6,7 @@ import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -73,7 +74,9 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 		apps := &applicationv1alpha1.AppList{}
 		{
 			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
-			if err != nil {
+			if apimeta.IsNoMatchError(err) {
+				return nil, microerror.Mask(noMatchError)
+			} else if err != nil {
 				return nil, microerror.Mask(err)
 			} else if len(apps.Items) == 0 {
 				return nil, microerror.Mask(noResourcesError)
@@ -82,7 +85,7 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 
 		for _, app := range apps.Items {
 			a := App{
-				CR: app.DeepCopy(),
+				CR: omitManagedFields(app.DeepCopy()),
 			}
 			appCollection.Items = append(appCollection.Items, a)
 		}
@@ -103,11 +106,13 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 		}, appCR)
 		if apierrors.IsNotFound(err) {
 			return nil, microerror.Mask(notFoundError)
+		} else if apimeta.IsNoMatchError(err) {
+			return nil, microerror.Mask(noMatchError)
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		app.CR = appCR
+		app.CR = omitManagedFields(appCR)
 		app.CR.TypeMeta = metav1.TypeMeta{
 			APIVersion: "app.application.giantswarm.io/v1alpha1",
 			Kind:       "App",
@@ -115,4 +120,11 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 	}
 
 	return app, nil
+}
+
+// omitManagedFields removes managed fields to make YAML output easier to read.
+// With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
+func omitManagedFields(app *applicationv1alpha1.App) *applicationv1alpha1.App {
+	app.ManagedFields = nil
+	return app
 }

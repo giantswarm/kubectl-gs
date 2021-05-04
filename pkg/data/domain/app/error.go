@@ -13,6 +13,15 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var noMatchError = &microerror.Error{
+	Kind: "noMatchError",
+}
+
+// IsNoMatch asserts noMatchError.
+func IsNoMatch(err error) bool {
+	return microerror.Cause(err) == noMatchError
+}
+
 var noResourcesError = &microerror.Error{
 	Kind: "noResourcesError",
 }
