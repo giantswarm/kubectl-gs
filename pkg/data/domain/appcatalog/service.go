@@ -49,11 +49,13 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-	} else {
-		resource, err = s.getAll(ctx, options.LabelSelector)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+
+		return resource, nil
+	}
+
+	resource, err = s.getAll(ctx, options.LabelSelector)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	return resource, nil
