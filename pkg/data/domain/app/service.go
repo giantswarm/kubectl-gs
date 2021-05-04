@@ -6,6 +6,7 @@ import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -73,7 +74,9 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 		apps := &applicationv1alpha1.AppList{}
 		{
 			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
-			if err != nil {
+			if apimeta.IsNoMatchError(err) {
+				return nil, microerror.Mask(noMatchError)
+			} else if err != nil {
 				return nil, microerror.Mask(err)
 			} else if len(apps.Items) == 0 {
 				return nil, microerror.Mask(noResourcesError)
@@ -103,6 +106,8 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 		}, appCR)
 		if apierrors.IsNotFound(err) {
 			return nil, microerror.Mask(notFoundError)
+		} else if apimeta.IsNoMatchError(err) {
+			return nil, microerror.Mask(noMatchError)
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -83,9 +83,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		appResource, err = r.service.Get(ctx, options)
 		if app.IsNotFound(err) {
 			return microerror.Maskf(notFoundError, fmt.Sprintf("An app '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+		} else if app.IsNoMatch(err) {
+			r.printNoMatchOutput()
+			return nil
 		} else if app.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
-
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)

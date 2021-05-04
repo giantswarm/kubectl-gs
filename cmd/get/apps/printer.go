@@ -51,6 +51,11 @@ func (r *runner) printOutput(appResource app.Resource) error {
 	return nil
 }
 
+func (r *runner) printNoMatchOutput() {
+	fmt.Fprintf(r.stdout, "No App CRD found.\n")
+	fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
+}
+
 func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "No apps found.\n")
 	fmt.Fprintf(r.stdout, "To create an app, please check\n\n")
