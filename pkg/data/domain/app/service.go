@@ -44,15 +44,17 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	var err error
 
 	if len(options.Name) > 0 {
-		resource, err = s.getByName(ctx, options.Name, options.Namespace)
+		resource, err = s.getByName(ctx, options.Namespace, options.Name)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-	} else {
-		resource, err = s.getAll(ctx, options.Namespace)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+
+		return resource, nil
+	}
+
+	resource, err = s.getAll(ctx, options.Namespace)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	return resource, nil
@@ -89,7 +91,7 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 	return appCollection, nil
 }
 
-func (s *Service) getByName(ctx context.Context, name, namespace string) (Resource, error) {
+func (s *Service) getByName(ctx context.Context, namespace, name string) (Resource, error) {
 	var err error
 
 	app := &App{}
@@ -99,13 +101,13 @@ func (s *Service) getByName(ctx context.Context, name, namespace string) (Resour
 			Namespace: namespace,
 			Name:      name,
 		}, appCR)
-		if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
-		} else if apierrors.IsNotFound(err) {
-			return nil, microerror.Mask(noResourcesError)
 		}
 
-		app.CR = removeManagedFields(appCR)
+		app.CR = appCR
 		app.CR.TypeMeta = metav1.TypeMeta{
 			APIVersion: "app.application.giantswarm.io/v1alpha1",
 			Kind:       "App",

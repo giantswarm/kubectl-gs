@@ -13,6 +13,15 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var invalidTypeError = &microerror.Error{
+	Kind: "invalidTypeError",
+}
+
+// IsInvalidType asserts invalidTypeError.
+func IsInvalidType(err error) bool {
+	return microerror.Cause(err) == invalidTypeError
+}
+
 var noResourcesError = &microerror.Error{
 	Kind: "noResourcesError",
 }

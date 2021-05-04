@@ -66,6 +66,8 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	switch a := appResource.(type) {
 	case *app.App:
 		appCR = a.CR
+	default:
+		return results, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
 	}
 
 	valuesSchema, schemaValidationResult, err := s.validateApp(ctx, appCR, customValuesSchema)
@@ -91,6 +93,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 
 func (s *Service) validateMultiple(ctx context.Context, namespace string, labelSelector string, customValuesSchema string) (ValidationResults, error) {
 	var err error
+	results := ValidationResults{}
 
 	options := appdata.GetOptions{
 		Namespace:     namespace,
@@ -99,7 +102,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 
 	appResource, err := s.appDataService.Get(ctx, options)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return results, microerror.Mask(err)
 	}
 
 	var apps []*applicationv1alpha1.App
@@ -109,15 +112,16 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 		for _, appItem := range a.Items {
 			apps = append(apps, appItem.CR)
 		}
+	default:
+		return results, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
 	}
 
 	if len(apps) == 0 {
-		return nil, microerror.Mask(noResourcesError)
+		return results, microerror.Mask(noResourcesError)
 	}
 
 	// Iterate over all apps and fetch the AppCatalog CR, index.yaml, and
 	// corresponding values.schema.json if it is defined for that app's version.
-	results := ValidationResults{}
 	for _, app := range apps {
 		valuesSchema, schemaValidationResult, err := s.validateApp(ctx, app, customValuesSchema)
 		if err != nil {
