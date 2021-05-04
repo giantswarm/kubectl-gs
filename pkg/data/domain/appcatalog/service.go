@@ -50,7 +50,7 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 			return nil, microerror.Mask(err)
 		}
 	} else {
-		resource, err = s.getAll(ctx)
+		resource, err = s.getAll(ctx, options.LabelSelector)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -59,12 +59,12 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
-func (s *Service) getAll(ctx context.Context) (Resource, error) {
+func (s *Service) getAll(ctx context.Context, labelSelector string) (Resource, error) {
 	appCatalogCollection := &Collection{}
 	var err error
 
 	{
-		selector, _ := labels.Parse("application.giantswarm.io/catalog-visibility=public")
+		selector, _ := labels.Parse(labelSelector)
 		lo := &runtimeclient.ListOptions{
 			LabelSelector: selector,
 		}
@@ -97,8 +97,7 @@ func (s *Service) getByName(ctx context.Context, name string) (Resource, error) 
 
 	var selector labels.Selector
 	{
-		label := fmt.Sprintf("application.giantswarm.io/catalog=%s,latest=true", name)
-
+		label := fmt.Sprintf("application.giantswarm.io/catalog=%s", name)
 		selector, err = labels.Parse(label)
 		if err != nil {
 			return nil, microerror.Mask(err)

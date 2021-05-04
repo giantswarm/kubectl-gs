@@ -22,7 +22,8 @@ type Collection struct {
 
 // GetOptions are the parameters that the Get method takes.
 type GetOptions struct {
-	Name string
+	LabelSelector string
+	Name          string
 }
 
 type Resource interface {
