@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@4.4.0
+#    devctl@4.5.1
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -21,21 +21,18 @@ LDFLAGS        ?= -w -linkmode 'auto' -extldflags '$(EXTLDFLAGS)' \
 
 .DEFAULT_GOAL := build
 
+##@ Go
+
 .PHONY: build build-darwin build-darwin-64 build-linux build-linux-arm64
-## build: builds a local binary
-build: $(APPLICATION)
+build: $(APPLICATION) ## Builds a local binary.
 	@echo "====> $@"
-## build-darwin: builds a local binary for darwin/amd64
-build-darwin: $(APPLICATION)-darwin
+build-darwin: $(APPLICATION)-darwin ## Builds a local binary for darwin/amd64.
 	@echo "====> $@"
-## build-darwin-arm64: builds a local binary for darwin/arm64
-build-darwin-arm64: $(APPLICATION)-darwin-arm64
+build-darwin-arm64: $(APPLICATION)-darwin-arm64 ## Builds a local binary for darwin/arm64.
 	@echo "====> $@"
-## build-linux: builds a local binary for linux/amd64
-build-linux: $(APPLICATION)-linux
+build-linux: $(APPLICATION)-linux ## Builds a local binary for linux/amd64.
 	@echo "====> $@"
-## build-linux-arm64: builds a local binary for linux/arm64
-build-linux-arm64: $(APPLICATION)-linux-arm64
+build-linux-arm64: $(APPLICATION)-linux-arm64 ## Builds a local binary for linux/arm64.
 	@echo "====> $@"
 
 $(APPLICATION): $(APPLICATION)-v$(VERSION)-$(OS)-amd64
@@ -67,17 +64,13 @@ $(APPLICATION)-v$(VERSION)-%-arm64: $(SOURCES)
 	CGO_ENABLED=0 GOOS=$* GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o $@ .
 
 .PHONY: package-darwin-amd64 package-darwin-arm64 package-linux-amd64 package-linux-arm64
-## package-darwin-amd64: prepares a packaged darwin/amd64 version
-package-darwin-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-darwin-amd64.tar.gz
+package-darwin-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-darwin-amd64.tar.gz ## Prepares a packaged darwin/amd64 version.
 	@echo "====> $@"
-## package-darwin-arm64: prepares a packaged darwin/arm64 version
-package-darwin-arm64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-darwin-arm64.tar.gz
+package-darwin-arm64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-darwin-arm64.tar.gz ## Prepares a packaged darwin/arm64 version.
 	@echo "====> $@"
-## package-linux-amd64: prepares a packaged linux/amd64 version
-package-linux-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-linux-amd64.tar.gz
+package-linux-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-linux-amd64.tar.gz ## Prepares a packaged linux/amd64 version.
 	@echo "====> $@"
-## package-linux-arm64: prepares a packaged linux/arm64 version
-package-linux-arm64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-linux-arm64.tar.gz
+package-linux-arm64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-linux-arm64.tar.gz ## Prepares a packaged linux/arm64 version.
 	@echo "====> $@"
 
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-%-amd64.tar.gz: DIR=$(PACKAGE_DIR)/$<
@@ -101,45 +94,38 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-%-arm64.tar.gz: $(APPLICATION)-v$(VERS
 	rm -rf $<
 
 .PHONY: install
-## install: install the application
-install:
+install: ## Install the application.
 	@echo "====> $@"
 	go install -ldflags "$(LDFLAGS)" .
 
 .PHONY: run
-## run: runs go run main.go
-run:
+run: ## Runs go run main.go.
 	@echo "====> $@"
 	go run -ldflags "$(LDFLAGS)" -race .
 
 .PHONY: clean
-## clean: cleans the binary
-clean:
+clean: ## Cleans the binary.
 	@echo "====> $@"
 	rm -f $(APPLICATION)*
 	go clean
 
 .PHONY: imports
-## imports: runs goimports
-imports:
+imports: ## Runs goimports.
 	@echo "====> $@"
 	goimports -local $(MODULE) -w .
 
 .PHONY: lint
-## lint: runs golangci-lint
-lint:
+lint: ## Runs golangci-lint.
 	@echo "====> $@"
 	golangci-lint run -E gosec -E goconst --timeout=15m ./...
 
 .PHONY: test
-## test: runs go test with default values
-test:
+test: ## Runs go test with default values.
 	@echo "====> $@"
 	go test -ldflags "$(LDFLAGS)" -race ./...
 
 .PHONY: build-docker
-## build-docker: builds docker image to registry
-build-docker: build-linux
+build-docker: build-linux ## Builds docker image to registry.
 	@echo "====> $@"
 	cp -a $(APPLICATION)-linux $(APPLICATION)
 	docker build -t ${APPLICATION}:${VERSION} .
