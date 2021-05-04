@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add get apps command.
+
 ## [1.27.1] - 2021-04-28
 
 ### Fixed

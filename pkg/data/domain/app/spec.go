@@ -8,14 +8,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// GetOptions are the parameters that the Get method takes.
-type GetOptions struct {
-	Name      string
-	Namespace string
+// App abstracts away the custom resource so it can be returned as a runtime
+// object or a typed custom resource.
+type App struct {
+	CR *applicationv1alpha1.App
 }
 
-type ListOptions struct {
+// Collection wraps a list of apps.
+type Collection struct {
+	Items []App
+}
+
+// GetOptions are the parameters that the Get method takes.
+type GetOptions struct {
 	LabelSelector string
+	Name          string
 	Namespace     string
 }
 
@@ -27,15 +34,7 @@ type Resource interface {
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
-	Get(context.Context, GetOptions) (*applicationv1alpha1.App, error)
-	GetObject(context.Context, GetOptions) (Resource, error)
-	List(context.Context, ListOptions) (*applicationv1alpha1.AppList, error)
-}
-
-// App abstracts away the custom resource so it can be returned as a runtime
-// object or a typed custom resource.
-type App struct {
-	CR *applicationv1alpha1.App
+	Get(context.Context, GetOptions) (Resource, error)
 }
 
 func (a *App) Object() runtime.Object {
@@ -44,11 +43,6 @@ func (a *App) Object() runtime.Object {
 	}
 
 	return nil
-}
-
-// Collection wraps a list of apps.
-type Collection struct {
-	Items []App
 }
 
 func (cc *Collection) Object() runtime.Object {

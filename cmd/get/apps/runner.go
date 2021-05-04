@@ -55,6 +55,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	var namespace string
+	{
+		if r.flag.AllNamespaces {
+			namespace = metav1.NamespaceAll
+		} else {
+			namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+	}
+
 	var name string
 	{
 		if len(args) > 0 {
@@ -62,41 +74,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var namespace string
-	{
-		namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
 	var appResource app.Resource
 	{
 		options := app.GetOptions{
-			Name:      name,
 			Namespace: namespace,
+			Name:      name,
 		}
-		{
-			if len(args) > 0 {
-				options.Name = strings.ToLower(args[0])
-			}
-
-			if r.flag.AllNamespaces {
-				options.Namespace = metav1.NamespaceAll
-			} else {
-				options.Namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
-				if err != nil {
-					return microerror.Mask(err)
-				}
-			}
-		}
-
-		appResource, err = r.service.GetObject(ctx, options)
+		appResource, err = r.service.Get(ctx, options)
 		if app.IsNotFound(err) {
 			return microerror.Maskf(notFoundError, fmt.Sprintf("An app '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+		} else if app.IsNoMatch(err) {
+			r.printNoMatchOutput()
+			return nil
 		} else if app.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
-
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)

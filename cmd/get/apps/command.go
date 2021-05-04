@@ -24,8 +24,7 @@ const (
 Output columns:
 
 - NAME: Name of the app.
-- APP VERSION: Version of the upstream app that is being deployed.
-- VERSION: Version of the Helm chart.
+- VERSION: Version of the app.
 - LAST DEPLOYED: When the app was last deployed.
 - STATUS: Status of the app.`
 

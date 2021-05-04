@@ -6,8 +6,8 @@ import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
@@ -38,63 +38,27 @@ func New(config Config) (Interface, error) {
 	return s, nil
 }
 
-// Get fetches an App CR by name and namespace.
-func (s *Service) Get(ctx context.Context, options GetOptions) (*applicationv1alpha1.App, error) {
-	namespacedName := types.NamespacedName{
-		Namespace: options.Namespace,
-		Name:      options.Name,
-	}
-
-	app := &applicationv1alpha1.App{}
-	err := s.client.K8sClient.CtrlClient().Get(ctx, namespacedName, app)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return app, nil
-}
-
-// GetObject fetches a list of app CRs filtered by namespace and optionally by
+// Get fetches a list of app CRs filtered by namespace and optionally by
 // name.
-func (s *Service) GetObject(ctx context.Context, options GetOptions) (Resource, error) {
+func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
 	var resource Resource
 	var err error
 
 	if len(options.Name) > 0 {
-		resource, err = s.getByName(ctx, options.Name, options.Namespace)
+		resource, err = s.getByName(ctx, options.Namespace, options.Name)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-	} else {
-		resource, err = s.getAll(ctx, options.Namespace)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+
+		return resource, nil
+	}
+
+	resource, err = s.getAll(ctx, options.Namespace)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	return resource, nil
-}
-
-// List returns a list of App CRs in a namespace, optionally filtered by a label selector.
-func (s *Service) List(ctx context.Context, options ListOptions) (*applicationv1alpha1.AppList, error) {
-	parsedSelector, err := labels.Parse(options.LabelSelector)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	o := &runtimeclient.ListOptions{
-		Namespace:     options.Namespace,
-		LabelSelector: parsedSelector,
-	}
-
-	appList := &applicationv1alpha1.AppList{}
-	err = s.client.K8sClient.CtrlClient().List(ctx, appList, o)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return appList, nil
-
 }
 
 func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {
@@ -110,7 +74,9 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 		apps := &applicationv1alpha1.AppList{}
 		{
 			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
-			if err != nil {
+			if apimeta.IsNoMatchError(err) {
+				return nil, microerror.Mask(noMatchError)
+			} else if err != nil {
 				return nil, microerror.Mask(err)
 			} else if len(apps.Items) == 0 {
 				return nil, microerror.Mask(noResourcesError)
@@ -119,7 +85,7 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 
 		for _, app := range apps.Items {
 			a := App{
-				CR: removeManagedFields(app.DeepCopy()),
+				CR: omitManagedFields(app.DeepCopy()),
 			}
 			appCollection.Items = append(appCollection.Items, a)
 		}
@@ -128,37 +94,37 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 	return appCollection, nil
 }
 
-func (s *Service) getByName(ctx context.Context, name, namespace string) (Resource, error) {
+func (s *Service) getByName(ctx context.Context, namespace, name string) (Resource, error) {
 	var err error
 
-	app := &applicationv1alpha1.App{}
+	app := &App{}
 	{
+		appCR := &applicationv1alpha1.App{}
 		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
 			Namespace: namespace,
 			Name:      name,
-		}, app)
-		if err != nil {
+		}, appCR)
+		if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if apimeta.IsNoMatchError(err) {
+			return nil, microerror.Mask(noMatchError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
-		} else if apierrors.IsNotFound(err) {
-			return nil, microerror.Mask(noResourcesError)
+		}
+
+		app.CR = omitManagedFields(appCR)
+		app.CR.TypeMeta = metav1.TypeMeta{
+			APIVersion: "app.application.giantswarm.io/v1alpha1",
+			Kind:       "App",
 		}
 	}
 
-	appCollection := &Collection{}
-	{
-		appResource := App{
-			CR: removeManagedFields(app.DeepCopy()),
-		}
-
-		appCollection.Items = append(appCollection.Items, appResource)
-	}
-
-	return appCollection, nil
+	return app, nil
 }
 
-// removeManagedFields clears managed fields to make YAML output easier to read.
+// omitManagedFields removes managed fields to make YAML output easier to read.
 // With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
-func removeManagedFields(app *applicationv1alpha1.App) *applicationv1alpha1.App {
+func omitManagedFields(app *applicationv1alpha1.App) *applicationv1alpha1.App {
 	app.ManagedFields = nil
 	return app
 }
