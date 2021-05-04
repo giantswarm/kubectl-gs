@@ -5,8 +5,8 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
@@ -37,40 +37,82 @@ func New(config Config) (Interface, error) {
 	return s, nil
 }
 
-// Get fetches an App CR by name and namespace.
-func (s *Service) Get(ctx context.Context, options GetOptions) (*applicationv1alpha1.App, error) {
-	namespacedName := types.NamespacedName{
-		Namespace: options.Namespace,
-		Name:      options.Name,
+// Get fetches a list of app CRs filtered by namespace and optionally by
+// name.
+func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
+	var resource Resource
+	var err error
+
+	if len(options.Name) > 0 {
+		resource, err = s.getByName(ctx, options.Namespace, options.Name)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		return resource, nil
 	}
 
-	app := &applicationv1alpha1.App{}
-	err := s.client.K8sClient.CtrlClient().Get(ctx, namespacedName, app)
+	resource, err = s.getAll(ctx, options.Namespace)
 	if err != nil {
 		return nil, microerror.Mask(err)
+	}
+
+	return resource, nil
+}
+
+func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {
+	var err error
+
+	appCollection := &Collection{}
+
+	{
+		lo := &runtimeclient.ListOptions{
+			Namespace: namespace,
+		}
+
+		apps := &applicationv1alpha1.AppList{}
+		{
+			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			} else if len(apps.Items) == 0 {
+				return nil, microerror.Mask(noResourcesError)
+			}
+		}
+
+		for _, app := range apps.Items {
+			a := App{
+				CR: app.DeepCopy(),
+			}
+			appCollection.Items = append(appCollection.Items, a)
+		}
+	}
+
+	return appCollection, nil
+}
+
+func (s *Service) getByName(ctx context.Context, namespace, name string) (Resource, error) {
+	var err error
+
+	app := &App{}
+	{
+		appCR := &applicationv1alpha1.App{}
+		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
+			Namespace: namespace,
+			Name:      name,
+		}, appCR)
+		if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		app.CR = appCR
+		app.CR.TypeMeta = metav1.TypeMeta{
+			APIVersion: "app.application.giantswarm.io/v1alpha1",
+			Kind:       "App",
+		}
 	}
 
 	return app, nil
-}
-
-// List returns a list of App CRs in a namespace, optionally filtered by a label selector.
-func (s *Service) List(ctx context.Context, options ListOptions) (*applicationv1alpha1.AppList, error) {
-	parsedSelector, err := labels.Parse(options.LabelSelector)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	o := &runtimeclient.ListOptions{
-		Namespace:     options.Namespace,
-		LabelSelector: parsedSelector,
-	}
-
-	appList := &applicationv1alpha1.AppList{}
-	err = s.client.K8sClient.CtrlClient().List(ctx, appList, o)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return appList, nil
-
 }

@@ -2,16 +2,17 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
 
+	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/microerror"
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/microerror"
-
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
 	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
@@ -53,15 +54,26 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 		Name:      name,
 	}
 
-	app, err := s.appDataService.Get(ctx, options)
-	if err != nil {
+	appResource, err := s.appDataService.Get(ctx, options)
+	if app.IsNotFound(err) {
+		return nil, microerror.Maskf(notFoundError, fmt.Sprintf("An app '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+	} else if err != nil {
 		return results, microerror.Mask(err)
 	}
 
-	valuesSchema, schemaValidationResult, err := s.validateApp(ctx, *app, customValuesSchema)
+	var appCR *applicationv1alpha1.App
+
+	switch a := appResource.(type) {
+	case *app.App:
+		appCR = a.CR
+	default:
+		return results, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
+	}
+
+	valuesSchema, schemaValidationResult, err := s.validateApp(ctx, appCR, customValuesSchema)
 	if err != nil {
 		results = append(results, &ValidationResult{
-			App:          *app,
+			App:          appCR,
 			ValuesSchema: "",
 			Err:          microerror.Mask(err),
 		})
@@ -70,7 +82,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	}
 
 	results = append(results, &ValidationResult{
-		App:              *app,
+		App:              appCR,
 		ValuesSchema:     valuesSchema,
 		ValidationErrors: schemaValidationResult.Errors(),
 	})
@@ -81,23 +93,36 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 
 func (s *Service) validateMultiple(ctx context.Context, namespace string, labelSelector string, customValuesSchema string) (ValidationResults, error) {
 	var err error
+	results := ValidationResults{}
 
-	options := appdata.ListOptions{
+	options := appdata.GetOptions{
 		Namespace:     namespace,
 		LabelSelector: labelSelector,
 	}
 
-	apps, err := s.appDataService.List(ctx, options)
+	appResource, err := s.appDataService.Get(ctx, options)
 	if err != nil {
 		return nil, microerror.Mask(err)
-	} else if len(apps.Items) == 0 {
+	}
+
+	var apps []*applicationv1alpha1.App
+
+	switch a := appResource.(type) {
+	case *app.Collection:
+		for _, appItem := range a.Items {
+			apps = append(apps, appItem.CR)
+		}
+	default:
+		return results, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
+	}
+
+	if len(apps) == 0 {
 		return nil, microerror.Mask(noResourcesError)
 	}
 
 	// Iterate over all apps and fetch the AppCatalog CR, index.yaml, and
 	// corresponding values.schema.json if it is defined for that app's version.
-	results := ValidationResults{}
-	for _, app := range apps.Items {
+	for _, app := range apps {
 		valuesSchema, schemaValidationResult, err := s.validateApp(ctx, app, customValuesSchema)
 		if err != nil {
 			results = append(results, &ValidationResult{
@@ -120,7 +145,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 	return results, nil
 }
 
-func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, customValuesSchema string) (string, *gojsonschema.Result, error) {
+func (s *Service) validateApp(ctx context.Context, app *applicationv1alpha1.App, customValuesSchema string) (string, *gojsonschema.Result, error) {
 	catalogName := app.Spec.Catalog
 
 	// Fetch the catalog's index.yaml if we haven't tried to yet.
@@ -174,7 +199,7 @@ func (s *Service) validateApp(ctx context.Context, app applicationv1alpha1.App, 
 	// 2. Catalog values (configmap & secret)
 	// 3. Cluster values (configmap & secret)
 	// 4. User values (configmap & secret)
-	providedValues, err := s.valuesService.MergeAll(ctx, app, *catalog)
+	providedValues, err := s.valuesService.MergeAll(ctx, *app, *catalog)
 	if err != nil {
 		return "", nil, microerror.Maskf(ioError, "failed fetch and/or merge user provided values: %s", err.Error())
 	}
