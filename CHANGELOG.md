@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add get apps command.
+- Add `get appcatalogs` and `get apps` commands.
 
 ## [1.27.1] - 2021-04-28
 
