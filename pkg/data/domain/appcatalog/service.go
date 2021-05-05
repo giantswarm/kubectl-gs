@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -81,9 +82,9 @@ func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Re
 			}
 		}
 
-		for _, catalog := range appCatalogs.Items {
+		for _, appCatalog := range appCatalogs.Items {
 			a := AppCatalog{
-				CR: catalog.DeepCopy(),
+				CR: omitManagedFields(appCatalog.DeepCopy()),
 			}
 			appCatalogCollection.Items = append(appCatalogCollection.Items, a)
 		}
@@ -125,9 +126,20 @@ func (s *Service) getByName(ctx context.Context, name string, labelSelector labe
 	}
 
 	appCatalog := &AppCatalog{
-		CR:      appCatalogCR.DeepCopy(),
+		CR:      omitManagedFields(appCatalogCR.DeepCopy()),
 		Entries: entries,
+	}
+	appCatalog.CR.TypeMeta = metav1.TypeMeta{
+		APIVersion: "appcatalog.application.giantswarm.io/v1alpha1",
+		Kind:       "AppCatalog",
 	}
 
 	return appCatalog, nil
+}
+
+// omitManagedFields removes managed fields to make YAML output easier to read.
+// With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
+func omitManagedFields(appCatalog *applicationv1alpha1.AppCatalog) *applicationv1alpha1.AppCatalog {
+	appCatalog.ManagedFields = nil
+	return appCatalog
 }
