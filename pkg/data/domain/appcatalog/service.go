@@ -61,14 +61,13 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
-func (s *Service) getAll(ctx context.Context, labelSelector string) (Resource, error) {
+func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Resource, error) {
 	appCatalogCollection := &Collection{}
 	var err error
 
 	{
-		selector, _ := labels.Parse(labelSelector)
 		lo := &runtimeclient.ListOptions{
-			LabelSelector: selector,
+			LabelSelector: labelSelector,
 		}
 
 		appCatalogs := &applicationv1alpha1.AppCatalogList{}

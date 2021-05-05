@@ -5,6 +5,7 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -22,7 +23,7 @@ type Collection struct {
 
 // GetOptions are the parameters that the Get method takes.
 type GetOptions struct {
-	LabelSelector string
+	LabelSelector labels.Selector
 	Name          string
 }
 
