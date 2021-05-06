@@ -16,6 +16,16 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var unknownAuthorityError = &microerror.Error{
+	Kind: "unknownAuthorityError",
+	Desc: "the server side has presented a certificate that was issued by an untrusted authority",
+}
+
+// IsUnknownAuthority asserts unknownAuthorityError.
+func IsUnknownAuthority(err error) bool {
+	return microerror.Cause(err) == unknownAuthorityError
+}
+
 var httpError = &microerror.Error{
 	Kind: "httpError",
 }

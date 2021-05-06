@@ -3,8 +3,10 @@ package graphql
 import (
 	"bytes"
 	"context"
+	"crypto/x509"
 	"encoding/json"
 	"net/http"
+	"net/url"
 
 	"github.com/giantswarm/microerror"
 )
@@ -66,6 +68,11 @@ func (c *ClientImpl) ExecuteQuery(ctx context.Context, query string, variables m
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
+		if urlErr, ok := err.(*url.Error); ok {
+			if x509Err, ok := urlErr.Err.(x509.UnknownAuthorityError); ok {
+				return microerror.Maskf(unknownAuthorityError, "certificate issued by %q", x509Err.Cert.Issuer.CommonName)
+			}
+		}
 		return microerror.Mask(err)
 	}
 	defer res.Body.Close()
