@@ -10,10 +10,11 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalogentry"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
@@ -55,24 +56,39 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var name string
+	var name, selector string
 	{
 		if len(args) > 0 {
 			name = strings.ToLower(args[0])
+			selector = fmt.Sprintf("application.giantswarm.io/catalog=%s,latest=true", name)
+		} else {
+			selector = r.flag.LabelSelector
+		}
+	}
+
+	var labelSelector labels.Selector
+	{
+		labelSelector, err = labels.Parse(selector)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 
 	var appCatalogResource appcatalog.Resource
 	{
-		options := appcatalog.GetOptions{
-			Name: name,
-		}
-		appCatalogResource, err = r.service.GetObject(ctx, options)
-		if appcatalogentry.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("An appcatalog '%s' cannot be found.\n", options.Name))
-		} else if appcatalogentry.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
-			r.printNoResourcesOutput()
 
+		options := appcatalog.GetOptions{
+			Name:          name,
+			LabelSelector: labelSelector,
+		}
+		appCatalogResource, err = r.service.Get(ctx, options)
+		if appcatalog.IsNotFound(err) {
+			return microerror.Maskf(notFoundError, fmt.Sprintf("An appcatalog '%s' cannot be found.\n", options.Name))
+		} else if app.IsNoMatch(err) {
+			r.printNoMatchOutput()
+			return nil
+		} else if appcatalog.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
+			r.printNoResourcesOutput()
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)

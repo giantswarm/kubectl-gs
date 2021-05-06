@@ -5,12 +5,26 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+// AppCatalog abstracts away the custom resource so it can be returned as a runtime
+// object or a typed custom resource.
+type AppCatalog struct {
+	CR      *applicationv1alpha1.AppCatalog
+	Entries *applicationv1alpha1.AppCatalogEntryList
+}
+
+// Collection wraps a list of appcatalogs.
+type Collection struct {
+	Items []AppCatalog
+}
+
 // GetOptions are the parameters that the Get method takes.
 type GetOptions struct {
-	Name string
+	LabelSelector labels.Selector
+	Name          string
 }
 
 type Resource interface {
@@ -21,15 +35,7 @@ type Resource interface {
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
-	Get(context.Context, GetOptions) (*applicationv1alpha1.AppCatalog, error)
-	GetObject(context.Context, GetOptions) (Resource, error)
-}
-
-// AppCatalog abstracts away the custom resource so it can be returned as a runtime
-// object or a typed custom resource.
-type AppCatalog struct {
-	CR      *applicationv1alpha1.AppCatalog
-	Entries *applicationv1alpha1.AppCatalogEntryList
+	Get(context.Context, GetOptions) (Resource, error)
 }
 
 func (a *AppCatalog) Object() runtime.Object {
@@ -41,11 +47,6 @@ func (a *AppCatalog) Object() runtime.Object {
 	}
 
 	return nil
-}
-
-// Collection wraps a list of appcatalogs.
-type Collection struct {
-	Items []AppCatalog
 }
 
 func (cc *Collection) Object() runtime.Object {

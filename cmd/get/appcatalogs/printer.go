@@ -23,11 +23,8 @@ func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
 		resource = getTable(appCatalogResource)
-		printOptions := printers.PrintOptions{
-			WithNamespace: r.flag.AllNamespaces,
-		}
+		printOptions := printers.PrintOptions{}
 		printer = printers.NewTablePrinter(printOptions)
-
 	case output.IsOutputName(r.flag.print.OutputFormat):
 		resource = appCatalogResource.Object()
 		err = output.PrintResourceNames(r.stdout, resource)
@@ -53,6 +50,11 @@ func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
 	return nil
 }
 
+func (r *runner) printNoMatchOutput() {
+	fmt.Fprintf(r.stdout, "No AppCatalog CRD found.\n")
+	fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
+}
+
 func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "No appcatalogs found.\n")
 	fmt.Fprintf(r.stdout, "To create an appcatalog, please check\n\n")
@@ -71,7 +73,7 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 	}
 }
 
-func getAppCatalogEntryTable(appCatalogResource appcatalog.Resource) *metav1.Table {
+func getAppCatalogEntryTable(appCatalogResource *appcatalog.AppCatalog) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -83,15 +85,8 @@ func getAppCatalogEntryTable(appCatalogResource appcatalog.Resource) *metav1.Tab
 		{Name: "Age", Type: "string"},
 	}
 
-	switch c := appCatalogResource.(type) {
-	case *appcatalog.Collection:
-		if len(c.Items) == 1 {
-			item := c.Items[0]
-
-			for _, ace := range item.Entries.Items {
-				table.Rows = append(table.Rows, getAppCatalogEntryRow(ace))
-			}
-		}
+	for _, ace := range appCatalogResource.Entries.Items {
+		table.Rows = append(table.Rows, getAppCatalogEntryRow(ace))
 	}
 
 	return table
@@ -125,6 +120,8 @@ func getAppCatalogTable(appCatalogResource appcatalog.Resource) *metav1.Table {
 	}
 
 	switch c := appCatalogResource.(type) {
+	case *appcatalog.AppCatalog:
+		table.Rows = append(table.Rows, getAppCatalogRow(*c))
 	case *appcatalog.Collection:
 		for _, appCatalogItem := range c.Items {
 			table.Rows = append(table.Rows, getAppCatalogRow(appCatalogItem))
@@ -136,15 +133,10 @@ func getAppCatalogTable(appCatalogResource appcatalog.Resource) *metav1.Table {
 
 func getTable(appCatalogResource appcatalog.Resource) *metav1.Table {
 	switch c := appCatalogResource.(type) {
+	case *appcatalog.AppCatalog:
+		return getAppCatalogEntryTable(c)
 	case *appcatalog.Collection:
-		if len(c.Items) == 1 {
-			catalog := c.Items[0]
-			if len(catalog.Entries.Items) > 0 {
-				return getAppCatalogEntryTable(appCatalogResource)
-			}
-		}
-
-		return getAppCatalogTable(appCatalogResource)
+		return getAppCatalogTable(c)
 	}
 
 	return nil
