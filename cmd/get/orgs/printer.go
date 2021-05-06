@@ -20,14 +20,11 @@ func (r *runner) printOutput(orgResource organization.Resource) error {
 	var resource runtime.Object = orgResource.Object()
 
 	printOptions := printers.PrintOptions{
-		NoHeaders:     false,
-		WithNamespace: true,
-		WithKind:      true,
-		Wide:          true,
-		ShowLabels:    false,
-		//Kind:             schema.GroupKind{},
-		//ColumnLabels:     []string{},
-		//SortBy:           "",
+		NoHeaders:        false,
+		WithNamespace:    false,
+		WithKind:         true,
+		Wide:             true,
+		ShowLabels:       false,
 		AllowMissingKeys: true,
 	}
 	printer = printers.NewTablePrinter(printOptions)
