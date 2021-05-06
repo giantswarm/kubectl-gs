@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 
@@ -68,8 +69,10 @@ func (c *ClientImpl) ExecuteQuery(ctx context.Context, query string, variables m
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		if urlErr, ok := err.(*url.Error); ok {
-			if x509Err, ok := urlErr.Err.(x509.UnknownAuthorityError); ok {
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			var x509Err x509.UnknownAuthorityError
+			if errors.As(urlErr, &x509Err) {
 				return microerror.Maskf(unknownAuthorityError, "certificate issued by %q", x509Err.Cert.Issuer.CommonName)
 			}
 		}
