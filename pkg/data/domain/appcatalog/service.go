@@ -2,12 +2,12 @@ package appcatalog
 
 import (
 	"context"
-	"fmt"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -45,7 +45,7 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	var err error
 
 	if len(options.Name) > 0 {
-		resource, err = s.getByName(ctx, options.Name)
+		resource, err = s.getByName(ctx, options.Name, options.LabelSelector)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -82,9 +82,9 @@ func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Re
 			}
 		}
 
-		for _, catalog := range appCatalogs.Items {
+		for _, appCatalog := range appCatalogs.Items {
 			a := AppCatalog{
-				CR: catalog.DeepCopy(),
+				CR: omitManagedFields(appCatalog.DeepCopy()),
 			}
 			appCatalogCollection.Items = append(appCatalogCollection.Items, a)
 		}
@@ -93,17 +93,8 @@ func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Re
 	return appCatalogCollection, nil
 }
 
-func (s *Service) getByName(ctx context.Context, name string) (Resource, error) {
+func (s *Service) getByName(ctx context.Context, name string, labelSelector labels.Selector) (Resource, error) {
 	var err error
-
-	var selector labels.Selector
-	{
-		label := fmt.Sprintf("application.giantswarm.io/catalog=%s", name)
-		selector, err = labels.Parse(label)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
 
 	appCatalogCR := &applicationv1alpha1.AppCatalog{}
 	{
@@ -122,7 +113,7 @@ func (s *Service) getByName(ctx context.Context, name string) (Resource, error) 
 	entries := &applicationv1alpha1.AppCatalogEntryList{}
 	{
 		lo := &runtimeclient.ListOptions{
-			LabelSelector: selector,
+			LabelSelector: labelSelector,
 		}
 		err = s.client.K8sClient.CtrlClient().List(ctx, entries, lo)
 		if apimeta.IsNoMatchError(err) {
@@ -135,9 +126,20 @@ func (s *Service) getByName(ctx context.Context, name string) (Resource, error) 
 	}
 
 	appCatalog := &AppCatalog{
-		CR:      appCatalogCR.DeepCopy(),
+		CR:      omitManagedFields(appCatalogCR.DeepCopy()),
 		Entries: entries,
+	}
+	appCatalog.CR.TypeMeta = metav1.TypeMeta{
+		APIVersion: "appcatalog.application.giantswarm.io/v1alpha1",
+		Kind:       "AppCatalog",
 	}
 
 	return appCatalog, nil
+}
+
+// omitManagedFields removes managed fields to make YAML output easier to read.
+// With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
+func omitManagedFields(appCatalog *applicationv1alpha1.AppCatalog) *applicationv1alpha1.AppCatalog {
+	appCatalog.ManagedFields = nil
+	return appCatalog
 }
