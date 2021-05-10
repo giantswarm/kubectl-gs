@@ -82,7 +82,7 @@ func getAppCatalogEntryTable(appCatalogResource *appcatalog.AppCatalog) *metav1.
 		{Name: "App Name", Type: "string"},
 		{Name: "App Version", Type: "string"},
 		{Name: "Version", Type: "string"},
-		{Name: "Age", Type: "string"},
+		{Name: "Created", Type: "string"},
 	}
 
 	for _, ace := range appCatalogResource.Entries.Items {
@@ -116,7 +116,7 @@ func getAppCatalogTable(appCatalogResource appcatalog.Resource) *metav1.Table {
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
 		{Name: "Catalog URL", Type: "string"},
-		{Name: "Age", Type: "string", Format: "date-time"},
+		{Name: "Created", Type: "string", Format: "date-time"},
 	}
 
 	switch c := appCatalogResource.(type) {
