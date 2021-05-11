@@ -4,8 +4,6 @@ import (
 	"net"
 	"regexp"
 
-	"github.com/mpvl/unique"
-
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
@@ -114,9 +112,6 @@ func (f *flag) Validate() error {
 		case key.ProviderAWS:
 			if len(f.MasterAZ) != 0 && len(f.MasterAZ) != 1 && len(f.MasterAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagMasterAZ)
-			}
-			if !unique.StringsAreUnique(f.MasterAZ) {
-				return microerror.Maskf(invalidFlagError, "--%s values must contain each AZ name only once", flagMasterAZ)
 			}
 		case key.ProviderAzure:
 			if len(f.MasterAZ) > 1 {

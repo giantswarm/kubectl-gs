@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Disable unique AZ validation to allow China cluster templating.
+
 ### Added
 
 - Add `get appcatalogs` and `get apps` commands.
