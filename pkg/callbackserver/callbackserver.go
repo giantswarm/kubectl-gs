@@ -16,6 +16,7 @@ type Config struct {
 	Port        int
 	RedirectURI string
 }
+
 type CallbackServer struct {
 	port        int
 	redirectURI string
