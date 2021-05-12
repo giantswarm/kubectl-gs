@@ -47,8 +47,9 @@ func New(config Config) (*CallbackServer, error) {
 // Run starts a server listening at a given path and port and
 // calls a callback function as soon as that path is hit.
 //
-// It blocks and waits until the given path is hit, then shuts
-// down and returns the result of the callback function.
+// It blocks and waits until the given path is hit, or until the
+// context deadline is reached, then shuts down the server and
+// returns the result of the callback function.
 func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (interface{}, error) {
 	resultCh := make(chan interface{})
 	errorCh := make(chan error)
