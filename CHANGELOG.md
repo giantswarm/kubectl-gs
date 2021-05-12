@@ -339,7 +339,7 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...HEAD
 [1.28.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.1...v1.28.0
 [1.27.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.0...v1.27.1
 [1.27.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.26.0...v1.27.0
