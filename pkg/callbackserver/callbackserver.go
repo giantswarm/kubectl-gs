@@ -2,58 +2,121 @@ package callbackserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/giantswarm/microerror"
 )
 
-// CallbackResult is used by our channel to store callback results.
-type CallbackResult struct {
-	Interface interface{}
-	Error     error
+type CallbackFunc func(http.ResponseWriter, *http.Request) (interface{}, error)
+
+type Config struct {
+	Port        int
+	RedirectURI string
+}
+type CallbackServer struct {
+	port        int
+	redirectURI string
 }
 
-// RunCallbackServer starts a server listening at a specific path and port and
+func New(config Config) (*CallbackServer, error) {
+	var err error
+
+	if config.Port == 0 {
+		config.Port, err = findAvailablePort()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	if len(config.RedirectURI) < 1 {
+		config.RedirectURI = "/"
+	}
+
+	cs := &CallbackServer{
+		port:        config.Port,
+		redirectURI: config.RedirectURI,
+	}
+
+	return cs, nil
+}
+
+// Run starts a server listening at a given path and port and
 // calls a callback function as soon as that path is hit.
 //
-// It blocks and waits until the path is hit, then shuts down and returns the
-// result of the callback function.
-func RunCallbackServer(port int, redirectURI string, callback func(w http.ResponseWriter, r *http.Request) (interface{}, error)) (interface{}, error) {
-	// Set a channel we will block on and wait for the result.
-	resultCh := make(chan CallbackResult)
+// It blocks and waits until the given path is hit, then shuts
+// down and returns the result of the callback function.
+func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (interface{}, error) {
+	resultCh := make(chan interface{})
+	errorCh := make(chan error)
 
-	// Setup the server.
-	m := http.NewServeMux()
-	s := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
+	var server *http.Server
+	{
+		mux := http.NewServeMux()
+		mux.HandleFunc(cs.redirectURI, func(w http.ResponseWriter, r *http.Request) {
+			result, err := callback(w, r)
+			if err != nil {
+				errorCh <- err
+				return
+			}
 
-	// This is the handler for the path we specified, it calls the provided
-	// callback as soon as a request arrives and moves the result of the callback
-	// on to the resultCh.
-	m.HandleFunc(redirectURI, func(w http.ResponseWriter, r *http.Request) {
-		// Got a response, call the callback function.
-		i, err := callback(w, r)
-		resultCh <- CallbackResult{i, err}
-	})
+			resultCh <- result
+		})
+
+		server = &http.Server{
+			Addr:    fmt.Sprintf(":%d", cs.port),
+			Handler: mux,
+		}
+	}
 
 	// Start the server.
-	go startServer(s)
+	go (func(s *http.Server) {
+		err := s.ListenAndServe()
+		if errors.Is(err, http.ErrServerClosed) {
+			// All good.
+		} else if err != nil {
+			panic(err)
+		}
+	})(server)
 
-	// Block till the callback gives us a result.
-	r := <-resultCh
+	var result interface{}
+	var origErr error
+	select {
+	case result = <-resultCh:
+		break
+	case origErr = <-errorCh:
+		break
+	case <-ctx.Done():
+		origErr = microerror.Mask(timedOutError)
+		break
+	}
 
-	// Shutdown the server.
-	err := s.Shutdown(context.Background())
+	err := server.Shutdown(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	// Return the result.
-	return r.Interface, r.Error
+	return result, microerror.Mask(origErr)
 }
 
-func startServer(s *http.Server) {
-	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		panic(err)
+func (cs *CallbackServer) Port() int {
+	return cs.port
+}
+
+func findAvailablePort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return -1, microerror.Mask(err)
 	}
+
+	ln, err := net.Listen("tcp", addr.String())
+	if err != nil {
+		return -1, microerror.Mask(err)
+	}
+
+	port := ln.Addr().(*net.TCPAddr).Port
+
+	return port, nil
 }

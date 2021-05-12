@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Limit the time allowed for the `login` command to call the authentication proxy to one minute.
+
 ## [1.28.0] - 2021-05-11
 
 ### Changed
@@ -43,7 +47,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Removed
 
 - Removed the `--num-availability-zones` flag from the `kubectl-gs template` commands. The `--availability-zones` flag
-should be used to specify a list of availability zones.
+  should be used to specify a list of availability zones.
 
 ### Changed
 
@@ -147,7 +151,6 @@ should be used to specify a list of availability zones.
 ### Removed
 
 - Remove client-side validation of the GS `release` when creating a `Cluster`'s template.
-
 
 ## [0.13.0] - 2020-11-20
 
@@ -336,7 +339,7 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...HEAD
+[unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...HEAD
 [1.28.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.1...v1.28.0
 [1.27.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.0...v1.27.1
 [1.27.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.26.0...v1.27.0
