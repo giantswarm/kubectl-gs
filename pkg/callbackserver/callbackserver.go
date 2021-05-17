@@ -72,16 +72,16 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 			Handler: mux,
 		}
 	}
+	defer server.Shutdown(ctx)
 
-	// Start the server.
-	go (func(s *http.Server) {
-		err := s.ListenAndServe()
+	go func() {
+		err := server.ListenAndServe()
 		if errors.Is(err, http.ErrServerClosed) {
 			// All good.
 		} else if err != nil {
-			panic(err)
+			errorCh <- err
 		}
-	})(server)
+	}()
 
 	var result interface{}
 	var origErr error
@@ -93,11 +93,6 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 	case <-ctx.Done():
 		origErr = microerror.Mask(timedOutError)
 		break
-	}
-
-	err := server.Shutdown(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
 	}
 
 	return result, microerror.Mask(origErr)
@@ -117,6 +112,7 @@ func findAvailablePort() (int, error) {
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
+	defer ln.Close()
 
 	port := ln.Addr().(*net.TCPAddr).Port
 
