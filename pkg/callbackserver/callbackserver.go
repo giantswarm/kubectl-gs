@@ -72,12 +72,6 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 			Handler: mux,
 		}
 	}
-	defer func() {
-		err := server.Shutdown(ctx)
-		if err != nil {
-			errorCh <- err
-		}
-	}()
 
 	go func() {
 		err := server.ListenAndServe()
@@ -100,7 +94,16 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 		break
 	}
 
-	return result, microerror.Mask(origErr)
+	err := server.Shutdown(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	if origErr != nil {
+		return nil, microerror.Mask(origErr)
+	}
+
+	return result, nil
 }
 
 func (cs *CallbackServer) Port() int {
