@@ -72,7 +72,12 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 			Handler: mux,
 		}
 	}
-	defer server.Shutdown(ctx)
+	defer func() {
+		err := server.Shutdown(ctx)
+		if err != nil {
+			errorCh <- err
+		}
+	}()
 
 	go func() {
 		err := server.ListenAndServe()
