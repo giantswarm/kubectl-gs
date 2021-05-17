@@ -91,3 +91,12 @@ var invalidAuthConfigurationError = &microerror.Error{
 func IsInvalidAuthConfiguration(err error) bool {
 	return microerror.Cause(err) == invalidAuthConfigurationError
 }
+
+var authResponseTimedOutError = &microerror.Error{
+	Kind: "authResponseTimedOutError",
+}
+
+// IsAuthResponseTimedOut asserts authResponseTimedOutError.
+func IsAuthResponseTimedOut(err error) bool {
+	return microerror.Cause(err) == authResponseTimedOutError
+}

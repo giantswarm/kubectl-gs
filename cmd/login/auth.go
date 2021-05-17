@@ -27,11 +27,12 @@ const (
 	clientID = "zQiFLUnrTFQwrybYzeY53hWWfhOKWRAU"
 
 	authCallbackURL  = "http://localhost"
-	authCallbackPort = 8085
 	authCallbackPath = "/oauth/callback"
 
 	customerConnectorID   = "customer"
 	giantswarmConnectorID = "giantswarm"
+
+	authResultTimeout = 1 * time.Minute
 )
 
 var (
@@ -40,10 +41,25 @@ var (
 
 // handleAuth executes the OIDC authentication against an installation's authentication provider.
 func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
+	ctx, cancel := context.WithTimeout(ctx, authResultTimeout)
+	defer cancel()
+
+	var err error
+	var authProxy *callbackserver.CallbackServer
+	{
+		config := callbackserver.Config{
+			RedirectURI: authCallbackPath,
+		}
+		authProxy, err = callbackserver.New(config)
+		if err != nil {
+			return oidc.UserInfo{}, microerror.Mask(err)
+		}
+	}
+
 	oidcConfig := oidc.Config{
 		ClientID:    clientID,
 		Issuer:      i.AuthURL,
-		RedirectURL: fmt.Sprintf("%s:%d%s", authCallbackURL, authCallbackPort, authCallbackPath),
+		RedirectURL: fmt.Sprintf("%s:%d%s", authCallbackURL, authProxy.Port(), authCallbackPath),
 		AuthScopes:  authScopes[:],
 	}
 	auther, err := oidc.New(ctx, oidcConfig)
@@ -75,8 +91,10 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 
 	// Create a local web server, for fetching all the authentication data from
 	// the authentication provider.
-	p, err := callbackserver.RunCallbackServer(authCallbackPort, authCallbackPath, handleAuthCallback(ctx, auther))
-	if err != nil {
+	p, err := authProxy.Run(ctx, handleAuthCallback(ctx, auther))
+	if callbackserver.IsTimedOut(err) {
+		return oidc.UserInfo{}, microerror.Maskf(authResponseTimedOutError, "failed to get an authentication response on time")
+	} else if err != nil {
 		return oidc.UserInfo{}, microerror.Mask(err)
 	}
 
