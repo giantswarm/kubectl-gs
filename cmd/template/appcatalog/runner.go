@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	templateappcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
@@ -47,34 +48,24 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var catalogSecretYaml []byte
 	var err error
 
-	id := key.GenerateID()
 	config := templateappcatalog.Config{
-		CatalogConfigMapName: key.GenerateAssetName(r.flag.Name, id),
-		CatalogSecretName:    key.GenerateAssetName(r.flag.Name, id),
-		Description:          r.flag.Description,
-		LogoURL:              r.flag.LogoURL,
-		ID:                   id,
-		Name:                 r.flag.Name,
-		URL:                  r.flag.URL,
+		Description: r.flag.Description,
+		LogoURL:     r.flag.LogoURL,
+		ID:          key.GenerateID(),
+		Name:        r.flag.Name,
+		Namespace:   metav1.NamespaceDefault,
+		URL:         r.flag.URL,
 	}
 
-	appCatalogCR, err := templateappcatalog.NewAppCatalogCR(config)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	appCatalogCRYaml, err := yaml.Marshal(appCatalogCR)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	var configMapData string
 	if r.flag.ConfigMap != "" {
+		var configMapData string
+
 		configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), r.flag.ConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
+		config.CatalogConfigMapName = key.GenerateAssetName(r.flag.Name, config.ID)
 		catalogConfigMap, err = templateappcatalog.NewConfigMap(config, configMapData)
 		if err != nil {
 			return microerror.Mask(err)
@@ -86,13 +77,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var secretData []byte
 	if r.flag.Secret != "" {
+		var secretData []byte
+
 		secretData, err = key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.Secret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
+		config.CatalogSecretName = key.GenerateAssetName(r.flag.Name, config.ID)
 		catalogSecret, err = templateappcatalog.NewSecret(config, secretData)
 		if err != nil {
 			return microerror.Mask(err)
@@ -102,6 +95,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if err != nil {
 			return microerror.Maskf(unmashalToMapFailedError, err.Error())
 		}
+	}
+
+	appCatalogCR, err := templateappcatalog.NewAppCatalogCR(config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	appCatalogCRYaml, err := yaml.Marshal(appCatalogCR)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	type AppCatalogCROutput struct {

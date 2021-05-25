@@ -12,11 +12,28 @@ type Config struct {
 	Description          string
 	ID                   string
 	Name                 string
+	Namespace            string
 	LogoURL              string
 	URL                  string
 }
 
 func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
+	catalogConfig := applicationv1alpha1.AppCatalogSpecConfig{}
+
+	if config.CatalogConfigMapName != "" {
+		catalogConfig.ConfigMap = applicationv1alpha1.AppCatalogSpecConfigConfigMap{
+			Name:      config.CatalogConfigMapName,
+			Namespace: config.Namespace,
+		}
+	}
+
+	if config.CatalogSecretName != "" {
+		catalogConfig.Secret = applicationv1alpha1.AppCatalogSpecConfigSecret{
+			Name:      config.CatalogSecretName,
+			Namespace: config.Namespace,
+		}
+	}
+
 	appCatalogCR := &applicationv1alpha1.AppCatalog{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AppCatalog",
@@ -30,16 +47,7 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 			},
 		},
 		Spec: applicationv1alpha1.AppCatalogSpec{
-			Config: applicationv1alpha1.AppCatalogSpecConfig{
-				ConfigMap: applicationv1alpha1.AppCatalogSpecConfigConfigMap{
-					Name:      config.CatalogConfigMapName,
-					Namespace: metav1.NamespaceDefault,
-				},
-				Secret: applicationv1alpha1.AppCatalogSpecConfigSecret{
-					Name:      config.CatalogSecretName,
-					Namespace: metav1.NamespaceDefault,
-				},
-			},
+			Config:      catalogConfig,
 			Description: config.Description,
 			LogoURL:     config.LogoURL,
 			Storage: applicationv1alpha1.AppCatalogSpecStorage{
