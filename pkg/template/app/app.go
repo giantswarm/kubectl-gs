@@ -2,7 +2,7 @@ package app
 
 import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -85,8 +85,8 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 	return appCR, nil
 }
 
-func NewConfigMap(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
-	configMap := &apiv1.ConfigMap{
+func NewConfigMap(config ConfigMapConfig) (*corev1.ConfigMap, error) {
+	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
 			APIVersion: "v1",
@@ -103,8 +103,8 @@ func NewConfigMap(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
 	return configMap, nil
 }
 
-func NewSecret(config SecretConfig) (*apiv1.Secret, error) {
-	secret := &apiv1.Secret{
+func NewSecret(config SecretConfig) (*corev1.Secret, error) {
+	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
 			APIVersion: "v1",

@@ -52,9 +52,8 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 	return appCatalogCR, nil
 }
 
-func NewConfigmapCR(config Config, data string) (*apiv1.ConfigMap, error) {
-
-	configMapCR := &apiv1.ConfigMap{
+func NewConfigMap(config Config, data string) (*corev1.ConfigMap, error) {
+	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
 			APIVersion: "v1",
@@ -72,9 +71,8 @@ func NewConfigmapCR(config Config, data string) (*apiv1.ConfigMap, error) {
 	return configMapCR, nil
 }
 
-func NewSecretCR(config Config, data []byte) (*apiv1.Secret, error) {
-
-	secretCR := &apiv1.Secret{
+func NewSecret(config Config, data []byte) (*corev1.Secret, error) {
+	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
 			APIVersion: "v1",

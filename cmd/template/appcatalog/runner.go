@@ -11,10 +11,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-
-	appcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	templateappcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
 )
 
 type runner struct {

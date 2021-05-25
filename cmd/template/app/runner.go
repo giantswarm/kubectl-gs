@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/template/app"
@@ -42,8 +42,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	var userConfigMap *v1.ConfigMap
-	var userSecret *v1.Secret
+	var userConfigMap *corev1.ConfigMap
+	var userSecret *corev1.Secret
 	var userConfigConfigMapYaml []byte
 	var userConfigSecretYaml []byte
 	var err error
