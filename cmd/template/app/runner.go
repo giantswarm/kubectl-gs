@@ -48,7 +48,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var userConfigSecretYaml []byte
 	var err error
 
-	appConfig := app.Config{
+	appConfig := templateapp.Config{
 		Catalog:   r.flag.Catalog,
 		Name:      r.flag.Name,
 		Namespace: r.flag.Namespace,
