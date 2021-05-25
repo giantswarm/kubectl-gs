@@ -2,7 +2,6 @@ package appcatalog
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"text/template"
@@ -56,8 +55,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.ConfigMap != "" {
-		fmt.Printf("CM %s \n", r.flag.ConfigMap)
-
 		var configMapData string
 
 		configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), r.flag.ConfigMap)
@@ -78,8 +75,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.Secret != "" {
-		fmt.Printf("SECRET %s \n", r.flag.Secret)
-
 		var secretData []byte
 
 		secretData, err = key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.Secret)
