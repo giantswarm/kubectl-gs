@@ -85,8 +85,8 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 	return appCR, nil
 }
 
-func NewConfigmap(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
-	return &apiv1.ConfigMap{
+func NewConfigMap(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
+	configMap := &apiv1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
 			APIVersion: "v1",
@@ -94,16 +94,17 @@ func NewConfigmap(config ConfigMapConfig) (*apiv1.ConfigMap, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			Labels:    map[string]string{},
 		},
 		Data: map[string]string{
 			"values": config.Data,
 		},
-	}, nil
+	}
+
+	return configMap, nil
 }
 
 func NewSecret(config SecretConfig) (*apiv1.Secret, error) {
-	return &apiv1.Secret{
+	secret := &apiv1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
 			APIVersion: "v1",
@@ -115,5 +116,7 @@ func NewSecret(config SecretConfig) (*apiv1.Secret, error) {
 		Data: map[string][]byte{
 			"values": config.Data,
 		},
-	}, nil
+	}
+
+	return secret, nil
 }

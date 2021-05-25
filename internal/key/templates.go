@@ -1,9 +1,9 @@
 package key
 
 const AppCRTemplate = `
-{{- .UserConfigConfigMapCR -}}
+{{- .UserConfigConfigMap -}}
 ---
-{{ .UserConfigSecretCR -}}
+{{ .UserConfigSecret -}}
 ---
 {{ .AppCR -}}
 `

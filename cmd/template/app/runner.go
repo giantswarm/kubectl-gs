@@ -15,6 +15,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/template/app"
+	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
 type runner struct {
@@ -41,8 +42,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	var userSecret *v1.Secret
 	var userConfigMap *v1.ConfigMap
+	var userSecret *v1.Secret
 	var userConfigConfigMapYaml []byte
 	var userConfigSecretYaml []byte
 	var err error
@@ -61,12 +62,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		secretConfig := app.SecretConfig{
+		secretConfig := templateapp.SecretConfig{
 			Data:      userConfigSecretData,
 			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
 			Namespace: r.flag.Cluster,
 		}
-		userSecret, err = app.NewSecret(secretConfig)
+		userSecret, err = templateapp.NewSecret(secretConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -86,12 +87,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				return microerror.Mask(err)
 			}
 		}
-		configMapConfig := app.ConfigMapConfig{
+		configMapConfig := templateapp.ConfigMapConfig{
 			Data:      configMapData,
 			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
 			Namespace: r.flag.Cluster,
 		}
-		userConfigMap, err = app.NewConfigmap(configMapConfig)
+		userConfigMap, err = templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -114,15 +115,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	type AppCROutput struct {
-		AppCR                 string
-		UserConfigSecretCR    string
-		UserConfigConfigMapCR string
+		AppCR               string
+		UserConfigConfigMap string
+		UserConfigSecret    string
 	}
 
 	appCROutput := AppCROutput{
-		AppCR:                 string(appCRYaml),
-		UserConfigConfigMapCR: string(userConfigConfigMapYaml),
-		UserConfigSecretCR:    string(userConfigSecretYaml),
+		AppCR:               string(appCRYaml),
+		UserConfigConfigMap: string(userConfigConfigMapYaml),
+		UserConfigSecret:    string(userConfigSecretYaml),
 	}
 
 	t := template.Must(template.New("appCatalogCR").Parse(key.AppCRTemplate))
