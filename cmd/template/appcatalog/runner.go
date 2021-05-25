@@ -41,15 +41,24 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := appcatalog.Config{
-		Description: r.flag.Description,
-		LogoURL:     r.flag.LogoURL,
-		ID:          key.GenerateID(),
-		Name:        r.flag.Name,
-		URL:         r.flag.URL,
+	var catalogConfigMap *corev1.ConfigMap
+	var catalogSecret *corev1.Secret
+	var catalogConfigMapYaml []byte
+	var catalogSecretYaml []byte
+	var err error
+
+	id := key.GenerateID()
+	config := templateappcatalog.Config{
+		CatalogConfigMapName: key.GenerateAssetName(r.flag.Name, id),
+		CatalogSecretName:    key.GenerateAssetName(r.flag.Name, id),
+		Description:          r.flag.Description,
+		LogoURL:              r.flag.LogoURL,
+		ID:                   id,
+		Name:                 r.flag.Name,
+		URL:                  r.flag.URL,
 	}
 
-	appCatalogCR, err := appcatalog.NewAppCatalogCR(config)
+	appCatalogCR, err := templateappcatalog.NewAppCatalogCR(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -65,15 +74,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-	configmapCR, err := appcatalog.NewConfigmapCR(config, configMapData)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 
-	configmapCRYaml, err := yaml.Marshal(configmapCR)
-	if err != nil {
-		return microerror.Maskf(unmashalToMapFailedError, err.Error())
+		catalogConfigMap, err = templateappcatalog.NewConfigMap(config, configMapData)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		catalogConfigMapYaml, err = yaml.Marshal(catalogConfigMap)
+		if err != nil {
+			return microerror.Maskf(unmashalToMapFailedError, err.Error())
+		}
 	}
 
 	var secretData []byte
@@ -82,27 +92,28 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-	secretCR, err := appcatalog.NewSecretCR(config, secretData)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 
-	secretCRYaml, err := yaml.Marshal(secretCR)
-	if err != nil {
-		return microerror.Maskf(unmashalToMapFailedError, err.Error())
+		catalogSecret, err = templateappcatalog.NewSecret(config, secretData)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		catalogSecretYaml, err = yaml.Marshal(catalogSecret)
+		if err != nil {
+			return microerror.Maskf(unmashalToMapFailedError, err.Error())
+		}
 	}
 
 	type AppCatalogCROutput struct {
-		AppCatalogCR string
-		ConfigmapCR  string
-		SecretCR     string
+		AppCatalogCR     string
+		CatalogConfigMap string
+		CatalogSecret    string
 	}
 
 	appCatalogCROutput := AppCatalogCROutput{
-		AppCatalogCR: string(appCatalogCRYaml),
-		ConfigmapCR:  string(configmapCRYaml),
-		SecretCR:     string(secretCRYaml),
+		AppCatalogCR:     string(appCatalogCRYaml),
+		CatalogConfigMap: string(catalogConfigMapYaml),
+		CatalogSecret:    string(catalogSecretYaml),
 	}
 
 	t := template.Must(template.New("appCatalogCR").Parse(key.AppCatalogCRTemplate))

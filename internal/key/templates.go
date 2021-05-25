@@ -9,9 +9,9 @@ const AppCRTemplate = `
 `
 
 const AppCatalogCRTemplate = `
-{{- .ConfigmapCR -}}
+{{- .CatalogConfigMap -}}
 ---
-{{ .SecretCR -}}
+{{ .CatalogSecret -}}
 ---
 {{ .AppCatalogCR -}}
 `

@@ -2,20 +2,21 @@ package appcatalog
 
 import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Config struct {
-	Description string
-	ID          string
-	Name        string
-	LogoURL     string
-	URL         string
+	CatalogConfigMapName string
+	CatalogSecretName    string
+	Description          string
+	ID                   string
+	Name                 string
+	LogoURL              string
+	URL                  string
 }
 
 func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
-
 	appCatalogCR := &applicationv1alpha1.AppCatalog{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AppCatalog",
@@ -31,11 +32,11 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 		Spec: applicationv1alpha1.AppCatalogSpec{
 			Config: applicationv1alpha1.AppCatalogSpecConfig{
 				ConfigMap: applicationv1alpha1.AppCatalogSpecConfigConfigMap{
-					Name:      config.Name + config.ID,
+					Name:      config.CatalogConfigMapName,
 					Namespace: metav1.NamespaceDefault,
 				},
 				Secret: applicationv1alpha1.AppCatalogSpecConfigSecret{
-					Name:      config.Name + config.ID,
+					Name:      config.CatalogSecretName,
 					Namespace: metav1.NamespaceDefault,
 				},
 			},
@@ -59,16 +60,15 @@ func NewConfigMap(config Config, data string) (*corev1.ConfigMap, error) {
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.Name + config.ID,
+			Name:      config.CatalogConfigMapName,
 			Namespace: metav1.NamespaceDefault,
-			Labels:    map[string]string{},
 		},
 		Data: map[string]string{
 			"values": data,
 		},
 	}
 
-	return configMapCR, nil
+	return configMap, nil
 }
 
 func NewSecret(config Config, data []byte) (*corev1.Secret, error) {
@@ -78,14 +78,13 @@ func NewSecret(config Config, data []byte) (*corev1.Secret, error) {
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.Name + config.ID,
+			Name:      config.CatalogSecretName,
 			Namespace: metav1.NamespaceDefault,
-			Labels:    map[string]string{},
 		},
 		Data: map[string][]byte{
 			"values": data,
 		},
 	}
 
-	return secretCR, nil
+	return secret, nil
 }
