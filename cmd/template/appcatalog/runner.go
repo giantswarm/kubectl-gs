@@ -41,8 +41,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	var configmapCRYaml []byte
-	var secretCRYaml []byte
+	var configMapYaml []byte
+	var secretYaml []byte
 	var err error
 
 	config := templateappcatalog.Config{
@@ -63,12 +63,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		config.CatalogConfigMapName = key.GenerateAssetName(r.flag.Name, config.ID)
-		configmapCR, err := templateappcatalog.NewConfigmapCR(config, configMapData)
+		configmapCR, err := templateappcatalog.NewConfigMap(config, configMapData)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		configmapCRYaml, err = yaml.Marshal(configmapCR)
+		configMapYaml, err = yaml.Marshal(configmapCR)
 		if err != nil {
 			return microerror.Maskf(unmashalToMapFailedError, err.Error())
 		}
@@ -83,12 +83,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		config.CatalogSecretName = key.GenerateAssetName(r.flag.Name, config.ID)
-		secretCR, err := templateappcatalog.NewSecretCR(config, secretData)
+		secretCR, err := templateappcatalog.NewSecret(config, secretData)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		secretCRYaml, err = yaml.Marshal(secretCR)
+		secretYaml, err = yaml.Marshal(secretCR)
 		if err != nil {
 			return microerror.Maskf(unmashalToMapFailedError, err.Error())
 		}
@@ -96,8 +96,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	type AppCatalogCROutput struct {
 		AppCatalogCR string
-		ConfigmapCR  string
-		SecretCR     string
+		ConfigMap    string
+		Secret       string
 	}
 
 	appCatalogCR, err := templateappcatalog.NewAppCatalogCR(config)
@@ -112,8 +112,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	appCatalogCROutput := AppCatalogCROutput{
 		AppCatalogCR: string(appCatalogCRYaml),
-		ConfigmapCR:  string(configmapCRYaml),
-		SecretCR:     string(secretCRYaml),
+		ConfigMap:    string(configMapYaml),
+		Secret:       string(secretYaml),
 	}
 
 	t := template.Must(template.New("appCatalogCR").Parse(key.AppCatalogCRTemplate))
