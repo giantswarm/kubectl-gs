@@ -1,4 +1,4 @@
-package appcatalogs
+package catalogs
 
 import (
 	"io"
@@ -15,34 +15,35 @@ import (
 )
 
 const (
-	name  = "appcatalogs <catalog-name>"
-	alias = "appcatalog"
+	name  = "catalogs <catalog-name>"
+	alias = "catalog"
 
 	shortDescription = "Display app catalogs and available apps"
 	longDescription  = `Display app catalogs and available apps
 
 Output columns:
 
-- NAME: Name of the appcatalog.
+- NAME: Name of the catalog.
+- NAMESPACE: Namespace of the catalog.
 - URL: URL for the Helm chart repository.
-- CREATED: How long ago the appcatalog was created.
+- CREATED: How long ago the catalog was created.
 
-Getting an appcatalog by name will display the latest versions of the apps
+Getting a catalog by name will display the latest versions of the apps
 in this catalog according to semantic versioning.
 
 Output columns:
 
-- CATALOG: Name of the appcatalog.
+- CATALOG: Name of the catalog.
 - APP NAME: Name of the app.
 - APP VERSION: Upstream version of the app.
 - VERSION: Latest version of the app.
 - CREATED: How long ago the app release was created.`
 
 	examples = `  # List all public app catalogs
-  kubectl gs get appcatalogs
+  kubectl gs get catalogs
   
   # List all available apps for a catalog
-  kubectl gs get appcatalog giantswarm`
+  kubectl gs get catalog giantswarm`
 )
 
 type Config struct {

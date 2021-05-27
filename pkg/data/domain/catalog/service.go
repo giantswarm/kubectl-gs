@@ -1,4 +1,4 @@
-package appcatalog
+package catalog
 
 import (
 	"context"
@@ -16,17 +16,17 @@ import (
 
 var _ Interface = &Service{}
 
-// Config represent the input parameters that New takes to produce a valid appcatalog getter Service.
+// Config represent the input parameters that New takes to produce a valid catalog getter Service.
 type Config struct {
 	Client *client.Client
 }
 
-// Service is the object we'll hang the appcatalog getter methods on.
+// Service is the object we'll hang the catalog getter methods on.
 type Service struct {
 	client *client.Client
 }
 
-// New returns a new appcatalog getter Service.
+// New returns a new catalog getter Service.
 func New(config Config) (Interface, error) {
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
@@ -39,13 +39,13 @@ func New(config Config) (Interface, error) {
 	return s, nil
 }
 
-// Get fetches a list of appcatalog CRs optionally filtered by name.
+// Get fetches a list of catalog CRs optionally filtered by name.
 func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
 	var resource Resource
 	var err error
 
 	if len(options.Name) > 0 {
-		resource, err = s.getByName(ctx, options.Name, options.LabelSelector)
+		resource, err = s.getByName(ctx, options.Namespace, options.Name, options.LabelSelector)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -62,7 +62,7 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 }
 
 func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Resource, error) {
-	appCatalogCollection := &Collection{}
+	catalogCollection := &Collection{}
 	var err error
 
 	{
@@ -70,37 +70,38 @@ func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Re
 			LabelSelector: labelSelector,
 		}
 
-		appCatalogs := &applicationv1alpha1.AppCatalogList{}
+		catalogs := &applicationv1alpha1.CatalogList{}
 		{
-			err = s.client.K8sClient.CtrlClient().List(ctx, appCatalogs, lo)
+			err = s.client.K8sClient.CtrlClient().List(ctx, catalogs, lo)
 			if apimeta.IsNoMatchError(err) {
 				return nil, microerror.Mask(noMatchError)
 			} else if err != nil {
 				return nil, microerror.Mask(err)
-			} else if len(appCatalogs.Items) == 0 {
+			} else if len(catalogs.Items) == 0 {
 				return nil, microerror.Mask(noResourcesError)
 			}
 		}
 
-		for _, appCatalog := range appCatalogs.Items {
-			a := AppCatalog{
-				CR: omitManagedFields(appCatalog.DeepCopy()),
+		for _, catalog := range catalogs.Items {
+			a := Catalog{
+				CR: omitManagedFields(catalog.DeepCopy()),
 			}
-			appCatalogCollection.Items = append(appCatalogCollection.Items, a)
+			catalogCollection.Items = append(catalogCollection.Items, a)
 		}
 	}
 
-	return appCatalogCollection, nil
+	return catalogCollection, nil
 }
 
-func (s *Service) getByName(ctx context.Context, name string, labelSelector labels.Selector) (Resource, error) {
+func (s *Service) getByName(ctx context.Context, namespace, name string, labelSelector labels.Selector) (Resource, error) {
 	var err error
 
-	appCatalogCR := &applicationv1alpha1.AppCatalog{}
+	catalogCR := &applicationv1alpha1.Catalog{}
 	{
 		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
-			Name: name,
-		}, appCatalogCR)
+			Namespace: namespace,
+			Name:      name,
+		}, catalogCR)
 		if apierrors.IsNotFound(err) {
 			return nil, microerror.Mask(notFoundError)
 		} else if apimeta.IsNoMatchError(err) {
@@ -125,21 +126,21 @@ func (s *Service) getByName(ctx context.Context, name string, labelSelector labe
 		}
 	}
 
-	appCatalog := &AppCatalog{
-		CR:      omitManagedFields(appCatalogCR.DeepCopy()),
+	catalog := &Catalog{
+		CR:      omitManagedFields(catalogCR.DeepCopy()),
 		Entries: entries,
 	}
-	appCatalog.CR.TypeMeta = metav1.TypeMeta{
-		APIVersion: "appcatalog.application.giantswarm.io/v1alpha1",
-		Kind:       "AppCatalog",
+	catalog.CR.TypeMeta = metav1.TypeMeta{
+		APIVersion: "catalog.application.giantswarm.io/v1alpha1",
+		Kind:       "Catalog",
 	}
 
-	return appCatalog, nil
+	return catalog, nil
 }
 
 // omitManagedFields removes managed fields to make YAML output easier to read.
 // With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
-func omitManagedFields(appCatalog *applicationv1alpha1.AppCatalog) *applicationv1alpha1.AppCatalog {
-	appCatalog.ManagedFields = nil
-	return appCatalog
+func omitManagedFields(catalog *applicationv1alpha1.Catalog) *applicationv1alpha1.Catalog {
+	catalog.ManagedFields = nil
+	return catalog
 }

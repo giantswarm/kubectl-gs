@@ -7,7 +7,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
-	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
+	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
 )
 
@@ -21,11 +21,11 @@ type Config struct {
 
 // Service represents an instance of the App service.
 type Service struct {
-	client                *client.Client
-	appDataService        appdata.Interface
-	appcatalogDataService appcatalogdata.Interface
-	helmbinaryService     helmbinary.Interface
-	valuesService         *values.Values
+	client             *client.Client
+	appDataService     appdata.Interface
+	catalogDataService catalogdata.Interface
+	helmbinaryService  helmbinary.Interface
+	valuesService      *values.Values
 
 	catalogFetchResults map[string]CatalogFetchResult
 	schemaFetchResults  map[string]SchemaFetchResult
@@ -55,13 +55,13 @@ func New(config Config) (Interface, error) {
 		}
 	}
 
-	var appcatalogDataService appcatalogdata.Interface
+	var catalogDataService catalogdata.Interface
 	{
-		c := appcatalogdata.Config{
+		c := catalogdata.Config{
 			Client: config.Client,
 		}
 
-		appcatalogDataService, err = appcatalogdata.New(c)
+		catalogDataService, err = catalogdata.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -93,13 +93,13 @@ func New(config Config) (Interface, error) {
 	}
 
 	s := &Service{
-		client:                config.Client,
-		appDataService:        appDataService,
-		appcatalogDataService: appcatalogDataService,
-		helmbinaryService:     helmbinaryService,
-		valuesService:         valuesService,
-		catalogFetchResults:   make(map[string]CatalogFetchResult),
-		schemaFetchResults:    make(map[string]SchemaFetchResult),
+		client:              config.Client,
+		appDataService:      appDataService,
+		catalogDataService:  catalogDataService,
+		helmbinaryService:   helmbinaryService,
+		valuesService:       valuesService,
+		catalogFetchResults: make(map[string]CatalogFetchResult),
+		schemaFetchResults:  make(map[string]SchemaFetchResult),
 	}
 
 	return s, nil

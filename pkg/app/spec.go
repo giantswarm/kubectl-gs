@@ -42,7 +42,7 @@ type ValidationResult struct {
 }
 
 type CatalogFetchResult struct {
-	catalog *applicationv1alpha1.AppCatalog
+	catalog *applicationv1alpha1.Catalog
 	index   *IndexFile
 
 	err error

@@ -7,8 +7,8 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/giantswarm/apiextensions/v3 v3.22.0
-	github.com/giantswarm/app/v4 v4.12.0
+	github.com/giantswarm/apiextensions/v3 v3.26.0
+	github.com/giantswarm/app/v4 v4.13.1-0.20210527151041-7cf0c5bd73a9
 	github.com/giantswarm/k8sclient/v5 v5.11.0
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0
@@ -20,11 +20,11 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.18.18
+	k8s.io/api v0.18.19
 	k8s.io/apiextensions-apiserver v0.18.18
-	k8s.io/apimachinery v0.18.18
+	k8s.io/apimachinery v0.18.19
 	k8s.io/cli-runtime v0.18.18
-	k8s.io/client-go v0.18.18
+	k8s.io/client-go v0.18.19
 	sigs.k8s.io/cluster-api v0.3.13
 	sigs.k8s.io/cluster-api-provider-azure v0.4.11
 	sigs.k8s.io/controller-runtime v0.6.4

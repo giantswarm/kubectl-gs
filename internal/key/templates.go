@@ -8,12 +8,12 @@ const AppCRTemplate = `
 {{ .AppCR -}}
 `
 
-const AppCatalogCRTemplate = `
+const CatalogCRTemplate = `
 {{- .ConfigMap -}}
 ---
 {{ .Secret -}}
 ---
-{{ .AppCatalogCR -}}
+{{ .CatalogCR -}}
 `
 
 const ClusterAWSCRsTemplate = `

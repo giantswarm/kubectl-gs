@@ -1,4 +1,4 @@
-package appcatalog
+package catalog
 
 import (
 	"context"
@@ -9,22 +9,23 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// AppCatalog abstracts away the custom resource so it can be returned as a runtime
+// Catalog abstracts away the custom resource so it can be returned as a runtime
 // object or a typed custom resource.
-type AppCatalog struct {
-	CR      *applicationv1alpha1.AppCatalog
+type Catalog struct {
+	CR      *applicationv1alpha1.Catalog
 	Entries *applicationv1alpha1.AppCatalogEntryList
 }
 
-// Collection wraps a list of appcatalogs.
+// Collection wraps a list of catalogs.
 type Collection struct {
-	Items []AppCatalog
+	Items []Catalog
 }
 
 // GetOptions are the parameters that the Get method takes.
 type GetOptions struct {
 	LabelSelector labels.Selector
 	Name          string
+	Namespace     string
 }
 
 type Resource interface {
@@ -38,7 +39,7 @@ type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
 }
 
-func (a *AppCatalog) Object() runtime.Object {
+func (a *Catalog) Object() runtime.Object {
 	if a.CR != nil {
 		return a.CR
 	}

@@ -14,8 +14,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
-	appcatalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
+	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
 )
 
@@ -263,7 +262,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 	return string(body), nil
 }
 
-func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*IndexFile, *applicationv1alpha1.AppCatalog, error) {
+func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*IndexFile, *applicationv1alpha1.Catalog, error) {
 	var err error
 
 	// Don't try to fetch something that is undefined.
@@ -277,13 +276,13 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 	}
 
 	// Fetch the catalog.
-	options := appcatalogdata.GetOptions{
+	options := catalogdata.GetOptions{
 		Name: catalogName,
 	}
 
-	catalogResource, err := s.appcatalogDataService.Get(ctx, options)
+	catalogResource, err := s.catalogDataService.Get(ctx, options)
 	if err != nil {
-		err = microerror.Maskf(fetchError, "unable to fetch AppCatalog: %s", err.Error())
+		err = microerror.Maskf(fetchError, "unable to fetch Catalog: %s", err.Error())
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
@@ -291,10 +290,10 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 		return nil, nil, err
 	}
 
-	var catalog *applicationv1alpha1.AppCatalog
+	var catalog *applicationv1alpha1.Catalog
 
 	switch c := catalogResource.(type) {
-	case *appcatalog.AppCatalog:
+	case *catalogdata.Catalog:
 		catalog = c.CR
 	default:
 		return nil, nil, microerror.Maskf(invalidTypeError, "unexpected type %T found", c)

@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/app"
-	"github.com/giantswarm/kubectl-gs/cmd/template/appcatalog"
+	"github.com/giantswarm/kubectl-gs/cmd/template/catalog"
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster"
 	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool"
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool"
@@ -55,13 +55,13 @@ func New(config Config) (*cobra.Command, error) {
 
 	var appcatalogCmd *cobra.Command
 	{
-		c := appcatalog.Config{
+		c := catalog.Config{
 			Logger: config.Logger,
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}
 
-		appcatalogCmd, err = appcatalog.New(c)
+		appcatalogCmd, err = catalog.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

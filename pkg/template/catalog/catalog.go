@@ -1,4 +1,4 @@
-package appcatalog
+package catalog
 
 import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -17,40 +17,45 @@ type Config struct {
 	URL                  string
 }
 
-func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
-	catalogConfig := applicationv1alpha1.AppCatalogSpecConfig{}
+func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
+	var catalogConfig *applicationv1alpha1.CatalogSpecConfig
+
+	if config.CatalogConfigMapName != "" || config.CatalogSecretName != "" {
+		catalogConfig = &applicationv1alpha1.CatalogSpecConfig{}
+	}
 
 	if config.CatalogConfigMapName != "" {
-		catalogConfig.ConfigMap = applicationv1alpha1.AppCatalogSpecConfigConfigMap{
+		catalogConfig.ConfigMap = &applicationv1alpha1.CatalogSpecConfigConfigMap{
 			Name:      config.CatalogConfigMapName,
 			Namespace: config.Namespace,
 		}
 	}
 
 	if config.CatalogSecretName != "" {
-		catalogConfig.Secret = applicationv1alpha1.AppCatalogSpecConfigSecret{
+		catalogConfig.Secret = &applicationv1alpha1.CatalogSpecConfigSecret{
 			Name:      config.CatalogSecretName,
 			Namespace: config.Namespace,
 		}
 	}
 
-	appCatalogCR := &applicationv1alpha1.AppCatalog{
+	catalogCR := &applicationv1alpha1.Catalog{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "AppCatalog",
+			Kind:       "Catalog",
 			APIVersion: "application.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: config.Name,
+			Name:      config.Name,
+			Namespace: config.Namespace,
 			Labels: map[string]string{
 				"app-operator.giantswarm.io/version":     "1.0.0",
 				"application.giantswarm.io/catalog-type": "awesome",
 			},
 		},
-		Spec: applicationv1alpha1.AppCatalogSpec{
+		Spec: applicationv1alpha1.CatalogSpec{
 			Config:      catalogConfig,
 			Description: config.Description,
 			LogoURL:     config.LogoURL,
-			Storage: applicationv1alpha1.AppCatalogSpecStorage{
+			Storage: applicationv1alpha1.CatalogSpecStorage{
 				URL:  config.URL,
 				Type: "helm",
 			},
@@ -58,7 +63,7 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 		},
 	}
 
-	return appCatalogCR, nil
+	return catalogCR, nil
 }
 
 func NewConfigMap(config Config, data string) (*corev1.ConfigMap, error) {
