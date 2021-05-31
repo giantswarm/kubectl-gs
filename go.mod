@@ -8,7 +8,7 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/giantswarm/apiextensions/v3 v3.26.0
-	github.com/giantswarm/app/v4 v4.13.1-0.20210527151041-7cf0c5bd73a9
+	github.com/giantswarm/app/v5 v5.0.0-20210531144825-e78bd3e3f8c1
 	github.com/giantswarm/k8sclient/v5 v5.11.0
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0
