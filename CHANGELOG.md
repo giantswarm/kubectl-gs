@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Limit the time allowed for the `login` command to call the authentication proxy to one minute.
 
+### Changed
+
+- Replace AppCatalog CRD with new namespace scoped Catalog CRD.
+
 ## [1.28.0] - 2021-05-11
 
 ### Changed

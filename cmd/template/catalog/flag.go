@@ -31,7 +31,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ConfigMap, flagConfigMap, "", "Path to a configmap file.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "Catalog description.")
 	cmd.Flags().StringVar(&f.LogoURL, flagLogoURL, "", "Catalog logo URL.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "App Catalog name.")
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Catalog name.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the catalog will be created.")
 	cmd.Flags().StringVar(&f.Secret, flagSecret, "", "Path to a secret file.")
 	cmd.Flags().StringVar(&f.URL, flagURL, "", "Catalog storage URL.")

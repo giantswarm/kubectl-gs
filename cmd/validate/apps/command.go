@@ -58,7 +58,7 @@ Output columns:
       -o report
 
   # Get a detailed validation report of a specific app across all workload clusters
-  # the "app" label contains the name of the app in the App Catalog, so we can use --selector for that.
+  # the "app" label contains the name of the app in the Catalog, so we can use --selector for that.
 
     kubectl gs validate apps \
       --selector=app=nginx-ingress-controller-app \
