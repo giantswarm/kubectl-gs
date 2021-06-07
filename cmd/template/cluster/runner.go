@@ -35,8 +35,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	// Sorting is required before validation for uniqueness.
-	sort.Slice(r.flag.MasterAZ, func(i, j int) bool {
-		return r.flag.MasterAZ[i] < r.flag.MasterAZ[j]
+	sort.Slice(r.flag.ControlPlaneAZ, func(i, j int) bool {
+		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
 	err := r.flag.Validate()
@@ -61,7 +61,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			FileName:       clusterCRFileName,
 			ClusterID:      r.flag.ClusterID,
 			ExternalSNAT:   r.flag.ExternalSNAT,
-			MasterAZ:       r.flag.MasterAZ,
+			ControlPlaneAZ: r.flag.ControlPlaneAZ,
 			Description:    r.flag.Name,
 			Owner:          r.flag.Owner,
 			PodsCIDR:       r.flag.PodsCIDR,
