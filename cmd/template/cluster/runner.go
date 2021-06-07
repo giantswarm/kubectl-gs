@@ -69,6 +69,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Namespace:      metav1.NamespaceDefault,
 		}
 
+		if len(r.flag.MasterAZ) > 0 {
+			config.ControlPlaneAZ = r.flag.MasterAZ
+		}
+
 		if config.ClusterID == "" {
 			config.ClusterID = id.Generate()
 		}
