@@ -56,7 +56,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
-	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, []string{}, "Availability zone(s) to use by control plane nodes.")
+	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, nil, "Replaced by --control-plane-az.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Workload cluster name.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
