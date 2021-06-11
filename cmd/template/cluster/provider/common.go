@@ -10,8 +10,10 @@ import (
 
 type ClusterCRsConfig struct {
 	// AWS only.
-	ExternalSNAT bool
-	PodsCIDR     string
+	ExternalSNAT            bool
+	ControlPlaneSubnet      string
+	MachineDeploymentSubnet string
+	PodsCIDR                string
 
 	// Common.
 	FileName       string
@@ -41,6 +43,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: config.Description,
+				annotation.AWSSubnetSize:      config.ControlPlaneSubnet,
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{

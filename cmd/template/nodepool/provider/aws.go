@@ -4,6 +4,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -31,6 +32,10 @@ func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	crs, err := v1alpha2.NewNodePoolCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if config.MachineDeploymentSubnet != "" {
+		crs.AWSMachineDeployment.Annotations[annotation.AWSSubnetSize] = config.MachineDeploymentSubnet
 	}
 
 	mdCRYaml, err := yaml.Marshal(crs.MachineDeployment)

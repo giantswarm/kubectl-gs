@@ -13,6 +13,7 @@ import (
 type NodePoolCRsConfig struct {
 	// AWS only.
 	AWSInstanceType                     string
+	MachineDeploymentSubnet             string
 	OnDemandBaseCapacity                int
 	OnDemandPercentageAboveBaseCapacity int
 	UseAlikeInstanceTypes               bool

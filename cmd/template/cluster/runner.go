@@ -58,15 +58,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
-			FileName:       clusterCRFileName,
-			ClusterID:      r.flag.ClusterID,
-			ExternalSNAT:   r.flag.ExternalSNAT,
-			MasterAZ:       r.flag.MasterAZ,
-			Description:    r.flag.Name,
-			Owner:          r.flag.Owner,
-			PodsCIDR:       r.flag.PodsCIDR,
-			ReleaseVersion: r.flag.Release,
-			Namespace:      metav1.NamespaceDefault,
+			FileName:           clusterCRFileName,
+			ClusterID:          r.flag.ClusterID,
+			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
+			ExternalSNAT:       r.flag.ExternalSNAT,
+			MasterAZ:           r.flag.MasterAZ,
+			Description:        r.flag.Name,
+			Owner:              r.flag.Owner,
+			PodsCIDR:           r.flag.PodsCIDR,
+			ReleaseVersion:     r.flag.Release,
+			Namespace:          metav1.NamespaceDefault,
 		}
 
 		if config.ClusterID == "" {
