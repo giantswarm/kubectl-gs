@@ -4,6 +4,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -15,20 +16,24 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	crsConfig := v1alpha2.ClusterCRsConfig{
-		ClusterID:          config.ClusterID,
-		ControlPlaneSubnet: config.ControlPlaneSubnet,
-		ExternalSNAT:       config.ExternalSNAT,
-		MasterAZ:           config.MasterAZ,
-		Description:        config.Description,
-		PodsCIDR:           config.PodsCIDR,
-		Owner:              config.Owner,
-		ReleaseVersion:     config.ReleaseVersion,
-		Labels:             config.Labels,
+		ClusterID: config.ClusterID,
+
+		ExternalSNAT:   config.ExternalSNAT,
+		MasterAZ:       config.MasterAZ,
+		Description:    config.Description,
+		PodsCIDR:       config.PodsCIDR,
+		Owner:          config.Owner,
+		ReleaseVersion: config.ReleaseVersion,
+		Labels:         config.Labels,
 	}
 
 	crs, err := v1alpha2.NewClusterCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if config.ControlPlaneSubnet != "" {
+		crs.AWSCluster.Annotations[annotation.AWSSubnetSize] = config.ControlPlaneSubnet
 	}
 
 	clusterCRYaml, err := yaml.Marshal(crs.Cluster)
