@@ -46,3 +46,12 @@ spec:
     - from: ./kubectl-gs-*/*
       to: .
     bin: ./kubectl-gs
+  - selector:
+      matchLabels:
+        os: windows
+        arch: amd64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-windows-amd64.zip" .TagName }}
+    files:
+    - from: ./kubectl-gs-*/*
+      to: .
+    bin: ./kubectl-gs
