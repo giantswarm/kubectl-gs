@@ -104,7 +104,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 		  -pkcs12 /mnt/certs/code-signing.p12 \
 		  -n "Giant Swarm plugin for kubectl" \
 		  -i https://github.com/giantswarm/kubectl-gs \
-		  -ts http://timestamp.digicert.com -verbose \
+		  -t http://timestamp.digicert.com -verbose \
 		  -in /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe \
 		  -out /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe \
 		  -pass $(CODE_SIGNING_CERT_BUNDLE_PASSWORD); \
