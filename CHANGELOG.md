@@ -17,6 +17,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Disable unique AZ validation to allow China cluster templating.
 
+### Fixed
+
+- Only set configmap or secret in `template appcatalog` if values are provided.
+
 ### Added
 
 - Add `get appcatalogs` and `get apps` commands.

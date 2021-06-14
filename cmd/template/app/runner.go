@@ -11,10 +11,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/api/core/v1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/template/app"
+	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
 type runner struct {
@@ -41,13 +40,11 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	var userSecretCR *v1.Secret
-	var userConfigMapCR *v1.ConfigMap
-	var userConfigConfigMapCRYaml []byte
-	var userConfigSecretCRYaml []byte
+	var userConfigConfigMapYaml []byte
+	var userConfigSecretYaml []byte
 	var err error
 
-	appConfig := app.Config{
+	appConfig := templateapp.Config{
 		Catalog:   r.flag.Catalog,
 		Name:      r.flag.Name,
 		Namespace: r.flag.Namespace,
@@ -61,18 +58,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		secretConfig := app.SecretConfig{
+		secretConfig := templateapp.SecretConfig{
 			Data:      userConfigSecretData,
 			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
 			Namespace: r.flag.Cluster,
 		}
-		userSecretCR, err = app.NewSecretCR(secretConfig)
+		userSecret, err := templateapp.NewSecret(secretConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		appConfig.UserConfigSecretName = userSecretCR.GetName()
+		appConfig.UserConfigSecretName = userSecret.GetName()
 
-		userConfigSecretCRYaml, err = yaml.Marshal(userSecretCR)
+		userConfigSecretYaml, err = yaml.Marshal(userSecret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -86,24 +83,24 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				return microerror.Mask(err)
 			}
 		}
-		configMapConfig := app.ConfigMapConfig{
+		configMapConfig := templateapp.ConfigMapConfig{
 			Data:      configMapData,
 			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
 			Namespace: r.flag.Cluster,
 		}
-		userConfigMapCR, err = app.NewConfigmapCR(configMapConfig)
+		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		appConfig.UserConfigConfigMapName = userConfigMapCR.GetName()
+		appConfig.UserConfigConfigMapName = userConfigMap.GetName()
 
-		userConfigConfigMapCRYaml, err = yaml.Marshal(userConfigMapCR)
+		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	appCR, err := app.NewAppCR(appConfig)
+	appCR, err := templateapp.NewAppCR(appConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -114,18 +111,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	type AppCROutput struct {
-		AppCR                 string
-		UserConfigSecretCR    string
-		UserConfigConfigMapCR string
+		AppCR               string
+		UserConfigSecret    string
+		UserConfigConfigMap string
 	}
 
 	appCROutput := AppCROutput{
-		AppCR:                 string(appCRYaml),
-		UserConfigConfigMapCR: string(userConfigConfigMapCRYaml),
-		UserConfigSecretCR:    string(userConfigSecretCRYaml),
+		AppCR:               string(appCRYaml),
+		UserConfigConfigMap: string(userConfigConfigMapYaml),
+		UserConfigSecret:    string(userConfigSecretYaml),
 	}
 
-	t := template.Must(template.New("appCatalogCR").Parse(key.AppCRTemplate))
+	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
 
 	err = t.Execute(os.Stdout, appCROutput)
 	if err != nil {

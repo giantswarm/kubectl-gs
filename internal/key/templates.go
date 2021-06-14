@@ -1,17 +1,17 @@
 package key
 
 const AppCRTemplate = `
-{{- .UserConfigConfigMapCR -}}
+{{- .UserConfigConfigMap -}}
 ---
-{{ .UserConfigSecretCR -}}
+{{ .UserConfigSecret -}}
 ---
 {{ .AppCR -}}
 `
 
 const AppCatalogCRTemplate = `
-{{- .ConfigmapCR -}}
+{{- .ConfigMap -}}
 ---
-{{ .SecretCR -}}
+{{ .Secret -}}
 ---
 {{ .AppCatalogCR -}}
 `

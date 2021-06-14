@@ -2,19 +2,37 @@ package appcatalog
 
 import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Config struct {
-	Description string
-	ID          string
-	Name        string
-	LogoURL     string
-	URL         string
+	CatalogConfigMapName string
+	CatalogSecretName    string
+	Description          string
+	ID                   string
+	Name                 string
+	Namespace            string
+	LogoURL              string
+	URL                  string
 }
 
 func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
+	catalogConfig := applicationv1alpha1.AppCatalogSpecConfig{}
+
+	if config.CatalogConfigMapName != "" {
+		catalogConfig.ConfigMap = applicationv1alpha1.AppCatalogSpecConfigConfigMap{
+			Name:      config.CatalogConfigMapName,
+			Namespace: config.Namespace,
+		}
+	}
+
+	if config.CatalogSecretName != "" {
+		catalogConfig.Secret = applicationv1alpha1.AppCatalogSpecConfigSecret{
+			Name:      config.CatalogSecretName,
+			Namespace: config.Namespace,
+		}
+	}
 
 	appCatalogCR := &applicationv1alpha1.AppCatalog{
 		TypeMeta: metav1.TypeMeta{
@@ -29,16 +47,7 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 			},
 		},
 		Spec: applicationv1alpha1.AppCatalogSpec{
-			Config: applicationv1alpha1.AppCatalogSpecConfig{
-				ConfigMap: applicationv1alpha1.AppCatalogSpecConfigConfigMap{
-					Name:      config.Name + config.ID,
-					Namespace: metav1.NamespaceDefault,
-				},
-				Secret: applicationv1alpha1.AppCatalogSpecConfigSecret{
-					Name:      config.Name + config.ID,
-					Namespace: metav1.NamespaceDefault,
-				},
-			},
+			Config:      catalogConfig,
 			Description: config.Description,
 			LogoURL:     config.LogoURL,
 			Storage: applicationv1alpha1.AppCatalogSpecStorage{
@@ -52,42 +61,38 @@ func NewAppCatalogCR(config Config) (*applicationv1alpha1.AppCatalog, error) {
 	return appCatalogCR, nil
 }
 
-func NewConfigmapCR(config Config, data string) (*apiv1.ConfigMap, error) {
-
-	configMapCR := &apiv1.ConfigMap{
+func NewConfigMap(config Config, data string) (*corev1.ConfigMap, error) {
+	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.Name + config.ID,
-			Namespace: metav1.NamespaceDefault,
-			Labels:    map[string]string{},
+			Name:      config.CatalogConfigMapName,
+			Namespace: config.Namespace,
 		},
 		Data: map[string]string{
 			"values": data,
 		},
 	}
 
-	return configMapCR, nil
+	return configMap, nil
 }
 
-func NewSecretCR(config Config, data []byte) (*apiv1.Secret, error) {
-
-	secretCR := &apiv1.Secret{
+func NewSecret(config Config, data []byte) (*corev1.Secret, error) {
+	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.Name + config.ID,
-			Namespace: metav1.NamespaceDefault,
-			Labels:    map[string]string{},
+			Name:      config.CatalogSecretName,
+			Namespace: config.Namespace,
 		},
 		Data: map[string][]byte{
 			"values": data,
 		},
 	}
 
-	return secretCR, nil
+	return secret, nil
 }
