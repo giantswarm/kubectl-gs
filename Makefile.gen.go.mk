@@ -90,24 +90,23 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: DIR=$(PACKAGE_DIR)/
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(VERSION)-windows-amd64.exe
 	@echo "====> $@"
 
-	@if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" != "" ]; then \
+	@ if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" != "" ]; then \
 	  echo 'Signing the Windows binary'; \
-	  echo ${PWD}; \
-	  ls -la \
 	  mkdir -p certs; \
 	  echo ${CODE_SIGNING_CERT_BUNDLE_BASE64} | base64 -d > certs/code-signing.p12; \
-	#   docker run --rm -ti \
-	# 	  -v ${PWD}/certs:/mnt/certs \
-	# 	  -v ${PWD}/build:/mnt/binaries \
-	# 	  --user ${USERID}:${GROUPID} \
-	# 	  quay.io/giantswarm/signcode-util:latest \
-	# 	  sign \
-	# 	  -pkcs12 /mnt/certs/code-signing.p12 \
-	# 	  -n "kubectl-gs" \
-	# 	  -i https://github.com/giantswarm/kubectl-gs \
-	# 	  -in /mnt/binaries/bin/${BIN}-$$OS \
-	# 	  -out /mnt/binaries/$(BIN)-$(VERSION)-$$OS/$(BIN).exe \
-	# 	  -pass $(CODE_SIGNING_CERT_BUNDLE_PASSWORD); \
+	  mv ${APPLICATION}-v${VERSION}-windows-amd64.exe ${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe; \
+	  docker run --rm -ti \
+		  -v ${PWD}/certs:/mnt/certs \
+		  -v ${PWD}:/mnt/binaries \
+		  --user ${USERID}:${GROUPID} \
+		  quay.io/giantswarm/signcode-util:latest \
+		  sign \
+		  -pkcs12 /mnt/certs/code-signing.p12 \
+		  -n "kubectl-gs" \
+		  -i https://github.com/giantswarm/kubectl-gs \
+		  -in /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe \
+		  -out /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe \
+		  -pass $(CODE_SIGNING_CERT_BUNDLE_PASSWORD); \
 	fi
 
 	@echo "Creating directory $(DIR)"
