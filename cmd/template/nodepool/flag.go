@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -14,6 +15,7 @@ const (
 
 	// AWS only.
 	flagAWSInstanceType                     = "aws-instance-type"
+	flagMachineDeploymentSubnet             = "machine-deployment-subnet"
 	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
 	flagOnDemandPercentageAboveBaseCapacity = "on-demand-percentage-above-base-capacity"
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
@@ -43,6 +45,7 @@ type flag struct {
 
 	// AWS only.
 	AWSInstanceType                     string
+	MachineDeploymentSubnet             string
 	OnDemandBaseCapacity                int
 	OnDemandPercentageAboveBaseCapacity int
 	UseAlikeInstanceTypes               bool
@@ -70,6 +73,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWSInstanceType, flagAWSInstanceType, "m5.xlarge", "EC2 instance type to use for workers, e. g. 'm5.2xlarge'.")
+	cmd.Flags().StringVar(&f.MachineDeploymentSubnet, flagMachineDeploymentSubnet, "", "Subnet used for the Node Pool.")
 	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0.")
 	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100.")
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
@@ -109,6 +113,13 @@ func (f *flag) Validate() error {
 			if f.AzureVMSize == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagAzureVMSize)
 			}
+		}
+	}
+
+	if f.MachineDeploymentSubnet != "" {
+		matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.MachineDeploymentSubnet)
+		if err == nil && !matchedSubnet {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagMachineDeploymentSubnet)
 		}
 	}
 
