@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.29.0] - 2021-06-15
+
 ### Added
 
 - Add the AWS subnet annotations into the `template` command.
@@ -344,7 +346,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.0...HEAD
+[1.29.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...v1.29.0
 [1.28.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.1...v1.28.0
 [1.27.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.0...v1.27.1
 [1.27.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.26.0...v1.27.0
