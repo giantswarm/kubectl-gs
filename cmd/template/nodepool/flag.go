@@ -117,9 +117,9 @@ func (f *flag) Validate() error {
 	}
 
 	if f.MachineDeploymentSubnet != "" {
-		matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.MachineDeploymentSubnet)
+		matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25|26|27|28$", f.MachineDeploymentSubnet)
 		if err == nil && !matchedSubnet {
-			return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagMachineDeploymentSubnet)
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24,25, 26, 27 or 28)", flagMachineDeploymentSubnet)
 		}
 	}
 

@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Modify the AWS subnet validation for machine deployments.
+
 ## [1.29.0] - 2021-06-15
 
 ### Added
