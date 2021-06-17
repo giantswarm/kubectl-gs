@@ -9,6 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [1.29.2] - 2021-06-17
 
+- In the `template cluster` command, the flag `--control-plane-az` is replacing `--master-az`.
+
 ## [1.29.1] - 2021-06-16
 
 - Modify the AWS subnet validation for machine deployments.
@@ -22,7 +24,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- In the `template cluster` command, the flag `--control-plane-az` is replacing `--master-az`.
 - Updated terminology to use "control plane nodes" instead of "master nodes".
 
 ## [1.28.0] - 2021-05-11
