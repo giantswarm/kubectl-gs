@@ -15,8 +15,9 @@ const (
 	flagProvider = "provider"
 
 	// AWS only.
-	flagExternalSNAT = "external-snat"
-	flagPodsCIDR     = "pods-cidr"
+	flagExternalSNAT       = "external-snat"
+	flagPodsCIDR           = "pods-cidr"
+	flagControlPlaneSubnet = "control-plane-subnet"
 
 	// Common.
 	flagClusterID      = "cluster-id"
@@ -33,8 +34,9 @@ type flag struct {
 	Provider string
 
 	// AWS only.
-	ExternalSNAT bool
-	PodsCIDR     string
+	ControlPlaneSubnet string
+	ExternalSNAT       bool
+	PodsCIDR           string
 
 	// Common.
 	ClusterID      string
@@ -51,6 +53,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
+	cmd.Flags().StringVar(&f.ControlPlaneSubnet, flagControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 
@@ -100,6 +103,13 @@ func (f *flag) Validate() error {
 		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.ClusterID)
 		if err == nil && !matched {
 			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagClusterID)
+		}
+
+		if f.ControlPlaneSubnet != "" {
+			matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.ControlPlaneSubnet)
+			if err == nil && !matchedSubnet {
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagControlPlaneSubnet)
+			}
 		}
 
 		return nil
