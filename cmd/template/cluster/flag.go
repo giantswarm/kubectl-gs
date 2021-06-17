@@ -75,8 +75,13 @@ func (f *flag) Validate() error {
 	var err error
 
 	// TODO: Remove the flag completely some time after August 2021
-	if len(f.MasterAZ) > 0 && len(f.ControlPlaneAZ) > 0 {
-		return microerror.Maskf(invalidFlagError, "--control-plane-az and --master-az cannot be combined")
+	if len(f.MasterAZ) > 0 {
+		if len(f.ControlPlaneAZ) > 0 {
+			return microerror.Maskf(invalidFlagError, "--control-plane-az and --master-az cannot be combined")
+		}
+
+		f.ControlPlaneAZ = f.MasterAZ
+		f.MasterAZ = nil
 	}
 
 	if f.Provider != key.ProviderAWS && f.Provider != key.ProviderAzure {
