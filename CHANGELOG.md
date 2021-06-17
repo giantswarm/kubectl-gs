@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.29.2] - 2021-06-17
+
+- In the `template cluster` command, the flag `--control-plane-az` is replacing `--master-az`.
+
 ## [1.29.1] - 2021-06-16
 
 - Modify the AWS subnet validation for machine deployments.
@@ -17,6 +21,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add the AWS subnet annotations into the `template` command.
 - Limit the time allowed for the `login` command to call the authentication proxy to one minute.
+
+### Changed
+
+- Updated terminology to use "control plane nodes" instead of "master nodes".
 
 ## [1.28.0] - 2021-05-11
 
@@ -350,7 +358,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.2...HEAD
+[1.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.1...v1.29.2
 [1.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.0...v1.29.1
 [1.29.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.28.0...v1.29.0
 [1.28.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.27.1...v1.28.0

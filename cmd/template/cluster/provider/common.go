@@ -17,7 +17,7 @@ type ClusterCRsConfig struct {
 	// Common.
 	FileName       string
 	ClusterID      string
-	MasterAZ       []string
+	ControlPlaneAZ []string
 	Description    string
 	Owner          string
 	ReleaseVersion string
