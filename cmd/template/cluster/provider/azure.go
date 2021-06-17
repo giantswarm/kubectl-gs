@@ -105,8 +105,8 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 
 func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
 	var failureDomain *string
-	if len(config.MasterAZ) > 0 {
-		failureDomain = &config.MasterAZ[0]
+	if len(config.ControlPlaneAZ) > 0 {
+		failureDomain = &config.ControlPlaneAZ[0]
 	}
 
 	machine := &capzv1alpha3.AzureMachine{

@@ -18,6 +18,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Add the AWS subnet annotations into the `template` command.
 - Limit the time allowed for the `login` command to call the authentication proxy to one minute.
 
+### Changed
+
+- In the `template cluster` command, the flag `--control-plane-az` is replacing `--master-az`.
+- Updated terminology to use "control plane nodes" instead of "master nodes".
+
 ## [1.28.0] - 2021-05-11
 
 ### Changed
