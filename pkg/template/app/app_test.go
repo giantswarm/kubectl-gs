@@ -14,7 +14,6 @@ func Test_NewAppCR(t *testing.T) {
 		name               string
 		config             Config
 		expectedGoldenFile string
-		errorMatcher       func(err error) bool
 	}{
 		{
 			name: "case 0: flawless flow",
@@ -72,23 +71,15 @@ func Test_NewAppCR(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Log(tc.name)
 
-			appCRYaml, err := NewAppCR(tc.config)
-
 			gf := goldenfile.New("testdata", tc.expectedGoldenFile)
 			expectedResult, err := gf.Read()
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 
-			switch {
-			case err == nil && tc.errorMatcher == nil:
-				// correct; carry on
-			case err != nil && tc.errorMatcher == nil:
-				t.Fatalf("error == %#v, want nil", err)
-			case err == nil && tc.errorMatcher != nil:
-				t.Fatalf("error == nil, want non-nil")
-			case !tc.errorMatcher(err):
-				t.Fatalf("error == %#v, want matching", err)
+			appCRYaml, err := NewAppCR(tc.config)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
 			}
 
 			if !cmp.Equal(appCRYaml, expectedResult) {
