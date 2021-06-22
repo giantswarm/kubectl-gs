@@ -4,8 +4,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
 
 func Test_NewAppCR(t *testing.T) {
