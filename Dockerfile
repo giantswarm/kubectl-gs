@@ -11,5 +11,6 @@ FROM quay.io/giantswarm/alpine:3.14
 
 COPY --from=binaries /binaries/* /usr/bin/
 COPY ./kubectl-gs /usr/bin/kubectl-gs
+RUN ln -s /usr/bin/kubectl-gs /usr/bin/kgs
 
 ENTRYPOINT ["kubectl-gs"]
