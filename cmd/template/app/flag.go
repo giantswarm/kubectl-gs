@@ -6,18 +6,20 @@ import (
 )
 
 const (
-	flagCatalog       = "catalog"
-	flagCluster       = "cluster"
-	flagName          = "name"
-	flagNamespace     = "namespace"
-	flagUserConfigMap = "user-configmap"
-	flagUserSecret    = "user-secret"
-	flagVersion       = "version"
+	flagCatalog           = "catalog"
+	flagCluster           = "cluster"
+	flagDefaultingEnabled = "defaulting-enabled"
+	flagName              = "name"
+	flagNamespace         = "namespace"
+	flagUserConfigMap     = "user-configmap"
+	flagUserSecret        = "user-secret"
+	flagVersion           = "version"
 )
 
 type flag struct {
 	Catalog           string
 	Cluster           string
+	DefaultingEnabled bool
 	Name              string
 	Namespace         string
 	flagUserConfigMap string
@@ -30,6 +32,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "App name.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the app will be deployed.")
 	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Cluster where the app will be deployed.")
+	cmd.Flags().BoolVar(&f.DefaultingEnabled, flagDefaultingEnabled, true, "Don't template fields that will be defaulted.")
 	cmd.Flags().StringVar(&f.flagUserConfigMap, flagUserConfigMap, "", "Path to the user app configmap file data.")
 	cmd.Flags().StringVar(&f.flagUserSecret, flagUserSecret, "", "Path to the user app secret file data.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to be installed.")

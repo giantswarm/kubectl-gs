@@ -45,11 +45,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	appConfig := templateapp.Config{
-		Catalog:   r.flag.Catalog,
-		Name:      r.flag.Name,
-		Namespace: r.flag.Namespace,
-		Cluster:   r.flag.Cluster,
-		Version:   r.flag.Version,
+		Catalog:           r.flag.Catalog,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
+		Cluster:           r.flag.Cluster,
+		DefaultingEnabled: r.flag.DefaultingEnabled,
+		Version:           r.flag.Version,
 	}
 
 	if r.flag.flagUserSecret != "" {
@@ -100,12 +101,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	appCR, err := templateapp.NewAppCR(appConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	appCRYaml, err := yaml.Marshal(appCR)
+	appCRYaml, err := templateapp.NewAppCR(appConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
