@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Extend `template app` to only output required fields, the flag `--defaulting-enabled`
+can be set to false to disable this.
+
 ## [1.29.2] - 2021-06-17
 
 - In the `template cluster` command, the flag `--control-plane-az` is replacing `--master-az`.

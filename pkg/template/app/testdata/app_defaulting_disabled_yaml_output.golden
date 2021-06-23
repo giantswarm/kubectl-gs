@@ -1,0 +1,26 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 1.0.0
+  name: nginx-ingress-controller-app
+  namespace: eggs2
+spec:
+  catalog: giantswarm
+  config:
+    configMap:
+      name: eggs2-cluster-values
+      namespace: eggs2
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: eggs2-kubeconfig
+    inCluster: false
+    secret:
+      name: eggs2-kubeconfig
+      namespace: eggs2
+  name: nginx-ingress-controller-app
+  namespace: kube-system
+  version: 1.17.0
