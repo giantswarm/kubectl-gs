@@ -50,6 +50,9 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		},
 	}
 	os.Setenv("AWS_SUBNET", "")
+	os.Setenv("AWS_CONTROL_PLANE_MACHINE_TYPE", "")
+	os.Setenv("AWS_REGION", "")
+	os.Setenv("AWS_SSH_KEY_NAME", "")
 
 	if replicas := int64(len(config.ControlPlaneAZ)); replicas > 0 {
 		templateOptions.ControlPlaneMachineCount = &replicas
