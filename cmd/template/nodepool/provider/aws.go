@@ -2,6 +2,7 @@ package provider
 
 import (
 	"io"
+	"os"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
@@ -40,13 +41,15 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 	}
 
 	templateOptions := client.GetClusterTemplateOptions{
-		ClusterName:     config.ClusterID,
-		TargetNamespace: config.Owner,
+		ClusterName:       config.ClusterID,
+		TargetNamespace:   config.Owner,
+		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
-			InfrastructureProvider: "aws",
+			InfrastructureProvider: "aws:v0.6.6",
 			Flavor:                 "machinepool",
 		},
 	}
+	os.Setenv("AWS_SUBNET", "")
 
 	if replicas := int64(config.NodesMin); replicas > 0 {
 		templateOptions.WorkerMachineCount = &replicas
@@ -67,19 +70,19 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 	for _, o := range objects {
 		switch o.GetKind() {
 		case "AWSMachinePool":
-			awsMachinePoolCRYaml, err := yaml.Marshal(o)
+			awsMachinePoolCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.ProviderMachinePoolCR = string(awsMachinePoolCRYaml)
 		case "MachinePool":
-			MachinePoolCRYaml, err := yaml.Marshal(o)
+			MachinePoolCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.MachinePoolCR = string(MachinePoolCRYaml)
 		case "KubeadmConfig":
-			kubeadmConfigCRYaml, err := yaml.Marshal(o)
+			kubeadmConfigCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}

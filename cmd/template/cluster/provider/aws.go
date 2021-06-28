@@ -2,6 +2,7 @@ package provider
 
 import (
 	"io"
+	"os"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
@@ -40,13 +41,15 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	templateOptions := client.GetClusterTemplateOptions{
-		ClusterName:     config.ClusterID,
-		TargetNamespace: config.Owner,
+		ClusterName:       config.ClusterID,
+		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
+		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
-			InfrastructureProvider: "aws",
+			InfrastructureProvider: "aws:v0.6.6",
 			Flavor:                 "machinepool",
 		},
 	}
+	os.Setenv("AWS_SUBNET", "")
 
 	if replicas := int64(len(config.ControlPlaneAZ)); replicas > 0 {
 		templateOptions.ControlPlaneMachineCount = &replicas
@@ -68,25 +71,25 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	for _, o := range objects {
 		switch o.GetKind() {
 		case "AWSCluster":
-			awsClusterCRYaml, err := yaml.Marshal(o)
+			awsClusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
-			awsMachineTemplateCRYaml, err := yaml.Marshal(o)
+			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSMachineTemplateCR = string(awsMachineTemplateCRYaml)
-		case "ClusterCR":
-			clusterCRYaml, err := yaml.Marshal(o)
+		case "Cluster":
+			clusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.ClusterCR = string(clusterCRYaml)
 		case "KubeadmControlPlane":
-			kubeadmControlPlaneCRYaml, err := yaml.Marshal(o)
+			kubeadmControlPlaneCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
