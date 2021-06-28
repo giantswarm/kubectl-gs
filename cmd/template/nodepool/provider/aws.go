@@ -15,6 +15,49 @@ import (
 func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
+	if key.IsCAPAVersion(config.ReleaseVersion) {
+		err = WriteCAPATemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		err = WriteGSAWSTemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
+	// get the yaml from github e.g. https://github.com/giantswarm/cluster-api-provider-aws/blob/release-0.6/templates/cluster-template-machinepool.yaml
+	// fill in stuff from the config
+
+	data := struct {
+		ProviderMachinePoolCR string
+		MachinePoolCR         string
+		KubeadmConfigCR       string
+	}{
+		ProviderMachinePoolCR: string(azureMachinePoolCRYaml),
+		MachinePoolCR:         string(machinePoolCRYaml),
+		KubeadmConfigCR:       string(kubeadmConfigCRYaml),
+	}
+
+	t := template.Must(template.New(config.FileName).Parse(key.MachinePoolAzureCRsTemplate))
+	err = t.Execute(out, data)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
 	crsConfig := v1alpha2.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,
 		AWSInstanceType:                     config.AWSInstanceType,

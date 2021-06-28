@@ -15,6 +15,51 @@ import (
 func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
+	if key.IsCAPAVersion(config.ReleaseVersion) {
+		err = WriteCAPATemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		err = WriteGSAWSTemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
+	var err error
+
+	// get the yaml from github e.g. https://github.com/giantswarm/cluster-api-provider-aws/blob/release-0.6/templates/cluster-template-machinepool.yaml
+	// fill in stuff from the config
+
+	data := struct {
+		AWSClusterCR          string
+		AWSMachineTemplateCR  string
+		ClusterCR             string
+		KubeadmControlPlaneCR string
+	}{
+		AWSClusterCR:          string(awsClusterCRYaml),
+		ClusterCR:             string(clusterCRYaml),
+		KubeadmControlPlaneCR: string(kubeadmControlPlaneCRYaml),
+		AWSMachineTemplateCR:  string(awsMachineTemplateCRYaml),
+	}
+
+	t := template.Must(template.New(config.FileName).Parse(key.ClusterCAPACRsTemplate))
+	err = t.Execute(out, data)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
+	var err error
+
 	crsConfig := v1alpha2.ClusterCRsConfig{
 		ClusterID: config.ClusterID,
 

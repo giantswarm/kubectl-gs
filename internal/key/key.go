@@ -58,6 +58,12 @@ func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
 }
 
+// IsCAPAVersion returns whether a given GS Release Version is based on the CAPI/CAPA projects
+// TODO: make this a >= comparison
+func IsCAPAVersion(version string) bool {
+	return version == "20.0.0"
+}
+
 // readConfigMapFromFile reads a configmap from a YAML file.
 func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	data, err := afero.ReadFile(fs, path)
