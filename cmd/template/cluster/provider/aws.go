@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -33,19 +34,64 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
-	// get the yaml from github e.g. https://github.com/giantswarm/cluster-api-provider-aws/blob/release-0.6/templates/cluster-template-machinepool.yaml
-	// fill in stuff from the config
+	c, err := client.New("")
+	if err != nil {
+		return err
+	}
+
+	templateOptions := client.GetClusterTemplateOptions{
+		ClusterName:     config.ClusterID,
+		TargetNamespace: config.Owner,
+		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
+			InfrastructureProvider: "aws",
+			Flavor:                 "machinepool",
+		},
+	}
+
+	if replicas := int64(len(config.ControlPlaneAZ)); replicas > 0 {
+		templateOptions.ControlPlaneMachineCount = &replicas
+	}
+
+	clusterTemplate, err := c.GetClusterTemplate(templateOptions)
+	if err != nil {
+		return err
+	}
 
 	data := struct {
 		AWSClusterCR          string
 		AWSMachineTemplateCR  string
 		ClusterCR             string
 		KubeadmControlPlaneCR string
-	}{
-		AWSClusterCR:          string(awsClusterCRYaml),
-		ClusterCR:             string(clusterCRYaml),
-		KubeadmControlPlaneCR: string(kubeadmControlPlaneCRYaml),
-		AWSMachineTemplateCR:  string(awsMachineTemplateCRYaml),
+	}{}
+
+	objects := clusterTemplate.Objs()
+	for _, o := range objects {
+		switch o.GetKind() {
+		case "AWSCluster":
+			awsClusterCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.AWSClusterCR = string(awsClusterCRYaml)
+		case "AWSMachineTemplate":
+			awsMachineTemplateCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.AWSMachineTemplateCR = string(awsMachineTemplateCRYaml)
+		case "ClusterCR":
+			clusterCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.ClusterCR = string(clusterCRYaml)
+		case "KubeadmControlPlane":
+			kubeadmControlPlaneCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.KubeadmControlPlaneCR = string(kubeadmControlPlaneCRYaml)
+		}
 	}
 
 	t := template.Must(template.New(config.FileName).Parse(key.ClusterCAPACRsTemplate))

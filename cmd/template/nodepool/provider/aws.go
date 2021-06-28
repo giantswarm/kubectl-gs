@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -33,17 +34,57 @@ func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
-	// get the yaml from github e.g. https://github.com/giantswarm/cluster-api-provider-aws/blob/release-0.6/templates/cluster-template-machinepool.yaml
-	// fill in stuff from the config
+	c, err := client.New("")
+	if err != nil {
+		return err
+	}
+
+	templateOptions := client.GetClusterTemplateOptions{
+		ClusterName:     config.ClusterID,
+		TargetNamespace: config.Owner,
+		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
+			InfrastructureProvider: "aws",
+			Flavor:                 "machinepool",
+		},
+	}
+
+	if replicas := int64(config.NodesMin); replicas > 0 {
+		templateOptions.WorkerMachineCount = &replicas
+	}
+
+	nodepoolTemplate, err := c.GetClusterTemplate(templateOptions)
+	if err != nil {
+		return err
+	}
 
 	data := struct {
 		ProviderMachinePoolCR string
 		MachinePoolCR         string
 		KubeadmConfigCR       string
-	}{
-		ProviderMachinePoolCR: string(azureMachinePoolCRYaml),
-		MachinePoolCR:         string(machinePoolCRYaml),
-		KubeadmConfigCR:       string(kubeadmConfigCRYaml),
+	}{}
+
+	objects := nodepoolTemplate.Objs()
+	for _, o := range objects {
+		switch o.GetKind() {
+		case "AWSMachinePool":
+			awsMachinePoolCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.ProviderMachinePoolCR = string(awsMachinePoolCRYaml)
+		case "MachinePool":
+			MachinePoolCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.MachinePoolCR = string(MachinePoolCRYaml)
+		case "KubeadmConfig":
+			kubeadmConfigCRYaml, err := yaml.Marshal(o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.KubeadmConfigCR = string(kubeadmConfigCRYaml)
+		}
 	}
 
 	t := template.Must(template.New(config.FileName).Parse(key.MachinePoolAzureCRsTemplate))
