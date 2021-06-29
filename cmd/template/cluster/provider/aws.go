@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
 func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
@@ -35,30 +36,7 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
-	c, err := client.New("")
-	if err != nil {
-		return err
-	}
-
-	templateOptions := client.GetClusterTemplateOptions{
-		ClusterName:       config.ClusterID,
-		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
-		KubernetesVersion: "v1.19.9",
-		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
-			InfrastructureProvider: "aws:v0.6.6",
-			Flavor:                 "machinepool",
-		},
-	}
-	os.Setenv("AWS_SUBNET", "")
-	os.Setenv("AWS_CONTROL_PLANE_MACHINE_TYPE", "")
-	os.Setenv("AWS_REGION", "")
-	os.Setenv("AWS_SSH_KEY_NAME", "")
-
-	if replicas := int64(len(config.ControlPlaneAZ)); replicas > 0 {
-		templateOptions.ControlPlaneMachineCount = &replicas
-	}
-
-	clusterTemplate, err := c.GetClusterTemplate(templateOptions)
+	clusterTemplate, err := getCAPAClusterTemplate(config)
 	if err != nil {
 		return err
 	}
@@ -72,14 +50,30 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 
 	objects := clusterTemplate.Objs()
 	for _, o := range objects {
+		o.SetLabels(map[string]string{
+			label.ReleaseVersion: config.ReleaseVersion,
+			label.Cluster:        config.ClusterID,
+			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSCluster":
+			if spec, ok := o.Object["spec"].(map[string]interface{}); ok {
+				delete(spec, "region")
+				delete(spec, "sshKeyName")
+			}
 			awsClusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
+			if spec, ok := o.Object["spec"].(map[string]interface{}); ok {
+				if template, ok := spec["template"].(map[string]interface{}); ok {
+					if templateSpec, ok := template["spec"].(map[string]interface{}); ok {
+						delete(templateSpec, "instanceType")
+						delete(templateSpec, "sshKeyName")
+					}
+				}
+			}
 			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
@@ -172,4 +166,37 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	return nil
+}
+
+func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
+	var err error
+
+	c, err := client.New("")
+	if err != nil {
+		return nil, err
+	}
+
+	templateOptions := client.GetClusterTemplateOptions{
+		ClusterName:       config.ClusterID,
+		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
+		KubernetesVersion: "v1.19.9",
+		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
+			InfrastructureProvider: "aws:v0.6.6",
+			Flavor:                 "machinepool",
+		},
+	}
+	os.Setenv("AWS_SUBNET", "")
+	os.Setenv("AWS_CONTROL_PLANE_MACHINE_TYPE", "")
+	os.Setenv("AWS_REGION", "")
+	os.Setenv("AWS_SSH_KEY_NAME", "")
+
+	if replicas := int64(len(config.ControlPlaneAZ)); replicas > 0 {
+		templateOptions.ControlPlaneMachineCount = &replicas
+	}
+
+	clusterTemplate, err := c.GetClusterTemplate(templateOptions)
+	if err != nil {
+		return nil, err
+	}
+	return clusterTemplate, nil
 }

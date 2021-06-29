@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
 func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
@@ -35,27 +36,7 @@ func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
-	c, err := client.New("")
-	if err != nil {
-		return err
-	}
-
-	templateOptions := client.GetClusterTemplateOptions{
-		ClusterName:       config.ClusterID,
-		TargetNamespace:   config.Owner,
-		KubernetesVersion: "v1.19.9",
-		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
-			InfrastructureProvider: "aws:v0.6.6",
-			Flavor:                 "machinepool",
-		},
-	}
-	os.Setenv("AWS_SUBNET", "")
-
-	if replicas := int64(config.NodesMin); replicas > 0 {
-		templateOptions.WorkerMachineCount = &replicas
-	}
-
-	nodepoolTemplate, err := c.GetClusterTemplate(templateOptions)
+	nodepoolTemplate, err := getCAPANodepoolTemplate(config)
 	if err != nil {
 		return err
 	}
@@ -68,6 +49,10 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 	objects := nodepoolTemplate.Objs()
 	for _, o := range objects {
+		o.SetLabels(map[string]string{
+			label.ReleaseVersion: config.ReleaseVersion,
+			label.Cluster:        config.ClusterID,
+			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSMachinePool":
 			awsMachinePoolCRYaml, err := yaml.Marshal(o.Object)
@@ -90,7 +75,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 		}
 	}
 
-	t := template.Must(template.New(config.FileName).Parse(key.MachinePoolAzureCRsTemplate))
+	t := template.Must(template.New(config.FileName).Parse(key.MachinePoolAWSCRsTemplate))
 	err = t.Execute(out, data)
 	if err != nil {
 		return microerror.Mask(err)
@@ -150,4 +135,37 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	}
 
 	return nil
+}
+
+func getCAPANodepoolTemplate(config NodePoolCRsConfig) (client.Template, error) {
+	var err error
+
+	c, err := client.New("")
+	if err != nil {
+		return nil, err
+	}
+
+	templateOptions := client.GetClusterTemplateOptions{
+		ClusterName:       config.ClusterID,
+		TargetNamespace:   config.Owner,
+		KubernetesVersion: "v1.19.9",
+		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
+			InfrastructureProvider: "aws:v0.6.6",
+			Flavor:                 "machinepool",
+		},
+	}
+	os.Setenv("AWS_SUBNET", "")
+	os.Setenv("AWS_CONTROL_PLANE_MACHINE_TYPE", "")
+	os.Setenv("AWS_REGION", "")
+	os.Setenv("AWS_SSH_KEY_NAME", "")
+
+	if replicas := int64(config.NodesMin); replicas > 0 {
+		templateOptions.WorkerMachineCount = &replicas
+	}
+
+	nodepoolTemplate, err := c.GetClusterTemplate(templateOptions)
+	if err != nil {
+		return nil, err
+	}
+	return nodepoolTemplate, nil
 }
