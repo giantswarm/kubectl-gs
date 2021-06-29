@@ -8,6 +8,8 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/runtime"
+	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	"sigs.k8s.io/yaml"
 
@@ -52,10 +54,18 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 		o.SetLabels(map[string]string{
 			label.ReleaseVersion: config.ReleaseVersion,
 			label.Cluster:        config.ClusterID,
+			"cluster.x-k8s.io":   config.ClusterID,
 			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSMachinePool":
-			awsMachinePoolCRYaml, err := yaml.Marshal(o.Object)
+			var awsmachinepool capav1alpha3.AWSMachinePool
+			err = runtime.DefaultUnstructuredConverter.
+				FromUnstructured(o.Object, &awsmachinepool)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
+			awsMachinePoolCRYaml, err := yaml.Marshal(awsmachinepool)
 			if err != nil {
 				return microerror.Mask(err)
 			}

@@ -53,6 +53,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		o.SetLabels(map[string]string{
 			label.ReleaseVersion: config.ReleaseVersion,
 			label.Cluster:        config.ClusterID,
+			"cluster.x-k8s.io":   config.ClusterID,
 			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSCluster":

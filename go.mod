@@ -3,6 +3,7 @@ module github.com/giantswarm/kubectl-gs
 go 1.16
 
 require (
+	github.com/aws/aws-lambda-go v1.23.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.10.0
@@ -25,6 +26,7 @@ require (
 	k8s.io/cli-runtime v0.18.18
 	k8s.io/client-go v0.18.18
 	sigs.k8s.io/cluster-api v0.3.13
+	sigs.k8s.io/cluster-api-provider-aws v0.6.4
 	sigs.k8s.io/cluster-api-provider-azure v0.4.11
 	sigs.k8s.io/controller-runtime v0.6.4
 	sigs.k8s.io/yaml v1.2.0
