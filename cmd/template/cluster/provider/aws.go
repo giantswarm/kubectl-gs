@@ -56,24 +56,12 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSCluster":
-			if spec, ok := o.Object["spec"].(map[string]interface{}); ok {
-				delete(spec, "region")
-				delete(spec, "sshKeyName")
-			}
 			awsClusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
-			if spec, ok := o.Object["spec"].(map[string]interface{}); ok {
-				if template, ok := spec["template"].(map[string]interface{}); ok {
-					if templateSpec, ok := template["spec"].(map[string]interface{}); ok {
-						delete(templateSpec, "instanceType")
-						delete(templateSpec, "sshKeyName")
-					}
-				}
-			}
 			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
