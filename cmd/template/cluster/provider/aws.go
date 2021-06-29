@@ -48,33 +48,41 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		KubeadmControlPlaneCR string
 	}{}
 
+	crLabels := map[string]string{
+		label.ReleaseVersion: config.ReleaseVersion,
+		label.Cluster:        config.ClusterID,
+		"cluster.x-k8s.io":   config.ClusterID,
+		label.Organization:   config.Owner}
+
 	objects := clusterTemplate.Objs()
 	for _, o := range objects {
-		o.SetLabels(map[string]string{
-			label.ReleaseVersion: config.ReleaseVersion,
-			label.Cluster:        config.ClusterID,
-			"cluster.x-k8s.io":   config.ClusterID,
-			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSCluster":
+			o.SetLabels(crLabels)
 			awsClusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
+			o.SetLabels(crLabels)
 			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSMachineTemplateCR = string(awsMachineTemplateCRYaml)
 		case "Cluster":
+			for key, value := range config.Labels {
+				crLabels[key] = value
+			}
+			o.SetLabels(crLabels)
 			clusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.ClusterCR = string(clusterCRYaml)
 		case "KubeadmControlPlane":
+			o.SetLabels(crLabels)
 			kubeadmControlPlaneCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
