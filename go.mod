@@ -3,7 +3,6 @@ module github.com/giantswarm/kubectl-gs
 go 1.16
 
 require (
-	github.com/aws/aws-lambda-go v1.23.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.10.0
