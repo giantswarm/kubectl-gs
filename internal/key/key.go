@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/pkg/normalize"
 )

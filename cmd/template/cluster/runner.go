@@ -35,8 +35,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	// Sorting is required before validation for uniqueness.
-	sort.Slice(r.flag.MasterAZ, func(i, j int) bool {
-		return r.flag.MasterAZ[i] < r.flag.MasterAZ[j]
+	sort.Slice(r.flag.ControlPlaneAZ, func(i, j int) bool {
+		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
 	err := r.flag.Validate()
@@ -58,15 +58,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
-			FileName:       clusterCRFileName,
-			ClusterID:      r.flag.ClusterID,
-			ExternalSNAT:   r.flag.ExternalSNAT,
-			MasterAZ:       r.flag.MasterAZ,
-			Description:    r.flag.Name,
-			Owner:          r.flag.Owner,
-			PodsCIDR:       r.flag.PodsCIDR,
-			ReleaseVersion: r.flag.Release,
-			Namespace:      metav1.NamespaceDefault,
+			FileName:           clusterCRFileName,
+			ClusterID:          r.flag.ClusterID,
+			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
+			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
+			ExternalSNAT:       r.flag.ExternalSNAT,
+			Description:        r.flag.Name,
+			Owner:              r.flag.Owner,
+			PodsCIDR:           r.flag.PodsCIDR,
+			ReleaseVersion:     r.flag.Release,
+			Namespace:          metav1.NamespaceDefault,
+		}
+
+		if len(r.flag.MasterAZ) > 0 {
+			config.ControlPlaneAZ = r.flag.MasterAZ
 		}
 
 		if config.ClusterID == "" {

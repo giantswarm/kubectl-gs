@@ -10,13 +10,14 @@ import (
 
 type ClusterCRsConfig struct {
 	// AWS only.
-	ExternalSNAT bool
-	PodsCIDR     string
+	ExternalSNAT       bool
+	ControlPlaneSubnet string
+	PodsCIDR           string
 
 	// Common.
 	FileName       string
 	ClusterID      string
-	MasterAZ       []string
+	ControlPlaneAZ []string
 	Description    string
 	Owner          string
 	ReleaseVersion string
