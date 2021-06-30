@@ -23,6 +23,7 @@ type Collection struct {
 
 // GetOptions are the parameters that the Get method takes.
 type GetOptions struct {
+	AllNamespaces bool
 	LabelSelector labels.Selector
 	Name          string
 	Namespace     string

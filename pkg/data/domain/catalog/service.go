@@ -53,7 +53,7 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 		return resource, nil
 	}
 
-	resource, err = s.getAll(ctx, options.LabelSelector)
+	resource, err = s.getAll(ctx, options)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -61,18 +61,14 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
-func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Resource, error) {
+func (s *Service) getAll(ctx context.Context, options GetOptions) (Resource, error) {
 	catalogCollection := &Collection{}
 	var err error
 
 	{
-		lo := &runtimeclient.ListOptions{
-			LabelSelector: labelSelector,
-		}
-
 		catalogs := &applicationv1alpha1.CatalogList{}
 		{
-			err = s.client.K8sClient.CtrlClient().List(ctx, catalogs, lo)
+			err = s.client.K8sClient.CtrlClient().List(ctx, catalogs, runtimeclient.InNamespace(options.Namespace))
 			if apimeta.IsNoMatchError(err) {
 				return nil, microerror.Mask(noMatchError)
 			} else if err != nil {
@@ -83,6 +79,13 @@ func (s *Service) getAll(ctx context.Context, labelSelector labels.Selector) (Re
 		}
 
 		for _, catalog := range catalogs.Items {
+			// We hide catalog CRs from the giantswarm namespace by
+			// default as these are internal.
+			if options.AllNamespaces && catalog.Namespace == "giantswarm" {
+				// Fall through
+				continue
+			}
+
 			a := Catalog{
 				CR: omitManagedFields(catalog.DeepCopy()),
 			}

@@ -61,8 +61,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if len(args) > 0 {
 			name = strings.ToLower(args[0])
 			selector = fmt.Sprintf("application.giantswarm.io/catalog=%s,latest=true", name)
-		} else {
-			selector = r.flag.LabelSelector
 		}
 	}
 
@@ -90,6 +88,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	{
 
 		options := catalogdata.GetOptions{
+			AllNamespaces: r.flag.AllNamespaces,
 			Name:          name,
 			Namespace:     namespace,
 			LabelSelector: labelSelector,
