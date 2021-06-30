@@ -46,10 +46,6 @@ func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			Labels: map[string]string{
-				"app-operator.giantswarm.io/version":     "1.0.0",
-				"application.giantswarm.io/catalog-type": "awesome",
-			},
 		},
 		Spec: applicationv1alpha1.CatalogSpec{
 			Config:      catalogConfig,
