@@ -3,6 +3,7 @@ package provider
 import (
 	"io"
 	"os"
+	"strconv"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
@@ -72,7 +73,10 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			}
 			data.ProviderMachinePoolCR = string(awsMachinePoolCRYaml)
 		case "MachinePool":
-			o.SetAnnotations(map[string]string{annotation.MachinePoolName: config.Description})
+			o.SetAnnotations(map[string]string{
+				annotation.MachinePoolName: config.Description,
+				annotation.NodePoolMinSize: strconv.Itoa(config.NodesMin),
+				annotation.NodePoolMaxSize: strconv.Itoa(config.NodesMax)})
 			MachinePoolCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
