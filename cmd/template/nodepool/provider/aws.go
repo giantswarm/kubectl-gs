@@ -65,12 +65,14 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 				return microerror.Mask(err)
 			}
 			awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
+			awsmachinepool.Spec.AWSLaunchTemplate.InstanceType = config.AWSInstanceType
 			awsMachinePoolCRYaml, err := yaml.Marshal(awsmachinepool)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.ProviderMachinePoolCR = string(awsMachinePoolCRYaml)
 		case "MachinePool":
+			o.SetAnnotations(map[string]string{annotation.MachinePoolName: config.Description})
 			MachinePoolCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
