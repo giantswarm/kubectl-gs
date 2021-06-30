@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
@@ -67,14 +68,9 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
-			var awsmachinetemplate capav1alpha3.AWSMachineTemplate
-			err = runtime.DefaultUnstructuredConverter.
-				FromUnstructured(o.Object, &awsmachinetemplate)
+			awsmachinetemplate, err := newAWSMachineTemplateFromUnstructured(config, o)
 			if err != nil {
 				return microerror.Mask(err)
-			}
-			if config.ControlPlaneAZ != nil {
-				awsmachinetemplate.Spec.Template.Spec.FailureDomain = &config.ControlPlaneAZ[0]
 			}
 			awsMachineTemplateCRYaml, err := yaml.Marshal(awsmachinetemplate)
 			if err != nil {
@@ -207,4 +203,19 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 		return nil, err
 	}
 	return clusterTemplate, nil
+}
+
+func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructured.Unstructured) (*capav1alpha3.AWSMachineTemplate, error) {
+	var awsmachinetemplate capav1alpha3.AWSMachineTemplate
+	{
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &awsmachinetemplate)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if config.ControlPlaneAZ != nil {
+			awsmachinetemplate.Spec.Template.Spec.FailureDomain = &config.ControlPlaneAZ[0]
+		}
+	}
+	return &awsmachinetemplate, nil
 }

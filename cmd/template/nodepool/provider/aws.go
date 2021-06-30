@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
@@ -59,14 +60,10 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			label.Organization:   config.Owner})
 		switch o.GetKind() {
 		case "AWSMachinePool":
-			var awsmachinepool capav1alpha3.AWSMachinePool
-			err = runtime.DefaultUnstructuredConverter.
-				FromUnstructured(o.Object, &awsmachinepool)
+			awsmachinepool, err := newAWSMachinePoolFromUnstructured(config, o)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
-			awsmachinepool.Spec.AWSLaunchTemplate.InstanceType = config.AWSInstanceType
 			awsMachinePoolCRYaml, err := yaml.Marshal(awsmachinepool)
 			if err != nil {
 				return microerror.Mask(err)
@@ -184,4 +181,27 @@ func getCAPANodepoolTemplate(config NodePoolCRsConfig) (client.Template, error) 
 		return nil, err
 	}
 	return nodepoolTemplate, nil
+}
+
+func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Unstructured) (*capav1alpha3.AWSMachinePool, error) {
+	var awsmachinepool capav1alpha3.AWSMachinePool
+	{
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &awsmachinepool)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
+		awsmachinepool.Spec.AWSLaunchTemplate.InstanceType = config.AWSInstanceType
+		onDemandBaseCapacity := int64(config.OnDemandBaseCapacity)
+		onDemandPercentageAboveBaseCapacity := int64(config.OnDemandPercentageAboveBaseCapacity)
+		awsmachinepool.Spec.MixedInstancesPolicy = &capav1alpha3.MixedInstancesPolicy{
+			InstancesDistribution: &capav1alpha3.InstancesDistribution{
+				OnDemandBaseCapacity:                &onDemandBaseCapacity,
+				OnDemandPercentageAboveBaseCapacity: &onDemandPercentageAboveBaseCapacity,
+			},
+		}
+	}
+	return &awsmachinepool, nil
 }
