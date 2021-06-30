@@ -8,6 +8,8 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/runtime"
+	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	"sigs.k8s.io/yaml"
 
@@ -65,8 +67,16 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
-			o.SetLabels(crLabels)
-			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
+			var awsmachinetemplate capav1alpha3.AWSMachineTemplate
+			err = runtime.DefaultUnstructuredConverter.
+				FromUnstructured(o.Object, &awsmachinetemplate)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if config.ControlPlaneAZ != nil {
+				awsmachinetemplate.Spec.Template.Spec.FailureDomain = &config.ControlPlaneAZ[0]
+			}
+			awsMachineTemplateCRYaml, err := yaml.Marshal(awsmachinetemplate)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -76,6 +86,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 				crLabels[key] = value
 			}
 			o.SetLabels(crLabels)
+			o.SetAnnotations(map[string]string{annotation.ClusterDescription: config.Description})
 			clusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
