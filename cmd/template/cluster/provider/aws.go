@@ -62,18 +62,18 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		switch o.GetKind() {
 		case "AWSCluster":
 			o.SetLabels(crLabels)
-			awsClusterCRYaml, err := yaml.Marshal(o.Object)
+			awscluster, err := newAWSClusterFromUnstructured(config, o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			awsClusterCRYaml, err := yaml.Marshal(awscluster)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
 			o.SetLabels(crLabels)
-			awsmachinetemplate, err := newAWSMachineTemplateFromUnstructured(config, o)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			awsMachineTemplateCRYaml, err := yaml.Marshal(awsmachinetemplate)
+			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -207,17 +207,21 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 	return clusterTemplate, nil
 }
 
-func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructured.Unstructured) (*capav1alpha3.AWSMachineTemplate, error) {
-	var awsmachinetemplate capav1alpha3.AWSMachineTemplate
+func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstructured) (*capav1alpha3.AWSCluster, error) {
+	var awscluster capav1alpha3.AWSCluster
 	{
 		err := runtime.DefaultUnstructuredConverter.
-			FromUnstructured(o.Object, &awsmachinetemplate)
+			FromUnstructured(o.Object, &awscluster)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 		if config.ControlPlaneAZ != nil {
-			awsmachinetemplate.Spec.Template.Spec.FailureDomain = &config.ControlPlaneAZ[0]
+			for _, az := range config.ControlPlaneAZ {
+				privateSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: false}
+				publicSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: true}
+				awscluster.Spec.NetworkSpec.Subnets = append(awscluster.Spec.NetworkSpec.Subnets, &privateSubnet, &publicSubnet)
+			}
 		}
 	}
-	return &awsmachinetemplate, nil
+	return &awscluster, nil
 }
