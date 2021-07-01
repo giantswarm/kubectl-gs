@@ -68,6 +68,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			}
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
+			o.SetLabels(crLabels)
 			awsmachinetemplate, err := newAWSMachineTemplateFromUnstructured(config, o)
 			if err != nil {
 				return microerror.Mask(err)
@@ -78,10 +79,11 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			}
 			data.AWSMachineTemplateCR = string(awsMachineTemplateCRYaml)
 		case "Cluster":
+			clusterLabels := crLabels
 			for key, value := range config.Labels {
-				crLabels[key] = value
+				clusterLabels[key] = value
 			}
-			o.SetLabels(crLabels)
+			o.SetLabels(clusterLabels)
 			o.SetAnnotations(map[string]string{annotation.ClusterDescription: config.Description})
 			clusterCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
