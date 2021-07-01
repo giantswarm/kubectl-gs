@@ -54,10 +54,12 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 	objects := nodepoolTemplate.Objs()
 	for _, o := range objects {
 		o.SetLabels(map[string]string{
-			label.ReleaseVersion: config.ReleaseVersion,
-			label.Cluster:        config.ClusterID,
-			"cluster.x-k8s.io":   config.ClusterID,
-			label.Organization:   config.Owner})
+			label.ReleaseVersion:            config.ReleaseVersion,
+			label.Cluster:                   config.ClusterID,
+			"cluster.x-k8s.io":              config.ClusterID,
+			label.Organization:              config.Owner,
+			"cluster.x-k8s.io/watch-filter": "capi",
+		})
 		switch o.GetKind() {
 		case "AWSMachinePool":
 			awsmachinepool, err := newAWSMachinePoolFromUnstructured(config, o)

@@ -54,10 +54,11 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	}{}
 
 	crLabels := map[string]string{
-		label.ReleaseVersion: config.ReleaseVersion,
-		label.Cluster:        config.ClusterID,
-		"cluster.x-k8s.io":   config.ClusterID,
-		label.Organization:   config.Owner}
+		label.ReleaseVersion:            config.ReleaseVersion,
+		label.Cluster:                   config.ClusterID,
+		"cluster.x-k8s.io":              config.ClusterID,
+		label.Organization:              config.Owner,
+		"cluster.x-k8s.io/watch-filter": "capi"}
 
 	objects := clusterTemplate.Objs()
 	for _, o := range objects {
