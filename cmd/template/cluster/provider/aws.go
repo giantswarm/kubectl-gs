@@ -102,16 +102,13 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		}
 	}
 	{
-		awsclusterroleidentity, err := newAWSClusterRoleIdentity(config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		awsclusterroleidentity := newAWSClusterRoleIdentity(config)
 		awsclusterroleidentity.SetLabels(crLabels)
 		awsClusterRoleIdentityCRYaml, err := yaml.Marshal(awsclusterroleidentity)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		data.AWSClusterCR = string(awsClusterRoleIdentityCRYaml)
+		data.AWSClusterRoleIdentityCR = string(awsClusterRoleIdentityCRYaml)
 	}
 
 	t := template.Must(template.New(config.FileName).Parse(key.ClusterCAPACRsTemplate))
@@ -229,6 +226,10 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+		awscluster.Spec.IdentityRef = &capav1alpha3.AWSIdentityReference{
+			Name: config.ClusterID,
+			Kind: capav1alpha3.ClusterRoleIdentityKind}
+
 		if config.ControlPlaneAZ != nil {
 			for _, az := range config.ControlPlaneAZ {
 				privateSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: false}
@@ -240,7 +241,7 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 	return &awscluster, nil
 }
 
-func newAWSClusterRoleIdentity(config ClusterCRsConfig) (*capav1alpha3.AWSClusterRoleIdentity, error) {
+func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSClusterRoleIdentity {
 	awsclusterroleidentity := &capav1alpha3.AWSClusterRoleIdentity{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AWSClusterRoleIdentity",
@@ -258,5 +259,5 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) (*capav1alpha3.AWSCluste
 			},
 		},
 	}
-	return awsclusterroleidentity, nil
+	return awsclusterroleidentity
 }
