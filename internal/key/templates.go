@@ -42,6 +42,8 @@ const ClusterCAPACRsTemplate = `
 {{ .KubeadmControlPlaneCR -}}
 ---
 {{ .AWSMachineTemplateCR -}}
+---
+{{ .AWSClusterRoleIdentityCR -}}
 `
 
 const MachineDeploymentCRsTemplate = `

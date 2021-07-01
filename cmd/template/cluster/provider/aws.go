@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha3"
@@ -45,10 +46,11 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	data := struct {
-		AWSClusterCR          string
-		AWSMachineTemplateCR  string
-		ClusterCR             string
-		KubeadmControlPlaneCR string
+		AWSClusterCR             string
+		AWSMachineTemplateCR     string
+		ClusterCR                string
+		KubeadmControlPlaneCR    string
+		AWSClusterRoleIdentityCR string
 	}{}
 
 	crLabels := map[string]string{
@@ -98,6 +100,18 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			}
 			data.KubeadmControlPlaneCR = string(kubeadmControlPlaneCRYaml)
 		}
+	}
+	{
+		awsclusterroleidentity, err := newAWSClusterRoleIdentity(config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		awsclusterroleidentity.SetLabels(crLabels)
+		awsClusterRoleIdentityCRYaml, err := yaml.Marshal(awsclusterroleidentity)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		data.AWSClusterCR = string(awsClusterRoleIdentityCRYaml)
 	}
 
 	t := template.Must(template.New(config.FileName).Parse(key.ClusterCAPACRsTemplate))
@@ -224,4 +238,25 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 		}
 	}
 	return &awscluster, nil
+}
+
+func newAWSClusterRoleIdentity(config ClusterCRsConfig) (*capav1alpha3.AWSClusterRoleIdentity, error) {
+	awsclusterroleidentity := &capav1alpha3.AWSClusterRoleIdentity{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AWSClusterRoleIdentity",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      config.ClusterID,
+			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+		},
+		Spec: capav1alpha3.AWSClusterRoleIdentitySpec{
+			AWSClusterIdentitySpec: capav1alpha3.AWSClusterIdentitySpec{
+				AllowedNamespaces: &capav1alpha3.AllowedNamespaces{
+					NamespaceList: []string{key.OrganizationNamespaceFromName(config.Owner)},
+				},
+			},
+		},
+	}
+	return awsclusterroleidentity, nil
 }
