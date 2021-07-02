@@ -253,6 +253,10 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSCluster
 			Namespace: key.OrganizationNamespaceFromName(config.Owner),
 		},
 		Spec: capav1alpha3.AWSClusterRoleIdentitySpec{
+			SourceIdentityRef: &capav1alpha3.AWSIdentityReference{
+				Name: "default",
+				Kind: capav1alpha3.ControllerIdentityKind,
+			},
 			AWSClusterIdentitySpec: capav1alpha3.AWSClusterIdentitySpec{
 				AllowedNamespaces: &capav1alpha3.AllowedNamespaces{
 					NamespaceList: []string{key.OrganizationNamespaceFromName(config.Owner)},
