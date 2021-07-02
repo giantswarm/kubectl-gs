@@ -1,18 +1,22 @@
 package app
 
 import (
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type Config struct {
 	Catalog                 string
 	Cluster                 string
-	UserConfigConfigMapName string
-	UserConfigSecretName    string
+	DefaultingEnabled       bool
 	Name                    string
 	Namespace               string
+	UserConfigConfigMapName string
+	UserConfigSecretName    string
 	Version                 string
 }
 
@@ -28,7 +32,7 @@ type ConfigMapConfig struct {
 	Namespace string
 }
 
-func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
+func NewAppCR(config Config) ([]byte, error) {
 	userConfig := applicationv1alpha1.AppSpecUserConfig{}
 
 	if config.UserConfigConfigMapName != "" {
@@ -53,36 +57,42 @@ func NewAppCR(config Config) (*applicationv1alpha1.App, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Cluster,
-			Labels: map[string]string{
-				"app-operator.giantswarm.io/version": "1.0.0",
-			},
 		},
 		Spec: applicationv1alpha1.AppSpec{
 			Catalog:   config.Catalog,
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			Config: applicationv1alpha1.AppSpecConfig{
-				ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
-					Name:      config.Cluster + "-cluster-values",
-					Namespace: config.Cluster,
-				},
-			},
 			KubeConfig: applicationv1alpha1.AppSpecKubeConfig{
-				Context: applicationv1alpha1.AppSpecKubeConfigContext{
-					Name: config.Cluster + "-kubeconfig",
-				},
 				InCluster: false,
-				Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
-					Name:      config.Cluster + "-kubeconfig",
-					Namespace: config.Cluster,
-				},
 			},
 			UserConfig: userConfig,
 			Version:    config.Version,
 		},
 	}
 
-	return appCR, nil
+	if !config.DefaultingEnabled {
+		appCR.SetLabels(map[string]string{
+			"app-operator.giantswarm.io/version": "1.0.0",
+		})
+		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
+			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
+				Name:      config.Cluster + "-cluster-values",
+				Namespace: config.Cluster,
+			},
+		}
+		appCR.Spec.KubeConfig = applicationv1alpha1.AppSpecKubeConfig{
+			Context: applicationv1alpha1.AppSpecKubeConfigContext{
+				Name: config.Cluster + "-kubeconfig",
+			},
+			InCluster: false,
+			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
+				Name:      config.Cluster + "-kubeconfig",
+				Namespace: config.Cluster,
+			},
+		}
+	}
+
+	return printAppCR(appCR, config.DefaultingEnabled)
 }
 
 func NewConfigMap(config ConfigMapConfig) (*corev1.ConfigMap, error) {
@@ -119,4 +129,65 @@ func NewSecret(config SecretConfig) (*corev1.Secret, error) {
 	}
 
 	return secret, nil
+}
+
+// printAppCR removes empty fields from the app CR YAML. This is needed because
+// although the fields are optional we do not use struct pointers. This will
+// be fixed in a future version of the App CRD.
+func printAppCR(appCR *v1alpha1.App, defaultingEnabled bool) ([]byte, error) {
+	appCRYaml, err := yaml.Marshal(appCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	rawAppCR := map[string]interface{}{}
+	err = yaml.Unmarshal(appCRYaml, &rawAppCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	delete(rawAppCR, "status")
+
+	metadata, ok := rawAppCR["metadata"].(map[string]interface{})
+	if !ok {
+		return nil, microerror.Maskf(executionFailedError, "failed to get metadata for app CR")
+	}
+	delete(metadata, "creationTimestamp")
+
+	spec, ok := rawAppCR["spec"].(map[string]interface{})
+	if !ok {
+		return nil, microerror.Maskf(executionFailedError, "failed to get spec for app CR")
+	}
+
+	delete(spec, "install")
+	delete(spec, "namespaceConfig")
+
+	if defaultingEnabled {
+		delete(spec, "config")
+		spec["kubeConfig"] = map[string]bool{
+			"inCluster": false,
+		}
+	}
+
+	if appCR.Spec.UserConfig.ConfigMap.Name == "" && appCR.Spec.UserConfig.Secret.Name == "" {
+		delete(spec, "userConfig")
+	} else {
+		userConfig, ok := spec["userConfig"].(map[string]interface{})
+		if !ok {
+			return nil, microerror.Maskf(executionFailedError, "failed to get userConfig for app CR")
+		}
+
+		if appCR.Spec.UserConfig.ConfigMap.Name != "" && appCR.Spec.UserConfig.Secret.Name == "" {
+			delete(userConfig, "secret")
+		} else if appCR.Spec.UserConfig.ConfigMap.Name == "" && appCR.Spec.UserConfig.Secret.Name != "" {
+			delete(userConfig, "configMap")
+		}
+	}
+
+	outputYaml, err := yaml.Marshal(rawAppCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return outputYaml, nil
 }

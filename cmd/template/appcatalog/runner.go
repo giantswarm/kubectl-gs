@@ -6,12 +6,12 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/ghodss/yaml"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	templateappcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
