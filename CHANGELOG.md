@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update Dockerfile to use alpine:3.14 as a base image
+
 ## [1.30.0] - 2021-06-29
 
 ### Changed
