@@ -238,6 +238,9 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 				awscluster.Spec.NetworkSpec.Subnets = append(awscluster.Spec.NetworkSpec.Subnets, &privateSubnet, &publicSubnet)
 			}
 		}
+		if config.ControlPlaneSubnet != "" {
+			awscluster.SetAnnotations(map[string]string{annotation.AWSSubnetSize: config.ControlPlaneSubnet})
+		}
 	}
 	return &awscluster, nil
 }

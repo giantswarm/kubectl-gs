@@ -204,6 +204,9 @@ func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.
 				OnDemandPercentageAboveBaseCapacity: &onDemandPercentageAboveBaseCapacity,
 			},
 		}
+		if config.MachineDeploymentSubnet != "" {
+			awsmachinepool.SetAnnotations(map[string]string{annotation.AWSSubnetSize: config.MachineDeploymentSubnet})
+		}
 	}
 	return &awsmachinepool, nil
 }
