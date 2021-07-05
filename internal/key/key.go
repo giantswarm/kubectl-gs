@@ -58,6 +58,14 @@ func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
 }
 
+func GetControlPlaneInstanceProfile(clusterID string) string {
+	return fmt.Sprintf("control-plane-%s", clusterID)
+}
+
+func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
+	return fmt.Sprintf("nodes-%s-%s", machinePoolID, clusterID)
+}
+
 // IsCAPAVersion returns whether a given GS Release Version is based on the CAPI/CAPA projects
 // TODO: make this a >= comparison
 func IsCAPAVersion(version string) bool {

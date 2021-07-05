@@ -76,7 +76,11 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			data.AWSClusterCR = string(awsClusterCRYaml)
 		case "AWSMachineTemplate":
 			o.SetLabels(crLabels)
-			awsMachineTemplateCRYaml, err := yaml.Marshal(o.Object)
+			awsmachinetemplate, err := newAWSMachineTemplateFromUnstructured(config, o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			awsMachineTemplateCRYaml, err := yaml.Marshal(awsmachinetemplate)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -243,6 +247,19 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 		}
 	}
 	return &awscluster, nil
+}
+
+func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructured.Unstructured) (*capav1alpha3.AWSMachineTemplate, error) {
+	var awsmachinetemplate capav1alpha3.AWSMachineTemplate
+	{
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &awsmachinetemplate)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		awsmachinetemplate.Spec.Template.Spec.IAMInstanceProfile = key.GetControlPlaneInstanceProfile(config.ClusterID)
+	}
+	return &awsmachinetemplate, nil
 }
 
 func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSClusterRoleIdentity {

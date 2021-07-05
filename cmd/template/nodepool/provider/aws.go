@@ -8,15 +8,16 @@ import (
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
 func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
@@ -53,9 +54,11 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 	objects := nodepoolTemplate.Objs()
 	for _, o := range objects {
+		o.SetName(config.NodePoolID)
 		o.SetLabels(map[string]string{
 			label.ReleaseVersion:            config.ReleaseVersion,
 			label.Cluster:                   config.ClusterID,
+			label.MachinePool:               config.NodePoolID,
 			"cluster.x-k8s.io":              config.ClusterID,
 			label.Organization:              config.Owner,
 			"cluster.x-k8s.io/watch-filter": "capi",
@@ -72,15 +75,15 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			}
 			data.ProviderMachinePoolCR = string(awsMachinePoolCRYaml)
 		case "MachinePool":
-			o.SetAnnotations(map[string]string{
-				annotation.MachinePoolName: config.Description,
-				annotation.NodePoolMinSize: strconv.Itoa(config.NodesMin),
-				annotation.NodePoolMaxSize: strconv.Itoa(config.NodesMax)})
-			MachinePoolCRYaml, err := yaml.Marshal(o.Object)
+			machinepool, err := newMachinePoolFromUnstructured(config, o)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			data.MachinePoolCR = string(MachinePoolCRYaml)
+			machinePoolCRYaml, err := yaml.Marshal(machinepool)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			data.MachinePoolCR = string(machinePoolCRYaml)
 		case "KubeadmConfig":
 			kubeadmConfigCRYaml, err := yaml.Marshal(o.Object)
 			if err != nil {
@@ -196,6 +199,7 @@ func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.
 
 		awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
 		awsmachinepool.Spec.AWSLaunchTemplate.InstanceType = config.AWSInstanceType
+		awsmachinepool.Spec.AWSLaunchTemplate.IamInstanceProfile = key.GetNodeInstanceProfile(config.NodePoolID, config.ClusterID)
 		onDemandBaseCapacity := int64(config.OnDemandBaseCapacity)
 		onDemandPercentageAboveBaseCapacity := int64(config.OnDemandPercentageAboveBaseCapacity)
 		awsmachinepool.Spec.MixedInstancesPolicy = &capav1alpha3.MixedInstancesPolicy{
@@ -209,4 +213,23 @@ func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.
 		}
 	}
 	return &awsmachinepool, nil
+}
+
+func newMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Unstructured) (*capiv1alpha3.MachinePool, error) {
+	var machinepool capiv1alpha3.MachinePool
+	{
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &machinepool)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		machinepool.SetAnnotations(map[string]string{
+			annotation.MachinePoolName: config.Description,
+			annotation.NodePoolMinSize: strconv.Itoa(config.NodesMin),
+			annotation.NodePoolMaxSize: strconv.Itoa(config.NodesMax)})
+
+		machinepool.Spec.Template.Spec.Bootstrap.ConfigRef.Name = config.NodePoolID
+		machinepool.Spec.Template.Spec.InfrastructureRef.Name = config.NodePoolID
+	}
+	return &machinepool, nil
 }
