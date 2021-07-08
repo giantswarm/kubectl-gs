@@ -40,6 +40,13 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
+	if config.ExternalSNAT {
+		return microerror.Maskf(invalidFlagError, "--external-snat setting is not available for release %v", config.ReleaseVersion)
+	}
+	if config.PodsCIDR != "" {
+		return microerror.Maskf(invalidFlagError, "--pods-cidr setting is not available for release %v", config.ReleaseVersion)
+	}
+
 	clusterTemplate, err := getCAPAClusterTemplate(config)
 	if err != nil {
 		return err
@@ -273,10 +280,7 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSCluster
 			Namespace: key.OrganizationNamespaceFromName(config.Owner),
 		},
 		Spec: capav1alpha3.AWSClusterRoleIdentitySpec{
-			SourceIdentityRef: &capav1alpha3.AWSIdentityReference{
-				Name: "default",
-				Kind: capav1alpha3.ControllerIdentityKind,
-			},
+			SourceIdentityRef: &capav1alpha3.AWSIdentityReference{},
 			AWSClusterIdentitySpec: capav1alpha3.AWSClusterIdentitySpec{
 				AllowedNamespaces: &capav1alpha3.AllowedNamespaces{
 					NamespaceList: []string{key.OrganizationNamespaceFromName(config.Owner)},

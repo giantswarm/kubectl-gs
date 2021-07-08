@@ -41,6 +41,10 @@ func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
+	if config.UseAlikeInstanceTypes {
+		return microerror.Maskf(invalidFlagError, "--use-alike-instance-types setting is not available for release %v", config.ReleaseVersion)
+	}
+
 	nodepoolTemplate, err := getCAPANodepoolTemplate(config)
 	if err != nil {
 		return err
