@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	flagAppName           = "app-name"
 	flagCatalog           = "catalog"
 	flagCluster           = "cluster"
 	flagDefaultingEnabled = "defaulting-enabled"
@@ -17,6 +18,7 @@ const (
 )
 
 type flag struct {
+	AppName           string
 	Catalog           string
 	Cluster           string
 	DefaultingEnabled bool
@@ -28,8 +30,9 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&f.AppName, flagAppName, "", "Optionally set a different name for the App CR.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog name where app is stored.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "App name.")
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app in the Catalog.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the app will be deployed.")
 	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Cluster where the app will be deployed.")
 	cmd.Flags().BoolVar(&f.DefaultingEnabled, flagDefaultingEnabled, true, "Don't template fields that will be defaulted.")
