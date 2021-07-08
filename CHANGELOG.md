@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Allow overriding the app CR name in the `template app` command.
+
 ### Changed
 
 - Update Dockerfile to use alpine:3.14 as a base image

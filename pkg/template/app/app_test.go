@@ -65,6 +65,19 @@ func Test_NewAppCR(t *testing.T) {
 			},
 			expectedGoldenFile: "app_user_secrets_yaml_output.golden",
 		},
+		{
+			name: "case 4: override app name",
+			config: Config{
+				AppName:           "internal-nginx-ingress-controller",
+				Catalog:           "giantswarm",
+				Cluster:           "eggs2",
+				DefaultingEnabled: true,
+				Name:              "nginx-ingress-controller-app",
+				Namespace:         "kube-system",
+				Version:           "1.17.0",
+			},
+			expectedGoldenFile: "app_override_app_name_yaml_output.golden",
+		},
 	}
 
 	for i, tc := range testCases {
