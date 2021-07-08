@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	AppName                 string
 	Catalog                 string
 	Cluster                 string
 	DefaultingEnabled       bool
@@ -49,13 +50,17 @@ func NewAppCR(config Config) ([]byte, error) {
 		}
 	}
 
+	if config.AppName == "" {
+		config.AppName = config.Name
+	}
+
 	appCR := &applicationv1alpha1.App{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "App",
 			APIVersion: "application.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.Name,
+			Name:      config.AppName,
 			Namespace: config.Cluster,
 		},
 		Spec: applicationv1alpha1.AppSpec{
