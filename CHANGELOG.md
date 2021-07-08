@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.31.0] - 2021-07-08
+
 ### Added
 
 - Allow overriding the app CR name in the `template app` command.
@@ -373,7 +375,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.30.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.31.0...HEAD
+[1.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.30.0...v1.31.0
 [1.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.2...v1.30.0
 [1.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.1...v1.29.2
 [1.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.0...v1.29.1
