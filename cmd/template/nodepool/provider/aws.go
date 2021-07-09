@@ -13,8 +13,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capiv1alpha3exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -63,7 +64,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			label.ReleaseVersion:            config.ReleaseVersion,
 			label.Cluster:                   config.ClusterID,
 			label.MachinePool:               config.NodePoolID,
-			"cluster.x-k8s.io":              config.ClusterID,
+			capiv1alpha3.ClusterLabelName:   config.ClusterID,
 			label.Organization:              config.Owner,
 			"cluster.x-k8s.io/watch-filter": "capi",
 		})
@@ -219,8 +220,8 @@ func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.
 	return &awsmachinepool, nil
 }
 
-func newMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Unstructured) (*capiv1alpha3.MachinePool, error) {
-	var machinepool capiv1alpha3.MachinePool
+func newMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Unstructured) (*capiv1alpha3exp.MachinePool, error) {
+	var machinepool capiv1alpha3exp.MachinePool
 	{
 		err := runtime.DefaultUnstructuredConverter.
 			FromUnstructured(o.Object, &machinepool)

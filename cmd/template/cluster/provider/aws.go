@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	"sigs.k8s.io/yaml"
 
@@ -63,7 +64,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	crLabels := map[string]string{
 		label.ReleaseVersion:            config.ReleaseVersion,
 		label.Cluster:                   config.ClusterID,
-		"cluster.x-k8s.io":              config.ClusterID,
+		capiv1alpha3.ClusterLabelName:   config.ClusterID,
 		label.Organization:              config.Owner,
 		"cluster.x-k8s.io/watch-filter": "capi"}
 

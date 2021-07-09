@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS. 
+- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS. 
+- Add optional `--release` flag to nodepool templating so that the new functionality can be used for CAPA versions.
+
 ## [1.31.0] - 2021-07-08
 
 ### Added
