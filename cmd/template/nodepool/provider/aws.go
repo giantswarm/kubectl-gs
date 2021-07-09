@@ -178,9 +178,13 @@ func getCAPANodepoolTemplate(config NodePoolCRsConfig) (client.Template, error) 
 		},
 	}
 	os.Setenv("AWS_SUBNET", "")
+	defer os.Unsetenv("AWS_SUBNET")
 	os.Setenv("AWS_CONTROL_PLANE_MACHINE_TYPE", "")
+	defer os.Unsetenv("AWS_CONTROL_PLANE_MACHINE_TYPE")
 	os.Setenv("AWS_REGION", "")
+	defer os.Unsetenv("AWS_REGION")
 	os.Setenv("AWS_SSH_KEY_NAME", "")
+	defer os.Unsetenv("AWS_SSH_KEY_NAME")
 
 	if replicas := int64(config.NodesMin); replicas > 0 {
 		templateOptions.WorkerMachineCount = &replicas
