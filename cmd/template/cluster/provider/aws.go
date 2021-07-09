@@ -242,12 +242,10 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 			Name: config.ClusterID,
 			Kind: capav1alpha3.ClusterRoleIdentityKind}
 
-		if config.ControlPlaneAZ != nil {
-			for _, az := range config.ControlPlaneAZ {
-				privateSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: false}
-				publicSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: true}
-				awscluster.Spec.NetworkSpec.Subnets = append(awscluster.Spec.NetworkSpec.Subnets, &privateSubnet, &publicSubnet)
-			}
+		for _, az := range config.ControlPlaneAZ {
+			privateSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: false}
+			publicSubnet := capav1alpha3.SubnetSpec{AvailabilityZone: az, IsPublic: true}
+			awscluster.Spec.NetworkSpec.Subnets = append(awscluster.Spec.NetworkSpec.Subnets, &privateSubnet, &publicSubnet)
 		}
 		if config.ControlPlaneSubnet != "" {
 			awscluster.SetAnnotations(map[string]string{annotation.AWSSubnetSize: config.ControlPlaneSubnet})
