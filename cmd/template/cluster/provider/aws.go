@@ -215,14 +215,18 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 			Flavor:                 "machinepool",
 		},
 	}
-	os.Setenv("AWS_SUBNET", "")
-	defer os.Unsetenv("AWS_SUBNET")
-	os.Setenv("AWS_CONTROL_PLANE_MACHINE_TYPE", "")
-	defer os.Unsetenv("AWS_CONTROL_PLANE_MACHINE_TYPE")
-	os.Setenv("AWS_REGION", "")
-	defer os.Unsetenv("AWS_REGION")
-	os.Setenv("AWS_SSH_KEY_NAME", "")
-	defer os.Unsetenv("AWS_SSH_KEY_NAME")
+	// Set all environment variables expected by the upstream client to empty strings. These values are defaulted later
+	// Make sure that the values are reset.
+	for _, envVar := range key.GetCAPAEnvVars() {
+		if os.Getenv(envVar) != "" {
+			prevEnvAWSSubnet := os.Getenv(envVar)
+			os.Setenv(envVar, "")
+			defer os.Setenv(envVar, prevEnvAWSSubnet)
+		} else {
+			os.Setenv(envVar, "")
+			defer os.Unsetenv(envVar)
+		}
+	}
 
 	if replicas := int64(len(config.ControlPlaneAZ)); replicas > 0 {
 		templateOptions.ControlPlaneMachineCount = &replicas
