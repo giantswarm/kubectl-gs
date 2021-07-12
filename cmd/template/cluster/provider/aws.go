@@ -219,9 +219,9 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 	// Make sure that the values are reset.
 	for _, envVar := range key.GetCAPAEnvVars() {
 		if os.Getenv(envVar) != "" {
-			prevEnvAWSSubnet := os.Getenv(envVar)
+			prevEnv := os.Getenv(envVar)
 			os.Setenv(envVar, "")
-			defer os.Setenv(envVar, prevEnvAWSSubnet)
+			defer os.Setenv(envVar, prevEnv)
 		} else {
 			os.Setenv(envVar, "")
 			defer os.Unsetenv(envVar)
