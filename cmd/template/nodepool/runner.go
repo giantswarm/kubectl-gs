@@ -59,6 +59,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
 			OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
 			Owner:                               r.flag.Owner,
+			ReleaseVersion:                      r.flag.Release,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 		}
 
