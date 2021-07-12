@@ -33,6 +33,7 @@ const (
 	flagNodexMin          = "nodex-min"
 	flagOutput            = "output"
 	flagOwner             = "owner"
+	flagRelease           = "release"
 )
 
 const (
@@ -61,6 +62,7 @@ type flag struct {
 	NodesMin          int
 	Output            string
 	Owner             string
+	Release           string
 
 	// Deprecated
 	// Can be removed in a future version around March 2021 or later.
@@ -89,6 +91,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, minNodes, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d)", minNodes))
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty to match the workload cluster version via the Management API.")
 
 	// This can be removed in a future version around March 2021 or later.
 	cmd.Flags().IntVar(&f.NodexMax, flagNodexMax, 0, "")
