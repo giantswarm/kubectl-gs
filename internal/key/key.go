@@ -59,7 +59,7 @@ func GenerateAssetName(values ...string) string {
 }
 
 func GetCAPAEnvVars() []string {
-	return []string{"AWS_SUBNET", "AWS_CONTROL_PLANE_MACHINE_TYPE", "AWS_REGION", "AWS_SSH_KEY_NAME", "AWS_SSH_KEY_NAME"}
+	return []string{"AWS_SUBNET", "AWS_CONTROL_PLANE_MACHINE_TYPE", "AWS_REGION", "AWS_SSH_KEY_NAME"}
 }
 
 func GetControlPlaneInstanceProfile(clusterID string) string {
