@@ -214,6 +214,8 @@ func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.
 		awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
 		awsmachinepool.Spec.AWSLaunchTemplate.InstanceType = config.AWSInstanceType
 		awsmachinepool.Spec.AWSLaunchTemplate.IamInstanceProfile = key.GetNodeInstanceProfile(config.NodePoolID, config.ClusterID)
+		awsmachinepool.Spec.MinSize = int32(config.NodesMin)
+		awsmachinepool.Spec.MaxSize = int32(config.NodesMax)
 		onDemandBaseCapacity := int64(config.OnDemandBaseCapacity)
 		onDemandPercentageAboveBaseCapacity := int64(config.OnDemandPercentageAboveBaseCapacity)
 		awsmachinepool.Spec.MixedInstancesPolicy = &capav1alpha3.MixedInstancesPolicy{
