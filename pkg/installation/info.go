@@ -43,7 +43,7 @@ func getInstallationInfo(ctx context.Context, gqlClient graphql.Client) (install
 	var info installationInfo
 	err := gqlClient.ExecuteQuery(ctx, infoQuery, nil, &info)
 	if err != nil {
-		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfoError, "make sure you're connected to the internet and that the Athena service is up and running\n%s", err.Error())
+		return installationInfo{}, microerror.Maskf(cannotGetInstallationInfoError, "make sure you're connected to the internet, OIDC is configured for the management cluster and that the Athena service is up and running\n%s", err.Error())
 	}
 
 	return info, nil
