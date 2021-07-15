@@ -13,6 +13,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS. 
 - Add optional `--release` flag to nodepool templating so that the new functionality can be used for CAPA versions.
 
+### Fixed
+
+- Extend `login` error message to mention if OIDC is configured.
+
 ## [1.31.0] - 2021-07-08
 
 ### Added
