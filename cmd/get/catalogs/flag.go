@@ -1,4 +1,4 @@
-package appcatalogs
+package catalogs
 
 import (
 	"github.com/spf13/cobra"
@@ -6,19 +6,18 @@ import (
 )
 
 const (
-	flagLabelSelector     = "selector"
-	publicCatalogSelector = "application.giantswarm.io/catalog-visibility=public"
+	flagAllNamespaces = "all-namespaces"
 )
 
 type flag struct {
-	LabelSelector string
+	AllNamespaces bool
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&f.LabelSelector, flagLabelSelector, "l", publicCatalogSelector, "Specify label selector(s) to filter Apps by.")
+	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")

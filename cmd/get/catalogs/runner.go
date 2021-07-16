@@ -1,4 +1,4 @@
-package appcatalogs
+package catalogs
 
 import (
 	"context"
@@ -10,11 +10,11 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
+	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
@@ -23,7 +23,7 @@ type runner struct {
 	logger micrologger.Logger
 	fs     afero.Fs
 
-	service appcatalog.Interface
+	service catalogdata.Interface
 
 	stdout io.Writer
 	stderr io.Writer
@@ -61,8 +61,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if len(args) > 0 {
 			name = strings.ToLower(args[0])
 			selector = fmt.Sprintf("application.giantswarm.io/catalog=%s,latest=true", name)
+		}
+	}
+
+	var namespace string
+	{
+		if r.flag.AllNamespaces {
+			namespace = metav1.NamespaceAll
 		} else {
-			selector = r.flag.LabelSelector
+			namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
@@ -74,20 +84,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var appCatalogResource appcatalog.Resource
+	var catalogResource catalogdata.Resource
 	{
 
-		options := appcatalog.GetOptions{
+		options := catalogdata.GetOptions{
+			AllNamespaces: r.flag.AllNamespaces,
 			Name:          name,
+			Namespace:     namespace,
 			LabelSelector: labelSelector,
 		}
-		appCatalogResource, err = r.service.Get(ctx, options)
-		if appcatalog.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("An appcatalog '%s' cannot be found.\n", options.Name))
-		} else if app.IsNoMatch(err) {
+		catalogResource, err = r.service.Get(ctx, options)
+		if catalogdata.IsNotFound(err) {
+			return microerror.Maskf(notFoundError, fmt.Sprintf("A catalog '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+		} else if catalogdata.IsNoMatch(err) {
 			r.printNoMatchOutput()
 			return nil
-		} else if appcatalog.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
+		} else if catalogdata.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 			return nil
 		} else if err != nil {
@@ -95,7 +107,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	err = r.printOutput(appCatalogResource)
+	err = r.printOutput(catalogResource)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -113,10 +125,10 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 		return microerror.Mask(err)
 	}
 
-	serviceConfig := appcatalog.Config{
+	serviceConfig := catalogdata.Config{
 		Client: client,
 	}
-	r.service, err = appcatalog.New(serviceConfig)
+	r.service, err = catalogdata.New(serviceConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}

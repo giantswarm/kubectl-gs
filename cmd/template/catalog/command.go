@@ -1,4 +1,4 @@
-package appcatalog
+package catalog
 
 import (
 	"io"
@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	name        = "appcatalog"
-	description = "Template AppCatalog CR."
+	name        = "catalog"
+	description = "Template Catalog CR."
 )
 
 type Config struct {

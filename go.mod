@@ -7,7 +7,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.12.0
 	github.com/giantswarm/apiextensions/v3 v3.27.1
-	github.com/giantswarm/app/v4 v4.13.0
+	github.com/giantswarm/app/v5 v5.0.1
 	github.com/giantswarm/k8sclient/v5 v5.11.0
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0

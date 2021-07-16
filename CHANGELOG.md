@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Replace AppCatalog CRD with new namespace scoped Catalog CRD.
+
 ### Added
 
 - Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS. 

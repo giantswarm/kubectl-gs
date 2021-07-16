@@ -1,4 +1,4 @@
-package appcatalogs
+package catalogs
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/appcatalog"
+	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
-func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
+func (r *runner) printOutput(catalogResource catalogdata.Resource) error {
 	var (
 		err      error
 		printer  printers.ResourcePrinter
@@ -22,11 +22,11 @@ func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
-		resource = getTable(appCatalogResource)
+		resource = getTable(catalogResource)
 		printOptions := printers.PrintOptions{}
 		printer = printers.NewTablePrinter(printOptions)
 	case output.IsOutputName(r.flag.print.OutputFormat):
-		resource = appCatalogResource.Object()
+		resource = catalogResource.Object()
 		err = output.PrintResourceNames(r.stdout, resource)
 		if err != nil {
 			return microerror.Mask(err)
@@ -35,7 +35,7 @@ func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
 		return nil
 
 	default:
-		resource = appCatalogResource.Object()
+		resource = catalogResource.Object()
 		printer, err = r.flag.print.ToPrinter()
 		if err != nil {
 			return microerror.Mask(err)
@@ -51,14 +51,14 @@ func (r *runner) printOutput(appCatalogResource appcatalog.Resource) error {
 }
 
 func (r *runner) printNoMatchOutput() {
-	fmt.Fprintf(r.stdout, "No AppCatalog CRD found.\n")
+	fmt.Fprintf(r.stdout, "No Catalog CRD found.\n")
 	fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No appcatalogs found.\n")
-	fmt.Fprintf(r.stdout, "To create an appcatalog, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template appcatalog --help\n")
+	fmt.Fprintf(r.stdout, "No catalogs found.\n")
+	fmt.Fprintf(r.stdout, "To create a catalog, please check\n\n")
+	fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
 }
 
 func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.TableRow {
@@ -73,7 +73,7 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 	}
 }
 
-func getAppCatalogEntryTable(appCatalogResource *appcatalog.AppCatalog) *metav1.Table {
+func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -85,14 +85,14 @@ func getAppCatalogEntryTable(appCatalogResource *appcatalog.AppCatalog) *metav1.
 		{Name: "Created", Type: "string"},
 	}
 
-	for _, ace := range appCatalogResource.Entries.Items {
+	for _, ace := range catalogResource.Entries.Items {
 		table.Rows = append(table.Rows, getAppCatalogEntryRow(ace))
 	}
 
 	return table
 }
 
-func getAppCatalogRow(a appcatalog.AppCatalog) metav1.TableRow {
+func getCatalogRow(a catalogdata.Catalog) metav1.TableRow {
 	if a.CR == nil {
 		return metav1.TableRow{}
 	}
@@ -100,6 +100,7 @@ func getAppCatalogRow(a appcatalog.AppCatalog) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			a.CR.Name,
+			a.CR.Namespace,
 			a.CR.Spec.Storage.URL,
 			output.TranslateTimestampSince(a.CR.CreationTimestamp),
 		},
@@ -109,34 +110,35 @@ func getAppCatalogRow(a appcatalog.AppCatalog) metav1.TableRow {
 	}
 }
 
-func getAppCatalogTable(appCatalogResource appcatalog.Resource) *metav1.Table {
+func getCatalogTable(catalogResource catalogdata.Resource) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
+		{Name: "Namespace", Type: "string"},
 		{Name: "Catalog URL", Type: "string"},
 		{Name: "Created", Type: "string", Format: "date-time"},
 	}
 
-	switch c := appCatalogResource.(type) {
-	case *appcatalog.AppCatalog:
-		table.Rows = append(table.Rows, getAppCatalogRow(*c))
-	case *appcatalog.Collection:
-		for _, appCatalogItem := range c.Items {
-			table.Rows = append(table.Rows, getAppCatalogRow(appCatalogItem))
+	switch c := catalogResource.(type) {
+	case *catalogdata.Catalog:
+		table.Rows = append(table.Rows, getCatalogRow(*c))
+	case *catalogdata.Collection:
+		for _, catalogItem := range c.Items {
+			table.Rows = append(table.Rows, getCatalogRow(catalogItem))
 		}
 	}
 
 	return table
 }
 
-func getTable(appCatalogResource appcatalog.Resource) *metav1.Table {
-	switch c := appCatalogResource.(type) {
-	case *appcatalog.AppCatalog:
-		return getAppCatalogEntryTable(c)
-	case *appcatalog.Collection:
-		return getAppCatalogTable(c)
+func getTable(catalogResource catalogdata.Resource) *metav1.Table {
+	switch c := catalogResource.(type) {
+	case *catalogdata.Catalog:
+		return getCatalogEntryTable(c)
+	case *catalogdata.Collection:
+		return getCatalogTable(c)
 	}
 
 	return nil

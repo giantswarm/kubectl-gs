@@ -1,4 +1,4 @@
-package appcatalog
+package catalog
 
 import (
 	"context"
@@ -10,11 +10,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	templateappcatalog "github.com/giantswarm/kubectl-gs/pkg/template/appcatalog"
+	templatecatalog "github.com/giantswarm/kubectl-gs/pkg/template/catalog"
 )
 
 type runner struct {
@@ -45,12 +44,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var secretYaml []byte
 	var err error
 
-	config := templateappcatalog.Config{
+	config := templatecatalog.Config{
 		Description: r.flag.Description,
 		LogoURL:     r.flag.LogoURL,
 		ID:          key.GenerateID(),
 		Name:        r.flag.Name,
-		Namespace:   metav1.NamespaceDefault,
+		Namespace:   r.flag.Namespace,
 		URL:         r.flag.URL,
 	}
 
@@ -63,7 +62,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		config.CatalogConfigMapName = key.GenerateAssetName(r.flag.Name, config.ID)
-		configmapCR, err := templateappcatalog.NewConfigMap(config, configMapData)
+		configmapCR, err := templatecatalog.NewConfigMap(config, configMapData)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -83,7 +82,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		config.CatalogSecretName = key.GenerateAssetName(r.flag.Name, config.ID)
-		secretCR, err := templateappcatalog.NewSecret(config, secretData)
+		secretCR, err := templatecatalog.NewSecret(config, secretData)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -94,31 +93,31 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	type AppCatalogCROutput struct {
-		AppCatalogCR string
-		ConfigMap    string
-		Secret       string
+	type CatalogCROutput struct {
+		CatalogCR string
+		ConfigMap string
+		Secret    string
 	}
 
-	appCatalogCR, err := templateappcatalog.NewAppCatalogCR(config)
+	catalogCR, err := templatecatalog.NewCatalogCR(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	appCatalogCRYaml, err := yaml.Marshal(appCatalogCR)
+	catalogCRYaml, err := yaml.Marshal(catalogCR)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	appCatalogCROutput := AppCatalogCROutput{
-		AppCatalogCR: string(appCatalogCRYaml),
-		ConfigMap:    string(configMapYaml),
-		Secret:       string(secretYaml),
+	catalogCROutput := CatalogCROutput{
+		CatalogCR: string(catalogCRYaml),
+		ConfigMap: string(configMapYaml),
+		Secret:    string(secretYaml),
 	}
 
-	t := template.Must(template.New("appCatalogCR").Parse(key.AppCatalogCRTemplate))
+	t := template.Must(template.New("catalogCR").Parse(key.CatalogCRTemplate))
 
-	err = t.Execute(os.Stdout, appCatalogCROutput)
+	err = t.Execute(os.Stdout, catalogCROutput)
 	if err != nil {
 		return microerror.Mask(err)
 	}
