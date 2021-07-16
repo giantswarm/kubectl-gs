@@ -34,6 +34,18 @@ const ClusterAzureCRsTemplate = `
 {{ .MasterMachineCR -}}
 `
 
+const ClusterCAPACRsTemplate = `
+{{- .ClusterCR -}}
+---
+{{ .AWSClusterCR -}}
+---
+{{ .KubeadmControlPlaneCR -}}
+---
+{{ .AWSMachineTemplateCR -}}
+---
+{{ .AWSClusterRoleIdentityCR -}}
+`
+
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
@@ -43,6 +55,15 @@ const MachineDeploymentCRsTemplate = `
 const NetworkPoolCRsTemplate = `
 {{- .NetworkPoolCR -}}
 `
+
+const MachinePoolAWSCRsTemplate = `
+{{- .ProviderMachinePoolCR -}}
+---
+{{ .MachinePoolCR -}}
+---
+{{ .KubeadmConfigCR -}}
+`
+
 const MachinePoolAzureCRsTemplate = `
 {{- .ProviderMachinePoolCR -}}
 ---

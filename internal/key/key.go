@@ -58,6 +58,24 @@ func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
 }
 
+func GetCAPAEnvVars() []string {
+	return []string{"AWS_SUBNET", "AWS_CONTROL_PLANE_MACHINE_TYPE", "AWS_REGION", "AWS_SSH_KEY_NAME"}
+}
+
+func GetControlPlaneInstanceProfile(clusterID string) string {
+	return fmt.Sprintf("control-plane-%s", clusterID)
+}
+
+func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
+	return fmt.Sprintf("nodes-%s-%s", machinePoolID, clusterID)
+}
+
+// IsCAPAVersion returns whether a given GS Release Version is based on the CAPI/CAPA projects
+// TODO: make this a >= comparison
+func IsCAPAVersion(version string) bool {
+	return version == "20.0.0"
+}
+
 // readConfigMapFromFile reads a configmap from a YAML file.
 func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	data, err := afero.ReadFile(fs, path)

@@ -11,6 +11,26 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Replace AppCatalog CRD with new namespace scoped Catalog CRD.
 
+### Added
+
+- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS. 
+- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS. 
+- Add optional `--release` flag to nodepool templating so that the new functionality can be used for CAPA versions.
+
+### Fixed
+
+- Extend `login` error message to mention if OIDC is configured.
+
+## [1.31.0] - 2021-07-08
+
+### Added
+
+- Allow overriding the app CR name in the `template app` command.
+
+### Changed
+
+- Update Dockerfile to use alpine:3.14 as a base image
+
 ## [1.30.0] - 2021-06-29
 
 ### Changed
@@ -369,7 +389,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.30.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.31.0...HEAD
+[1.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.30.0...v1.31.0
 [1.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.2...v1.30.0
 [1.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.1...v1.29.2
 [1.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.0...v1.29.1

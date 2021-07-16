@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/id"
 
@@ -59,12 +60,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
 			OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
 			Owner:                               r.flag.Owner,
+			ReleaseVersion:                      r.flag.Release,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 		}
 
 		if config.NodePoolID == "" {
 			config.NodePoolID = id.Generate()
 		}
+
+		// Remove leading 'v' from release flag input.
+		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
 
 		if len(r.flag.AvailabilityZones) > 0 {
 			config.AvailabilityZones = r.flag.AvailabilityZones
