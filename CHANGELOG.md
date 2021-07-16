@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.32.0] - 2021-07-16
+
 ### Changed
 
 - Replace AppCatalog CRD with new namespace scoped Catalog CRD.
@@ -389,7 +391,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.31.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.32.0...HEAD
+[1.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.31.0...v1.32.0
 [1.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.30.0...v1.31.0
 [1.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.2...v1.30.0
 [1.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.29.1...v1.29.2
