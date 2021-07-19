@@ -86,7 +86,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
-	cmd.Flags().BoolVar(&f.AzureUseSpotVms, flagAzureUseSpotVMs, false, "Whether to use Spot VMs for this Node Pool. Defaults to false.")
+	cmd.Flags().BoolVar(&f.AzureUseSpotVms, flagAzureUseSpotVMs, false, "Whether to use Spot VMs for this Node Pool. Defaults to false. Only available on Azure.")
 	cmd.Flags().Float32Var(&f.AzureSpotVMsMaxPrice, flagAzureSpotVMsMaxPrice, 0, "Max hourly price in USD to pay for one spot VM on Azure. If not set, the on-demand price is used as the limit.")
 
 	// Common.
