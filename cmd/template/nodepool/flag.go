@@ -23,7 +23,7 @@ const (
 	// Azure only.
 	flagAzureVMSize       = "azure-vm-size"
 	flagAzureUseSpotVMs   = "azure-spot-vms"
-	flagAzureSpotMaxPrice = "azure-spot-max-price"
+	flagAzureSpotVMsMaxPrice = "azure-spot-vms-max-price"
 
 	// Common.
 	flagAvailabilityZones = "availability-zones"
