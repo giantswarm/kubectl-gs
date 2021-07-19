@@ -77,13 +77,15 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachinePool {
 	var spot *v1alpha3.SpotVMOptions
 	if config.AzureUseSpotVms {
-		var maxPrice *resource.Quantity
+		var maxPrice resource.Quantity
 		if config.AzureSpotMaxPrice > 0 {
-			maxPriceScalar := resource.MustParse(fmt.Sprintf("%f", config.AzureSpotMaxPrice))
-			maxPrice = &maxPriceScalar
+			maxPrice = resource.MustParse(fmt.Sprintf("%f", config.AzureSpotMaxPrice))
+
+		} else {
+			maxPrice = resource.MustParse("-1")
 		}
 		spot = &v1alpha3.SpotVMOptions{
-			MaxPrice: maxPrice,
+			MaxPrice: &maxPrice,
 		}
 	}
 
