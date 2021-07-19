@@ -21,8 +21,8 @@ const (
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
 
 	// Azure only.
-	flagAzureVMSize       = "azure-vm-size"
-	flagAzureUseSpotVMs   = "azure-spot-vms"
+	flagAzureVMSize          = "azure-vm-size"
+	flagAzureUseSpotVMs      = "azure-spot-vms"
 	flagAzureSpotVMsMaxPrice = "azure-spot-vms-max-price"
 
 	// Common.
@@ -54,8 +54,8 @@ type flag struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	AzureVMSize       string
-	AzureUseSpotVms   bool
+	AzureVMSize          string
+	AzureUseSpotVms      bool
 	AzureSpotVMsMaxPrice float32
 
 	// Common.
