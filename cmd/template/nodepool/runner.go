@@ -54,6 +54,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ClusterID:                           r.flag.ClusterID,
 			Description:                         r.flag.NodepoolName,
 			VMSize:                              r.flag.AzureVMSize,
+			AzureUseSpotVms:                     r.flag.AzureUseSpotVms,
+			AzureSpotMaxPrice:                   r.flag.AzureSpotVMsMaxPrice,
 			MachineDeploymentSubnet:             r.flag.MachineDeploymentSubnet,
 			NodesMax:                            r.flag.NodesMax,
 			NodesMin:                            r.flag.NodesMin,

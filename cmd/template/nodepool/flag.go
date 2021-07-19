@@ -21,7 +21,9 @@ const (
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
 
 	// Azure only.
-	flagAzureVMSize = "azure-vm-size"
+	flagAzureVMSize          = "azure-vm-size"
+	flagAzureUseSpotVMs      = "azure-spot-vms"
+	flagAzureSpotVMsMaxPrice = "azure-spot-vms-max-price"
 
 	// Common.
 	flagAvailabilityZones = "availability-zones"
@@ -52,7 +54,9 @@ type flag struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	AzureVMSize string
+	AzureVMSize          string
+	AzureUseSpotVms      bool
+	AzureSpotVMsMaxPrice float32
 
 	// Common.
 	AvailabilityZones []string
@@ -76,12 +80,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWSInstanceType, flagAWSInstanceType, "m5.xlarge", "EC2 instance type to use for workers, e. g. 'm5.2xlarge'.")
 	cmd.Flags().StringVar(&f.MachineDeploymentSubnet, flagMachineDeploymentSubnet, "", "Subnet used for the Node Pool.")
-	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0.")
-	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100.")
-	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback.")
+	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0. Only available on AWS.")
+	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100. Only available on AWS.")
+	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback. Only available on AWS.")
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
+	cmd.Flags().BoolVar(&f.AzureUseSpotVms, flagAzureUseSpotVMs, false, "Whether to use Spot VMs for this Node Pool. Defaults to false. Only available on Azure.")
+	cmd.Flags().Float32Var(&f.AzureSpotVMsMaxPrice, flagAzureSpotVMsMaxPrice, 0, "Max hourly price in USD to pay for one spot VM on Azure. If not set, the on-demand price is used as the limit.")
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
