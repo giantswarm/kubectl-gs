@@ -56,7 +56,7 @@ type flag struct {
 	// Azure only.
 	AzureVMSize       string
 	AzureUseSpotVms   bool
-	AzureSpotMaxPrice float32
+	AzureSpotVMsMaxPrice float32
 
 	// Common.
 	AvailabilityZones []string
