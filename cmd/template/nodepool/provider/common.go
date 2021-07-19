@@ -19,7 +19,9 @@ type NodePoolCRsConfig struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	VMSize string
+	VMSize            string
+	AzureUseSpotVms   bool
+	AzureSpotMaxPrice float32
 
 	// Common.
 	FileName          string

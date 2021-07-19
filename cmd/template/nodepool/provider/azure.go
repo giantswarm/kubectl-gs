@@ -7,7 +7,9 @@ import (
 	"text/template"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
@@ -73,6 +75,18 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 }
 
 func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachinePool {
+	var spot *v1alpha3.SpotVMOptions
+	if config.AzureUseSpotVms {
+		var maxPrice *resource.Quantity
+		if config.AzureSpotMaxPrice > 0 {
+			maxPriceScalar := resource.MustParse(fmt.Sprintf("%f", config.AzureSpotMaxPrice))
+			maxPrice = &maxPriceScalar
+		}
+		spot = &v1alpha3.SpotVMOptions{
+			MaxPrice: maxPrice,
+		}
+	}
+
 	azureMp := &expcapzv1alpha3.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachinePool",
@@ -90,8 +104,9 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
 			Template: expcapzv1alpha3.AzureMachineTemplate{
-				SSHPublicKey: "",
-				VMSize:       config.VMSize,
+				VMSize:        config.VMSize,
+				SSHPublicKey:  "",
+				SpotVMOptions: spot,
 			},
 		},
 	}

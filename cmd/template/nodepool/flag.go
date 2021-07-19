@@ -21,7 +21,9 @@ const (
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
 
 	// Azure only.
-	flagAzureVMSize = "azure-vm-size"
+	flagAzureVMSize       = "azure-vm-size"
+	flagAzureUseSpotVMs   = "azure-spot-vms"
+	flagAzureSpotMaxPrice = "azure-spot-max-price"
 
 	// Common.
 	flagAvailabilityZones = "availability-zones"
@@ -52,7 +54,9 @@ type flag struct {
 	UseAlikeInstanceTypes               bool
 
 	// Azure only.
-	AzureVMSize string
+	AzureVMSize       string
+	AzureUseSpotVms   bool
+	AzureSpotMaxPrice float32
 
 	// Common.
 	AvailabilityZones []string
@@ -82,6 +86,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
+	cmd.Flags().BoolVar(&f.AzureUseSpotVms, flagAzureUseSpotVMs, false, "Whether to use Spot VMs for this Node Pool.")
+	cmd.Flags().Float32Var(&f.AzureSpotMaxPrice, flagAzureSpotMaxPrice, 0, "Max hourly price in USD to pay for one spot VM.")
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
