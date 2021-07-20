@@ -272,6 +272,7 @@ func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructur
 			return nil, microerror.Mask(err)
 		}
 		awsmachinetemplate.Spec.Template.Spec.IAMInstanceProfile = key.GetControlPlaneInstanceProfile(config.ClusterID)
+		awsmachinetemplate.Labels["cluster.x-k8s.io/role"] = "control-plane"
 	}
 	return &awsmachinetemplate, nil
 }
