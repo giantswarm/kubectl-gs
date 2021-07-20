@@ -272,6 +272,7 @@ func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructur
 			return nil, microerror.Mask(err)
 		}
 		awsmachinetemplate.Spec.Template.Spec.IAMInstanceProfile = key.GetControlPlaneInstanceProfile(config.ClusterID)
+		// we need to label so capa-iam-controller knows this is  control-plane awsmachinetemplate and it has to create IAM for it
 		awsmachinetemplate.Labels["cluster.x-k8s.io/role"] = "control-plane"
 	}
 	return &awsmachinetemplate, nil
