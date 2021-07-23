@@ -33,6 +33,8 @@ const (
 
 	FlatcarAMIOwner      = "075585003325"
 	FlatcarChinaAMIOwner = "306934455918"
+
+	RoleBastion = "bastion"
 )
 
 func BastionResourceName(clusterName string) string {

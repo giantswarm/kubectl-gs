@@ -136,7 +136,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	{
 		bastionSecret := newBastionBootstrapSecret(config)
 		bastionSecret.SetLabels(crLabels)
-		bastionSecret.Labels[key.CAPIRoleLabel] = "bastion"
+		bastionSecret.Labels[key.CAPIRoleLabel] = key.RoleBastion
 		bastionSecretYaml, err := yaml.Marshal(bastionSecret)
 		if err != nil {
 			return microerror.Mask(err)
@@ -145,7 +145,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 
 		md := newBastionMachineDeployment(config)
 		md.SetLabels(crLabels)
-		md.Labels[key.CAPIRoleLabel] = "bastion"
+		md.Labels[key.CAPIRoleLabel] = key.RoleBastion
 		mdYaml, err := yaml.Marshal(md)
 		if err != nil {
 			return microerror.Mask(err)
@@ -154,7 +154,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 
 		awsmachinetemplate := newBastionAWSMachineTemplate(config, awsRegion)
 		awsmachinetemplate.SetLabels(crLabels)
-		awsmachinetemplate.Labels[key.CAPIRoleLabel] = "bastion"
+		awsmachinetemplate.Labels[key.CAPIRoleLabel] = key.RoleBastion
 		awsmachinetemplateYaml, err := yaml.Marshal(awsmachinetemplate)
 		if err != nil {
 			return microerror.Mask(err)
