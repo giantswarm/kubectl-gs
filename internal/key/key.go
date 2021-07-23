@@ -25,6 +25,32 @@ const (
 	organizationNamespaceFormat = "org-%s"
 )
 
+const (
+	AWSBastionInstanceType = "t3.small"
+
+	CAPIRoleLabel = "cluster.x-k8s.io/role"
+	CAPARoleTag   = "tag:sigs.k8s.io/cluster-api-provider-aws/role"
+
+	FlatcarAMIOwner      = "075585003325"
+	FlatcarChinaAMIOwner = "306934455918"
+)
+
+func BastionResourceName(clusterName string) string {
+	return fmt.Sprintf("%s-bastion", clusterName)
+}
+
+func CAPAClusterOwnedTag(clusterName string) string {
+	return fmt.Sprintf("tag:sigs.k8s.io/cluster-api-provider-aws/cluster/%s", clusterName)
+}
+
+func FlatcarAWSAccountID(awsRegion string) string {
+	if strings.Contains(awsRegion, "cn-") {
+		return FlatcarChinaAMIOwner
+	} else {
+		return FlatcarAMIOwner
+	}
+}
+
 func GenerateID() string {
 	compiledRegexp, _ := regexp.Compile("^[a-z]+$")
 
