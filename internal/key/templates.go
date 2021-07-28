@@ -113,7 +113,7 @@ const BastionIgnitionTemplate = `{
             "filesystem":"root",
             "mode":600,
             "contents":{
-               "source":"data:text/plain;charset=utf-8;base64,IyBVc2UgbW9zdCBkZWZhdWx0cyBmb3Igc3NoZCBjb25maWd1cmF0aW9uLgpTdWJzeXN0ZW0gc2Z0cCBpbnRlcm5hbC1zZnRwCkNsaWVudEFsaXZlSW50ZXJ2YWwgMTgwClVzZUROUyBubwpVc2VQQU0geWVzClByaW50TGFzdExvZyBubyAjIGhhbmRsZWQgYnkgUEFNClByaW50TW90ZCBubyAjIGhhbmRsZWQgYnkgUEFNCiMgTm9uIGRlZmF1bHRzICgjMTAwKQpDbGllbnRBbGl2ZUNvdW50TWF4IDIKUGFzc3dvcmRBdXRoZW50aWNhdGlvbiBubwpUcnVzdGVkVXNlckNBS2V5cyAvZXRjL3NzaC90cnVzdGVkLXVzZXItY2Eta2V5cy5wZW0KTWF4QXV0aFRyaWVzIDUKTG9naW5HcmFjZVRpbWUgNjAKQWxsb3dUY3BGb3J3YXJkaW5nIG5vCkFsbG93QWdlbnRGb3J3YXJkaW5nIG5vCg=="
+               "source":"data:text/plain;charset=utf-8;base64,%s"
             }
          },
          {
@@ -121,9 +121,11 @@ const BastionIgnitionTemplate = `{
             "filesystem":"root",
             "mode":400,
             "contents":{
-               "source":"data:text/plain;charset=utf-8;base64,SSH_SSO_PUBLIC_KEY_PLACEHOLDER"
+               "source":"data:text/plain;charset=utf-8;base64,%s"
             }
          }
       ]
    }
 }`
+
+const BastionSSHConfigEncoded = `IyBVc2UgbW9zdCBkZWZhdWx0cyBmb3Igc3NoZCBjb25maWd1cmF0aW9uLgpTdWJzeXN0ZW0gc2Z0cCBpbnRlcm5hbC1zZnRwCkNsaWVudEFsaXZlSW50ZXJ2YWwgMTgwClVzZUROUyBubwpVc2VQQU0geWVzClByaW50TGFzdExvZyBubyAjIGhhbmRsZWQgYnkgUEFNClByaW50TW90ZCBubyAjIGhhbmRsZWQgYnkgUEFNCiMgTm9uIGRlZmF1bHRzICgjMTAwKQpDbGllbnRBbGl2ZUNvdW50TWF4IDIKUGFzc3dvcmRBdXRoZW50aWNhdGlvbiBubwpUcnVzdGVkVXNlckNBS2V5cyAvZXRjL3NzaC90cnVzdGVkLXVzZXItY2Eta2V5cy5wZW0KTWF4QXV0aFRyaWVzIDUKTG9naW5HcmFjZVRpbWUgNjAKQWxsb3dUY3BGb3J3YXJkaW5nIG5vCkFsbG93QWdlbnRGb3J3YXJkaW5nIG5vCg==`

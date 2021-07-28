@@ -1,8 +1,15 @@
 package provider
 
 import (
+	"context"
+	"encoding/base64"
+	"fmt"
 	"io"
+	v1 "k8s.io/api/core/v1"
 	"os"
+	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strconv"
 	"text/template"
 
@@ -44,6 +51,44 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 	if config.UseAlikeInstanceTypes {
 		return microerror.Maskf(invalidFlagError, "--use-alike-instance-types setting is not available for release %v", config.ReleaseVersion)
+	}
+
+	var sshSSOPublicKey string
+	{
+		c, err := runtimeconfig.GetConfig()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		secretList := &v1.SecretList{}
+
+		err = k8sClient.List(
+			context.TODO(),
+			secretList,
+			runtimeclient.MatchingLabels{
+				key.RoleLabel: key.SSHSSOPubKeyLabel,
+			},
+			runtimeclient.InNamespace(key.GiantswarmNamespace))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if len(secretList.Items) == 0 {
+			return microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
+		}
+
+		secret := secretList.Items[0]
+
+		buff := make([]byte, len(secret.Data["value"]))
+		_, err = base64.StdEncoding.Decode(buff, secret.Data["value"])
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		sshSSOPublicKey = string(buff)
 	}
 
 	nodepoolTemplate, err := getCAPANodepoolTemplate(config)
@@ -90,7 +135,11 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			}
 			data.MachinePoolCR = string(machinePoolCRYaml)
 		case "KubeadmConfig":
-			kubeadmConfigCRYaml, err := yaml.Marshal(o.Object)
+			kubeadmConfig, err := newKubeadmConfigFromUnstructured(sshSSOPublicKey, key.BastionSSHConfigEncoded, o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			kubeadmConfigCRYaml, err := yaml.Marshal(kubeadmConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -247,6 +296,40 @@ func newMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Uns
 
 		machinepool.Spec.Template.Spec.Bootstrap.ConfigRef.Name = config.NodePoolID
 		machinepool.Spec.Template.Spec.InfrastructureRef.Name = config.NodePoolID
+
 	}
 	return &machinepool, nil
+}
+
+func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o unstructured.Unstructured) (*bootstrap.KubeadmConfig, error) {
+	var kubeadmConfig bootstrap.KubeadmConfig
+	{
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &kubeadmConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		kubeadmConfig.Spec.Files = []bootstrap.File{
+			{
+				Owner:       "root",
+				Permissions: "420",
+				Path:        "/etc/ssh/sshd_config",
+				Content:     sshdConfig,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "420",
+				Path:        "/etc/ssh/trusted-user-ca-keys.pem",
+				Content:     sshSSOPubKey,
+				Encoding:    bootstrap.Base64,
+			},
+		}
+		kubeadmConfig.Spec.PostKubeadmCommands = []string{
+			"service ssh restart",
+		}
+	}
+
+	return &kubeadmConfig, nil
 }

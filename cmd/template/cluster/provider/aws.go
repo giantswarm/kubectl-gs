@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -16,7 +18,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1alpha3"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
+
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -42,6 +49,8 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 }
 
 func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
+	fmt.Printf("debug 1\n")
+
 	var err error
 	var awsRegion string
 
@@ -57,6 +66,46 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		return err
 	}
 
+	var sshSSOPublicKey string
+	{
+		c, err := runtimeconfig.GetConfig()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		secretList := &v1.SecretList{}
+
+		fmt.Printf("fetching secret\n")
+
+		err = k8sClient.List(
+			context.TODO(),
+			secretList,
+			runtimeclient.MatchingLabels{
+				key.RoleLabel: key.SSHSSOPubKeyLabel,
+			},
+			runtimeclient.InNamespace(key.GiantswarmNamespace))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if len(secretList.Items) == 0 {
+			return microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
+		}
+		fmt.Printf("fetched secret\n")
+
+		secret := secretList.Items[0]
+
+		buff := make([]byte, len(secret.Data["value"]))
+		_, err = base64.StdEncoding.Decode(buff, secret.Data["value"])
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		sshSSOPublicKey = string(buff)
+	}
 	data := struct {
 		AWSClusterCR             string
 		AWSMachineTemplateCR     string
@@ -116,10 +165,15 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			data.ClusterCR = string(clusterCRYaml)
 		case "KubeadmControlPlane":
 			o.SetLabels(crLabels)
-			kubeadmControlPlaneCRYaml, err := yaml.Marshal(o.Object)
+			kubeadmControlPlane, err := newKubeadmControlPlaneFromUnstructured(sshSSOPublicKey, key.BastionSSHConfigEncoded, o)
 			if err != nil {
 				return microerror.Mask(err)
 			}
+			kubeadmControlPlaneCRYaml, err := yaml.Marshal(kubeadmControlPlane)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
 			data.KubeadmControlPlaneCR = string(kubeadmControlPlaneCRYaml)
 		}
 	}
@@ -134,7 +188,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 	// prepare CRs and resources for bastion
 	{
-		bastionSecret := newBastionBootstrapSecret(config)
+		bastionSecret := newBastionBootstrapSecret(config, key.BastionSSHConfigEncoded, sshSSOPublicKey)
 		bastionSecret.SetLabels(crLabels)
 		bastionSecret.Labels[key.CAPIRoleLabel] = key.RoleBastion
 		bastionSecretYaml, err := yaml.Marshal(bastionSecret)
@@ -316,6 +370,38 @@ func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructur
 	return &awsmachinetemplate, nil
 }
 
+func newKubeadmControlPlaneFromUnstructured(sshSSOPubKey string, sshdConfig string, o unstructured.Unstructured) (*kubeadm.KubeadmControlPlane, error) {
+	var cp kubeadm.KubeadmControlPlane
+	{
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &cp)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		cp.Spec.KubeadmConfigSpec.Files = []bootstrap.File{
+			{
+				Owner:       "root",
+				Permissions: "420",
+				Path:        "/etc/ssh/sshd_config",
+				Content:     sshdConfig,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "420",
+				Path:        "/etc/ssh/trusted-user-ca-keys.pem",
+				Content:     sshSSOPubKey,
+				Encoding:    bootstrap.Base64,
+			},
+		}
+		cp.Spec.KubeadmConfigSpec.PostKubeadmCommands = []string{
+			"service ssh restart",
+		}
+	}
+
+	return &cp, nil
+}
+
 func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSClusterRoleIdentity {
 	awsclusterroleidentity := &capav1alpha3.AWSClusterRoleIdentity{
 		TypeMeta: metav1.TypeMeta{
@@ -338,7 +424,7 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSCluster
 	return awsclusterroleidentity
 }
 
-func newBastionBootstrapSecret(config ClusterCRsConfig) *v1.Secret {
+func newBastionBootstrapSecret(config ClusterCRsConfig, sshdConfig string, sshSSOPublicKey string) *v1.Secret {
 	s := &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
@@ -350,7 +436,7 @@ func newBastionBootstrapSecret(config ClusterCRsConfig) *v1.Secret {
 		},
 		Type: "cluster.x-k8s.io/secret",
 		StringData: map[string]string{
-			"value": fmt.Sprintf(key.BastionIgnitionTemplate, config.ClusterID),
+			"value": fmt.Sprintf(key.BastionIgnitionTemplate, config.ClusterID, sshdConfig, sshSSOPublicKey),
 		},
 	}
 

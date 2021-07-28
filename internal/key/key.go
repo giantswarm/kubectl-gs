@@ -35,6 +35,10 @@ const (
 	FlatcarChinaAMIOwner = "306934455918"
 
 	RoleBastion = "bastion"
+
+	RoleLabel           = "role"
+	SSHSSOPubKeyLabel   = "ssh-sso-public-key"
+	GiantswarmNamespace = "giantswarm"
 )
 
 func BastionResourceName(clusterName string) string {
