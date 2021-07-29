@@ -1,6 +1,7 @@
 package key
 
 import (
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -39,10 +40,20 @@ const (
 	RoleLabel           = "role"
 	SSHSSOPubKeyLabel   = "ssh-sso-public-key"
 	GiantswarmNamespace = "giantswarm"
+
+	ControllerRuntimeBurstValue = 200
 )
 
 func BastionResourceName(clusterName string) string {
 	return fmt.Sprintf("%s-bastion", clusterName)
+}
+
+func BastionSSHDConfigEncoded() string {
+	return base64.StdEncoding.EncodeToString([]byte(bastionSSHDConfig))
+}
+
+func NodeSSHDConfigEncoded() string {
+	return base64.StdEncoding.EncodeToString([]byte(nodeSSHDConfig))
 }
 
 func CAPAClusterOwnedTag(clusterName string) string {
@@ -137,6 +148,10 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func UbuntuSudoersConfigEncoded() string {
+	return base64.StdEncoding.EncodeToString([]byte(ubuntuSudoersConfig))
 }
 
 func OrganizationNamespaceFromName(name string) string {

@@ -5,11 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	v1 "k8s.io/api/core/v1"
 	"os"
-	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
-	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strconv"
 	"text/template"
 
@@ -17,12 +13,16 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	capiv1alpha3exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -59,6 +59,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		c.Burst = key.ControllerRuntimeBurstValue // to avoid throttling the request
 
 		k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
 		if err != nil {
@@ -80,15 +81,8 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			return microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
 		}
 
-		secret := secretList.Items[0]
+		sshSSOPublicKey = base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
 
-		buff := make([]byte, len(secret.Data["value"]))
-		_, err = base64.StdEncoding.Decode(buff, secret.Data["value"])
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		sshSSOPublicKey = string(buff)
 	}
 
 	nodepoolTemplate, err := getCAPANodepoolTemplate(config)
@@ -135,7 +129,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			}
 			data.MachinePoolCR = string(machinePoolCRYaml)
 		case "KubeadmConfig":
-			kubeadmConfig, err := newKubeadmConfigFromUnstructured(sshSSOPublicKey, key.BastionSSHConfigEncoded, o)
+			kubeadmConfig, err := newKubeadmConfigFromUnstructured(sshSSOPublicKey, key.NodeSSHDConfigEncoded(), o)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -304,6 +298,9 @@ func newMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Uns
 func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o unstructured.Unstructured) (*bootstrap.KubeadmConfig, error) {
 	var kubeadmConfig bootstrap.KubeadmConfig
 	{
+		groups := "sudo"
+		shell := "/bin/bash"
+
 		err := runtime.DefaultUnstructuredConverter.
 			FromUnstructured(o.Object, &kubeadmConfig)
 		if err != nil {
@@ -313,21 +310,35 @@ func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o 
 		kubeadmConfig.Spec.Files = []bootstrap.File{
 			{
 				Owner:       "root",
-				Permissions: "420",
+				Permissions: "640",
 				Path:        "/etc/ssh/sshd_config",
 				Content:     sshdConfig,
 				Encoding:    bootstrap.Base64,
 			},
 			{
 				Owner:       "root",
-				Permissions: "420",
+				Permissions: "600",
 				Path:        "/etc/ssh/trusted-user-ca-keys.pem",
 				Content:     sshSSOPubKey,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "600",
+				Path:        "/etc/sudoers.d/giantswarm",
+				Content:     key.UbuntuSudoersConfigEncoded(),
 				Encoding:    bootstrap.Base64,
 			},
 		}
 		kubeadmConfig.Spec.PostKubeadmCommands = []string{
 			"service ssh restart",
+		}
+		kubeadmConfig.Spec.Users = []bootstrap.User{
+			{
+				Name:   "giantswarm",
+				Groups: &groups,
+				Shell:  &shell,
+			},
 		}
 	}
 

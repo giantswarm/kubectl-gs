@@ -23,7 +23,6 @@ import (
 	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1alpha3"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
-
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -49,8 +48,6 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 }
 
 func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
-	fmt.Printf("debug 1\n")
-
 	var err error
 	var awsRegion string
 
@@ -72,14 +69,13 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		c.Burst = key.ControllerRuntimeBurstValue // to avoid throttling the request
 
 		k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 		secretList := &v1.SecretList{}
-
-		fmt.Printf("fetching secret\n")
 
 		err = k8sClient.List(
 			context.TODO(),
@@ -94,17 +90,8 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		if len(secretList.Items) == 0 {
 			return microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
 		}
-		fmt.Printf("fetched secret\n")
 
-		secret := secretList.Items[0]
-
-		buff := make([]byte, len(secret.Data["value"]))
-		_, err = base64.StdEncoding.Decode(buff, secret.Data["value"])
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		sshSSOPublicKey = string(buff)
+		sshSSOPublicKey = base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
 	}
 	data := struct {
 		AWSClusterCR             string
@@ -165,7 +152,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			data.ClusterCR = string(clusterCRYaml)
 		case "KubeadmControlPlane":
 			o.SetLabels(crLabels)
-			kubeadmControlPlane, err := newKubeadmControlPlaneFromUnstructured(sshSSOPublicKey, key.BastionSSHConfigEncoded, o)
+			kubeadmControlPlane, err := newKubeadmControlPlaneFromUnstructured(sshSSOPublicKey, key.NodeSSHDConfigEncoded(), o)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -188,7 +175,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 	// prepare CRs and resources for bastion
 	{
-		bastionSecret := newBastionBootstrapSecret(config, key.BastionSSHConfigEncoded, sshSSOPublicKey)
+		bastionSecret := newBastionBootstrapSecret(config, key.BastionSSHDConfigEncoded(), sshSSOPublicKey)
 		bastionSecret.SetLabels(crLabels)
 		bastionSecret.Labels[key.CAPIRoleLabel] = key.RoleBastion
 		bastionSecretYaml, err := yaml.Marshal(bastionSecret)
@@ -373,6 +360,9 @@ func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructur
 func newKubeadmControlPlaneFromUnstructured(sshSSOPubKey string, sshdConfig string, o unstructured.Unstructured) (*kubeadm.KubeadmControlPlane, error) {
 	var cp kubeadm.KubeadmControlPlane
 	{
+		groups := "sudo"
+		shell := "/bin/bash"
+
 		err := runtime.DefaultUnstructuredConverter.
 			FromUnstructured(o.Object, &cp)
 		if err != nil {
@@ -381,21 +371,36 @@ func newKubeadmControlPlaneFromUnstructured(sshSSOPubKey string, sshdConfig stri
 		cp.Spec.KubeadmConfigSpec.Files = []bootstrap.File{
 			{
 				Owner:       "root",
-				Permissions: "420",
+				Permissions: "640",
 				Path:        "/etc/ssh/sshd_config",
 				Content:     sshdConfig,
 				Encoding:    bootstrap.Base64,
 			},
 			{
 				Owner:       "root",
-				Permissions: "420",
+				Permissions: "600",
 				Path:        "/etc/ssh/trusted-user-ca-keys.pem",
 				Content:     sshSSOPubKey,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "600",
+				Path:        "/etc/sudoers.d/giantswarm",
+				Content:     key.UbuntuSudoersConfigEncoded(),
 				Encoding:    bootstrap.Base64,
 			},
 		}
 		cp.Spec.KubeadmConfigSpec.PostKubeadmCommands = []string{
 			"service ssh restart",
+		}
+
+		cp.Spec.KubeadmConfigSpec.Users = []bootstrap.User{
+			{
+				Name:   "giantswarm",
+				Groups: &groups,
+				Shell:  &shell,
+			},
 		}
 	}
 
