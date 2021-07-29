@@ -10,15 +10,17 @@ import (
 )
 
 type Config struct {
-	AppName                 string
-	Catalog                 string
-	Cluster                 string
-	DefaultingEnabled       bool
-	Name                    string
-	Namespace               string
-	UserConfigConfigMapName string
-	UserConfigSecretName    string
-	Version                 string
+	AppName                    string
+	Catalog                    string
+	Cluster                    string
+	DefaultingEnabled          bool
+	Name                       string
+	Namespace                  string
+	NamespaceConfigAnnotations map[string]string
+	NamespaceConfigLabels      map[string]string
+	UserConfigConfigMapName    string
+	UserConfigSecretName       string
+	Version                    string
 }
 
 type SecretConfig struct {
@@ -72,6 +74,10 @@ func NewAppCR(config Config) ([]byte, error) {
 			},
 			UserConfig: userConfig,
 			Version:    config.Version,
+			NamespaceConfig: applicationv1alpha1.AppSpecNamespaceConfig{
+				Annotations: config.NamespaceConfigAnnotations,
+				Labels:      config.NamespaceConfigLabels,
+			},
 		},
 	}
 
@@ -165,7 +171,9 @@ func printAppCR(appCR *v1alpha1.App, defaultingEnabled bool) ([]byte, error) {
 	}
 
 	delete(spec, "install")
-	delete(spec, "namespaceConfig")
+	if len(appCR.Spec.NamespaceConfig.Annotations) == 0 && len(appCR.Spec.NamespaceConfig.Labels) == 0 {
+		delete(spec, "namespaceConfig")
+	}
 
 	if defaultingEnabled {
 		delete(spec, "config")
