@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--namespace-annotations` and `--namespace-labels` flags to `template app` command to allow users to
+  specify the `namespaceConfig` of the generated `App` CR.
+
 ## [1.33.0] - 2021-07-19
 
 ### Added
