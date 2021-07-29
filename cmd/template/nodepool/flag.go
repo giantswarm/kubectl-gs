@@ -26,16 +26,18 @@ const (
 	flagAzureSpotVMsMaxPrice = "azure-spot-vms-max-price"
 
 	// Common.
-	flagAvailabilityZones = "availability-zones"
-	flagClusterID         = "cluster-id"
-	flagNodepoolName      = "nodepool-name"
-	flagNodesMax          = "nodes-max"
-	flagNodesMin          = "nodes-min"
-	flagNodexMax          = "nodex-max"
-	flagNodexMin          = "nodex-min"
-	flagOutput            = "output"
-	flagOwner             = "owner"
-	flagRelease           = "release"
+	flagAvailabilityZones      = "availability-zones"
+	flagClusterIDDeprecated    = "cluster-id"
+	flagClusterName            = "cluster-name"
+	flagDescription            = "description"
+	flagNodepoolNameDeprecated = "nodepool-name"
+	flagNodesMax               = "nodes-max"
+	flagNodesMin               = "nodes-min"
+	flagNodexMax               = "nodex-max"
+	flagNodexMin               = "nodex-min"
+	flagOutput                 = "output"
+	flagOwner                  = "owner"
+	flagRelease                = "release"
 )
 
 const (
@@ -59,14 +61,16 @@ type flag struct {
 	AzureSpotVMsMaxPrice float32
 
 	// Common.
-	AvailabilityZones []string
-	ClusterID         string
-	NodepoolName      string
-	NodesMax          int
-	NodesMin          int
-	Output            string
-	Owner             string
-	Release           string
+	AvailabilityZones      []string
+	ClusterIDDeprecated    string
+	ClusterName            string
+	Description            string
+	NodepoolNameDeprecated string
+	NodesMax               int
+	NodesMin               int
+	Output                 string
+	Owner                  string
+	Release                string
 
 	// Deprecated
 	// Can be removed in a future version around March 2021 or later.
@@ -91,8 +95,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
-	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "Workload cluster ID.")
-	cmd.Flags().StringVar(&f.NodepoolName, flagNodepoolName, "Unnamed node pool", "NodepoolName or purpose description of the node pool.")
+	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Cluster ID (deprecated).")
+	cmd.Flags().StringVar(&f.ClusterName, flagClusterName, "", "Name of the Cluster to add the node pool to.")
+	cmd.Flags().StringVar(&f.NodepoolNameDeprecated, flagNodepoolNameDeprecated, "", "Node pool description (deprecated).")
+	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the node pool's purpose.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, maxNodes, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d)", maxNodes))
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, minNodes, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d)", minNodes))
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
@@ -104,6 +110,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NodexMin, flagNodexMin, 0, "")
 	_ = cmd.Flags().MarkDeprecated(flagNodexMax, "")
 	_ = cmd.Flags().MarkDeprecated(flagNodexMin, "")
+
+	// To be removed around December 2021
+	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "use --cluster-name instead")
+	_ = cmd.Flags().MarkDeprecated(flagNodepoolNameDeprecated, "use --description instead")
 }
 
 func (f *flag) Validate() error {
@@ -132,11 +142,21 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.ClusterID == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagClusterID)
+	// To be removed around December 2021
+	if f.ClusterIDDeprecated != "" && f.ClusterName == "" {
+		f.ClusterName = f.ClusterIDDeprecated
+		f.ClusterIDDeprecated = ""
 	}
-	if f.NodepoolName == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagNodepoolName)
+	if f.NodepoolNameDeprecated != "" && f.Description == "" {
+		f.Description = f.NodepoolNameDeprecated
+		f.NodepoolNameDeprecated = ""
+	}
+
+	if f.ClusterName == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagClusterName)
+	}
+	if f.Description == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagDescription)
 	}
 
 	{
