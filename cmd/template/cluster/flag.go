@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
+	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
 
 const (
@@ -151,7 +151,7 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
-	_, err = clusterlabels.Parse(f.Label)
+	_, err = labels.Parse(f.Label)
 	if err != nil {
 		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
 	}
