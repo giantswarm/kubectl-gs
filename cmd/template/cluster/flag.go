@@ -20,14 +20,15 @@ const (
 	flagControlPlaneSubnet = "control-plane-subnet"
 
 	// Common.
-	flagClusterID      = "cluster-id"
-	flagControlPlaneAZ = "control-plane-az"
-	flagMasterAZ       = "master-az" // TODO: Remove some time after August 2021
-	flagName           = "name"
-	flagOutput         = "output"
-	flagOwner          = "owner"
-	flagRelease        = "release"
-	flagLabel          = "label"
+	flagClusterIDDeprecated = "cluster-id"
+	flagControlPlaneAZ      = "control-plane-az"
+	flagDescription         = "description"
+	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
+	flagName                = "name"
+	flagOutput              = "output"
+	flagOwner               = "owner"
+	flagRelease             = "release"
+	flagLabel               = "label"
 )
 
 type flag struct {
@@ -39,14 +40,15 @@ type flag struct {
 	PodsCIDR           string
 
 	// Common.
-	ClusterID      string
-	ControlPlaneAZ []string
-	MasterAZ       []string
-	Name           string
-	Output         string
-	Owner          string
-	Release        string
-	Label          []string
+	ClusterIDDeprecated string
+	ControlPlaneAZ      []string
+	Description         string
+	MasterAZ            []string
+	Name                string
+	Output              string
+	Owner               string
+	Release             string
+	Label               []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -58,10 +60,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 
 	// Common.
-	cmd.Flags().StringVar(&f.ClusterID, flagClusterID, "", "User-defined cluster ID.")
+	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
 	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, nil, "Replaced by --control-plane-az.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "Workload cluster name.")
+	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
@@ -69,6 +72,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// TODO: Remove the flag completely some time after August 2021
 	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
+
+	// TODO: Remove around December 2021
+	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
 }
 
 func (f *flag) Validate() error {
@@ -84,30 +90,37 @@ func (f *flag) Validate() error {
 		f.MasterAZ = nil
 	}
 
+	// Handle legacy cluster ID, pass it to cluster name flag.
+	// TODO: Remove around December 2021
+	if f.ClusterIDDeprecated != "" {
+		f.Name = f.ClusterIDDeprecated
+		f.ClusterIDDeprecated = ""
+	}
+
 	if f.Provider != key.ProviderAWS && f.Provider != key.ProviderAzure {
 		return microerror.Maskf(invalidFlagError, "--%s must be either aws or azure", flagProvider)
 	}
 
-	if f.ClusterID != "" {
-		if len(f.ClusterID) != key.IDLength {
-			return microerror.Maskf(invalidFlagError, "--%s must be length of %d", flagClusterID, key.IDLength)
+	if f.Name != "" {
+		if len(f.Name) != key.IDLength {
+			return microerror.Maskf(invalidFlagError, "--%s must be length of %d", flagClusterIDDeprecated, key.IDLength)
 		}
 
-		matchedLettersOnly, err := regexp.MatchString("^[a-z]+$", f.ClusterID)
+		matchedLettersOnly, err := regexp.MatchString("^[a-z]+$", f.Name)
 		if err == nil && matchedLettersOnly {
 			// strings is letters only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagClusterID)
+			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagClusterIDDeprecated)
 		}
 
-		matchedNumbersOnly, err := regexp.MatchString("^[0-9]+$", f.ClusterID)
+		matchedNumbersOnly, err := regexp.MatchString("^[0-9]+$", f.Name)
 		if err == nil && matchedNumbersOnly {
 			// strings is numbers only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one digit", flagClusterID)
+			return microerror.Maskf(invalidFlagError, "--%s must contain at least one digit", flagClusterIDDeprecated)
 		}
 
-		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.ClusterID)
+		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.Name)
 		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagClusterID)
+			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagClusterIDDeprecated)
 		}
 
 		if f.ControlPlaneSubnet != "" {
