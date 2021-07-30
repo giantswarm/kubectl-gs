@@ -9,10 +9,19 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [1.34.0] - 2021-07-30
 
+Throughout our UIs and documentation we are aligning our terminology regarding cluster and node pool details, to use consistent terminology matching our Management API. The unique, immutable identifier that was formerly called ID in our user interfaces, is now called the name. The user-friendly, changeable description of the cluster's and node pool's purpose was called name in our UIs and is now called the description.
+
+**Warning:** This terminology change results in a **breaking change** in the `template cluster` command, as the purpose of the flag `--name` has changed. Also several flags in other commands have been deprecated.
+
+If you are upgrading from an earlier releases, apply these changes to migrate any scripts:
+
+- When using `template cluster`, replace `--name` with `--description` to set the user-friendly cluster description, and replace `--cluster-id` with `--name` to set the cluster's unique identifier.
+- When using `template nodepool`, replace `--cluster-id` with `--cluster-name`.
+
 ### Added
 
-- Add `--namespace-annotations` and `--namespace-labels` flags to `template app` command to allow users to
-  specify the `namespaceConfig` of the generated `App` CR.
+- `template app`: Added the `--namespace-annotations` and `--namespace-labels` flags to allow users to
+  specify the `namespaceConfig` of the generated `App` manifest. Read [App CR's target namespace configuration](https://docs.giantswarm.io/app-platform/namespace-configuration/) for more information.
 
 ### Changed
 
@@ -27,7 +36,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   - The `--description` flag has been added to set the user-friendly description.
 - `template nodepool`:
   - Deprecated the `--cluster-id` flag, added the `--cluster-name` flag as a replacement.
-  - Deprecated the `-nodepool-name` flag, add the `--description` flag as a replacement.
+  - Deprecated the `--nodepool-name` flag, add the `--description` flag as a replacement.
 
 ## [1.33.0] - 2021-07-19
 
