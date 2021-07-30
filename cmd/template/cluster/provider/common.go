@@ -16,9 +16,9 @@ type ClusterCRsConfig struct {
 
 	// Common.
 	FileName       string
-	ClusterID      string
 	ControlPlaneAZ []string
 	Description    string
+	Name           string
 	Owner          string
 	ReleaseVersion string
 	Labels         map[string]string
@@ -32,11 +32,11 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 			APIVersion: "cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.ClusterID,
+			Name:      config.Name,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterID,
-				capiv1alpha3.ClusterLabelName: config.ClusterID,
+				label.Cluster:                 config.Name,
+				capiv1alpha3.ClusterLabelName: config.Name,
 				label.Organization:            config.Owner,
 				label.ReleaseVersion:          config.ReleaseVersion,
 			},

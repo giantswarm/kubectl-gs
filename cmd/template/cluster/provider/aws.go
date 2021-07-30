@@ -63,8 +63,8 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 
 	crLabels := map[string]string{
 		label.ReleaseVersion:            config.ReleaseVersion,
-		label.Cluster:                   config.ClusterID,
-		capiv1alpha3.ClusterLabelName:   config.ClusterID,
+		label.Cluster:                   config.Name,
+		capiv1alpha3.ClusterLabelName:   config.Name,
 		label.Organization:              config.Owner,
 		"cluster.x-k8s.io/watch-filter": "capi"}
 
@@ -137,7 +137,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	crsConfig := v1alpha2.ClusterCRsConfig{
-		ClusterID: config.ClusterID,
+		ClusterID: config.Name,
 
 		ExternalSNAT:   config.ExternalSNAT,
 		MasterAZ:       config.ControlPlaneAZ,
@@ -207,7 +207,7 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 	}
 
 	templateOptions := client.GetClusterTemplateOptions{
-		ClusterName:       config.ClusterID,
+		ClusterName:       config.Name,
 		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
 		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
@@ -248,7 +248,7 @@ func newAWSClusterFromUnstructured(config ClusterCRsConfig, o unstructured.Unstr
 			return nil, microerror.Mask(err)
 		}
 		awscluster.Spec.IdentityRef = &capav1alpha3.AWSIdentityReference{
-			Name: config.ClusterID,
+			Name: config.Name,
 			Kind: capav1alpha3.ClusterRoleIdentityKind}
 
 		for _, az := range config.ControlPlaneAZ {
@@ -271,7 +271,7 @@ func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructur
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		awsmachinetemplate.Spec.Template.Spec.IAMInstanceProfile = key.GetControlPlaneInstanceProfile(config.ClusterID)
+		awsmachinetemplate.Spec.Template.Spec.IAMInstanceProfile = key.GetControlPlaneInstanceProfile(config.Name)
 		// we need to label so capa-iam-controller knows this is  control-plane awsmachinetemplate and it has to create IAM for it
 		awsmachinetemplate.Labels["cluster.x-k8s.io/role"] = "control-plane"
 	}
@@ -285,7 +285,7 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSCluster
 			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.ClusterID,
+			Name:      config.Name,
 			Namespace: key.OrganizationNamespaceFromName(config.Owner),
 		},
 		Spec: capav1alpha3.AWSClusterRoleIdentitySpec{

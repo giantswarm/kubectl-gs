@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	name  = "nodepools [nodepool-id]"
+	name  = "nodepools [nodepool-name]"
 	alias = "nodepool"
 
 	shortDescription = "Display one or many node pools"
@@ -23,8 +23,8 @@ const (
 
 Output columns:
 
-- ID: Unique identifier of the node pool.
-- CLUSTER ID: Unique identifier of the cluster that the node pool belongs to.
+- NAME: Unique identifier of the node pool.
+- CLUSTER NAME: Unique identifier of the cluster that the node pool belongs to.
 - CREATED: Date and time of the node pool CR creation.
 - CONDITION: Latest condition reported for the node pool.
 - NODES MIN/MAX: Node pool autoscaler settings (if supported).
@@ -35,7 +35,7 @@ Output columns:
 	examples = `  # List all node pools you have access to
   kubectl gs get nodepools
 
-  # Get one specific nodepool by its ID
+  # Get one specific nodepool by its name
   kubectl gs get nodepool 3f01a`
 )
 

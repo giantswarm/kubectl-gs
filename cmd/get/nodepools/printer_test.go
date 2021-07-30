@@ -251,19 +251,19 @@ func Test_printOutput(t *testing.T) {
 	}
 }
 
-func newAWSMachineDeployment(id, clusterID, created, release, description string, nodesMin, nodesMax int) *infrastructurev1alpha2.AWSMachineDeployment {
+func newAWSMachineDeployment(name, clusterName, created, release, description string, nodesMin, nodesMax int) *infrastructurev1alpha2.AWSMachineDeployment {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	n := &infrastructurev1alpha2.AWSMachineDeployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              id,
+			Name:              name,
 			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.MachineDeployment: id,
+				label.MachineDeployment: name,
 				label.ReleaseVersion:    release,
 				label.Organization:      "giantswarm",
-				label.Cluster:           clusterID,
+				label.Cluster:           clusterName,
 			},
 		},
 		Spec: infrastructurev1alpha2.AWSMachineDeploymentSpec{
@@ -286,7 +286,7 @@ func newAWSMachineDeployment(id, clusterID, created, release, description string
 	return n
 }
 
-func newCAPIv1alpha2MachineDeployment(id, clusterID, created, release string, nodesDesired, nodesReady int) *capiv1alpha2.MachineDeployment {
+func newCAPIv1alpha2MachineDeployment(name, clusterName, created, release string, nodesDesired, nodesReady int) *capiv1alpha2.MachineDeployment {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	n := &capiv1alpha2.MachineDeployment{
@@ -295,14 +295,14 @@ func newCAPIv1alpha2MachineDeployment(id, clusterID, created, release string, no
 			Kind:       "MachineDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              id,
+			Name:              name,
 			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.MachineDeployment: id,
+				label.MachineDeployment: name,
 				label.ReleaseVersion:    release,
 				label.Organization:      "giantswarm",
-				label.Cluster:           clusterID,
+				label.Cluster:           clusterName,
 			},
 		},
 		Status: capiv1alpha2.MachineDeploymentStatus{
@@ -314,9 +314,9 @@ func newCAPIv1alpha2MachineDeployment(id, clusterID, created, release string, no
 	return n
 }
 
-func newAWSNodePool(id, clusterID, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
-	awsMD := newAWSMachineDeployment(id, clusterID, created, release, description, nodesMin, nodesMax)
-	md := newCAPIv1alpha2MachineDeployment(id, clusterID, created, release, nodesDesired, nodesReady)
+func newAWSNodePool(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
+	awsMD := newAWSMachineDeployment(name, clusterName, created, release, description, nodesMin, nodesMax)
+	md := newCAPIv1alpha2MachineDeployment(name, clusterName, created, release, nodesDesired, nodesReady)
 
 	np := &nodepool.Nodepool{
 		MachineDeployment:    md,
@@ -326,7 +326,7 @@ func newAWSNodePool(id, clusterID, created, release, description string, nodesMi
 	return np
 }
 
-func newAzureMachinePool(id, clusterID, created, release string) *capzexpv1alpha3.AzureMachinePool {
+func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1alpha3.AzureMachinePool {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	n := &capzexpv1alpha3.AzureMachinePool{
@@ -335,14 +335,14 @@ func newAzureMachinePool(id, clusterID, created, release string) *capzexpv1alpha
 			Kind:       "AzureMachinePool",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              id,
+			Name:              name,
 			Namespace:         "org-giantswarm",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.MachinePool:             id,
+				label.MachinePool:             name,
 				label.ReleaseVersion:          release,
 				label.Organization:            "giantswarm",
-				capiv1alpha3.ClusterLabelName: clusterID,
+				capiv1alpha3.ClusterLabelName: clusterName,
 			},
 		},
 	}
@@ -350,7 +350,7 @@ func newAzureMachinePool(id, clusterID, created, release string) *capzexpv1alpha
 	return n
 }
 
-func newCAPIexpv1alpha3MachinePool(id, clusterID, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexpv1alpha3.MachinePool {
+func newCAPIexpv1alpha3MachinePool(name, clusterName, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexpv1alpha3.MachinePool {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	n := &capiexpv1alpha3.MachinePool{
@@ -359,14 +359,14 @@ func newCAPIexpv1alpha3MachinePool(id, clusterID, created, release, description 
 			Kind:       "MachinePool",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              id,
+			Name:              name,
 			Namespace:         "org-giantswarm",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.MachinePool:             id,
+				label.MachinePool:             name,
 				label.ReleaseVersion:          release,
 				label.Organization:            "giantswarm",
-				capiv1alpha3.ClusterLabelName: clusterID,
+				capiv1alpha3.ClusterLabelName: clusterName,
 			},
 			Annotations: map[string]string{
 				annotation.NodePoolMinSize: fmt.Sprintf("%d", nodesMin),
@@ -383,9 +383,9 @@ func newCAPIexpv1alpha3MachinePool(id, clusterID, created, release, description 
 	return n
 }
 
-func newAzureNodePool(id, clusterID, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
-	azureMP := newAzureMachinePool(id, clusterID, created, release)
-	mp := newCAPIexpv1alpha3MachinePool(id, clusterID, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
+func newAzureNodePool(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
+	azureMP := newAzureMachinePool(name, clusterName, created, release)
+	mp := newCAPIexpv1alpha3MachinePool(name, clusterName, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
 
 	np := &nodepool.Nodepool{
 		MachinePool:      mp,

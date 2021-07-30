@@ -17,8 +17,8 @@ import (
 func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
-			{Name: "ID", Type: "string"},
-			{Name: "Cluster ID", Type: "string"},
+			{Name: "Name", Type: "string"},
+			{Name: "Cluster Name", Type: "string"},
 			{Name: "Created", Type: "string", Format: "date-time"},
 			{Name: "Condition", Type: "string"},
 			{Name: "Nodes Min/Max", Type: "string"},
@@ -32,18 +32,18 @@ func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) 
 	case *nodepool.Nodepool:
 		table.Rows = append(table.Rows, getAzureNodePoolRow(*n, capabilities))
 	case *nodepool.Collection:
-		// Sort ASC by Cluster ID.
+		// Sort ASC by Cluster name.
 		sort.Slice(n.Items, func(i, j int) bool {
-			var iClusterID, jClusterID string
+			var iClusterName, jClusterName string
 
 			if n.Items[i].MachinePool != nil && n.Items[i].MachinePool.Labels != nil {
-				iClusterID = n.Items[i].MachinePool.Labels[capiv1alpha3.ClusterLabelName]
+				iClusterName = n.Items[i].MachinePool.Labels[capiv1alpha3.ClusterLabelName]
 			}
 			if n.Items[j].MachinePool != nil && n.Items[j].MachinePool.Labels != nil {
-				jClusterID = n.Items[j].MachinePool.Labels[capiv1alpha3.ClusterLabelName]
+				jClusterName = n.Items[j].MachinePool.Labels[capiv1alpha3.ClusterLabelName]
 			}
 
-			return strings.Compare(iClusterID, jClusterID) > 0
+			return strings.Compare(iClusterName, jClusterName) > 0
 		})
 
 		for _, nodePool := range n.Items {
