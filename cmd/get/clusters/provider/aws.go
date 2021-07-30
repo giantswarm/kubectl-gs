@@ -14,7 +14,7 @@ func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
 	table := &metav1.Table{}
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
-		{Name: "ID", Type: "string"},
+		{Name: "Name", Type: "string"},
 		{Name: "Created", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},

@@ -70,7 +70,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		{
 			if len(args) > 0 {
-				options.ID = strings.ToLower(args[0])
+				options.Name = strings.ToLower(args[0])
 			}
 
 			if r.flag.AllNamespaces {
@@ -85,7 +85,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		resource, err = r.service.Get(ctx, options)
 		if cluster.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A cluster with ID '%s' cannot be found.\n", options.ID))
+			return microerror.Maskf(notFoundError, fmt.Sprintf("A cluster with name '%s' cannot be found.\n", options.Name))
 		} else if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 

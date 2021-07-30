@@ -15,7 +15,7 @@ import (
 )
 
 type PrintOptions struct {
-	ID string
+	Name string
 }
 
 func (r *runner) printOutput(npResource nodepool.Resource) error {

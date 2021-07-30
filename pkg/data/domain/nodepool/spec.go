@@ -12,10 +12,10 @@ import (
 )
 
 type GetOptions struct {
-	ID        string
-	ClusterID string
-	Provider  string
-	Namespace string
+	Name        string
+	ClusterName string
+	Provider    string
+	Namespace   string
 }
 
 type Interface interface {
