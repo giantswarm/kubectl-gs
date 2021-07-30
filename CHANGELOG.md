@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- `template cluster` (breaking): deprecated the `--cluster-id` flag. The `--name` flag changed purpose to set the cluster's unique identifier. The `--description` flag has been added to set the user-friendly description.
+
 ## [1.33.0] - 2021-07-19
 
 ### Added
