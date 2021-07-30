@@ -69,11 +69,11 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 	return clusterCollection, nil
 }
 
-func (s *Service) getByIdAzure(ctx context.Context, id, namespace string) (Resource, error) {
+func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (Resource, error) {
 	var err error
 
 	labelSelector := runtimeClient.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: id,
+		capiv1alpha3.ClusterLabelName: name,
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 

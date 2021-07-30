@@ -7,7 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-
+- `get clusters`:
+  - The output table header `ID` has been renamed to `NAME`.
 - `get nodepools`:
   - The `--cluster-id` flag is now deprecated, replaced with `--cluster-name`.
   - Output column headers have been renamed from `ID` to `NAME` and from `CLUSTER ID` to `CLUSTER NAME`.

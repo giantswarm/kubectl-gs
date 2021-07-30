@@ -12,7 +12,7 @@ import (
 )
 
 type GetOptions struct {
-	ID        string
+	Name      string
 	Provider  string
 	Namespace string
 }
