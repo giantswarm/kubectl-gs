@@ -410,12 +410,12 @@ func newBastionBootstrapSecret(config ClusterCRsConfig, sshdConfig string, sshSS
 			APIVersion: v1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      key.BastionResourceName(config.ClusterID),
+			Name:      key.BastionResourceName(config.Name),
 			Namespace: key.OrganizationNamespaceFromName(config.Owner),
 		},
 		Type: "cluster.x-k8s.io/secret",
 		StringData: map[string]string{
-			"value": fmt.Sprintf(key.BastionIgnitionTemplate, config.ClusterID, sshdConfig, sshSSOPublicKey),
+			"value": fmt.Sprintf(key.BastionIgnitionTemplate, config.Name, sshdConfig, sshSSOPublicKey),
 		},
 	}
 
@@ -425,7 +425,7 @@ func newBastionBootstrapSecret(config ClusterCRsConfig, sshdConfig string, sshSS
 func newBastionMachineDeployment(config ClusterCRsConfig) *capiv1alpha3.MachineDeployment {
 	replicas := int32(1)
 	rollupdateValue := intstr.FromInt(1)
-	dataSecretname := key.BastionResourceName(config.ClusterID)
+	dataSecretname := key.BastionResourceName(config.Name)
 	// we dont need any specific version for bastion machine as it wont run k8s anyway, but it has to be set for AMI lookup otherwise it will fail
 	version := "v0.0.0"
 
@@ -435,16 +435,16 @@ func newBastionMachineDeployment(config ClusterCRsConfig) *capiv1alpha3.MachineD
 			APIVersion: capiv1alpha3.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      key.BastionResourceName(config.ClusterID),
+			Name:      key.BastionResourceName(config.Name),
 			Namespace: key.OrganizationNamespaceFromName(config.Owner),
 		},
 		Spec: capiv1alpha3.MachineDeploymentSpec{
-			ClusterName: config.ClusterID,
+			ClusterName: config.Name,
 			Replicas:    &replicas,
 			Selector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"cluster.x-k8s.io/cluster-name":    config.ClusterID,
-					"cluster.x-k8s.io/deployment-name": key.BastionResourceName(config.ClusterID),
+					"cluster.x-k8s.io/cluster-name":    config.Name,
+					"cluster.x-k8s.io/deployment-name": key.BastionResourceName(config.Name),
 				},
 			},
 			Strategy: &capiv1alpha3.MachineDeploymentStrategy{
@@ -457,19 +457,19 @@ func newBastionMachineDeployment(config ClusterCRsConfig) *capiv1alpha3.MachineD
 			Template: capiv1alpha3.MachineTemplateSpec{
 				ObjectMeta: capiv1alpha3.ObjectMeta{
 					Labels: map[string]string{
-						"cluster.x-k8s.io/cluster-name":    config.ClusterID,
-						"cluster.x-k8s.io/deployment-name": key.BastionResourceName(config.ClusterID),
+						"cluster.x-k8s.io/cluster-name":    config.Name,
+						"cluster.x-k8s.io/deployment-name": key.BastionResourceName(config.Name),
 					},
 				},
 				Spec: capiv1alpha3.MachineSpec{
-					ClusterName: config.ClusterID,
+					ClusterName: config.Name,
 					Bootstrap: capiv1alpha3.Bootstrap{
 						DataSecretName: &dataSecretname,
 					},
 					InfrastructureRef: v1.ObjectReference{
 						APIVersion: capav1alpha3.GroupVersion.String(),
 						Kind:       "AWSMachineTemplate",
-						Name:       key.BastionResourceName(config.ClusterID),
+						Name:       key.BastionResourceName(config.Name),
 					},
 					Version: &version,
 				},
@@ -491,7 +491,7 @@ func newBastionAWSMachineTemplate(config ClusterCRsConfig, region string) *capav
 			APIVersion: capav1alpha3.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      key.BastionResourceName(config.ClusterID),
+			Name:      key.BastionResourceName(config.Name),
 			Namespace: key.OrganizationNamespaceFromName(config.Owner),
 		},
 		Spec: capav1alpha3.AWSMachineTemplateSpec{
@@ -514,7 +514,7 @@ func newBastionAWSMachineTemplate(config ClusterCRsConfig, region string) *capav
 									Values: []string{"bastion"},
 								},
 								{
-									Name:   key.CAPAClusterOwnedTag(config.ClusterID),
+									Name:   key.CAPAClusterOwnedTag(config.Name),
 									Values: []string{"owned"},
 								},
 							},
