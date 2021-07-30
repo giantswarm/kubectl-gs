@@ -96,7 +96,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Cluster ID (deprecated).")
-	cmd.Flags().StringVar(&f.ClusterName, flagClusterName, "", "Name of the Cluster to add the node pool to.")
+	cmd.Flags().StringVar(&f.ClusterName, flagClusterName, "", "Name of the cluster to add the node pool to.")
 	cmd.Flags().StringVar(&f.NodepoolNameDeprecated, flagNodepoolNameDeprecated, "", "Node pool description (deprecated).")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the node pool's purpose.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, maxNodes, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d)", maxNodes))
