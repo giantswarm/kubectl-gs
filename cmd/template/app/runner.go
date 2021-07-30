@@ -13,6 +13,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/annotations"
+	"github.com/giantswarm/kubectl-gs/pkg/labels"
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
@@ -100,6 +102,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	}
+
+	namespaceAnnotations, err := annotations.Parse(r.flag.flagNamespaceConfigAnnotations)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	appConfig.NamespaceConfigAnnotations = namespaceAnnotations
+
+	namespaceLabels, err := labels.Parse(r.flag.flagNamespaceConfigLabels)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	appConfig.NamespaceConfigLabels = namespaceLabels
 
 	appCRYaml, err := templateapp.NewAppCR(appConfig)
 	if err != nil {

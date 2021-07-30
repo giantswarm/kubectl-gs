@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
+	"github.com/giantswarm/kubectl-gs/pkg/labels"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -81,7 +81,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Remove leading 'v' from release flag input.
 		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
 
-		config.Labels, err = clusterlabels.Parse(r.flag.Label)
+		config.Labels, err = labels.Parse(r.flag.Label)
 		if err != nil {
 			return microerror.Mask(err)
 		}

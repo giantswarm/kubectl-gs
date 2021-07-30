@@ -7,6 +7,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--namespace-annotations` and `--namespace-labels` flags to `template app` command to allow users to
+  specify the `namespaceConfig` of the generated `App` CR.
+
+### Changed
+
 - `get clusters`:
   - The output table header `ID` has been renamed to `NAME`.
 - `get nodepools`:
