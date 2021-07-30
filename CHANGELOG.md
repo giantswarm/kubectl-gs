@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- `get clusters`: The output table header `ID` has been renamed to `NAME`.
+
 ## [1.33.0] - 2021-07-19
 
 ### Added
