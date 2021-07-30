@@ -85,7 +85,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		// Delete value
-		config.AuthInfos[userEntryName].AuthProvider.Config[idTokenKey] = ""
+		delete(config.AuthInfos[userEntryName].AuthProvider.Config, idTokenKey)
 
 		if !r.flag.KeepRefreshToken {
 			_, ok3 := config.AuthInfos[userEntryName].AuthProvider.Config[refreshTokenKey]
@@ -94,7 +94,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 
 			// Delete value
-			config.AuthInfos[userEntryName].AuthProvider.Config[refreshTokenKey] = ""
+			delete(config.AuthInfos[userEntryName].AuthProvider.Config, refreshTokenKey)
 			refreshTokenDeleted = true
 		}
 
