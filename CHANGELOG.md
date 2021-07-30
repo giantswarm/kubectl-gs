@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add CRs to create bastion host, when creating a CAPI cluster.
+- Add configuration to allow SSH for giantswarm employee when creating CAPI cluster.
+
 ## [1.34.0] - 2021-07-30
 
 Throughout our UIs and documentation we are aligning our terminology regarding cluster and node pool details, to use consistent terminology matching our Management API. The unique, immutable identifier that was formerly called ID in our user interfaces, is now called the name. The user-friendly, changeable description of the cluster's and node pool's purpose was called name in our UIs and is now called the description.
