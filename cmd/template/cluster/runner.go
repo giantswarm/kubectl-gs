@@ -59,11 +59,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	{
 		config = provider.ClusterCRsConfig{
 			FileName:           clusterCRFileName,
-			ClusterID:          r.flag.ClusterID,
 			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
 			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
 			ExternalSNAT:       r.flag.ExternalSNAT,
-			Description:        r.flag.Name,
+			Description:        r.flag.Description,
+			Name:               r.flag.Name,
 			Owner:              r.flag.Owner,
 			PodsCIDR:           r.flag.PodsCIDR,
 			ReleaseVersion:     r.flag.Release,
@@ -74,8 +74,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			config.ControlPlaneAZ = r.flag.MasterAZ
 		}
 
-		if config.ClusterID == "" {
-			config.ClusterID = id.Generate()
+		if config.Name == "" {
+			config.Name = id.Generate()
 		}
 
 		// Remove leading 'v' from release flag input.
