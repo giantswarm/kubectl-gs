@@ -13,6 +13,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
+	"github.com/giantswarm/kubectl-gs/cmd/logout"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
 	"github.com/giantswarm/kubectl-gs/cmd/validate"
 	"github.com/giantswarm/kubectl-gs/pkg/project"
@@ -73,6 +74,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 
 		loginCmd, err = login.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var logoutCmd *cobra.Command
+	{
+		c := logout.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		logoutCmd, err = logout.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -153,6 +172,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(loginCmd)
+	c.AddCommand(logoutCmd)
 	c.AddCommand(templateCmd)
 	c.AddCommand(getCmd)
 	c.AddCommand(validateCmd)
