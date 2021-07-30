@@ -1,6 +1,7 @@
 package key
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"math/rand"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+	v1 "k8s.io/api/core/v1"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/pkg/normalize"
@@ -148,6 +152,38 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func SSHSSOPublicKey() (string, error) {
+	c, err := runtimeconfig.GetConfig()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	c.Burst = ControllerRuntimeBurstValue // to avoid throttling the request
+
+	k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	secretList := &v1.SecretList{}
+
+	err = k8sClient.List(
+		context.TODO(),
+		secretList,
+		runtimeclient.MatchingLabels{
+			RoleLabel: SSHSSOPubKeyLabel,
+		},
+		runtimeclient.InNamespace(GiantswarmNamespace))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	if len(secretList.Items) == 0 {
+		return "", microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
+	}
+
+	sshSSOPublicKey := base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
+
+	return sshSSOPublicKey, nil
 }
 
 func UbuntuSudoersConfigEncoded() string {

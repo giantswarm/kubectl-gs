@@ -1,9 +1,6 @@
 package provider
 
 import (
-	"context"
-	"encoding/base64"
-	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -13,7 +10,6 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
@@ -21,8 +17,6 @@ import (
 	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	capiv1alpha3exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
-	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -55,34 +49,10 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 	var sshSSOPublicKey string
 	{
-		c, err := runtimeconfig.GetConfig()
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		c.Burst = key.ControllerRuntimeBurstValue // to avoid throttling the request
-
-		k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		secretList := &v1.SecretList{}
-
-		err = k8sClient.List(
-			context.TODO(),
-			secretList,
-			runtimeclient.MatchingLabels{
-				key.RoleLabel: key.SSHSSOPubKeyLabel,
-			},
-			runtimeclient.InNamespace(key.GiantswarmNamespace))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		if len(secretList.Items) == 0 {
-			return microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
-		}
-
-		sshSSOPublicKey = base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
-
 	}
 
 	nodepoolTemplate, err := getCAPANodepoolTemplate(config)
