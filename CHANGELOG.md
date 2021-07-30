@@ -12,6 +12,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Add `--namespace-annotations` and `--namespace-labels` flags to `template app` command to allow users to
   specify the `namespaceConfig` of the generated `App` CR.
 
+### Changed
+
+- `template nodepool`:
+  - Deprecated the `--cluster-id` flag, added the `--cluster-name` flag as a replacement.
+  - Deprecated the `-nodepool-name` flag, add the `--description` flag as a replacement.
+
 ## [1.33.0] - 2021-07-19
 
 ### Added
