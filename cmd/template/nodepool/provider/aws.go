@@ -71,9 +71,9 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 		o.SetName(config.NodePoolID)
 		o.SetLabels(map[string]string{
 			label.ReleaseVersion:            config.ReleaseVersion,
-			label.Cluster:                   config.ClusterID,
+			label.Cluster:                   config.ClusterName,
 			label.MachinePool:               config.NodePoolID,
-			capiv1alpha3.ClusterLabelName:   config.ClusterID,
+			capiv1alpha3.ClusterLabelName:   config.ClusterName,
 			label.Organization:              config.Owner,
 			"cluster.x-k8s.io/watch-filter": "capi",
 		})
@@ -126,7 +126,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	crsConfig := v1alpha2.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,
 		AWSInstanceType:                     config.AWSInstanceType,
-		ClusterID:                           config.ClusterID,
+		ClusterID:                           config.ClusterName,
 		Description:                         config.Description,
 		MachineDeploymentID:                 config.NodePoolID,
 		NodesMax:                            config.NodesMax,
@@ -182,7 +182,7 @@ func getCAPANodepoolTemplate(config NodePoolCRsConfig) (client.Template, error) 
 	}
 
 	templateOptions := client.GetClusterTemplateOptions{
-		ClusterName:       config.ClusterID,
+		ClusterName:       config.ClusterName,
 		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
 		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
@@ -226,7 +226,7 @@ func newAWSMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.
 
 		awsmachinepool.Spec.AvailabilityZones = config.AvailabilityZones
 		awsmachinepool.Spec.AWSLaunchTemplate.InstanceType = config.AWSInstanceType
-		awsmachinepool.Spec.AWSLaunchTemplate.IamInstanceProfile = key.GetNodeInstanceProfile(config.NodePoolID, config.ClusterID)
+		awsmachinepool.Spec.AWSLaunchTemplate.IamInstanceProfile = key.GetNodeInstanceProfile(config.NodePoolID, config.ClusterName)
 		awsmachinepool.Spec.MinSize = int32(config.NodesMin)
 		awsmachinepool.Spec.MaxSize = int32(config.NodesMax)
 		onDemandBaseCapacity := int64(config.OnDemandBaseCapacity)

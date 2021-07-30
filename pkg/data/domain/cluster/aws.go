@@ -68,11 +68,11 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 	return clusterCollection, nil
 }
 
-func (s *Service) getByIdAWS(ctx context.Context, id, namespace string) (Resource, error) {
+func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Resource, error) {
 	var err error
 
 	labelSelector := runtimeClient.MatchingLabels{
-		label.Cluster: id,
+		label.Cluster: name,
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 

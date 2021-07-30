@@ -74,25 +74,25 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.ClusterID,
+			Name:      config.Name,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterID,
-				capiv1alpha3.ClusterLabelName: config.ClusterID,
+				label.Cluster:                 config.Name,
+				capiv1alpha3.ClusterLabelName: config.Name,
 				label.Organization:            config.Owner,
 				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
-			ResourceGroup: config.ClusterID,
+			ResourceGroup: config.Name,
 			NetworkSpec: capzv1alpha3.NetworkSpec{
 				APIServerLB: capzv1alpha3.LoadBalancerSpec{
-					Name: fmt.Sprintf("%s-%s-%s", config.ClusterID, "API", "PublicLoadBalancer"),
+					Name: fmt.Sprintf("%s-%s-%s", config.Name, "API", "PublicLoadBalancer"),
 					SKU:  "Standard",
 					Type: "Public",
 					FrontendIPs: []capzv1alpha3.FrontendIP{
 						{
-							Name: fmt.Sprintf("%s-%s-%s-%s", config.ClusterID, "API", "PublicLoadBalancer", "Frontend"),
+							Name: fmt.Sprintf("%s-%s-%s-%s", config.Name, "API", "PublicLoadBalancer", "Frontend"),
 						},
 					},
 				},
@@ -115,11 +115,11 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-master-%d", config.ClusterID, 0),
+			Name:      fmt.Sprintf("%s-master-%d", config.Name, 0),
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                             config.ClusterID,
-				capiv1alpha3.ClusterLabelName:             config.ClusterID,
+				label.Cluster:                             config.Name,
+				capiv1alpha3.ClusterLabelName:             config.Name,
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
 				label.Organization:                        config.Owner,
 				label.ReleaseVersion:                      config.ReleaseVersion,

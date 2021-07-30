@@ -66,12 +66,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var resource nodepool.Resource
 	{
 		options := nodepool.GetOptions{
-			Provider:  r.provider,
-			ClusterID: r.flag.ClusterID,
+			Provider:    r.provider,
+			ClusterName: r.flag.ClusterName,
 		}
 		{
 			if len(args) > 0 {
-				options.ID = strings.ToLower(args[0])
+				options.Name = strings.ToLower(args[0])
 			}
 
 			if r.flag.AllNamespaces {
@@ -86,7 +86,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		resource, err = r.service.Get(ctx, options)
 		if nodepool.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A node pool with ID '%s' cannot be found.\n", options.ID))
+			return microerror.Maskf(notFoundError, fmt.Sprintf("A node pool with name '%s' cannot be found.\n", options.Name))
 		} else if nodepool.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 

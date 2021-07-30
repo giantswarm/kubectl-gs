@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/pkg/clusterlabels"
+	"github.com/giantswarm/kubectl-gs/pkg/labels"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -59,11 +59,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	{
 		config = provider.ClusterCRsConfig{
 			FileName:           clusterCRFileName,
-			ClusterID:          r.flag.ClusterID,
 			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
 			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
 			ExternalSNAT:       r.flag.ExternalSNAT,
-			Description:        r.flag.Name,
+			Description:        r.flag.Description,
+			Name:               r.flag.Name,
 			Owner:              r.flag.Owner,
 			PodsCIDR:           r.flag.PodsCIDR,
 			ReleaseVersion:     r.flag.Release,
@@ -74,14 +74,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			config.ControlPlaneAZ = r.flag.MasterAZ
 		}
 
-		if config.ClusterID == "" {
-			config.ClusterID = id.Generate()
+		if config.Name == "" {
+			config.Name = id.Generate()
 		}
 
 		// Remove leading 'v' from release flag input.
 		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
 
-		config.Labels, err = clusterlabels.Parse(r.flag.Label)
+		config.Labels, err = labels.Parse(r.flag.Label)
 		if err != nil {
 			return microerror.Mask(err)
 		}

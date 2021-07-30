@@ -1,4 +1,4 @@
-package clusterlabels
+package labels
 
 import (
 	"strings"
