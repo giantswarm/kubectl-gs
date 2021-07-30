@@ -98,8 +98,8 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 			Name:      config.NodePoolID,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterID,
-				capiv1alpha3.ClusterLabelName: config.ClusterID,
+				label.Cluster:                 config.ClusterName,
+				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Owner,
 			},

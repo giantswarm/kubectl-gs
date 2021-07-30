@@ -27,7 +27,7 @@ type NodePoolCRsConfig struct {
 	FileName          string
 	NodePoolID        string
 	AvailabilityZones []string
-	ClusterID         string
+	ClusterName       string
 	Description       string
 	NodesMax          int
 	NodesMin          int
@@ -47,8 +47,8 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 			Name:      config.NodePoolID,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterID,
-				capiv1alpha3.ClusterLabelName: config.ClusterID,
+				label.Cluster:                 config.ClusterName,
+				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Owner,
 			},
@@ -57,12 +57,12 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 			},
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
-			ClusterName:    config.ClusterID,
+			ClusterName:    config.ClusterName,
 			Replicas:       toInt32Ptr(int32(config.NodesMin)),
 			FailureDomains: config.AvailabilityZones,
 			Template: capiv1alpha3.MachineTemplateSpec{
 				Spec: capiv1alpha3.MachineSpec{
-					ClusterName:       config.ClusterID,
+					ClusterName:       config.ClusterName,
 					InfrastructureRef: *infrastructureRef,
 					Bootstrap: capiv1alpha3.Bootstrap{
 						ConfigRef: bootstrapConfigRef,
@@ -85,8 +85,8 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			Name:      config.NodePoolID,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterID,
-				capiv1alpha3.ClusterLabelName: config.ClusterID,
+				label.Cluster:                 config.ClusterName,
+				capiv1alpha3.ClusterLabelName: config.ClusterName,
 			},
 		},
 		Spec: corev1alpha1.SparkSpec{},

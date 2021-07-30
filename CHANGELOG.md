@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- `template nodepool`:
+  - Deprecated the `--cluster-id` flag, added the `--cluster-name` flag as a replacement.
+  - Deprecated the `-nodepool-name` flag, add the `--description` flag as a replacement.
+
 ## [1.33.0] - 2021-07-19
 
 ### Added
