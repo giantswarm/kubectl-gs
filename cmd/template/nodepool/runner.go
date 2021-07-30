@@ -51,8 +51,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config = provider.NodePoolCRsConfig{
 			AWSInstanceType:                     r.flag.AWSInstanceType,
 			FileName:                            nodePoolCRFileName,
-			ClusterID:                           r.flag.ClusterID,
-			Description:                         r.flag.NodepoolName,
+			ClusterName:                         r.flag.ClusterName,
+			Description:                         r.flag.Description,
 			VMSize:                              r.flag.AzureVMSize,
 			AzureUseSpotVms:                     r.flag.AzureUseSpotVms,
 			AzureSpotMaxPrice:                   r.flag.AzureSpotVMsMaxPrice,

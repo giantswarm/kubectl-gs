@@ -7,7 +7,17 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-- `get nodepools`: the `--cluster-id` flag is now deprecated, replaced with `--cluster-name`. Output column headers have been renamed from `ID` to `NAME` and from `CLUSTER ID` to `CLUSTER NAME`.
+
+- `get nodepools`:
+  - The `--cluster-id` flag is now deprecated, replaced with `--cluster-name`.
+  - Output column headers have been renamed from `ID` to `NAME` and from `CLUSTER ID` to `CLUSTER NAME`.
+- `template cluster`:
+  - Deprecated the `--cluster-id` flag.
+  - Breaking: the `--name` flag changed purpose to set the cluster's unique identifier.
+  - The `--description` flag has been added to set the user-friendly description.
+- `template nodepool`:
+  - Deprecated the `--cluster-id` flag, added the `--cluster-name` flag as a replacement.
+  - Deprecated the `-nodepool-name` flag, add the `--description` flag as a replacement.
 
 ## [1.33.0] - 2021-07-19
 
