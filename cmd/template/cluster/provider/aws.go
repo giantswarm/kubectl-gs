@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"text/template"
@@ -8,12 +9,16 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/microerror"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	kubeadm "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -40,6 +45,7 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 
 func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
+	var awsRegion string
 
 	if config.ExternalSNAT {
 		return microerror.Maskf(invalidFlagError, "--external-snat setting is not available for release %v", config.ReleaseVersion)
@@ -53,12 +59,24 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		return err
 	}
 
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	data := struct {
 		AWSClusterCR             string
 		AWSMachineTemplateCR     string
 		ClusterCR                string
 		KubeadmControlPlaneCR    string
 		AWSClusterRoleIdentityCR string
+
+		BastionBootstrapSecret      string
+		BastionMachineDeploymentCR  string
+		BastionAWSMachineTemplateCR string
 	}{}
 
 	crLabels := map[string]string{
@@ -77,6 +95,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
+			awsRegion = awscluster.Spec.Region
 			awsClusterCRYaml, err := yaml.Marshal(awscluster)
 			if err != nil {
 				return microerror.Mask(err)
@@ -107,10 +126,15 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			data.ClusterCR = string(clusterCRYaml)
 		case "KubeadmControlPlane":
 			o.SetLabels(crLabels)
-			kubeadmControlPlaneCRYaml, err := yaml.Marshal(o.Object)
+			kubeadmControlPlane, err := newKubeadmControlPlaneFromUnstructured(sshSSOPublicKey, key.NodeSSHDConfigEncoded(), o)
 			if err != nil {
 				return microerror.Mask(err)
 			}
+			kubeadmControlPlaneCRYaml, err := yaml.Marshal(kubeadmControlPlane)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
 			data.KubeadmControlPlaneCR = string(kubeadmControlPlaneCRYaml)
 		}
 	}
@@ -122,6 +146,35 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 			return microerror.Mask(err)
 		}
 		data.AWSClusterRoleIdentityCR = string(awsClusterRoleIdentityCRYaml)
+	}
+	// prepare CRs and resources for bastion
+	{
+		bastionSecret := newBastionBootstrapSecret(config, key.BastionSSHDConfigEncoded(), sshSSOPublicKey)
+		bastionSecret.SetLabels(crLabels)
+		bastionSecret.Labels[key.CAPIRoleLabel] = key.RoleBastion
+		bastionSecretYaml, err := yaml.Marshal(bastionSecret)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		data.BastionBootstrapSecret = string(bastionSecretYaml)
+
+		md := newBastionMachineDeployment(config)
+		md.SetLabels(crLabels)
+		md.Labels[key.CAPIRoleLabel] = key.RoleBastion
+		mdYaml, err := yaml.Marshal(md)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		data.BastionMachineDeploymentCR = string(mdYaml)
+
+		awsmachinetemplate := newBastionAWSMachineTemplate(config, awsRegion)
+		awsmachinetemplate.SetLabels(crLabels)
+		awsmachinetemplate.Labels[key.CAPIRoleLabel] = key.RoleBastion
+		awsmachinetemplateYaml, err := yaml.Marshal(awsmachinetemplate)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		data.BastionAWSMachineTemplateCR = string(awsmachinetemplateYaml)
 	}
 
 	t := template.Must(template.New(config.FileName).Parse(key.ClusterCAPACRsTemplate))
@@ -278,6 +331,56 @@ func newAWSMachineTemplateFromUnstructured(config ClusterCRsConfig, o unstructur
 	return &awsmachinetemplate, nil
 }
 
+func newKubeadmControlPlaneFromUnstructured(sshSSOPubKey string, sshdConfig string, o unstructured.Unstructured) (*kubeadm.KubeadmControlPlane, error) {
+	var cp kubeadm.KubeadmControlPlane
+	{
+		groups := "sudo"
+		shell := "/bin/bash"
+
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &cp)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		cp.Spec.KubeadmConfigSpec.Files = []bootstrap.File{
+			{
+				Owner:       "root",
+				Permissions: "640",
+				Path:        "/etc/ssh/sshd_config",
+				Content:     sshdConfig,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "600",
+				Path:        "/etc/ssh/trusted-user-ca-keys.pem",
+				Content:     sshSSOPubKey,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "600",
+				Path:        "/etc/sudoers.d/giantswarm",
+				Content:     key.UbuntuSudoersConfigEncoded(),
+				Encoding:    bootstrap.Base64,
+			},
+		}
+		cp.Spec.KubeadmConfigSpec.PostKubeadmCommands = []string{
+			"service ssh restart",
+		}
+
+		cp.Spec.KubeadmConfigSpec.Users = []bootstrap.User{
+			{
+				Name:   "giantswarm",
+				Groups: &groups,
+				Shell:  &shell,
+			},
+		}
+	}
+
+	return &cp, nil
+}
+
 func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSClusterRoleIdentity {
 	awsclusterroleidentity := &capav1alpha3.AWSClusterRoleIdentity{
 		TypeMeta: metav1.TypeMeta{
@@ -298,4 +401,140 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSCluster
 		},
 	}
 	return awsclusterroleidentity
+}
+
+func newBastionBootstrapSecret(config ClusterCRsConfig, sshdConfig string, sshSSOPublicKey string) *v1.Secret {
+	s := &v1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: v1.SchemeGroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      key.BastionResourceName(config.Name),
+			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+		},
+		Type: "cluster.x-k8s.io/secret",
+		StringData: map[string]string{
+			"value": fmt.Sprintf(key.BastionIgnitionTemplate, config.Name, sshdConfig, sshSSOPublicKey),
+		},
+	}
+
+	return s
+}
+
+func newBastionMachineDeployment(config ClusterCRsConfig) *capiv1alpha3.MachineDeployment {
+	replicas := int32(1)
+	rollupdateValue := intstr.FromInt(1)
+	dataSecretname := key.BastionResourceName(config.Name)
+	// we dont need any specific version for bastion machine as it wont run k8s anyway, but it has to be set for AMI lookup otherwise it will fail
+	version := "v0.0.0"
+
+	md := &capiv1alpha3.MachineDeployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "MachineDeployment",
+			APIVersion: capiv1alpha3.GroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      key.BastionResourceName(config.Name),
+			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+		},
+		Spec: capiv1alpha3.MachineDeploymentSpec{
+			ClusterName: config.Name,
+			Replicas:    &replicas,
+			Selector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"cluster.x-k8s.io/cluster-name":    config.Name,
+					"cluster.x-k8s.io/deployment-name": key.BastionResourceName(config.Name),
+				},
+			},
+			Strategy: &capiv1alpha3.MachineDeploymentStrategy{
+				Type: "RollingUpdate",
+				RollingUpdate: &capiv1alpha3.MachineRollingUpdateDeployment{
+					MaxSurge:       &rollupdateValue,
+					MaxUnavailable: &rollupdateValue,
+				},
+			},
+			Template: capiv1alpha3.MachineTemplateSpec{
+				ObjectMeta: capiv1alpha3.ObjectMeta{
+					Labels: map[string]string{
+						"cluster.x-k8s.io/cluster-name":    config.Name,
+						"cluster.x-k8s.io/deployment-name": key.BastionResourceName(config.Name),
+					},
+				},
+				Spec: capiv1alpha3.MachineSpec{
+					ClusterName: config.Name,
+					Bootstrap: capiv1alpha3.Bootstrap{
+						DataSecretName: &dataSecretname,
+					},
+					InfrastructureRef: v1.ObjectReference{
+						APIVersion: capav1alpha3.GroupVersion.String(),
+						Kind:       "AWSMachineTemplate",
+						Name:       key.BastionResourceName(config.Name),
+					},
+					Version: &version,
+				},
+			},
+		},
+	}
+
+	return md
+}
+
+func newBastionAWSMachineTemplate(config ClusterCRsConfig, region string) *capav1alpha3.AWSMachineTemplate {
+	uncompressedUserData := true
+	publicIP := true
+	sshKey := ""
+
+	t := &capav1alpha3.AWSMachineTemplate{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AWSMachineTemplate",
+			APIVersion: capav1alpha3.GroupVersion.String(),
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      key.BastionResourceName(config.Name),
+			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+		},
+		Spec: capav1alpha3.AWSMachineTemplateSpec{
+			Template: capav1alpha3.AWSMachineTemplateResource{
+				Spec: capav1alpha3.AWSMachineSpec{
+					// ignition do not work with encrypted or compressed user-data so we need to turn it off
+					CloudInit: capav1alpha3.CloudInit{
+						InsecureSkipSecretsManager: true,
+					},
+					UncompressedUserData: &uncompressedUserData,
+					// leaving it empty as we dont need specific instance profile
+					IAMInstanceProfile: "",
+					PublicIP:           &publicIP,
+					InstanceType:       key.AWSBastionInstanceType,
+					AdditionalSecurityGroups: []capav1alpha3.AWSResourceReference{
+						{
+							Filters: []capav1alpha3.Filter{
+								{
+									Name:   key.CAPARoleTag,
+									Values: []string{"bastion"},
+								},
+								{
+									Name:   key.CAPAClusterOwnedTag(config.Name),
+									Values: []string{"owned"},
+								},
+							},
+						},
+					},
+					SSHKeyName: &sshKey,
+					Subnet: &capav1alpha3.AWSResourceReference{
+						Filters: []capav1alpha3.Filter{
+							{
+								Name:   key.CAPARoleTag,
+								Values: []string{"public"},
+							},
+						},
+					},
+					ImageLookupOrg:    key.FlatcarAWSAccountID(region),
+					ImageLookupFormat: "Flatcar-stable-*",
+				},
+			},
+		},
+	}
+
+	return t
 }

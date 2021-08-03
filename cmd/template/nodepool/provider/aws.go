@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	bootstrap "sigs.k8s.io/cluster-api/bootstrap/kubeadm/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	capiv1alpha3exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
@@ -44,6 +45,14 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 	if config.UseAlikeInstanceTypes {
 		return microerror.Maskf(invalidFlagError, "--use-alike-instance-types setting is not available for release %v", config.ReleaseVersion)
+	}
+
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	nodepoolTemplate, err := getCAPANodepoolTemplate(config)
@@ -90,7 +99,11 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			}
 			data.MachinePoolCR = string(machinePoolCRYaml)
 		case "KubeadmConfig":
-			kubeadmConfigCRYaml, err := yaml.Marshal(o.Object)
+			kubeadmConfig, err := newKubeadmConfigFromUnstructured(sshSSOPublicKey, key.NodeSSHDConfigEncoded(), o)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			kubeadmConfigCRYaml, err := yaml.Marshal(kubeadmConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -247,6 +260,57 @@ func newMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstructured.Uns
 
 		machinepool.Spec.Template.Spec.Bootstrap.ConfigRef.Name = config.NodePoolID
 		machinepool.Spec.Template.Spec.InfrastructureRef.Name = config.NodePoolID
+
 	}
 	return &machinepool, nil
+}
+
+func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o unstructured.Unstructured) (*bootstrap.KubeadmConfig, error) {
+	var kubeadmConfig bootstrap.KubeadmConfig
+	{
+		groups := "sudo"
+		shell := "/bin/bash"
+
+		err := runtime.DefaultUnstructuredConverter.
+			FromUnstructured(o.Object, &kubeadmConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		kubeadmConfig.Spec.Files = []bootstrap.File{
+			{
+				Owner:       "root",
+				Permissions: "640",
+				Path:        "/etc/ssh/sshd_config",
+				Content:     sshdConfig,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "600",
+				Path:        "/etc/ssh/trusted-user-ca-keys.pem",
+				Content:     sshSSOPubKey,
+				Encoding:    bootstrap.Base64,
+			},
+			{
+				Owner:       "root",
+				Permissions: "600",
+				Path:        "/etc/sudoers.d/giantswarm",
+				Content:     key.UbuntuSudoersConfigEncoded(),
+				Encoding:    bootstrap.Base64,
+			},
+		}
+		kubeadmConfig.Spec.PostKubeadmCommands = []string{
+			"service ssh restart",
+		}
+		kubeadmConfig.Spec.Users = []bootstrap.User{
+			{
+				Name:   "giantswarm",
+				Groups: &groups,
+				Shell:  &shell,
+			},
+		}
+	}
+
+	return &kubeadmConfig, nil
 }

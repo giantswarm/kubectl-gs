@@ -1,6 +1,8 @@
 package key
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -10,6 +12,9 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+	v1 "k8s.io/api/core/v1"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/pkg/normalize"
@@ -24,6 +29,48 @@ const (
 
 	organizationNamespaceFormat = "org-%s"
 )
+
+const (
+	AWSBastionInstanceType = "t3.small"
+
+	CAPIRoleLabel = "cluster.x-k8s.io/role"
+	CAPARoleTag   = "tag:sigs.k8s.io/cluster-api-provider-aws/role"
+
+	FlatcarAMIOwner      = "075585003325"
+	FlatcarChinaAMIOwner = "306934455918"
+
+	RoleBastion = "bastion"
+
+	RoleLabel           = "role"
+	SSHSSOPubKeyLabel   = "ssh-sso-public-key"
+	GiantswarmNamespace = "giantswarm"
+
+	ControllerRuntimeBurstValue = 200
+)
+
+func BastionResourceName(clusterName string) string {
+	return fmt.Sprintf("%s-bastion", clusterName)
+}
+
+func BastionSSHDConfigEncoded() string {
+	return base64.StdEncoding.EncodeToString([]byte(bastionSSHDConfig))
+}
+
+func NodeSSHDConfigEncoded() string {
+	return base64.StdEncoding.EncodeToString([]byte(nodeSSHDConfig))
+}
+
+func CAPAClusterOwnedTag(clusterName string) string {
+	return fmt.Sprintf("tag:sigs.k8s.io/cluster-api-provider-aws/cluster/%s", clusterName)
+}
+
+func FlatcarAWSAccountID(awsRegion string) string {
+	if strings.Contains(awsRegion, "cn-") {
+		return FlatcarChinaAMIOwner
+	} else {
+		return FlatcarAMIOwner
+	}
+}
 
 func GenerateID() string {
 	compiledRegexp, _ := regexp.Compile("^[a-z]+$")
@@ -105,6 +152,42 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+func SSHSSOPublicKey() (string, error) {
+	c, err := runtimeconfig.GetConfig()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	c.Burst = ControllerRuntimeBurstValue // to avoid throttling the request
+
+	k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	secretList := &v1.SecretList{}
+
+	err = k8sClient.List(
+		context.TODO(),
+		secretList,
+		runtimeclient.MatchingLabels{
+			RoleLabel: SSHSSOPubKeyLabel,
+		},
+		runtimeclient.InNamespace(GiantswarmNamespace))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	if len(secretList.Items) == 0 {
+		return "", microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
+	}
+
+	sshSSOPublicKey := base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
+
+	return sshSSOPublicKey, nil
+}
+
+func UbuntuSudoersConfigEncoded() string {
+	return base64.StdEncoding.EncodeToString([]byte(ubuntuSudoersConfig))
 }
 
 func OrganizationNamespaceFromName(name string) string {
