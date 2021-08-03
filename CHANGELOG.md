@@ -9,8 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add CRs to create bastion host, when creating a CAPI cluster.
-- Add configuration to allow SSH for giantswarm employee when creating CAPI cluster.
+- Add CRs to create bastion host, when creating a CAPI cluster via `template cluster` command.
+- Add configuration to allow SSH for giantswarm employee when creating CAPI cluster. Applies to `template cluster` and `template nodepool` commands.
 
 ## [1.34.0] - 2021-07-30
 
