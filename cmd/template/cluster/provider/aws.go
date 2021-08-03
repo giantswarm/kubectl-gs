@@ -264,7 +264,7 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
 		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
-			InfrastructureProvider: "aws:v0.6.6",
+			InfrastructureProvider: "aws:v0.6.8",
 			Flavor:                 "machinepool",
 		},
 	}
