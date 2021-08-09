@@ -1,17 +1,34 @@
 {
     "kind": "Cluster",
-    "apiVersion": "cluster.x-k8s.io/v1alpha2",
+    "apiVersion": "cluster.x-k8s.io/v1alpha3",
     "metadata": {
         "name": "f930q",
         "namespace": "default",
         "creationTimestamp": null,
         "labels": {
-            "giantswarm.io/cluster": "f930q"
+            "cluster.x-k8s.io/cluster-name": "f930q",
+            "giantswarm.io/organization": "some-other",
+            "release.giantswarm.io/version": "11.0.0"
+        },
+        "annotations": {
+            "cluster.giantswarm.io/description": "test cluster 4"
         }
     },
-    "spec": {},
+    "spec": {
+        "controlPlaneEndpoint": {
+            "host": "",
+            "port": 0
+        }
+    },
     "status": {
         "infrastructureReady": false,
-        "controlPlaneInitialized": false
+        "controlPlaneInitialized": false,
+        "conditions": [
+            {
+                "type": "Created",
+                "status": "True",
+                "lastTransitionTime": null
+            }
+        ]
     }
 }

@@ -3,10 +3,10 @@ package cluster
 import (
 	"context"
 
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
@@ -17,9 +17,9 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 
 	inNamespace := runtimeClient.InNamespace(namespace)
 
-	var awsClusters map[string]*infrastructurev1alpha2.AWSCluster
+	var awsClusters map[string]*infrastructurev1alpha3.AWSCluster
 	{
-		clusterCollection := &infrastructurev1alpha2.AWSClusterList{}
+		clusterCollection := &infrastructurev1alpha3.AWSClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusterCollection, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -27,14 +27,14 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 			return nil, microerror.Mask(noResourcesError)
 		}
 
-		awsClusters = make(map[string]*infrastructurev1alpha2.AWSCluster, len(clusterCollection.Items))
+		awsClusters = make(map[string]*infrastructurev1alpha3.AWSCluster, len(clusterCollection.Items))
 		for _, cluster := range clusterCollection.Items {
 			c := cluster
 			awsClusters[cluster.GetName()] = &c
 		}
 	}
 
-	clusters := &capiv1alpha2.ClusterList{}
+	clusters := &capiv1alpha3.ClusterList{}
 	{
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusters, inNamespace)
 		if err != nil {
@@ -51,14 +51,14 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 
 			if awsCluster, exists := awsClusters[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1alpha2",
+					APIVersion: "cluster.x-k8s.io/v1alpha3",
 					Kind:       "Cluster",
 				}
-				awsCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
+				awsCluster.TypeMeta = infrastructurev1alpha3.NewAWSClusterTypeMeta()
 
 				c := Cluster{
-					V1Alpha2Cluster: &o,
-					AWSCluster:      awsCluster,
+					Cluster:    &o,
+					AWSCluster: awsCluster,
 				}
 				clusterCollection.Items = append(clusterCollection.Items, c)
 			}
@@ -79,7 +79,7 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 	cluster := &Cluster{}
 
 	{
-		crs := &capiv1alpha2.ClusterList{}
+		crs := &capiv1alpha3.ClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -88,16 +88,16 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		if len(crs.Items) < 1 {
 			return nil, microerror.Mask(notFoundError)
 		}
-		cluster.V1Alpha2Cluster = &crs.Items[0]
+		cluster.Cluster = &crs.Items[0]
 
-		cluster.V1Alpha2Cluster.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha2",
+		cluster.Cluster.TypeMeta = metav1.TypeMeta{
+			APIVersion: "cluster.x-k8s.io/v1alpha3",
 			Kind:       "Cluster",
 		}
 	}
 
 	{
-		crs := &infrastructurev1alpha2.AWSClusterList{}
+		crs := &infrastructurev1alpha3.AWSClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -108,7 +108,7 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		}
 		cluster.AWSCluster = &crs.Items[0]
 
-		cluster.AWSCluster.TypeMeta = infrastructurev1alpha2.NewAWSClusterTypeMeta()
+		cluster.AWSCluster.TypeMeta = infrastructurev1alpha3.NewAWSClusterTypeMeta()
 	}
 
 	return cluster, nil

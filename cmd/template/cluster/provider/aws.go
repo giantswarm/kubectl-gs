@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -189,7 +189,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
-	crsConfig := v1alpha2.ClusterCRsConfig{
+	crsConfig := v1alpha3.ClusterCRsConfig{
 		ClusterID: config.Name,
 
 		ExternalSNAT:   config.ExternalSNAT,
@@ -201,7 +201,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		Labels:         config.Labels,
 	}
 
-	crs, err := v1alpha2.NewClusterCRs(crsConfig)
+	crs, err := v1alpha3.NewClusterCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}

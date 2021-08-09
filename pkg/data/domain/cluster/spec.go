@@ -3,11 +3,10 @@ package cluster
 import (
 	"context"
 
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 )
 
@@ -31,17 +30,14 @@ type Resource interface {
 // Cluster abstracts away provider-specific
 // node pool resources.
 type Cluster struct {
-	V1Alpha2Cluster *capiv1alpha2.Cluster
-	Cluster         *capiv1alpha3.Cluster
+	Cluster *capiv1alpha3.Cluster
 
-	AWSCluster   *infrastructurev1alpha2.AWSCluster
+	AWSCluster   *infrastructurev1alpha3.AWSCluster
 	AzureCluster *capzv1alpha3.AzureCluster
 }
 
 func (n *Cluster) Object() runtime.Object {
-	if n.V1Alpha2Cluster != nil {
-		return n.V1Alpha2Cluster
-	} else if n.Cluster != nil {
+	if n.Cluster != nil {
 		return n.Cluster
 	}
 

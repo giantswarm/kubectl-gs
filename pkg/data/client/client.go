@@ -5,7 +5,7 @@ import (
 	backupv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/backup/v1alpha1"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	examplev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/example/v1alpha1"
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	securityv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/security/v1alpha1"
@@ -16,7 +16,6 @@ import (
 	"k8s.io/client-go/rest"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
@@ -43,7 +42,6 @@ func New(config Config) (*Client, error) {
 	{
 		c := k8sclient.ClientsConfig{
 			SchemeBuilder: k8sclient.SchemeBuilder{
-				capiv1alpha2.AddToScheme,
 				capiv1alpha3.AddToScheme,
 				capzv1alpha3.AddToScheme,
 				capiexpv1alpha3.AddToScheme,
@@ -52,7 +50,7 @@ func New(config Config) (*Client, error) {
 				backupv1alpha1.AddToScheme,
 				corev1alpha1.AddToScheme,
 				examplev1alpha1.AddToScheme,
-				infrastructurev1alpha2.AddToScheme,
+				infrastructurev1alpha3.AddToScheme,
 				providerv1alpha1.AddToScheme,
 				releasev1alpha1.AddToScheme,
 				securityv1alpha1.AddToScheme,
