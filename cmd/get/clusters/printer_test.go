@@ -292,9 +292,10 @@ func newAWSClusterResource(id, created, release, org, description string, condit
 			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.ReleaseVersion: release,
-				label.Organization:   org,
-				label.Cluster:        id,
+				label.ReleaseVersion:          release,
+				label.Organization:            org,
+				label.Cluster:                 id,
+				capiv1alpha3.ClusterLabelName: id,
 			},
 		},
 		Spec: infrastructurev1alpha3.AWSClusterSpec{

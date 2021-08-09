@@ -8,8 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
 func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, error) {
@@ -72,7 +70,7 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 	var err error
 
 	labelSelector := runtimeClient.MatchingLabels{
-		label.Cluster: name,
+		capiv1alpha3.ClusterLabelName: name,
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 
