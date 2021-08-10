@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1alpha2
+apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineDeployment
 metadata:
   creationTimestamp: "2021-01-02T15:04:32Z"
@@ -10,13 +10,14 @@ metadata:
   name: f930q
   namespace: default
 spec:
+  clusterName: ""
   selector: {}
   template:
     metadata: {}
     spec:
       bootstrap: {}
+      clusterName: ""
       infrastructureRef: {}
-      metadata: {}
 status:
   readyReplicas: 1
   replicas: 3

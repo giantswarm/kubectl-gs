@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Apply only `v1alpha3` CR's on provider AWS.
+
 ### Added
 
 - Add CRs to create bastion host, when creating a CAPI cluster via `template cluster` command.

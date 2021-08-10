@@ -1,6 +1,6 @@
 apiVersion: v1
 items:
-- apiVersion: cluster.x-k8s.io/v1alpha2
+- apiVersion: cluster.x-k8s.io/v1alpha3
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -12,17 +12,18 @@ items:
     name: 1sad2
     namespace: default
   spec:
+    clusterName: ""
     selector: {}
     template:
       metadata: {}
       spec:
         bootstrap: {}
+        clusterName: ""
         infrastructureRef: {}
-        metadata: {}
   status:
     readyReplicas: 2
     replicas: 2
-- apiVersion: cluster.x-k8s.io/v1alpha2
+- apiVersion: cluster.x-k8s.io/v1alpha3
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -34,17 +35,18 @@ items:
     name: 2a03f
     namespace: default
   spec:
+    clusterName: ""
     selector: {}
     template:
       metadata: {}
       spec:
         bootstrap: {}
+        clusterName: ""
         infrastructureRef: {}
-        metadata: {}
   status:
     readyReplicas: 2
     replicas: 5
-- apiVersion: cluster.x-k8s.io/v1alpha2
+- apiVersion: cluster.x-k8s.io/v1alpha3
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -56,17 +58,18 @@ items:
     name: asd29
     namespace: default
   spec:
+    clusterName: ""
     selector: {}
     template:
       metadata: {}
       spec:
         bootstrap: {}
+        clusterName: ""
         infrastructureRef: {}
-        metadata: {}
   status:
     readyReplicas: 10
     replicas: 10
-- apiVersion: cluster.x-k8s.io/v1alpha2
+- apiVersion: cluster.x-k8s.io/v1alpha3
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -78,17 +81,18 @@ items:
     name: f930q
     namespace: default
   spec:
+    clusterName: ""
     selector: {}
     template:
       metadata: {}
       spec:
         bootstrap: {}
+        clusterName: ""
         infrastructureRef: {}
-        metadata: {}
   status:
     readyReplicas: 1
     replicas: 3
-- apiVersion: cluster.x-k8s.io/v1alpha2
+- apiVersion: cluster.x-k8s.io/v1alpha3
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -100,17 +104,18 @@ items:
     name: 9f012
     namespace: default
   spec:
+    clusterName: ""
     selector: {}
     template:
       metadata: {}
       spec:
         bootstrap: {}
+        clusterName: ""
         infrastructureRef: {}
-        metadata: {}
   status:
     readyReplicas: 1
     replicas: 1
-- apiVersion: cluster.x-k8s.io/v1alpha2
+- apiVersion: cluster.x-k8s.io/v1alpha3
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -122,13 +127,14 @@ items:
     name: 2f0as
     namespace: default
   spec:
+    clusterName: ""
     selector: {}
     template:
       metadata: {}
       spec:
         bootstrap: {}
+        clusterName: ""
         infrastructureRef: {}
-        metadata: {}
   status:
     readyReplicas: 5
     replicas: 5

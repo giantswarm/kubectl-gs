@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -123,7 +123,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
-	crsConfig := v1alpha2.NodePoolCRsConfig{
+	crsConfig := v1alpha3.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,
 		AWSInstanceType:                     config.AWSInstanceType,
 		ClusterID:                           config.ClusterName,
@@ -137,7 +137,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		UseAlikeInstanceTypes:               config.UseAlikeInstanceTypes,
 	}
 
-	crs, err := v1alpha2.NewNodePoolCRs(crsConfig)
+	crs, err := v1alpha3.NewNodePoolCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
