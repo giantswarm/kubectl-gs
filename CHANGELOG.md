@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.35.0] - 2021-08-11
+
 ### Changed
 
 - Apply only `v1alpha3` CR's on provider AWS.
@@ -438,7 +440,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...HEAD
+[1.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.32.0...v1.33.0
 [1.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.31.0...v1.32.0
