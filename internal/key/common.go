@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func ReleaseVersion(getter LabelsGetter) string {
@@ -40,4 +41,9 @@ func MachinePoolScaling(getter AnnotationsGetter) (int, int) {
 	}
 
 	return -1, -1
+}
+
+func MoveNamespace(cr metav1.Object, namespace string) metav1.Object {
+	cr.SetNamespace(namespace)
+	return cr
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
@@ -144,6 +145,10 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 
 	if config.MachineDeploymentSubnet != "" {
 		crs.AWSMachineDeployment.Annotations[annotation.AWSSubnetSize] = config.MachineDeploymentSubnet
+	}
+
+	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
+		crs = moveCRsToOrgNamespace(crs, config.Owner)
 	}
 
 	mdCRYaml, err := yaml.Marshal(crs.MachineDeployment)
@@ -313,4 +318,12 @@ func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o 
 	}
 
 	return &kubeadmConfig, nil
+}
+
+func moveCRsToOrgNamespace(crs v1alpha3.NodePoolCRs, organization string) v1alpha3.NodePoolCRs {
+	for _, cr := range []interface{}{crs.AWSMachineDeployment, crs.MachineDeployment} {
+		cr = key.MoveNamespace(cr.(metav1.Object), key.OrganizationNamespaceFromName(organization))
+	}
+	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
+	return crs
 }

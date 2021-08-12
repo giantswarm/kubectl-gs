@@ -123,6 +123,13 @@ func IsCAPAVersion(version string) bool {
 	return version == "20.0.0"
 }
 
+// IsOrgNamespaceVersion returns whether a given GS Release Version is based on clusters in Org Namespace
+// TODO: make this a >= comparison. Also eventually this has to happen on default, e.g if there is no version given,
+//       it should be considered org namespace version
+func IsOrgNamespaceVersion(version string) bool {
+	return version == "17.0.0"
+}
+
 // readConfigMapFromFile reads a configmap from a YAML file.
 func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	data, err := afero.ReadFile(fs, path)
