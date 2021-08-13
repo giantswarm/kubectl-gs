@@ -11,7 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Apply only `v1alpha3` CR's on provider AWS.
+- Apply only `v1alpha3` CRs on provider AWS.
 
 ### Added
 
