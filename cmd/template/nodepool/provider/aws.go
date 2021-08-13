@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
@@ -321,9 +320,8 @@ func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o 
 }
 
 func moveCRsToOrgNamespace(crs v1alpha3.NodePoolCRs, organization string) v1alpha3.NodePoolCRs {
-	for _, cr := range []interface{}{crs.AWSMachineDeployment, crs.MachineDeployment} {
-		cr = key.MoveNamespace(cr.(metav1.Object), key.OrganizationNamespaceFromName(organization))
-	}
+	crs.MachineDeployment.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
+	crs.AWSMachineDeployment.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	return crs
 }

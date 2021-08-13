@@ -544,10 +544,11 @@ func newBastionAWSMachineTemplate(config ClusterCRsConfig, region string) *capav
 }
 
 func moveCRsToOrgNamespace(crs v1alpha3.ClusterCRs, organization string) v1alpha3.ClusterCRs {
-	for _, cr := range []interface{}{crs.AWSCluster, crs.Cluster, crs.AWSControlPlane, crs.G8sControlPlane} {
-		cr = key.MoveNamespace(cr.(metav1.Object), key.OrganizationNamespaceFromName(organization))
-	}
+	crs.Cluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	crs.Cluster.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
+	crs.AWSCluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
+	crs.G8sControlPlane.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	crs.G8sControlPlane.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
+	crs.AWSControlPlane.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	return crs
 }
