@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update the Dockerfile to include kuebctl v1.19 and be based on Alpine v3.14.1.
+
 ## [1.35.0] - 2021-08-11
 
 ### Changed
