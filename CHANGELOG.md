@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Update the Dockerfile to include kuebctl v1.19 and be based on Alpine v3.14.1.
 
+### Fixed
+
+- Make the `login` command continue to work even if opening the default browser fails.
+
 ## [1.35.0] - 2021-08-11
 
 ### Changed
@@ -68,8 +72,8 @@ If you are upgrading from an earlier releases, apply these changes to migrate an
 
 ### Added
 
-- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS. 
-- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS. 
+- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS.
+- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS.
 - Add optional `--release` flag to nodepool templating so that the new functionality can be used for CAPA versions.
 
 ### Fixed

@@ -40,7 +40,7 @@ var (
 )
 
 // handleAuth executes the OIDC authentication against an installation's authentication provider.
-func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
+func handleAuth(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, authResultTimeout)
 	defer cancel()
 
@@ -76,18 +76,18 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 			connectorID = customerConnectorID
 		}
 	}
+
 	authURL := auther.GetAuthURL(connectorID)
-	{
-		// Open the authorization url in the user's browser, which will eventually
-		// redirect the user to the local web server we'll create next.
-		err = open.Run(authURL)
-		if err != nil {
-			return oidc.UserInfo{}, microerror.Mask(err)
-		}
-	}
 
 	fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
 	fmt.Fprintf(out, "%s\n\n", authURL)
+
+	// Open the authorization url in the user's browser, which will eventually
+	// redirect the user to the local web server we'll create next.
+	err = open.Run(authURL)
+	if err != nil {
+		fmt.Fprintf(errOut, "%s\n\n", color.RedString("Couldn't open the default browser. Please access the URL above to continue logging in."))
+	}
 
 	// Create a local web server, for fetching all the authentication data from
 	// the authentication provider.
