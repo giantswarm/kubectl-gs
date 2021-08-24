@@ -40,7 +40,7 @@ var (
 )
 
 // handleAuth executes the OIDC authentication against an installation's authentication provider.
-func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
+func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation, clusterAdmin bool, port int) (oidc.UserInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, authResultTimeout)
 	defer cancel()
 
@@ -48,6 +48,7 @@ func handleAuth(ctx context.Context, out io.Writer, i *installation.Installation
 	var authProxy *callbackserver.CallbackServer
 	{
 		config := callbackserver.Config{
+			Port:        port,
 			RedirectURI: authCallbackPath,
 		}
 		authProxy, err = callbackserver.New(config)

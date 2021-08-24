@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `kubectl gs login` now offers the flag `--callback-port` to specify the port number the OIDC callback server on localhost should use.
+
 ### Changed
 
 - Update the Dockerfile to include kuebctl v1.19 and be based on Alpine v3.14.1.
