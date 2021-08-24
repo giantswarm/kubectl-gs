@@ -86,7 +86,7 @@ func handleAuth(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	// redirect the user to the local web server we'll create next.
 	err = open.Run(authURL)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n\n", color.RedString("Couldn't open the default browser. Please access the URL above to continue logging in."))
+		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
 	}
 
 	// Create a local web server, for fetching all the authentication data from
