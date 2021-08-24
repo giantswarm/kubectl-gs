@@ -178,7 +178,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
-	authResult, err := handleAuth(ctx, r.stdout, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
+	authResult, err := handleAuth(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
 	if err != nil {
 		return microerror.Mask(err)
 	}

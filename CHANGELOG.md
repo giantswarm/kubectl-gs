@@ -11,9 +11,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - `kubectl gs login` now offers the flag `--callback-port` to specify the port number the OIDC callback server on localhost should use.
 
+## [1.35.1] - 2021-08-24
+
 ### Changed
 
 - Update the Dockerfile to include kuebctl v1.19 and be based on Alpine v3.14.1.
+
+### Fixed
+
+- Make the `login` command continue to work even if opening the default browser fails.
 
 ## [1.35.0] - 2021-08-11
 
@@ -72,8 +78,8 @@ If you are upgrading from an earlier releases, apply these changes to migrate an
 
 ### Added
 
-- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS. 
-- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS. 
+- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS.
+- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS.
 - Add optional `--release` flag to nodepool templating so that the new functionality can be used for CAPA versions.
 
 ### Fixed
@@ -448,7 +454,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...HEAD
+[1.35.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...v1.35.1
 [1.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.32.0...v1.33.0
