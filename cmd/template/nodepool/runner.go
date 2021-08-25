@@ -64,6 +64,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Owner:                               r.flag.Owner,
 			ReleaseVersion:                      r.flag.Release,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
+			EKS:                                 r.flag.EKS,
 		}
 
 		if config.NodePoolID == "" {
