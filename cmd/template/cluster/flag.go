@@ -16,6 +16,7 @@ const (
 
 	// AWS only.
 	flagExternalSNAT       = "external-snat"
+	flagEKS                = "eks"
 	flagPodsCIDR           = "pods-cidr"
 	flagControlPlaneSubnet = "control-plane-subnet"
 
@@ -37,6 +38,7 @@ type flag struct {
 	// AWS only.
 	ControlPlaneSubnet string
 	ExternalSNAT       bool
+	EKS                bool
 	PodsCIDR           string
 
 	// Common.
@@ -57,6 +59,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// AWS only.
 	cmd.Flags().StringVar(&f.ControlPlaneSubnet, flagControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().BoolVar(&f.EKS, flagEKS, false, "Enable EKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 
 	// Common.

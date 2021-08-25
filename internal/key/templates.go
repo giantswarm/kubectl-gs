@@ -52,6 +52,14 @@ const ClusterCAPACRsTemplate = `
 {{ .BastionAWSMachineTemplateCR -}}
 `
 
+const ClusterEKSCRsTemplate = `
+{{- .ClusterCR -}}
+---
+{{ .AWSManagedControlPlaneCR -}}
+---
+{{ .AWSClusterRoleIdentityCR -}}
+`
+
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
