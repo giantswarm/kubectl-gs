@@ -78,6 +78,12 @@ const MachinePoolAWSCRsTemplate = `
 {{ .KubeadmConfigCR -}}
 `
 
+const MachinePoolEKSCRsTemplate = `
+{{- .ManagedMachinePoolCR -}}
+---
+{{ .MachinePoolCR -}}
+`
+
 const MachinePoolAzureCRsTemplate = `
 {{- .ProviderMachinePoolCR -}}
 ---

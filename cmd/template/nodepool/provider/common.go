@@ -17,6 +17,7 @@ type NodePoolCRsConfig struct {
 	OnDemandBaseCapacity                int
 	OnDemandPercentageAboveBaseCapacity int
 	UseAlikeInstanceTypes               bool
+	EKS                                 bool
 
 	// Azure only.
 	VMSize            string
