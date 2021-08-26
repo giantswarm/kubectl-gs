@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `kubectl gs login` now offers the flag `--callback-port` to specify the port number the OIDC callback server on localhost should use.
+
 ## [1.35.1] - 2021-08-24
 
 ### Changed
