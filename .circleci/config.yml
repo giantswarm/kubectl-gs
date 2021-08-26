@@ -6,7 +6,7 @@ orbs:
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2020.01
+      - image: cimg/base:2021.07
     steps:
       - checkout
       - run: |
