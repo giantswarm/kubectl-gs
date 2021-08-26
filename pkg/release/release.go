@@ -7,13 +7,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/blang/semver"
-
-	"github.com/giantswarm/kubectl-gs/internal/key"
-
+	semver "github.com/blang/semver/v4"
+	"github.com/giantswarm/microerror"
 	"gopkg.in/yaml.v3"
 
-	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 const (

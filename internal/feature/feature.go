@@ -3,7 +3,7 @@ package feature
 import (
 	"strings"
 
-	"github.com/blang/semver"
+	semver "github.com/blang/semver/v4"
 )
 
 // Service is used to compute different provider capabilities.
