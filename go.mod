@@ -18,7 +18,6 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.18.19
 	k8s.io/apiextensions-apiserver v0.18.19
 	k8s.io/apimachinery v0.18.19
