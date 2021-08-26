@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	gooidc "github.com/coreos/go-oidc"
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 	"github.com/skratchdot/open-golang/open"
