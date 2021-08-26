@@ -24,13 +24,17 @@ jobs:
 
     steps:
       - checkout
-      - run: |
-          echo "using krew-release-bot version ${KREW_RELEASE_BOT_VERSION}"
-          curl -LO https://github.com/rajatjindal/krew-release-bot/releases/download/${KREW_RELEASE_BOT_VERSION}/krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
-          tar -xvf krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
-          echo export GITHUB_REF=refs/tags/${CIRCLE_TAG} >> "$BASH_ENV"
-          echo export GITHUB_WORKSPACE=$(pwd) >> "$BASH_ENV"
-      - run: ./krew-release-bot action
+      - run:
+          name: Configure krew-release-bot
+          command: |
+            echo "using krew-release-bot version ${KREW_RELEASE_BOT_VERSION}"
+            curl -LO https://github.com/rajatjindal/krew-release-bot/releases/download/${KREW_RELEASE_BOT_VERSION}/krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
+            tar -xvf krew-release-bot_${KREW_RELEASE_BOT_VERSION}_linux_amd64.tar.gz
+            echo export GITHUB_REF=refs/tags/${CIRCLE_TAG} >> "$BASH_ENV"
+            echo export GITHUB_WORKSPACE=$(pwd) >> "$BASH_ENV"
+      - run:
+          name: Execute krew-release-bot
+          command: ./krew-release-bot action
 
 
 workflows:
