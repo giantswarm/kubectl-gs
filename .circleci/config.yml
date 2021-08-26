@@ -18,7 +18,7 @@ jobs:
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38
-      GITHUB_ACTIONS: true
+      GITHUB_ACTIONS: "true"
       GITHUB_REPOSITORY: giantswarm/kubectl-gs
       GITHUB_ACTOR: architectbot
 
