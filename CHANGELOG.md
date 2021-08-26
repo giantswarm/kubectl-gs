@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.36.0] - 2021-08-26
+
+### Added
+
+- `kubectl gs login` now offers the flag `--callback-port` to specify the port number the OIDC callback server on localhost should use.
+
 ## [1.35.1] - 2021-08-24
 
 ### Changed
@@ -450,7 +456,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.36.0...HEAD
+[1.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...v1.36.0
 [1.35.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...v1.35.1
 [1.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.33.0...v1.34.0
