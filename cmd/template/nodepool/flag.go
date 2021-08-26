@@ -19,7 +19,7 @@ const (
 	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
 	flagOnDemandPercentageAboveBaseCapacity = "on-demand-percentage-above-base-capacity"
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
-	flagEKS                                 = "eks"
+	flagEKS                                 = "aws-eks"
 
 	// Azure only.
 	flagAzureVMSize          = "azure-vm-size"

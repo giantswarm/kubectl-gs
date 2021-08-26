@@ -16,7 +16,7 @@ const (
 
 	// AWS only.
 	flagExternalSNAT       = "external-snat"
-	flagEKS                = "eks"
+	flagEKS                = "aws-eks"
 	flagPodsCIDR           = "pods-cidr"
 	flagControlPlaneSubnet = "control-plane-subnet"
 
