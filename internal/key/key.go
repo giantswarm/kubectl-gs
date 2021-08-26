@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	semver "github.com/blang/semver/v4"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
@@ -46,6 +47,11 @@ const (
 	GiantswarmNamespace = "giantswarm"
 
 	ControllerRuntimeBurstValue = 200
+)
+
+const (
+	// FirstOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
+	FirstAWSOrgNamespaceRelease = "16.0.0"
 )
 
 func BastionResourceName(clusterName string) string {
@@ -123,11 +129,14 @@ func IsCAPAVersion(version string) bool {
 	return version == "20.0.0"
 }
 
-// IsOrgNamespaceVersion returns whether a given GS Release Version is based on clusters in Org Namespace
-// TODO: make this a >= comparison. Also eventually this has to happen on default, e.g if there is no version given,
-//       it should be considered org namespace version
+// IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
 func IsOrgNamespaceVersion(version string) bool {
-	return version == "17.0.0"
+	if version == "" {
+		return true
+	}
+	OrgNamespaceVersion, _ := semver.New(FirstAWSOrgNamespaceRelease)
+	releaseVersion, _ := semver.New(version)
+	return releaseVersion.GE(*OrgNamespaceVersion)
 }
 
 // readConfigMapFromFile reads a configmap from a YAML file.
