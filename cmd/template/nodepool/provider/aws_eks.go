@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"io"
 	"strconv"
 	"text/template"
@@ -97,6 +98,7 @@ func newAWSManagedMachinePoolFromUnstructured(config NodePoolCRsConfig, o unstru
 			MinSize: &min,
 			MaxSize: &max,
 		}
+		awsmachinepool.Spec.RoleName = fmt.Sprintf("nodes-%s-%s", config.NodePoolID, config.ClusterName)
 
 		awsmachinepool.Spec.SubnetIDs = nil // for now we dont allow spec of subnets ID and  this needs to be ommited
 		if config.MachineDeploymentSubnet != "" {
