@@ -131,8 +131,9 @@ func IsCAPAVersion(version string) bool {
 
 // IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
 func IsOrgNamespaceVersion(version string) bool {
+	// TODO: this has to return true as soon as v16.0.0 is the newest version
 	if version == "" {
-		return true
+		return false
 	}
 	OrgNamespaceVersion, _ := semver.New(FirstAWSOrgNamespaceRelease)
 	releaseVersion, _ := semver.New(version)

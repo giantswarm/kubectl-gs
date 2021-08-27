@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/color v1.12.0
 	github.com/giantswarm/apiextensions/v3 v3.31.0

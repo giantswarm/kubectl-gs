@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	capav1alpha3 "sigs.k8s.io/cluster-api-provider-aws/exp/api/v1alpha3"
@@ -146,9 +147,21 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		crs.AWSMachineDeployment.Annotations[annotation.AWSSubnetSize] = config.MachineDeploymentSubnet
 	}
 
-	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
-		crs = moveCRsToOrgNamespace(crs, config.Owner)
+	// Starting with v16.0.0, clusters are created in the org-namespace. This also applies to nodepools.
+	// However, there is a possibility that a cluster in a higher version has been upgraded and is still in
+	// the default namespace. Therefore we allow to explicitly set the namespace here so that users can
+	// ensure their nodepool is in the cluster namespace.
+	var namespace string
+	{
+		if config.Namespace != "" {
+			namespace = config.Namespace
+		} else if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
+			namespace = key.OrganizationNamespaceFromName(config.Owner)
+		} else {
+			namespace = metav1.NamespaceDefault
+		}
 	}
+	crs = moveCRsToNamespace(crs, namespace)
 
 	mdCRYaml, err := yaml.Marshal(crs.MachineDeployment)
 	if err != nil {
@@ -319,9 +332,9 @@ func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o 
 	return &kubeadmConfig, nil
 }
 
-func moveCRsToOrgNamespace(crs v1alpha3.NodePoolCRs, organization string) v1alpha3.NodePoolCRs {
-	crs.MachineDeployment.SetNamespace(key.OrganizationNamespaceFromName(organization))
-	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
-	crs.AWSMachineDeployment.SetNamespace(key.OrganizationNamespaceFromName(organization))
+func moveCRsToNamespace(crs v1alpha3.NodePoolCRs, namespace string) v1alpha3.NodePoolCRs {
+	crs.MachineDeployment.SetNamespace(namespace)
+	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = namespace
+	crs.AWSMachineDeployment.SetNamespace(namespace)
 	return crs
 }
