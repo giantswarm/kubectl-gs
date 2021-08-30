@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	semver "github.com/blang/semver/v4"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
@@ -46,6 +47,11 @@ const (
 	GiantswarmNamespace = "giantswarm"
 
 	ControllerRuntimeBurstValue = 200
+)
+
+const (
+	// FirstOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
+	FirstAWSOrgNamespaceRelease = "16.0.0"
 )
 
 func BastionResourceName(clusterName string) string {
@@ -121,6 +127,20 @@ func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
 // TODO: make this a >= comparison
 func IsCAPAVersion(version string) bool {
 	return version == "20.0.0"
+}
+
+// IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
+func IsOrgNamespaceVersion(version string) bool {
+	// TODO: this has to return true as soon as v16.0.0 is the newest version
+	// Background: in case the release version is not set, aws-admission-controller mutates to the the latest AWS version,
+	// see https://github.com/giantswarm/aws-admission-controller/blob/ef83d90fc856fbc0484bec967064834c0b8d2c1e/pkg/aws/v1alpha3/cluster/mutate_cluster.go#L191-L202
+	// so as soon as the latest version is >=16.0.0 we are going to need the org-namespace as default here.
+	if version == "" {
+		return false
+	}
+	OrgNamespaceVersion, _ := semver.New(FirstAWSOrgNamespaceRelease)
+	releaseVersion, _ := semver.New(version)
+	return releaseVersion.GE(*OrgNamespaceVersion)
 }
 
 // readConfigMapFromFile reads a configmap from a YAML file.

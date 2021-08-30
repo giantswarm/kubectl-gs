@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	gooidc "github.com/coreos/go-oidc"
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/giantswarm/microerror"
 	"golang.org/x/oauth2"
 )

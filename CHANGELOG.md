@@ -7,9 +7,24 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Template cluster and nodepool resources in the org-namespace from AWS release `16.0.0` onwards.
+
+### Added
+
+- Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for 
+  upgraded >v16.0.0 clusters that remain in the default namespace.
+
+## [1.36.0] - 2021-08-26
+
+### Added
+
+- `kubectl gs login` now offers the flag `--callback-port` to specify the port number the OIDC callback server on localhost should use.
+
 ## [1.35.1] - 2021-08-24
 
-### Changed
+### Added### Added
 
 - Update the Dockerfile to include kuebctl v1.19 and be based on Alpine v3.14.1.
 
@@ -450,7 +465,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.36.0...HEAD
+[1.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...v1.36.0
 [1.35.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...v1.35.1
 [1.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.33.0...v1.34.0

@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -63,6 +64,22 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		crs.AWSMachineDeployment.Annotations[annotation.AWSSubnetSize] = config.MachineDeploymentSubnet
 	}
 
+	// Starting with v16.0.0, clusters are created in the org-namespace. This also applies to nodepools.
+	// However, there is a possibility that a cluster in a higher version has been upgraded and is still in
+	// the default namespace. Therefore we allow to explicitly set the namespace here so that users can
+	// ensure their nodepool is in the cluster namespace.
+	var namespace string
+	{
+		if config.Namespace != "" {
+			namespace = config.Namespace
+		} else if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
+			namespace = key.OrganizationNamespaceFromName(config.Owner)
+		} else {
+			namespace = metav1.NamespaceDefault
+		}
+	}
+	crs = moveCRsToNamespace(crs, namespace)
+
 	mdCRYaml, err := yaml.Marshal(crs.MachineDeployment)
 	if err != nil {
 		return microerror.Mask(err)
@@ -88,4 +105,11 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	}
 
 	return nil
+}
+
+func moveCRsToNamespace(crs v1alpha3.NodePoolCRs, namespace string) v1alpha3.NodePoolCRs {
+	crs.MachineDeployment.SetNamespace(namespace)
+	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = namespace
+	crs.AWSMachineDeployment.SetNamespace(namespace)
+	return crs
 }

@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	gooidc "github.com/coreos/go-oidc"
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 	"github.com/skratchdot/open-golang/open"
@@ -40,7 +40,7 @@ var (
 )
 
 // handleAuth executes the OIDC authentication against an installation's authentication provider.
-func handleAuth(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, clusterAdmin bool) (oidc.UserInfo, error) {
+func handleAuth(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, clusterAdmin bool, port int) (oidc.UserInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, authResultTimeout)
 	defer cancel()
 
@@ -48,6 +48,7 @@ func handleAuth(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	var authProxy *callbackserver.CallbackServer
 	{
 		config := callbackserver.Config{
+			Port:        port,
 			RedirectURI: authCallbackPath,
 		}
 		authProxy, err = callbackserver.New(config)
