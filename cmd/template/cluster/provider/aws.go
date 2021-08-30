@@ -210,6 +210,10 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		crs.AWSCluster.Annotations[annotation.AWSSubnetSize] = config.ControlPlaneSubnet
 	}
 
+	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
+		crs = moveCRsToOrgNamespace(crs, config.Owner)
+	}
+
 	clusterCRYaml, err := yaml.Marshal(crs.Cluster)
 	if err != nil {
 		return microerror.Mask(err)
@@ -537,4 +541,14 @@ func newBastionAWSMachineTemplate(config ClusterCRsConfig, region string) *capav
 	}
 
 	return t
+}
+
+func moveCRsToOrgNamespace(crs v1alpha3.ClusterCRs, organization string) v1alpha3.ClusterCRs {
+	crs.Cluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
+	crs.Cluster.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
+	crs.AWSCluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
+	crs.G8sControlPlane.SetNamespace(key.OrganizationNamespaceFromName(organization))
+	crs.G8sControlPlane.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
+	crs.AWSControlPlane.SetNamespace(key.OrganizationNamespaceFromName(organization))
+	return crs
 }

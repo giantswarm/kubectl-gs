@@ -80,6 +80,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.Provider == key.ProviderAzure {
 			config.Namespace = key.OrganizationNamespaceFromName(config.Owner)
 		}
+		if r.flag.Provider == key.ProviderAWS {
+			config.Namespace = r.flag.ClusterNamespace
+		}
 	}
 
 	var output *os.File
