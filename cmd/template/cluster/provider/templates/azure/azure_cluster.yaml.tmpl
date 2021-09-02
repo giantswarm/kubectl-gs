@@ -2,7 +2,11 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
 kind: AzureCluster
 metadata:
   labels:
-    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    "release.giantswarm.io/version": "{{ .Version }}"
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Owner }}"
+    "cluster.x-k8s.io/watch-filter": "capi"
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:

@@ -48,12 +48,14 @@ func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
 		KubernetesVersion string
 		Name              string
 		Namespace         string
+		Owner             string
 		Version           string
 		VMSize            string
 	}{
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Owner),
+		Owner:             config.Owner,
 		Version:           config.ReleaseVersion,
 		VMSize:            "Standard_D4s_v3",
 	}
