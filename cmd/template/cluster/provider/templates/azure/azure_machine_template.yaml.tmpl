@@ -1,0 +1,19 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: AzureMachineTemplate
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: {{ .Name }}
+  name: {{ .Name }}-control-plane
+  namespace: {{ .Namespace }}
+spec:
+  template:
+    spec:
+      dataDisks:
+      - diskSizeGB: 256
+        lun: 0
+        nameSuffix: etcddisk
+      osDisk:
+        diskSizeGB: 128
+        osType: Linux
+      sshPublicKey: ""
+      vmSize: {{ .VMSize }}

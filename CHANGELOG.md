@@ -15,6 +15,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for 
   upgraded >v16.0.0 clusters that remain in the default namespace.
+- Added support to generate templates for CAPZ clusters. 
 
 ## [1.36.0] - 2021-08-26
 
