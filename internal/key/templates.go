@@ -52,16 +52,6 @@ const ClusterCAPACRsTemplate = `
 {{ .BastionAWSMachineTemplateCR -}}
 `
 
-const ClusterCAPZCRsTemplate = `
-{{- .ClusterCR -}}
----
-{{ .AzureClusterCR -}}
----
-{{ .KubeadmControlPlaneCR -}}
----
-{{ .AzureMachineTemplateCR -}}
-`
-
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
