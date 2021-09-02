@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	semver "github.com/blang/semver/v4"
+	"github.com/blang/semver/v4"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
@@ -126,6 +126,11 @@ func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
 // IsCAPAVersion returns whether a given GS Release Version is based on the CAPI/CAPA projects
 // TODO: make this a >= comparison
 func IsCAPAVersion(version string) bool {
+	return version == "20.0.0"
+}
+
+// IsCAPZVersion returns whether a given GS Release Version is based on the CAPI/CAPZ projects
+func IsCAPZVersion(version string) bool {
 	return version == "20.0.0"
 }
 
