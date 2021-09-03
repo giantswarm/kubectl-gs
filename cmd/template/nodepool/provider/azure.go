@@ -21,10 +21,63 @@ import (
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
+	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
+	if key.IsCAPZVersion(config.ReleaseVersion) {
+		err = WriteCAPZTemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		err = WriteGSAzureTemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
+	data := struct {
+		KubernetesVersion  string
+		ClusterName        string
+		Name               string
+		Namespace          string
+		Owner              string
+		Replicas           int8
+		StorageAccountType string
+		Version            string
+		VMSize             string
+	}{
+		KubernetesVersion:  "v1.19.9",
+		ClusterName:        config.ClusterName,
+		Name:               config.NodePoolID,
+		Namespace:          key.OrganizationNamespaceFromName(config.Owner),
+		Owner:              config.Owner,
+		Replicas:           2,
+		StorageAccountType: key.AzureStorageAccountTypeForVMSize(config.VMSize),
+		Version:            config.ReleaseVersion,
+		VMSize:             config.VMSize,
+	}
+
+	t := template.Must(template.New(config.FileName).Parse(azurenodepooltemplate.GetTemplate()))
+	err = t.Execute(out, data)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func WriteGSAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
 	var azureMachinePoolCRYaml, machinePoolCRYaml, sparkCRYaml []byte

@@ -1,0 +1,27 @@
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: MachinePool
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    "cluster.x-k8s.io/cluster-name": {{ .ClusterName }}
+    "cluster.x-k8s.io/watch-filter": capi
+    "giantswarm.io/cluster": {{ .ClusterName }}
+    "release.giantswarm.io/version": "{{ .Version }}"
+    "giantswarm.io/organization": "{{ .Owner }}"
+spec:
+  clusterName: {{ .ClusterName }}
+  replicas: {{ .Replicas }}
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
+          kind: KubeadmConfig
+          name: {{ .Name }}
+      clusterName: {{ .ClusterName }}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+        kind: AzureMachinePool
+        name: {{ .Name }}
+      version: {{ .KubernetesVersion }}

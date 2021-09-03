@@ -220,3 +220,30 @@ func OrganizationNamespaceFromName(name string) string {
 
 	return name
 }
+
+func AzureStorageAccountTypeForVMSize(vmSize string) string {
+	// Ugly but hardcoding is the only way to know premium storage support without reaching Azure API.
+	vmTypesWithPremiumStorageSupport := map[string]bool{
+		"Standard_B12ms": true, "Standard_B16ms": true, "Standard_B20ms": true,
+		"Standard_F2s": true, "Standard_F4s": true, "Standard_F8s": true, "Standard_F16s": true,
+		"Standard_D4s_v3": true, "Standard_D8s_v3": true, "Standard_D16s_v3": true, "Standard_D32s_v3": true, "Standard_D48s_v3": true, "Standard_D64s_v3": true,
+		"Standard_E4-2s_v3": true, "Standard_E4s_v3": true, "Standard_E8-2s_v3": true, "Standard_E8-4s_v3": true, "Standard_E8s_v3": true, "Standard_E16-4s_v3": true, "Standard_E16-8s_v3": true,
+		"Standard_E16s_v3": true, "Standard_E20s_v3": true, "Standard_E32-8s_v3": true, "Standard_E32-16s_v3": true, "Standard_E32s_v3": true,
+		"Standard_PB6s":     true,
+		"Standard_E4-2s_v4": true, "Standard_E4s_v4": true, "Standard_E8-2s_v4": true, "Standard_E8-4s_v4": true, "Standard_E8s_v4": true, "Standard_E16-4s_v4": true, "Standard_E16-8s_v4": true, "Standard_E16s_v4": true, "Standard_E20s_v4": true, "Standard_E32-8s_v4": true, "Standard_E32-16s_v4": true, "Standard_E32s_v4": true, "Standard_E48s_v4": true, "Standard_E64-16s_v4": true, "Standard_E64-32s_v4": true, "Standard_E64s_v4": true,
+		"Standard_E4-2ds_v4": true, "Standard_E4ds_v4": true, "Standard_E8-2ds_v4": true, "Standard_E8-4ds_v4": true, "Standard_E8ds_v4": true, "Standard_E16-4ds_v4": true, "Standard_E16-8ds_v4": true, "Standard_E16ds_v4": true, "Standard_E20ds_v4": true, "Standard_E32-8ds_v4": true, "Standard_E32-16ds_v4": true, "Standard_E32ds_v4": true, "Standard_E48ds_v4": true, "Standard_E64-16ds_v4": true, "Standard_E64-32ds_v4": true, "Standard_E64ds_v4": true,
+		"Standard_D4ds_v4": true, "Standard_D8ds_v4": true, "Standard_D16ds_v4": true, "Standard_D32ds_v4": true, "Standard_D48ds_v4": true, "Standard_D64ds_v4": true,
+		"Standard_D4s_v4": true, "Standard_D8s_v4": true, "Standard_D16s_v4": true, "Standard_D32s_v4": true, "Standard_D48s_v4": true, "Standard_D64s_v4": true,
+		"Standard_F4s_v2": true, "Standard_F8s_v2": true, "Standard_F16s_v2": true, "Standard_F32s_v2": true, "Standard_F48s_v2": true, "Standard_F64s_v2": true, "Standard_F72s_v2": true,
+		"Standard_NV12s_v3": true, "Standard_NV24s_v3": true, "Standard_NV48s_v3": true,
+		"Standard_L8s_v2": true, "Standard_L16s_v2": true, "Standard_L32s_v2": true, "Standard_L48s_v2": true, "Standard_L64s_v2": true, "Standard_L80s_v2": true,
+		"Standard_M208s_v2": true, "Standard_M416-208s_v2": true, "Standard_M416s_v2": true, "Standard_M416-208ms_v2": true, "Standard_M416ms_v2": true,
+		"Standard_NV4as_v4": true, "Standard_NV8as_v4": true, "Standard_NV16as_v4": true, "Standard_NV32as_v4": true,
+		"Standard_D4as_v4": true, "Standard_D8as_v4": true, "Standard_D16as_v4": true, "Standard_D32as_v4": true, "Standard_D48as_v4": true, "Standard_D64as_v4": true, "Standard_D96as_v4": true,
+		"Standard_E4as_v4": true, "Standard_E8as_v4": true, "Standard_E16as_v4": true, "Standard_E20as_v4": true, "Standard_E32as_v4": true, "Standard_E48as_v4": true, "Standard_E64as_v4": true, "Standard_E96as_v4": true,
+	}
+	if vmTypesWithPremiumStorageSupport[vmSize] {
+		return "Premium_LRS"
+	}
+	return "Standard_LRS"
+}

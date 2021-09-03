@@ -24,5 +24,7 @@ func GetTemplate() string {
 		azureCluster,
 		kubeadmControlPlane,
 		azureMachineTemplate,
+		// Adds a separator at the end of the joined template for easier joinability of cluster and node pool templates.
+		"",
 	}, "\n---\n")
 }
