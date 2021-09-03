@@ -1,0 +1,27 @@
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
+kind: KubeadmConfig
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    "cluster.x-k8s.io/cluster-name": {{ .ClusterName }}
+    "cluster.x-k8s.io/watch-filter": capi
+    "giantswarm.io/cluster": {{ .ClusterName }}
+    "release.giantswarm.io/version": "{{ .Version }}"
+    "giantswarm.io/organization": "{{ .Owner }}"
+spec:
+  files:
+  - contentFrom:
+      secret:
+        key: worker-node-azure.json
+        name: {{ .Name }}-azure-json
+    owner: root:root
+    path: /etc/kubernetes/azure.json
+    permissions: "0644"
+  joinConfiguration:
+    nodeRegistration:
+      kubeletExtraArgs:
+        azure-container-registry-config: /etc/kubernetes/azure.json
+        cloud-config: /etc/kubernetes/azure.json
+        cloud-provider: azure
+      name: '{{ `{{ ds.meta_data["local_hostname"] }}` }}'
