@@ -10,6 +10,9 @@ metadata:
     "release.giantswarm.io/version": "{{ .Version }}"
     "giantswarm.io/organization": "{{ .Owner }}"
 spec:
+  additionalTags:
+    "cluster-autoscaler-enabled": "true"
+    "cluster-autoscaler-name": "{{ .ClusterName }}"
   identity: SystemAssigned
   location: ""
   strategy:

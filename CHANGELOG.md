@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add tags to enable `cluster autoscaler` to Azure Node Pool template.
+
 ### Fixed
 
 - Set `cluster.giantswarm.io/description` annotation for `Cluster` CR in template generation command on Azure.
