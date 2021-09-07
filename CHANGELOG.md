@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Set `cluster.giantswarm.io/description` label for `Cluster` CR in template generation command on Azure.
+
 ## [1.37.0] - 2021-09-03
 
 ### Changed

@@ -7,6 +7,7 @@ metadata:
     "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
     "giantswarm.io/organization": "{{ .Owner }}"
     "cluster.x-k8s.io/watch-filter": "capi"
+    "cluster.giantswarm.io/description": "{{ .Description }}"
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
