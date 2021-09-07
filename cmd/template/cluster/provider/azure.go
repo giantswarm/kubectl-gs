@@ -45,6 +45,7 @@ func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	data := struct {
+		Description       string
 		KubernetesVersion string
 		Name              string
 		Namespace         string
@@ -52,6 +53,7 @@ func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
 		Version           string
 		VMSize            string
 	}{
+		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Owner),
