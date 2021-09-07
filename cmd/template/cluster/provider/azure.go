@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"text/template"
@@ -37,6 +38,48 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+
+	return nil
+}
+
+func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
+	var err error
+
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	data := struct {
+		BastionIgnitionSecretBase64 string
+		BastionVMSize               string
+		Description                 string
+		KubernetesVersion           string
+		Name                        string
+		Namespace                   string
+		Owner                       string
+		Version                     string
+		VMSize                      string
+	}{
+		BastionIgnitionSecretBase64: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(key.BastionIgnitionTemplate, config.Name, key.BastionSSHDConfigEncoded(), sshSSOPublicKey))),
+		BastionVMSize:               "Standard_D2_v3",
+		Description:                 config.Description,
+		KubernetesVersion:           "v1.19.9",
+		Name:                        config.Name,
+		Namespace:                   key.OrganizationNamespaceFromName(config.Owner),
+		Owner:                       config.Owner,
+		Version:                     config.ReleaseVersion,
+		VMSize:                      "Standard_D4s_v3",
+	}
+
+	t := template.Must(template.New(config.FileName).Parse(azure.GetTemplate()))
+	err = t.Execute(out, data)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil

@@ -17,6 +17,28 @@ spec:
       role: control-plane
       routeTable:
         name: {{ .Name }}-node-routetable
+    - role: node
+      name: {{ .Name }}-bastion
+      cidrBlocks:
+      - 10.2.0.0/16
+      natGateway:
+        name: {{ .Name }}-bastion
+        ip:
+          name: {{ .Name }}-bastion-nat-gw
+      securityGroup:
+        name: {{ .Name }}-bastion
+        securityRules:
+        - name: "allow-ssh"
+          description: "Allow SSH access from the internet"
+          protocol: Tcp
+          direction: Inbound
+          priority: 100
+          destinationPorts: "22"
+          destination: "*"
+          sourcePorts: "*"
+          source: "*"
     vnet:
       name: {{ .Name }}-vnet
+      cidrBlocks:
+      - 10.0.0.0/8
   resourceGroup: {{ .Name }}

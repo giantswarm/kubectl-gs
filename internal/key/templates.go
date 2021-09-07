@@ -123,6 +123,14 @@ const BastionIgnitionTemplate = `{
             "contents":{
                "source":"data:text/plain;charset=utf-8;base64,%s"
             }
+         },
+         {
+            "path":"/run/cluster-api/bootstrap-success.complete",
+            "filesystem":"root",
+            "mode": 420,
+            "contents":{
+               "source":"data:,success"
+            }
          }
       ]
    }
