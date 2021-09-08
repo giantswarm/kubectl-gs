@@ -10,10 +10,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add tags to enable `cluster autoscaler` to Azure Node Pool template.
+- Enable system assigned identity in Azure CAPI clusters' master nodes.
+- Set routing table in master subnet in Azure CAPI clusters.
 
 ### Fixed
 
 - Set `cluster.giantswarm.io/description` annotation for `Cluster` CR in template generation command on Azure.
+- Set `machine-pool.giantswarm.io/name` annotation for `MachinePool` CR in template generation command on Azure.
 
 ## [1.37.0] - 2021-09-03
 

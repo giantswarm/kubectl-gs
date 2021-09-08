@@ -49,20 +49,26 @@ func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	data := struct {
 		KubernetesVersion  string
 		ClusterName        string
+		Description        string
+		MaxSize            int
+		MinSize            int
 		Name               string
 		Namespace          string
 		Owner              string
-		Replicas           int8
+		Replicas           int
 		StorageAccountType string
 		Version            string
 		VMSize             string
 	}{
 		KubernetesVersion:  "v1.19.9",
 		ClusterName:        config.ClusterName,
+		Description:        config.Description,
+		MaxSize:            config.NodesMax,
+		MinSize:            config.NodesMin,
 		Name:               config.NodePoolID,
 		Namespace:          key.OrganizationNamespaceFromName(config.Owner),
 		Owner:              config.Owner,
-		Replicas:           2,
+		Replicas:           config.NodesMin,
 		StorageAccountType: key.AzureStorageAccountTypeForVMSize(config.VMSize),
 		Version:            config.ReleaseVersion,
 		VMSize:             config.VMSize,
