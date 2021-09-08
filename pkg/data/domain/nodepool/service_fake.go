@@ -5,23 +5,23 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
+	dataclient "github.com/giantswarm/kubectl-gs/pkg/data/client"
 )
 
 var _ Interface = &FakeService{}
 
 type FakeService struct {
 	service *Service
-	storage []runtime.Object
+	storage []client.Object
 }
 
-func NewFakeService(storage []runtime.Object) *FakeService {
-	clientConfig := client.Config{
+func NewFakeService(storage []client.Object) *FakeService {
+	clientConfig := dataclient.Config{
 		Logger: microloggertest.New(),
 	}
-	fakeClient, _ := client.NewFakeClient(clientConfig)
+	fakeClient, _ := dataclient.NewFakeClient(clientConfig)
 
 	underlyingService := &Service{
 		client: fakeClient,
