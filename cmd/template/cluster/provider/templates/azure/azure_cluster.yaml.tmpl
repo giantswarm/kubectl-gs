@@ -16,7 +16,7 @@ spec:
     - name: {{ .Name }}-controlplane-subnet
       role: control-plane
       routeTable:
-        name: ur80b-node-routetable
+        name: {{ .Name }}-node-routetable
     vnet:
       name: {{ .Name }}-vnet
   resourceGroup: {{ .Name }}
