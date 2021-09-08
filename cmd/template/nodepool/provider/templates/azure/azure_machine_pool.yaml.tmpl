@@ -11,8 +11,10 @@ metadata:
     "giantswarm.io/organization": "{{ .Owner }}"
 spec:
   additionalTags:
-    "cluster-autoscaler-enabled": "true"
+    "cluster-autoscaler-enabled": "{{ if eq .MinSize .MaxSize }}false{{else}}true{{end}}"
     "cluster-autoscaler-name": "{{ .ClusterName }}"
+    "min": "{{ .MinSize }}"
+    "max": "{{ .MaxSize }}"
   identity: SystemAssigned
   location: ""
   strategy:
