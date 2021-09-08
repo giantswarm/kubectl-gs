@@ -39,7 +39,7 @@ func WriteVSphereTemplate(out io.Writer, config ClusterCRsConfig) error {
 		VMSize:            "Standard_D4s_v3",
 	}
 
-	t := template.Must(template.New(config.FileName).Parse(azure.GetTemplate()))
+	t := template.Must(template.New(config.FileName).Parse(vsphere.GetTemplate()))
 	err = t.Execute(out, data)
 	if err != nil {
 		return microerror.Mask(err)

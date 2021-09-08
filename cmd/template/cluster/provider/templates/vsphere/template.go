@@ -1,4 +1,4 @@
-package azure
+package vsphere
 
 import (
 	_ "embed"
