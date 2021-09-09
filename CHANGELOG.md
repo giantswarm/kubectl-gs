@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Enable termination events for CAPZ node pools.
+
 ## [1.41.1] - 2021-10-04
 
 ### Changed
