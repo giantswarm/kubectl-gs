@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Allow providing Kubernetes API URLs with prefixes to the `login` command.
+
 ## [1.38.0] - 2021-09-08
 
 ### Added
@@ -28,9 +32,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for 
+- Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for
   upgraded >v16.0.0 clusters that remain in the default namespace.
-- Added support to generate templates for CAPZ clusters and node pools. 
+- Added support to generate templates for CAPZ clusters and node pools.
 
 ## [1.36.0] - 2021-08-26
 
