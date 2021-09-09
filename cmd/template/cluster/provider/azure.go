@@ -1,11 +1,14 @@
 package provider
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,11 +26,11 @@ const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteAzureTemplate(client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	if key.IsCAPZVersion(config.ReleaseVersion) {
-		err = WriteCAPZTemplate(out, config)
+		err = WriteCAPZTemplate(client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -41,8 +44,9 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 	return nil
 }
 
-func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteCAPZTemplate(client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
+	ctx := context.Background()
 
 	data := struct {
 		Description       string
@@ -62,10 +66,30 @@ func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
 		VMSize:            "Standard_D4s_v3",
 	}
 
-	t := template.Must(template.New(config.FileName).Parse(azure.GetTemplate()))
-	err = t.Execute(out, data)
-	if err != nil {
-		return microerror.Mask(err)
+	for _, t := range azure.GetTemplates() {
+		te := template.Must(template.New(config.FileName).Parse(t))
+		buf := new(bytes.Buffer)
+		// Template from our inputs.
+		err = te.Execute(buf, data)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		// DryRun the CR against the management cluster.
+		tYaml, err := runMutation(ctx, client, buf.Bytes(), config.Namespace)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		// Write the yaml to our file.
+		_, err = out.Write(tYaml)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		// Add separators to make the entire file valid yaml and allow easy appending.
+		_, err = out.Write([]byte("---\n"))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
 	}
 
 	return nil

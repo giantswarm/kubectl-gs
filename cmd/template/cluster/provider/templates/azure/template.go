@@ -2,7 +2,6 @@ package azure
 
 import (
 	_ "embed"
-	"strings"
 )
 
 //go:embed cluster.yaml.tmpl
@@ -18,13 +17,11 @@ var kubeadmControlPlane string
 var azureMachineTemplate string
 
 // GetTemplate merges all .tmpl files.
-func GetTemplate() string {
-	return strings.Join([]string{
+func GetTemplates() []string {
+	return []string{
 		cluster,
 		azureCluster,
 		kubeadmControlPlane,
 		azureMachineTemplate,
-		// Adds a separator at the end of the joined template for easier joinability of cluster and node pool templates.
-		"",
-	}, "\n---\n")
+	}
 }

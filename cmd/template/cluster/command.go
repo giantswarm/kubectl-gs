@@ -4,9 +4,12 @@ import (
 	"io"
 	"os"
 
+	"github.com/giantswarm/kubectl-gs/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
@@ -16,6 +19,9 @@ const (
 
 type Config struct {
 	Logger micrologger.Logger
+
+	K8sConfigAccess clientcmd.ConfigAccess
+
 	Stderr io.Writer
 	Stdout io.Writer
 }
@@ -29,6 +35,9 @@ func New(config Config) (*cobra.Command, error) {
 	}
 	if config.Stdout == nil {
 		config.Stdout = os.Stdout
+	}
+	if config.K8sConfigAccess == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
 	}
 
 	f := &flag{}
@@ -45,6 +54,9 @@ func New(config Config) (*cobra.Command, error) {
 		Short: description,
 		Long:  description,
 		RunE:  r.Run,
+		PreRunE: middleware.Compose(
+			renewtoken.Middleware(config.K8sConfigAccess),
+		),
 	}
 
 	f.Init(c)

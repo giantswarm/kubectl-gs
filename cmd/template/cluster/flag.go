@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
@@ -25,10 +26,11 @@ const (
 	flagDescription         = "description"
 	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
 	flagName                = "name"
-	flagOutput              = "output"
-	flagOwner               = "owner"
-	flagRelease             = "release"
-	flagLabel               = "label"
+	// TODO: Fix this - the genericclioptions already have an output field. We can't redefine flags.
+	flagOutput  = "output-gs"
+	flagOwner   = "owner"
+	flagRelease = "release"
+	flagLabel   = "label"
 )
 
 type flag struct {
@@ -49,6 +51,9 @@ type flag struct {
 	Owner               string
 	Release             string
 	Label               []string
+
+	config genericclioptions.RESTClientGetter
+	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -75,6 +80,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// TODO: Remove around December 2021
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
+
+	f.config = genericclioptions.NewConfigFlags(true)
+	f.print = genericclioptions.NewPrintFlags("")
+
+	// Merging current command flags and config flags,
+	// to be able to override kubectl-specific ones.
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+	f.print.AddFlags(cmd)
 }
 
 func (f *flag) Validate() error {
