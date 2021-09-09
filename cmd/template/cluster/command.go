@@ -4,12 +4,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/giantswarm/kubectl-gs/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/giantswarm/kubectl-gs/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 )
 
 const (
