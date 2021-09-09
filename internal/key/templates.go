@@ -108,6 +108,16 @@ const BastionIgnitionTemplate = `{
                "source":"data:,%s-bastion"
             }
          },
+         {{- range $file := .IgnitionFiles }}
+         {
+            "path":"{{ $file.Path }}",
+            "filesystem":"root",
+            "mode": 420,
+            "contents":{
+              "source":"data:text/plain;charset=utf-8;base64,{{ $file.Content }}"
+            },
+         }
+         {{- end }}
          {
             "path":"/etc/ssh/sshd_config",
             "filesystem":"root",
@@ -122,14 +132,6 @@ const BastionIgnitionTemplate = `{
             "mode": 420,
             "contents":{
                "source":"data:text/plain;charset=utf-8;base64,%s"
-            }
-         },
-         {
-            "path":"/run/cluster-api/bootstrap-success.complete",
-            "filesystem":"root",
-            "mode": 420,
-            "contents":{
-               "source":"data:,success"
             }
          }
       ]
@@ -170,4 +172,20 @@ MaxAuthTries 5
 LoginGraceTime 60
 AllowTcpForwarding no
 AllowAgentForwarding no
+`
+
+const CapzSetBastionReadyTimer = `[Timer]
+OnCalendar=minutely
+Unit=set-bastion-ready.service
+
+[Install]
+WantedBy=default.target
+`
+
+const CapzSetBastionReadyService = `[Unit]
+Description=Set Bastion zone as ready by creating /run/cluster-api/bootstrap-success.complete
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'mkdir -p /run/cluster-api/ ; echo "success" >/run/cluster-api/bootstrap-success.complete'
 `

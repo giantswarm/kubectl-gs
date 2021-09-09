@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add CRs to create a bastion host in CAPZ cluster template.
 - Enable termination events for CAPZ node pools.
 
 ## [1.41.1] - 2021-10-04
