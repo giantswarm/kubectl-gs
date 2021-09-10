@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster"
 	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool"
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool"
+	"github.com/giantswarm/kubectl-gs/cmd/template/organization"
 )
 
 const (
@@ -109,6 +110,19 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var organizationCmd *cobra.Command
+	{
+		c := organization.Config{
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		organizationCmd, err = organization.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -132,6 +146,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(clusterCmd)
 	c.AddCommand(networkpoolCmd)
 	c.AddCommand(nodepoolCmd)
+	c.AddCommand(organizationCmd)
 
 	return c, nil
 }

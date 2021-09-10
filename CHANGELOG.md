@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for templating `Organization` CRs.
+
 ### Changed
 
 - Allow providing Kubernetes API URLs with prefixes to the `login` command.
