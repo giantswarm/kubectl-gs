@@ -249,7 +249,9 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	}
 
 	err = validateAuthProvider(authProvider)
-	if err != nil {
+	if IsNewLoginRequired(err) {
+		return microerror.Mask(err)
+	} else if err != nil {
 		return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
 	}
 
@@ -299,16 +301,12 @@ func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
 }
 
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
-	keys := []string{
-		ClientID,
-		IDToken,
-		Issuer,
-		RefreshToken,
+	if len(provider.Config[IDToken]) < 1 || len(provider.Config[RefreshToken]) < 1 {
+		return microerror.Mask(newLoginRequiredError)
 	}
-	for _, k := range keys {
-		if len(provider.Config[k]) == 0 {
-			return microerror.Mask(invalidAuthConfigurationError)
-		}
+
+	if len(provider.Config[ClientID]) < 1 || len(provider.Config[Issuer]) < 1 {
+		return microerror.Mask(invalidAuthConfigurationError)
 	}
 
 	_, err := url.ParseRequestURI(provider.Config[Issuer])
