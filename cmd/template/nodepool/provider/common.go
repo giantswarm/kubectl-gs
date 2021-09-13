@@ -31,7 +31,7 @@ type NodePoolCRsConfig struct {
 	Description       string
 	NodesMax          int
 	NodesMin          int
-	Owner             string
+	Organization      string
 	ReleaseComponents map[string]string
 	ReleaseVersion    string
 	Namespace         string
@@ -50,7 +50,7 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 			},
 			Annotations: map[string]string{
 				annotation.MachinePoolName: config.Description,

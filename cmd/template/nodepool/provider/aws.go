@@ -75,7 +75,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			label.Cluster:                   config.ClusterName,
 			label.MachinePool:               config.NodePoolID,
 			capiv1alpha3.ClusterLabelName:   config.ClusterName,
-			label.Organization:              config.Owner,
+			label.Organization:              config.Organization,
 			"cluster.x-k8s.io/watch-filter": "capi",
 		})
 		switch o.GetKind() {
@@ -134,7 +134,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		NodesMin:                            config.NodesMin,
 		OnDemandBaseCapacity:                config.OnDemandBaseCapacity,
 		OnDemandPercentageAboveBaseCapacity: config.OnDemandPercentageAboveBaseCapacity,
-		Owner:                               config.Owner,
+		Owner:                               config.Organization,
 		UseAlikeInstanceTypes:               config.UseAlikeInstanceTypes,
 	}
 
@@ -156,7 +156,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		if config.Namespace != "" {
 			namespace = config.Namespace
 		} else if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
-			namespace = key.OrganizationNamespaceFromName(config.Owner)
+			namespace = key.OrganizationNamespaceFromName(config.Organization)
 		} else {
 			namespace = metav1.NamespaceDefault
 		}
@@ -200,7 +200,7 @@ func getCAPANodepoolTemplate(config NodePoolCRsConfig) (client.Template, error) 
 
 	templateOptions := client.GetClusterTemplateOptions{
 		ClusterName:       config.ClusterName,
-		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
+		TargetNamespace:   key.OrganizationNamespaceFromName(config.Organization),
 		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
 			InfrastructureProvider: "aws:v0.6.8",

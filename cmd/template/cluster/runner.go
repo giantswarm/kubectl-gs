@@ -64,7 +64,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ExternalSNAT:       r.flag.ExternalSNAT,
 			Description:        r.flag.Description,
 			Name:               r.flag.Name,
-			Owner:              r.flag.Owner,
+			Organization:       r.flag.Organization,
 			PodsCIDR:           r.flag.PodsCIDR,
 			ReleaseVersion:     r.flag.Release,
 			Namespace:          metav1.NamespaceDefault,
@@ -87,7 +87,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if r.flag.Provider == key.ProviderAzure {
-			config.Namespace = key.OrganizationNamespaceFromName(config.Owner)
+			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 		}
 	}
 

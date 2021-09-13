@@ -54,7 +54,7 @@ func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		MinSize            int
 		Name               string
 		Namespace          string
-		Owner              string
+		Organization       string
 		Replicas           int
 		StorageAccountType string
 		Version            string
@@ -66,8 +66,8 @@ func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		MaxSize:            config.NodesMax,
 		MinSize:            config.NodesMin,
 		Name:               config.NodePoolID,
-		Namespace:          key.OrganizationNamespaceFromName(config.Owner),
-		Owner:              config.Owner,
+		Namespace:          key.OrganizationNamespaceFromName(config.Organization),
+		Organization:       config.Organization,
 		Replicas:           config.NodesMin,
 		StorageAccountType: key.AzureStorageAccountTypeForVMSize(config.VMSize),
 		Version:            config.ReleaseVersion,
@@ -160,7 +160,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{

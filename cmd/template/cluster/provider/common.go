@@ -19,7 +19,7 @@ type ClusterCRsConfig struct {
 	ControlPlaneAZ []string
 	Description    string
 	Name           string
-	Owner          string
+	Organization   string
 	ReleaseVersion string
 	Labels         map[string]string
 	Namespace      string
@@ -37,7 +37,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 			Labels: map[string]string{
 				label.Cluster:                 config.Name,
 				capiv1alpha3.ClusterLabelName: config.Name,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 			Annotations: map[string]string{
