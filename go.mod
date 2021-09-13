@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.0.0
 	github.com/fatih/color v1.12.0
-	github.com/giantswarm/apiextensions/v3 v3.32.0
+	github.com/giantswarm/apiextensions/v3 v3.33.0
 	github.com/giantswarm/app/v5 v5.2.3
 	github.com/giantswarm/k8sclient/v5 v5.12.0
 	github.com/giantswarm/microerror v0.3.0
