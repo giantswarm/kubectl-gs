@@ -6,15 +6,18 @@ import (
 )
 
 const (
-	flagName = "name"
+	flagName   = "name"
+	flagOutput = "output"
 )
 
 type flag struct {
-	Name string
+	Name   string
+	Output string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Organization name.")
+	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for the resulting manifest. (default: stdout)")
 }
 
 func (f *flag) Validate() error {
