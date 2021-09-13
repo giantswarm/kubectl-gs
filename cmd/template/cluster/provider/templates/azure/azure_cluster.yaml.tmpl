@@ -12,6 +12,11 @@ metadata:
 spec:
   location: ""
   networkSpec:
+    subnets:
+    - name: {{ .Name }}-controlplane-subnet
+      role: control-plane
+      routeTable:
+        name: {{ .Name }}-node-routetable
     vnet:
       name: {{ .Name }}-vnet
   resourceGroup: {{ .Name }}

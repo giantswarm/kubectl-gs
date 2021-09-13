@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@4.2.0
+  architect: giantswarm/architect@4.3.0
 
 jobs:
   debug-tag:
@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: circleci/golang:1.16
+      - image: circleci/golang:1.17
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38

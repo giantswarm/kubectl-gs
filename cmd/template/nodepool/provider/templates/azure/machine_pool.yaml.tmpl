@@ -3,6 +3,8 @@ kind: MachinePool
 metadata:
   name: {{ .Name }}
   namespace: {{ .Namespace }}
+  annotations:
+    "machine-pool.giantswarm.io/name": "{{ .Description }}"
   labels:
     "cluster.x-k8s.io/cluster-name": {{ .ClusterName }}
     "cluster.x-k8s.io/watch-filter": capi
