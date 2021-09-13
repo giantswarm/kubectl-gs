@@ -301,12 +301,12 @@ func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
 }
 
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
-	if len(provider.Config[IDToken]) < 1 || len(provider.Config[RefreshToken]) < 1 {
-		return microerror.Mask(newLoginRequiredError)
-	}
-
 	if len(provider.Config[ClientID]) < 1 || len(provider.Config[Issuer]) < 1 {
 		return microerror.Mask(invalidAuthConfigurationError)
+	}
+
+	if len(provider.Config[IDToken]) < 1 || len(provider.Config[RefreshToken]) < 1 {
+		return microerror.Mask(newLoginRequiredError)
 	}
 
 	_, err := url.ParseRequestURI(provider.Config[Issuer])
