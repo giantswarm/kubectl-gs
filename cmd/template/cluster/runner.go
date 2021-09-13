@@ -115,7 +115,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(output, config)
+		err = provider.WriteAWSTemplate(c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

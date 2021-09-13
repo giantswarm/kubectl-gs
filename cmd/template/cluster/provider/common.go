@@ -65,7 +65,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 	return cluster
 }
 
-func runMutation(ctx context.Context, client k8sclient.Interface, input []byte, namespace string) ([]byte, error) {
+func runMutation(ctx context.Context, client k8sclient.Interface, input []byte) ([]byte, error) {
 	obj := &unstructured.Unstructured{}
 	dec := apiyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 	_, gvk, err := dec.Decode(input, nil, obj)
@@ -91,12 +91,34 @@ func runMutation(ctx context.Context, client k8sclient.Interface, input []byte, 
 		return []byte{}, err
 	}
 
-	// Execute our request as a `DryRun` - no resources will be persisted.
-	defaultedObj, err := dyn.Resource(mapping.Resource).Namespace(namespace).Create(ctx, obj, metav1.CreateOptions{DryRun: []string{"All"}})
+	namespace, namespaced, err := unstructured.NestedString(obj.Object, "metadata", "namespace")
 	if err != nil {
-		// TODO handle different kinds of errors (e.g. validation) here.
 		return []byte{}, err
 	}
+
+	var defaultedObj *unstructured.Unstructured
+	// Execute our request as a `DryRun` - no resources will be persisted.
+	if namespaced {
+		defaultedObj, err = dyn.Resource(mapping.Resource).Namespace(namespace).Create(ctx, obj, metav1.CreateOptions{DryRun: []string{"All"}})
+		if err != nil {
+			// TODO handle different kinds of errors (e.g. validation) here.
+			return []byte{}, err
+		}
+	} else {
+		defaultedObj, err = dyn.Resource(mapping.Resource).Create(ctx, obj, metav1.CreateOptions{DryRun: []string{"All"}})
+		if err != nil {
+			// TODO handle different kinds of errors (e.g. validation) here.
+			return []byte{}, err
+		}
+	}
+
+	// Strip `managedFields` for better readability.
+	unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "managedFields")
+	// Strip some metadata fields for better UX.
+	unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "creationTimestamp")
+	unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "generation")
+	unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "selfLink")
+	unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "uid")
 
 	// Unstructured to JSON.
 	buf := new(bytes.Buffer)
