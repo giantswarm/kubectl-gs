@@ -48,7 +48,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	if len(args) < 1 {
-		err = r.tryToReuseExistingContext()
+		err = r.tryToReuseExistingContext(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -74,7 +74,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 	default:
-		err = r.loginWithURL(ctx, installationIdentifier)
+		err = r.loginWithURL(ctx, installationIdentifier, true)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -83,7 +83,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) tryToReuseExistingContext() error {
+func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 	config, err := r.k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -97,7 +97,16 @@ func (r *runner) tryToReuseExistingContext() error {
 		}
 
 		err = validateAuthProvider(authProvider)
-		if err != nil {
+		if IsNewLoginRequired(err) {
+			issuer := authProvider.Config[Issuer]
+
+			err = r.loginWithURL(ctx, issuer, false)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			return nil
+		} else if err != nil {
 			return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
 		}
 
@@ -123,6 +132,22 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
+	} else if IsNewLoginRequired(err) {
+		config, err := r.k8sConfigAccess.GetStartingConfig()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		// If we get here, we are sure that the kubeconfig context exists.
+		authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+		issuer := authProvider.Config[Issuer]
+
+		err = r.loginWithURL(ctx, issuer, false)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
@@ -149,6 +174,22 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
+	} else if IsNewLoginRequired(err) {
+		config, err := r.k8sConfigAccess.GetStartingConfig()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		// If we get here, we are sure that the kubeconfig context exists.
+		authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+		issuer := authProvider.Config[Issuer]
+
+		err = r.loginWithURL(ctx, issuer, false)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
@@ -166,7 +207,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 
 // loginWithURL performs the OIDC login into an installation's
 // k8s api with a happa/k8s api URL.
-func (r *runner) loginWithURL(ctx context.Context, path string) error {
+func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool) error {
 	i, err := installation.New(ctx, path)
 	if installation.IsUnknownUrlType(err) {
 		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Management API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
@@ -192,8 +233,10 @@ func (r *runner) loginWithURL(ctx context.Context, path string) error {
 	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
-	fmt.Fprintf(r.stdout, " ")
+	if firstLogin {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
+		fmt.Fprintf(r.stdout, " ")
+	}
 	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
 	fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
 	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)

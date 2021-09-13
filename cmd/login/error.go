@@ -92,6 +92,15 @@ func IsInvalidAuthConfiguration(err error) bool {
 	return microerror.Cause(err) == invalidAuthConfigurationError
 }
 
+var newLoginRequiredError = &microerror.Error{
+	Kind: "newLoginRequiredError",
+}
+
+// IsNewLoginRequired asserts newLoginRequiredError.
+func IsNewLoginRequired(err error) bool {
+	return microerror.Cause(err) == newLoginRequiredError
+}
+
 var authResponseTimedOutError = &microerror.Error{
 	Kind: "authResponseTimedOutError",
 }
