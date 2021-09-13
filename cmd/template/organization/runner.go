@@ -42,10 +42,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Name: r.flag.Name,
 	}
 
-	var output *os.File
+	var outputWriter io.Writer
 	{
 		if r.flag.Output == "" {
-			output = os.Stdout
+			outputWriter = r.stdout
 		} else {
 			f, err := os.Create(r.flag.Output)
 			if err != nil {
@@ -53,7 +53,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 			defer f.Close()
 
-			output = f
+			outputWriter = f
 		}
 	}
 
@@ -67,7 +67,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	_, err = fmt.Fprint(output, string(organizationCRYaml))
+	_, err = fmt.Fprint(outputWriter, string(organizationCRYaml))
 	if err != nil {
 		return microerror.Mask(err)
 	}
