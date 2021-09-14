@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [1.39.1] - 2021-09-14
 
+### Added
+
+- The `template organization` command now also offers an `--output` flag to specify an output path optionally.
+
 ### Changed
 
 - Make the `login` command be able to start a new authentication flow if one of the tokens of an existing authentication provider are not present.
