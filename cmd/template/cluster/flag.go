@@ -83,6 +83,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
+	f.print.OutputFormat = nil
 
 	// Merging current command flags and config flags,
 	// to be able to override kubectl-specific ones.
