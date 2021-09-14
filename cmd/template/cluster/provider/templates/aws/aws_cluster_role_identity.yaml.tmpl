@@ -6,7 +6,7 @@ metadata:
     cluster.x-k8s.io/watch-filter: capi
     giantswarm.io/cluster: {{ .Name }}
     giantswarm.io/organization: {{ .Owner }}
-    "release.giantswarm.io/version": "{{ .ReleaseVersion }}"
+    release.giantswarm.io/version: {{ .ReleaseVersion }}
   name: {{ .Name }}
 spec:
   allowedNamespaces:
