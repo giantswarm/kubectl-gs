@@ -13,9 +13,8 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteCAPZTemplate(client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
-	ctx := context.Background()
 
 	data := struct {
 		Description       string

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"text/template"
@@ -23,11 +24,11 @@ const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	if key.IsCAPZVersion(config.ReleaseVersion) {
-		err = WriteCAPZTemplate(client, out, config)
+		err = WriteCAPZTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

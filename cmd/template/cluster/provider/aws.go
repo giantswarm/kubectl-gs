@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"io"
 	"text/template"
 
@@ -13,11 +14,11 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAWSTemplate(client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	if key.IsCAPAVersion(config.ReleaseVersion) {
-		err = WriteCAPATemplate(client, out, config)
+		err = WriteCAPATemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
