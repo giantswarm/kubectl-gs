@@ -26,11 +26,10 @@ const (
 	flagDescription         = "description"
 	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
 	flagName                = "name"
-	// TODO: Fix this - the genericclioptions already have an output field. We can't redefine flags.
-	flagOutput  = "output-gs"
-	flagOwner   = "owner"
-	flagRelease = "release"
-	flagLabel   = "label"
+	flagOutput              = "output"
+	flagOwner               = "owner"
+	flagRelease             = "release"
+	flagLabel               = "label"
 )
 
 type flag struct {
