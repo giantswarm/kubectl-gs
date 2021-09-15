@@ -37,7 +37,7 @@ const (
 	flagNodexMax               = "nodex-max"
 	flagNodexMin               = "nodex-min"
 	flagOutput                 = "output"
-	flagOrganization           = "org"
+	flagOrganization           = "organization"
 	flagOwner                  = "owner" // TODO: Remove some time after December 2021
 	flagRelease                = "release"
 )

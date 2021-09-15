@@ -26,7 +26,7 @@ const (
 	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
 	flagName                = "name"
 	flagOutput              = "output"
-	flagOrganization        = "org"
+	flagOrganization        = "organization"
 	flagOwner               = "owner" // TODO: Remove some time after December 2021
 	flagRelease             = "release"
 	flagLabel               = "label"

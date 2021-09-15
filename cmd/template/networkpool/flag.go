@@ -12,7 +12,7 @@ const (
 	flagCIDRBlock       = "cidr-block"
 	flagNetworkPoolName = "networkpool-name"
 	flagOutput          = "output"
-	flagOrganization    = "org"
+	flagOrganization    = "organization"
 	flagOwner           = "owner" // TODO: Remove some time after December 2021
 )
 
