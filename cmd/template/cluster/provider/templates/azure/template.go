@@ -18,6 +18,8 @@ var azureMachineTemplate string
 
 // GetTemplate merges all .tmpl files.
 func GetTemplates() []string {
+	// Order is important here.
+	// The order in this slice determines in which order files will be applied.
 	return []string{
 		cluster,
 		azureCluster,
