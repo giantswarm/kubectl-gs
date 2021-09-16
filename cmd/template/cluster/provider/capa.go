@@ -41,12 +41,12 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 			return microerror.Mask(err)
 		}
 		// DryRun the CR against the management cluster.
-		tYaml, err := runMutation(ctx, client, buf.Bytes())
+		mutated, err := runMutation(ctx, client, buf.Bytes())
 		if err != nil {
 			return microerror.Mask(err)
 		}
 		// Write the yaml to our file.
-		_, err = out.Write(tYaml)
+		_, err = out.Write(mutated)
 		if err != nil {
 			return microerror.Mask(err)
 		}
