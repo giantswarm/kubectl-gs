@@ -77,7 +77,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
 
 	// TODO: Remove around December 2021
-	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --org instead.")
+	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
 }
 

@@ -120,7 +120,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// To be removed around December 2021
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "use --cluster-name instead")
 	_ = cmd.Flags().MarkDeprecated(flagNodepoolNameDeprecated, "use --description instead")
-	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --org instead.")
+	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 }
 
 func (f *flag) Validate() error {

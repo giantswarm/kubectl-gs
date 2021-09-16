@@ -33,7 +33,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 
 	// TODO: Remove around December 2021
-	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --org instead.")
+	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 }
 
 func (f *flag) Validate() error {
