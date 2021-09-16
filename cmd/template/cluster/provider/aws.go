@@ -42,7 +42,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		MasterAZ:       config.ControlPlaneAZ,
 		Description:    config.Description,
 		PodsCIDR:       config.PodsCIDR,
-		Owner:          config.Owner,
+		Owner:          config.Organization,
 		ReleaseVersion: config.ReleaseVersion,
 		Labels:         config.Labels,
 	}
@@ -57,7 +57,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
-		crs = moveCRsToOrgNamespace(crs, config.Owner)
+		crs = moveCRsToOrgNamespace(crs, config.Organization)
 	}
 
 	clusterCRYaml, err := yaml.Marshal(crs.Cluster)

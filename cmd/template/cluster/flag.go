@@ -27,7 +27,8 @@ const (
 	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
 	flagName                = "name"
 	flagOutput              = "output"
-	flagOwner               = "owner"
+	flagOrganization        = "organization"
+	flagOwner               = "owner" // TODO: Remove some time after December 2021
 	flagRelease             = "release"
 	flagLabel               = "label"
 )
@@ -47,6 +48,7 @@ type flag struct {
 	MasterAZ            []string
 	Name                string
 	Output              string
+	Organization        string
 	Owner               string
 	Release             string
 	Label               []string
@@ -70,7 +72,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
+	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
@@ -78,6 +81,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
 
 	// TODO: Remove around December 2021
+	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
 
 	f.config = genericclioptions.NewConfigFlags(true)
@@ -142,8 +146,6 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagControlPlaneSubnet)
 			}
 		}
-
-		return nil
 	}
 
 	if f.PodsCIDR != "" {
@@ -152,8 +154,18 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Owner == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
+	// TODO: Remove the flag completely some time after December 2021
+	if f.Owner == "" && f.Organization == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+	}
+
+	if f.Owner != "" {
+		if f.Organization != "" {
+			return microerror.Maskf(invalidFlagError, "--%s and --%s cannot be combined", flagOwner, flagOrganization)
+		}
+
+		f.Organization = f.Owner
+		f.Owner = ""
 	}
 
 	{

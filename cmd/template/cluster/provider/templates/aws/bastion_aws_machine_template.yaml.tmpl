@@ -7,7 +7,7 @@ metadata:
     cluster.x-k8s.io/role: bastion
     cluster.x-k8s.io/watch-filter: capi
     giantswarm.io/cluster: {{ .Name }}
-    giantswarm.io/organization: {{ .Owner }}
+    giantswarm.io/organization: {{ .Organization }}
     release.giantswarm.io/version: {{ .ReleaseVersion }}
   name: {{ .Name }}-bastion
   namespace: {{ .Namespace }}

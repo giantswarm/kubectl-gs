@@ -19,15 +19,15 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		KubernetesVersion string
 		Name              string
 		Namespace         string
-		Owner             string
+		Organization      string
 		Version           string
 		VMSize            string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Owner),
-		Owner:             config.Owner,
+		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
+		Organization:      config.Organization,
 		Version:           config.ReleaseVersion,
 		VMSize:            "Standard_D4s_v3",
 	}

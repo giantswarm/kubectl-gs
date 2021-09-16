@@ -99,7 +99,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			Labels: map[string]string{
 				label.Cluster:                 config.Name,
 				capiv1alpha3.ClusterLabelName: config.Name,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
@@ -141,7 +141,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 				label.Cluster:                             config.Name,
 				capiv1alpha3.ClusterLabelName:             config.Name,
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
-				label.Organization:                        config.Owner,
+				label.Organization:                        config.Organization,
 				label.ReleaseVersion:                      config.ReleaseVersion,
 			},
 		},

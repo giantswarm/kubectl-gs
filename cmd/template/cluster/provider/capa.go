@@ -19,14 +19,14 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		KubernetesVersion string
 		Name              string
 		Namespace         string
-		Owner             string
+		Organization      string
 		ReleaseVersion    string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Owner),
-		Owner:             config.Owner,
+		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
+		Organization:      config.Organization,
 		ReleaseVersion:    config.ReleaseVersion,
 	}
 

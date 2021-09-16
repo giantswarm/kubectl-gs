@@ -10,7 +10,7 @@ metadata:
     "cluster.x-k8s.io/watch-filter": capi
     "giantswarm.io/cluster": {{ .ClusterName }}
     "release.giantswarm.io/version": "{{ .Version }}"
-    "giantswarm.io/organization": "{{ .Owner }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
 spec:
   clusterName: {{ .ClusterName }}
   replicas: {{ .Replicas }}
