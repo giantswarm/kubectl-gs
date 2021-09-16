@@ -83,7 +83,7 @@ func WriteCAPATemplate(out io.Writer, config ClusterCRsConfig) error {
 		label.ReleaseVersion:            config.ReleaseVersion,
 		label.Cluster:                   config.Name,
 		capiv1alpha3.ClusterLabelName:   config.Name,
-		label.Organization:              config.Owner,
+		label.Organization:              config.Organization,
 		"cluster.x-k8s.io/watch-filter": "capi"}
 
 	objects := clusterTemplate.Objs()
@@ -196,7 +196,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		MasterAZ:       config.ControlPlaneAZ,
 		Description:    config.Description,
 		PodsCIDR:       config.PodsCIDR,
-		Owner:          config.Owner,
+		Owner:          config.Organization,
 		ReleaseVersion: config.ReleaseVersion,
 		Labels:         config.Labels,
 	}
@@ -211,7 +211,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
-		crs = moveCRsToOrgNamespace(crs, config.Owner)
+		crs = moveCRsToOrgNamespace(crs, config.Organization)
 	}
 
 	clusterCRYaml, err := yaml.Marshal(crs.Cluster)
@@ -265,7 +265,7 @@ func getCAPAClusterTemplate(config ClusterCRsConfig) (client.Template, error) {
 
 	templateOptions := client.GetClusterTemplateOptions{
 		ClusterName:       config.Name,
-		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
+		TargetNamespace:   key.OrganizationNamespaceFromName(config.Organization),
 		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
 			InfrastructureProvider: "aws:v0.6.8",
@@ -393,13 +393,13 @@ func newAWSClusterRoleIdentity(config ClusterCRsConfig) *capav1alpha3.AWSCluster
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
-			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+			Namespace: key.OrganizationNamespaceFromName(config.Organization),
 		},
 		Spec: capav1alpha3.AWSClusterRoleIdentitySpec{
 			SourceIdentityRef: &capav1alpha3.AWSIdentityReference{},
 			AWSClusterIdentitySpec: capav1alpha3.AWSClusterIdentitySpec{
 				AllowedNamespaces: &capav1alpha3.AllowedNamespaces{
-					NamespaceList: []string{key.OrganizationNamespaceFromName(config.Owner)},
+					NamespaceList: []string{key.OrganizationNamespaceFromName(config.Organization)},
 				},
 			},
 		},
@@ -415,7 +415,7 @@ func newBastionBootstrapSecret(config ClusterCRsConfig, sshdConfig string, sshSS
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      key.BastionResourceName(config.Name),
-			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+			Namespace: key.OrganizationNamespaceFromName(config.Organization),
 		},
 		Type: "cluster.x-k8s.io/secret",
 		StringData: map[string]string{
@@ -440,7 +440,7 @@ func newBastionMachineDeployment(config ClusterCRsConfig) *capiv1alpha3.MachineD
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      key.BastionResourceName(config.Name),
-			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+			Namespace: key.OrganizationNamespaceFromName(config.Organization),
 		},
 		Spec: capiv1alpha3.MachineDeploymentSpec{
 			ClusterName: config.Name,
@@ -496,7 +496,7 @@ func newBastionAWSMachineTemplate(config ClusterCRsConfig, region string) *capav
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      key.BastionResourceName(config.Name),
-			Namespace: key.OrganizationNamespaceFromName(config.Owner),
+			Namespace: key.OrganizationNamespaceFromName(config.Organization),
 		},
 		Spec: capav1alpha3.AWSMachineTemplateSpec{
 			Template: capav1alpha3.AWSMachineTemplateResource{

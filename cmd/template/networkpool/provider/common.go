@@ -15,7 +15,7 @@ import (
 type NetworkPoolCRsConfig struct {
 	CIDRBlock       string
 	NetworkPoolName string
-	Owner           string
+	Organization    string
 	FileName        string
 }
 
@@ -25,7 +25,7 @@ func WriteTemplate(out io.Writer, config NetworkPoolCRsConfig) error {
 	crsConfig := v1alpha3.NetworkPoolCRsConfig{
 		CIDRBlock:     config.CIDRBlock,
 		NetworkPoolID: config.NetworkPoolName,
-		Owner:         config.Owner,
+		Owner:         config.Organization,
 	}
 
 	crs, err := v1alpha3.NewNetworkPoolCRs(crsConfig)

@@ -61,7 +61,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			NodesMin:                            r.flag.NodesMin,
 			OnDemandBaseCapacity:                r.flag.OnDemandBaseCapacity,
 			OnDemandPercentageAboveBaseCapacity: r.flag.OnDemandPercentageAboveBaseCapacity,
-			Owner:                               r.flag.Owner,
+			Organization:                        r.flag.Organization,
 			ReleaseVersion:                      r.flag.Release,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
 		}
@@ -78,7 +78,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if r.flag.Provider == key.ProviderAzure {
-			config.Namespace = key.OrganizationNamespaceFromName(config.Owner)
+			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 		}
 		if r.flag.Provider == key.ProviderAWS {
 			config.Namespace = r.flag.ClusterNamespace

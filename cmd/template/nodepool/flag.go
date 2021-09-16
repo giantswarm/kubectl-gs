@@ -37,7 +37,8 @@ const (
 	flagNodexMax               = "nodex-max"
 	flagNodexMin               = "nodex-min"
 	flagOutput                 = "output"
-	flagOwner                  = "owner"
+	flagOrganization           = "organization"
+	flagOwner                  = "owner" // TODO: Remove some time after December 2021
 	flagRelease                = "release"
 )
 
@@ -71,6 +72,7 @@ type flag struct {
 	NodesMax               int
 	NodesMin               int
 	Output                 string
+	Organization           string
 	Owner                  string
 	Release                string
 
@@ -105,6 +107,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, maxNodes, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d)", maxNodes))
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, minNodes, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d)", minNodes))
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty to match the workload cluster version via the Management API.")
 
@@ -117,6 +120,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// To be removed around December 2021
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "use --cluster-name instead")
 	_ = cmd.Flags().MarkDeprecated(flagNodepoolNameDeprecated, "use --description instead")
+	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 }
 
 func (f *flag) Validate() error {
@@ -182,8 +186,18 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Owner == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
+	// TODO: Remove the flag completely some time after December 2021
+	if f.Owner == "" && f.Organization == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+	}
+
+	if f.Owner != "" {
+		if f.Organization != "" {
+			return microerror.Maskf(invalidFlagError, "--%s and --%s cannot be combined", flagOwner, flagOrganization)
+		}
+
+		f.Organization = f.Owner
+		f.Owner = ""
 	}
 
 	{

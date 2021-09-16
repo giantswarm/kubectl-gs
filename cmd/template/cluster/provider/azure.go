@@ -49,15 +49,15 @@ func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
 		KubernetesVersion string
 		Name              string
 		Namespace         string
-		Owner             string
+		Organization      string
 		Version           string
 		VMSize            string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Owner),
-		Owner:             config.Owner,
+		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
+		Organization:      config.Organization,
 		Version:           config.ReleaseVersion,
 		VMSize:            "Standard_D4s_v3",
 	}
@@ -128,7 +128,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			Labels: map[string]string{
 				label.Cluster:                 config.Name,
 				capiv1alpha3.ClusterLabelName: config.Name,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
@@ -170,7 +170,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 				label.Cluster:                             config.Name,
 				capiv1alpha3.ClusterLabelName:             config.Name,
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
-				label.Organization:                        config.Owner,
+				label.Organization:                        config.Organization,
 				label.ReleaseVersion:                      config.ReleaseVersion,
 			},
 		},
