@@ -1,10 +1,8 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"io"
-	"text/template"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -34,30 +32,9 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		VMSize:            "Standard_D4s_v3",
 	}
 
-	for _, t := range azure.GetTemplates() {
-		te := template.Must(template.New(config.FileName).Parse(t))
-		buf := new(bytes.Buffer)
-		// Template from our inputs.
-		err = te.Execute(buf, data)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		// DryRun the CR against the management cluster.
-		tYaml, err := runMutation(ctx, client, buf.Bytes())
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		// Write the yaml to our file.
-		_, err = out.Write(tYaml)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		// Add separators to make the entire file valid yaml and allow easy appending.
-		_, err = out.Write([]byte("---\n"))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
+	err = runMutation(ctx, client, data, azure.GetTemplates(), out)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
