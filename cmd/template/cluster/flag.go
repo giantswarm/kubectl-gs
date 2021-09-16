@@ -143,7 +143,7 @@ func (f *flag) Validate() error {
 
 	// TODO: Remove the flag completely some time after December 2021
 	if f.Owner == "" && f.Organization == "" {
-		return microerror.Maskf(invalidFlagError, "--%s or --%s must not be empty", flagOwner, flagOrganization)
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
 	}
 
 	if f.Owner != "" {
