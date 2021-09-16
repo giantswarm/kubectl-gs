@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Update `template cluster` command to verify and mutate against management cluster webhooks for CAPI clusters.
+- Update the `template cluster` command to add CAPI defaults and validation using the management cluster API.
 
 ## [1.39.1] - 2021-09-14
 
