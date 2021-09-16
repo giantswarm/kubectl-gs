@@ -34,9 +34,9 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 
 	for _, t := range aws.GetTemplates() {
 		te := template.Must(template.New(config.FileName).Parse(t))
-		buf := new(bytes.Buffer)
+		var buf bytes.Buffer
 		// Template from our inputs.
-		err = te.Execute(buf, data)
+		err = te.Execute(&buf, data)
 		if err != nil {
 			return microerror.Mask(err)
 		}
