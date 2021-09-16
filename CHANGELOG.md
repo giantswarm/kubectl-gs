@@ -16,6 +16,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Make the `login` command be able to start a new authentication flow if one of the tokens of an existing authentication provider are not present.
+- Update cluster templating error messages for `--name` flag to use correct terminology
 
 ## [1.39.0] - 2021-09-10
 

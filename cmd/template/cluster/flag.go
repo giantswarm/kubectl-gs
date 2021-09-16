@@ -103,24 +103,24 @@ func (f *flag) Validate() error {
 
 	if f.Name != "" {
 		if len(f.Name) != key.IDLength {
-			return microerror.Maskf(invalidFlagError, "--%s must be length of %d", flagClusterIDDeprecated, key.IDLength)
+			return microerror.Maskf(invalidFlagError, "--%s must be of length %d", flagName, key.IDLength)
 		}
 
 		matchedLettersOnly, err := regexp.MatchString("^[a-z]+$", f.Name)
 		if err == nil && matchedLettersOnly {
 			// strings is letters only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagClusterIDDeprecated)
+			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagName)
 		}
 
 		matchedNumbersOnly, err := regexp.MatchString("^[0-9]+$", f.Name)
 		if err == nil && matchedNumbersOnly {
 			// strings is numbers only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one digit", flagClusterIDDeprecated)
+			return microerror.Maskf(invalidFlagError, "--%s must contain at least one letter", flagName)
 		}
 
 		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.Name)
 		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagClusterIDDeprecated)
+			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
 		}
 
 		if f.ControlPlaneSubnet != "" {
