@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.39.1] - 2021-09-14
+
+### Added
+
+- The `template organization` command now also offers an `--output` flag to specify an output path optionally.
+
 ### Changed
 
 - In the `template` commands, the flag `--owner` is replaced by `--organization`.
@@ -496,7 +502,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.1...HEAD
+[1.39.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.0...v1.39.1
 [1.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.38.0...v1.39.0
 [1.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.37.0...v1.38.0
 [1.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.36.0...v1.37.0

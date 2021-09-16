@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -41,6 +42,21 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Name: r.flag.Name,
 	}
 
+	var outputWriter io.Writer
+	{
+		if r.flag.Output == "" {
+			outputWriter = r.stdout
+		} else {
+			f, err := os.Create(r.flag.Output)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			defer f.Close()
+
+			outputWriter = f
+		}
+	}
+
 	organizationCR, err := template.NewOrganizationCR(config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -51,7 +67,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, string(organizationCRYaml))
+	_, err = fmt.Fprint(outputWriter, string(organizationCRYaml))
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	return nil
 }
