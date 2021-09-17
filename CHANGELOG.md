@@ -9,6 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [1.39.2] - 2021-09-17
 
+- In the `template cluster` and `template nodepool` commands, the `--owner` flag got replaced by `--organization`.
+
 ## [1.39.1] - 2021-09-14
 
 ### Added
