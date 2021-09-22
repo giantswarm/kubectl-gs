@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Update the `template cluster` command to add CAPI defaults and validation using the management cluster API.
 
+## [1.39.2] - 2021-09-17
+
+### Changed
+
+- In the `template cluster` and `template nodepool` commands, the `--owner` flag got replaced by `--organization`.
+
 ## [1.39.1] - 2021-09-14
 
 ### Added
@@ -507,7 +513,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.2...HEAD
+[1.39.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.1...v1.39.2
 [1.39.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.0...v1.39.1
 [1.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.38.0...v1.39.0
 [1.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.37.0...v1.38.0
