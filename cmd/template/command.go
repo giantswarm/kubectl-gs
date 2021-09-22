@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/app"
 	"github.com/giantswarm/kubectl-gs/cmd/template/catalog"
@@ -23,6 +24,9 @@ const (
 
 type Config struct {
 	Logger micrologger.Logger
+
+	K8sConfigAccess clientcmd.ConfigAccess
+
 	Stderr io.Writer
 	Stdout io.Writer
 }
@@ -72,6 +76,9 @@ func New(config Config) (*cobra.Command, error) {
 	{
 		c := cluster.Config{
 			Logger: config.Logger,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}

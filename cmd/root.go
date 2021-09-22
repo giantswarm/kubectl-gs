@@ -82,6 +82,9 @@ func New(config Config) (*cobra.Command, error) {
 	{
 		c := template.Config{
 			Logger: config.Logger,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}

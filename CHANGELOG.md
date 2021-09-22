@@ -7,7 +7,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update the `template cluster` command to add CAPI defaults and validation using the management cluster API.
+
 ## [1.39.2] - 2021-09-17
+
+### Changed
 
 - In the `template cluster` and `template nodepool` commands, the `--owner` flag got replaced by `--organization`.
 

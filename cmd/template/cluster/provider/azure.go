@@ -1,11 +1,13 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +17,6 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/azure"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -23,11 +24,11 @@ const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	if key.IsCAPZVersion(config.ReleaseVersion) {
-		err = WriteCAPZTemplate(out, config)
+		err = WriteCAPZTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -36,36 +37,6 @@ func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-
-	return nil
-}
-
-func WriteCAPZTemplate(out io.Writer, config ClusterCRsConfig) error {
-	var err error
-
-	data := struct {
-		Description       string
-		KubernetesVersion string
-		Name              string
-		Namespace         string
-		Organization      string
-		Version           string
-		VMSize            string
-	}{
-		Description:       config.Description,
-		KubernetesVersion: "v1.19.9",
-		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
-		Organization:      config.Organization,
-		Version:           config.ReleaseVersion,
-		VMSize:            "Standard_D4s_v3",
-	}
-
-	t := template.Must(template.New(config.FileName).Parse(azure.GetTemplate()))
-	err = t.Execute(out, data)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	return nil

@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
@@ -51,6 +52,9 @@ type flag struct {
 	Owner               string
 	Release             string
 	Label               []string
+
+	config genericclioptions.RESTClientGetter
+	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -79,6 +83,15 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// TODO: Remove around December 2021
 	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
+
+	f.config = genericclioptions.NewConfigFlags(true)
+	f.print = genericclioptions.NewPrintFlags("")
+	f.print.OutputFormat = nil
+
+	// Merging current command flags and config flags,
+	// to be able to override kubectl-specific ones.
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+	f.print.AddFlags(cmd)
 }
 
 func (f *flag) Validate() error {
