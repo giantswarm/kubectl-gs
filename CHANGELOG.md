@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Nodepool nodes are labeled with nodepool id on Azure.
+
 ### Changed
 
 - Update the `template cluster` command to add CAPI defaults and validation using the management cluster API.
