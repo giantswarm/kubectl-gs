@@ -11,6 +11,7 @@ metadata:
     "giantswarm.io/cluster": {{ .ClusterName }}
     "release.giantswarm.io/version": "{{ .Version }}"
     "giantswarm.io/organization": "{{ .Organization }}"
+    "giantswarm.io/machine-pool": "{{ .Name }}"
 spec:
   clusterName: {{ .ClusterName }}
   replicas: {{ .Replicas }}
