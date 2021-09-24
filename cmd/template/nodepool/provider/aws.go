@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -326,6 +327,10 @@ func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o 
 				Groups: &groups,
 				Shell:  &shell,
 			},
+		}
+		kubeadmConfig.Spec.JoinConfiguration.NodeRegistration.KubeletExtraArgs = map[string]string{
+			"cloud-provider": "aws",
+			"node-labels":    fmt.Sprintf("giantswarm.io/machine-pool=%s", o.GetName()),
 		}
 	}
 
