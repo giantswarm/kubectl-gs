@@ -9,6 +9,7 @@ metadata:
     "giantswarm.io/cluster": {{ .ClusterName }}
     "release.giantswarm.io/version": "{{ .Version }}"
     "giantswarm.io/organization": "{{ .Organization }}"
+    "giantswarm.io/machine-pool": "{{ .Name }}"
 spec:
   additionalTags:
     "cluster-autoscaler-enabled": "{{ if eq .MinSize .MaxSize }}false{{else}}true{{end}}"
