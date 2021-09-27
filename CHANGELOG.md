@@ -9,13 +9,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Nodepool nodes are labeled with nodepool id on AWS using `giantswarm.io/machine-pool`.
 - `MachinePool` and `AzureMachinePool` are labeled with the `giantswarm.io/machine-pool` label.
 
 ## [1.40.0] - 2021-09-24
 
 ### Added
 
-- Nodepool nodes are labeled with nodepool id on Azure.
+- Nodepool nodes are labeled with nodepool id on Azure using `giantswarm.io/machine-pool`.
 
 ### Changed
 
