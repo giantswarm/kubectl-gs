@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -330,7 +330,7 @@ func newKubeadmConfigFromUnstructured(sshSSOPubKey string, sshdConfig string, o 
 		}
 		kubeadmConfig.Spec.JoinConfiguration.NodeRegistration.KubeletExtraArgs = map[string]string{
 			"cloud-provider": "aws",
-			"node-labels":    fmt.Sprintf("giantswarm.io/machine-pool=%s", o.GetName()),
+			"node-labels":    fmt.Sprintf("%s=%s", label.MachinePool, o.GetName()),
 		}
 	}
 
