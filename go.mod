@@ -4,11 +4,12 @@ go 1.16
 
 require (
 	github.com/blang/semver/v4 v4.0.0
-	github.com/coreos/go-oidc/v3 v3.0.0
-	github.com/fatih/color v1.12.0
+	github.com/coreos/go-oidc/v3 v3.1.0
+	github.com/fatih/color v1.13.0
 	github.com/giantswarm/apiextensions/v3 v3.33.0
 	github.com/giantswarm/app/v5 v5.3.0
 	github.com/giantswarm/k8sclient/v5 v5.12.0
+	github.com/giantswarm/k8smetadata v0.3.0
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0
 	github.com/google/go-cmp v0.5.6
