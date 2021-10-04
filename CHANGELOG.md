@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.41.0] - 2021-10-04
+
 ### Added
 
 - Nodepool nodes are labeled with nodepool id on AWS using `giantswarm.io/machine-pool`.
@@ -525,7 +527,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.40.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.0...HEAD
+[1.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.40.0...v1.41.0
 [1.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.2...v1.40.0
 [1.39.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.1...v1.39.2
 [1.39.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.0...v1.39.1
