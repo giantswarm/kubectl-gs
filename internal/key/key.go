@@ -141,7 +141,7 @@ func IsOrgNamespaceVersion(version string) bool {
 	// see https://github.com/giantswarm/aws-admission-controller/blob/ef83d90fc856fbc0484bec967064834c0b8d2c1e/pkg/aws/v1alpha3/cluster/mutate_cluster.go#L191-L202
 	// so as soon as the latest version is >=16.0.0 we are going to need the org-namespace as default here.
 	if version == "" {
-		return false
+		return true
 	}
 	OrgNamespaceVersion, _ := semver.New(FirstAWSOrgNamespaceRelease)
 	releaseVersion, _ := semver.New(version)

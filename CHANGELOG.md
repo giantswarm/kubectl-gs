@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Use org-namespace for AWS Clusters by default
+
 ## [1.41.0] - 2021-10-04
 
 ### Added
