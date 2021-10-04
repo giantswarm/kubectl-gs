@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	name  = "releases [release-name]"
+	name  = "releases [release-version]"
 	alias = "release"
 
 	shortDescription = "Display one or more releases"
@@ -24,8 +24,8 @@ const (
 	examples = `  # List all releases
   kubectl gs get releases
 
-  # Get one specific release by its name
-  kubectl gs get release 1.4.2`
+  # Get one specific release by its tagged version
+  kubectl gs get release v1.4.2`
 )
 
 type Config struct {
