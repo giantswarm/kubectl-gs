@@ -8,7 +8,7 @@ import (
 var cluster string
 
 //go:embed cluster_eks.yaml.tmpl
-var cluster_eks string
+var clusterEKS string
 
 //go:embed aws_cluster.yaml.tmpl
 var awsCluster string
@@ -55,7 +55,7 @@ func GetEKSTemplates() []string {
 	// Order is important here.
 	// The order in this slice determines in which order files will be applied.
 	return []string{
-		cluster_eks,
+		clusterEKS,
 		awsManagedControlPlane,
 		awsClusterRoleIdentity,
 	}
