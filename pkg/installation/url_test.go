@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Test_getBasePath(t *testing.T) {
+func Test_GetBasePath(t *testing.T) {
 	testCases := []struct {
 		name           string
 		url            string
@@ -52,7 +52,7 @@ func Test_getBasePath(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			basePath, err := getBasePath(tc.url)
+			basePath, err := GetBasePath(tc.url)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))
