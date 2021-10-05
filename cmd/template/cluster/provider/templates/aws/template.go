@@ -7,6 +7,9 @@ import (
 //go:embed cluster.yaml.tmpl
 var cluster string
 
+//go:embed cluster_eks.yaml.tmpl
+var clusterEKS string
+
 //go:embed aws_cluster.yaml.tmpl
 var awsCluster string
 
@@ -15,6 +18,9 @@ var kubeadmControlPlane string
 
 //go:embed aws_machine_template.yaml.tmpl
 var awsMachineTemplate string
+
+//go:embed aws_managed_control_plane.yaml.tmpl
+var awsManagedControlPlane string
 
 //go:embed aws_cluster_role_identity.yaml.tmpl
 var awsClusterRoleIdentity string
@@ -28,8 +34,8 @@ var bastionMachineDeployment string
 //go:embed bastion_aws_machine_template.yaml.tmpl
 var bastionAWSMachineTemplate string
 
-// GetTemplate merges all .tmpl files.
-func GetTemplates() []string {
+// GetAWSTemplate merges .tmpl files for an AWS cluster.
+func GetAWSTemplates() []string {
 	// Order is important here.
 	// The order in this slice determines in which order files will be applied.
 	return []string{
@@ -41,5 +47,16 @@ func GetTemplates() []string {
 		bastionSecret,
 		bastionMachineDeployment,
 		bastionAWSMachineTemplate,
+	}
+}
+
+// GetEKSTemplate merges .tmpl files for an EKS cluster.
+func GetEKSTemplates() []string {
+	// Order is important here.
+	// The order in this slice determines in which order files will be applied.
+	return []string{
+		clusterEKS,
+		awsManagedControlPlane,
+		awsClusterRoleIdentity,
 	}
 }

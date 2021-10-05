@@ -19,7 +19,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 
 	if key.IsCAPAVersion(config.ReleaseVersion) {
 		if config.EKS {
-			err = WriteCAPAEKSTemplate(out, config)
+			err = WriteCAPAEKSTemplate(ctx, client, out, config)
 			if err != nil {
 				return microerror.Mask(err)
 			}
