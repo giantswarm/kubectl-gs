@@ -16,8 +16,8 @@ import (
 
 const (
 	name             = "login [K8s API URL | Web UI URL | Existing GS Context Name]"
-	shortDescription = "Logs into an installation's Kubernetes API"
-	longDescription  = `Log into an installation's Kubernetes API.
+	shortDescription = "Logs into an installation's or workload cluster's Kubernetes API"
+	longDescription  = `Log into an installation's or workload cluster's Kubernetes API.
 
 You can use as an argument:
   * Your installation's Kubernetes API URL, e. g. 'https://g8s.test.eu-west-1.aws.gigantic.io'

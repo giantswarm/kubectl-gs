@@ -109,3 +109,12 @@ var authResponseTimedOutError = &microerror.Error{
 func IsAuthResponseTimedOut(err error) bool {
 	return microerror.Cause(err) == authResponseTimedOutError
 }
+
+var credentialRetrievalTimedOut = &microerror.Error{
+	Kind: "credentialRetrievalTimedOut",
+}
+
+// IsCredentialRetrievalTimedOut asserts credentialRetrievalTimedOut.
+func IsCredentialRetrievalTimedOut(err error) bool {
+	return microerror.Cause(err) == credentialRetrievalTimedOut
+}
