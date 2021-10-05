@@ -44,7 +44,7 @@ func WriteCAPAEKSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 			label.Cluster:                   config.ClusterName,
 			label.MachinePool:               config.NodePoolID,
 			capiv1alpha3.ClusterLabelName:   config.ClusterName,
-			label.Organization:              config.Owner,
+			label.Organization:              config.Organization,
 			"cluster.x-k8s.io/watch-filter": "capi",
 		})
 		switch o.GetKind() {
