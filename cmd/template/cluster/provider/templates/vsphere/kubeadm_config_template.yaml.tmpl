@@ -17,7 +17,7 @@ spec:
           criSocket: /var/run/containerd/containerd.sock
           kubeletExtraArgs:
             cloud-provider: external
-          name: '{{ ds.meta_data.hostname }}'
+          name: '{{ `{{ ds.meta_data.hostname }}` }}'
       preKubeadmCommands:
       - hostname "{{ ds.meta_data.hostname }}"
       - echo "::1         ipv6-localhost ipv6-loopback" >/etc/hosts
