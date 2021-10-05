@@ -20,17 +20,22 @@ func WriteCAPVTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Name              string
 		Namespace         string
 		Organization      string
-		Version           string
+		ReleaseVersion    string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
-		Version:           config.ReleaseVersion,
+		ReleaseVersion:    config.ReleaseVersion,
 	}
 
-	err = runMutation(ctx, client, data, vsphere.GetTemplates(), out)
+	var templates []templateConfig
+	for _, t := range vsphere.GetTemplates() {
+		templates = append(templates, templateConfig(t))
+	}
+
+	err = runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}

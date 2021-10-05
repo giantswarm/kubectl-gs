@@ -30,7 +30,12 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		ReleaseVersion:    config.ReleaseVersion,
 	}
 
-	err = runMutation(ctx, client, data, aws.GetTemplates(), out)
+	var templates []templateConfig
+	for _, t := range aws.GetTemplates() {
+		templates = append(templates, templateConfig(t))
+	}
+
+	err = runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}

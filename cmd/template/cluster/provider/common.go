@@ -41,6 +41,11 @@ type ClusterCRsConfig struct {
 	Namespace      string
 }
 
+type templateConfig struct {
+	Name string
+	Data string
+}
+
 func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
 	cluster := &capiv1alpha3.Cluster{
 		TypeMeta: metav1.TypeMeta{
@@ -68,7 +73,7 @@ func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1
 	return cluster
 }
 
-func runMutation(ctx context.Context, client k8sclient.Interface, templateData interface{}, input []string, output io.Writer) error {
+func runMutation(ctx context.Context, client k8sclient.Interface, templateData interface{}, templates []templateConfig, output io.Writer) error {
 	var err error
 
 	// Create a DiscoveryClient to get the GVR.
@@ -83,13 +88,13 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		return microerror.Mask(err)
 	}
 
-	for _, t := range input {
+	for _, t := range templates {
 		// Add separators to make the entire file valid yaml and allow easy appending.
 		_, err = output.Write([]byte("---\n"))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		te := template.Must(template.New("resource").Parse(t))
+		te := template.Must(template.New(t.Name).Parse(t.Data))
 		var buf bytes.Buffer
 		// Template from our inputs.
 		err = te.Execute(&buf, templateData)
