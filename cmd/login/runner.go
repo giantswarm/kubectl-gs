@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/keypair"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
@@ -47,10 +49,19 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
+	isCreatingKeypair := len(r.flag.KeypairCluster) > 0
+
 	if len(args) < 1 {
 		err = r.tryToReuseExistingContext(ctx)
 		if err != nil {
 			return microerror.Mask(err)
+		}
+
+		if isCreatingKeypair {
+			err = r.createClusterKeypair(ctx)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		return nil
@@ -75,6 +86,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	default:
 		err = r.loginWithURL(ctx, installationIdentifier, true)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	if isCreatingKeypair {
+		err = r.createClusterKeypair(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -242,4 +260,80 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 
 	return nil
+}
+
+func (r *runner) createClusterKeypair(ctx context.Context) error {
+	var keypairService keypair.Interface
+	{
+		config := commonconfig.New(r.flag.config)
+
+		client, err := config.GetClient(r.logger)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		serviceConfig := keypair.Config{
+			Client: client,
+		}
+		keypairService, err = keypair.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	keypairResource, err := generateKeypair(r.flag.KeypairCluster, r.flag.KeypairOrganization, r.flag.KeypairTTL, r.flag.KeypairGroups, clusterBasePath)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Creating keypair resource.
+	err = keypairService.Create(ctx, keypairResource)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Retrieving keypair credential.
+	secret, err := tryToGetKeypairCredential(ctx, keypairService, keypairResource.CertConfig.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Storing keypair credential into the kubeconfig.
+	contextName, err := storeKeypairCredential(r.k8sConfigAccess, r.fs, keypairResource, secret, clusterBasePath)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Cleaning up leftover resources.
+	err = cleanUpKeypairResources(ctx, keypairService, keypairResource)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Fprint(r.stdout, color.GreenString("Created keypair successfully for you on cluster '%s'.\n\n", r.flag.KeypairCluster))
+	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.\n", contextName)
+
+	return nil
+}
+
+func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	// If we get here, we are sure that the kubeconfig context exists and is valid.
+	authProvider, _ := kubeconfig.GetAuthProvider(config, config.CurrentContext)
+
+	issuer := authProvider.Config[Issuer]
+	mcBasePath, err := installation.GetBasePath(issuer)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return strings.TrimPrefix(mcBasePath, "g8s."), nil
 }
