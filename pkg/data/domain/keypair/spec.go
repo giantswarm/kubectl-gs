@@ -28,7 +28,11 @@ type Interface interface {
 }
 
 func (k *Keypair) Object() runtime.Object {
-	return k.CertConfig
+	if k.CertConfig != nil {
+		return k.CertConfig
+	}
+
+	return nil
 }
 
 func (c *Collection) Object() runtime.Object {
