@@ -4,8 +4,8 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
@@ -51,7 +51,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		NodesMin:                            config.NodesMin,
 		OnDemandBaseCapacity:                config.OnDemandBaseCapacity,
 		OnDemandPercentageAboveBaseCapacity: config.OnDemandPercentageAboveBaseCapacity,
-		Owner:                               config.Owner,
+		Owner:                               config.Organization,
 		UseAlikeInstanceTypes:               config.UseAlikeInstanceTypes,
 	}
 
@@ -73,7 +73,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		if config.Namespace != "" {
 			namespace = config.Namespace
 		} else if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
-			namespace = key.OrganizationNamespaceFromName(config.Owner)
+			namespace = key.OrganizationNamespaceFromName(config.Organization)
 		} else {
 			namespace = metav1.NamespaceDefault
 		}

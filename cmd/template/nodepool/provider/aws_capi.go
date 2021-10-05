@@ -55,7 +55,7 @@ func WriteCAPATemplate(out io.Writer, config NodePoolCRsConfig) error {
 			label.Cluster:                   config.ClusterName,
 			label.MachinePool:               config.NodePoolID,
 			capiv1alpha3.ClusterLabelName:   config.ClusterName,
-			label.Organization:              config.Owner,
+			label.Organization:              config.Organization,
 			"cluster.x-k8s.io/watch-filter": "capi",
 		})
 		switch o.GetKind() {
@@ -111,7 +111,7 @@ func getCAPANodepoolTemplate(config NodePoolCRsConfig, flavor string) (client.Te
 
 	templateOptions := client.GetClusterTemplateOptions{
 		ClusterName:       config.ClusterName,
-		TargetNamespace:   key.OrganizationNamespaceFromName(config.Owner),
+		TargetNamespace:   key.OrganizationNamespaceFromName(config.Organization),
 		KubernetesVersion: "v1.19.9",
 		ProviderRepositorySource: &client.ProviderRepositorySourceOptions{
 			InfrastructureProvider: "aws:v0.6.8",

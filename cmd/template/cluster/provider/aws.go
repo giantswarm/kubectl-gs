@@ -1,18 +1,20 @@
 package provider
 
 import (
+	"context"
 	"io"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	if key.IsCAPAVersion(config.ReleaseVersion) {
@@ -22,7 +24,7 @@ func WriteAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 				return microerror.Mask(err)
 			}
 		} else {
-			err = WriteCAPATemplate(out, config)
+			err = WriteCAPATemplate(ctx, client, out, config)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -47,7 +49,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		MasterAZ:       config.ControlPlaneAZ,
 		Description:    config.Description,
 		PodsCIDR:       config.PodsCIDR,
-		Owner:          config.Owner,
+		Owner:          config.Organization,
 		ReleaseVersion: config.ReleaseVersion,
 		Labels:         config.Labels,
 	}
@@ -62,7 +64,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	}
 
 	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {
-		crs = moveCRsToOrgNamespace(crs, config.Owner)
+		crs = moveCRsToOrgNamespace(crs, config.Organization)
 	}
 
 	clusterCRYaml, err := yaml.Marshal(crs.Cluster)

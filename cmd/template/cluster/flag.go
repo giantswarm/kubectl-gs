@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
@@ -27,7 +28,8 @@ const (
 	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
 	flagName                = "name"
 	flagOutput              = "output"
-	flagOwner               = "owner"
+	flagOrganization        = "organization"
+	flagOwner               = "owner" // TODO: Remove some time after December 2021
 	flagRelease             = "release"
 	flagLabel               = "label"
 )
@@ -48,9 +50,13 @@ type flag struct {
 	MasterAZ            []string
 	Name                string
 	Output              string
+	Organization        string
 	Owner               string
 	Release             string
 	Label               []string
+
+	config genericclioptions.RESTClientGetter
+	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -69,7 +75,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
+	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
@@ -77,7 +84,17 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
 
 	// TODO: Remove around December 2021
+	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
+
+	f.config = genericclioptions.NewConfigFlags(true)
+	f.print = genericclioptions.NewPrintFlags("")
+	f.print.OutputFormat = nil
+
+	// Merging current command flags and config flags,
+	// to be able to override kubectl-specific ones.
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+	f.print.AddFlags(cmd)
 }
 
 func (f *flag) Validate() error {
@@ -106,24 +123,24 @@ func (f *flag) Validate() error {
 
 	if f.Name != "" {
 		if len(f.Name) != key.IDLength {
-			return microerror.Maskf(invalidFlagError, "--%s must be length of %d", flagClusterIDDeprecated, key.IDLength)
+			return microerror.Maskf(invalidFlagError, "--%s must be of length %d", flagName, key.IDLength)
 		}
 
 		matchedLettersOnly, err := regexp.MatchString("^[a-z]+$", f.Name)
 		if err == nil && matchedLettersOnly {
 			// strings is letters only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagClusterIDDeprecated)
+			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagName)
 		}
 
 		matchedNumbersOnly, err := regexp.MatchString("^[0-9]+$", f.Name)
 		if err == nil && matchedNumbersOnly {
 			// strings is numbers only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one digit", flagClusterIDDeprecated)
+			return microerror.Maskf(invalidFlagError, "--%s must contain at least one letter", flagName)
 		}
 
 		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.Name)
 		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagClusterIDDeprecated)
+			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
 		}
 
 		if f.ControlPlaneSubnet != "" {
@@ -132,8 +149,6 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagControlPlaneSubnet)
 			}
 		}
-
-		return nil
 	}
 
 	if f.PodsCIDR != "" {
@@ -142,8 +157,18 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Owner == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
+	// TODO: Remove the flag completely some time after December 2021
+	if f.Owner == "" && f.Organization == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+	}
+
+	if f.Owner != "" {
+		if f.Organization != "" {
+			return microerror.Maskf(invalidFlagError, "--%s and --%s cannot be combined", flagOwner, flagOrganization)
+		}
+
+		f.Organization = f.Owner
+		f.Owner = ""
 	}
 
 	{

@@ -7,14 +7,82 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.41.1] - 2021-10-04
+
+### Changed
+
+- Use org-namespace for AWS Clusters by default
+
+## [1.41.0] - 2021-10-04
+
+### Added
+
+- Nodepool nodes are labeled with nodepool id on AWS using `giantswarm.io/machine-pool`.
+- `MachinePool` and `AzureMachinePool` are labeled with the `giantswarm.io/machine-pool` label.
+- `get releases` command to return details of available releases.
+
+## [1.40.0] - 2021-09-24
+
+### Added
+
+- Nodepool nodes are labeled with nodepool id on Azure using `giantswarm.io/machine-pool`.
+
+### Changed
+
+- Update the `template cluster` command to add CAPI defaults and validation using the management cluster API.
+
+## [1.39.2] - 2021-09-17
+
+### Changed
+
+- In the `template cluster` and `template nodepool` commands, the `--owner` flag got replaced by `--organization`.
+
+## [1.39.1] - 2021-09-14
+
+### Added
+
+- The `template organization` command now also offers an `--output` flag to specify an output path optionally.
+
+### Changed
+
+- In the `template` commands, the flag `--owner` is replaced by `--organization`.
+- Make the `login` command be able to start a new authentication flow if one of the tokens of an existing authentication provider are not present.
+- Update cluster templating error messages for `--name` flag to use correct terminology
+
+## [1.39.0] - 2021-09-10
+
+### Added
+
+- Add support for templating `Organization` CRs.
+
+### Changed
+
+- Allow providing Kubernetes API URLs with prefixes to the `login` command.
+
+## [1.38.0] - 2021-09-08
+
+### Added
+
+- Add tags to enable `cluster autoscaler` to Azure Node Pool template.
+- Enable system assigned identity in Azure CAPI clusters' master nodes.
+- Set routing table in master subnet in Azure CAPI clusters.
+
+### Fixed
+
+- Set `cluster.giantswarm.io/description` annotation for `Cluster` CR in template generation command on Azure.
+- Set `machine-pool.giantswarm.io/name` annotation for `MachinePool` CR in template generation command on Azure.
+
+## [1.37.0] - 2021-09-03
+
 ### Changed
 
 - Template cluster and nodepool resources in the org-namespace from AWS release `16.0.0` onwards.
 
 ### Added
 
-- Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for 
+- Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for
   upgraded >v16.0.0 clusters that remain in the default namespace.
+- Added support to generate templates for CAPZ clusters and node pools.
 
 ## [1.36.0] - 2021-08-26
 
@@ -465,7 +533,15 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.36.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.1...HEAD
+[1.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.0...v1.41.1
+[1.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.40.0...v1.41.0
+[1.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.2...v1.40.0
+[1.39.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.1...v1.39.2
+[1.39.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.0...v1.39.1
+[1.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.38.0...v1.39.0
+[1.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.37.0...v1.38.0
+[1.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.36.0...v1.37.0
 [1.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...v1.36.0
 [1.35.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...v1.35.1
 [1.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...v1.35.0

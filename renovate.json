@@ -1,7 +1,7 @@
 {
   "extends": [
     "config:base",
-    ":reviewer(team:giantswarm/team-biscuit)"
+    ":reviewer(team:giantswarm/team-rainbow)"
   ],
   "packageRules": [
     {

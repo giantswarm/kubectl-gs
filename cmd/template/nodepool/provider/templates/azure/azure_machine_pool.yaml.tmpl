@@ -1,0 +1,34 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: AzureMachinePool
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    "cluster.x-k8s.io/cluster-name": {{ .ClusterName }}
+    "cluster.x-k8s.io/watch-filter": capi
+    "giantswarm.io/cluster": {{ .ClusterName }}
+    "release.giantswarm.io/version": "{{ .Version }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+    "giantswarm.io/machine-pool": "{{ .Name }}"
+spec:
+  additionalTags:
+    "cluster-autoscaler-enabled": "{{ if eq .MinSize .MaxSize }}false{{else}}true{{end}}"
+    "cluster-autoscaler-name": "{{ .ClusterName }}"
+    "min": "{{ .MinSize }}"
+    "max": "{{ .MaxSize }}"
+  identity: SystemAssigned
+  location: ""
+  strategy:
+    rollingUpdate:
+      deletePolicy: Oldest
+      maxSurge: 25%
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    osDisk:
+      diskSizeGB: 30
+      managedDisk:
+        storageAccountType: {{ .StorageAccountType }}
+      osType: Linux
+    sshPublicKey: ""
+    vmSize: {{ .VMSize }}

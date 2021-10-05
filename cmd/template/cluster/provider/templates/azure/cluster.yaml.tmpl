@@ -1,0 +1,26 @@
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: Cluster
+metadata:
+  annotations:
+    "cluster.giantswarm.io/description": "{{ .Description }}"
+  labels:
+    "release.giantswarm.io/version": "{{ .Version }}"
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+    "cluster.x-k8s.io/watch-filter": "capi"
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+    kind: KubeadmControlPlane
+    name: {{ .Name }}-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+    kind: AzureCluster
+    name: {{ .Name }}

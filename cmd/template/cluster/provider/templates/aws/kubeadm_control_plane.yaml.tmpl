@@ -1,0 +1,65 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: KubeadmControlPlane
+metadata:
+  labels:
+    release.giantswarm.io/version: {{ .ReleaseVersion }}
+    giantswarm.io/cluster: {{ .Name }}
+    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    giantswarm.io/organization: {{ .Organization }}
+    cluster.x-k8s.io/watch-filter: capi
+  name: {{ .Name }}-control-plane
+  namespace: {{ .Namespace }}
+spec:
+  infrastructureTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+    kind: AWSMachineTemplate
+    name: {{ .Name }}-control-plane
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: aws
+      controllerManager:
+        extraArgs:
+          cloud-provider: aws
+    files:
+    - content: IyBVc2UgbW9zdCBkZWZhdWx0cyBmb3Igc3NoZCBjb25maWd1cmF0aW9uLgpTdWJzeXN0ZW0gc2Z0cCBpbnRlcm5hbC1zZnRwCkNsaWVudEFsaXZlSW50ZXJ2YWwgMTgwClVzZUROUyBubwpVc2VQQU0geWVzClByaW50TGFzdExvZyBubyAjIGhhbmRsZWQgYnkgUEFNClByaW50TW90ZCBubyAjIGhhbmRsZWQgYnkgUEFNCiMgTm9uIGRlZmF1bHRzICgjMTAwKQpDbGllbnRBbGl2ZUNvdW50TWF4IDIKUGFzc3dvcmRBdXRoZW50aWNhdGlvbiBubwpUcnVzdGVkVXNlckNBS2V5cyAvZXRjL3NzaC90cnVzdGVkLXVzZXItY2Eta2V5cy5wZW0KTWF4QXV0aFRyaWVzIDUKTG9naW5HcmFjZVRpbWUgNjAKQWxsb3dUY3BGb3J3YXJkaW5nIG5vCkFsbG93QWdlbnRGb3J3YXJkaW5nIG5vCg==
+      encoding: base64
+      owner: root
+      path: /etc/ssh/sshd_config
+      permissions: "640"
+    - content: c3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFDQVFDOGhDMUlsQllJdy9pbE1hakVUSTdJdSt0aUgxTlJKbmtBRjhNSmdYajA2TzVUK0hCa2pIWkJOdC96N25UNWhhcXp1TGk5eHpnaUN2dHpxOWFOQ3pqZExZOTlzVW42YnllR1RPdkpWUjh1SUlCRXZ3d0NNODJaMWVTemF2QkpsS1ZQd0wvV3lyYkpnV3BUbmk0SFZiWWhmSXdtWUN1aU83Y3J6UjFBZHlwMVkvMEVxR2c3RnNQTzBzMmNsQStYZkQxbEdManhvL0ZZSGgvUkR6cVB1WENDSU5RTTI1UzhlQTJoR0taSnBHbmUwd0JWYUJMaFBkOC9MSDFkZnVEdHUwSHRpZHg2RlRTdnQ4dEdmQVh4R0FjeUtaYkgzNjcyVzN1TzZDVkxxTUVCVGlXamgvUVRLUWdGWlIvMWdiODZtOG8rUVZCQ29OVmdXNVBzRDNUb09QK0xiWDV6aGVkRU1UbXZVdWQ4a0NTaHdabWwvWTF1eE12Wms2YmhWZUg0VFBmdUJ3ZXdCUU9DVkYrOU5GeEQ0Q2hISjdsSlVkVUwvMFgybHphb2xzbUowUkh2bVZ1bStod01XTjhsRm5xNTl2Q1lqdnIxUmxuVE9OWWNibXhyZXFqd0RLajVjY2NVYkVURWJ1dGYvYVFUVk1zSjZZbkJScGFVdmlmUUtsWHJCTXc4dWtpUU9tTDUwOHpnRitSMWd2RlI0ZDRoUWg4VmhsdEUraHdyeUlHQlNMdVZtMmhaN08zT0h2bFNQS3p2MGVmMUlyT1lhaVFaWUpWUGlPb0VFMU0yS3hVOXhaMFlnKzZudWtQL2cvVklXUzlZQ2RzY1o4NWFTUGl5T05xNkRKaG51WjhVOEJWV1N0K05ka2RnSVRaUmx2QVcvdjJZWlZBbW1zWXR0UktMRFE9PQ==
+      encoding: base64
+      owner: root
+      path: /etc/ssh/trusted-user-ca-keys.pem
+      permissions: "600"
+    - content: Z2lhbnRzd2FybSBBTEw9KEFMTDpBTEwpIE5PUEFTU1dEOiBBTEw=
+      encoding: base64
+      owner: root
+      path: /etc/sudoers.d/giantswarm
+      permissions: "600"
+    initConfiguration:
+      localAPIEndpoint:
+        advertiseAddress: ""
+        bindPort: 0
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ `{{ ds.meta_data.local_hostname }}` }}'
+    joinConfiguration:
+      discovery: {}
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ `{{ ds.meta_data.local_hostname }}` }}'
+    postKubeadmCommands:
+    - service ssh restart
+    users:
+    - groups: sudo
+      name: giantswarm
+      shell: /bin/bash
+  replicas: 1
+  version: {{ .KubernetesVersion }}
+status:
+  initialized: false
+  ready: false
