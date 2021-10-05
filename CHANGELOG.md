@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add templating for EKS clusters using the management cluster API
+
 ## [1.41.1] - 2021-10-04
 
 ### Changed
