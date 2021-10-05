@@ -16,8 +16,8 @@ import (
 
 const (
 	name             = "login [K8s API URL | Web UI URL | Existing GS Context Name]"
-	shortDescription = "Logs into an installation's or workload cluster's Kubernetes API"
-	longDescription  = `Log into an installation's or workload cluster's Kubernetes API.
+	shortDescription = "Gains access to a Kubernetes management or workload cluster API"
+	longDescription  = `Gain access to a Kubernetes management or workload cluster API
 
 You can use as an argument:
   * Your installation's Kubernetes API URL, e. g. 'https://g8s.test.eu-west-1.aws.gigantic.io'
@@ -37,7 +37,10 @@ You can use as an argument:
   kubectl gs login gs-test
 
   # Or even shorter
-  kubectl gs login test`
+  kubectl gs login test
+
+  # Create a keypair for a workload cluster
+  kubectl gs login test --keypair-cluster d231p --keypair-organization production --keypair-group admins`
 )
 
 type Config struct {
