@@ -1,8 +1,12 @@
 package provider
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"fmt"
 	"io"
+	"text/template"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -14,22 +18,67 @@ import (
 func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var ignitionBase64 string
+	{
+		data := struct {
+			IgnitionFiles []struct {
+				Path    string
+				Content string
+			}
+		}{
+			IgnitionFiles: []struct {
+				Path    string
+				Content string
+			}{
+				{
+					Path:    "/etc/systemd/system/set-bastion-ready.timer",
+					Content: base64.StdEncoding.EncodeToString([]byte(key.CapzSetBastionReadyTimer)),
+				},
+				{
+					Path:    "/etc/systemd/system/set-bastion-ready.service",
+					Content: base64.StdEncoding.EncodeToString([]byte(key.CapzSetBastionReadyService)),
+				},
+			},
+		}
+
+		var tpl bytes.Buffer
+		t := template.Must(template.New(config.FileName).Parse(fmt.Sprintf(key.BastionIgnitionTemplate, config.Name, key.BastionSSHDConfigEncoded(), sshSSOPublicKey)))
+		err = t.Execute(&tpl, data)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		ignitionBase64 = base64.StdEncoding.EncodeToString(tpl.Bytes())
+	}
+
 	data := struct {
-		Description       string
-		KubernetesVersion string
-		Name              string
-		Namespace         string
-		Organization      string
-		Version           string
-		VMSize            string
+		BastionIgnitionSecretBase64 string
+		BastionVMSize               string
+		Description                 string
+		KubernetesVersion           string
+		Name                        string
+		Namespace                   string
+		Owner                       string
+		Version                     string
+		VMSize                      string
 	}{
-		Description:       config.Description,
-		KubernetesVersion: "v1.19.9",
-		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
-		Organization:      config.Organization,
-		Version:           config.ReleaseVersion,
-		VMSize:            "Standard_D4s_v3",
+		BastionIgnitionSecretBase64: ignitionBase64,
+		BastionVMSize:               "Standard_D2_v3",
+		Description:                 config.Description,
+		KubernetesVersion:           "v1.19.9",
+		Name:                        config.Name,
+		Namespace:                   key.OrganizationNamespaceFromName(config.Organization),
+		Owner:                       config.Organization,
+		Version:                     config.ReleaseVersion,
+		VMSize:                      "Standard_D4s_v3",
 	}
 
 	err = runMutation(ctx, client, data, azure.GetTemplates(), out)
