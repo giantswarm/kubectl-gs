@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/keypair"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
@@ -49,7 +49,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	isCreatingKeypair := len(r.flag.WCName) > 0
+	isCreatingClientCert := len(r.flag.WCName) > 0
 
 	if len(args) < 1 {
 		err = r.tryToReuseExistingContext(ctx)
@@ -57,8 +57,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		if isCreatingKeypair {
-			err = r.createClusterKeypair(ctx)
+		if isCreatingClientCert {
+			err = r.createClusterClientCert(ctx)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -91,8 +91,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	if isCreatingKeypair {
-		err = r.createClusterKeypair(ctx)
+	if isCreatingClientCert {
+		err = r.createClusterClientCert(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -262,8 +262,8 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 	return nil
 }
 
-func (r *runner) createClusterKeypair(ctx context.Context) error {
-	var keypairService keypair.Interface
+func (r *runner) createClusterClientCert(ctx context.Context) error {
+	var clientCertService clientcert.Interface
 	{
 		config := commonconfig.New(r.flag.config)
 
@@ -272,10 +272,10 @@ func (r *runner) createClusterKeypair(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 
-		serviceConfig := keypair.Config{
+		serviceConfig := clientcert.Config{
 			Client: client,
 		}
-		keypairService, err = keypair.New(serviceConfig)
+		clientCertService, err = clientcert.New(serviceConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -286,36 +286,36 @@ func (r *runner) createClusterKeypair(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	keypairResource, err := generateKeypair(r.flag.WCName, r.flag.WCOrganization, r.flag.WCCertTTL, r.flag.WCCertGroups, clusterBasePath)
+	clientCertResource, err := generateClientCert(r.flag.WCName, r.flag.WCOrganization, r.flag.WCCertTTL, r.flag.WCCertGroups, clusterBasePath)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Creating keypair resource.
-	err = keypairService.Create(ctx, keypairResource)
+	// Creating client certificate resource.
+	err = clientCertService.Create(ctx, clientCertResource)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Retrieving keypair credential.
-	secret, err := tryToGetKeypairCredential(ctx, keypairService, keypairResource.CertConfig.Name)
+	// Retrieving client certificate credential.
+	secret, err := tryToGetClientCertCredential(ctx, clientCertService, clientCertResource.CertConfig.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Storing keypair credential into the kubeconfig.
-	contextName, err := storeKeypairCredential(r.k8sConfigAccess, r.fs, keypairResource, secret, clusterBasePath)
+	// Storing client certificate credential into the kubeconfig.
+	contextName, err := storeClientCertCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	// Cleaning up leftover resources.
-	err = cleanUpKeypairResources(ctx, keypairService, keypairResource)
+	err = cleanUpClientCertResources(ctx, clientCertService, clientCertResource)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("Created keypair successfully for you on cluster '%s'.\n\n", r.flag.WCName))
+	fmt.Fprint(r.stdout, color.GreenString("Created client certificate successfully for you on cluster '%s'.\n\n", r.flag.WCName))
 	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.\n", contextName)
 
 	return nil

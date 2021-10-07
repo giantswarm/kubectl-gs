@@ -1,4 +1,4 @@
-package keypair
+package clientcert
 
 import (
 	"context"
@@ -9,12 +9,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type Keypair struct {
+type ClientCert struct {
 	CertConfig *corev1alpha1.CertConfig
 }
 
 type Collection struct {
-	Items []Keypair
+	Items []ClientCert
 }
 
 type Resource interface {
@@ -22,12 +22,12 @@ type Resource interface {
 }
 
 type Interface interface {
-	Create(ctx context.Context, keypair *Keypair) error
-	Delete(ctx context.Context, keypair *Keypair) error
+	Create(ctx context.Context, clientCert *ClientCert) error
+	Delete(ctx context.Context, clientCert *ClientCert) error
 	GetCredential(ctx context.Context, name string) (*corev1.Secret, error)
 }
 
-func (k *Keypair) Object() runtime.Object {
+func (k *ClientCert) Object() runtime.Object {
 	if k.CertConfig != nil {
 		return k.CertConfig
 	}
