@@ -8,14 +8,13 @@ import (
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/keypair"
 )
 
 const (
@@ -27,7 +26,7 @@ const (
 	credentialKeyCertCA  = "ca"
 )
 
-func generateKeypairUID() string {
+func generateClientCertUID() string {
 	hash := sha256.New()
 	_, _ = hash.Write([]byte(time.Now().String()))
 
@@ -36,18 +35,18 @@ func generateKeypairUID() string {
 	return uid[:16]
 }
 
-func generateKeypair(cluster, organization, ttl string, groups []string, clusterBasePath string) (*keypair.Keypair, error) {
-	keypairUID := generateKeypairUID()
-	keypairName := fmt.Sprintf("%s-%s", cluster, keypairUID)
-	commonName := fmt.Sprintf("%s.%s.k8s.%s", keypairUID, cluster, clusterBasePath)
+func generateClientCert(cluster, organization, ttl string, groups []string, clusterBasePath string) (*clientcert.ClientCert, error) {
+	clientCertUID := generateClientCertUID()
+	clientCertName := fmt.Sprintf("%s-%s", cluster, clientCertUID)
+	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertUID, cluster, clusterBasePath)
 
 	certConfig := &corev1alpha1.CertConfig{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      keypairName,
+			Name:      clientCertName,
 			Namespace: metav1.NamespaceDefault,
 			Labels: map[string]string{
 				"cert-operator.giantswarm.io/version": "0.1.0",
-				"giantswarm.io/certificate":           keypairUID,
+				"giantswarm.io/certificate":           clientCertUID,
 				"giantswarm.io/cluster":               cluster,
 				"giantswarm.io/organization":          organization,
 			},
@@ -55,7 +54,7 @@ func generateKeypair(cluster, organization, ttl string, groups []string, cluster
 		Spec: corev1alpha1.CertConfigSpec{
 			Cert: corev1alpha1.CertConfigSpecCert{
 				AllowBareDomains:    true,
-				ClusterComponent:    keypairUID,
+				ClusterComponent:    clientCertUID,
 				ClusterID:           cluster,
 				CommonName:          commonName,
 				DisableRegeneration: true,
@@ -68,23 +67,23 @@ func generateKeypair(cluster, organization, ttl string, groups []string, cluster
 		},
 	}
 
-	r := &keypair.Keypair{
+	r := &clientcert.ClientCert{
 		CertConfig: certConfig,
 	}
 
 	return r, nil
 }
 
-// tryToCreateKeypairCredential tries to fetch the keypair credential
+// tryToGetClientCertCredential tries to fetch the client certificate credential
 // for a couple of times, until the resource is fetched, or until the timeout is reached.
-func tryToGetKeypairCredential(ctx context.Context, keypairService keypair.Interface, name string) (*corev1.Secret, error) {
+func tryToGetClientCertCredential(ctx context.Context, clientCertService clientcert.Interface, name string) (*corev1.Secret, error) {
 	var secret *corev1.Secret
 	var err error
 
 	o := func() error {
-		secret, err = keypairService.GetCredential(ctx, name)
-		if keypair.IsNotFound(err) {
-			// Keypair credential has not been created yet, try again until it is.
+		secret, err = clientCertService.GetCredential(ctx, name)
+		if clientcert.IsNotFound(err) {
+			// Client certificate credential has not been created yet, try again until it is.
 			return microerror.Mask(err)
 		} else if err != nil {
 			return backoff.Permanent(microerror.Mask(err))
@@ -95,8 +94,8 @@ func tryToGetKeypairCredential(ctx context.Context, keypairService keypair.Inter
 	b := backoff.NewConstant(credentialMaxRetryTimeout, credentialRetryTimeout)
 
 	err = backoff.Retry(o, b)
-	if keypair.IsNotFound(err) {
-		return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the keypair credential on time")
+	if clientcert.IsNotFound(err) {
+		return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -104,17 +103,17 @@ func tryToGetKeypairCredential(ctx context.Context, keypairService keypair.Inter
 	return secret, nil
 }
 
-// storeKeypairCredential saves the created keypair credentials into the kubectl config.
-func storeKeypairCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, keypair *keypair.Keypair, credential *corev1.Secret, clusterBasePath string) (string, error) {
+// storeClientCertCredential saves the created client certificate credentials into the kubectl config.
+func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	contextName := keypair.CertConfig.GetName()
-	userName := keypair.CertConfig.Spec.Cert.ClusterComponent
-	clusterName := fmt.Sprintf("giantswarm-%s", keypair.CertConfig.Spec.Cert.ClusterID)
-	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", keypair.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
+	contextName := clientCert.CertConfig.GetName()
+	userName := clientCert.CertConfig.Spec.Cert.ClusterComponent
+	clusterName := fmt.Sprintf("giantswarm-%s", clientCert.CertConfig.Spec.Cert.ClusterID)
+	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
 
 	certCRT := credential.Data[credentialKeyCertCRT]
 	certKey := credential.Data[credentialKeyCertKey]
@@ -173,8 +172,8 @@ func storeKeypairCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs,
 	return contextName, nil
 }
 
-func cleanUpKeypairResources(ctx context.Context, keypairService keypair.Interface, keypairResource *keypair.Keypair) error {
-	err := keypairService.Delete(ctx, keypairResource)
+func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {
+	err := clientCertService.Delete(ctx, clientCertResource)
 	if err != nil {
 		return microerror.Mask(err)
 	}

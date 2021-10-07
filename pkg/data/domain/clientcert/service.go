@@ -1,4 +1,4 @@
-package keypair
+package clientcert
 
 import (
 	"context"
@@ -35,8 +35,8 @@ func New(config Config) (*Service, error) {
 	return s, nil
 }
 
-func (s *Service) Create(ctx context.Context, keypair *Keypair) error {
-	kp := keypair.Object()
+func (s *Service) Create(ctx context.Context, clientCert *ClientCert) error {
+	kp := clientCert.Object()
 
 	err := s.client.K8sClient.CtrlClient().Create(ctx, kp)
 	if err != nil {
@@ -46,8 +46,8 @@ func (s *Service) Create(ctx context.Context, keypair *Keypair) error {
 	return nil
 }
 
-func (s *Service) Delete(ctx context.Context, keypair *Keypair) error {
-	kp := keypair.Object()
+func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
+	kp := clientCert.Object()
 	namespace := runtimeclient.InNamespace(metav1.NamespaceDefault)
 
 	err := s.client.K8sClient.CtrlClient().DeleteAllOf(ctx, kp, namespace)

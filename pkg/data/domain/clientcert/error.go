@@ -1,4 +1,4 @@
-package keypair
+package clientcert
 
 import (
 	"github.com/giantswarm/microerror"
