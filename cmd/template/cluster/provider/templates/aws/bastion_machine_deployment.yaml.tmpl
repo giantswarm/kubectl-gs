@@ -29,7 +29,7 @@ spec:
         cluster.x-k8s.io/deployment-name: {{ .Name }}-bastion
     spec:
       bootstrap:
-        dataSecretName: {{ .Name }}-bastion
+        dataSecretName: {{ .Name }}-bastion-ignition
       clusterName: {{ .Name }}
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
