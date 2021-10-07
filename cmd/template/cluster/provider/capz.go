@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"text/template"
@@ -29,22 +30,22 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 	var ignitionBase64 string
 	{
 		data := struct {
-			IgnitionFiles []struct {
-				Path    string
-				Content string
+			SystemdUnits []struct {
+				Name     string
+				Contents string
 			}
 		}{
-			IgnitionFiles: []struct {
-				Path    string
-				Content string
+			SystemdUnits: []struct {
+				Name     string
+				Contents string
 			}{
 				{
-					Path:    "/etc/systemd/system/set-bastion-ready.timer",
-					Content: base64.StdEncoding.EncodeToString([]byte(key.CapzSetBastionReadyTimer)),
+					Name:     "set-bastion-ready.timer",
+					Contents: jsonEscape(key.CapzSetBastionReadyTimer),
 				},
 				{
-					Path:    "/etc/systemd/system/set-bastion-ready.service",
-					Content: base64.StdEncoding.EncodeToString([]byte(key.CapzSetBastionReadyService)),
+					Name:     "set-bastion-ready.service",
+					Contents: jsonEscape(key.CapzSetBastionReadyService),
 				},
 			},
 		}
@@ -66,7 +67,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		KubernetesVersion           string
 		Name                        string
 		Namespace                   string
-		Owner                       string
+		Organization                string
 		Version                     string
 		VMSize                      string
 	}{
@@ -76,7 +77,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		KubernetesVersion:           "v1.19.9",
 		Name:                        config.Name,
 		Namespace:                   key.OrganizationNamespaceFromName(config.Organization),
-		Owner:                       config.Organization,
+		Organization:                config.Organization,
 		Version:                     config.ReleaseVersion,
 		VMSize:                      "Standard_D4s_v3",
 	}
@@ -87,4 +88,13 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 	}
 
 	return nil
+}
+
+func jsonEscape(i string) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		panic(err)
+	}
+	// Trim the beginning and trailing " character
+	return string(b[1 : len(b)-1])
 }

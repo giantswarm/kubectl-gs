@@ -98,6 +98,19 @@ const BastionIgnitionTemplate = `{
          }
       ]
    },
+   "systemd":{
+     "units":[
+       {{- $units := .SystemdUnits }}
+       {{- range $index,$unit := $units }}
+       {{- if $index}},{{- end}}
+       {
+          "name":"{{ $unit.Name }}",
+          "enabled":true,
+          "contents": "{{ $unit.Contents }}"
+       }
+       {{- end }}
+     ]
+   },
    "storage":{
       "files":[
          {
@@ -108,16 +121,6 @@ const BastionIgnitionTemplate = `{
                "source":"data:,%s-bastion"
             }
          },
-         {{- range $file := .IgnitionFiles }}
-         {
-            "path":"{{ $file.Path }}",
-            "filesystem":"root",
-            "mode": 420,
-            "contents":{
-              "source":"data:text/plain;charset=utf-8;base64,{{ $file.Content }}"
-            },
-         }
-         {{- end }}
          {
             "path":"/etc/ssh/sshd_config",
             "filesystem":"root",
@@ -179,7 +182,7 @@ OnCalendar=minutely
 Unit=set-bastion-ready.service
 
 [Install]
-WantedBy=default.target
+WantedBy=timers.target
 `
 
 const CapzSetBastionReadyService = `[Unit]
