@@ -17,10 +17,10 @@ var kubeadmConfig string
 // GetTemplate merges all .tmpl files.
 func GetTemplate() string {
 	return strings.Join([]string{
+		// Adds a separator at the beginning of the joined template for easier joinability of cluster and node pool templates.
+		"",
 		machinePool,
 		azureMachinePool,
 		kubeadmConfig,
-		// Adds a separator at the end of the joined template for easier joinability of cluster and node pool templates.
-		"",
 	}, "\n---\n")
 }
