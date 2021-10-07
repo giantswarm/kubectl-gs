@@ -16,6 +16,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
 const (
@@ -112,7 +113,7 @@ func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := fmt.Sprintf("%s-%s", mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
 	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)

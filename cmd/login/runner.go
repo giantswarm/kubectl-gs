@@ -52,16 +52,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	isCreatingClientCert := len(r.flag.WCName) > 0
 
 	if len(args) < 1 {
-		err = r.tryToReuseExistingContext(ctx)
+		err = r.tryToReuseExistingContext(ctx, isCreatingClientCert)
 		if err != nil {
 			return microerror.Mask(err)
-		}
-
-		if isCreatingClientCert {
-			err = r.createClusterClientCert(ctx)
-			if err != nil {
-				return microerror.Mask(err)
-			}
 		}
 
 		return nil
@@ -71,20 +64,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// installation code name, or happa/k8s api URL.
 	installationIdentifier := strings.ToLower(args[0])
 
-	switch {
-	case kubeconfig.IsKubeContext(installationIdentifier):
+	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC {
 		err = r.loginWithKubeContextName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-	case kubeconfig.IsCodeName(installationIdentifier):
+	} else if kubeconfig.IsCodeName(installationIdentifier) {
 		err = r.loginWithCodeName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-	default:
+	} else {
 		err = r.loginWithURL(ctx, installationIdentifier, true)
 		if err != nil {
 			return microerror.Mask(err)
@@ -101,14 +91,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
+func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClientCert bool) error {
 	config, err := r.k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(config)
-	if isLoggedInWithKubeContext {
+	currentContext := config.CurrentContext
+	kubeContextType := kubeconfig.GetKubeContextType(currentContext)
+
+	switch kubeContextType {
+	case kubeconfig.ContextTypeMC:
 		authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
 		if !exists {
 			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
@@ -131,14 +124,29 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
 		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 
+		if isCreatingClientCert {
+			err = r.createClusterClientCert(ctx)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
 		return nil
-	}
 
-	if currentContext != "" {
-		return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.", currentContext)
-	}
+	case kubeconfig.ContextTypeWC:
+		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
+		clusterName := kubeconfig.GetClusterNameFromKubeContext(currentContext)
+		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the workload cluster '%s' of installation '%s'.\n", clusterName, codeName))
 
-	return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
+		return nil
+
+	default:
+		if currentContext != "" {
+			return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.", currentContext)
+		}
+
+		return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
+	}
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
@@ -322,7 +330,8 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.\n", contextName)
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected. To switch back to this context later, use this command:\n\n", contextName)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
 
 	return nil
