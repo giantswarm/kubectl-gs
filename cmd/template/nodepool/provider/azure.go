@@ -46,6 +46,14 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	data := struct {
 		KubernetesVersion  string
 		ClusterName        string
@@ -56,6 +64,8 @@ func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		Namespace          string
 		Organization       string
 		Replicas           int
+		SSHDConfig         string
+		SSOPublicKey       string
 		StorageAccountType string
 		Version            string
 		VMSize             string
@@ -69,6 +79,8 @@ func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		Namespace:          key.OrganizationNamespaceFromName(config.Organization),
 		Organization:       config.Organization,
 		Replicas:           config.NodesMin,
+		SSHDConfig:         key.NodeSSHDConfigEncoded(),
+		SSOPublicKey:       sshSSOPublicKey,
 		StorageAccountType: key.AzureStorageAccountTypeForVMSize(config.VMSize),
 		Version:            config.ReleaseVersion,
 		VMSize:             config.VMSize,
