@@ -6,7 +6,7 @@ metadata:
     "giantswarm.io/cluster": "{{ .Name }}"
     "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
     "giantswarm.io/organization": "{{ .Organization }}"
-  name: {{ .Name }}-control-plane
+  name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
   kubeadmConfigSpec:
