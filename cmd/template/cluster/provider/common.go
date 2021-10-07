@@ -83,6 +83,7 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		return microerror.Mask(err)
 	}
 
+	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
 	for _, t := range input {
 		// Add separators to make the entire file valid yaml and allow easy appending.
 		_, err = output.Write([]byte("---\n"))
@@ -104,7 +105,7 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 			return microerror.Mask(err)
 		}
 		// Mapping needed for the dynamic client.
-		mapping, err := findGVR(gvk, dc)
+		mapping, err := findGVR(mapper, gvk, dc)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -155,7 +156,6 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 	return nil
 }
 
-func findGVR(gvk *schema.GroupVersionKind, dc *discovery.DiscoveryClient) (*meta.RESTMapping, error) {
-	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
+func findGVR(mapper *restmapper.DeferredDiscoveryRESTMapper, gvk *schema.GroupVersionKind, dc *discovery.DiscoveryClient) (*meta.RESTMapping, error) {
 	return mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 }

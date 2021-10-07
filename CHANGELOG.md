@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Throttling for generating CAPI templates.
+
 ## [1.42.0] - 2021-10-07
 
 ### Added
