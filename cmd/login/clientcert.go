@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	credentialRetryTimeout    = 500 * time.Millisecond
-	credentialMaxRetryTimeout = 20 * time.Second
+	credentialRetryTimeout    = 1 * time.Second
+	credentialMaxRetryTimeout = 5 * time.Minute
 
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
