@@ -15,32 +15,49 @@ import (
 )
 
 const (
-	name             = "login [K8s API URL | Web UI URL | Existing GS Context Name]"
-	shortDescription = "Gains access to a Kubernetes management or workload cluster API"
-	longDescription  = `Gain access to a Kubernetes management or workload cluster API
+	name = `login <management-cluster> [flags]
 
-You can use as an argument:
-  * Your installation's Kubernetes API URL, e. g. 'https://g8s.test.eu-west-1.aws.gigantic.io'
-  * Your Web UI URL, e. g. 'https://happa.g8s.test.eu-west-1.aws.gigantic.io'
-  * An existing Giant Swarm specific kubectl context name, e. g. 'gs-test'
-`
-	examples = `  # See on which installation you're logged in currently.
-  kubectl gs login
+The <management-cluster> argument can take several forms:
 
-  # Log in using your K8s API URL.
+  - the URL of the management cluster Kubernetes endpoint
+  - the URL of the Giant Swarm web UI
+  - a previously generated context name, with or without the prefix "gs-"`
+	shortDescription = "Ensures an authenticated context for a Giant Swarm management or workload cluster"
+	longDescription  = `Ensure an authenticated context for a Giant Swarm management or workload cluster
+
+Use this command to set up a kubectl context to work with:
+  (1) a management cluster, using OIDC authentication
+  (2) a workload cluster, using client certificate auth
+
+Note that (2) implies (1). When setting up workload cluster access,
+management cluster access will be set up as well, if that is not yet done.
+
+Security notes:
+
+Please be aware that the recommended way to authenticate users for
+workload clusters is OIDC. Client certificates should only be a
+temporary replacement.
+
+When creating client certificates, we recommend to use short
+expiration periods (--` + flagWCCertTTL + `) and specific group names
+(--` + flagWCCertGroups + `).`
+	examples = `
+Management cluster:
+
   kubectl gs login https://g8s.test.eu-west-1.aws.gigantic.io
 
-  # Log in using your Web UI URL.
-  kubectl gs login https://happa.g8s.test.eu-west-1.aws.gigantic.io
+  kubectl gs login gs-mymc
 
-  # Log in using a GS specific context name.
-  kubectl gs login gs-test
+  kubectl gs login mymc
 
-  # Or even shorter
-  kubectl gs login test
+Workload cluster:
 
-  # Create a keypair for a workload cluster
-  kubectl gs login test --keypair-cluster d231p --keypair-organization production --keypair-group admins`
+  kubectl gs login mymc \
+    --workload-cluster gir0y \
+    --organization acme \
+    --certificate-o admins \
+    --certificate-ttl 3h
+`
 )
 
 type Config struct {

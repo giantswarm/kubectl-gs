@@ -49,7 +49,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	isCreatingKeypair := len(r.flag.KeypairCluster) > 0
+	isCreatingKeypair := len(r.flag.WCName) > 0
 
 	if len(args) < 1 {
 		err = r.tryToReuseExistingContext(ctx)
@@ -286,7 +286,7 @@ func (r *runner) createClusterKeypair(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	keypairResource, err := generateKeypair(r.flag.KeypairCluster, r.flag.KeypairOrganization, r.flag.KeypairTTL, r.flag.KeypairGroups, clusterBasePath)
+	keypairResource, err := generateKeypair(r.flag.WCName, r.flag.WCOrganization, r.flag.WCCertTTL, r.flag.WCCertGroups, clusterBasePath)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -315,7 +315,7 @@ func (r *runner) createClusterKeypair(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("Created keypair successfully for you on cluster '%s'.\n\n", r.flag.KeypairCluster))
+	fmt.Fprint(r.stdout, color.GreenString("Created keypair successfully for you on cluster '%s'.\n\n", r.flag.WCName))
 	fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.\n", contextName)
 
 	return nil
