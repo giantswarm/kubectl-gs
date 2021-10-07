@@ -8,13 +8,14 @@ import (
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 )
 
 const (
@@ -104,20 +105,23 @@ func tryToGetClientCertCredential(ctx context.Context, clientCertService clientc
 }
 
 // storeClientCertCredential saves the created client certificate credentials into the kubectl config.
-func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, error) {
+func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", false, microerror.Mask(err)
 	}
 
-	contextName := clientCert.CertConfig.GetName()
-	userName := clientCert.CertConfig.Spec.Cert.ClusterComponent
-	clusterName := fmt.Sprintf("giantswarm-%s", clientCert.CertConfig.Spec.Cert.ClusterID)
+	mcContextName := config.CurrentContext
+	contextName := fmt.Sprintf("%s-%s", mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+	userName := fmt.Sprintf("%s-user", contextName)
+	clusterName := contextName
 	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
 
 	certCRT := credential.Data[credentialKeyCertCRT]
 	certKey := credential.Data[credentialKeyCertKey]
 	certCA := credential.Data[credentialKeyCertCA]
+
+	contextExists := false
 
 	{
 		// Create authenticated user.
@@ -149,8 +153,9 @@ func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.
 
 	{
 		// Create authenticated context.
-		context, exists := config.Contexts[contextName]
-		if !exists {
+		var context *clientcmdapi.Context
+		context, contextExists = config.Contexts[contextName]
+		if !contextExists {
 			context = clientcmdapi.NewContext()
 		}
 
@@ -166,10 +171,10 @@ func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", contextExists, microerror.Mask(err)
 	}
 
-	return contextName, nil
+	return contextName, contextExists, nil
 }
 
 func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {
