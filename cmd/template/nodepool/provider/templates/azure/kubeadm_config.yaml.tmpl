@@ -18,6 +18,21 @@ spec:
     owner: root:root
     path: /etc/kubernetes/azure.json
     permissions: "0644"
+  - content: {{ .SSHDConfig }}
+    encoding: base64
+    owner: root
+    path: /etc/ssh/sshd_config
+    permissions: "640"
+  - content: {{ .SSOPublicKey }}
+    encoding: base64
+    owner: root
+    path: /etc/ssh/trusted-user-ca-keys.pem
+    permissions: "600"
+  - content: Z2lhbnRzd2FybSBBTEw9KEFMTDpBTEwpIE5PUEFTU1dEOiBBTEw=
+    encoding: base64
+    owner: root
+    path: /etc/sudoers.d/giantswarm
+    permissions: "600"
   joinConfiguration:
     nodeRegistration:
       kubeletExtraArgs:
@@ -26,3 +41,7 @@ spec:
         cloud-provider: azure
         node-labels: giantswarm.io/machine-pool={{ .Name }}
       name: '{{ `{{ ds.meta_data["local_hostname"] }}` }}'
+  users:
+  - groups: sudo
+    name: giantswarm
+    shell: /bin/bash

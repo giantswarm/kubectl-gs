@@ -67,6 +67,8 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		KubernetesVersion           string
 		Name                        string
 		Namespace                   string
+		SSHDConfig                  string
+		SSOPublicKey                string
 		Organization                string
 		Version                     string
 		VMSize                      string
@@ -78,6 +80,8 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Name:                        config.Name,
 		Namespace:                   key.OrganizationNamespaceFromName(config.Organization),
 		Organization:                config.Organization,
+		SSHDConfig:                  key.NodeSSHDConfigEncoded(),
+		SSOPublicKey:                sshSSOPublicKey,
 		Version:                     config.ReleaseVersion,
 		VMSize:                      "Standard_D4s_v3",
 	}
