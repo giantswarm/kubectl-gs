@@ -1,6 +1,8 @@
 package login
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -11,10 +13,10 @@ const (
 	flagInternalAPI    = "internal-api"
 	callbackServerPort = "callback-port"
 
-	flagKeypairCluster      = "keypair-cluster"
-	flagKeypairOrganization = "keypair-organization"
-	flagKeypairGroups       = "keypair-group"
-	flagKeypairTTL          = "keypair-ttl"
+	flagWCName         = "workload-cluster"
+	flagWCOrganization = "organization"
+	flagWCCertGroups   = "certificate-o"
+	flagWCCertTTL      = "certificate-ttl"
 )
 
 type flag struct {
@@ -22,10 +24,10 @@ type flag struct {
 	ClusterAdmin       bool
 	InternalAPI        bool
 
-	KeypairCluster      string
-	KeypairOrganization string
-	KeypairGroups       []string
-	KeypairTTL          string
+	WCName         string
+	WCOrganization string
+	WCCertGroups   []string
+	WCCertTTL      string
 
 	config genericclioptions.RESTClientGetter
 }
@@ -35,17 +37,17 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.ClusterAdmin, flagClusterAdmin, false, "Login with cluster-admin access.")
 	cmd.Flags().BoolVar(&f.InternalAPI, flagInternalAPI, false, "Use Internal API in the kube config.")
 
-	cmd.Flags().StringVar(&f.KeypairCluster, flagKeypairCluster, "", "The name of the workload cluster to create a keypair for.")
-	cmd.Flags().StringVar(&f.KeypairOrganization, flagKeypairOrganization, "", "The organization that the cluster belongs to.")
-	cmd.Flags().StringSliceVar(&f.KeypairGroups, flagKeypairGroups, nil, "The group names (O) to set in the X.509 certificate.")
-	cmd.Flags().StringVar(&f.KeypairTTL, flagKeypairTTL, "1h", "How long the keypair should live for.")
+	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
+	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))
+	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("Group name(s) to be used as the 'O' attribute of the resulting client certificate subject. Requires --%s.", flagWCName))
+	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf("How long the client certificate should live for. Requires --%s.", flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
 }
 
 func (f *flag) Validate() error {
-	if len(f.KeypairCluster) > 0 && len(f.KeypairOrganization) < 1 {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty when --%s is provided.", flagKeypairOrganization, flagKeypairCluster)
+	if len(f.WCName) > 0 && len(f.WCOrganization) < 1 {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty when --%s is provided.", flagWCOrganization, flagWCName)
 	}
 
 	return nil
