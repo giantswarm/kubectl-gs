@@ -7,6 +7,7 @@ import (
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
@@ -18,8 +19,8 @@ import (
 )
 
 const (
-	credentialRetryTimeout    = 250 * time.Millisecond
-	credentialMaxRetryTimeout = 2 * time.Second
+	credentialRetryTimeout    = 500 * time.Millisecond
+	credentialMaxRetryTimeout = 20 * time.Second
 
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
@@ -80,28 +81,27 @@ func tryToGetKeypairCredential(ctx context.Context, keypairService keypair.Inter
 	var secret *corev1.Secret
 	var err error
 
-	retryTimer := time.NewTicker(credentialRetryTimeout)
-	defer retryTimer.Stop()
-
-	timeout := time.NewTimer(credentialMaxRetryTimeout)
-	defer timeout.Stop()
-
-	for {
-		select {
-		case <-retryTimer.C:
-			secret, err = keypairService.GetCredential(ctx, name)
-			if keypair.IsNotFound(err) {
-				// Keypair credential has not been created yet, try again until it is.
-				continue
-			} else if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-			return secret, nil
-		case <-timeout.C:
-			return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the keypair credential on time")
+	o := func() error {
+		secret, err = keypairService.GetCredential(ctx, name)
+		if keypair.IsNotFound(err) {
+			// Keypair credential has not been created yet, try again until it is.
+			return microerror.Mask(err)
+		} else if err != nil {
+			return backoff.Permanent(microerror.Mask(err))
 		}
+
+		return nil
 	}
+	b := backoff.NewConstant(credentialMaxRetryTimeout, credentialRetryTimeout)
+
+	err = backoff.Retry(o, b)
+	if keypair.IsNotFound(err) {
+		return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the keypair credential on time")
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return secret, nil
 }
 
 // storeKeypairCredential saves the created keypair credentials into the kubectl config.
