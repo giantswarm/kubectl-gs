@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- Throttling for generating CAPI templates.
+- Fix a problem where the template subcommands would be slower than expected because of obsolete API requests.
 
 ## [1.42.0] - 2021-10-07
 
