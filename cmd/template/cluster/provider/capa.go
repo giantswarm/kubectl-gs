@@ -14,6 +14,14 @@ import (
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	data := struct {
 		Description       string
 		KubernetesVersion string
@@ -21,6 +29,8 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Namespace         string
 		Organization      string
 		ReleaseVersion    string
+		SSHDConfig        string
+		SSOPublicKey      string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
@@ -28,6 +38,8 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
 		ReleaseVersion:    config.ReleaseVersion,
+		SSHDConfig:        key.NodeSSHDConfigEncoded(),
+		SSOPublicKey:      sshSSOPublicKey,
 	}
 
 	err = runMutation(ctx, client, data, aws.GetAWSTemplates(), out)
