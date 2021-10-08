@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix a problem where the template subcommands would be slower than expected because of obsolete API requests.
+
 ## [1.42.0] - 2021-10-07
 
 ### Added

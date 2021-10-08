@@ -11,10 +11,8 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	apiyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/discovery"
 	memory "k8s.io/client-go/discovery/cached"
@@ -83,6 +81,7 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		return microerror.Mask(err)
 	}
 
+	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
 	for _, t := range input {
 		// Add separators to make the entire file valid yaml and allow easy appending.
 		_, err = output.Write([]byte("---\n"))
@@ -104,7 +103,7 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 			return microerror.Mask(err)
 		}
 		// Mapping needed for the dynamic client.
-		mapping, err := findGVR(gvk, dc)
+		mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -153,9 +152,4 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		}
 	}
 	return nil
-}
-
-func findGVR(gvk *schema.GroupVersionKind, dc *discovery.DiscoveryClient) (*meta.RESTMapping, error) {
-	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
-	return mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 }
