@@ -87,7 +87,7 @@ spec:
     users:
     - name: capv
       sshAuthorizedKeys:
-      - ssh-rsa AAAABEKf fake@giantswarm
+      - "{{ .SSHPublicKey }}"
       sudo: ALL=(ALL) NOPASSWD:ALL
   machineTemplate:
     infrastructureRef:

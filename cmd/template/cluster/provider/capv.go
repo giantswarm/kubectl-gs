@@ -1,8 +1,11 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -14,6 +17,17 @@ import (
 func WriteCAPVTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	idRsaPubBytes, err := os.ReadFile(filepath.Join(homeDir, ".ssh/id_rsa.pub"))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	idRsaPubBytes = bytes.TrimSpace(idRsaPubBytes)
+
 	data := struct {
 		Description       string
 		KubernetesVersion string
@@ -21,6 +35,7 @@ func WriteCAPVTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Namespace         string
 		Organization      string
 		ReleaseVersion    string
+		SSHPublicKey      string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.10",
@@ -28,6 +43,7 @@ func WriteCAPVTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
 		ReleaseVersion:    config.ReleaseVersion,
+		SSHPublicKey:      string(idRsaPubBytes),
 	}
 
 	var templates []templateConfig
