@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- In the `get catalogs` command output, rename the colum `APP VERSION` to `UPSTREAM VERSION` and change the column order.
+
 ## [1.42.1] - 2021-10-08
 
 ### Fixed
