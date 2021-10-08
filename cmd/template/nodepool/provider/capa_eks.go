@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,10 +18,48 @@ import (
 	capiv1alpha3exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/aws"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteCAPAEKSTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
+	data := struct {
+		AvailabilityZones []string
+		AWSInstanceType   string
+		ClusterName       string
+		Description       string
+		MaxSize           int
+		MinSize           int
+		Name              string
+		Namespace         string
+		Organization      string
+		Replicas          int
+		ReleaseVersion    string
+	}{
+		AvailabilityZones: config.AvailabilityZones,
+		AWSInstanceType:   config.AWSInstanceType,
+		ClusterName:       config.ClusterName,
+		Description:       config.Description,
+		MaxSize:           config.NodesMax,
+		MinSize:           config.NodesMin,
+		Name:              config.NodePoolID,
+		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
+		Organization:      config.Organization,
+		Replicas:          config.NodesMin,
+		ReleaseVersion:    config.ReleaseVersion,
+	}
+
+	err = runMutation(ctx, client, data, aws.GetEKSTemplates(), out)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func WriteCAPAEKSTemplates(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
 	if config.UseAlikeInstanceTypes {
