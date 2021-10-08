@@ -16,6 +16,15 @@ var kubeadmControlPlane string
 //go:embed azure_machine_template.yaml.tmpl
 var azureMachineTemplate string
 
+//go:embed bastion_secret.yaml.tmpl
+var bastionSecret string
+
+//go:embed bastion_machine_deployment.yaml.tmpl
+var bastionMachineDeployment string
+
+//go:embed bastion_azure_machine_template.yaml.tmpl
+var bastionAzureMachineTemplate string
+
 type Template struct {
 	Name string
 	Data string
@@ -30,5 +39,8 @@ func GetTemplates() []Template {
 		{Name: "azure_cluster.yaml.tmpl", Data: azureCluster},
 		{Name: "kubeadm_control_plane.yaml.tmpl", Data: kubeadmControlPlane},
 		{Name: "azure_machine_template.yaml.tmpl", Data: azureMachineTemplate},
+		{Name: "bastion_secret.yaml.tmpl", Data: bastionSecret},
+		{Name: "bastion_machine_deployment.yaml.tmpl", Data: bastionMachineDeployment},
+		{Name: "bastion_azure_machine_template.yaml.tmpl", Data: bastionAzureMachineTemplate},
 	}
 }

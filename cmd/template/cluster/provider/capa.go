@@ -14,20 +14,34 @@ import (
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	data := struct {
+		BastionSSHDConfig string
 		Description       string
 		KubernetesVersion string
 		Name              string
 		Namespace         string
 		Organization      string
 		ReleaseVersion    string
+		SSHDConfig        string
+		SSOPublicKey      string
 	}{
+		BastionSSHDConfig: key.BastionSSHDConfigEncoded(),
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
 		ReleaseVersion:    config.ReleaseVersion,
+		SSHDConfig:        key.NodeSSHDConfigEncoded(),
+		SSOPublicKey:      sshSSOPublicKey,
 	}
 
 	var templates []templateConfig

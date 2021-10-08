@@ -98,6 +98,19 @@ const BastionIgnitionTemplate = `{
          }
       ]
    },
+   "systemd":{
+     "units":[
+       {{- $units := .SystemdUnits }}
+       {{- range $index,$unit := $units }}
+       {{- if $index}},{{- end}}
+       {
+          "name":"{{ $unit.Name }}",
+          "enabled":true,
+          "contents": "{{ $unit.Contents }}"
+       }
+       {{- end }}
+     ]
+   },
    "storage":{
       "files":[
          {
@@ -162,4 +175,20 @@ MaxAuthTries 5
 LoginGraceTime 60
 AllowTcpForwarding no
 AllowAgentForwarding no
+`
+
+const CapzSetBastionReadyTimer = `[Timer]
+OnCalendar=minutely
+Unit=set-bastion-ready.service
+
+[Install]
+WantedBy=timers.target
+`
+
+const CapzSetBastionReadyService = `[Unit]
+Description=Set Bastion zone as ready by creating /run/cluster-api/bootstrap-success.complete
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'mkdir -p /run/cluster-api/ ; echo "success" >/run/cluster-api/bootstrap-success.complete'
 `

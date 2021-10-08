@@ -1,0 +1,31 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: AzureMachineTemplate
+metadata:
+  labels:
+    "release.giantswarm.io/version": "{{ .Version }}"
+    cluster.x-k8s.io/role: bastion
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+    "cluster.x-k8s.io/watch-filter": "capi"
+    "cluster.x-k8s.io/control-plane": "true"
+  name: {{ .Name }}-bastion
+  namespace: {{ .Namespace }}
+spec:
+  template:
+    spec:
+      acceleratedNetworking: false
+      allocatePublicIP: true
+      image:
+        marketplace:
+          publisher: "kinvolk"
+          offer: "flatcar-container-linux-free"
+          sku: "stable"
+          version: "2905.2.3"
+          thirdPartyImage: true
+      osDisk:
+        diskSizeGB: 30
+        osType: Linux
+      subnetName: {{ .Name }}-bastion
+      sshPublicKey: ""
+      vmSize: {{ .BastionVMSize }}
