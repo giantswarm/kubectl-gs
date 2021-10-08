@@ -66,8 +66,8 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 		Cells: []interface{}{
 			ace.Spec.Catalog.Name,
 			ace.Spec.AppName,
-			ace.Spec.AppVersion,
 			ace.Spec.Version,
+			ace.Spec.AppVersion,
 			output.TranslateTimestampSince(ace.CreationTimestamp),
 		},
 	}
@@ -80,8 +80,8 @@ func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Catalog", Type: "string"},
 		{Name: "App Name", Type: "string"},
-		{Name: "App Version", Type: "string"},
 		{Name: "Version", Type: "string"},
+		{Name: "Upstream Version", Type: "string"},
 		{Name: "Created", Type: "string"},
 	}
 
