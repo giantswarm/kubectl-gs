@@ -38,7 +38,7 @@ func WriteCAPVTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		SSHPublicKey      string
 	}{
 		Description:       config.Description,
-		KubernetesVersion: "v1.20.10",
+		KubernetesVersion: "v1.20.1",
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
