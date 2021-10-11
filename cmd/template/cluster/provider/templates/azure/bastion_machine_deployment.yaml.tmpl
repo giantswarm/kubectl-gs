@@ -1,13 +1,14 @@
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: MachineDeployment
 metadata:
+  creationTimestamp: null
   labels:
-    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    "release.giantswarm.io/version": "{{ .Version }}"
     cluster.x-k8s.io/role: bastion
-    cluster.x-k8s.io/watch-filter: capi
-    giantswarm.io/cluster: {{ .Name }}
-    giantswarm.io/organization: {{ .Organization }}
-    release.giantswarm.io/version: {{ .ReleaseVersion }}
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+    "cluster.x-k8s.io/watch-filter": "capi"
   name: {{ .Name }}-bastion
   namespace: {{ .Namespace }}
 spec:
@@ -29,10 +30,10 @@ spec:
         cluster.x-k8s.io/deployment-name: {{ .Name }}-bastion
     spec:
       bootstrap:
-        dataSecretName: {{ .Name }}-bastion-ignition
+        dataSecretName: {{ .Name }}-bastion
       clusterName: {{ .Name }}
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-        kind: AWSMachineTemplate
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+        kind: AzureMachineTemplate
         name: {{ .Name }}-bastion
       version: v0.0.0

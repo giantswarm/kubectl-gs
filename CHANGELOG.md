@@ -7,8 +7,21 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- In the `get catalogs` command output, rename the colum `APP VERSION` to `UPSTREAM VERSION` and change the column order.
+
+## [1.42.1] - 2021-10-08
+
+### Fixed
+
+- Fix a problem where the template subcommands would be slower than expected because of obsolete API requests.
+
+## [1.42.0] - 2021-10-07
+
 ### Added
 
+- Add CRs to create a bastion host in CAPZ cluster template.
 - Enable termination events for CAPZ node pools.
 - Add support for creating workload cluster client certificates using the `login` command.
 
@@ -538,7 +551,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.1...HEAD
+[1.42.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.0...v1.42.1
+[1.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.1...v1.42.0
 [1.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.0...v1.41.1
 [1.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.40.0...v1.41.0
 [1.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.2...v1.40.0
