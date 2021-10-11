@@ -1,0 +1,41 @@
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+kind: KubeadmConfig
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    "cluster.x-k8s.io/cluster-name": {{ .ClusterName }}
+    "cluster.x-k8s.io/watch-filter": capi
+    "giantswarm.io/cluster": {{ .ClusterName }}
+    "release.giantswarm.io/version": "{{ .ReleaseVersion }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+spec:
+  files:
+  - content: {{ .SSHDConfig }}
+    encoding: base64
+    owner: root
+    path: /etc/ssh/sshd_config
+    permissions: "640"
+  - content: {{ .SSOPublicKey }}
+    encoding: base64
+    owner: root
+    path: /etc/ssh/trusted-user-ca-keys.pem
+    permissions: "600"
+  - content: {{ .SudoConfig }}
+    encoding: base64
+    owner: root
+    path: /etc/sudoers.d/giantswarm
+    permissions: "600"
+  joinConfiguration:
+    discovery: {}
+    nodeRegistration:
+      kubeletExtraArgs:
+        cloud-provider: aws
+        node-labels: giantswarm.io/machine-pool={{ .Name }}
+      name: '{{ `{{ ds.meta_data.local_hostname }}` }}'
+  postKubeadmCommands:
+  - service ssh restart
+  users:
+  - groups: sudo
+    name: giantswarm
+    shell: /bin/bash
