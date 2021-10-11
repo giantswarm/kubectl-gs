@@ -1,10 +1,12 @@
 package provider
 
 import (
+	"context"
 	"io"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,12 +15,12 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
 	if key.IsCAPAVersion(config.ReleaseVersion) {
 		if config.EKS {
-			err = WriteCAPAEKSTemplate(out, config)
+			err = WriteCAPAEKSTemplate(ctx, client, out, config)
 			if err != nil {
 				return microerror.Mask(err)
 			}
