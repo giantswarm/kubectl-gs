@@ -23,6 +23,7 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 	}
 
 	data := struct {
+		BastionSSHDConfig string
 		Description       string
 		KubernetesVersion string
 		Name              string
@@ -32,6 +33,7 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		SSHDConfig        string
 		SSOPublicKey      string
 	}{
+		BastionSSHDConfig: key.BastionSSHDConfigEncoded(),
 		Description:       config.Description,
 		KubernetesVersion: "v1.19.9",
 		Name:              config.Name,

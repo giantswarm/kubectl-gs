@@ -1,4 +1,4 @@
-![header image](https://user-images.githubusercontent.com/273727/85553386-2ee41980-b624-11ea-91f9-a6bdfe4d10a8.png)
+![header image](https://user-images.githubusercontent.com/273727/136764760-3c28515d-eb65-4e27-9503-1375dcbf49f0.png)
 
 # The official Giant Swarm kubectl plug-in
 
