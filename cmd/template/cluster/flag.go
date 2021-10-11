@@ -17,6 +17,7 @@ const (
 
 	// AWS only.
 	flagExternalSNAT       = "external-snat"
+	flagEKS                = "aws-eks"
 	flagPodsCIDR           = "pods-cidr"
 	flagControlPlaneSubnet = "control-plane-subnet"
 
@@ -39,6 +40,7 @@ type flag struct {
 	// AWS only.
 	ControlPlaneSubnet string
 	ExternalSNAT       bool
+	EKS                bool
 	PodsCIDR           string
 
 	// Common.
@@ -63,6 +65,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// AWS only.
 	cmd.Flags().StringVar(&f.ControlPlaneSubnet, flagControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().BoolVar(&f.EKS, flagEKS, false, "Enable EKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 
 	// Common.
@@ -76,6 +79,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
+
+	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
+	_ = cmd.Flags().MarkHidden(flagEKS)
 
 	// TODO: Remove the flag completely some time after August 2021
 	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")

@@ -10,6 +10,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -64,6 +65,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Organization:                        r.flag.Organization,
 			ReleaseVersion:                      r.flag.Release,
 			UseAlikeInstanceTypes:               r.flag.UseAlikeInstanceTypes,
+			EKS:                                 r.flag.EKS,
 		}
 
 		if config.NodePoolID == "" {
@@ -85,6 +87,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	commonConfig := commonconfig.New(r.flag.config)
+	c, err := commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	var output *os.File
 	{
 		if r.flag.Output == "" {
@@ -102,7 +110,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(output, config)
+		err = provider.WriteAWSTemplate(ctx, c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

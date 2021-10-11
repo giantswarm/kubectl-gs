@@ -18,9 +18,16 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	var err error
 
 	if key.IsCAPAVersion(config.ReleaseVersion) {
-		err = WriteCAPATemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
+		if config.EKS {
+			err = WriteCAPAEKSTemplate(ctx, client, out, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		} else {
+			err = WriteCAPATemplate(ctx, client, out, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	} else {
 		err = WriteGSAWSTemplate(out, config)

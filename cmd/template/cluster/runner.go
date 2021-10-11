@@ -63,6 +63,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
 			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
 			ExternalSNAT:       r.flag.ExternalSNAT,
+			EKS:                r.flag.EKS,
 			Description:        r.flag.Description,
 			Name:               r.flag.Name,
 			Organization:       r.flag.Organization,

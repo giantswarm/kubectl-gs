@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -19,6 +20,7 @@ const (
 	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
 	flagOnDemandPercentageAboveBaseCapacity = "on-demand-percentage-above-base-capacity"
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
+	flagEKS                                 = "aws-eks"
 	flagClusterNamespace                    = "aws-cluster-namespace"
 
 	// Azure only.
@@ -56,6 +58,7 @@ type flag struct {
 	OnDemandBaseCapacity                int
 	OnDemandPercentageAboveBaseCapacity int
 	UseAlikeInstanceTypes               bool
+	EKS                                 bool
 	ClusterNamespace                    string
 
 	// Azure only.
@@ -76,6 +79,9 @@ type flag struct {
 	Owner                  string
 	Release                string
 
+	config genericclioptions.RESTClientGetter
+	print  *genericclioptions.PrintFlags
+
 	// Deprecated
 	// Can be removed in a future version around March 2021 or later.
 	NodexMin int
@@ -91,6 +97,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0. Only available on AWS.")
 	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100. Only available on AWS.")
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback. Only available on AWS.")
+	cmd.Flags().BoolVar(&f.EKS, flagEKS, false, "Enable EKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().StringVar(&f.ClusterNamespace, flagClusterNamespace, "", "Namespace of the cluster to add the node pool to. Defaults to the organization namespace from v16.0.0 and to `default` before.")
 
 	// Azure only.
@@ -111,6 +118,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty to match the workload cluster version via the Management API.")
 
+	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
+	_ = cmd.Flags().MarkHidden(flagEKS)
+
 	// This can be removed in a future version around March 2021 or later.
 	cmd.Flags().IntVar(&f.NodexMax, flagNodexMax, 0, "")
 	cmd.Flags().IntVar(&f.NodexMin, flagNodexMin, 0, "")
@@ -121,6 +131,15 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "use --cluster-name instead")
 	_ = cmd.Flags().MarkDeprecated(flagNodepoolNameDeprecated, "use --description instead")
 	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
+
+	f.config = genericclioptions.NewConfigFlags(true)
+	f.print = genericclioptions.NewPrintFlags("")
+	f.print.OutputFormat = nil
+
+	// Merging current command flags and config flags,
+	// to be able to override kubectl-specific ones.
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+	f.print.AddFlags(cmd)
 }
 
 func (f *flag) Validate() error {
