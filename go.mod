@@ -35,7 +35,7 @@ replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	github.com/coreos/etcd => github.com/etcd-io/etcd v3.3.25+incompatible
 	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
-	github.com/docker/docker => github.com/moby/moby v20.10.6+incompatible // Use moby v20.10.x to fix build issue on darwin.
+	github.com/docker/docker => github.com/moby/moby v20.10.9+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/opencontainers/runc v0.1.1 => github.com/opencontainers/runc v1.0.0-rc7
