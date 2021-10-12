@@ -7,12 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-
 ### Added
 
 - Add templating for EKS clusters using the management cluster API
 - Add templating for EKS node pools using the management cluster API
 - Add templating for CAPA node pools using the management cluster API
+- Add `--output` flag to the `template app` command
 
 ### Changed
 
