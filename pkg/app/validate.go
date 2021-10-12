@@ -157,11 +157,6 @@ func (s *Service) validateApp(ctx context.Context, app *applicationv1alpha1.App,
 		return "", nil, microerror.Mask(err)
 	}
 
-	// If there is no index.yaml return early and validate other apps.
-	if index == nil {
-		return "", nil, nil
-	}
-
 	var valuesSchema string
 	if customValuesSchema != "" {
 		valuesSchema = customValuesSchema
