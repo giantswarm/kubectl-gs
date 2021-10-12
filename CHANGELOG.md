@@ -12,6 +12,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add templating for EKS clusters using the management cluster API
 - Add templating for EKS node pools using the management cluster API
+- Add templating for CAPA node pools using the management cluster API
 
 ### Changed
 

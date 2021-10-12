@@ -13,10 +13,12 @@ require (
 	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/micrologger v0.5.0
 	github.com/google/go-cmp v0.5.6
+	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/afero v1.6.0
 	github.com/spf13/cobra v1.2.1
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 	k8s.io/api v0.18.19
@@ -25,7 +27,6 @@ require (
 	k8s.io/cli-runtime v0.18.19
 	k8s.io/client-go v0.18.19
 	sigs.k8s.io/cluster-api v0.3.15-0.20210309173700-34de71aaaac8
-	sigs.k8s.io/cluster-api-provider-aws v0.6.4
 	sigs.k8s.io/cluster-api-provider-azure v0.4.11
 	sigs.k8s.io/controller-runtime v0.6.4
 	sigs.k8s.io/yaml v1.2.0

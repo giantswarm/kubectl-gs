@@ -25,7 +25,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 				return microerror.Mask(err)
 			}
 		} else {
-			err = WriteCAPATemplate(out, config)
+			err = WriteCAPATemplate(ctx, client, out, config)
 			if err != nil {
 				return microerror.Mask(err)
 			}
