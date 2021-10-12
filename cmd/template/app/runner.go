@@ -134,7 +134,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
 
-	err = t.Execute(os.Stdout, appCROutput)
+	var output *os.File
+	{
+		if r.flag.Output == "" {
+			output = os.Stdout
+		} else {
+			f, err := os.Create(r.flag.Output)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			defer f.Close()
+
+			output = f
+		}
+	}
+
+	err = t.Execute(output, appCROutput)
 	if err != nil {
 		return microerror.Mask(err)
 	}

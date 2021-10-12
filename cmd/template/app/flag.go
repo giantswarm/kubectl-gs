@@ -17,6 +17,7 @@ const (
 	flagNamespace                  = "namespace"
 	flagNamespaceConfigAnnotations = "namespace-annotations"
 	flagNamespaceConfigLabels      = "namespace-labels"
+	flagOutput                     = "output"
 	flagUserConfigMap              = "user-configmap"
 	flagUserSecret                 = "user-secret"
 	flagVersion                    = "version"
@@ -29,6 +30,7 @@ type flag struct {
 	DefaultingEnabled              bool
 	Name                           string
 	Namespace                      string
+	Output                         string
 	Version                        string
 	flagNamespaceConfigAnnotations []string
 	flagNamespaceConfigLabels      []string
@@ -43,6 +45,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the app will be deployed.")
 	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Name of the cluster the app will be deployed to.")
 	cmd.Flags().BoolVar(&f.DefaultingEnabled, flagDefaultingEnabled, true, "Don't template fields that will be defaulted.")
+	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing the created manifest. (default: stdout)")
 	cmd.Flags().StringVar(&f.flagUserConfigMap, flagUserConfigMap, "", "Path to the user values configmap YAML file.")
 	cmd.Flags().StringVar(&f.flagUserSecret, flagUserSecret, "", "Path to the user secrets YAML file.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to be installed.")
