@@ -7,8 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-## [1.43.0] - 2021-10-13
+### Fixed
 
+- Fix a problem with fetching Catalog CRs in `validate apps`.
+
+## [1.43.0] - 2021-10-13
 
 ### Added
 
@@ -19,7 +22,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - In the `get catalogs` command output, rename the colum `APP VERSION` to `UPSTREAM VERSION` and change the column order.
-
 
 ## [1.42.1] - 2021-10-08
 
