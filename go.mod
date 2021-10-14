@@ -21,14 +21,14 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
-	k8s.io/api v0.18.19
-	k8s.io/apiextensions-apiserver v0.18.19
-	k8s.io/apimachinery v0.18.19
-	k8s.io/cli-runtime v0.18.19
-	k8s.io/client-go v0.18.19
-	sigs.k8s.io/cluster-api v0.3.15-0.20210309173700-34de71aaaac8
-	sigs.k8s.io/cluster-api-provider-azure v0.4.11
-	sigs.k8s.io/controller-runtime v0.6.4
+	k8s.io/api v0.20.11
+	k8s.io/apiextensions-apiserver v0.20.11
+	k8s.io/apimachinery v0.20.11
+	k8s.io/cli-runtime v0.20.11
+	k8s.io/client-go v0.20.11
+	sigs.k8s.io/cluster-api v0.4.4
+	sigs.k8s.io/cluster-api-provider-azure v0.5.3
+	sigs.k8s.io/controller-runtime v0.6.5
 	sigs.k8s.io/yaml v1.3.0
 )
 
