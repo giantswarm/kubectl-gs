@@ -1,12 +1,14 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
 	"text/template"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -25,11 +27,11 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
 	if key.IsCAPZVersion(config.ReleaseVersion) {
-		err = WriteCAPZTemplate(out, config)
+		err = WriteCAPZTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -43,12 +45,12 @@ func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	return nil
 }
 
-func WriteCAPZTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
 	var sshSSOPublicKey string
 	{
-		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
 		if err != nil {
 			return microerror.Mask(err)
 		}

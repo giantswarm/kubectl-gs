@@ -115,7 +115,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(output, config)
+		err = provider.WriteAzureTemplate(ctx, c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

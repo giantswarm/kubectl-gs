@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - Fix a problem with fetching Catalog CRs in `validate apps`.
+- Fixing a problem where the function to fetch the SSH secret to generate the templates was using `inCluster` config ignoring the kubeconfig.
 
 ## [1.43.0] - 2021-10-13
 
