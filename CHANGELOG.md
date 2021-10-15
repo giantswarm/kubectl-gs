@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.43.1] - 2021-10-15
+
 ### Fixed
 
 - Fix a problem with fetching Catalog CRs in `validate apps`.
@@ -563,7 +565,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...HEAD
+[1.43.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...v1.43.1
 [1.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.1...v1.43.0
 [1.42.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.0...v1.42.1
 [1.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.1...v1.42.0
