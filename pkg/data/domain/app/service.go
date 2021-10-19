@@ -61,6 +61,56 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
+func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
+	var err error
+
+	// is passing version or other properties for that matter, through the `options` considered good?
+	// if not what would be a good way to pass the new parameters and yet make the function generic?
+	// would it allow extending the update sub-command with another patches?
+	if len(options.Version) > 0 {
+		err = s.patchVersion(ctx, options.Namespace, options.Name, options.Version)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+
+	return nil
+}
+
+func (s *Service) patchVersion(ctx context.Context, namespace string, name string, version string) error {
+	var err error
+
+	var appResource Resource
+	{
+		// reuse the getByName ??
+		appResource, _ = s.getByName(ctx, namespace, name)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var appCR *applicationv1alpha1.App
+
+	switch a := appResource.(type) {
+	case *App:
+		appCR = a.CR
+	default:
+		return microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
+	}
+
+	patch := runtimeclient.MergeFrom(appCR.DeepCopy())
+	appCR.Spec.Version = version
+
+	err = s.client.K8sClient.CtrlClient().Patch(ctx, appCR, patch)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
 func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {
 	var err error
 

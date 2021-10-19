@@ -39,3 +39,12 @@ var notFoundError = &microerror.Error{
 func IsNotFound(err error) bool {
 	return microerror.Cause(err) == notFoundError
 }
+
+var invalidTypeError = &microerror.Error{
+	Kind: "invalidTypeError",
+}
+
+// IsInvalidType asserts invalidTypeError.
+func IsInvalidType(err error) bool {
+	return microerror.Cause(err) == invalidTypeError
+}
