@@ -65,8 +65,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Version:   version,
 	}
 
-	// Masking errors by printing something  to the user?
-	// Like: no such app, no such version available in the catalog?
 	err = r.service.Patch(ctx, patchOptions)
 	if catalog.IsNoResources(err) {
 		r.printNoMatchOutput(version)

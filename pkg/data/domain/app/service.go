@@ -142,6 +142,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		}
 
 		_, err = s.catalogDataService.Get(ctx, options)
+
 		if catalogdata.IsNoResources(err) {
 			return microerror.Mask(err)
 		} else if err != nil {
