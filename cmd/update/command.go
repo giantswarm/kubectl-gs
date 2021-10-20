@@ -14,7 +14,7 @@ import (
 
 const (
 	name        = "update"
-	description = "Update various parameters of the resource"
+	description = "Update different types of CRs"
 )
 
 type Config struct {

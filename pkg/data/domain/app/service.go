@@ -2,15 +2,18 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
+	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 )
 
 var _ Interface = &Service{}
@@ -22,17 +25,33 @@ type Config struct {
 
 // Service is the object we'll hang the app getter methods on.
 type Service struct {
-	client *client.Client
+	client             *client.Client
+	catalogDataService catalogdata.Interface
 }
 
 // New returns a new app getter Service.
 func New(config Config) (Interface, error) {
+	var err error
+
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}
 
+	var catalogDataService catalogdata.Interface
+	{
+		c := catalogdata.Config{
+			Client: config.Client,
+		}
+
+		catalogDataService, err = catalogdata.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	s := &Service{
-		client: config.Client,
+		client:             config.Client,
+		catalogDataService: catalogDataService,
 	}
 
 	return s, nil
@@ -61,12 +80,10 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
+// Patch patches an app CR given by name and namespace
 func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	var err error
 
-	// is passing version or other properties for that matter, through the `options` considered good?
-	// if not what would be a good way to pass the new parameters and yet make the function generic?
-	// would it allow extending the update sub-command with another patches?
 	if len(options.Version) > 0 {
 		err = s.patchVersion(ctx, options.Namespace, options.Name, options.Version)
 		if err != nil {
@@ -84,8 +101,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 
 	var appResource Resource
 	{
-		// reuse the getByName ??
-		appResource, _ = s.getByName(ctx, namespace, name)
+		appResource, err = s.getByName(ctx, namespace, name)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -98,6 +114,39 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		appCR = a.CR
 	default:
 		return microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
+	}
+
+	// Make sure the requested version is available
+	// Easy way: reuse the catalogdata.Get with LabelsSelector
+	{
+		selector := fmt.Sprintf(
+			"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
+			appCR.Spec.Catalog,
+			appCR.Spec.Name,
+			version,
+		)
+
+		var labelSelector labels.Selector
+		{
+			labelSelector, err = labels.Parse(selector)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		options := catalogdata.GetOptions{
+			AllNamespaces: false,
+			Name:          appCR.Spec.Catalog,
+			Namespace:     appCR.Spec.CatalogNamespace,
+			LabelSelector: labelSelector,
+		}
+
+		_, err = s.catalogDataService.Get(ctx, options)
+		if catalogdata.IsNoResources(err) {
+			return microerror.Mask(err)
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	patch := runtimeclient.MergeFrom(appCR.DeepCopy())

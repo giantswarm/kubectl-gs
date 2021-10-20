@@ -171,11 +171,11 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
+	c.AddCommand(getCmd)
 	c.AddCommand(loginCmd)
 	c.AddCommand(templateCmd)
-	c.AddCommand(getCmd)
-	c.AddCommand(validateCmd)
 	c.AddCommand(updateCmd)
+	c.AddCommand(validateCmd)
 
 	return c, nil
 }

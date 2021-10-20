@@ -11,6 +11,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 )
 
 type runner struct {
@@ -58,8 +59,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	name := strings.ToLower(args[0])
 	version := strings.ToLower(args[1])
 
-	// Do we want to verify the version use specified is available in the catalog
-	// and notify the user otherwise?
 	patchOptions := app.PatchOptions{
 		Namespace: namespace,
 		Name:      name,
@@ -69,7 +68,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// Masking errors by printing something  to the user?
 	// Like: no such app, no such version available in the catalog?
 	err = r.service.Patch(ctx, patchOptions)
-	if err != nil {
+	if catalog.IsNoResources(err) {
+		r.printNoMatchOutput(version)
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 

@@ -15,9 +15,14 @@ import (
 )
 
 const (
-	name = "app app-name app-new-version"
+	name = "app <app-name> <updated-app-version>"
 
-	description = "Update app version"
+	shortDescription = "Update app (App CRs) version"
+	longDescription  = `Update app (App CRs) version
+
+Updates given app version to the provided version.
+
+For the provided version it checks if the respective App Catalog Entry CR exists.`
 
 	examples = `  # Update app version
   kubectl gs update app test-app 2.0.0`
@@ -59,8 +64,8 @@ func New(config Config) (*cobra.Command, error) {
 
 	c := &cobra.Command{
 		Use:     name,
-		Short:   description,
-		Long:    description,
+		Short:   shortDescription,
+		Long:    longDescription,
 		Example: examples,
 		Args:    cobra.MaximumNArgs(2),
 		RunE:    r.Run,
