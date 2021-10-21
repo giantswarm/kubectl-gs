@@ -15,17 +15,21 @@ import (
 )
 
 const (
-	name = "app <app-name> <updated-app-version>"
+	name = "app <app-name> --version <updated-app-version>"
 
-	shortDescription = "Update app (App CRs) version"
-	longDescription  = `Update app (App CRs) version
+	shortDescription = "Update app (App CR)"
+	longDescription  = `Update app (App CR)
 
-Updates given app version to the provided version.
+Updates given app with the provided values.
 
-For the provided version it checks if the respective App Catalog Entry CR exists.`
+Supported values:
+  --version <version>			New version to update the app to. Plugin checks if the respective App Catalog Entry CR exists`
 
-	examples = `  # Update app version
-  kubectl gs update app test-app 2.0.0`
+	examples = `  # Display this help
+kubectl gs update app --help
+
+# Update app version
+kubectl gs update app hello-world-app --version 0.2.0`
 )
 
 type Config struct {
@@ -67,7 +71,7 @@ func New(config Config) (*cobra.Command, error) {
 		Short:   shortDescription,
 		Long:    longDescription,
 		Example: examples,
-		Args:    cobra.MaximumNArgs(2),
+		Args:    cobra.RangeArgs(1, 1),
 		RunE:    r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(config.K8sConfigAccess),

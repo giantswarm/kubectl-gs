@@ -57,7 +57,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	name := strings.ToLower(args[0])
-	version := strings.ToLower(args[1])
+	version := r.flag.Version
 
 	patchOptions := app.PatchOptions{
 		Namespace: namespace,

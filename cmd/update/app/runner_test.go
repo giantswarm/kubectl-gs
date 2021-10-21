@@ -26,6 +26,7 @@ func Test_run(t *testing.T) {
 		name               string
 		storage            []runtime.Object
 		args               []string
+		flags              flag
 		expectedGoldenFile string
 		errorMatcher       func(error) bool
 	}{
@@ -37,7 +38,8 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
 				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog"),
 			},
-			args: []string{"fake-app", "0.1.0"},
+			args:  []string{"fake-app"},
+			flags: flag{Version: "0.1.0"},
 		},
 		{
 			name: "case 1: patch app with nonexisting version",
@@ -46,7 +48,8 @@ func Test_run(t *testing.T) {
 				newCatalog("fake-catalog"),
 				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
 			},
-			args:               []string{"fake-app", "0.1.0"},
+			args:               []string{"fake-app"},
+			flags:              flag{Version: "0.1.0"},
 			expectedGoldenFile: "patch_wrong_version.golden",
 		},
 	}
@@ -56,10 +59,10 @@ func Test_run(t *testing.T) {
 			ctx := context.TODO()
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
-			flag := &flag{
-				print:  genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault),
-				config: genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig),
-			}
+
+			flag := &tc.flags
+			flag.print = genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault)
+			flag.config = genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig)
 
 			out := new(bytes.Buffer)
 			runner := &runner{

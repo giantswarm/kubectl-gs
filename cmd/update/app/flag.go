@@ -1,16 +1,28 @@
 package app
 
 import (
+	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
+const (
+	flagVersion = "version"
+)
+
 type flag struct {
-	config genericclioptions.RESTClientGetter
-	print  *genericclioptions.PrintFlags
+	config  genericclioptions.RESTClientGetter
+	print   *genericclioptions.PrintFlags
+	Version string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&f.Version, flagVersion, "", "Version to update the app to")
+	// Hide flag in favour of the longDescription, otherwise if the number of supported
+	// update flags grows, it may be hard to differentiate them from the rest of the flags,
+	// like kubectl global flags.
+	cmd.Flags().MarkHidden(flagVersion)
+
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
 
@@ -21,5 +33,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	return nil
+	// at least one of the supported updates must be provided
+	if len(f.Version) > 0 {
+		return nil
+	}
+
+	return microerror.Maskf(notEnoughFlags, "at least one of the --version flags has to be provided")
 }
