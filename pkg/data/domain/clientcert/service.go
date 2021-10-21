@@ -48,7 +48,7 @@ func (s *Service) Create(ctx context.Context, clientCert *ClientCert) error {
 
 func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
 	kp := clientCert.Object()
-	namespace := runtimeclient.InNamespace(metav1.NamespaceDefault)
+	namespace := runtimeclient.InNamespace(clientCert.CertConfig.Namespace)
 
 	err := s.client.K8sClient.CtrlClient().DeleteAllOf(ctx, kp, namespace)
 	if apierrors.IsNotFound(err) {
@@ -60,8 +60,8 @@ func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
 	return nil
 }
 
-func (s *Service) GetCredential(ctx context.Context, name string) (*corev1.Secret, error) {
-	secret, err := s.client.K8sClient.K8sClient().CoreV1().Secrets(metav1.NamespaceDefault).Get(ctx, name, metav1.GetOptions{})
+func (s *Service) GetCredential(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
+	secret, err := s.client.K8sClient.K8sClient().CoreV1().Secrets(namespace).Get(ctx, name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		return nil, microerror.Mask(notFoundError)
 	} else if err != nil {

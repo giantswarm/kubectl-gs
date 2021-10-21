@@ -306,7 +306,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	}
 
 	// Retrieving client certificate credential.
-	secret, err := tryToGetClientCertCredential(ctx, clientCertService, clientCertResource.CertConfig.Name)
+	secret, err := tryToGetClientCertCredential(ctx, clientCertService, clientCertResource.CertConfig.Namespace, clientCertResource.CertConfig.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}

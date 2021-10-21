@@ -24,7 +24,7 @@ type Resource interface {
 type Interface interface {
 	Create(ctx context.Context, clientCert *ClientCert) error
 	Delete(ctx context.Context, clientCert *ClientCert) error
-	GetCredential(ctx context.Context, name string) (*corev1.Secret, error)
+	GetCredential(ctx context.Context, namespace, name string) (*corev1.Secret, error)
 }
 
 func (k *ClientCert) Object() runtime.Object {
