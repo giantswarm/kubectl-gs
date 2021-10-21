@@ -29,7 +29,7 @@ Supported values:
 kubectl gs update app --help
 
 # Update app version
-kubectl gs update app hello-world-app --version 0.2.0`
+kubectl gs update app --name hello-world-app --version 0.2.0`
 )
 
 type Config struct {
