@@ -71,7 +71,7 @@ func New(config Config) (*cobra.Command, error) {
 		Short:   shortDescription,
 		Long:    longDescription,
 		Example: examples,
-		Args:    cobra.RangeArgs(1, 1),
+		Args:    cobra.ExactValidArgs(0),
 		RunE:    r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(config.K8sConfigAccess),
