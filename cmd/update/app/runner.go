@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"io"
-	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -56,7 +55,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	name := strings.ToLower(args[0])
+	name := r.flag.Name //strings.ToLower(args[0])
 	version := r.flag.Version
 
 	patchOptions := app.PatchOptions{

@@ -25,7 +25,6 @@ func Test_run(t *testing.T) {
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
-		args               []string
 		flags              flag
 		expectedGoldenFile string
 		errorMatcher       func(error) bool
@@ -38,8 +37,7 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
 				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog"),
 			},
-			args:  []string{"fake-app"},
-			flags: flag{Version: "0.1.0"},
+			flags: flag{Name: "fake-app", Version: "0.1.0"},
 		},
 		{
 			name: "case 1: patch app with nonexisting version",
@@ -48,8 +46,7 @@ func Test_run(t *testing.T) {
 				newCatalog("fake-catalog"),
 				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
 			},
-			args:               []string{"fake-app"},
-			flags:              flag{Version: "0.1.0"},
+			flags:              flag{Name: "fake-app", Version: "0.1.0"},
 			expectedGoldenFile: "patch_wrong_version.golden",
 		},
 	}
@@ -71,7 +68,7 @@ func Test_run(t *testing.T) {
 				stdout:  out,
 			}
 
-			err := runner.run(ctx, nil, tc.args)
+			err := runner.run(ctx, nil, []string{})
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))

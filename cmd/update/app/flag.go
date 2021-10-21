@@ -8,12 +8,14 @@ import (
 
 const (
 	flagVersion = "version"
+	flagAppName = "name"
 )
 
 type flag struct {
 	config  genericclioptions.RESTClientGetter
 	print   *genericclioptions.PrintFlags
 	Version string
+	Name    string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -22,6 +24,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// update flags grows, it may be hard to differentiate them from the rest of the flags,
 	// like kubectl global flags.
 	cmd.Flags().MarkHidden(flagVersion)
+
+	cmd.Flags().StringVar(&f.Name, flagAppName, "", "Name of the app to update")
+	cmd.MarkFlagRequired(flagAppName)
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
@@ -38,5 +43,5 @@ func (f *flag) Validate() error {
 		return nil
 	}
 
-	return microerror.Maskf(notEnoughFlags, "at least one of the --version flags has to be provided")
+	return microerror.Maskf(notEnoughFlags, "at least one of the --version parameters has to be provided")
 }
