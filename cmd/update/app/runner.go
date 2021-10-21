@@ -67,7 +67,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	err = r.service.Patch(ctx, patchOptions)
 	if app.IsNotFound(err) {
-		return microerror.Maskf(notFoundError, fmt.Sprintf("An app with name '%s' cannot be found in the '%s' namespace.\n", patchOptions.Name, patch.Namespace))
+		return microerror.Maskf(notFoundError, fmt.Sprintf("An app with name '%s' cannot be found in the '%s' namespace.\n", patchOptions.Name, patchOptions.Namespace))
 	} else if catalog.IsNoResources(err) {
 		return microerror.Maskf(noResourcesError, fmt.Sprintf("No AppCatalogEntry CR found for the given version: '%s'\n", patchOptions.Version))
 	} else if err != nil {
