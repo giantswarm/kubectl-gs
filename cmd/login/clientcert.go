@@ -80,9 +80,9 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 	return r, nil
 }
 
-// tryToGetClientCertCredential tries to fetch the client certificate credential
+// fetchClientCertCredential tries to fetch the client certificate credential
 // for a couple of times, until the resource is fetched, or until the timeout is reached.
-func tryToGetClientCertCredential(ctx context.Context, clientCertService clientcert.Interface, namespace, name string) (*corev1.Secret, error) {
+func fetchClientCertCredential(ctx context.Context, clientCertService clientcert.Interface, namespace, name string) (*corev1.Secret, error) {
 	var secret *corev1.Secret
 	var err error
 
