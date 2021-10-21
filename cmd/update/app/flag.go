@@ -26,7 +26,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagVersion)
 
 	cmd.Flags().StringVar(&f.Name, flagAppName, "", "Name of the app to update")
-	_ = cmd.MarkFlagRequired(flagAppName)
+	_ = cmd.Flags().MarkHidden(flagAppName)
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
@@ -39,9 +39,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 func (f *flag) Validate() error {
 	// at least one of the supported updates must be provided
-	if len(f.Version) > 0 {
-		return nil
+	if f.Version == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
 	}
 
-	return microerror.Maskf(notEnoughFlags, "at least one of the --version parameters has to be provided")
+	return nil
 }

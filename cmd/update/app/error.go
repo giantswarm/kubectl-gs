@@ -31,15 +31,6 @@ func IsNotFound(err error) bool {
 	return microerror.Cause(err) == notFoundError
 }
 
-var notEnoughFlags = &microerror.Error{
-	Kind: "notEnoughFlags",
-}
-
-// TooLessFlags asserts notFoundError.
-func NotEnoughFlags(err error) bool {
-	return microerror.Cause(err) == notEnoughFlags
-}
-
 var noResourcesError = &microerror.Error{
 	Kind: "noResourcesError",
 }
