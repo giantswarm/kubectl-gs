@@ -23,7 +23,7 @@ const (
 Updates given app with the provided values.
 
 Supported values:
-  --version <version>			New version to update the app to. Plugin checks if the respective App Catalog Entry CR exists`
+  --version <version>			New version to update the app to. Plugin checks if the respective AppCatalogEntry exists`
 
 	examples = `  # Display this help
 kubectl gs update app --help
