@@ -11,6 +11,7 @@ const (
 	Organization      = "giantswarm.io/organization"
 	Provider          = "giantswarm.io/provider"
 	VersionBundle     = "giantswarm.io/version-bundle"
+	Certificate       = "giantswarm.io/certificate"
 )
 
 const (
@@ -24,3 +25,7 @@ const (
 )
 
 const ForbiddenLabelKeyPart = "giantswarm.io"
+
+const (
+	CertOperatorVersion = "cert-operator.giantswarm.io/version"
+)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
@@ -15,6 +16,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	kgslabel "github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
@@ -26,6 +28,8 @@ const (
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
 	credentialKeyCertCA  = "ca"
+
+	certOperatorVersion = "1.1.0"
 )
 
 func generateClientCertUID() string {
@@ -47,10 +51,10 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 			Name:      clientCertName,
 			Namespace: metav1.NamespaceDefault,
 			Labels: map[string]string{
-				"cert-operator.giantswarm.io/version": "0.1.0",
-				"giantswarm.io/certificate":           clientCertUID,
-				"giantswarm.io/cluster":               cluster,
-				"giantswarm.io/organization":          organization,
+				kgslabel.CertOperatorVersion: certOperatorVersion,
+				kgslabel.Certificate:         clientCertUID,
+				label.Cluster:                cluster,
+				label.Organization:           organization,
 			},
 		},
 		Spec: corev1alpha1.CertConfigSpec{
@@ -64,7 +68,7 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 				TTL:                 ttl,
 			},
 			VersionBundle: corev1alpha1.CertConfigSpecVersionBundle{
-				Version: "0.1.0",
+				Version: certOperatorVersion,
 			},
 		},
 	}
@@ -78,12 +82,12 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 
 // tryToGetClientCertCredential tries to fetch the client certificate credential
 // for a couple of times, until the resource is fetched, or until the timeout is reached.
-func tryToGetClientCertCredential(ctx context.Context, clientCertService clientcert.Interface, name string) (*corev1.Secret, error) {
+func tryToGetClientCertCredential(ctx context.Context, clientCertService clientcert.Interface, namespace, name string) (*corev1.Secret, error) {
 	var secret *corev1.Secret
 	var err error
 
 	o := func() error {
-		secret, err = clientCertService.GetCredential(ctx, name)
+		secret, err = clientCertService.GetCredential(ctx, namespace, name)
 		if clientcert.IsNotFound(err) {
 			// Client certificate credential has not been created yet, try again until it is.
 			return microerror.Mask(err)
