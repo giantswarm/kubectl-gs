@@ -1,6 +1,8 @@
 package app
 
-import "github.com/giantswarm/microerror"
+import (
+	"github.com/giantswarm/microerror"
+)
 
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
@@ -34,6 +36,15 @@ var notEnoughFlags = &microerror.Error{
 }
 
 // TooLessFlags asserts notFoundError.
-func TooLessFlags(err error) bool {
+func NotEnoughFlags(err error) bool {
 	return microerror.Cause(err) == notEnoughFlags
+}
+
+var noResourcesError = &microerror.Error{
+	Kind: "noResourcesError",
+}
+
+// IsNoResources asserts noResourcesError.
+func IsNoResources(err error) bool {
+	return microerror.Cause(err) == noResourcesError
 }

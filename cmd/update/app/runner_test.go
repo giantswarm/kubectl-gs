@@ -46,8 +46,14 @@ func Test_run(t *testing.T) {
 				newCatalog("fake-catalog"),
 				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
 			},
-			flags:              flag{Name: "fake-app", Version: "0.1.0"},
-			expectedGoldenFile: "patch_wrong_version.golden",
+			flags:        flag{Name: "fake-app", Version: "0.1.0"},
+			errorMatcher: IsNoResources,
+		},
+		{
+			name:         "case 2: patch nonexisting app",
+			storage:      []runtime.Object{},
+			flags:        flag{Name: "bad-app", Version: "0.1.0"},
+			errorMatcher: IsNotFound,
 		},
 	}
 

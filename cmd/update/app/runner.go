@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/giantswarm/microerror"
@@ -65,9 +66,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	err = r.service.Patch(ctx, patchOptions)
-	if catalog.IsNoResources(err) {
-		r.printNoMatchOutput(version)
-		return nil
+	if app.IsNotFound(err) {
+		return microerror.Maskf(notFoundError, fmt.Sprintf("An app with name '%s' cannot be found in the '%s' namespace.\n", patchOptions.Name, patch.Namespace))
+	} else if catalog.IsNoResources(err) {
+		return microerror.Maskf(noResourcesError, fmt.Sprintf("No AppCatalogEntry CR found for the given version: '%s'\n", patchOptions.Version))
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
