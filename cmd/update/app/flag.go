@@ -23,10 +23,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// Hide flag in favour of the longDescription, otherwise if the number of supported
 	// update flags grows, it may be hard to differentiate them from the rest of the flags,
 	// like kubectl global flags.
-	cmd.Flags().MarkHidden(flagVersion)
+	_ = cmd.Flags().MarkHidden(flagVersion)
 
 	cmd.Flags().StringVar(&f.Name, flagAppName, "", "Name of the app to update")
-	cmd.MarkFlagRequired(flagAppName)
+	_ = cmd.MarkFlagRequired(flagAppName)
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
