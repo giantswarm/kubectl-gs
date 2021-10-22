@@ -366,27 +366,30 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	clientCertResource, err := generateClientCert(r.flag.WCName, r.flag.WCOrganization, r.flag.WCCertTTL, r.flag.WCCertGroups, clusterBasePath, certOperatorVersion, orgNamespace)
+	certConfig := clientCertConfig{
+		provider:              provider,
+		clusterName:           r.flag.WCName,
+		organizationName:      r.flag.WCOrganization,
+		organizationNamespace: orgNamespace,
+		ttl:                   r.flag.WCCertTTL,
+		groups:                r.flag.WCCertGroups,
+		clusterBasePath:       clusterBasePath,
+		certOperatorVersion:   certOperatorVersion,
+	}
+
+	clientCertResource, err := createCert(ctx, clientCertService, certConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Creating client certificate resource.
-	err = clientCertService.Create(ctx, clientCertResource)
+	// Retrieve client certificate credential.
+	secret, err := fetchCredential(ctx, provider, clientCertService, clientCertResource)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	credentialNamespace := determineCredentialNamespace(clientCertResource, provider)
-
-	// Retrieving client certificate credential.
-	secret, err := fetchClientCertCredential(ctx, clientCertService, credentialNamespace, clientCertResource.CertConfig.Name)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// Storing client certificate credential into the kubeconfig.
-	contextName, contextExists, err := storeClientCertCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+	// Store client certificate credential into the kubeconfig.
+	contextName, contextExists, err := storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
 	if err != nil {
 		return microerror.Mask(err)
 	}

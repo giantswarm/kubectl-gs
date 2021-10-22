@@ -35,6 +35,17 @@ const (
 	credentialKeyCertCA  = "ca"
 )
 
+type clientCertConfig struct {
+	provider              string
+	clusterName           string
+	organizationName      string
+	organizationNamespace string
+	ttl                   string
+	groups                []string
+	clusterBasePath       string
+	certOperatorVersion   string
+}
+
 func generateClientCertUID() string {
 	hash := sha256.New()
 	_, _ = hash.Write([]byte(time.Now().String()))
@@ -44,31 +55,31 @@ func generateClientCertUID() string {
 	return uid[:16]
 }
 
-func generateClientCert(cluster, organization, ttl string, groups []string, clusterBasePath, certOperatorVersion, namespace string) (*clientcert.ClientCert, error) {
+func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error) {
 	clientCertUID := generateClientCertUID()
-	clientCertName := fmt.Sprintf("%s-%s", cluster, clientCertUID)
-	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertUID, cluster, clusterBasePath)
+	clientCertName := fmt.Sprintf("%s-%s", config.clusterName, clientCertUID)
+	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertUID, config.clusterName, config.clusterBasePath)
 
 	certConfig := &corev1alpha1.CertConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clientCertName,
-			Namespace: namespace,
+			Namespace: config.organizationNamespace,
 			Labels: map[string]string{
-				kgslabel.CertOperatorVersion: certOperatorVersion,
+				kgslabel.CertOperatorVersion: config.certOperatorVersion,
 				kgslabel.Certificate:         clientCertUID,
-				label.Cluster:                cluster,
-				label.Organization:           organization,
+				label.Cluster:                config.clusterName,
+				label.Organization:           config.organizationName,
 			},
 		},
 		Spec: corev1alpha1.CertConfigSpec{
 			Cert: corev1alpha1.CertConfigSpecCert{
 				AllowBareDomains:    true,
 				ClusterComponent:    clientCertUID,
-				ClusterID:           cluster,
+				ClusterID:           config.clusterName,
 				CommonName:          commonName,
 				DisableRegeneration: true,
-				Organizations:       groups,
-				TTL:                 ttl,
+				Organizations:       config.groups,
+				TTL:                 config.ttl,
 			},
 		},
 	}
@@ -80,14 +91,30 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 	return r, nil
 }
 
-// fetchClientCertCredential tries to fetch the client certificate credential
+func createCert(ctx context.Context, clientCertService clientcert.Interface, config clientCertConfig) (*clientcert.ClientCert, error) {
+	clientCert, err := generateClientCert(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	err = clientCertService.Create(ctx, clientCert)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return clientCert, nil
+}
+
+// fetchCredential tries to fetch the client certificate credential
 // for a couple of times, until the resource is fetched, or until the timeout is reached.
-func fetchClientCertCredential(ctx context.Context, clientCertService clientcert.Interface, namespace, name string) (*corev1.Secret, error) {
+func fetchCredential(ctx context.Context, provider string, clientCertService clientcert.Interface, clientCert *clientcert.ClientCert) (*corev1.Secret, error) {
+	credentialNamespace := determineCredentialNamespace(clientCert, provider)
+
 	var secret *corev1.Secret
 	var err error
 
 	o := func() error {
-		secret, err = clientCertService.GetCredential(ctx, namespace, name)
+		secret, err = clientCertService.GetCredential(ctx, credentialNamespace, clientCert.CertConfig.Name)
 		if clientcert.IsNotFound(err) {
 			// Client certificate credential has not been created yet, try again until it is.
 			return microerror.Mask(err)
@@ -109,8 +136,8 @@ func fetchClientCertCredential(ctx context.Context, clientCertService clientcert
 	return secret, nil
 }
 
-// storeClientCertCredential saves the created client certificate credentials into the kubectl config.
-func storeClientCertCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// storeCredential saves the created client certificate credentials into the kubectl config.
+func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
