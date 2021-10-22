@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -12,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/appcatalog"
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 )
@@ -117,37 +119,16 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	}
 
 	// Make sure the requested version is available
-	// Easy way: reuse the catalogdata.Get with LabelsSelector
-	{
-		selector := fmt.Sprintf(
-			"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
-			appCR.Spec.Catalog,
-			appCR.Spec.Name,
-			version,
-		)
-
-		var labelSelector labels.Selector
-		{
-			labelSelector, err = labels.Parse(selector)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		options := catalogdata.GetOptions{
-			AllNamespaces: false,
-			Name:          appCR.Spec.Catalog,
-			Namespace:     appCR.Spec.CatalogNamespace,
-			LabelSelector: labelSelector,
-		}
-
-		_, err = s.catalogDataService.Get(ctx, options)
-
-		if catalogdata.IsNoResources(err) {
-			return microerror.Mask(err)
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
+	// Easy way:
+	// (1) Reuse `catalogdata.Get(ctx, options)` to get Catalog with AppCatalogEntry CR using version-specific label selector.
+	// (2) We only keep AppCatalogEntries CRs for 5 most recent versions. If step (1) returns an error, this does not necessarily
+	//     mean an error. So, change selector to `latest=true` and fetch Catalog CR with AppCatalogEntry CR again. This is to reuse
+	//     the `catalogdata.Get(ctx, options)` again. Catalog CR carries the URL of the given catalog, we can use it as a fallback.
+	// (3) Now, fall back to checking the Helm Repository (Catalog) directly. Use HEAD request for the Chart archive, without fetching
+	//     the whole index.yaml which is more "expensive".
+	err = s.validateVersion(ctx, appCR.Spec.Name, version, appCR.Spec.Catalog, appCR.Spec.CatalogNamespace)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	patch := runtimeclient.MergeFrom(appCR.DeepCopy())
@@ -159,6 +140,89 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	}
 
 	return nil
+}
+
+func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appCatalog, appCatalogNamespace string) error {
+	selector := fmt.Sprintf(
+		"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
+		appCatalog,
+		appName,
+		appVersion,
+	)
+
+	// (1) Check against the AppCatalogEntry CR, no error means there is either no such app
+	//     or it does not fall into the range of 5 most recent versions
+	_, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
+	if err == nil {
+		return nil
+	}
+
+	selector = fmt.Sprintf(
+		"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,latest=true",
+		appCatalog,
+		appName,
+	)
+
+	// (2) Fetch the Catalog CR and latest AppCatalogEntry CR.
+	catalog, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	tarbalURL, err := appcatalog.NewTarballURL(catalog.Spec.Storage.URL, appName, appVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// (3) Fallback solution, we nead to issue a HEAD request for the Chart archive.
+	resp, err := http.Head(tarbalURL)
+	if err != nil {
+		return microerror.Maskf(fetchError, "unable to get the app, http request failed: %s", err.Error())
+	}
+	defer resp.Body.Close()
+
+	// statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
+	// what would be the rule of thumb here?
+	if resp.StatusCode == 404 {
+		return microerror.Mask(noResourcesError)
+	}
+
+	return nil
+}
+
+func (s *Service) fetchCatalog(ctx context.Context, name, namespace, selector string) (*applicationv1alpha1.Catalog, error) {
+	var err error
+
+	var labelSelector labels.Selector
+	{
+		labelSelector, err = labels.Parse(selector)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	options := catalogdata.GetOptions{
+		AllNamespaces: false,
+		Name:          name,
+		Namespace:     namespace,
+		LabelSelector: labelSelector,
+	}
+
+	catalogResource, err := s.catalogDataService.Get(ctx, options)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var catalogCR *applicationv1alpha1.Catalog
+
+	switch c := catalogResource.(type) {
+	case *catalogdata.Catalog:
+		catalogCR = c.CR
+	default:
+		return nil, microerror.Maskf(invalidTypeError, "unexpected type %T found", c)
+	}
+
+	return catalogCR, nil
 }
 
 func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {

@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
@@ -18,47 +21,31 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+)
+
+const (
+	address = "127.0.0.1:63283"
 )
 
 func Test_run(t *testing.T) {
-	testCases := []struct {
-		name               string
-		storage            []runtime.Object
-		flags              flag
-		expectedGoldenFile string
-		errorMatcher       func(error) bool
-	}{
-		{
-			name: "case 0: patch app",
-			storage: []runtime.Object{
-				newApp("fake-app", "0.0.1", "fake-catalog"),
-				newCatalog("fake-catalog"),
-				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
-				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog"),
-			},
-			flags: flag{Name: "fake-app", Version: "0.1.0"},
-		},
-		{
-			name: "case 1: patch app with nonexisting version",
-			storage: []runtime.Object{
-				newApp("fake-app", "0.0.1", "fake-catalog"),
-				newCatalog("fake-catalog"),
-				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog"),
-			},
-			flags:        flag{Name: "fake-app", Version: "0.1.0"},
-			errorMatcher: IsNoResources,
-		},
-		{
-			name:         "case 2: patch nonexisting app",
-			storage:      []runtime.Object{},
-			flags:        flag{Name: "bad-app", Version: "0.1.0"},
-			errorMatcher: IsNotFound,
-		},
-	}
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			var err error
+
+			var server *httptest.Server
+			if tc.chartResponseCode != 0 {
+				server = httptest.NewUnstartedServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					rw.WriteHeader(tc.chartResponseCode)
+				}))
+
+				l, err := net.Listen("tcp", address)
+				if err != nil {
+					panic(fmt.Sprintf("httptest: failed to listen on a port: %v", err))
+				}
+				server.Listener.Close()
+				server.Listener = l
+				server.Start()
+			}
 			ctx := context.TODO()
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
@@ -74,7 +61,11 @@ func Test_run(t *testing.T) {
 				stdout:  out,
 			}
 
-			err := runner.run(ctx, nil, []string{})
+			err = runner.run(ctx, nil, []string{})
+			if server != nil {
+				server.Close()
+			}
+
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))
@@ -126,7 +117,7 @@ func newApp(appName, appVersion, catalogName string) *applicationv1alpha1.App {
 	return c
 }
 
-func newAppCatalogEntry(appName, appVersion, catalogName string) *applicationv1alpha1.AppCatalogEntry {
+func newAppCatalogEntry(appName, appVersion, catalogName, latest string) *applicationv1alpha1.AppCatalogEntry {
 	c := &applicationv1alpha1.AppCatalogEntry{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "application.giantswarm.io/v1alpha1",
@@ -139,6 +130,7 @@ func newAppCatalogEntry(appName, appVersion, catalogName string) *applicationv1a
 				label.CatalogName:          catalogName,
 				label.AppKubernetesName:    appName,
 				label.AppKubernetesVersion: appVersion,
+				"latest":                   latest,
 			},
 		},
 		Spec: applicationv1alpha1.AppCatalogEntrySpec{
@@ -164,6 +156,12 @@ func newCatalog(catalogName string) *applicationv1alpha1.Catalog {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      catalogName,
 			Namespace: "default",
+		},
+		Spec: applicationv1alpha1.CatalogSpec{
+			Storage: applicationv1alpha1.CatalogSpecStorage{
+				Type: "helm",
+				URL:  fmt.Sprintf("http://%s/", address),
+			},
 		},
 	}
 

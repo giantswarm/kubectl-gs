@@ -48,3 +48,12 @@ var invalidTypeError = &microerror.Error{
 func IsInvalidType(err error) bool {
 	return microerror.Cause(err) == invalidTypeError
 }
+
+var fetchError = &microerror.Error{
+	Kind: "fetchError",
+}
+
+// IsFetch asserts fetchError.
+func IsFetch(err error) bool {
+	return microerror.Cause(err) == fetchError
+}

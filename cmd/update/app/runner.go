@@ -10,7 +10,6 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 )
 
 type runner struct {
@@ -67,8 +66,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	err = r.service.Patch(ctx, patchOptions)
 	if app.IsNotFound(err) {
 		return microerror.Maskf(notFoundError, "An app with name '%s' cannot be found in the '%s' namespace.\n", patchOptions.Name, patchOptions.Namespace)
-	} else if catalog.IsNoResources(err) {
-		return microerror.Maskf(noResourcesError, "No AppCatalogEntry CR found for the given version: '%s'\n", patchOptions.Version)
+	} else if app.IsNoResources(err) {
+		return microerror.Maskf(noResourcesError, "No app with the name '%s' and the version '%s' found in the catalog.\n", patchOptions.Name, patchOptions.Version)
 	} else if err != nil {
 		return microerror.Mask(err)
 	}

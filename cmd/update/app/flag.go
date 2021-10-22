@@ -38,7 +38,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	// at least one of the supported updates must be provided
+	if f.Name == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagAppName)
+	}
+
 	if f.Version == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
 	}
