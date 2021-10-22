@@ -55,7 +55,7 @@ Workload cluster:
   kubectl gs login mymc \
     --workload-cluster gir0y \
     --organization acme \
-    --certificate-o admins \
+    --certificate-organization admins \
     --certificate-ttl 3h
 `
 )

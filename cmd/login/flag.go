@@ -15,7 +15,7 @@ const (
 
 	flagWCName         = "workload-cluster"
 	flagWCOrganization = "organization"
-	flagWCCertGroups   = "certificate-o"
+	flagWCCertGroups   = "certificate-organization"
 	flagWCCertTTL      = "certificate-ttl"
 )
 
