@@ -36,14 +36,14 @@ const (
 )
 
 type clientCertConfig struct {
-	provider              string
-	clusterName           string
-	organizationName      string
-	organizationNamespace string
-	ttl                   string
-	groups                []string
-	clusterBasePath       string
-	certOperatorVersion   string
+	provider            string
+	clusterName         string
+	clusterNamespace    string
+	organizationName    string
+	ttl                 string
+	groups              []string
+	clusterBasePath     string
+	certOperatorVersion string
 }
 
 func generateClientCertUID() string {
@@ -63,7 +63,7 @@ func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error)
 	certConfig := &corev1alpha1.CertConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clientCertName,
-			Namespace: config.organizationNamespace,
+			Namespace: config.clusterNamespace,
 			Labels: map[string]string{
 				kgslabel.CertOperatorVersion: config.certOperatorVersion,
 				kgslabel.Certificate:         clientCertUID,

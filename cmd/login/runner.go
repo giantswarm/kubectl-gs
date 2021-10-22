@@ -367,14 +367,14 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	}
 
 	certConfig := clientCertConfig{
-		provider:              provider,
-		clusterName:           r.flag.WCName,
-		organizationName:      r.flag.WCOrganization,
-		organizationNamespace: orgNamespace,
-		ttl:                   r.flag.WCCertTTL,
-		groups:                r.flag.WCCertGroups,
-		clusterBasePath:       clusterBasePath,
-		certOperatorVersion:   certOperatorVersion,
+		provider:            provider,
+		clusterName:         r.flag.WCName,
+		clusterNamespace:    c.Cluster.GetNamespace(),
+		organizationName:    r.flag.WCOrganization,
+		ttl:                 r.flag.WCCertTTL,
+		groups:              r.flag.WCCertGroups,
+		clusterBasePath:     clusterBasePath,
+		certOperatorVersion: certOperatorVersion,
 	}
 
 	clientCertResource, err := createCert(ctx, clientCertService, certConfig)
