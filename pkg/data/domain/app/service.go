@@ -14,6 +14,7 @@ import (
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/appcatalog"
+
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 )
