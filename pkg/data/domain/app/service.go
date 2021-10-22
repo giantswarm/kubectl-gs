@@ -176,6 +176,7 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 	}
 
 	// (3) Fallback solution, we nead to issue a HEAD request for the Chart archive.
+	// #nosec G107
 	resp, err := http.Head(tarbalURL)
 	if err != nil {
 		return microerror.Maskf(fetchError, "unable to get the app, http request failed: %s", err.Error())
