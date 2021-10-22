@@ -16,8 +16,13 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/giantswarm/kubectl-gs/internal/feature"
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	kgslabel "github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
@@ -28,8 +33,6 @@ const (
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
 	credentialKeyCertCA  = "ca"
-
-	certOperatorVersion = "1.1.0"
 )
 
 func generateClientCertUID() string {
@@ -41,7 +44,7 @@ func generateClientCertUID() string {
 	return uid[:16]
 }
 
-func generateClientCert(cluster, organization, ttl string, groups []string, clusterBasePath string) (*clientcert.ClientCert, error) {
+func generateClientCert(cluster, organization, ttl string, groups []string, clusterBasePath, certOperatorVersion, namespace string) (*clientcert.ClientCert, error) {
 	clientCertUID := generateClientCertUID()
 	clientCertName := fmt.Sprintf("%s-%s", cluster, clientCertUID)
 	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertUID, cluster, clusterBasePath)
@@ -49,7 +52,7 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 	certConfig := &corev1alpha1.CertConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clientCertName,
-			Namespace: metav1.NamespaceDefault,
+			Namespace: namespace,
 			Labels: map[string]string{
 				kgslabel.CertOperatorVersion: certOperatorVersion,
 				kgslabel.Certificate:         clientCertUID,
@@ -66,9 +69,6 @@ func generateClientCert(cluster, organization, ttl string, groups []string, clus
 				DisableRegeneration: true,
 				Organizations:       groups,
 				TTL:                 ttl,
-			},
-			VersionBundle: corev1alpha1.CertConfigSpecVersionBundle{
-				Version: certOperatorVersion,
 			},
 		},
 	}
@@ -189,4 +189,102 @@ func cleanUpClientCertResources(ctx context.Context, clientCertService clientcer
 	}
 
 	return nil
+}
+
+func getOrganizationNamespace(ctx context.Context, organizationService organization.Interface, name string) (string, error) {
+	org, err := organizationService.Get(ctx, organization.GetOptions{Name: name})
+	if organization.IsNotFound(err) {
+		return "", microerror.Maskf(organizationNotFoundError, "The organization %s could not be found.", name)
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	namespace := org.(*organization.Organization).Organization.Status.Namespace
+	if len(namespace) < 1 {
+		return "", microerror.Maskf(unknownOrganizationNamespaceError, "Could not find the namespace for organization %s.", name)
+	}
+
+	return namespace, nil
+}
+
+func determineCredentialNamespace(clientCert *clientcert.ClientCert, provider string) string {
+	if provider == key.ProviderAzure {
+		return metav1.NamespaceDefault
+	}
+
+	return clientCert.CertConfig.GetNamespace()
+}
+
+func fetchCluster(ctx context.Context, clusterService cluster.Interface, provider, namespace, name string) (*cluster.Cluster, error) {
+	o := cluster.GetOptions{
+		Namespace: namespace,
+		Name:      name,
+		Provider:  provider,
+	}
+
+	c, err := clusterService.Get(ctx, o)
+	if cluster.IsNotFound(err) {
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return c.(*cluster.Cluster), nil
+}
+
+func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
+	if c.Cluster.Labels == nil {
+		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s does not have a release version label.", name)
+	}
+
+	releaseVersion := c.Cluster.Labels[label.ReleaseVersion]
+	if len(releaseVersion) < 1 {
+		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s has an invalid release version.", name)
+	}
+
+	err := validateReleaseVersion(releaseVersion, provider)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return releaseVersion, nil
+}
+
+func getCertOperatorVersion(ctx context.Context, releaseService release.Interface, name string) (string, error) {
+	resource, err := releaseService.Get(ctx, release.GetOptions{Name: fmt.Sprintf("v%s", name)})
+	if release.IsNotFound(err) {
+		return "", microerror.Maskf(releaseNotFoundError, "Release v%s could not be found.", name)
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	components := resource.(*release.Release).CR.Spec.Components
+	for _, component := range components {
+		if component.Name == "cert-operator" {
+			return component.Version, nil
+		}
+	}
+
+	return "", microerror.Maskf(missingComponentError, "The release v%s does not include the required 'cert-operator' component.", name)
+}
+
+func validateProvider(provider string) error {
+	if provider == key.ProviderAWS || provider == key.ProviderAzure {
+		return nil
+	}
+
+	return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is only supported on AWS and Azure.")
+}
+
+func validateReleaseVersion(version, provider string) error {
+	featureService := feature.New(provider)
+	if featureService.Supports(feature.ClientCert, version) {
+		return nil
+	}
+
+	if provider == key.ProviderAWS {
+		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation.")
+	}
+
+	return microerror.Maskf(unsupportedReleaseVersionError, "The workload cluster release does not allow client certificate creation.")
 }

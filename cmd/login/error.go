@@ -118,3 +118,75 @@ var credentialRetrievalTimedOut = &microerror.Error{
 func IsCredentialRetrievalTimedOut(err error) bool {
 	return microerror.Cause(err) == credentialRetrievalTimedOut
 }
+
+var organizationNotFoundError = &microerror.Error{
+	Kind: "organizationNotFoundError",
+}
+
+// IsOrganizationNotFound asserts organizationNotFoundError.
+func IsOrganizationNotFound(err error) bool {
+	return microerror.Cause(err) == organizationNotFoundError
+}
+
+var unknownOrganizationNamespaceError = &microerror.Error{
+	Kind: "unknownOrganizationNamespaceError",
+}
+
+// IsUnknownOrganizationNamespace asserts unknownOrganizationNamespaceError.
+func IsUnknownOrganizationNamespace(err error) bool {
+	return microerror.Cause(err) == unknownOrganizationNamespaceError
+}
+
+var clusterNotFoundError = &microerror.Error{
+	Kind: "clusterNotFoundError",
+}
+
+// IsClusterNotFound asserts clusterNotFoundError.
+func IsClusterNotFound(err error) bool {
+	return microerror.Cause(err) == clusterNotFoundError
+}
+
+var invalidReleaseVersionError = &microerror.Error{
+	Kind: "invalidReleaseVersionError",
+}
+
+// IsInvalidReleaseVersion asserts invalidReleaseVersionError.
+func IsInvalidReleaseVersion(err error) bool {
+	return microerror.Cause(err) == invalidReleaseVersionError
+}
+
+var unsupportedReleaseVersionError = &microerror.Error{
+	Kind: "unsupportedReleaseVersionError",
+}
+
+// IsUnsupportedReleaseVersion asserts unsupportedReleaseVersionError.
+func IsUnsupportedReleaseVersion(err error) bool {
+	return microerror.Cause(err) == unsupportedReleaseVersionError
+}
+
+var missingComponentError = &microerror.Error{
+	Kind: "missingComponentError",
+}
+
+// IsMissingComponent asserts missingComponentError.
+func IsMissingComponent(err error) bool {
+	return microerror.Cause(err) == missingComponentError
+}
+
+var unsupportedProviderError = &microerror.Error{
+	Kind: "unsupportedProviderError",
+}
+
+// IsUnsupportedProvider asserts unsupportedProviderError.
+func IsUnsupportedProvider(err error) bool {
+	return microerror.Cause(err) == unsupportedProviderError
+}
+
+var releaseNotFoundError = &microerror.Error{
+	Kind: "releaseNotFoundError",
+}
+
+// IsReleaseNotFound asserts releaseNotFoundError.
+func IsReleaseNotFound(err error) bool {
+	return microerror.Cause(err) == releaseNotFoundError
+}

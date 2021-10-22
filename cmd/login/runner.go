@@ -14,7 +14,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
@@ -271,15 +275,30 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 }
 
 func (r *runner) createClusterClientCert(ctx context.Context) error {
-	var clientCertService clientcert.Interface
-	{
-		config := commonconfig.New(r.flag.config)
+	var err error
 
-		client, err := config.GetClient(r.logger)
+	config := commonconfig.New(r.flag.config)
+
+	provider, err := config.GetProvider()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = validateProvider(provider)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	var client *dataClient.Client
+	{
+		client, err = config.GetClient(r.logger)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
 
+	var clientCertService clientcert.Interface
+	{
 		serviceConfig := clientcert.Config{
 			Client: client,
 		}
@@ -289,12 +308,65 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		}
 	}
 
+	var organizationService organization.Interface
+	{
+		serviceConfig := organization.Config{
+			Client: client,
+		}
+		organizationService, err = organization.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var clusterService cluster.Interface
+	{
+		serviceConfig := cluster.Config{
+			Client: client,
+		}
+		clusterService, err = cluster.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var releaseService release.Interface
+	{
+		serviceConfig := release.Config{
+			Client: client,
+		}
+		releaseService, err = release.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	c, err := fetchCluster(ctx, clusterService, provider, orgNamespace, r.flag.WCName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	releaseVersion, err := getClusterReleaseVersion(c, provider)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	certOperatorVersion, err := getCertOperatorVersion(ctx, releaseService, releaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	clientCertResource, err := generateClientCert(r.flag.WCName, r.flag.WCOrganization, r.flag.WCCertTTL, r.flag.WCCertGroups, clusterBasePath)
+	clientCertResource, err := generateClientCert(r.flag.WCName, r.flag.WCOrganization, r.flag.WCCertTTL, r.flag.WCCertGroups, clusterBasePath, certOperatorVersion, orgNamespace)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -305,8 +377,10 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
+	credentialNamespace := determineCredentialNamespace(clientCertResource, provider)
+
 	// Retrieving client certificate credential.
-	secret, err := fetchClientCertCredential(ctx, clientCertService, clientCertResource.CertConfig.Namespace, clientCertResource.CertConfig.Name)
+	secret, err := fetchClientCertCredential(ctx, clientCertService, credentialNamespace, clientCertResource.CertConfig.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
