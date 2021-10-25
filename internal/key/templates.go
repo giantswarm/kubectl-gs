@@ -52,6 +52,14 @@ const ClusterCAPACRsTemplate = `
 {{ .BastionAWSMachineTemplateCR -}}
 `
 
+const ClusterEKSCRsTemplate = `
+{{- .ClusterCR -}}
+---
+{{ .AWSManagedControlPlaneCR -}}
+---
+{{ .AWSClusterRoleIdentityCR -}}
+`
+
 const MachineDeploymentCRsTemplate = `
 {{- .MachineDeploymentCR -}}
 ---
@@ -68,6 +76,12 @@ const MachinePoolAWSCRsTemplate = `
 {{ .MachinePoolCR -}}
 ---
 {{ .KubeadmConfigCR -}}
+`
+
+const MachinePoolEKSCRsTemplate = `
+{{- .ManagedMachinePoolCR -}}
+---
+{{ .MachinePoolCR -}}
 `
 
 const MachinePoolAzureCRsTemplate = `

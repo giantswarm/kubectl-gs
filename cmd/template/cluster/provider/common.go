@@ -24,6 +24,7 @@ import (
 
 type ClusterCRsConfig struct {
 	// AWS only.
+	EKS                bool
 	ExternalSNAT       bool
 	ControlPlaneSubnet string
 	PodsCIDR           string

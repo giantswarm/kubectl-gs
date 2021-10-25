@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-	runtimeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/pkg/normalize"
@@ -179,21 +178,10 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	return data, nil
 }
 
-func SSHSSOPublicKey() (string, error) {
-	c, err := runtimeconfig.GetConfig()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	c.Burst = ControllerRuntimeBurstValue // to avoid throttling the request
-
-	k8sClient, err := runtimeclient.New(c, runtimeclient.Options{})
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
+func SSHSSOPublicKey(ctx context.Context, client runtimeclient.Client) (string, error) {
 	secretList := &v1.SecretList{}
-
-	err = k8sClient.List(
-		context.TODO(),
+	err := client.List(
+		ctx,
 		secretList,
 		runtimeclient.MatchingLabels{
 			RoleLabel: SSHSSOPubKeyLabel,

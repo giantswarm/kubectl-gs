@@ -21,7 +21,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 
 	var sshSSOPublicKey string
 	{
-		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
 		if err != nil {
 			return microerror.Mask(err)
 		}

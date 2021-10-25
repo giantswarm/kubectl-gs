@@ -134,12 +134,14 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 			continue
 		}
 
-		// Append the result to the results array.
-		results = append(results, &ValidationResult{
-			App:              app,
-			ValuesSchema:     valuesSchema,
-			ValidationErrors: schemaValidationResult.Errors(),
-		})
+		// Append the result to the results array if there are any.
+		if schemaValidationResult != nil {
+			results = append(results, &ValidationResult{
+				App:              app,
+				ValuesSchema:     valuesSchema,
+				ValidationErrors: schemaValidationResult.Errors(),
+			})
+		}
 	}
 
 	return results, nil
@@ -147,9 +149,10 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 
 func (s *Service) validateApp(ctx context.Context, app *applicationv1alpha1.App, customValuesSchema string) (string, *gojsonschema.Result, error) {
 	catalogName := app.Spec.Catalog
+	catalogNamespace := app.Spec.CatalogNamespace
 
 	// Fetch the catalog's index.yaml if we haven't tried to yet.
-	index, catalog, err := s.fetchCatalogIndex(ctx, catalogName)
+	index, catalog, err := s.fetchCatalogIndex(ctx, catalogName, catalogNamespace)
 	if err != nil {
 		return "", nil, microerror.Mask(err)
 	}
@@ -262,7 +265,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 	return string(body), nil
 }
 
-func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*IndexFile, *applicationv1alpha1.Catalog, error) {
+func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNamespace string) (*IndexFile, *applicationv1alpha1.Catalog, error) {
 	var err error
 
 	// Don't try to fetch something that is undefined.
@@ -277,7 +280,8 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName string) (*I
 
 	// Fetch the catalog.
 	options := catalogdata.GetOptions{
-		Name: catalogName,
+		Name:      catalogName,
+		Namespace: catalogNamespace,
 	}
 
 	catalogResource, err := s.catalogDataService.Get(ctx, options)

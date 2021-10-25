@@ -1,6 +1,7 @@
 package kubeconfig
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -39,7 +40,7 @@ func TestIsKubeContext(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := IsKubeContext(tc.input)
+			result, _ := IsKubeContext(tc.input)
 
 			if result != tc.expected {
 				t.Fatalf("Value not expected, got: %t", result)
@@ -60,12 +61,17 @@ func TestGetCodeNameFromKubeContext(t *testing.T) {
 			expected: "test",
 		},
 		{
-			name:     "case 1: get installation code name, with no prefix",
+			name:     "case 1: get installation code name, with workload cluster context",
+			input:    "gs-test-somecluster",
+			expected: "test",
+		},
+		{
+			name:     "case 2: get installation code name, with no prefix",
 			input:    "test",
 			expected: "test",
 		},
 		{
-			name:     "case 2: get installation code name, with incorrect prefix",
+			name:     "case 3: get installation code name, with incorrect prefix",
 			input:    "ms-test",
 			expected: "ms-test",
 		},
@@ -116,6 +122,70 @@ func TestIsCodeName(t *testing.T) {
 
 			if result != tc.expected {
 				t.Fatalf("Value not expected, got: %t", result)
+			}
+		})
+	}
+}
+
+func TestGetKubeContextType(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected ContextType
+	}{
+		{
+			input:    "gs-test",
+			expected: ContextTypeMC,
+		},
+		{
+			input:    "test123",
+			expected: ContextTypeNone,
+		},
+		{
+			input:    "gs-some-wc",
+			expected: ContextTypeWC,
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			result := GetKubeContextType(tc.input)
+
+			if result != tc.expected {
+				t.Fatalf("Expected %d, got: %d", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestGetClusterNameFromKubeContext(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "",
+			expected: "",
+		},
+		{
+			input:    "gs-test",
+			expected: "",
+		},
+		{
+			input:    "gs-test-wc",
+			expected: "wc",
+		},
+		{
+			input:    "gs-some-wc-213-sad",
+			expected: "wc-213-sad",
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			result := GetClusterNameFromKubeContext(tc.input)
+
+			if result != tc.expected {
+				t.Fatalf("Expected %s, got: %s", tc.expected, result)
 			}
 		})
 	}

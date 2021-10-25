@@ -18,6 +18,7 @@ func New(provider string) *Service {
 		features: map[string]Feature{
 			Autoscaling:        autoscaling,
 			NodePoolConditions: nodePoolConditions,
+			ClientCert:         clientCert,
 		},
 	}
 

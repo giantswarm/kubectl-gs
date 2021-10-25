@@ -1,5 +1,5 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
-kind: AWSCluster
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha3
+kind: AWSManagedControlPlane
 metadata:
   labels:
     cluster.x-k8s.io/cluster-name: {{ .Name }}
@@ -7,7 +7,7 @@ metadata:
     giantswarm.io/cluster: {{ .Name }}
     giantswarm.io/organization: {{ .Organization }}
     release.giantswarm.io/version: {{ .ReleaseVersion }}
-  name: {{ .Name }}
+  name: {{ .Name }}-control-plane
   namespace: {{ .Namespace }}
 spec:
   bastion:
@@ -15,3 +15,6 @@ spec:
   identityRef:
     kind: AWSClusterRoleIdentity
     name: {{ .Name }}
+  region: ""
+  sshKeyName: ""
+  version: {{ .KubernetesVersion }}

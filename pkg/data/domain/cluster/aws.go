@@ -4,6 +4,7 @@ import (
 	"context"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -69,14 +70,14 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Resource, error) {
 	var err error
 
-	labelSelector := runtimeClient.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: name,
-	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 
 	cluster := &Cluster{}
 
 	{
+		labelSelector := runtimeClient.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: name,
+		}
 		crs := &capiv1alpha3.ClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
@@ -95,6 +96,9 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 	}
 
 	{
+		labelSelector := runtimeClient.MatchingLabels{
+			label.Cluster: name,
+		}
 		crs := &infrastructurev1alpha3.AWSClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {

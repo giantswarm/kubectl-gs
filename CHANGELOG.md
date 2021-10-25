@@ -7,6 +7,27 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.44.0] - 2021-10-25
+
+### Added
+
+- Add support for creating workload cluster client certificates using the `login` command.
+
+## [1.43.1] - 2021-10-15
+
+### Fixed
+
+- Fix a problem with fetching Catalog CRs in `validate apps`.
+- Fixing a problem where the function to fetch the SSH secret to generate the templates was using `inCluster` config ignoring the kubeconfig.
+
+## [1.43.0] - 2021-10-13
+
+### Added
+
+- Add templating for EKS clusters using the management cluster API
+- Add templating for EKS node pools using the management cluster API
+- Add templating for CAPA node pools using the management cluster API
+
 ### Changed
 
 - In the `get catalogs` command output, rename the colum `APP VERSION` to `UPSTREAM VERSION` and change the column order.
@@ -550,7 +571,10 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.44.0...HEAD
+[1.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...v1.44.0
+[1.43.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...v1.43.1
+[1.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.1...v1.43.0
 [1.42.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.0...v1.42.1
 [1.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.1...v1.42.0
 [1.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.0...v1.41.1

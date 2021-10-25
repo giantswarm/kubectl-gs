@@ -13,6 +13,12 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
@@ -47,8 +53,10 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
+	isCreatingClientCert := len(r.flag.WCName) > 0
+
 	if len(args) < 1 {
-		err = r.tryToReuseExistingContext(ctx)
+		err = r.tryToReuseExistingContext(ctx, isCreatingClientCert)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -60,21 +68,25 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// installation code name, or happa/k8s api URL.
 	installationIdentifier := strings.ToLower(args[0])
 
-	switch {
-	case kubeconfig.IsKubeContext(installationIdentifier):
+	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC {
 		err = r.loginWithKubeContextName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-	case kubeconfig.IsCodeName(installationIdentifier):
+	} else if kubeconfig.IsCodeName(installationIdentifier) {
 		err = r.loginWithCodeName(ctx, installationIdentifier)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-	default:
+	} else {
 		err = r.loginWithURL(ctx, installationIdentifier, true)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	if isCreatingClientCert {
+		err = r.createClusterClientCert(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -83,14 +95,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
+func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClientCert bool) error {
 	config, err := r.k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	currentContext, isLoggedInWithKubeContext := isLoggedWithGSContext(config)
-	if isLoggedInWithKubeContext {
+	currentContext := config.CurrentContext
+	kubeContextType := kubeconfig.GetKubeContextType(currentContext)
+
+	switch kubeContextType {
+	case kubeconfig.ContextTypeMC:
 		authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
 		if !exists {
 			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
@@ -113,14 +128,29 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
 		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 
+		if isCreatingClientCert {
+			err = r.createClusterClientCert(ctx)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
 		return nil
-	}
 
-	if currentContext != "" {
-		return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.", currentContext)
-	}
+	case kubeconfig.ContextTypeWC:
+		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
+		clusterName := kubeconfig.GetClusterNameFromKubeContext(currentContext)
+		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the workload cluster '%s' of installation '%s'.\n", clusterName, codeName))
 
-	return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
+		return nil
+
+	default:
+		if currentContext != "" {
+			return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.", currentContext)
+		}
+
+		return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
+	}
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
@@ -242,4 +272,161 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 
 	return nil
+}
+
+func (r *runner) createClusterClientCert(ctx context.Context) error {
+	var err error
+
+	config := commonconfig.New(r.flag.config)
+
+	provider, err := config.GetProvider()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = validateProvider(provider)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	var client *dataClient.Client
+	{
+		client, err = config.GetClient(r.logger)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var clientCertService clientcert.Interface
+	{
+		serviceConfig := clientcert.Config{
+			Client: client,
+		}
+		clientCertService, err = clientcert.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var organizationService organization.Interface
+	{
+		serviceConfig := organization.Config{
+			Client: client,
+		}
+		organizationService, err = organization.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var clusterService cluster.Interface
+	{
+		serviceConfig := cluster.Config{
+			Client: client,
+		}
+		clusterService, err = cluster.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var releaseService release.Interface
+	{
+		serviceConfig := release.Config{
+			Client: client,
+		}
+		releaseService, err = release.New(serviceConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	c, err := fetchCluster(ctx, clusterService, provider, orgNamespace, r.flag.WCName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	releaseVersion, err := getClusterReleaseVersion(c, provider)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	certOperatorVersion, err := getCertOperatorVersion(ctx, releaseService, releaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	certConfig := clientCertConfig{
+		provider:            provider,
+		clusterName:         r.flag.WCName,
+		clusterNamespace:    c.Cluster.GetNamespace(),
+		organizationName:    r.flag.WCOrganization,
+		ttl:                 r.flag.WCCertTTL,
+		groups:              r.flag.WCCertGroups,
+		clusterBasePath:     clusterBasePath,
+		certOperatorVersion: certOperatorVersion,
+	}
+
+	clientCertResource, err := createCert(ctx, clientCertService, certConfig)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Retrieve client certificate credential.
+	secret, err := fetchCredential(ctx, provider, clientCertService, clientCertResource)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Store client certificate credential into the kubeconfig.
+	contextName, contextExists, err := storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Cleaning up leftover resources.
+	err = cleanUpClientCertResources(ctx, clientCertService, clientCertResource)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
+
+	if contextExists {
+		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
+		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+	} else {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected. To switch back to this context later, use this command:\n\n", contextName)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+	}
+
+	return nil
+}
+
+func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	// If we get here, we are sure that the kubeconfig context exists and is valid.
+	authProvider, _ := kubeconfig.GetAuthProvider(config, config.CurrentContext)
+
+	issuer := authProvider.Config[Issuer]
+	mcBasePath, err := installation.GetBasePath(issuer)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return strings.TrimPrefix(mcBasePath, "g8s."), nil
 }

@@ -16,7 +16,7 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 
 	var sshSSOPublicKey string
 	{
-		sshSSOPublicKey, err = key.SSHSSOPublicKey()
+		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -45,7 +45,39 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 	}
 
 	var templates []templateConfig
-	for _, t := range aws.GetTemplates() {
+	for _, t := range aws.GetAWSTemplates() {
+		templates = append(templates, templateConfig(t))
+	}
+
+	err = runMutation(ctx, client, data, templates, out)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+	var err error
+
+	data := struct {
+		Description       string
+		KubernetesVersion string
+		Name              string
+		Namespace         string
+		Organization      string
+		ReleaseVersion    string
+	}{
+		Description:       config.Description,
+		KubernetesVersion: "v1.19.9",
+		Name:              config.Name,
+		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
+		Organization:      config.Organization,
+		ReleaseVersion:    config.ReleaseVersion,
+	}
+
+	var templates []templateConfig
+	for _, t := range aws.GetEKSTemplates() {
 		templates = append(templates, templateConfig(t))
 	}
 
