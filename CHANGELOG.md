@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for creating workload cluster client certificates using the `login` command.
+
 ## [1.43.1] - 2021-10-15
 
 ### Fixed

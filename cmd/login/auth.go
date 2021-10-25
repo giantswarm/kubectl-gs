@@ -292,14 +292,6 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	return nil
 }
 
-func isLoggedWithGSContext(k8sConfig *clientcmdapi.Config) (string, bool) {
-	if !kubeconfig.IsKubeContext(k8sConfig.CurrentContext) {
-		return k8sConfig.CurrentContext, false
-	}
-
-	return k8sConfig.CurrentContext, true
-}
-
 func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
 	if len(provider.Config[ClientID]) < 1 || len(provider.Config[Issuer]) < 1 {
 		return microerror.Mask(invalidAuthConfigurationError)

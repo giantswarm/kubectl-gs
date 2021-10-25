@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,7 +41,9 @@ func (s *Service) getByName(ctx context.Context, name, namespace string, activeO
 			Namespace: namespace,
 			Name:      name,
 		}, rel)
-		if err != nil {
+		if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
