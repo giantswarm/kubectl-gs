@@ -15,7 +15,7 @@ const (
 
 	flagWCName         = "workload-cluster"
 	flagWCOrganization = "organization"
-	flagWCCertGroups   = "certificate-organization"
+	flagWCCertGroups   = "certificate-group"
 	flagWCCertTTL      = "certificate-ttl"
 )
 
@@ -39,7 +39,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))
-	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("Group name(s) to be used as the 'O' attribute of the resulting client certificate subject. Requires --%s.", flagWCName))
+	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
 	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf("How long the client certificate should live for. Requires --%s.", flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)

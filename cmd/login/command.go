@@ -53,10 +53,10 @@ Management cluster:
 Workload cluster:
 
   kubectl gs login mymc \
-    --workload-cluster gir0y \
-    --organization acme \
-    --certificate-organization admins \
-    --certificate-ttl 3h
+    --` + flagWCName + ` gir0y \
+    --` + flagWCOrganization + ` acme \
+    --` + flagWCCertGroups + ` admins \
+    --` + flagWCCertTTL + ` 3h
 `
 )
 
