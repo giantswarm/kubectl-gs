@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.44.0] - 2021-10-25
+
 ### Added
 
 - Add support for creating workload cluster client certificates using the `login` command.
@@ -569,7 +571,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.44.0...HEAD
+[1.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...v1.44.0
 [1.43.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...v1.43.1
 [1.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.1...v1.43.0
 [1.42.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.0...v1.42.1
