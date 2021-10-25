@@ -11,6 +11,7 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/label"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,6 +33,7 @@ func Test_run(t *testing.T) {
 		flags             flag
 		errorMatcher      func(error) bool
 		chartResponseCode int
+		message           string
 	}{
 		{
 			name: "case 0: patch app with the latest AppCatalogEntry CR",
@@ -41,7 +43,8 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog", "false"),
 				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "true"),
 			},
-			flags: flag{Name: "fake-app", Version: "0.1.0"},
+			flags:   flag{Name: "fake-app", Version: "0.1.0"},
+			message: "App fake-app updated to version 0.1.0\n",
 		},
 		{
 			name: "case 1: patch app with the AppCatalogEntry CR (not latest)",
@@ -52,7 +55,8 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "false"),
 				newAppCatalogEntry("fake-app", "0.2.0", "fake-catalog", "true"),
 			},
-			flags: flag{Name: "fake-app", Version: "0.1.0"},
+			flags:   flag{Name: "fake-app", Version: "0.1.0"},
+			message: "App fake-app updated to version 0.1.0\n",
 		},
 		{
 			name: "case 2: patch app without AppCatalogEntry CR, but available in catalog",
@@ -67,6 +71,7 @@ func Test_run(t *testing.T) {
 			},
 			flags:             flag{Name: "fake-app", Version: "0.0.1"},
 			chartResponseCode: 200,
+			message:           "App fake-app updated to version 0.0.1\n",
 		},
 		{
 			name: "case 3: patch app with nonexisting version",
@@ -133,6 +138,11 @@ func Test_run(t *testing.T) {
 				return
 			} else if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			diff := cmp.Diff(tc.message, out.String())
+			if diff != "" {
+				t.Fatalf("value not expected, got:\n %s", diff)
 			}
 		})
 	}

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/giantswarm/microerror"
@@ -73,6 +74,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
+	fmt.Fprintf(r.stdout, "App %s updated to version %s\n", name, version)
 	return nil
 }
 
