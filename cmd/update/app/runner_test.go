@@ -10,12 +10,12 @@ import (
 	"testing"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
