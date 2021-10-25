@@ -27,7 +27,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 
 	err := r.flag.Validate()
 	if err != nil {
-		cmd.Help()
+		_ = cmd.Help()
 		return microerror.Mask(err)
 	}
 
