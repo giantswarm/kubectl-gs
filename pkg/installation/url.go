@@ -42,7 +42,7 @@ func isHappaUrl(u string) bool {
 	return strings.Contains(u, fmt.Sprintf("%s.", happaUrlPrefix))
 }
 
-func getBasePath(u string) (string, error) {
+func GetBasePath(u string) (string, error) {
 	// Add https scheme if it doesn't exist.
 	urlRegexp := regexp.MustCompile("^http(s)?://.*$")
 	if matched := urlRegexp.MatchString(u); !matched {
