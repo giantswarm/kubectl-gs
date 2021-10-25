@@ -8,14 +8,14 @@ import (
 
 const (
 	flagVersion = "version"
-	flagAppName = "name"
+	flagName    = "name"
 )
 
 type flag struct {
 	config  genericclioptions.RESTClientGetter
 	print   *genericclioptions.PrintFlags
-	Version string
 	Name    string
+	Version string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -25,8 +25,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// like kubectl global flags.
 	_ = cmd.Flags().MarkHidden(flagVersion)
 
-	cmd.Flags().StringVar(&f.Name, flagAppName, "", "Name of the app to update")
-	_ = cmd.Flags().MarkHidden(flagAppName)
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app to update")
+	_ = cmd.Flags().MarkHidden(flagName)
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
@@ -39,7 +39,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 func (f *flag) Validate() error {
 	if f.Name == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagAppName)
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
 	}
 
 	if f.Version == "" {

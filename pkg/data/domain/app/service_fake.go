@@ -38,24 +38,24 @@ func NewFakeService(storage []runtime.Object) *FakeService {
 		catalogDataService: fakeCatalogDataService,
 	}
 
-	ms := &FakeService{
+	fs := &FakeService{
 		service: underlyingService,
 		storage: storage,
 	}
 
-	return ms
+	return fs
 }
 
-func (ms *FakeService) Get(ctx context.Context, options GetOptions) (Resource, error) {
+func (fs *FakeService) Get(ctx context.Context, options GetOptions) (Resource, error) {
 	var err error
-	for _, res := range ms.storage {
-		err = ms.service.client.K8sClient.CtrlClient().Create(ctx, res)
+	for _, res := range fs.storage {
+		err = fs.service.client.K8sClient.CtrlClient().Create(ctx, res)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	result, err := ms.service.Get(ctx, options)
+	result, err := fs.service.Get(ctx, options)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -63,16 +63,16 @@ func (ms *FakeService) Get(ctx context.Context, options GetOptions) (Resource, e
 	return result, nil
 }
 
-func (ms *FakeService) Patch(ctx context.Context, options PatchOptions) error {
+func (fs *FakeService) Patch(ctx context.Context, options PatchOptions) error {
 	var err error
-	for _, res := range ms.storage {
-		err = ms.service.client.K8sClient.CtrlClient().Create(ctx, res)
+	for _, res := range fs.storage {
+		err = fs.service.client.K8sClient.CtrlClient().Create(ctx, res)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	err = ms.service.Patch(ctx, options)
+	err = fs.service.Patch(ctx, options)
 	if err != nil {
 		return microerror.Mask(err)
 	}

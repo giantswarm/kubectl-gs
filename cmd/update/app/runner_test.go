@@ -9,18 +9,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/giantswarm/k8smetadata/pkg/label"
-	"github.com/google/go-cmp/cmp"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
-
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -28,6 +26,67 @@ const (
 )
 
 func Test_run(t *testing.T) {
+	var testCases = []struct {
+		name              string
+		storage           []runtime.Object
+		flags             flag
+		errorMatcher      func(error) bool
+		chartResponseCode int
+	}{
+		{
+			name: "case 0: patch app with the latest AppCatalogEntry CR",
+			storage: []runtime.Object{
+				newApp("fake-app", "0.0.1", "fake-catalog"),
+				newCatalog("fake-catalog"),
+				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "true"),
+			},
+			flags: flag{Name: "fake-app", Version: "0.1.0"},
+		},
+		{
+			name: "case 1: patch app with the AppCatalogEntry CR (not latest)",
+			storage: []runtime.Object{
+				newApp("fake-app", "0.0.1", "fake-catalog"),
+				newCatalog("fake-catalog"),
+				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.2.0", "fake-catalog", "true"),
+			},
+			flags: flag{Name: "fake-app", Version: "0.1.0"},
+		},
+		{
+			name: "case 2: patch app without AppCatalogEntry CR, but available in catalog",
+			storage: []runtime.Object{
+				newApp("fake-app", "0.5.0", "fake-catalog"),
+				newCatalog("fake-catalog"),
+				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.2.0", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.3.0", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.4.0", "fake-catalog", "false"),
+				newAppCatalogEntry("fake-app", "0.5.0", "fake-catalog", "true"),
+			},
+			flags:             flag{Name: "fake-app", Version: "0.0.1"},
+			chartResponseCode: 200,
+		},
+		{
+			name: "case 3: patch app with nonexisting version",
+			storage: []runtime.Object{
+				newApp("fake-app", "0.0.1", "fake-catalog"),
+				newCatalog("fake-catalog"),
+				newAppCatalogEntry("fake-app", "0.0.1", "fake-catalog", "true"),
+			},
+			flags:             flag{Name: "fake-app", Version: "0.1.0"},
+			errorMatcher:      IsNoResources,
+			chartResponseCode: 404,
+		},
+		{
+			name:         "case 4: patch nonexisting app",
+			storage:      []runtime.Object{},
+			flags:        flag{Name: "bad-app", Version: "0.1.0"},
+			errorMatcher: IsNotFound,
+		},
+	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -74,24 +133,6 @@ func Test_run(t *testing.T) {
 				return
 			} else if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
-			}
-
-			if len(tc.expectedGoldenFile) == 0 {
-				return
-			}
-
-			var expectedResult []byte
-			{
-				gf := goldenfile.New("testdata", tc.expectedGoldenFile)
-				expectedResult, err = gf.Read()
-				if err != nil {
-					t.Fatalf("unexpected error: %s", err.Error())
-				}
-			}
-
-			diff := cmp.Diff(string(expectedResult), out.String())
-			if diff != "" {
-				t.Fatalf("value not expected, got:\n %s", diff)
 			}
 		})
 	}

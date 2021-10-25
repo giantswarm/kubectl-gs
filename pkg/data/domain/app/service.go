@@ -28,8 +28,8 @@ type Config struct {
 
 // Service is the object we'll hang the app getter methods on.
 type Service struct {
-	client             *client.Client
 	catalogDataService catalogdata.Interface
+	client             *client.Client
 }
 
 // New returns a new app getter Service.
@@ -83,7 +83,7 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
-// Patch patches an app CR given by name and namespace
+// Patch patches an app CR given its name and namespace.
 func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	var err error
 
@@ -151,8 +151,14 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 		appVersion,
 	)
 
-	// (1) Check against the AppCatalogEntry CR, no error means there is either no such app
-	//     or it does not fall into the range of 5 most recent versions
+	/*
+		(1) Check against the AppCatalogEntry CR. No error means there is an ACE CR for the given
+		    version and we may stop processing here. The version is thus validated.
+
+		    An error returned here means there is no ACE CR for the given version, but this not
+		    necessarily mean the version is unavailable. Upon error we fallback to checking the
+		    Helm Chart repository directly, see (2) and (3).
+	*/
 	_, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
 	if err == nil {
 		return nil
@@ -164,7 +170,10 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 		appName,
 	)
 
-	// (2) Fetch the Catalog CR and latest AppCatalogEntry CR.
+	/*
+		(2) Fetch the Catalog CR and the latest AppCatalogEntry CR. We need to do it in order to get the
+		    repository URL from the Catalog CR.
+	*/
 	catalog, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
 	if err != nil {
 		return microerror.Mask(err)
@@ -175,7 +184,9 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 		return microerror.Mask(err)
 	}
 
-	// (3) Fallback solution, we nead to issue a HEAD request for the Chart archive.
+	/*
+	   (3) Fallback solution, we issue a HEAD request for the Chart archive.
+	*/
 	// #nosec G107
 	resp, err := http.Head(tarbalURL)
 	if err != nil {
@@ -183,8 +194,6 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 	}
 	defer resp.Body.Close()
 
-	// statusOK := resp.StatusCode >= 200 && resp.StatusCode < 300
-	// what would be the rule of thumb here?
 	if resp.StatusCode == 404 {
 		return microerror.Mask(noResourcesError)
 	}
