@@ -36,7 +36,7 @@ func Test_run(t *testing.T) {
 		message           string
 	}{
 		{
-			name: "case 0: patch app with the latest AppCatalogEntry CR",
+			name: "patch app with the latest AppCatalogEntry CR",
 			storage: []runtime.Object{
 				newApp("fake-app", "0.0.1", "fake-catalog"),
 				newCatalog("fake-catalog"),
@@ -47,7 +47,7 @@ func Test_run(t *testing.T) {
 			message: "App 'fake-app' updated to version '0.1.0'\n",
 		},
 		{
-			name: "case 1: patch app with the AppCatalogEntry CR (not latest)",
+			name: "patch app with the AppCatalogEntry CR (not latest)",
 			storage: []runtime.Object{
 				newApp("fake-app", "0.0.1", "fake-catalog"),
 				newCatalog("fake-catalog"),
@@ -59,7 +59,7 @@ func Test_run(t *testing.T) {
 			message: "App 'fake-app' updated to version '0.1.0'\n",
 		},
 		{
-			name: "case 2: patch app without AppCatalogEntry CR, but available in catalog",
+			name: "patch app without AppCatalogEntry CR, but available in catalog",
 			storage: []runtime.Object{
 				newApp("fake-app", "0.5.0", "fake-catalog"),
 				newCatalog("fake-catalog"),
@@ -74,7 +74,7 @@ func Test_run(t *testing.T) {
 			message:           "App 'fake-app' updated to version '0.0.1'\n",
 		},
 		{
-			name: "case 3: patch app with nonexisting version",
+			name: "patch app with nonexisting version",
 			storage: []runtime.Object{
 				newApp("fake-app", "0.0.1", "fake-catalog"),
 				newCatalog("fake-catalog"),
@@ -85,15 +85,15 @@ func Test_run(t *testing.T) {
 			chartResponseCode: 404,
 		},
 		{
-			name:         "case 4: patch nonexisting app",
+			name:         "patch nonexisting app",
 			storage:      []runtime.Object{},
 			flags:        flag{Name: "bad-app", Version: "0.1.0"},
 			errorMatcher: IsNotFound,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
 			var err error
 
 			var server *httptest.Server
