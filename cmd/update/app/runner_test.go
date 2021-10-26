@@ -44,7 +44,7 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "true"),
 			},
 			flags:   flag{Name: "fake-app", Version: "0.1.0"},
-			message: "App fake-app updated to version 0.1.0\n",
+			message: "App 'fake-app' updated to version '0.1.0'\n",
 		},
 		{
 			name: "case 1: patch app with the AppCatalogEntry CR (not latest)",
@@ -56,7 +56,7 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.2.0", "fake-catalog", "true"),
 			},
 			flags:   flag{Name: "fake-app", Version: "0.1.0"},
-			message: "App fake-app updated to version 0.1.0\n",
+			message: "App 'fake-app' updated to version '0.1.0'\n",
 		},
 		{
 			name: "case 2: patch app without AppCatalogEntry CR, but available in catalog",
@@ -71,7 +71,7 @@ func Test_run(t *testing.T) {
 			},
 			flags:             flag{Name: "fake-app", Version: "0.0.1"},
 			chartResponseCode: 200,
-			message:           "App fake-app updated to version 0.0.1\n",
+			message:           "App 'fake-app' updated to version '0.0.1'\n",
 		},
 		{
 			name: "case 3: patch app with nonexisting version",

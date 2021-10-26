@@ -23,9 +23,9 @@ const (
 Updates given app with the provided values.
 
 Options:
-  --name <name>			App CR name to update.
-  --namespace <cluster>		Cluster to update the app on.
-  --version <version>		New version to update the app to.`
+  --name <name>              App CR name to update.
+  --namespace <cluster>      Cluster to update the app on.
+  --version <version>        New version to update the app to.`
 
 	examples = `  # Display this help
 kubectl gs update app --help
