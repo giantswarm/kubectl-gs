@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	name = "app --name <app-name> --version <updated-app-version>"
+	name = "app --name <app-name> --namespace <cluster-namespace> --version <updated-app-version>"
 
 	shortDescription = "Update App CR."
 	longDescription  = `Update App CR.
@@ -24,13 +24,14 @@ Updates given app with the provided values.
 
 Options:
   --name <name>			App CR name to update.
+  --namespace <cluster>		Cluster to update the app on.
   --version <version>		New version to update the app to.`
 
 	examples = `  # Display this help
 kubectl gs update app --help
 
 # Update app version
-kubectl gs update app --name hello-world-app --version 0.2.0`
+kubectl gs update app --name hello-world-app --namespace ab01c --version 0.2.0`
 )
 
 type Config struct {
