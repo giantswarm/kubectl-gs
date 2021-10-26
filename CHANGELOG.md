@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Addes
+
+- `update app` command for updating App CRs
+
 ## [1.44.0] - 2021-10-25
 
 ### Added
