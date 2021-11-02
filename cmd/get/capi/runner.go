@@ -19,11 +19,11 @@ import (
 const (
 	giantswarmNamespace = "giantswarm"
 
-	providerAll    = "All"
-	providerAWS    = "AWS"
-	providerAzure   = "Azure"
+	providerAll       = "All"
+	providerAWS       = "AWS"
+	providerAzure     = "Azure"
 	providerOpenStack = "OpenStack"
-	providerVSphere = "vSphere"
+	providerVSphere   = "vSphere"
 )
 
 type runner struct {
