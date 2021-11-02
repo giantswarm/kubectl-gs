@@ -124,10 +124,18 @@ func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
 }
 
 // IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
-func IsCAPIVersion(version string) bool {
-	capiVersion, _ := semver.New(FirstCAPIRelease)
-	releaseVersion, _ := semver.New(version)
-	return releaseVersion.GE(*capiVersion)
+func IsCAPIVersion(version string) (bool, error) {
+	capiVersion, err := semver.New(FirstCAPIRelease)
+	if err != nil {
+		return false, microerror.Maskf(parsingReleaseError, err.Error())
+	}
+
+	releaseVersion, err := semver.New(version)
+	if err != nil {
+		return false, microerror.Maskf(parsingReleaseError, err.Error())
+	}
+
+	return releaseVersion.GE(*capiVersion), nil
 }
 
 // IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
