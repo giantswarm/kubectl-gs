@@ -125,12 +125,12 @@ func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
 // IsCAPAVersion returns whether a given GS Release Version is based on the CAPI/CAPA projects
 // TODO: make this a >= comparison
 func IsCAPAVersion(version string) bool {
-	return version == "20.0.0"
+	return strings.HasPrefix(version, "20.0.0")
 }
 
 // IsCAPZVersion returns whether a given GS Release Version is based on the CAPI/CAPZ projects
 func IsCAPZVersion(version string) bool {
-	return version == "20.0.0"
+	return strings.HasPrefix(version, "20.0.0")
 }
 
 // IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
