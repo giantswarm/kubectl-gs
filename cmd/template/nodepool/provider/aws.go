@@ -18,7 +18,7 @@ import (
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
-	if key.IsCAPAVersion(config.ReleaseVersion) {
+	if key.IsCAPIVersion(config.ReleaseVersion) {
 		if config.EKS {
 			err = WriteCAPAEKSTemplate(ctx, client, out, config)
 			if err != nil {

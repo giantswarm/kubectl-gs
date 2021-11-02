@@ -30,7 +30,7 @@ import (
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
-	if key.IsCAPZVersion(config.ReleaseVersion) {
+	if key.IsCAPIVersion(config.ReleaseVersion) {
 		err = WriteCAPZTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)

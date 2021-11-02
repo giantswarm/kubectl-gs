@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Usa CAPI templates for all releases that start with `v20.0.0`, to include alpha and beta releases.
+- Usa CAPI templates for all releases from `v20.0.0-alpha1` onwards, to include alpha and beta releases.
 
 ## [1.45.0] - 2021-10-26
 
