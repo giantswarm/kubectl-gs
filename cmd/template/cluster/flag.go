@@ -3,6 +3,7 @@ package cluster
 import (
 	"net"
 	"regexp"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -120,8 +121,20 @@ func (f *flag) Validate() error {
 		f.ClusterIDDeprecated = ""
 	}
 
-	if f.Provider != key.ProviderAWS && f.Provider != key.ProviderAzure {
-		return microerror.Maskf(invalidFlagError, "--%s must be either aws or azure", flagProvider)
+	validProviders := []string{
+		key.ProviderAWS,
+		key.ProviderAzure,
+		key.ProviderVsphere,
+	}
+	isValidProvider := false
+	for _, p := range validProviders {
+		if f.Provider == p {
+			isValidProvider = true
+			break
+		}
+	}
+	if !isValidProvider {
+		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
 	}
 
 	if f.Name != "" {

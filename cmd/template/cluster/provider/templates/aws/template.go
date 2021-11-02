@@ -34,29 +34,34 @@ var bastionMachineDeployment string
 //go:embed bastion_aws_machine_template.yaml.tmpl
 var bastionAWSMachineTemplate string
 
+type Template struct {
+	Name string
+	Data string
+}
+
 // GetAWSTemplate merges .tmpl files for an AWS cluster.
-func GetAWSTemplates() []string {
+func GetAWSTemplates() []Template {
 	// Order is important here.
 	// The order in this slice determines in which order files will be applied.
-	return []string{
-		cluster,
-		awsCluster,
-		kubeadmControlPlane,
-		awsMachineTemplate,
-		awsClusterRoleIdentity,
-		bastionSecret,
-		bastionMachineDeployment,
-		bastionAWSMachineTemplate,
+	return []Template{
+		{Name: "cluster.yaml.tmpl", Data: cluster},
+		{Name: "aws_cluster.yaml.tmpl", Data: awsCluster},
+		{Name: "kubeadm_control_plane.yaml.tmpl", Data: kubeadmControlPlane},
+		{Name: "aws_machine_template.yaml.tmpl", Data: awsMachineTemplate},
+		{Name: "aws_cluster_role_identity.yaml.tmpl", Data: awsClusterRoleIdentity},
+		{Name: "bastion_secret.yaml.tmpl", Data: bastionSecret},
+		{Name: "bastion_machine_deployment.yaml.tmpl", Data: bastionMachineDeployment},
+		{Name: "bastion_aws_machine_template.yaml.tmpl", Data: bastionAWSMachineTemplate},
 	}
 }
 
 // GetEKSTemplate merges .tmpl files for an EKS cluster.
-func GetEKSTemplates() []string {
+func GetEKSTemplates() []Template {
 	// Order is important here.
 	// The order in this slice determines in which order files will be applied.
-	return []string{
-		clusterEKS,
-		awsManagedControlPlane,
-		awsClusterRoleIdentity,
+	return []Template{
+		{Name: "cluster_eks.yaml.tmpl", Data: clusterEKS},
+		{Name: "aws_managed_control_plane.yaml.tmpl", Data: awsManagedControlPlane},
+		{Name: "aws_cluster_role_identity.yaml.tmpl", Data: awsClusterRoleIdentity},
 	}
 }

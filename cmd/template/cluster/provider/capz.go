@@ -86,7 +86,12 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		VMSize:                      "Standard_D4s_v3",
 	}
 
-	err = runMutation(ctx, client, data, azure.GetTemplates(), out)
+	var templates []templateConfig
+	for _, t := range azure.GetTemplates() {
+		templates = append(templates, templateConfig(t))
+	}
+
+	err = runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}
