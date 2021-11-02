@@ -51,6 +51,7 @@ const (
 const (
 	// FirstOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
 	FirstAWSOrgNamespaceRelease = "16.0.0"
+	FirstCAPIRelease            = "20.0.0-alpha1"
 )
 
 func BastionResourceName(clusterName string) string {
@@ -122,15 +123,19 @@ func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
 	return fmt.Sprintf("nodes-%s-%s", machinePoolID, clusterID)
 }
 
-// IsCAPAVersion returns whether a given GS Release Version is based on the CAPI/CAPA projects
-// TODO: make this a >= comparison
-func IsCAPAVersion(version string) bool {
-	return strings.HasPrefix(version, "20.0.0")
-}
+// IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
+func IsCAPIVersion(version string) (bool, error) {
+	capiVersion, err := semver.New(FirstCAPIRelease)
+	if err != nil {
+		return false, microerror.Maskf(parsingReleaseError, err.Error())
+	}
 
-// IsCAPZVersion returns whether a given GS Release Version is based on the CAPI/CAPZ projects
-func IsCAPZVersion(version string) bool {
-	return strings.HasPrefix(version, "20.0.0")
+	releaseVersion, err := semver.New(version)
+	if err != nil {
+		return false, microerror.Maskf(parsingReleaseError, err.Error())
+	}
+
+	return releaseVersion.GE(*capiVersion), nil
 }
 
 // IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace

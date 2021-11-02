@@ -17,7 +17,12 @@ import (
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
-	if key.IsCAPAVersion(config.ReleaseVersion) {
+	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if isCapiVersion {
 		if config.EKS {
 			err = WriteCAPAEKSTemplate(ctx, client, out, config)
 			if err != nil {
