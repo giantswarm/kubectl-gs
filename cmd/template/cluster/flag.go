@@ -124,6 +124,7 @@ func (f *flag) Validate() error {
 	validProviders := []string{
 		key.ProviderAWS,
 		key.ProviderAzure,
+		key.ProviderOpenStack,
 		key.ProviderVsphere,
 	}
 	isValidProvider := false

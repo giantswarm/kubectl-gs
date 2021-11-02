@@ -1,0 +1,50 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+kind: KubeadmControlPlane
+metadata:
+  labels:
+    "release.giantswarm.io/version": "{{ .ReleaseVersion }}"
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: external
+      controllerManager:
+        extraArgs:
+          cloud-provider: external
+    initConfiguration:
+      nodeRegistration:
+        criSocket: /var/run/containerd/containerd.sock
+        kubeletExtraArgs:
+          cloud-provider: external
+        name: '{{ `{{ ds.meta_data.hostname }}` }}'
+    joinConfiguration:
+      nodeRegistration:
+        criSocket: /var/run/containerd/containerd.sock
+        kubeletExtraArgs:
+          cloud-provider: external
+        name: '{{ `{{ ds.meta_data.hostname }}` }}'
+    preKubeadmCommands:
+    - hostname "{{ `{{ ds.meta_data.hostname }}` }}"
+    - echo "::1         ipv6-localhost ipv6-loopback" >/etc/hosts
+    - echo "127.0.0.1   localhost" >>/etc/hosts
+    - echo "127.0.0.1   {{ `{{ ds.meta_data.hostname }}` }}" >>/etc/hosts
+    - echo "{{ `{{ ds.meta_data.hostname }}` }}" >/etc/hostname
+    useExperimentalRetryJoin: true
+    users:
+    - name: capo
+      sshAuthorizedKeys:
+      - "{{ .SSHPublicKey }}"
+      sudo: ALL=(ALL) NOPASSWD:ALL
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+      kind: OpenStackMachineTemplate
+      name: {{ .Name }}
+  replicas: 1
+  version: {{ .KubernetesVersion }}

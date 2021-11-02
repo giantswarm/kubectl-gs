@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Alpha support for vSphere and OpenStack providers.
+
 ### Changed
 
 - Usa CAPI templates for all releases from `v20.0.0-alpha1` onwards, to include alpha and beta releases.

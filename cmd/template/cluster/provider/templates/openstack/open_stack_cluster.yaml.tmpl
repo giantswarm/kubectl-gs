@@ -1,0 +1,21 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: OpenStackCluster
+metadata:
+  labels:
+    "release.giantswarm.io/version": "{{ .ReleaseVersion }}"
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  cloudName: changeme
+  identityRef:
+    name: changeme
+    kind: Secret
+  managedAPIServerLoadBalancer: true
+  managedSecurityGroups: true
+  nodeCidr: 10.6.0.0/24
+  dnsNameservers:
+  - changeme
+  externalNetworkId: changeme
