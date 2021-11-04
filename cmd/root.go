@@ -154,13 +154,14 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:           name,
-		Short:         description,
-		Long:          description,
-		RunE:          r.Run,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Version:       project.Version(),
+		Use:                name,
+		Short:              description,
+		Long:               description,
+		RunE:               r.Run,
+		PersistentPostRunE: r.PersistentPostRun,
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Version:            project.Version(),
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
