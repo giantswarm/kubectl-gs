@@ -13,6 +13,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
+	"github.com/giantswarm/kubectl-gs/cmd/selfupdate"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
 	"github.com/giantswarm/kubectl-gs/cmd/update"
 	"github.com/giantswarm/kubectl-gs/cmd/validate"
@@ -144,6 +145,21 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var selfUpdateCmd *cobra.Command
+	{
+		c := selfupdate.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+			Stderr:     config.Stderr,
+			Stdout:     config.Stdout,
+		}
+
+		selfUpdateCmd, err = selfupdate.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -177,6 +193,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(templateCmd)
 	c.AddCommand(updateCmd)
 	c.AddCommand(validateCmd)
+	c.AddCommand(selfUpdateCmd)
 
 	return c, nil
 }
