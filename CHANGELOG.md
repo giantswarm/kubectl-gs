@@ -11,6 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Print warning after running any command if there is a newer version available.
 - Implement command for checking for newer versions.
+- Implement command for self-updating.
 
 ### Changed
 
