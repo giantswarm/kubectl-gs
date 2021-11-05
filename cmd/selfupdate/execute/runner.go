@@ -70,7 +70,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		color.New(color.Bold, color.FgGreen).Fprintln(r.stdout, "Updated successfully.")
+		_, _ = color.New(color.Bold, color.FgGreen).Fprintln(r.stdout, "Updated successfully.")
 
 		return nil
 	} else if selfupdate.IsVersionNotFound(err) {

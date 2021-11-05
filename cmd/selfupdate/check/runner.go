@@ -62,7 +62,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	_, err = updaterService.GetLatest()
 	if selfupdate.IsHasNewVersion(err) {
-		color.New(color.Bold, color.FgYellow).Fprintln(r.stdout, "There's a new version available!")
+		_, _ = color.New(color.Bold, color.FgYellow).Fprintln(r.stdout, "There's a new version available!")
 		fmt.Fprintln(r.stdout, "Please update by running \"kubectl gs selfupdate execute\".")
 
 		return nil
@@ -72,7 +72,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	color.New(color.Bold, color.FgGreen).Fprintln(r.stdout, "You are already using the latest version.")
+	_, _ = color.New(color.Bold, color.FgGreen).Fprintln(r.stdout, "You are already using the latest version.")
 	fmt.Fprintln(r.stdout, "There are no newer versions available.")
 
 	return nil
