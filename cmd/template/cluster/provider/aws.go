@@ -6,11 +6,11 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/aws"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -47,7 +47,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
-	crsConfig := v1alpha3.ClusterCRsConfig{
+	crsConfig := aws.ClusterCRsConfig{
 		ClusterID: config.Name,
 
 		ExternalSNAT:   config.ExternalSNAT,
@@ -59,7 +59,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		Labels:         config.Labels,
 	}
 
-	crs, err := v1alpha3.NewClusterCRs(crsConfig)
+	crs, err := aws.NewClusterCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -113,7 +113,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 	return nil
 }
 
-func moveCRsToOrgNamespace(crs v1alpha3.ClusterCRs, organization string) v1alpha3.ClusterCRs {
+func moveCRsToOrgNamespace(crs aws.ClusterCRs, organization string) aws.ClusterCRs {
 	crs.Cluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	crs.Cluster.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
 	crs.AWSCluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
