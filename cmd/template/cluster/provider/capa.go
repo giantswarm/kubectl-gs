@@ -64,7 +64,7 @@ func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out i
 		ReleaseVersion    string
 	}{
 		Description:       config.Description,
-		KubernetesVersion: "v1.19.9",
+		KubernetesVersion: "v1.21",
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
