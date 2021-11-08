@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
@@ -234,6 +236,24 @@ func getOrganizationNamespace(ctx context.Context, organizationService organizat
 	return namespace, nil
 }
 
+func getAllOrganizationNamespaces(ctx context.Context, organizationService organization.Interface) ([]string, error) {
+	orgList, err := organizationService.Get(ctx, organization.GetOptions{})
+	if organization.IsNoResources(err) {
+		return nil, microerror.Maskf(noOrganizationsError, "Could not find any organizations.")
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var namespaces []string
+	for _, org := range orgList.(*organization.Collection).Items {
+		if len(org.Organization.Status.Namespace) > 0 {
+			namespaces = append(namespaces, org.Organization.Status.Namespace)
+		}
+	}
+
+	return namespaces, nil
+}
+
 func determineCredentialNamespace(clientCert *clientcert.ClientCert, provider string) string {
 	if provider == key.ProviderAzure {
 		return metav1.NamespaceDefault
@@ -257,6 +277,71 @@ func fetchCluster(ctx context.Context, clusterService cluster.Interface, provide
 	}
 
 	return c.(*cluster.Cluster), nil
+}
+
+func findCluster(ctx context.Context, clusterService cluster.Interface, organizationService organization.Interface, provider, name string, namespaces ...string) (*cluster.Cluster, error) {
+	clustersCh := make(chan *cluster.Cluster, len(namespaces))
+	errorsCh := make(chan error, len(namespaces))
+
+	var wg sync.WaitGroup
+
+	for _, namespace := range namespaces {
+		wg.Add(1)
+
+		go func(namespace string) {
+			defer wg.Done()
+
+			c, err := fetchCluster(ctx, clusterService, provider, namespace, name)
+			if IsClusterNotFound(err) {
+				// Nothing to see here.
+				return
+			} else if err != nil {
+				errorsCh <- microerror.Mask(err)
+				return
+			}
+
+			clustersCh <- c
+		}(namespace)
+	}
+
+	wg.Wait()
+
+	close(clustersCh)
+	close(errorsCh)
+
+	if len(errorsCh) > 0 {
+		return nil, microerror.Mask(<-errorsCh)
+	}
+
+	switch len(clustersCh) {
+	case 1:
+		return <-clustersCh, nil
+
+	case 0:
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+
+	default:
+		{
+			var errMsg strings.Builder
+			errMsg.WriteString(fmt.Sprintf("There are multiple workload clusters with the name %s:\n", name))
+
+			i := 1
+			for c := range clustersCh {
+				org := c.Cluster.Labels[label.Organization]
+				if len(org) < 1 {
+					org = "n/a"
+				}
+
+				errMsg.WriteString(fmt.Sprintf("%d. %s in organization %s\n", i, name, org))
+
+				i++
+			}
+
+			errMsg.WriteString(fmt.Sprintf("\nUse the --%s flag to select one from a specific organization.", flagWCOrganization))
+
+			return nil, microerror.Maskf(multipleClustersFoundError, errMsg.String())
+		}
+	}
 }
 
 func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
