@@ -10,10 +10,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Find `Cluster` resources on AWS based on the `giantswarm.io/cluster` label if the `cluster.x-k8s.io/cluster-name` label does not yield results.
+- Add `cluster.x-k8s.io/cluster-name` label to AWS Cluster templates
 
 ### Changed
 
 - Usa CAPI templates for all releases from `v20.0.0-alpha1` onwards, to include alpha and beta releases.
+- Move AWS Cluster templating from `apiextensions`
 
 ## [1.45.0] - 2021-10-26
 
