@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Find `Cluster` resources on AWS based on the `giantswarm.io/cluster` label if the `cluster.x-k8s.io/cluster-name` label does not yield results.
+
 ### Changed
 
 - Usa CAPI templates for all releases from `v20.0.0-alpha1` onwards, to include alpha and beta releases.
