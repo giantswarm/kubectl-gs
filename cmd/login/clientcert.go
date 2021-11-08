@@ -272,6 +272,8 @@ func fetchCluster(ctx context.Context, clusterService cluster.Interface, provide
 	c, err := clusterService.Get(ctx, o)
 	if cluster.IsNotFound(err) {
 		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+	} else if cluster.IsInsufficientPermissions(err) {
+		return nil, microerror.Maskf(insufficientPermissionsError, "You don't have the required permissions to get clusters in the %s namespace.", namespace)
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -280,6 +282,15 @@ func fetchCluster(ctx context.Context, clusterService cluster.Interface, provide
 }
 
 func findCluster(ctx context.Context, clusterService cluster.Interface, organizationService organization.Interface, provider, name string, namespaces ...string) (*cluster.Cluster, error) {
+	if len(namespaces) == 1 {
+		c, err := fetchCluster(ctx, clusterService, provider, namespaces[0], name)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		return c, nil
+	}
+
 	clustersCh := make(chan *cluster.Cluster, len(namespaces))
 	errorsCh := make(chan error, len(namespaces))
 
@@ -292,7 +303,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 			defer wg.Done()
 
 			c, err := fetchCluster(ctx, clusterService, provider, namespace, name)
-			if IsClusterNotFound(err) {
+			if IsClusterNotFound(err) || IsInsufficientPermissions(err) {
 				// Nothing to see here.
 				return
 			} else if err != nil {
@@ -318,7 +329,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 		return <-clustersCh, nil
 
 	case 0:
-		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.\nMake sure you have access to the cluster's organization namespace.", name)
 
 	default:
 		{

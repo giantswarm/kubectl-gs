@@ -208,3 +208,12 @@ var multipleClustersFoundError = &microerror.Error{
 func IsMultipleClustersFound(err error) bool {
 	return microerror.Cause(err) == multipleClustersFoundError
 }
+
+var insufficientPermissionsError = &microerror.Error{
+	Kind: "insufficientPermissionsError",
+}
+
+// IsInsufficientPermissions asserts insufficientPermissionsError.
+func IsInsufficientPermissions(err error) bool {
+	return microerror.Cause(err) == insufficientPermissionsError
+}
