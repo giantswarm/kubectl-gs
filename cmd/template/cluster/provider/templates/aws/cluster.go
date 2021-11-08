@@ -142,11 +142,12 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awscontrolplanes.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
-				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
-				label.Cluster:            c.ClusterID,
-				label.ControlPlane:       c.ControlPlaneID,
-				label.Organization:       c.Owner,
-				label.ReleaseVersion:     c.ReleaseVersion,
+				label.AWSOperatorVersion:     c.ReleaseComponents["aws-operator"],
+				label.Cluster:                c.ClusterID,
+				label.ControlPlane:           c.ControlPlaneID,
+				label.Organization:           c.Owner,
+				label.ReleaseVersion:         c.ReleaseVersion,
+				apiv1alpha3.ClusterLabelName: c.ClusterID,
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
@@ -220,6 +221,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 				label.ControlPlane:           c.ControlPlaneID,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
+				apiv1alpha3.ClusterLabelName: c.ClusterID,
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{
