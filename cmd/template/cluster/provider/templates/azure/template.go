@@ -25,17 +25,22 @@ var bastionMachineDeployment string
 //go:embed bastion_azure_machine_template.yaml.tmpl
 var bastionAzureMachineTemplate string
 
-// GetTemplates return a list of templates.
-func GetTemplates() []string {
+type Template struct {
+	Name string
+	Data string
+}
+
+// GetTemplate merges all .tmpl files.
+func GetTemplates() []Template {
 	// Order is important here.
 	// The order in this slice determines in which order files will be applied.
-	return []string{
-		cluster,
-		azureCluster,
-		kubeadmControlPlane,
-		azureMachineTemplate,
-		bastionSecret,
-		bastionMachineDeployment,
-		bastionAzureMachineTemplate,
+	return []Template{
+		{Name: "cluster.yaml.tmpl", Data: cluster},
+		{Name: "azure_cluster.yaml.tmpl", Data: azureCluster},
+		{Name: "kubeadm_control_plane.yaml.tmpl", Data: kubeadmControlPlane},
+		{Name: "azure_machine_template.yaml.tmpl", Data: azureMachineTemplate},
+		{Name: "bastion_secret.yaml.tmpl", Data: bastionSecret},
+		{Name: "bastion_machine_deployment.yaml.tmpl", Data: bastionMachineDeployment},
+		{Name: "bastion_azure_machine_template.yaml.tmpl", Data: bastionAzureMachineTemplate},
 	}
 }

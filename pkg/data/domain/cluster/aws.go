@@ -85,7 +85,18 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		}
 
 		if len(crs.Items) < 1 {
-			return nil, microerror.Mask(notFoundError)
+			// Fall back on old giant swarm cluster id label
+			labelSelector = runtimeClient.MatchingLabels{
+				label.Cluster: name,
+			}
+			err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			if len(crs.Items) < 1 {
+				return nil, microerror.Mask(notFoundError)
+			}
 		}
 		cluster.Cluster = &crs.Items[0]
 

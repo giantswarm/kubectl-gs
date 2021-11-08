@@ -44,7 +44,12 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		SSOPublicKey:      sshSSOPublicKey,
 	}
 
-	err = runMutation(ctx, client, data, aws.GetAWSTemplates(), out)
+	var templates []templateConfig
+	for _, t := range aws.GetAWSTemplates() {
+		templates = append(templates, templateConfig(t))
+	}
+
+	err = runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -71,7 +76,12 @@ func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out i
 		ReleaseVersion:    config.ReleaseVersion,
 	}
 
-	err = runMutation(ctx, client, data, aws.GetEKSTemplates(), out)
+	var templates []templateConfig
+	for _, t := range aws.GetEKSTemplates() {
+		templates = append(templates, templateConfig(t))
+	}
+
+	err = runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}
