@@ -3,7 +3,6 @@ package login
 import (
 	"fmt"
 
-	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
@@ -46,9 +45,5 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	if len(f.WCName) > 0 && len(f.WCOrganization) < 1 {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty when --%s is provided.", flagWCOrganization, flagWCName)
-	}
-
 	return nil
 }

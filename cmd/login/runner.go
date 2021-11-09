@@ -341,14 +341,29 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		}
 	}
 
-	orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	var c *cluster.Cluster
+	{
+		if len(r.flag.WCOrganization) > 0 {
+			orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-	c, err := fetchCluster(ctx, clusterService, provider, orgNamespace, r.flag.WCName)
-	if err != nil {
-		return microerror.Mask(err)
+			c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, orgNamespace)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		} else {
+			orgNamespaces, err := getAllOrganizationNamespaces(ctx, organizationService)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, orgNamespaces...)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
 	}
 
 	releaseVersion, err := getClusterReleaseVersion(c, provider)

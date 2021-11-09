@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Make the `--organization` flag optional when using the `login` command with a workload cluster. The cluster will be searched in all the organization namespaces that the user has access to.
+
 ## [1.46.0] - 2021-11-09
 
 ### Added

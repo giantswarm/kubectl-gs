@@ -6,6 +6,7 @@ import (
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,7 +21,9 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 	{
 		clusterCollection := &infrastructurev1alpha3.AWSClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusterCollection, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(clusterCollection.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
@@ -36,7 +39,9 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 	clusters := &capiv1alpha3.ClusterList{}
 	{
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusters, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(clusters.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
@@ -80,7 +85,9 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		}
 		crs := &capiv1alpha3.ClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
@@ -90,7 +97,9 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 				label.Cluster: name,
 			}
 			err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
-			if err != nil {
+			if apierrors.IsForbidden(err) {
+				return nil, microerror.Mask(insufficientPermissionsError)
+			} else if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
@@ -112,7 +121,9 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		}
 		crs := &infrastructurev1alpha3.AWSClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
