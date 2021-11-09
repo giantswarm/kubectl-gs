@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.46.0] - 2021-11-09
+
 ### Added
 
 - Find `Cluster` resources on AWS based on the `giantswarm.io/cluster` label if the `cluster.x-k8s.io/cluster-name` label does not yield results.
@@ -589,7 +591,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.45.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.46.0...HEAD
+[1.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.45.0...v1.46.0
 [1.45.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.44.0...v1.45.0
 [1.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...v1.44.0
 [1.43.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...v1.43.1
