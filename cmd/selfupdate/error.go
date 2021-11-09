@@ -1,6 +1,8 @@
 package selfupdate
 
-import "github.com/giantswarm/microerror"
+import (
+	"github.com/giantswarm/microerror"
+)
 
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
@@ -18,4 +20,13 @@ var invalidFlagsError = &microerror.Error{
 // IsInvalidFlags asserts invalidFlagsError.
 func IsInvalidFlags(err error) bool {
 	return microerror.Cause(err) == invalidFlagsError
+}
+
+var updateCheckFailedError = &microerror.Error{
+	Kind: "updateCheckFailedError",
+}
+
+// IsUpdateCheckFailed asserts updateCheckFailedError.
+func IsUpdateCheckFailed(err error) bool {
+	return microerror.Cause(err) == updateCheckFailedError
 }

@@ -8,14 +8,12 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-
-	"github.com/giantswarm/kubectl-gs/cmd/selfupdate/check"
-	"github.com/giantswarm/kubectl-gs/cmd/selfupdate/execute"
 )
 
 const (
-	name        = "selfupdate"
-	description = "Update to the latest version or simply check for updates."
+	name = "selfupdate"
+
+	description = "Update to the latest version."
 )
 
 type Config struct {
@@ -40,40 +38,6 @@ func New(config Config) (*cobra.Command, error) {
 		config.Stdout = os.Stdout
 	}
 
-	var err error
-
-	var checkCmd *cobra.Command
-	{
-		c := check.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		checkCmd, err = check.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var executeCmd *cobra.Command
-	{
-		c := execute.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		executeCmd, err = execute.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	f := &flag{}
 
 	r := &runner{
@@ -87,13 +51,11 @@ func New(config Config) (*cobra.Command, error) {
 		Use:   name,
 		Short: description,
 		Long:  description,
+		Args:  cobra.NoArgs,
 		RunE:  r.Run,
 	}
 
 	f.Init(c)
-
-	c.AddCommand(checkCmd)
-	c.AddCommand(executeCmd)
 
 	return c, nil
 }

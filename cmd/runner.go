@@ -64,10 +64,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args []string) error {
-	// Let's not run this before any `selfupdate *` command,
-	// to not prevent being able to update or check the current version.
-	parentCmd := cmd.Parent()
-	if parentCmd != nil && parentCmd.Name() == "selfupdate" {
+	// Let's not run this before the `selfupdate` command,
+	// to not prevent being able to update or check for new versions.
+	if cmd.Name() == "selfupdate" {
 		return nil
 	}
 
