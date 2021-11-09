@@ -15,6 +15,7 @@ spec:
   identityRef:
     kind: AWSClusterRoleIdentity
     name: {{ .Name }}
+  eksClusterName: {{ .Name }}
   region: ""
   sshKeyName: ""
   version: {{ .KubernetesVersion }}
