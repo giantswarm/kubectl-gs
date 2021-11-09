@@ -1,4 +1,4 @@
-package cmd
+package selfupdate
 
 import (
 	"context"
@@ -11,8 +11,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/project"
 	"github.com/giantswarm/kubectl-gs/pkg/selfupdate"
+
+	"github.com/giantswarm/kubectl-gs/pkg/project"
 )
 
 type runner struct {
@@ -38,44 +39,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *runner) PersistentPostRun(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-
-	err := r.flag.Validate()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.persistentPostRun(ctx, cmd, args)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	err := cmd.Help()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args []string) error {
-	// Let's not run this before the `selfupdate` command,
-	// to not prevent being able to update or check for new versions.
-	if cmd.Name() == "selfupdate" {
-		return nil
-	}
-
-	if r.flag.disableVersionCheck {
-		// User wants to risk their life and use an older version.
-		// Not my problem anymore.
-		return nil
-	}
-
 	var err error
 
 	var updaterService *selfupdate.Updater
@@ -98,17 +62,31 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 
 	latestVersion, err := updaterService.GetLatest()
 	if selfupdate.IsHasNewVersion(err) {
-		if key.IsTTY() {
-			fmt.Fprintf(r.stderr, "\n")
+		if r.flag.DryRun {
+			_, _ = color.New(color.Bold, color.FgYellow).Fprintln(r.stdout, "There's a new version available!")
+			fmt.Fprintln(r.stdout, "Please update by running \"kubectl gs selfupdate\".")
+
+			return nil
 		}
 
-		_, _ = color.New(color.Bold, color.FgYellow).Fprintf(r.stderr, "You are running an outdated version of %s. The latest version is %s.\n", project.Name(), latestVersion)
-		fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate execute\".")
+		fmt.Fprintf(r.stdout, "Update to %s has been started.\n", latestVersion)
+		fmt.Fprintln(r.stdout, "Fetching latest built binary...")
+
+		err = updaterService.InstallLatest()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, _ = color.New(color.Bold, color.FgGreen).Fprintln(r.stdout, "Updated successfully.")
 
 		return nil
+	} else if selfupdate.IsVersionNotFound(err) {
+		return microerror.Maskf(updateCheckFailedError, "Checking for the latest version failed or your platform is unsupported.")
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
+
+	fmt.Fprintln(r.stdout, "You are already using the latest version.")
 
 	return nil
 }

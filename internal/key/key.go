@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -239,4 +241,19 @@ func AzureStorageAccountTypeForVMSize(vmSize string) string {
 		return "Premium_LRS"
 	}
 	return "Standard_LRS"
+}
+
+func GetCacheDir() (string, error) {
+	rootDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return filepath.Join(rootDir, "kubectl-gs"), nil
+}
+
+func IsTTY() bool {
+	fileInfo, _ := os.Stdout.Stat()
+
+	return fileInfo.Mode()&os.ModeCharDevice != 0
 }
