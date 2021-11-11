@@ -243,43 +243,48 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Management API URL or the web UI URL of the installation as an argument.", newContextName)
 	}
 
-	authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
-	if !exists {
+	authType := kubeconfig.GetAuthType(config, newContextName)
+	if authType == kubeconfig.AuthTypeAuthProvider {
+		authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
+		if !exists {
+			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
+		}
+
+		err = validateAuthProvider(authProvider)
+		if IsNewLoginRequired(err) {
+			return microerror.Mask(err)
+		} else if err != nil {
+			return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+		}
+
+		if newContextName == config.CurrentContext {
+			return microerror.Mask(contextAlreadySelectedError)
+		}
+
+		var auther *oidc.Authenticator
+		{
+			oidcConfig := oidc.Config{
+				Issuer:   authProvider.Config[Issuer],
+				ClientID: authProvider.Config[ClientID],
+			}
+
+			auther, err = oidc.New(ctx, oidcConfig)
+			if err != nil {
+				return microerror.Maskf(incorrectConfigurationError, "\n%v", err.Error())
+			}
+		}
+
+		// Renew authentication token.
+		{
+			idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config[RefreshToken])
+			if err != nil {
+				return microerror.Mask(tokenRenewalFailedError)
+			}
+			authProvider.Config[RefreshToken] = rToken
+			authProvider.Config[IDToken] = idToken
+		}
+	} else if authType == kubeconfig.AuthTypeUnknown {
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
-	}
-
-	err = validateAuthProvider(authProvider)
-	if IsNewLoginRequired(err) {
-		return microerror.Mask(err)
-	} else if err != nil {
-		return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
-	}
-
-	if newContextName == config.CurrentContext {
-		return microerror.Mask(contextAlreadySelectedError)
-	}
-
-	var auther *oidc.Authenticator
-	{
-		oidcConfig := oidc.Config{
-			Issuer:   authProvider.Config[Issuer],
-			ClientID: authProvider.Config[ClientID],
-		}
-
-		auther, err = oidc.New(ctx, oidcConfig)
-		if err != nil {
-			return microerror.Maskf(incorrectConfigurationError, "\n%v", err.Error())
-		}
-	}
-
-	// Renew authentication token.
-	{
-		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config[RefreshToken])
-		if err != nil {
-			return microerror.Mask(tokenRenewalFailedError)
-		}
-		authProvider.Config[RefreshToken] = rToken
-		authProvider.Config[IDToken] = idToken
 	}
 
 	config.CurrentContext = newContextName

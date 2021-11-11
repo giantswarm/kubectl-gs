@@ -106,23 +106,28 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 
 	switch kubeContextType {
 	case kubeconfig.ContextTypeMC:
-		authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
-		if !exists {
-			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
-		}
-
-		err = validateAuthProvider(authProvider)
-		if IsNewLoginRequired(err) {
-			issuer := authProvider.Config[Issuer]
-
-			err = r.loginWithURL(ctx, issuer, false)
-			if err != nil {
-				return microerror.Mask(err)
+		authType := kubeconfig.GetAuthType(config, currentContext)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
+			if !exists {
+				return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
 			}
 
-			return nil
-		} else if err != nil {
-			return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+			err = validateAuthProvider(authProvider)
+			if IsNewLoginRequired(err) {
+				issuer := authProvider.Config[Issuer]
+
+				err = r.loginWithURL(ctx, issuer, false)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				return nil
+			} else if err != nil {
+				return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+			}
+		} else if authType == kubeconfig.AuthTypeUnknown {
+			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
 		}
 
 		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
@@ -168,13 +173,16 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 			return microerror.Mask(err)
 		}
 
-		// If we get here, we are sure that the kubeconfig context exists.
-		authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-		issuer := authProvider.Config[Issuer]
+		authType := kubeconfig.GetAuthType(config, contextName)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			// If we get here, we are sure that the kubeconfig context exists.
+			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+			issuer := authProvider.Config[Issuer]
 
-		err = r.loginWithURL(ctx, issuer, false)
-		if err != nil {
-			return microerror.Mask(err)
+			err = r.loginWithURL(ctx, issuer, false)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		return nil
@@ -210,13 +218,16 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 			return microerror.Mask(err)
 		}
 
-		// If we get here, we are sure that the kubeconfig context exists.
-		authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-		issuer := authProvider.Config[Issuer]
+		authType := kubeconfig.GetAuthType(config, contextName)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			// If we get here, we are sure that the kubeconfig context exists.
+			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+			issuer := authProvider.Config[Issuer]
 
-		err = r.loginWithURL(ctx, issuer, false)
-		if err != nil {
-			return microerror.Mask(err)
+			err = r.loginWithURL(ctx, issuer, false)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		return nil
@@ -434,14 +445,8 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	// If we get here, we are sure that the kubeconfig context exists and is valid.
-	authProvider, _ := kubeconfig.GetAuthProvider(config, config.CurrentContext)
 
-	issuer := authProvider.Config[Issuer]
-	mcBasePath, err := installation.GetBasePath(issuer)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
+	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
 
-	return strings.TrimPrefix(mcBasePath, "g8s."), nil
+	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
 }
