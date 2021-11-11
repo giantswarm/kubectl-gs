@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Allow using `ServiceAccount` tokens for creating workload cluster certificates.
+
 ## [1.47.0] - 2021-11-09
 
 ### Added
