@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Allow using `ServiceAccount` tokens for creating workload cluster certificates.
+- Let users override their kubectl config using flags in the `login` command.
 
 ## [1.47.0] - 2021-11-09
 

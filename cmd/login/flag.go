@@ -42,6 +42,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf("How long the client certificate should live for. Requires --%s.", flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+
+	_ = cmd.Flags().MarkHidden("namespace")
 }
 
 func (f *flag) Validate() error {
