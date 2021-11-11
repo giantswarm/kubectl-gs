@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: cimg/go:1.17.2
+      - image: cimg/go:1.17.3
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38
