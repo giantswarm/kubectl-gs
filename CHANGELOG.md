@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix self-update command suggestion in the update warning.
+
 ## [1.48.0] - 2021-11-11
 
 ### Changed

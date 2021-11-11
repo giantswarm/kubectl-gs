@@ -103,7 +103,7 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 		}
 
 		_, _ = color.New(color.Bold, color.FgYellow).Fprintf(r.stderr, "You are running an outdated version of %s. The latest version is %s.\n", project.Name(), latestVersion)
-		fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate execute\".")
+		fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate\".")
 
 		return nil
 	} else if err != nil {
