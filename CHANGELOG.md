@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.48.1] - 2021-11-11
+
 ### Fixed
 
 - Fix self-update command suggestion in the update warning.
@@ -612,7 +614,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.1...HEAD
+[1.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.0...v1.48.1
 [1.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.47.0...v1.48.0
 [1.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.46.0...v1.47.0
 [1.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.45.0...v1.46.0
