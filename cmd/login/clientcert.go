@@ -262,7 +262,7 @@ func printCredential(fs afero.Fs, filePath string, clientCert *clientcert.Client
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
-	return "", false, nil
+	return contextName, false, nil
 }
 
 func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {
