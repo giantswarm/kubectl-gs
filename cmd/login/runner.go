@@ -415,7 +415,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	}
 
 	// Store client certificate credential into the kubeconfig.
-	contextName, contextExists, err := storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+	contextName, contextExists, err := storeCredential(r.k8sConfigAccess, r.fs, r.flag.WCSelfContained, clientCertResource, secret, clusterBasePath)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -428,7 +428,10 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
-	if contextExists {
+	if len(r.flag.WCSelfContained) > 0 {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.WCSelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.WCSelfContained)
+	} else if contextExists {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
 		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)

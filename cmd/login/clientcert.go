@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -11,12 +12,14 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/backoff"
+	kubeconfig "github.com/giantswarm/kubeconfig/v3"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -25,7 +28,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
+	kubeconfigutil "github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
 const (
@@ -139,14 +142,20 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 }
 
 // storeCredential saves the created client certificate credentials into the kubectl config.
-func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filepath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+	contextName := kubeconfigutil.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+
+	// In case a file path for a self-contained kubeconfig is given, we print it there instead of manipulating the current config
+	if len(filepath) > 0 {
+		return printCredential(fs, filepath, clientCert, credential, clusterBasePath, contextName)
+	}
+
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
 	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
@@ -209,6 +218,51 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 	}
 
 	return contextName, contextExists, nil
+}
+
+// printCredential saves the created client certificate credentials into a separate kubectl config file.
+func printCredential(fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, contextName string) (string, bool, error) {
+	config := kubeconfig.KubeConfigValue{
+		APIVersion: "v1",
+		Kind:       "Config",
+		Clusters: []kubeconfig.KubeconfigNamedCluster{
+			{
+				Name: contextName,
+				Cluster: kubeconfig.KubeconfigCluster{
+					Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
+					CertificateAuthorityData: base64.StdEncoding.EncodeToString(credential.Data[credentialKeyCertCA]),
+				},
+			},
+		},
+		Contexts: []kubeconfig.KubeconfigNamedContext{
+			{
+				Name: fmt.Sprintf("%s-context", contextName),
+				Context: kubeconfig.KubeconfigContext{
+					Cluster: contextName,
+					User:    fmt.Sprintf("%s-user", contextName),
+				},
+			},
+		},
+		Users: []kubeconfig.KubeconfigUser{
+			{
+				Name: fmt.Sprintf("%s-user", contextName),
+				User: kubeconfig.KubeconfigUserKeyPair{
+					ClientCertificateData: base64.StdEncoding.EncodeToString(credential.Data[credentialKeyCertCRT]),
+					ClientKeyData:         base64.StdEncoding.EncodeToString(credential.Data[credentialKeyCertKey]),
+				},
+			},
+		},
+		CurrentContext: contextName,
+	}
+	bytes, err := yaml.Marshal(config)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	err = afero.WriteFile(fs, filePath, bytes, 0600)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	return "", false, nil
 }
 
 func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {
