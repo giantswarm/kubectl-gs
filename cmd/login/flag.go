@@ -2,7 +2,9 @@ package login
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
@@ -39,7 +41,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))
 	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
-	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf("How long the client certificate should live for. Requires --%s.", flagWCName))
+	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`How long the client certificate should live for. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Requires --%s.`, flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
@@ -48,5 +50,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
+	// Validate ttl flag
+	_, err := time.ParseDuration(f.WCCertTTL)
+	if err != nil {
+		return microerror.Maskf(invalidFlagError, `--%s is not a valid duration. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`, flagWCCertTTL)
+	}
+
 	return nil
 }
