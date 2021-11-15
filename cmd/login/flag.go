@@ -51,9 +51,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 func (f *flag) Validate() error {
 	// Validate ttl flag
-	_, err := time.ParseDuration(f.WCCertTTL)
+	ttlFlag, err := time.ParseDuration(f.WCCertTTL)
 	if err != nil {
 		return microerror.Maskf(invalidFlagError, `--%s is not a valid duration. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`, flagWCCertTTL)
+	}
+	if ttlFlag <= 0 {
+		return microerror.Maskf(invalidFlagError, `--%s cannot be negative or zero.`, flagWCCertTTL)
 	}
 
 	return nil
