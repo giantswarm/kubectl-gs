@@ -15,11 +15,11 @@ import (
 	kubeconfig "github.com/giantswarm/kubeconfig/v3"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -236,7 +236,7 @@ func printCredential(fs afero.Fs, filePath string, clientCert *clientcert.Client
 		},
 		Contexts: []kubeconfig.KubeconfigNamedContext{
 			{
-				Name: fmt.Sprintf("%s-context", contextName),
+				Name: contextName,
 				Context: kubeconfig.KubeconfigContext{
 					Cluster: contextName,
 					User:    fmt.Sprintf("%s-user", contextName),
