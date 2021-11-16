@@ -159,7 +159,6 @@ github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnht
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa/go.mod h1:zn76sxSg3SzpJ0PPJaLDCu+Bu0Lg3sKTORVIj19EIF8=
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
-github.com/coredns/corefile-migration v1.0.10/go.mod h1:RMy/mXdeDlYwzt0vdMEJvT2hGJ2I86/eO0UdXmH9XNI=
 github.com/coredns/corefile-migration v1.0.11/go.mod h1:RMy/mXdeDlYwzt0vdMEJvT2hGJ2I86/eO0UdXmH9XNI=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=
@@ -236,7 +235,6 @@ github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/giantswarm/apiextensions/v3 v3.4.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
 github.com/giantswarm/apiextensions/v3 v3.30.0/go.mod h1:PcU7LAi0E8lOXoPp2wD7AY/AOtp6sN03cnQuBZGAksg=
 github.com/giantswarm/apiextensions/v3 v3.32.0/go.mod h1:PcU7LAi0E8lOXoPp2wD7AY/AOtp6sN03cnQuBZGAksg=
 github.com/giantswarm/apiextensions/v3 v3.35.0 h1:qD6snPvoj/8ri/fP+6NDi5SckKBobL/2LemBAt8wMV4=
@@ -256,10 +254,7 @@ github.com/giantswarm/k8sclient/v5 v5.12.0/go.mod h1:KXRSG1t+XBDsXx089Jp9agMjQ4x
 github.com/giantswarm/k8smetadata v0.3.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
 github.com/giantswarm/k8smetadata v0.4.0 h1:CZeQJkGvtrFT4K+IM7NREEgeKEAoGKoHYvyasIL0juQ=
 github.com/giantswarm/k8smetadata v0.4.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
-github.com/giantswarm/kubeconfig/v3 v3.0.0 h1:0k/R6tjAIkcHUSalM/1NH4M1qi1ucADpf528DUootV0=
-github.com/giantswarm/kubeconfig/v3 v3.0.0/go.mod h1:FmsJ+cSGJHgxdqpywO9E3/dmKNxP33xK3bYq7fcn2Jk=
 github.com/giantswarm/microerror v0.2.0/go.mod h1:1YtJq/m7Vlq1Y6NP7B+SODOKCGlG7e5wctV2OoE9n34=
-github.com/giantswarm/microerror v0.2.1/go.mod h1:1YtJq/m7Vlq1Y6NP7B+SODOKCGlG7e5wctV2OoE9n34=
 github.com/giantswarm/microerror v0.3.0 h1:V/9cXlIEddNGaRYiA0vYJmgM2+sTQy+k8M7kVjOy4XM=
 github.com/giantswarm/microerror v0.3.0/go.mod h1:g8oCEMFAoEs70riRRmj9+6eiz7SqNxYl+2OfxFh1po0=
 github.com/giantswarm/micrologger v0.3.1/go.mod h1:PjAgtcJ922ZMX/Aa05IPi0bdYvOj2P7pZ7+6dBShMQs=
@@ -292,7 +287,6 @@ github.com/go-openapi/analysis v0.19.5/go.mod h1:hkEAkxagaIvIP7VTn8ygJNkd4kAYON2
 github.com/go-openapi/errors v0.17.0/go.mod h1:LcZQpmvG4wyF5j4IhA73wkLFQg+QJXOQHVjmcZxhka0=
 github.com/go-openapi/errors v0.18.0/go.mod h1:LcZQpmvG4wyF5j4IhA73wkLFQg+QJXOQHVjmcZxhka0=
 github.com/go-openapi/errors v0.19.2/go.mod h1:qX0BLWsyaKfvhluLejVpVNwNRdXZhEbTA4kxxpKBC94=
-github.com/go-openapi/errors v0.19.4/go.mod h1:qX0BLWsyaKfvhluLejVpVNwNRdXZhEbTA4kxxpKBC94=
 github.com/go-openapi/jsonpointer v0.0.0-20160704185906-46af16f9f7b1/go.mod h1:+35s3my2LFTysnkMfxsJBAMHj/DoqoB9knIWoYG/Vk0=
 github.com/go-openapi/jsonpointer v0.17.0/go.mod h1:cOnomiV+CVVwFLk0A/MExoFMjwdsUdVpsRhURCKh+3M=
 github.com/go-openapi/jsonpointer v0.18.0/go.mod h1:cOnomiV+CVVwFLk0A/MExoFMjwdsUdVpsRhURCKh+3M=
@@ -1344,9 +1338,7 @@ rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8
 rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
 rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.7/go.mod h1:PHgbrJT7lCHcxMU+mDHEm+nx46H4zuuHZkDP6icnhu0=
-sigs.k8s.io/cluster-api v0.3.10/go.mod h1:XBBDBiaczcyNlH4D7FNjSKc5bBofYRppfg0ZgaP2x1U=
 sigs.k8s.io/cluster-api v0.3.13/go.mod h1:qGxyPTEJWNpII9SBkeRwv+Xvy6EZRLLLzaxVfBLsBpA=
-sigs.k8s.io/controller-runtime v0.5.11/go.mod h1:OTqxLuz7gVcrq+BHGUgedRu6b2VIKCEc7Pu4Jbwui0A=
 sigs.k8s.io/controller-runtime v0.5.14/go.mod h1:OTqxLuz7gVcrq+BHGUgedRu6b2VIKCEc7Pu4Jbwui0A=
 sigs.k8s.io/controller-runtime v0.6.3/go.mod h1:WlZNXcM0++oyaQt4B7C2lEE5JYRs8vJUzRP4N4JpdAY=
 sigs.k8s.io/controller-runtime v0.6.4 h1:4013CKsBs5bEqo+LevzDett+LLxag/FjQWG94nVZ/9g=

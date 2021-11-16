@@ -7,17 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-<<<<<<< HEAD
 ### Added
 
 - Add `--self-contained` flag to `kubectl-gs login` command for workload clusters to allow output of standalone kubeconfig file.
-=======
+
 ## [1.49.0] - 2021-11-16
 
 ### Changed
 
 - Validate `--certificate-ttl` flag of the `login` command.
->>>>>>> master
 
 ## [1.48.1] - 2021-11-11
 

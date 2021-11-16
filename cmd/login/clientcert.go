@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
-	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -245,16 +244,12 @@ func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePa
 		},
 		CurrentContext: contextName,
 	}
-	bytes, err := yaml.Marshal(kubeconfig)
-	if err != nil {
-		return "", false, microerror.Mask(err)
-	}
 	if exists, err := afero.Exists(fs, filePath); exists {
 		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", filePath)
 	} else if err != nil {
 		return "", false, microerror.Mask(err)
 	}
-	err = afero.WriteFile(fs, filePath, bytes, 0600)
+	err = clientcmd.WriteToFile(kubeconfig, filePath)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
