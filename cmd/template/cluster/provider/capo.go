@@ -19,13 +19,14 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		ReleaseVersion    string
 		SSHPublicKey      string
 
-		Cloud                     string // OPENSTACK_CLOUD
-		ControlPlaneMachineFlavor string // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
-		DNSNameservers            string // OPENSTACK_DNS_NAMESERVERS
-		FailureDomain             string // OPENSTACK_FAILURE_DOMAIN
-		ImageName                 string // OPENSTACK_IMAGE_NAME
-		NodeMachineFlavor         string // OPENSTACK_NODE_MACHINE_FLAVOR
-		SSHKeyName                string // OPENSTACK_SSH_KEY_NAME
+		Cloud                     string   // OPENSTACK_CLOUD
+		CloudConfig               string   // <no equivalent env var>
+		ControlPlaneMachineFlavor string   // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
+		DNSNameservers            []string // OPENSTACK_DNS_NAMESERVERS
+		FailureDomain             string   // OPENSTACK_FAILURE_DOMAIN
+		ImageName                 string   // OPENSTACK_IMAGE_NAME
+		NodeMachineFlavor         string   // OPENSTACK_NODE_MACHINE_FLAVOR
+		SSHKeyName                string   // OPENSTACK_SSH_KEY_NAME
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.1",
@@ -35,6 +36,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		ReleaseVersion:    config.ReleaseVersion,
 
 		Cloud:                     config.Cloud,
+		CloudConfig:               config.CloudConfig,
 		ControlPlaneMachineFlavor: config.ControlPlaneMachineFlavor,
 		DNSNameservers:            config.DNSNameservers,
 		FailureDomain:             config.FailureDomain,

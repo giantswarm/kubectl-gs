@@ -24,6 +24,7 @@ const (
 
 	// OpenStack only.
 	flagOpenStackCloud                     = "cloud"
+	flagOpenStackCloudConfig               = "cloud-config"
 	flagOpenStackControlPlaneMachineFlavor = "control-plane-machine-flavor"
 	flagOpenStackDNSNameservers            = "dns-nameservers"
 	flagOpenStackFailureDomain             = "failure-domain"
@@ -52,13 +53,14 @@ type awsFlag struct {
 }
 
 type openStackFlag struct {
-	Cloud                     string // OPENSTACK_CLOUD
-	ControlPlaneMachineFlavor string // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
-	DNSNameservers            string // OPENSTACK_DNS_NAMESERVERS
-	FailureDomain             string // OPENSTACK_FAILURE_DOMAIN
-	ImageName                 string // OPENSTACK_IMAGE_NAME
-	NodeMachineFlavor         string // OPENSTACK_NODE_MACHINE_FLAVOR
-	SSHKeyName                string // OPENSTACK_SSH_KEY_NAME
+	Cloud                     string   // OPENSTACK_CLOUD
+	CloudConfig               string   // <no equivalent env var>>
+	ControlPlaneMachineFlavor string   // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
+	DNSNameservers            []string // OPENSTACK_DNS_NAMESERVERS
+	FailureDomain             string   // OPENSTACK_FAILURE_DOMAIN
+	ImageName                 string   // OPENSTACK_IMAGE_NAME
+	NodeMachineFlavor         string   // OPENSTACK_NODE_MACHINE_FLAVOR
+	SSHKeyName                string   // OPENSTACK_SSH_KEY_NAME
 }
 
 type flag struct {
@@ -94,8 +96,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ControlPlaneMachineFlavor, flagOpenStackControlPlaneMachineFlavor, "", "Control plane machine flavor (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, "", "DNS nameservers (OpenStack only).")
+	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "", "Image name (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeMachineFlavor, flagOpenStackNodeMachineFlavor, "", "Node machine flavor (OpenStack only).")

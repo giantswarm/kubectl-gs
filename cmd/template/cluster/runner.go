@@ -21,10 +21,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-const (
-	clusterCRFileName = "clusterCR"
-)
-
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
@@ -72,6 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			PodsCIDR:           r.flag.AWS.PodsCIDR,
 
 			Cloud:                     r.flag.OpenStack.Cloud,
+			CloudConfig:               r.flag.OpenStack.CloudConfig,
 			ControlPlaneMachineFlavor: r.flag.OpenStack.ControlPlaneMachineFlavor,
 			DNSNameservers:            r.flag.OpenStack.DNSNameservers,
 			FailureDomain:             r.flag.OpenStack.FailureDomain,

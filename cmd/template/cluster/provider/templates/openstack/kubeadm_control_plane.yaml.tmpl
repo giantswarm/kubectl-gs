@@ -19,28 +19,15 @@ spec:
           cloud-provider: external
     initConfiguration:
       nodeRegistration:
-        criSocket: /var/run/containerd/containerd.sock
         kubeletExtraArgs:
           cloud-provider: external
-        name: '{{ `{{ ds.meta_data.hostname }}` }}'
+        name: '{{ `{{ local_hostname }}` }}'
     joinConfiguration:
       nodeRegistration:
-        criSocket: /var/run/containerd/containerd.sock
         kubeletExtraArgs:
           cloud-provider: external
-        name: '{{ `{{ ds.meta_data.hostname }}` }}'
-    preKubeadmCommands:
-    - hostname "{{ `{{ ds.meta_data.hostname }}` }}"
-    - echo "::1         ipv6-localhost ipv6-loopback" >/etc/hosts
-    - echo "127.0.0.1   localhost" >>/etc/hosts
-    - echo "127.0.0.1   {{ `{{ ds.meta_data.hostname }}` }}" >>/etc/hosts
-    - echo "{{ `{{ ds.meta_data.hostname }}` }}" >/etc/hostname
+        name: '{{ `{{ local_hostname }}` }}'
     useExperimentalRetryJoin: true
-    users:
-    - name: capo
-      sshAuthorizedKeys:
-      - "{{ .SSHPublicKey }}"
-      sudo: ALL=(ALL) NOPASSWD:ALL
   machineTemplate:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4

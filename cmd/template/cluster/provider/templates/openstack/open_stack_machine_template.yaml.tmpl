@@ -11,10 +11,10 @@ metadata:
 spec:
   template:
     spec:
-      flavor: changeme
-      image: changeme
-      sshKeyName: changeme
-      cloudName: changeme
+      flavor: {{ .NodeMachineFlavor }}
+      image: {{ .ImageName }}
+      sshKeyName: {{ .SSHKeyName }}
+      cloudName: {{ .Cloud }}
       identityRef:
-        name: changeme
+        name: {{ .CloudConfig }}
         kind: Secret
