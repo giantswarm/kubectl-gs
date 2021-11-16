@@ -17,10 +17,19 @@ const (
 	flagProvider = "provider"
 
 	// AWS only.
-	flagExternalSNAT       = "external-snat"
-	flagEKS                = "aws-eks"
-	flagPodsCIDR           = "pods-cidr"
-	flagControlPlaneSubnet = "control-plane-subnet"
+	flagAWSExternalSNAT       = "external-snat"
+	flagAWSEKS                = "aws-eks"
+	flagAWSPodsCIDR           = "pods-cidr"
+	flagAWSControlPlaneSubnet = "control-plane-subnet"
+
+	// OpenStack only.
+	flagOpenStackCloud                     = "cloud"
+	flagOpenStackControlPlaneMachineFlavor = "control-plane-machine-flavor"
+	flagOpenStackDNSNameservers            = "dns-nameservers"
+	flagOpenStackFailureDomain             = "failure-domain"
+	flagOpenStackImageName                 = "image-name"
+	flagOpenStackNodeMachineFlavor         = "node-machine-flavor"
+	flagOpenStackSSHKeyName                = "ssh-key-name"
 
 	// Common.
 	flagClusterIDDeprecated = "cluster-id"
@@ -35,14 +44,28 @@ const (
 	flagLabel               = "label"
 )
 
-type flag struct {
-	Provider string
-
-	// AWS only.
+type awsFlag struct {
 	ControlPlaneSubnet string
 	ExternalSNAT       bool
 	EKS                bool
 	PodsCIDR           string
+}
+
+type openStackFlag struct {
+	Cloud                     string // OPENSTACK_CLOUD
+	ControlPlaneMachineFlavor string // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
+	DNSNameservers            string // OPENSTACK_DNS_NAMESERVERS
+	FailureDomain             string // OPENSTACK_FAILURE_DOMAIN
+	ImageName                 string // OPENSTACK_IMAGE_NAME
+	NodeMachineFlavor         string // OPENSTACK_NODE_MACHINE_FLAVOR
+	SSHKeyName                string // OPENSTACK_SSH_KEY_NAME
+}
+
+type flag struct {
+	Provider string
+
+	AWS       awsFlag
+	OpenStack openStackFlag
 
 	// Common.
 	ClusterIDDeprecated string
@@ -64,10 +87,19 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
-	cmd.Flags().StringVar(&f.ControlPlaneSubnet, flagControlPlaneSubnet, "", "Subnet used for the Control Plane.")
-	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
-	cmd.Flags().BoolVar(&f.EKS, flagEKS, false, "Enable EKS. Only available for AWS Release v20.0.0 (CAPA)")
-	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
+	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
+	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
+	cmd.Flags().StringVar(&f.AWS.PodsCIDR, flagAWSPodsCIDR, "", "CIDR used for the pods.")
+
+	// OpenStack only.
+	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ControlPlaneMachineFlavor, flagOpenStackControlPlaneMachineFlavor, "", "Control plane machine flavor (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, "", "DNS nameservers (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.NodeMachineFlavor, flagOpenStackNodeMachineFlavor, "", "Node machine flavor (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.SSHKeyName, flagOpenStackSSHKeyName, "", "SSH key name (OpenStack only).")
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
@@ -82,7 +114,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
-	_ = cmd.Flags().MarkHidden(flagEKS)
+	_ = cmd.Flags().MarkHidden(flagAWSEKS)
 
 	// TODO: Remove the flag completely some time after August 2021
 	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
@@ -125,7 +157,7 @@ func (f *flag) Validate() error {
 		key.ProviderAWS,
 		key.ProviderAzure,
 		key.ProviderOpenStack,
-		key.ProviderVsphere,
+		key.ProviderVSphere,
 	}
 	isValidProvider := false
 	for _, p := range validProviders {
@@ -160,17 +192,17 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
 		}
 
-		if f.ControlPlaneSubnet != "" {
-			matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.ControlPlaneSubnet)
+		if f.AWS.ControlPlaneSubnet != "" {
+			matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
 			if err == nil && !matchedSubnet {
-				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagControlPlaneSubnet)
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
 			}
 		}
 	}
 
-	if f.PodsCIDR != "" {
-		if !validateCIDR(f.PodsCIDR) {
-			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagPodsCIDR)
+	if f.AWS.PodsCIDR != "" {
+		if !validateCIDR(f.AWS.PodsCIDR) {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagAWSPodsCIDR)
 		}
 	}
 

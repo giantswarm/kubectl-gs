@@ -59,15 +59,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
-			FileName:           clusterCRFileName,
 			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
-			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
-			ExternalSNAT:       r.flag.ExternalSNAT,
-			EKS:                r.flag.EKS,
+			ControlPlaneSubnet: r.flag.AWSControlPlaneSubnet,
+			ExternalSNAT:       r.flag.AWSExternalSNAT,
+			EKS:                r.flag.AWSEKS,
 			Description:        r.flag.Description,
 			Name:               r.flag.Name,
 			Organization:       r.flag.Organization,
-			PodsCIDR:           r.flag.PodsCIDR,
+			PodsCIDR:           r.flag.AWSPodsCIDR,
 			ReleaseVersion:     r.flag.Release,
 			Namespace:          metav1.NamespaceDefault,
 		}
@@ -88,7 +87,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		if r.flag.Provider == key.ProviderAzure {
+		if r.flag.Provider != key.ProviderAWS {
 			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 		}
 	}
@@ -126,12 +125,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		err = provider.WriteCAPOTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteOpenStackTemplate(ctx, c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case key.ProviderVsphere:
-		err = provider.WriteCAPVTemplate(ctx, c.K8sClient, output, config)
+	case key.ProviderVSphere:
+		err = provider.WriteVSphereTemplate(ctx, c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

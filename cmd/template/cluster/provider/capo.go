@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteCAPOTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	homeDir, err := os.UserHomeDir()

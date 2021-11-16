@@ -149,17 +149,17 @@ var (
 		// Open Stack
 		{
 			DisplayName: "OpenStack Cluster",
-			Name:        "vsphereclusters.infrastructure.cluster.x-k8s.io",
+			Name:        "openstackclusters.infrastructure.cluster.x-k8s.io",
 			Provider:    providerOpenStack,
 		},
 		{
 			DisplayName: "OpenStack Machine",
-			Name:        "vspheremachines.infrastructure.cluster.x-k8s.io",
+			Name:        "openstackmachines.infrastructure.cluster.x-k8s.io",
 			Provider:    providerOpenStack,
 		},
 		{
 			DisplayName: "OpenStack Machine Template",
-			Name:        "vspheremachinetemplates.infrastructure.cluster.x-k8s.io",
+			Name:        "openstackmachinetemplates.infrastructure.cluster.x-k8s.io",
 			Provider:    providerOpenStack,
 		},
 		// vSphere

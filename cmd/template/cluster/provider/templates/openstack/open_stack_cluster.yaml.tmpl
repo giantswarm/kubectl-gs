@@ -9,9 +9,9 @@ metadata:
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
-  cloudName: changeme
+  cloudName: {{ .Provider.OpenStackCloudName }}
   identityRef:
-    name: changeme
+    name: {{ .Provider.OpenStackCloudName }}
     kind: Secret
   managedAPIServerLoadBalancer: true
   managedSecurityGroups: true
