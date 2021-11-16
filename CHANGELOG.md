@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Validate `--certificate-ttl` flag of the `login` command.
+
 ## [1.48.1] - 2021-11-11
 
 ### Fixed
