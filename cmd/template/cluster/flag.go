@@ -19,7 +19,6 @@ const (
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
 	flagAWSEKS                = "aws-eks"
-	flagAWSPodsCIDR           = "pods-cidr"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	// OpenStack only.
@@ -41,6 +40,7 @@ const (
 	flagOutput              = "output"
 	flagOrganization        = "organization"
 	flagOwner               = "owner" // TODO: Remove some time after December 2021
+	flagPodsCIDR            = "pods-cidr"
 	flagRelease             = "release"
 	flagLabel               = "label"
 )
@@ -49,7 +49,6 @@ type awsFlag struct {
 	ControlPlaneSubnet string
 	ExternalSNAT       bool
 	EKS                bool
-	PodsCIDR           string
 }
 
 type openStackFlag struct {
@@ -78,6 +77,7 @@ type flag struct {
 	Output              string
 	Organization        string
 	Owner               string
+	PodsCIDR            string
 	Release             string
 	Label               []string
 
@@ -92,7 +92,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
-	cmd.Flags().StringVar(&f.AWS.PodsCIDR, flagAWSPodsCIDR, "", "CIDR used for the pods.")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
@@ -113,6 +112,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
+	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
@@ -203,9 +203,9 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.AWS.PodsCIDR != "" {
-		if !validateCIDR(f.AWS.PodsCIDR) {
-			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagAWSPodsCIDR)
+	if f.PodsCIDR != "" {
+		if !validateCIDR(f.PodsCIDR) {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagPodsCIDR)
 		}
 	}
 

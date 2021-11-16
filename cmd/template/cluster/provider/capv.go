@@ -34,6 +34,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Name              string
 		Namespace         string
 		Organization      string
+		PodsCIDR          string
 		ReleaseVersion    string
 		SSHPublicKey      string
 	}{
@@ -42,6 +43,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Name:              config.Name,
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
+		PodsCIDR:          config.PodsCIDR,
 		ReleaseVersion:    config.ReleaseVersion,
 		SSHPublicKey:      string(idRsaPubBytes),
 	}

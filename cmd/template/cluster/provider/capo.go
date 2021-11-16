@@ -16,6 +16,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		Name              string
 		Namespace         string
 		Organization      string
+		PodsCIDR          string
 		ReleaseVersion    string
 		SSHPublicKey      string
 
@@ -33,6 +34,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		Name:              config.Name,
 		Namespace:         config.Namespace,
 		Organization:      config.Organization,
+		PodsCIDR:          config.PodsCIDR,
 		ReleaseVersion:    config.ReleaseVersion,
 
 		Cloud:                     config.Cloud,

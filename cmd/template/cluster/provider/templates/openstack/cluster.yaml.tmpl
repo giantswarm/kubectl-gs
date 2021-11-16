@@ -11,10 +11,12 @@ metadata:
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
+{{- if .PodsCIDR }}
   clusterNetwork:
     pods:
       cidrBlocks:
-      - 192.168.0.0/16
+      - {{ .PodsCIDR }}
+{{- end }}
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
     kind: KubeadmControlPlane

@@ -59,13 +59,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Description:    r.flag.Description,
 			Name:           r.flag.Name,
 			Organization:   r.flag.Organization,
+			PodsCIDR:       r.flag.PodsCIDR,
 			ReleaseVersion: r.flag.Release,
 			Namespace:      metav1.NamespaceDefault,
 
 			ControlPlaneSubnet: r.flag.AWS.ControlPlaneSubnet,
 			ExternalSNAT:       r.flag.AWS.ExternalSNAT,
 			EKS:                r.flag.AWS.EKS,
-			PodsCIDR:           r.flag.AWS.PodsCIDR,
 
 			Cloud:                     r.flag.OpenStack.Cloud,
 			CloudConfig:               r.flag.OpenStack.CloudConfig,
