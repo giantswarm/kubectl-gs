@@ -2,9 +2,10 @@ package provider
 
 import (
 	"context"
+	"io"
+
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"io"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
 )
