@@ -29,6 +29,15 @@ type ClusterCRsConfig struct {
 	ControlPlaneSubnet string
 	PodsCIDR           string
 
+	// OpenStack only.
+	Cloud                     string // OPENSTACK_CLOUD
+	ControlPlaneMachineFlavor string // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
+	DNSNameservers            string // OPENSTACK_DNS_NAMESERVERS
+	FailureDomain             string // OPENSTACK_FAILURE_DOMAIN
+	ImageName                 string // OPENSTACK_IMAGE_NAME
+	NodeMachineFlavor         string // OPENSTACK_NODE_MACHINE_FLAVOR
+	SSHKeyName                string // OPENSTACK_SSH_KEY_NAME
+
 	// Common.
 	FileName       string
 	ControlPlaneAZ []string

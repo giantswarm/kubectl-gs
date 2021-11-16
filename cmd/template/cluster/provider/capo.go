@@ -1,33 +1,15 @@
 package provider
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"os"
-	"path/filepath"
-
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"io"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
-	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
-	var err error
-
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	idRsaPubBytes, err := os.ReadFile(filepath.Join(homeDir, ".ssh/id_rsa.pub"))
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	idRsaPubBytes = bytes.TrimSpace(idRsaPubBytes)
-
 	data := struct {
 		Description       string
 		KubernetesVersion string
@@ -36,14 +18,29 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		Organization      string
 		ReleaseVersion    string
 		SSHPublicKey      string
+
+		Cloud                     string // OPENSTACK_CLOUD
+		ControlPlaneMachineFlavor string // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
+		DNSNameservers            string // OPENSTACK_DNS_NAMESERVERS
+		FailureDomain             string // OPENSTACK_FAILURE_DOMAIN
+		ImageName                 string // OPENSTACK_IMAGE_NAME
+		NodeMachineFlavor         string // OPENSTACK_NODE_MACHINE_FLAVOR
+		SSHKeyName                string // OPENSTACK_SSH_KEY_NAME
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.1",
 		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
+		Namespace:         config.Namespace,
 		Organization:      config.Organization,
 		ReleaseVersion:    config.ReleaseVersion,
-		SSHPublicKey:      string(idRsaPubBytes),
+
+		Cloud:                     config.Cloud,
+		ControlPlaneMachineFlavor: config.ControlPlaneMachineFlavor,
+		DNSNameservers:            config.DNSNameservers,
+		FailureDomain:             config.FailureDomain,
+		ImageName:                 config.ImageName,
+		NodeMachineFlavor:         config.NodeMachineFlavor,
+		SSHKeyName:                config.SSHKeyName,
 	}
 
 	var templates []templateConfig
@@ -51,7 +48,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		templates = append(templates, templateConfig(t))
 	}
 
-	err = runMutation(ctx, client, data, templates, out)
+	err := runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}

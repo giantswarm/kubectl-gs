@@ -59,16 +59,25 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
-			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
-			ControlPlaneSubnet: r.flag.AWSControlPlaneSubnet,
-			ExternalSNAT:       r.flag.AWSExternalSNAT,
-			EKS:                r.flag.AWSEKS,
-			Description:        r.flag.Description,
-			Name:               r.flag.Name,
-			Organization:       r.flag.Organization,
-			PodsCIDR:           r.flag.AWSPodsCIDR,
-			ReleaseVersion:     r.flag.Release,
-			Namespace:          metav1.NamespaceDefault,
+			ControlPlaneAZ: r.flag.ControlPlaneAZ,
+			Description:    r.flag.Description,
+			Name:           r.flag.Name,
+			Organization:   r.flag.Organization,
+			ReleaseVersion: r.flag.Release,
+			Namespace:      metav1.NamespaceDefault,
+
+			ControlPlaneSubnet: r.flag.AWS.ControlPlaneSubnet,
+			ExternalSNAT:       r.flag.AWS.ExternalSNAT,
+			EKS:                r.flag.AWS.EKS,
+			PodsCIDR:           r.flag.AWS.PodsCIDR,
+
+			Cloud:                     r.flag.OpenStack.Cloud,
+			ControlPlaneMachineFlavor: r.flag.OpenStack.ControlPlaneMachineFlavor,
+			DNSNameservers:            r.flag.OpenStack.DNSNameservers,
+			FailureDomain:             r.flag.OpenStack.FailureDomain,
+			ImageName:                 r.flag.OpenStack.ImageName,
+			NodeMachineFlavor:         r.flag.OpenStack.NodeMachineFlavor,
+			SSHKeyName:                r.flag.OpenStack.SSHKeyName,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
