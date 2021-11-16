@@ -414,10 +414,19 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	// Store client certificate credential into the kubeconfig.
-	contextName, contextExists, err := storeCredential(r.k8sConfigAccess, r.fs, r.flag.WCSelfContained, clientCertResource, secret, clusterBasePath)
-	if err != nil {
-		return microerror.Mask(err)
+	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
+	var contextExists bool
+	var contextName string
+	if len(r.flag.WCSelfContained) > 0 {
+		contextName, contextExists, err = printCredential(r.k8sConfigAccess, r.fs, r.flag.WCSelfContained, clientCertResource, secret, clusterBasePath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		contextName, contextExists, err = storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Cleaning up leftover resources.

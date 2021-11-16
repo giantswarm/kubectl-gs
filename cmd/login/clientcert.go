@@ -3,7 +3,6 @@ package login
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -12,7 +11,6 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/backoff"
-	kubeconfig "github.com/giantswarm/kubeconfig/v3"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	yaml "gopkg.in/yaml.v2"
@@ -28,7 +26,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
-	kubeconfigutil "github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
 const (
@@ -142,20 +140,14 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 }
 
 // storeCredential saves the created client certificate credentials into the kubectl config.
-func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filepath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfigutil.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
-
-	// In case a file path for a self-contained kubeconfig is given, we print it there instead of manipulating the current config
-	if len(filepath) > 0 {
-		return printCredential(fs, filepath, clientCert, credential, clusterBasePath, contextName)
-	}
-
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
 	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
@@ -221,41 +213,45 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filepa
 }
 
 // printCredential saves the created client certificate credentials into a separate kubectl config file.
-func printCredential(fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, contextName string) (string, bool, error) {
-	config := kubeconfig.KubeConfigValue{
+func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	mcContextName := config.CurrentContext
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+
+	kubeconfig := clientcmdapi.Config{
 		APIVersion: "v1",
 		Kind:       "Config",
-		Clusters: []kubeconfig.KubeconfigNamedCluster{
-			{
-				Name: contextName,
-				Cluster: kubeconfig.KubeconfigCluster{
-					Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
-					CertificateAuthorityData: base64.StdEncoding.EncodeToString(credential.Data[credentialKeyCertCA]),
-				},
+		Clusters: map[string]*clientcmdapi.Cluster{
+			contextName: {
+				Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
+				CertificateAuthorityData: credential.Data[credentialKeyCertCA],
 			},
 		},
-		Contexts: []kubeconfig.KubeconfigNamedContext{
-			{
-				Name: contextName,
-				Context: kubeconfig.KubeconfigContext{
-					Cluster: contextName,
-					User:    fmt.Sprintf("%s-user", contextName),
-				},
+		Contexts: map[string]*clientcmdapi.Context{
+			contextName: {
+				Cluster:  contextName,
+				AuthInfo: fmt.Sprintf("%s-user", contextName),
 			},
 		},
-		Users: []kubeconfig.KubeconfigUser{
-			{
-				Name: fmt.Sprintf("%s-user", contextName),
-				User: kubeconfig.KubeconfigUserKeyPair{
-					ClientCertificateData: base64.StdEncoding.EncodeToString(credential.Data[credentialKeyCertCRT]),
-					ClientKeyData:         base64.StdEncoding.EncodeToString(credential.Data[credentialKeyCertKey]),
-				},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			fmt.Sprintf("%s-user", contextName): {
+				ClientCertificateData: credential.Data[credentialKeyCertCRT],
+				ClientKeyData:         credential.Data[credentialKeyCertKey],
 			},
 		},
 		CurrentContext: contextName,
 	}
-	bytes, err := yaml.Marshal(config)
+	bytes, err := yaml.Marshal(kubeconfig)
 	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	if exists, err := afero.Exists(fs, filePath); exists {
+		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", filePath)
+	} else if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 	err = afero.WriteFile(fs, filePath, bytes, 0600)
