@@ -24,9 +24,13 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		CloudConfig               string   // <no equivalent env var>
 		ControlPlaneMachineFlavor string   // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
 		DNSNameservers            []string // OPENSTACK_DNS_NAMESERVERS
+		ExternalNetworkID         string   // <no equivalent env var>
 		FailureDomain             string   // OPENSTACK_FAILURE_DOMAIN
 		ImageName                 string   // OPENSTACK_IMAGE_NAME
 		NodeMachineFlavor         string   // OPENSTACK_NODE_MACHINE_FLAVOR
+		RootVolumeDiskSize        string   // <no equivalent env var>
+		RootVolumeSourceType      string   // <no equivalent env var>
+		RootVolumeSourceUUID      string   // <no equivalent env var>
 		SSHKeyName                string   // OPENSTACK_SSH_KEY_NAME
 	}{
 		Description:       config.Description,
@@ -41,9 +45,13 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		CloudConfig:               config.CloudConfig,
 		ControlPlaneMachineFlavor: config.ControlPlaneMachineFlavor,
 		DNSNameservers:            config.DNSNameservers,
+		ExternalNetworkID:         config.ExternalNetworkID,
 		FailureDomain:             config.FailureDomain,
 		ImageName:                 config.ImageName,
 		NodeMachineFlavor:         config.NodeMachineFlavor,
+		RootVolumeDiskSize:        config.RootVolumeDiskSize,
+		RootVolumeSourceType:      config.RootVolumeSourceType,
+		RootVolumeSourceUUID:      config.RootVolumeSourceUUID,
 		SSHKeyName:                config.SSHKeyName,
 	}
 

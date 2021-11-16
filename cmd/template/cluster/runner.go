@@ -71,9 +71,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			CloudConfig:               r.flag.OpenStack.CloudConfig,
 			ControlPlaneMachineFlavor: r.flag.OpenStack.ControlPlaneMachineFlavor,
 			DNSNameservers:            r.flag.OpenStack.DNSNameservers,
+			ExternalNetworkID:         r.flag.OpenStack.ExternalNetworkID,
 			FailureDomain:             r.flag.OpenStack.FailureDomain,
 			ImageName:                 r.flag.OpenStack.ImageName,
 			NodeMachineFlavor:         r.flag.OpenStack.NodeMachineFlavor,
+			RootVolumeDiskSize:        r.flag.OpenStack.RootVolumeDiskSize,
+			RootVolumeSourceType:      r.flag.OpenStack.RootVolumeSourceType,
+			RootVolumeSourceUUID:      r.flag.OpenStack.RootVolumeSourceUUID,
 			SSHKeyName:                r.flag.OpenStack.SSHKeyName,
 		}
 

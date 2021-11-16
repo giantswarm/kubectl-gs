@@ -34,9 +34,13 @@ type ClusterCRsConfig struct {
 	CloudConfig               string   // <no equivalent env var>>
 	ControlPlaneMachineFlavor string   // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
 	DNSNameservers            []string // OPENSTACK_DNS_NAMESERVERS
+	ExternalNetworkID         string   // <no equivalent env var>
 	FailureDomain             string   // OPENSTACK_FAILURE_DOMAIN
 	ImageName                 string   // OPENSTACK_IMAGE_NAME
 	NodeMachineFlavor         string   // OPENSTACK_NODE_MACHINE_FLAVOR
+	RootVolumeDiskSize        string   // <no equivalent env var>
+	RootVolumeSourceType      string   // <no equivalent env var>
+	RootVolumeSourceUUID      string   // <no equivalent env var>
 	SSHKeyName                string   // OPENSTACK_SSH_KEY_NAME
 
 	// Common.

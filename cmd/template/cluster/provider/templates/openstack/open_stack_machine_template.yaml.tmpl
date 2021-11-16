@@ -18,3 +18,7 @@ spec:
       identityRef:
         name: {{ .CloudConfig }}
         kind: Secret
+      rootVolume:
+        sourceType: {{ .RootVolumeSourceType }}
+        diskSize: {{ .RootVolumeDiskSize }}
+        sourceUUID: {{ .RootVolumeSourceUUID }}
