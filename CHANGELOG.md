@@ -7,9 +7,17 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ### Added
 
 - Add `--self-contained` flag to `kubectl-gs login` command for workload clusters to allow output of standalone kubeconfig file.
+=======
+## [1.49.0] - 2021-11-16
+
+### Changed
+
+- Validate `--certificate-ttl` flag of the `login` command.
+>>>>>>> master
 
 ## [1.48.1] - 2021-11-11
 
@@ -618,7 +626,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.49.0...HEAD
+[1.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.1...v1.49.0
 [1.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.0...v1.48.1
 [1.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.47.0...v1.48.0
 [1.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.46.0...v1.47.0
