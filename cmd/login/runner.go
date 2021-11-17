@@ -114,7 +114,7 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 				return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
 			}
 
-			err = validateAuthProvider(authProvider)
+			err = validateOIDCProvider(authProvider)
 			if IsNewLoginRequired(err) {
 				issuer := authProvider.Config[Issuer]
 
@@ -261,7 +261,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
-	authResult, err := handleAuth(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
+	authResult, err := handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -272,7 +272,11 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
+	if len(authResult.email) > 0 {
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
+	} else {
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
+	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if firstLogin {

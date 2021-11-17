@@ -3,153 +3,36 @@ package login
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"time"
 
-	gooidc "github.com/coreos/go-oidc/v3/oidc"
-	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
-	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/afero"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/cmd/login/template"
-	"github.com/giantswarm/kubectl-gs/pkg/callbackserver"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/oidc"
 )
 
-const (
-	clientID = "zQiFLUnrTFQwrybYzeY53hWWfhOKWRAU"
+type authInfo struct {
+	username string
+	token    string
 
-	authCallbackURL  = "http://localhost"
-	authCallbackPath = "/oauth/callback"
-
-	customerConnectorID   = "customer"
-	giantswarmConnectorID = "giantswarm"
-
-	authResultTimeout = 1 * time.Minute
-)
-
-var (
-	authScopes = [...]string{gooidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "audience:server:client_id:dex-k8s-authenticator"}
-)
-
-// handleAuth executes the OIDC authentication against an installation's authentication provider.
-func handleAuth(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, clusterAdmin bool, port int) (oidc.UserInfo, error) {
-	ctx, cancel := context.WithTimeout(ctx, authResultTimeout)
-	defer cancel()
-
-	var err error
-	var authProxy *callbackserver.CallbackServer
-	{
-		config := callbackserver.Config{
-			Port:        port,
-			RedirectURI: authCallbackPath,
-		}
-		authProxy, err = callbackserver.New(config)
-		if err != nil {
-			return oidc.UserInfo{}, microerror.Mask(err)
-		}
-	}
-
-	oidcConfig := oidc.Config{
-		ClientID:    clientID,
-		Issuer:      i.AuthURL,
-		RedirectURL: fmt.Sprintf("%s:%d%s", authCallbackURL, authProxy.Port(), authCallbackPath),
-		AuthScopes:  authScopes[:],
-	}
-	auther, err := oidc.New(ctx, oidcConfig)
-	if err != nil {
-		return oidc.UserInfo{}, microerror.Mask(err)
-	}
-
-	// select dex connector_id based on clusterAdmin value
-	var connectorID string
-	{
-		if clusterAdmin {
-			connectorID = giantswarmConnectorID
-		} else {
-			connectorID = customerConnectorID
-		}
-	}
-
-	authURL := auther.GetAuthURL(connectorID)
-
-	fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
-	fmt.Fprintf(out, "%s\n\n", authURL)
-
-	// Open the authorization url in the user's browser, which will eventually
-	// redirect the user to the local web server we'll create next.
-	err = open.Run(authURL)
-	if err != nil {
-		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
-	}
-
-	// Create a local web server, for fetching all the authentication data from
-	// the authentication provider.
-	p, err := authProxy.Run(ctx, handleAuthCallback(ctx, auther))
-	if callbackserver.IsTimedOut(err) {
-		return oidc.UserInfo{}, microerror.Maskf(authResponseTimedOutError, "failed to get an authentication response on time")
-	} else if err != nil {
-		return oidc.UserInfo{}, microerror.Mask(err)
-	}
-
-	var authResult oidc.UserInfo
-	{
-		var ok bool
-		authResult, ok = p.(oidc.UserInfo)
-		if !ok {
-			return oidc.UserInfo{}, microerror.Mask(invalidAuthResult)
-		}
-		authResult.ClientID = clientID
-	}
-
-	return authResult, nil
-}
-
-// handleAuthCallback is the callback executed after the authentication response was
-// received from the authentication provider.
-func handleAuthCallback(ctx context.Context, a *oidc.Authenticator) func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-	return func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-		res, err := a.HandleIssuerResponse(ctx, r.URL.Query().Get("state"), r.URL.Query().Get("code"))
-		if err != nil {
-			failureTemplate, tErr := template.GetFailedHTMLTemplateReader()
-			if tErr != nil {
-				return oidc.UserInfo{}, microerror.Mask(tErr)
-			}
-
-			w.Header().Set("Content-Type", "text/html")
-			http.ServeContent(w, r, "", time.Time{}, failureTemplate)
-
-			return oidc.UserInfo{}, microerror.Mask(err)
-		}
-
-		successTemplate, err := template.GetSuccessHTMLTemplateReader()
-		if err != nil {
-			return oidc.UserInfo{}, microerror.Mask(err)
-		}
-
-		w.Header().Set("Content-Type", "text/html")
-		http.ServeContent(w, r, "", time.Time{}, successTemplate)
-
-		return res, nil
-	}
+	// OIDC-specific.
+	clientID     string
+	email        string
+	refreshToken string
 }
 
 // storeCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult oidc.UserInfo, fs afero.Fs, internalAPI bool) error {
+func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	kUsername := fmt.Sprintf("gs-%s-%s", authResult.Username, i.Codename)
+	kUsername := fmt.Sprintf("gs-%s-%s", authResult.username, i.Codename)
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	clusterName := fmt.Sprintf("gs-%s", i.Codename)
 
@@ -166,14 +49,18 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 			initialUser = clientcmdapi.NewAuthInfo()
 		}
 
-		initialUser.AuthProvider = &clientcmdapi.AuthProviderConfig{
-			Name: "oidc",
-			Config: map[string]string{
-				ClientID:     authResult.ClientID,
-				IDToken:      authResult.IDToken,
-				Issuer:       i.AuthURL,
-				RefreshToken: authResult.RefreshToken,
-			},
+		if len(authResult.clientID) > 0 {
+			initialUser.AuthProvider = &clientcmdapi.AuthProviderConfig{
+				Name: "oidc",
+				Config: map[string]string{
+					ClientID:     authResult.clientID,
+					IDToken:      authResult.token,
+					Issuer:       i.AuthURL,
+					RefreshToken: authResult.refreshToken,
+				},
+			}
+		} else {
+			initialUser.Token = authResult.token
 		}
 
 		// Add user information to config.
@@ -250,7 +137,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 		}
 
-		err = validateAuthProvider(authProvider)
+		err = validateOIDCProvider(authProvider)
 		if IsNewLoginRequired(err) {
 			return microerror.Mask(err)
 		} else if err != nil {
@@ -292,23 +179,6 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func validateAuthProvider(provider *clientcmdapi.AuthProviderConfig) error {
-	if len(provider.Config[ClientID]) < 1 || len(provider.Config[Issuer]) < 1 {
-		return microerror.Mask(invalidAuthConfigurationError)
-	}
-
-	if len(provider.Config[IDToken]) < 1 || len(provider.Config[RefreshToken]) < 1 {
-		return microerror.Mask(newLoginRequiredError)
-	}
-
-	_, err := url.ParseRequestURI(provider.Config[Issuer])
-	if err != nil {
-		return microerror.Mask(invalidAuthConfigurationError)
 	}
 
 	return nil
