@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add the ability of executing the management cluster login part of the `login` command with a `ServiceAccount` token.
+
 ## [1.50.1] - 2021-11-17
 
 ### Fixed
