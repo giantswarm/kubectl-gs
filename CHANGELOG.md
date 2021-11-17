@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Strip ':<port>' suffix when requesting a client certificate.
+
 ## [1.50.0] - 2021-11-17
 
 ### Added
