@@ -2,6 +2,15 @@ package login
 
 import "github.com/giantswarm/microerror"
 
+var fileExistsError = &microerror.Error{
+	Kind: "fileExistsError",
+}
+
+// IsFileExistsError asserts fileExistsError.
+func IsFileExistsError(err error) bool {
+	return microerror.Cause(err) == fileExistsError
+}
+
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }

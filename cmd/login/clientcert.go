@@ -211,6 +211,51 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 	return contextName, contextExists, nil
 }
 
+// printCredential saves the created client certificate credentials into a separate kubectl config file.
+func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	mcContextName := config.CurrentContext
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+
+	kubeconfig := clientcmdapi.Config{
+		APIVersion: "v1",
+		Kind:       "Config",
+		Clusters: map[string]*clientcmdapi.Cluster{
+			contextName: {
+				Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
+				CertificateAuthorityData: credential.Data[credentialKeyCertCA],
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			contextName: {
+				Cluster:  contextName,
+				AuthInfo: fmt.Sprintf("%s-user", contextName),
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			fmt.Sprintf("%s-user", contextName): {
+				ClientCertificateData: credential.Data[credentialKeyCertCRT],
+				ClientKeyData:         credential.Data[credentialKeyCertKey],
+			},
+		},
+		CurrentContext: contextName,
+	}
+	if exists, err := afero.Exists(fs, filePath); exists {
+		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", filePath)
+	} else if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	err = clientcmd.WriteToFile(kubeconfig, filePath)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	return contextName, false, nil
+}
+
 func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {
 	err := clientCertService.Delete(ctx, clientCertResource)
 	if err != nil {
