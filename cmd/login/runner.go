@@ -460,5 +460,5 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 
 	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
 
-	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
+	return strings.TrimSuffix(strings.TrimPrefix(clusterServer, "https://g8s."), ":443"), nil
 }
