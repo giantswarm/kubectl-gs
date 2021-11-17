@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- Strip ':443' suffix when requesting a client certificate.
+- Strip ':<port>' suffix when requesting a client certificate.
 
 ## [1.50.0] - 2021-11-17
 

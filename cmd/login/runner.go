@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
@@ -460,5 +461,11 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 
 	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
 
-	return strings.TrimSuffix(strings.TrimPrefix(clusterServer, "https://g8s."), ":443"), nil
+	fmt.Println(clusterServer)
+
+	// Ensure any trailing ports are trimmed.
+	reg := regexp.MustCompile(`:[0-9]+$`)
+	clusterServer = reg.ReplaceAllString(clusterServer, "")
+
+	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
 }
