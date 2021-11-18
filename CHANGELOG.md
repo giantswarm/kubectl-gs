@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.51.0] - 2021-11-18
+
 ### Added
 
 - Add the ability of executing the management cluster login part of the `login` command with a `ServiceAccount` token.
@@ -636,7 +638,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...HEAD
+[1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
 [1.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.0...v1.50.1
 [1.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.49.0...v1.50.0
 [1.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.1...v1.49.0
