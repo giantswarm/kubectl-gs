@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
@@ -80,7 +81,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	} else {
-		err = r.loginWithURL(ctx, installationIdentifier, true)
+		var tokenOverride string
+		if c, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
+			tokenOverride = *c.BearerToken
+		}
+
+		err = r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -114,11 +120,11 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 				return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
 			}
 
-			err = validateAuthProvider(authProvider)
+			err = validateOIDCProvider(authProvider)
 			if IsNewLoginRequired(err) {
 				issuer := authProvider.Config[Issuer]
 
-				err = r.loginWithURL(ctx, issuer, false)
+				err = r.loginWithURL(ctx, issuer, false, "")
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -180,7 +186,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
 			issuer := authProvider.Config[Issuer]
 
-			err = r.loginWithURL(ctx, issuer, false)
+			err = r.loginWithURL(ctx, issuer, false, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -225,7 +231,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
 			issuer := authProvider.Config[Issuer]
 
-			err = r.loginWithURL(ctx, issuer, false)
+			err = r.loginWithURL(ctx, issuer, false, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -249,7 +255,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 
 // loginWithURL performs the OIDC login into an installation's
 // k8s api with a happa/k8s api URL.
-func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool) error {
+func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool, tokenOverride string) error {
 	i, err := installation.New(ctx, path)
 	if installation.IsUnknownUrlType(err) {
 		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Management API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
@@ -261,9 +267,20 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
-	authResult, err := handleAuth(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
-	if err != nil {
-		return microerror.Mask(err)
+	var authResult authInfo
+	{
+		if len(tokenOverride) > 0 {
+			authResult = authInfo{
+				username: "automation",
+				token:    tokenOverride,
+			}
+		} else {
+			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+		}
 	}
 
 	// Store kubeconfig and CA certificate.
@@ -272,7 +289,11 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
+	if len(authResult.email) > 0 {
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
+	} else {
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
+	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if firstLogin {
