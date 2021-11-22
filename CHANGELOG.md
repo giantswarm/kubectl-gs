@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Display relative dates in all `get` command outputs.
+
 ## [1.51.0] - 2021-11-18
 
 ### Added

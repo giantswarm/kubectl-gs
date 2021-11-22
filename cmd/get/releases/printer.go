@@ -33,7 +33,7 @@ func (r *runner) printOutput(rResource release.Resource) error {
 			ColumnDefinitions: []metav1.TableColumnDefinition{
 				{Name: "Version", Type: "string"},
 				{Name: "Status", Type: "string"},
-				{Name: "Created", Type: "string", Format: "date-time"},
+				{Name: "Age", Type: "string", Format: "date-time"},
 				{Name: "Kubernetes", Type: "string"},
 				{Name: "Container Linux", Type: "string"},
 				{Name: "CoreDNS", Type: "string"},
@@ -140,7 +140,7 @@ func getTableRow(release release.Release) metav1.TableRow {
 		Cells: []interface{}{
 			release.CR.GetName(),
 			status,
-			release.CR.CreationTimestamp.UTC(),
+			output.TranslateTimestampSince(release.CR.CreationTimestamp),
 			kubernetesVersion,
 			containerLinuxVersion,
 			coreDNSVersion,
