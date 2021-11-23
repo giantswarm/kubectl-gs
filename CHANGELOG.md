@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Disable version caching for the `selfupdate` command, so you will always get the latest version right after it's released.
+
 ## [1.52.0] - 2021-11-23
 
 ### Changed
