@@ -22,18 +22,17 @@ const (
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	// OpenStack only.
-	flagOpenStackCloud                     = "cloud"
-	flagOpenStackCloudConfig               = "cloud-config"
-	flagOpenStackControlPlaneMachineFlavor = "control-plane-machine-flavor"
-	flagOpenStackDNSNameservers            = "dns-nameservers"
-	flagOpenStackExternalNetworkID         = "external-network-id"
-	flagOpenStackFailureDomain             = "failure-domain"
-	flagOpenStackImageName                 = "image-name"
-	flagOpenStackNodeMachineFlavor         = "node-machine-flavor"
-	flagOpenStackSSHKeyName                = "ssh-key-name"
-	flagOpenStackRootVolumeDiskSize        = "root-volume-disk-size"
-	flagOpenStackRootVolumeSourceType      = "root-volume-source-type"
-	flagOpenStackRootVolumeSourceUUID      = "root-volume-source-uuid"
+	flagOpenStackCloud                = "cloud"
+	flagOpenStackCloudConfig          = "cloud-config"
+	flagOpenStackDNSNameservers       = "dns-nameservers"
+	flagOpenStackExternalNetworkID    = "external-network-id"
+	flagOpenStackFailureDomain        = "failure-domain"
+	flagOpenStackImageName            = "image-name"
+	flagOpenStackNodeMachineFlavor    = "node-machine-flavor"
+	flagOpenStackSSHKeyName           = "ssh-key-name"
+	flagOpenStackRootVolumeDiskSize   = "root-volume-disk-size"
+	flagOpenStackRootVolumeSourceType = "root-volume-source-type"
+	flagOpenStackRootVolumeSourceUUID = "root-volume-source-uuid"
 
 	// Common.
 	flagClusterIDDeprecated = "cluster-id"
@@ -56,18 +55,17 @@ type awsFlag struct {
 }
 
 type openStackFlag struct {
-	Cloud                     string   // OPENSTACK_CLOUD
-	CloudConfig               string   // <no equivalent env var>
-	ControlPlaneMachineFlavor string   // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
-	DNSNameservers            []string // OPENSTACK_DNS_NAMESERVERS
-	ExternalNetworkID         string   // <no equivalent env var>
-	FailureDomain             string   // OPENSTACK_FAILURE_DOMAIN
-	ImageName                 string   // OPENSTACK_IMAGE_NAME
-	NodeMachineFlavor         string   // OPENSTACK_NODE_MACHINE_FLAVOR
-	RootVolumeDiskSize        string   // <no equivalent env var>
-	RootVolumeSourceType      string   // <no equivalent env var>
-	RootVolumeSourceUUID      string   // <no equivalent env var>
-	SSHKeyName                string   // OPENSTACK_SSH_KEY_NAME
+	Cloud                string   // OPENSTACK_CLOUD
+	CloudConfig          string   // <no equivalent env var>
+	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
+	ExternalNetworkID    string   // <no equivalent env var>
+	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
+	ImageName            string   // OPENSTACK_IMAGE_NAME
+	NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
+	RootVolumeDiskSize   string   // <no equivalent env var>
+	RootVolumeSourceType string   // <no equivalent env var>
+	RootVolumeSourceUUID string   // <no equivalent env var>
+	SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
 }
 
 type flag struct {
@@ -104,7 +102,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ControlPlaneMachineFlavor, flagOpenStackControlPlaneMachineFlavor, "", "Control plane machine flavor (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")

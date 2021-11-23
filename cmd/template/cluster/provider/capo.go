@@ -21,18 +21,17 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		ReleaseVersion    string
 		SSHPublicKey      string
 
-		Cloud                     string   // OPENSTACK_CLOUD
-		CloudConfig               string   // <no equivalent env var>
-		ControlPlaneMachineFlavor string   // OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR
-		DNSNameservers            []string // OPENSTACK_DNS_NAMESERVERS
-		ExternalNetworkID         string   // <no equivalent env var>
-		FailureDomain             string   // OPENSTACK_FAILURE_DOMAIN
-		ImageName                 string   // OPENSTACK_IMAGE_NAME
-		NodeMachineFlavor         string   // OPENSTACK_NODE_MACHINE_FLAVOR
-		RootVolumeDiskSize        string   // <no equivalent env var>
-		RootVolumeSourceType      string   // <no equivalent env var>
-		RootVolumeSourceUUID      string   // <no equivalent env var>
-		SSHKeyName                string   // OPENSTACK_SSH_KEY_NAME
+		Cloud                string   // OPENSTACK_CLOUD
+		CloudConfig          string   // <no equivalent env var>
+		DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
+		ExternalNetworkID    string   // <no equivalent env var>
+		FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
+		ImageName            string   // OPENSTACK_IMAGE_NAME
+		NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
+		RootVolumeDiskSize   string   // <no equivalent env var>
+		RootVolumeSourceType string   // <no equivalent env var>
+		RootVolumeSourceUUID string   // <no equivalent env var>
+		SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.1",
@@ -42,18 +41,17 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		PodsCIDR:          config.PodsCIDR,
 		ReleaseVersion:    config.ReleaseVersion,
 
-		Cloud:                     config.Cloud,
-		CloudConfig:               config.CloudConfig,
-		ControlPlaneMachineFlavor: config.ControlPlaneMachineFlavor,
-		DNSNameservers:            config.DNSNameservers,
-		ExternalNetworkID:         config.ExternalNetworkID,
-		FailureDomain:             config.FailureDomain,
-		ImageName:                 config.ImageName,
-		NodeMachineFlavor:         config.NodeMachineFlavor,
-		RootVolumeDiskSize:        config.RootVolumeDiskSize,
-		RootVolumeSourceType:      config.RootVolumeSourceType,
-		RootVolumeSourceUUID:      config.RootVolumeSourceUUID,
-		SSHKeyName:                config.SSHKeyName,
+		Cloud:                config.Cloud,
+		CloudConfig:          config.CloudConfig,
+		DNSNameservers:       config.DNSNameservers,
+		ExternalNetworkID:    config.ExternalNetworkID,
+		FailureDomain:        config.FailureDomain,
+		ImageName:            config.ImageName,
+		NodeMachineFlavor:    config.NodeMachineFlavor,
+		RootVolumeDiskSize:   config.RootVolumeDiskSize,
+		RootVolumeSourceType: config.RootVolumeSourceType,
+		RootVolumeSourceUUID: config.RootVolumeSourceUUID,
+		SSHKeyName:           config.SSHKeyName,
 	}
 
 	var templates []templateConfig
