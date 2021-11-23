@@ -11,9 +11,66 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Alpha support for vSphere and OpenStack providers.
 
+## [1.51.0] - 2021-11-18
+
+### Added
+
+- Add the ability of executing the management cluster login part of the `login` command with a `ServiceAccount` token.
+
+## [1.50.1] - 2021-11-17
+
+### Fixed
+
+- Strip ':<port>' suffix when requesting a client certificate.
+
+## [1.50.0] - 2021-11-17
+
+### Added
+
+- Add `--self-contained` flag to `kubectl-gs login` command for workload clusters to allow output of standalone kubeconfig file.
+
+## [1.49.0] - 2021-11-16
+
+### Changed
+
+- Validate `--certificate-ttl` flag of the `login` command.
+
+## [1.48.1] - 2021-11-11
+
+### Fixed
+
+- Fix self-update command suggestion in the update warning.
+
+## [1.48.0] - 2021-11-11
+
+### Changed
+
+- Allow using `ServiceAccount` tokens for creating workload cluster certificates.
+- Let users override their kubectl config using flags in the `login` command.
+
+## [1.47.0] - 2021-11-09
+
+### Added
+
+- Print warning after running any command if there is a newer version available.
+- Implement command for self-updating (`kubectl gs selfupdate`).
+
+### Changed
+
+- Make the `--organization` flag optional when using the `login` command with a workload cluster. The cluster will be searched in all the organization namespaces that the user has access to.
+
+## [1.46.0] - 2021-11-09
+
+### Added
+
+- Find `Cluster` resources on AWS based on the `giantswarm.io/cluster` label if the `cluster.x-k8s.io/cluster-name` label does not yield results.
+- Add `cluster.x-k8s.io/cluster-name` label to all CRs created by AWS Cluster and Nodepol templating.
+
 ### Changed
 
 - Usa CAPI templates for all releases from `v20.0.0-alpha1` onwards, to include alpha and beta releases.
+- Move AWS Cluster templating from `apiextensions`
+- Move AWS Node Pool templating from `apiextensions`
 
 ## [1.45.0] - 2021-10-26
 
@@ -585,7 +642,15 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.45.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...HEAD
+[1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
+[1.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.0...v1.50.1
+[1.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.49.0...v1.50.0
+[1.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.1...v1.49.0
+[1.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.0...v1.48.1
+[1.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.47.0...v1.48.0
+[1.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.46.0...v1.47.0
+[1.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.45.0...v1.46.0
 [1.45.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.44.0...v1.45.0
 [1.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...v1.44.0
 [1.43.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...v1.43.1

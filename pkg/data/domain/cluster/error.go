@@ -39,3 +39,12 @@ var invalidProviderError = &microerror.Error{
 func IsInvalidProvider(err error) bool {
 	return microerror.Cause(err) == invalidProviderError
 }
+
+var insufficientPermissionsError = &microerror.Error{
+	Kind: "insufficientPermissionsError",
+}
+
+// IsInsufficientPermissions asserts insufficientPermissionsError.
+func IsInsufficientPermissions(err error) bool {
+	return microerror.Cause(err) == insufficientPermissionsError
+}

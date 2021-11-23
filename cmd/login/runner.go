@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/fatih/color"
@@ -11,6 +12,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
@@ -79,7 +81,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	} else {
-		err = r.loginWithURL(ctx, installationIdentifier, true)
+		var tokenOverride string
+		if c, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
+			tokenOverride = *c.BearerToken
+		}
+
+		err = r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -106,23 +113,28 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 
 	switch kubeContextType {
 	case kubeconfig.ContextTypeMC:
-		authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
-		if !exists {
-			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
-		}
-
-		err = validateAuthProvider(authProvider)
-		if IsNewLoginRequired(err) {
-			issuer := authProvider.Config[Issuer]
-
-			err = r.loginWithURL(ctx, issuer, false)
-			if err != nil {
-				return microerror.Mask(err)
+		authType := kubeconfig.GetAuthType(config, currentContext)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
+			if !exists {
+				return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
 			}
 
-			return nil
-		} else if err != nil {
-			return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+			err = validateOIDCProvider(authProvider)
+			if IsNewLoginRequired(err) {
+				issuer := authProvider.Config[Issuer]
+
+				err = r.loginWithURL(ctx, issuer, false, "")
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				return nil
+			} else if err != nil {
+				return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
+			}
+		} else if authType == kubeconfig.AuthTypeUnknown {
+			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
 		}
 
 		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
@@ -168,13 +180,16 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 			return microerror.Mask(err)
 		}
 
-		// If we get here, we are sure that the kubeconfig context exists.
-		authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-		issuer := authProvider.Config[Issuer]
+		authType := kubeconfig.GetAuthType(config, contextName)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			// If we get here, we are sure that the kubeconfig context exists.
+			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+			issuer := authProvider.Config[Issuer]
 
-		err = r.loginWithURL(ctx, issuer, false)
-		if err != nil {
-			return microerror.Mask(err)
+			err = r.loginWithURL(ctx, issuer, false, "")
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		return nil
@@ -210,13 +225,16 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 			return microerror.Mask(err)
 		}
 
-		// If we get here, we are sure that the kubeconfig context exists.
-		authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-		issuer := authProvider.Config[Issuer]
+		authType := kubeconfig.GetAuthType(config, contextName)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			// If we get here, we are sure that the kubeconfig context exists.
+			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+			issuer := authProvider.Config[Issuer]
 
-		err = r.loginWithURL(ctx, issuer, false)
-		if err != nil {
-			return microerror.Mask(err)
+			err = r.loginWithURL(ctx, issuer, false, "")
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		return nil
@@ -237,7 +255,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 
 // loginWithURL performs the OIDC login into an installation's
 // k8s api with a happa/k8s api URL.
-func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool) error {
+func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool, tokenOverride string) error {
 	i, err := installation.New(ctx, path)
 	if installation.IsUnknownUrlType(err) {
 		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Management API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
@@ -249,9 +267,20 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 
-	authResult, err := handleAuth(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
-	if err != nil {
-		return microerror.Mask(err)
+	var authResult authInfo
+	{
+		if len(tokenOverride) > 0 {
+			authResult = authInfo{
+				username: "automation",
+				token:    tokenOverride,
+			}
+		} else {
+			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+		}
 	}
 
 	// Store kubeconfig and CA certificate.
@@ -260,7 +289,11 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool)
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.Email, i.Codename))
+	if len(authResult.email) > 0 {
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
+	} else {
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
+	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if firstLogin {
@@ -341,14 +374,29 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		}
 	}
 
-	orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	var c *cluster.Cluster
+	{
+		if len(r.flag.WCOrganization) > 0 {
+			orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-	c, err := fetchCluster(ctx, clusterService, provider, orgNamespace, r.flag.WCName)
-	if err != nil {
-		return microerror.Mask(err)
+			c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, orgNamespace)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		} else {
+			orgNamespaces, err := getAllOrganizationNamespaces(ctx, organizationService)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, orgNamespaces...)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
 	}
 
 	releaseVersion, err := getClusterReleaseVersion(c, provider)
@@ -388,10 +436,19 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	// Store client certificate credential into the kubeconfig.
-	contextName, contextExists, err := storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
-	if err != nil {
-		return microerror.Mask(err)
+	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
+	var contextExists bool
+	var contextName string
+	if len(r.flag.WCSelfContained) > 0 {
+		contextName, contextExists, err = printCredential(r.k8sConfigAccess, r.fs, r.flag.WCSelfContained, clientCertResource, secret, clusterBasePath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		contextName, contextExists, err = storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Cleaning up leftover resources.
@@ -402,7 +459,10 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
-	if contextExists {
+	if len(r.flag.WCSelfContained) > 0 {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.WCSelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.WCSelfContained)
+	} else if contextExists {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
 		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
@@ -419,14 +479,12 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	// If we get here, we are sure that the kubeconfig context exists and is valid.
-	authProvider, _ := kubeconfig.GetAuthProvider(config, config.CurrentContext)
 
-	issuer := authProvider.Config[Issuer]
-	mcBasePath, err := installation.GetBasePath(issuer)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
+	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
 
-	return strings.TrimPrefix(mcBasePath, "g8s."), nil
+	// Ensure any trailing ports are trimmed.
+	reg := regexp.MustCompile(`:[0-9]+$`)
+	clusterServer = reg.ReplaceAllString(clusterServer, "")
+
+	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
 }

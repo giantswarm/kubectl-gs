@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
@@ -209,6 +211,51 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 	return contextName, contextExists, nil
 }
 
+// printCredential saves the created client certificate credentials into a separate kubectl config file.
+func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	mcContextName := config.CurrentContext
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+
+	kubeconfig := clientcmdapi.Config{
+		APIVersion: "v1",
+		Kind:       "Config",
+		Clusters: map[string]*clientcmdapi.Cluster{
+			contextName: {
+				Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
+				CertificateAuthorityData: credential.Data[credentialKeyCertCA],
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			contextName: {
+				Cluster:  contextName,
+				AuthInfo: fmt.Sprintf("%s-user", contextName),
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			fmt.Sprintf("%s-user", contextName): {
+				ClientCertificateData: credential.Data[credentialKeyCertCRT],
+				ClientKeyData:         credential.Data[credentialKeyCertKey],
+			},
+		},
+		CurrentContext: contextName,
+	}
+	if exists, err := afero.Exists(fs, filePath); exists {
+		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", filePath)
+	} else if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	err = clientcmd.WriteToFile(kubeconfig, filePath)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	return contextName, false, nil
+}
+
 func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {
 	err := clientCertService.Delete(ctx, clientCertResource)
 	if err != nil {
@@ -234,6 +281,24 @@ func getOrganizationNamespace(ctx context.Context, organizationService organizat
 	return namespace, nil
 }
 
+func getAllOrganizationNamespaces(ctx context.Context, organizationService organization.Interface) ([]string, error) {
+	orgList, err := organizationService.Get(ctx, organization.GetOptions{})
+	if organization.IsNoResources(err) {
+		return nil, microerror.Maskf(noOrganizationsError, "Could not find any organizations.")
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var namespaces []string
+	for _, org := range orgList.(*organization.Collection).Items {
+		if len(org.Organization.Status.Namespace) > 0 {
+			namespaces = append(namespaces, org.Organization.Status.Namespace)
+		}
+	}
+
+	return namespaces, nil
+}
+
 func determineCredentialNamespace(clientCert *clientcert.ClientCert, provider string) string {
 	if provider == key.ProviderAzure {
 		return metav1.NamespaceDefault
@@ -252,11 +317,87 @@ func fetchCluster(ctx context.Context, clusterService cluster.Interface, provide
 	c, err := clusterService.Get(ctx, o)
 	if cluster.IsNotFound(err) {
 		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+	} else if cluster.IsInsufficientPermissions(err) {
+		return nil, microerror.Maskf(insufficientPermissionsError, "You don't have the required permissions to get clusters in the %s namespace.", namespace)
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return c.(*cluster.Cluster), nil
+}
+
+func findCluster(ctx context.Context, clusterService cluster.Interface, organizationService organization.Interface, provider, name string, namespaces ...string) (*cluster.Cluster, error) {
+	if len(namespaces) == 1 {
+		c, err := fetchCluster(ctx, clusterService, provider, namespaces[0], name)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		return c, nil
+	}
+
+	clustersCh := make(chan *cluster.Cluster, len(namespaces))
+	errorsCh := make(chan error, len(namespaces))
+
+	var wg sync.WaitGroup
+
+	for _, namespace := range namespaces {
+		wg.Add(1)
+
+		go func(namespace string) {
+			defer wg.Done()
+
+			c, err := fetchCluster(ctx, clusterService, provider, namespace, name)
+			if IsClusterNotFound(err) || IsInsufficientPermissions(err) {
+				// Nothing to see here.
+				return
+			} else if err != nil {
+				errorsCh <- microerror.Mask(err)
+				return
+			}
+
+			clustersCh <- c
+		}(namespace)
+	}
+
+	wg.Wait()
+
+	close(clustersCh)
+	close(errorsCh)
+
+	if len(errorsCh) > 0 {
+		return nil, microerror.Mask(<-errorsCh)
+	}
+
+	switch len(clustersCh) {
+	case 1:
+		return <-clustersCh, nil
+
+	case 0:
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.\nMake sure you have access to the cluster's organization namespace.", name)
+
+	default:
+		{
+			var errMsg strings.Builder
+			errMsg.WriteString(fmt.Sprintf("There are multiple workload clusters with the name %s:\n", name))
+
+			i := 1
+			for c := range clustersCh {
+				org := c.Cluster.Labels[label.Organization]
+				if len(org) < 1 {
+					org = "n/a"
+				}
+
+				errMsg.WriteString(fmt.Sprintf("%d. %s in organization %s\n", i, name, org))
+
+				i++
+			}
+
+			errMsg.WriteString(fmt.Sprintf("\nUse the --%s flag to select one from a specific organization.", flagWCOrganization))
+
+			return nil, microerror.Maskf(multipleClustersFoundError, errMsg.String())
+		}
+	}
 }
 
 func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {

@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -13,10 +14,11 @@ const (
 	flagInternalAPI    = "internal-api"
 	callbackServerPort = "callback-port"
 
-	flagWCName         = "workload-cluster"
-	flagWCOrganization = "organization"
-	flagWCCertGroups   = "certificate-group"
-	flagWCCertTTL      = "certificate-ttl"
+	flagWCName          = "workload-cluster"
+	flagWCOrganization  = "organization"
+	flagWCCertGroups    = "certificate-group"
+	flagWCCertTTL       = "certificate-ttl"
+	flagWCSelfContained = "self-contained"
 )
 
 type flag struct {
@@ -24,10 +26,11 @@ type flag struct {
 	ClusterAdmin       bool
 	InternalAPI        bool
 
-	WCName         string
-	WCOrganization string
-	WCCertGroups   []string
-	WCCertTTL      string
+	WCName          string
+	WCOrganization  string
+	WCCertGroups    []string
+	WCCertTTL       string
+	WCSelfContained string
 
 	config genericclioptions.RESTClientGetter
 }
@@ -40,14 +43,23 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))
 	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
-	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf("How long the client certificate should live for. Requires --%s.", flagWCName))
+	cmd.Flags().StringVar(&f.WCSelfContained, flagWCSelfContained, "", fmt.Sprintf("Create a self-contained kubectl config with embedded credentials and write it to this path. Requires --%s.", flagWCName))
+	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`How long the client certificate should live for. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Requires --%s.`, flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+
+	_ = cmd.Flags().MarkHidden("namespace")
 }
 
 func (f *flag) Validate() error {
-	if len(f.WCName) > 0 && len(f.WCOrganization) < 1 {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty when --%s is provided.", flagWCOrganization, flagWCName)
+	// Validate ttl flag
+	ttlFlag, err := time.ParseDuration(f.WCCertTTL)
+	if err != nil {
+		return microerror.Maskf(invalidFlagError, `--%s is not a valid duration. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".`, flagWCCertTTL)
+	}
+	if ttlFlag <= 0 {
+		return microerror.Maskf(invalidFlagError, `--%s cannot be negative or zero.`, flagWCCertTTL)
 	}
 
 	return nil

@@ -7,7 +7,6 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
@@ -36,12 +35,22 @@ func New(config Config) (*Service, error) {
 }
 
 func (s *Service) Get(ctx context.Context, getOptions GetOptions) (Resource, error) {
-	org, err := s.getByName(ctx, getOptions.Name)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var resource Resource
+	var err error
+
+	if len(getOptions.Name) > 0 {
+		resource, err = s.getByName(ctx, getOptions.Name)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else {
+		resource, err = s.getAll(ctx)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
-	return org, nil
+	return resource, nil
 }
 
 func (s *Service) getByName(ctx context.Context, name string) (Resource, error) {
@@ -61,13 +70,33 @@ func (s *Service) getByName(ctx context.Context, name string) (Resource, error) 
 		return nil, microerror.Mask(err)
 	}
 
-	org.Organization.ManagedFields = nil
-
-	org.Organization.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   securityv1alpha1.SchemeGroupVersion.Group,
-		Version: securityv1alpha1.SchemeGroupVersion.Version,
-		Kind:    "Organization",
-	})
-
 	return org, nil
+}
+
+func (s *Service) getAll(ctx context.Context) (Resource, error) {
+	var err error
+
+	orgCollection := &Collection{}
+	{
+		orgs := &securityv1alpha1.OrganizationList{}
+		{
+			err = s.client.K8sClient.CtrlClient().List(ctx, orgs)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			} else if len(orgs.Items) == 0 {
+				return nil, microerror.Mask(noResourcesError)
+			}
+		}
+
+		for _, org := range orgs.Items {
+			o := Organization{
+				Organization: org.DeepCopy(),
+			}
+			o.Organization.ManagedFields = nil
+
+			orgCollection.Items = append(orgCollection.Items, o)
+		}
+	}
+
+	return orgCollection, nil
 }

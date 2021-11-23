@@ -2,6 +2,15 @@ package login
 
 import "github.com/giantswarm/microerror"
 
+var fileExistsError = &microerror.Error{
+	Kind: "fileExistsError",
+}
+
+// IsFileExistsError asserts fileExistsError.
+func IsFileExistsError(err error) bool {
+	return microerror.Cause(err) == fileExistsError
+}
+
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
@@ -189,4 +198,31 @@ var releaseNotFoundError = &microerror.Error{
 // IsReleaseNotFound asserts releaseNotFoundError.
 func IsReleaseNotFound(err error) bool {
 	return microerror.Cause(err) == releaseNotFoundError
+}
+
+var noOrganizationsError = &microerror.Error{
+	Kind: "noOrganizationsError",
+}
+
+// IsNoOrganizations asserts noOrganizationsError.
+func IsNoOrganizations(err error) bool {
+	return microerror.Cause(err) == noOrganizationsError
+}
+
+var multipleClustersFoundError = &microerror.Error{
+	Kind: "multipleClustersFoundError",
+}
+
+// IsMultipleClustersFound asserts multipleClustersFoundError.
+func IsMultipleClustersFound(err error) bool {
+	return microerror.Cause(err) == multipleClustersFoundError
+}
+
+var insufficientPermissionsError = &microerror.Error{
+	Kind: "insufficientPermissionsError",
+}
+
+// IsInsufficientPermissions asserts insufficientPermissionsError.
+func IsInsufficientPermissions(err error) bool {
+	return microerror.Cause(err) == insufficientPermissionsError
 }

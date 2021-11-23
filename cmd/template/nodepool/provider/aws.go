@@ -5,13 +5,13 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/aws"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -48,7 +48,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
-	crsConfig := v1alpha3.NodePoolCRsConfig{
+	crsConfig := aws.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,
 		AWSInstanceType:                     config.AWSInstanceType,
 		ClusterID:                           config.ClusterName,
@@ -62,7 +62,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		UseAlikeInstanceTypes:               config.UseAlikeInstanceTypes,
 	}
 
-	crs, err := v1alpha3.NewNodePoolCRs(crsConfig)
+	crs, err := aws.NewNodePoolCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -114,7 +114,7 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	return nil
 }
 
-func moveCRsToNamespace(crs v1alpha3.NodePoolCRs, namespace string) v1alpha3.NodePoolCRs {
+func moveCRsToNamespace(crs aws.NodePoolCRs, namespace string) aws.NodePoolCRs {
 	crs.MachineDeployment.SetNamespace(namespace)
 	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = namespace
 	crs.AWSMachineDeployment.SetNamespace(namespace)

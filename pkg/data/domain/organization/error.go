@@ -21,3 +21,12 @@ var notFoundError = &microerror.Error{
 func IsNotFound(err error) bool {
 	return microerror.Cause(err) == notFoundError
 }
+
+var noResourcesError = &microerror.Error{
+	Kind: "noResourcesError",
+}
+
+// IsNoResources asserts noResourcesError.
+func IsNoResources(err error) bool {
+	return microerror.Cause(err) == noResourcesError
+}
