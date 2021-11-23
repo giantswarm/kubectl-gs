@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Replace the `CREATED` column with `AGE` in all the `get` subcommand table outputs.
+
 ## [1.51.0] - 2021-11-18
 
 ### Added

@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
@@ -15,7 +16,7 @@ func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
-		{Name: "Created", Type: "string", Format: "date-time"},
+		{Name: "Age", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},
 		{Name: "Organization", Type: "string"},
@@ -42,7 +43,7 @@ func getAWSClusterRow(c cluster.Cluster) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			c.AWSCluster.GetName(),
-			c.AWSCluster.CreationTimestamp.UTC(),
+			output.TranslateTimestampSince(c.AWSCluster.CreationTimestamp),
 			getLatestAWSCondition(c.AWSCluster.Status.Cluster.Conditions),
 			c.AWSCluster.Labels[label.ReleaseVersion],
 			c.AWSCluster.Labels[label.Organization],
