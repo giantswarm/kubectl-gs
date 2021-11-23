@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Display relative dates in all `get` command outputs.
+- Replace the `CREATED` column with `AGE` in all the `get` subcommand table outputs.
 
 ## [1.51.0] - 2021-11-18
 
