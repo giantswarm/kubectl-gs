@@ -82,7 +82,7 @@ func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
 		{Name: "App Name", Type: "string"},
 		{Name: "Version", Type: "string"},
 		{Name: "Upstream Version", Type: "string"},
-		{Name: "Created", Type: "string"},
+		{Name: "Age", Type: "string", Format: "date-time"},
 	}
 
 	for _, ace := range catalogResource.Entries.Items {
@@ -118,7 +118,7 @@ func getCatalogTable(catalogResource catalogdata.Resource) *metav1.Table {
 		{Name: "Name", Type: "string"},
 		{Name: "Namespace", Type: "string"},
 		{Name: "Catalog URL", Type: "string"},
-		{Name: "Created", Type: "string", Format: "date-time"},
+		{Name: "Age", Type: "string", Format: "date-time"},
 	}
 
 	switch c := catalogResource.(type) {

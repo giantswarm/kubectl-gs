@@ -1,2 +1,2 @@
-NAME    CLUSTER NAME   CREATED                         CONDITION   NODES MIN/MAX   NODES DESIRED   NODES READY   DESCRIPTION
-f930q   s921a          2021-01-02 15:04:32 +0000 UTC   n/a         n/a             3               3             test nodepool 4
+NAME    CLUSTER NAME   AGE   CONDITION   NODES MIN/MAX   NODES DESIRED   NODES READY   DESCRIPTION
+f930q   s921a          0s    n/a         n/a             3               3             test nodepool 4
