@@ -376,26 +376,28 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 
 	var c *cluster.Cluster
 	{
+		var namespaces []string
 		if len(r.flag.WCOrganization) > 0 {
 			orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, orgNamespace)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+			namespaces = append(namespaces, orgNamespace)
 		} else {
-			orgNamespaces, err := getAllOrganizationNamespaces(ctx, organizationService)
+			namespaces, err = getAllOrganizationNamespaces(ctx, organizationService)
 			if err != nil {
 				return microerror.Mask(err)
 			}
+		}
 
-			c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, orgNamespaces...)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+		if r.flag.WCInsecureNamespace {
+			namespaces = append(namespaces, "default")
+		}
+
+		c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, namespaces...)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 

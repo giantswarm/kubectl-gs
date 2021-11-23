@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 func GetAzureTable(clusterResource cluster.Resource) *metav1.Table {
@@ -16,7 +17,7 @@ func GetAzureTable(clusterResource cluster.Resource) *metav1.Table {
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
-		{Name: "Created", Type: "string", Format: "date-time"},
+		{Name: "Age", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},
 		{Name: "Organization", Type: "string"},
@@ -43,7 +44,7 @@ func getAzureClusterRow(c cluster.Cluster) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			c.Cluster.GetName(),
-			c.Cluster.CreationTimestamp.UTC(),
+			output.TranslateTimestampSince(c.Cluster.CreationTimestamp),
 			getLatestAzureCondition(c.Cluster.GetConditions()),
 			c.Cluster.Labels[label.ReleaseVersion],
 			c.Cluster.Labels[label.Organization],
