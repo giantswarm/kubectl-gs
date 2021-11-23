@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.52.0] - 2021-11-23
+
 ### Changed
 
 - Replace the `CREATED` column with `AGE` in all the `get` subcommand table outputs.
@@ -642,7 +644,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...HEAD
+[1.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
 [1.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.0...v1.50.1
 [1.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.49.0...v1.50.0
