@@ -73,6 +73,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ExternalNetworkID:    r.flag.OpenStack.ExternalNetworkID,
 			FailureDomain:        r.flag.OpenStack.FailureDomain,
 			ImageName:            r.flag.OpenStack.ImageName,
+			NodeCIDR:             r.flag.OpenStack.NodeCIDR,
 			NodeMachineFlavor:    r.flag.OpenStack.NodeMachineFlavor,
 			RootVolumeDiskSize:   r.flag.OpenStack.RootVolumeDiskSize,
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,

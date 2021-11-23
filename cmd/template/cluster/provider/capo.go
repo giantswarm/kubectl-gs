@@ -27,6 +27,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		ExternalNetworkID    string   // <no equivalent env var>
 		FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
 		ImageName            string   // OPENSTACK_IMAGE_NAME
+		NodeCIDR             string   // <no equivalent env var>
 		NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
 		RootVolumeDiskSize   string   // <no equivalent env var>
 		RootVolumeSourceType string   // <no equivalent env var>
@@ -34,7 +35,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
 	}{
 		Description:       config.Description,
-		KubernetesVersion: "v1.20.1",
+		KubernetesVersion: "v1.20.9",
 		Name:              config.Name,
 		Namespace:         config.Namespace,
 		Organization:      config.Organization,

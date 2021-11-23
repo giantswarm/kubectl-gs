@@ -27,7 +27,6 @@ type ClusterCRsConfig struct {
 	EKS                bool
 	ExternalSNAT       bool
 	ControlPlaneSubnet string
-	PodsCIDR           string
 
 	// OpenStack only.
 	Cloud                string   // OPENSTACK_CLOUD
@@ -36,6 +35,7 @@ type ClusterCRsConfig struct {
 	ExternalNetworkID    string   // <no equivalent env var>
 	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
 	ImageName            string   // OPENSTACK_IMAGE_NAME
+	NodeCIDR             string   // <no equivalent env var>
 	NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
 	RootVolumeDiskSize   string   // <no equivalent env var>
 	RootVolumeSourceType string   // <no equivalent env var>
@@ -51,6 +51,7 @@ type ClusterCRsConfig struct {
 	ReleaseVersion string
 	Labels         map[string]string
 	Namespace      string
+	PodsCIDR       string
 }
 
 type templateConfig struct {

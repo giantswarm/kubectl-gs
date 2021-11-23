@@ -30,6 +30,7 @@ const (
 	flagOpenStackImageName            = "image-name"
 	flagOpenStackNodeMachineFlavor    = "node-machine-flavor"
 	flagOpenStackSSHKeyName           = "ssh-key-name"
+	flagOpenStackNodeCIDR             = "node-cidr"
 	flagOpenStackRootVolumeDiskSize   = "root-volume-disk-size"
 	flagOpenStackRootVolumeSourceType = "root-volume-source-type"
 	flagOpenStackRootVolumeSourceUUID = "root-volume-source-uuid"
@@ -66,6 +67,7 @@ type openStackFlag struct {
 	RootVolumeSourceType string   // <no equivalent env var>
 	RootVolumeSourceUUID string   // <no equivalent env var>
 	SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
+	NodeCIDR             string   // <no equivalent env var>
 }
 
 type flag struct {
@@ -111,6 +113,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.SSHKeyName, flagOpenStackSSHKeyName, "", "SSH key name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
@@ -242,6 +245,12 @@ func (f *flag) Validate() error {
 		case key.ProviderAzure:
 			if len(f.ControlPlaneAZ) > 1 {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
+			}
+		case key.ProviderOpenStack:
+			if f.OpenStack.NodeCIDR != "" {
+				if !validateCIDR(f.OpenStack.NodeCIDR) {
+					return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
+				}
 			}
 		}
 	}
