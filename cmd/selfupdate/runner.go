@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/selfupdate"
 
 	"github.com/giantswarm/kubectl-gs/pkg/project"
@@ -47,11 +46,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config := selfupdate.Config{
 			CurrentVersion: project.Version(),
 			RepositoryURL:  project.Source(),
-		}
-
-		config.CacheDir, err = key.GetCacheDir()
-		if err != nil {
-			return microerror.Mask(err)
 		}
 
 		updaterService, err = selfupdate.New(config)
