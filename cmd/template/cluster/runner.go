@@ -19,6 +19,8 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
 )
 
 const (
@@ -56,6 +58,12 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
+	commonConfig := commonconfig.New(r.flag.config)
+	c, err := commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
@@ -80,7 +88,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			config.Name = id.Generate()
 		}
 
-		// Remove leading 'v' from release flag input.
+		if len(config.ReleaseVersion) < 1 {
+			config.ReleaseVersion, err = getLatestReleaseVersion(ctx, c)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
 		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
 
 		config.Labels, err = labels.Parse(r.flag.Label)
@@ -91,12 +104,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.Provider == key.ProviderAzure {
 			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 		}
-	}
-
-	commonConfig := commonconfig.New(r.flag.config)
-	c, err := commonConfig.GetClient(r.logger)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	var output *os.File
@@ -133,4 +140,38 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func getLatestReleaseVersion(ctx context.Context, client *dataClient.Client) (string, error) {
+	var err error
+
+	var releaseService release.Interface
+	{
+		serviceConfig := release.Config{
+			Client: client,
+		}
+		releaseService, err = release.New(serviceConfig)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
+	resource, err := releaseService.Get(ctx, release.GetOptions{ActiveOnly: true})
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	releaseList, ok := resource.(*release.ReleaseCollection)
+	if !ok || len(releaseList.Items) < 1 {
+		return "", microerror.Mask(failedToDetermineLatestReleaseError)
+	}
+
+	var latestRelease string
+	for _, r := range releaseList.Items {
+		if strings.Compare(r.CR.Name, latestRelease) > 0 {
+			latestRelease = r.CR.Name
+		}
+	}
+
+	return latestRelease, nil
 }

@@ -21,3 +21,12 @@ var invalidFlagError = &microerror.Error{
 func IsInvalidFlag(err error) bool {
 	return microerror.Cause(err) == invalidFlagError
 }
+
+var failedToDetermineLatestReleaseError = &microerror.Error{
+	Kind: "failedToDetermineLatestReleaseError",
+}
+
+// IsFailedToDetermineLatestRelease asserts failedToDetermineLatestReleaseError.
+func IsFailedToDetermineLatestRelease(err error) bool {
+	return microerror.Cause(err) == failedToDetermineLatestReleaseError
+}
