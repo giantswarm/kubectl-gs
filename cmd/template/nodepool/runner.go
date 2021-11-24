@@ -7,10 +7,13 @@ import (
 	"strings"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/id"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -47,6 +50,12 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
+	commonConfig := commonconfig.New(r.flag.config)
+	c, err := commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	var config provider.NodePoolCRsConfig
 	{
 		config = provider.NodePoolCRsConfig{
@@ -72,9 +81,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			config.NodePoolID = id.Generate()
 		}
 
-		// Remove leading 'v' from release flag input.
-		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
-
 		if len(r.flag.AvailabilityZones) > 0 {
 			config.AvailabilityZones = r.flag.AvailabilityZones
 		}
@@ -85,12 +91,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.Provider == key.ProviderAWS {
 			config.Namespace = r.flag.ClusterNamespace
 		}
-	}
 
-	commonConfig := commonconfig.New(r.flag.config)
-	c, err := commonConfig.GetClient(r.logger)
-	if err != nil {
-		return microerror.Mask(err)
+		wc, err := getWorkloadCluster(ctx, c, config.Namespace, config.ClusterName, r.flag.Provider)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if len(config.ReleaseVersion) < 1 {
+			config.ReleaseVersion = wc.Cluster.Labels[label.ReleaseVersion]
+		} else {
+			config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
+		}
 	}
 
 	var output *os.File
@@ -122,4 +132,42 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func getWorkloadCluster(ctx context.Context, client *dataClient.Client, namespace, name, provider string) (*cluster.Cluster, error) {
+	var err error
+
+	var clusterService cluster.Interface
+	{
+		serviceConfig := cluster.Config{
+			Client: client,
+		}
+		clusterService, err = cluster.New(serviceConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	o := cluster.GetOptions{
+		Namespace: namespace,
+		Name:      name,
+		Provider:  provider,
+	}
+
+	c, err := clusterService.Get(ctx, o)
+	if cluster.IsNotFound(err) || cluster.IsNoResources(err) {
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	switch wc := c.(type) {
+	case *cluster.Cluster:
+		return wc, nil
+	case *cluster.Collection:
+		targetWC := wc.Items[0]
+		return &targetWC, nil
+	default:
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", name)
+	}
 }

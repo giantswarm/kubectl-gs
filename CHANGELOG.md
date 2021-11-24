@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - Use latest active release version as default in the `template cluster` command.
+- Use the workload cluster's release version as default in the `template nodepool` command.
 
 ### Changed
 

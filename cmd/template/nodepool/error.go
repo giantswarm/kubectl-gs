@@ -21,3 +21,12 @@ var invalidFlagError = &microerror.Error{
 func IsInvalidFlag(err error) bool {
 	return microerror.Cause(err) == invalidFlagError
 }
+
+var clusterNotFoundError = &microerror.Error{
+	Kind: "clusterNotFoundError",
+}
+
+// IsClusterNotFound asserts clusterNotFoundError.
+func IsClusterNotFound(err error) bool {
+	return microerror.Cause(err) == clusterNotFoundError
+}

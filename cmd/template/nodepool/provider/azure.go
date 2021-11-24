@@ -180,6 +180,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Organization,
+				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{

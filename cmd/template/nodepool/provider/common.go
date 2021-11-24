@@ -66,6 +66,7 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
 				label.Organization:            config.Organization,
+				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 			Annotations: map[string]string{
 				annotation.MachinePoolName: config.Description,
