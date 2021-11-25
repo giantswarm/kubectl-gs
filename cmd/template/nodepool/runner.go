@@ -12,7 +12,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 
 	"github.com/giantswarm/microerror"
@@ -92,7 +91,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			config.Namespace = r.flag.ClusterNamespace
 		}
 
-		wc, err := getWorkloadCluster(ctx, c, config.Namespace, config.ClusterName, r.flag.Provider)
+		var clusterService cluster.Interface
+		{
+			serviceConfig := cluster.Config{
+				Client: c,
+			}
+			clusterService, err = cluster.New(serviceConfig)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		wc, err := getWorkloadCluster(ctx, clusterService, config.Namespace, config.ClusterName, r.flag.Provider)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -134,20 +144,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func getWorkloadCluster(ctx context.Context, client *dataClient.Client, namespace, name, provider string) (*cluster.Cluster, error) {
-	var err error
-
-	var clusterService cluster.Interface
-	{
-		serviceConfig := cluster.Config{
-			Client: client,
-		}
-		clusterService, err = cluster.New(serviceConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
+func getWorkloadCluster(ctx context.Context, clusterService cluster.Interface, namespace, name, provider string) (*cluster.Cluster, error) {
 	o := cluster.GetOptions{
 		Namespace: namespace,
 		Name:      name,
