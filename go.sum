@@ -236,11 +236,10 @@ github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2H
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/giantswarm/apiextensions/v3 v3.30.0/go.mod h1:PcU7LAi0E8lOXoPp2wD7AY/AOtp6sN03cnQuBZGAksg=
-github.com/giantswarm/apiextensions/v3 v3.35.0/go.mod h1:uV8pzwVdUlzvrC9WZGb6z0koSNSampo3nLFSDW3mukA=
 github.com/giantswarm/apiextensions/v3 v3.38.0 h1:KdELD0Pd5aSGW5dVAOD579Hj46zcBNBvtrCGBf8ceOQ=
 github.com/giantswarm/apiextensions/v3 v3.38.0/go.mod h1:JgJfW2MjWKTAXfJ77rMcmKjVl3blvGSBWy43SVrpHY0=
-github.com/giantswarm/app/v5 v5.4.0 h1:H2wY3SMMKp2ivrt5FtOzd8nQiA2Jq7YwJWfdmvQybUk=
-github.com/giantswarm/app/v5 v5.4.0/go.mod h1:xnbfQm/H5zlY813NGMyzj3h4/TlAvpDyJYioYd2b1PI=
+github.com/giantswarm/app/v5 v5.5.0 h1:290c/M0Q3KwD+MMK9gwsBJrydSBkOHqMDvDHmwiljIg=
+github.com/giantswarm/app/v5 v5.5.0/go.mod h1:ZwY4Bub/IOUn1VEvaMkBLD2eeWZCW0/dPO+ngANLRYM=
 github.com/giantswarm/appcatalog v0.6.0 h1:lJMmiPK2pyWQtOaLlBwq0Ut1XrMhcnGeA+3j4OMHyfU=
 github.com/giantswarm/appcatalog v0.6.0/go.mod h1:MaglaykZAeFukjpD/jVHrm/zZFwa9uusuN6BgT4NXpY=
 github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
@@ -251,7 +250,6 @@ github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3 h1:hfYVY9E862A
 github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3/go.mod h1:v/WBSPW45C0QHslLmrmg7YGGmaN70kT2XxjDKby8Yh4=
 github.com/giantswarm/k8sclient/v5 v5.12.0 h1:oG5k7LLqMT+OaR/jMqOAQMTCpv5OdwjcJhFYGdIPThQ=
 github.com/giantswarm/k8sclient/v5 v5.12.0/go.mod h1:KXRSG1t+XBDsXx089Jp9agMjQ4xEIWywJUchAZ2OQ6c=
-github.com/giantswarm/k8smetadata v0.4.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
 github.com/giantswarm/k8smetadata v0.6.0 h1:L3opjzcNzetPacI4zOcYxDAvp6ssM/QLfuXZTQ5Otyo=
 github.com/giantswarm/k8smetadata v0.6.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
 github.com/giantswarm/microerror v0.2.0/go.mod h1:1YtJq/m7Vlq1Y6NP7B+SODOKCGlG7e5wctV2OoE9n34=
@@ -261,6 +259,7 @@ github.com/giantswarm/micrologger v0.3.1/go.mod h1:PjAgtcJ922ZMX/Aa05IPi0bdYvOj2
 github.com/giantswarm/micrologger v0.5.0 h1:/f2knkyf4bZw3L5F48R7VENiEKPb3Sjnzrg46+Ja5vk=
 github.com/giantswarm/micrologger v0.5.0/go.mod h1:J/jbt7A8eixqE40yq4JY8Hdbs/qeboe2FjHlq05UWjA=
 github.com/giantswarm/to v0.3.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
+github.com/giantswarm/to v0.4.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
 github.com/globalsign/mgo v0.0.0-20180905125535-1ca0a4f7cbcb/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=
 github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=
 github.com/go-acme/lego v2.5.0+incompatible/go.mod h1:yzMNe9CasVUhkquNvti5nAtPmG94USbYxYrZfTkIn0M=
