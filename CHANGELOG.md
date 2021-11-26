@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Disable version caching for the `selfupdate` command, so you will always get the latest version right after it's released.
+- Make the `--release` flag mandatory in the `template cluster` and `template nodepool` subcommands.
 
 ## [1.52.0] - 2021-11-23
 
