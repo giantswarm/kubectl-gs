@@ -48,6 +48,7 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		ExternalNetworkID:    config.ExternalNetworkID,
 		FailureDomain:        config.FailureDomain,
 		ImageName:            config.ImageName,
+		NodeCIDR:             config.NodeCIDR,
 		NodeMachineFlavor:    config.NodeMachineFlavor,
 		RootVolumeDiskSize:   config.RootVolumeDiskSize,
 		RootVolumeSourceType: config.RootVolumeSourceType,
