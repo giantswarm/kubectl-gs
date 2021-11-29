@@ -125,7 +125,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
-	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
@@ -255,8 +255,7 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate release version for non-aws clusters.
-	if f.Provider != key.ProviderAWS && f.Release == "" {
+	if f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

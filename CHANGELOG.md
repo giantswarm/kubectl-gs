@@ -11,9 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Alpha support for OpenStack cluster templating.
 
+## [1.53.0] - 2021-11-29
+
 ### Changed
 
 - Disable version caching for the `selfupdate` command, so you will always get the latest version right after it's released.
+- Make the `--release` flag mandatory in the `template cluster` and `template nodepool` subcommands.
 
 ## [1.52.0] - 2021-11-23
 
@@ -652,7 +655,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...HEAD
+[1.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...v1.53.0
 [1.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
 [1.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.0...v1.50.1

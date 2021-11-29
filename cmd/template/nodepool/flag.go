@@ -116,7 +116,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
-	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty to match the workload cluster version via the Management API.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagEKS)
@@ -217,6 +217,10 @@ func (f *flag) Validate() error {
 
 		f.Organization = f.Owner
 		f.Owner = ""
+	}
+
+	if f.Release == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
 	{
