@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix CRD API version for EKS infrastcture ref in cluster CR template. 
+
 ## [1.53.0] - 2021-11-29
 
 ### Changed
