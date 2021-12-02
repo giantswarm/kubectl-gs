@@ -35,7 +35,8 @@ func GetUrlType(u string) int {
 }
 
 func isK8sApiUrl(u string) bool {
-	return k8sApiURLRegexp.MatchString(u)
+	u = strings.SplitN(u, ":", 2)[0]
+	return k8sApiURLRegexp.MatchString(u) || (strings.HasPrefix(u, "api") && strings.HasSuffix(u, "gigantic.io"))
 }
 
 func isHappaUrl(u string) bool {
@@ -56,7 +57,12 @@ func GetBasePath(u string) (string, error) {
 
 	switch GetUrlType(path.Host) {
 	case UrlTypeK8sApi:
-		return k8sApiURLRegexp.FindString(path.Host), nil
+		if p := k8sApiURLRegexp.FindString(path.Host); len(p) > 0 {
+			return p, nil
+		}
+		p := strings.SplitN(path.Host, ".", 2)[1]
+		p = strings.SplitN(p, ":", 2)[0]
+		return p, nil
 	case UrlTypeHappa:
 		basePath := strings.Replace(path.Host, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
 		return basePath, nil
