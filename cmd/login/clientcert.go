@@ -83,6 +83,9 @@ func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error)
 				Organizations:       config.groups,
 				TTL:                 config.ttl,
 			},
+			VersionBundle: corev1alpha1.CertConfigSpecVersionBundle{
+				Version: config.certOperatorVersion,
+			},
 		},
 	}
 
