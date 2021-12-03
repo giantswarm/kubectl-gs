@@ -9,12 +9,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [1.54.0] - 2021-12-03
 
-### Changed
-
-- Enable the `login` command to create a client certificate for older workload clusters on Azure.
-
 ### Fixed
 
+- Fix a problem preventing the `login` command from creating a client certificate for older workload clusters on Azure.
 - Fix the problem where the `template cluster` output for a v20 Cluster API cluster on AWS contained a bad infrastructure reference, resulting in the cluster not being provisioned.
 
 ## [1.53.0] - 2021-11-29
