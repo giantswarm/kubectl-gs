@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Fix CRD API version for EKS infrastcture ref in cluster CR template. 
 
+### Changed
+
+- When generating a kubeconfig, look for the generated secret in org namespace and fallback to default namespace to support legacy Azure clusters.
+
 ## [1.53.0] - 2021-11-29
 
 ### Changed
