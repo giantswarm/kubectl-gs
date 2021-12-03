@@ -29,7 +29,6 @@ const (
 	flagOpenStackFailureDomain        = "failure-domain"
 	flagOpenStackImageName            = "image-name"
 	flagOpenStackNodeMachineFlavor    = "node-machine-flavor"
-	flagOpenStackSSHKeyName           = "ssh-key-name"
 	flagOpenStackNodeCIDR             = "node-cidr"
 	flagOpenStackRootVolumeDiskSize   = "root-volume-disk-size"
 	flagOpenStackRootVolumeSourceType = "root-volume-source-type"
@@ -66,7 +65,6 @@ type openStackFlag struct {
 	RootVolumeDiskSize   string   // <no equivalent env var>
 	RootVolumeSourceType string   // <no equivalent env var>
 	RootVolumeSourceUUID string   // <no equivalent env var>
-	SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
 	NodeCIDR             string   // <no equivalent env var>
 }
 
@@ -102,18 +100,30 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 
 	// OpenStack only.
-	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "openstack", "Name of cloud (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "cloud-config", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "ubuntu-2004-kube-v1.20.9", "Image name (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeMachineFlavor, flagOpenStackNodeMachineFlavor, "", "Node machine flavor (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeDiskSize, flagOpenStackRootVolumeDiskSize, "", "Root volume disk size (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.SSHKeyName, flagOpenStackSSHKeyName, "", "SSH key name (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
+
+	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
+	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
+	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
+	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
+	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackFailureDomain)
+	_ = cmd.Flags().MarkHidden(flagOpenStackImageName)
+	_ = cmd.Flags().MarkHidden(flagOpenStackNodeMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceType)
+	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceUUID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")

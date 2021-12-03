@@ -40,7 +40,6 @@ type ClusterCRsConfig struct {
 	RootVolumeDiskSize   string   // <no equivalent env var>
 	RootVolumeSourceType string   // <no equivalent env var>
 	RootVolumeSourceUUID string   // <no equivalent env var>
-	SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
 
 	// Common.
 	FileName       string

@@ -78,7 +78,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeDiskSize:   r.flag.OpenStack.RootVolumeDiskSize,
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
-			SSHKeyName:           r.flag.OpenStack.SSHKeyName,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {

@@ -1,11 +1,8 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"io"
-	"os"
-	"path/filepath"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -15,19 +12,6 @@ import (
 )
 
 func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
-	var err error
-
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	idRsaPubBytes, err := os.ReadFile(filepath.Join(homeDir, ".ssh/id_rsa.pub"))
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	idRsaPubBytes = bytes.TrimSpace(idRsaPubBytes)
-
 	data := struct {
 		Description       string
 		KubernetesVersion string
@@ -36,7 +20,6 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Organization      string
 		PodsCIDR          string
 		ReleaseVersion    string
-		SSHPublicKey      string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.1",
@@ -45,7 +28,6 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Organization:      config.Organization,
 		PodsCIDR:          config.PodsCIDR,
 		ReleaseVersion:    config.ReleaseVersion,
-		SSHPublicKey:      string(idRsaPubBytes),
 	}
 
 	var templates []templateConfig
@@ -53,7 +35,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		templates = append(templates, templateConfig(t))
 	}
 
-	err = runMutation(ctx, client, data, templates, out)
+	err := runMutation(ctx, client, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}

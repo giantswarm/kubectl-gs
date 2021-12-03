@@ -19,7 +19,6 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		Organization      string
 		PodsCIDR          string
 		ReleaseVersion    string
-		SSHPublicKey      string
 
 		Cloud                string   // OPENSTACK_CLOUD
 		CloudConfig          string   // <no equivalent env var>
@@ -32,7 +31,6 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		RootVolumeDiskSize   string   // <no equivalent env var>
 		RootVolumeSourceType string   // <no equivalent env var>
 		RootVolumeSourceUUID string   // <no equivalent env var>
-		SSHKeyName           string   // OPENSTACK_SSH_KEY_NAME
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.9",
@@ -53,7 +51,6 @@ func WriteOpenStackTemplate(ctx context.Context, client k8sclient.Interface, out
 		RootVolumeDiskSize:   config.RootVolumeDiskSize,
 		RootVolumeSourceType: config.RootVolumeSourceType,
 		RootVolumeSourceUUID: config.RootVolumeSourceUUID,
-		SSHKeyName:           config.SSHKeyName,
 	}
 
 	var templates []templateConfig
