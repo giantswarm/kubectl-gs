@@ -1,0 +1,187 @@
+---
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: Cluster
+metadata:
+  annotations:
+    cluster.giantswarm.io/description: ""
+  labels:
+    cluster-apps-operator.giantswarm.io/version: 0.6.0
+    cluster.x-k8s.io/cluster-name: jq90x
+    cluster.x-k8s.io/watch-filter: capi
+    giantswarm.io/cluster: jq90x
+    giantswarm.io/organization: giantswarm-2
+    release.giantswarm.io/version: 20.0.0-alpha1
+  name: jq90x
+  namespace: org-giantswarm-2
+spec:
+  controlPlaneEndpoint:
+    host: ""
+    port: 0
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+    kind: KubeadmControlPlane
+    name: jq90x
+    namespace: org-giantswarm-2
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+    kind: OpenStackCluster
+    name: jq90x
+    namespace: org-giantswarm-2
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: OpenStackCluster
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: jq90x
+    giantswarm.io/cluster: jq90x
+    giantswarm.io/organization: giantswarm-2
+    release.giantswarm.io/version: 20.0.0-alpha1
+  name: jq90x
+  namespace: org-giantswarm-2
+spec:
+  cloudName: openstack
+  externalNetworkId: cdbcb519-1f91-43fb-b0a9-312f0abf8f12
+  identityRef:
+    kind: Secret
+    name: cloud-config
+  managedAPIServerLoadBalancer: true
+  managedSecurityGroups: true
+  nodeCidr: 10.6.0.0/24
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+kind: KubeadmControlPlane
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: jq90x
+    giantswarm.io/cluster: jq90x
+    giantswarm.io/organization: giantswarm-2
+    release.giantswarm.io/version: 20.0.0-alpha1
+  name: jq90x
+  namespace: org-giantswarm-2
+spec:
+  kubeadmConfigSpec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: external
+      controllerManager:
+        extraArgs:
+          cloud-provider: external
+      dns: {}
+      etcd: {}
+      networking: {}
+      scheduler: {}
+    initConfiguration:
+      localAPIEndpoint: {}
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: external
+        name: '{{ local_hostname }}'
+    joinConfiguration:
+      discovery: {}
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: external
+        name: '{{ local_hostname }}'
+    useExperimentalRetryJoin: true
+  machineTemplate:
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+      kind: OpenStackMachineTemplate
+      name: jq90x
+      namespace: org-giantswarm-2
+    metadata: {}
+  replicas: 1
+  rolloutStrategy:
+    rollingUpdate:
+      maxSurge: 1
+    type: RollingUpdate
+  version: v1.20.9
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
+kind: KubeadmConfigTemplate
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: jq90x
+    giantswarm.io/cluster: jq90x
+    giantswarm.io/organization: giantswarm-2
+    release.giantswarm.io/version: 20.0.0-alpha1
+  name: jq90x-md-0
+  namespace: org-giantswarm-2
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-provider: external
+          name: '{{ local_hostname }}'
+---
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: MachineDeployment
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: jq90x
+    cluster.x-k8s.io/watch-filter: capi
+    giantswarm.io/cluster: jq90x
+    giantswarm.io/organization: giantswarm-2
+    release.giantswarm.io/version: 20.0.0-alpha1
+  name: jq90x-md
+  namespace: org-giantswarm-2
+spec:
+  clusterName: jq90x
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: jq90x
+      cluster.x-k8s.io/deployment-name: jq90x-md-0
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: jq90x
+        cluster.x-k8s.io/deployment-name: jq90x-md-0
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
+          kind: KubeadmConfigTemplate
+          name: jq90x-md-0
+      clusterName: jq90x
+      failureDomain: gb-lon-1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+        kind: OpenStackMachineTemplate
+        name: jq90x
+      version: v1.20.9
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+kind: OpenStackMachineTemplate
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: jq90x
+    giantswarm.io/cluster: jq90x
+    giantswarm.io/organization: giantswarm-2
+    release.giantswarm.io/version: 20.0.0-alpha1
+  name: jq90x
+  namespace: org-giantswarm-2
+spec:
+  template:
+    spec:
+      cloudName: openstack
+      flavor: n1.small
+      identityRef:
+        kind: Secret
+        name: cloud-config
+      image: ubuntu-2004-kube-v1.20.9
+      rootVolume:
+        diskSize: 50
+        sourceType: image
+        sourceUUID: 857c9ff3-ac41-4aa3-bfde-2bb0cc4600f1
