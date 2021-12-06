@@ -21,10 +21,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-const (
-	clusterCRFileName = "clusterCR"
-)
-
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
@@ -59,17 +55,29 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterCRsConfig
 	{
 		config = provider.ClusterCRsConfig{
-			FileName:           clusterCRFileName,
-			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
-			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
-			ExternalSNAT:       r.flag.ExternalSNAT,
-			EKS:                r.flag.EKS,
-			Description:        r.flag.Description,
-			Name:               r.flag.Name,
-			Organization:       r.flag.Organization,
-			PodsCIDR:           r.flag.PodsCIDR,
-			ReleaseVersion:     r.flag.Release,
-			Namespace:          metav1.NamespaceDefault,
+			ControlPlaneAZ: r.flag.ControlPlaneAZ,
+			Description:    r.flag.Description,
+			Name:           r.flag.Name,
+			Organization:   r.flag.Organization,
+			PodsCIDR:       r.flag.PodsCIDR,
+			ReleaseVersion: r.flag.Release,
+			Namespace:      metav1.NamespaceDefault,
+
+			ControlPlaneSubnet: r.flag.AWS.ControlPlaneSubnet,
+			ExternalSNAT:       r.flag.AWS.ExternalSNAT,
+			EKS:                r.flag.AWS.EKS,
+
+			Cloud:                r.flag.OpenStack.Cloud,
+			CloudConfig:          r.flag.OpenStack.CloudConfig,
+			DNSNameservers:       r.flag.OpenStack.DNSNameservers,
+			ExternalNetworkID:    r.flag.OpenStack.ExternalNetworkID,
+			FailureDomain:        r.flag.OpenStack.FailureDomain,
+			ImageName:            r.flag.OpenStack.ImageName,
+			NodeCIDR:             r.flag.OpenStack.NodeCIDR,
+			NodeMachineFlavor:    r.flag.OpenStack.NodeMachineFlavor,
+			RootVolumeDiskSize:   r.flag.OpenStack.RootVolumeDiskSize,
+			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
+			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -88,7 +96,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		if r.flag.Provider == key.ProviderAzure {
+		if r.flag.Provider != key.ProviderAWS {
 			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 		}
 	}
@@ -125,8 +133,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case key.ProviderVsphere:
-		err = provider.WriteCAPVTemplate(ctx, c.K8sClient, output, config)
+	case key.ProviderOpenStack:
+		err = provider.WriteOpenStackTemplate(ctx, c.K8sClient, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	case key.ProviderVSphere:
+		err = provider.WriteVSphereTemplate(ctx, c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

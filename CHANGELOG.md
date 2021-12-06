@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add alpha support for OpenStack cluster templating.
+
 ## [1.54.0] - 2021-12-03
 
 ### Fixed

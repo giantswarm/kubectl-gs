@@ -17,14 +17,11 @@ spec:
       cidrBlocks:
       - {{ .PodsCIDR }}
 {{- end }}
-  controlPlaneEndpoint:
-    host: 10.0.6.191
-    port: 6443
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
     kind: KubeadmControlPlane
     name: {{ .Name }}
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
-    kind: VSphereCluster
+    kind: OpenStackCluster
     name: {{ .Name }}
