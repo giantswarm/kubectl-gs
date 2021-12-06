@@ -9,7 +9,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Alpha support for OpenStack cluster templating.
+- Add alpha support for OpenStack cluster templating.
+
+## [1.54.0] - 2021-12-03
+
+### Fixed
+
+- Fix a problem preventing the `login` command from creating a client certificate for older workload clusters on Azure.
+- Fix the problem where the `template cluster` output for a v20 Cluster API cluster on AWS contained a bad infrastructure reference, resulting in the cluster not being provisioned.
 
 ## [1.53.0] - 2021-11-29
 
@@ -655,7 +662,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.54.0...HEAD
+[1.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...v1.54.0
 [1.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...v1.53.0
 [1.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
