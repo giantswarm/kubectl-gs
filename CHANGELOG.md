@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io`.
+
 ## [1.55.0] - 2021-12-06
 
 ### Added

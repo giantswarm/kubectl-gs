@@ -48,6 +48,11 @@ func Test_GetBasePath(t *testing.T) {
 			url:            "https://api.g8s.test.eu-west-1.aws.coolio.com",
 			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
 		},
+		{
+			name:           "case 5: new style url",
+			url:            "https://api.installation.customer.gigantic.io:6443",
+			expectedResult: "installation.customer.gigantic.io",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -64,7 +69,7 @@ func Test_GetBasePath(t *testing.T) {
 			}
 
 			if basePath != tc.expectedResult {
-				t.Fatalf("base path not expected, got: %s", basePath)
+				t.Fatalf("base path not expected, got: %s, want: %s", basePath, tc.expectedResult)
 			}
 		})
 	}
