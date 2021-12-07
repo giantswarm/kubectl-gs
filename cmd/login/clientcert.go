@@ -110,13 +110,11 @@ func createCert(ctx context.Context, clientCertService clientcert.Interface, con
 // fetchCredential tries to fetch the client certificate credential
 // for a couple of times, until the resource is fetched, or until the timeout is reached.
 func fetchCredential(ctx context.Context, provider string, clientCertService clientcert.Interface, clientCert *clientcert.ClientCert) (*corev1.Secret, error) {
-	credentialNamespace := determineCredentialNamespace(clientCert, provider)
-
 	var secret *corev1.Secret
 	var err error
 
 	o := func() error {
-		secret, err = clientCertService.GetCredential(ctx, credentialNamespace, clientCert.CertConfig.Name)
+		secret, err = clientCertService.GetCredential(ctx, clientCert.CertConfig.GetNamespace(), clientCert.CertConfig.Name)
 		if clientcert.IsNotFound(err) {
 			// Client certificate credential has not been created yet, try again until it is.
 			return microerror.Mask(err)
@@ -297,14 +295,6 @@ func getAllOrganizationNamespaces(ctx context.Context, organizationService organ
 	}
 
 	return namespaces, nil
-}
-
-func determineCredentialNamespace(clientCert *clientcert.ClientCert, provider string) string {
-	if provider == key.ProviderAzure {
-		return metav1.NamespaceDefault
-	}
-
-	return clientCert.CertConfig.GetNamespace()
 }
 
 func fetchCluster(ctx context.Context, clusterService cluster.Interface, provider, namespace, name string) (*cluster.Cluster, error) {

@@ -61,10 +61,17 @@ func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
 }
 
 func (s *Service) GetCredential(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
-	secret, err := s.client.K8sClient.K8sClient().CoreV1().Secrets(namespace).Get(ctx, name, metav1.GetOptions{})
+	secret := &corev1.Secret{}
+	err := s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{Name: name, Namespace: namespace}, secret)
 	if apierrors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
-	} else if err != nil {
+		// Try in default namespace for legacy azure clusters.
+		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{Name: name, Namespace: metav1.NamespaceDefault}, secret)
+		if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		}
+	}
+
+	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
