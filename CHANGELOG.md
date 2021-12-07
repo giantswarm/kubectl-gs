@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.56.0] - 2021-12-07
+
 ### Added
 
 - Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io`.
@@ -668,7 +670,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.55.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.56.0...HEAD
+[1.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.55.0...v1.56.0
 [1.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.54.0...v1.55.0
 [1.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...v1.54.0
 [1.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...v1.53.0
