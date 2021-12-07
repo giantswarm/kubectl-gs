@@ -36,7 +36,7 @@ func GetUrlType(u string) int {
 
 func isK8sApiUrl(u string) bool {
 	u = strings.SplitN(u, ":", 2)[0]
-	return k8sApiURLRegexp.MatchString(u) || (strings.HasPrefix(u, "api") && strings.HasSuffix(u, "gigantic.io"))
+	return k8sApiURLRegexp.MatchString(u) || (strings.HasPrefix(u, "api.") && strings.HasSuffix(u, ".gigantic.io"))
 }
 
 func isHappaUrl(u string) bool {
