@@ -239,8 +239,8 @@ github.com/giantswarm/apiextensions/v3 v3.30.0/go.mod h1:PcU7LAi0E8lOXoPp2wD7AY/
 github.com/giantswarm/apiextensions/v3 v3.38.0/go.mod h1:JgJfW2MjWKTAXfJ77rMcmKjVl3blvGSBWy43SVrpHY0=
 github.com/giantswarm/apiextensions/v3 v3.39.0 h1:+5N0QGFfck9ZckxXC0QWziIBhhdXO2hWCDbBQOeJwSY=
 github.com/giantswarm/apiextensions/v3 v3.39.0/go.mod h1:T2OVrXtzLFmtzFHZE80kWvvqnPe+xxGIxP3YKyIbrE0=
-github.com/giantswarm/app/v5 v5.6.0 h1:Gu7Rc/9EZtzl//k38HC0CIZWt0nUuDAw/4EGBozEJ1U=
-github.com/giantswarm/app/v5 v5.6.0/go.mod h1:ZwY4Bub/IOUn1VEvaMkBLD2eeWZCW0/dPO+ngANLRYM=
+github.com/giantswarm/app/v5 v5.6.1 h1:iXbHzV2diHSw1+Yhrsuhw95wlE72ve1NW1oQpCvQIys=
+github.com/giantswarm/app/v5 v5.6.1/go.mod h1:ZwY4Bub/IOUn1VEvaMkBLD2eeWZCW0/dPO+ngANLRYM=
 github.com/giantswarm/appcatalog v0.6.0 h1:lJMmiPK2pyWQtOaLlBwq0Ut1XrMhcnGeA+3j4OMHyfU=
 github.com/giantswarm/appcatalog v0.6.0/go.mod h1:MaglaykZAeFukjpD/jVHrm/zZFwa9uusuN6BgT4NXpY=
 github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
@@ -251,8 +251,9 @@ github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3 h1:hfYVY9E862A
 github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3/go.mod h1:v/WBSPW45C0QHslLmrmg7YGGmaN70kT2XxjDKby8Yh4=
 github.com/giantswarm/k8sclient/v5 v5.12.0 h1:oG5k7LLqMT+OaR/jMqOAQMTCpv5OdwjcJhFYGdIPThQ=
 github.com/giantswarm/k8sclient/v5 v5.12.0/go.mod h1:KXRSG1t+XBDsXx089Jp9agMjQ4xEIWywJUchAZ2OQ6c=
-github.com/giantswarm/k8smetadata v0.6.0 h1:L3opjzcNzetPacI4zOcYxDAvp6ssM/QLfuXZTQ5Otyo=
 github.com/giantswarm/k8smetadata v0.6.0/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
+github.com/giantswarm/k8smetadata v0.7.1 h1:Wc49mhisTc1BgaDGEPtnP7VCozuoa3DI/Txx4p++sdo=
+github.com/giantswarm/k8smetadata v0.7.1/go.mod h1:k3DYCMdspxhk7efLkQdX1b8UZ71ijOCG3ZoIU8+5xgw=
 github.com/giantswarm/microerror v0.2.0/go.mod h1:1YtJq/m7Vlq1Y6NP7B+SODOKCGlG7e5wctV2OoE9n34=
 github.com/giantswarm/microerror v0.3.0 h1:V/9cXlIEddNGaRYiA0vYJmgM2+sTQy+k8M7kVjOy4XM=
 github.com/giantswarm/microerror v0.3.0/go.mod h1:g8oCEMFAoEs70riRRmj9+6eiz7SqNxYl+2OfxFh1po0=
