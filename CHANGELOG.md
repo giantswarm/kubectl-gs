@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Modify `STATUS` column of `get releases` command table output to display release state.
+
 ## [1.56.0] - 2021-12-07
 
 ### Added
