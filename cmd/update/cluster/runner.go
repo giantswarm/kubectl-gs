@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 )
@@ -76,19 +77,35 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	patches := cluster.PatchOptions{
-		PatchSpecs: []cluster.PatchSpec{
-			{
-				Op:    "add",
-				Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetRelease)),
-				Value: targetRelease,
+	var patches cluster.PatchOptions
+	var msg string
+	if scheduledTime != "" {
+		patches = cluster.PatchOptions{
+			PatchSpecs: []cluster.PatchSpec{
+				{
+					Op:    "add",
+					Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetRelease)),
+					Value: targetRelease,
+				},
+				{
+					Op:    "add",
+					Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetTime)),
+					Value: scheduledTime,
+				},
 			},
-			{
-				Op:    "add",
-				Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetTime)),
-				Value: scheduledTime,
+		}
+		msg = fmt.Sprintf("Cluster '%s' is scheduled on '%v' to update to release version '%s'\n", name, scheduledTime, targetRelease)
+	} else {
+		patches = cluster.PatchOptions{
+			PatchSpecs: []cluster.PatchSpec{
+				{
+					Op:    "add",
+					Path:  fmt.Sprintf("/metadata/labels/%s", replaceToEscape(label.ReleaseVersion)),
+					Value: targetRelease,
+				},
 			},
-		},
+		}
+		msg = fmt.Sprintf("Cluster '%s' is updated to release version '%s'\n", name, targetRelease)
 	}
 
 	err = r.service.Patch(ctx, resource.Object(), patches)
@@ -96,7 +113,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "Cluster '%s' is scheduled on '%v' to update to release version '%s'\n", name, scheduledTime, targetRelease)
+	fmt.Fprintln(r.stdout, msg)
 	return nil
 }
 
