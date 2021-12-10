@@ -27,7 +27,7 @@ Options:
   --namespace <namespace>     		Namespace of the cluster.
   --release-version <release-version>   Update the cluster to a release version. The release version must be higher than the current release version.
   --scheduled-time <scheduled-time>     Scheduled time when cluster should be updated. The value has to be in RFC822 Format and UTC time zone.
-  --provider <provider> 			Name of the provider.`
+  --provider <provider> 		Name of the provider.`
 
 	examples = `  # Display this help
 kubectl gs update cluster --help

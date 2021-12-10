@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add `update cluster` to set cluster updates on a scheduled time .
+- Add support scheduling cluster updates.
 
 ## [1.56.0] - 2021-12-07
 
