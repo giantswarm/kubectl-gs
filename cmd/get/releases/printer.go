@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -105,10 +106,7 @@ func getTableRow(release release.Release) metav1.TableRow {
 		return metav1.TableRow{}
 	}
 
-	status := "inactive"
-	if release.CR.Status.Ready {
-		status = "active"
-	}
+	status := getReleaseStatus(release.CR.Spec.State)
 
 	kubernetesVersion := naValue
 	containerLinuxVersion := naValue
@@ -150,4 +148,12 @@ func getTableRow(release release.Release) metav1.TableRow {
 			Object: release.CR,
 		},
 	}
+}
+
+func getReleaseStatus(status releasev1alpha1.ReleaseState) string {
+	if status == "" {
+		return naValue
+	}
+
+	return strings.ToUpper(status.String())
 }
