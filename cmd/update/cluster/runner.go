@@ -108,7 +108,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				},
 			},
 		}
-		messageFormat := "An upgrade of cluster %s to release %s has been scheduled for\n    %v, (%v)"
+		messageFormat := "An upgrade of cluster %s to release %s has been scheduled for\n\n    %v, (%v)"
 		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
 	} else {
 		patches = cluster.PatchOptions{
