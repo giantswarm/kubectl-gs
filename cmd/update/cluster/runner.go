@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
@@ -45,11 +46,24 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
+	var scheduledTime string
+	var t time.Time
 
 	name := r.flag.Name
 	targetRelease := r.flag.ReleaseVersion
-	scheduledTime := r.flag.ScheduledTime
 	provider := r.flag.Provider
+
+	if r.flag.ScheduledTime != "" {
+		{
+			layout := "2006-01-02 15:04"
+			t, err = time.Parse(layout, r.flag.ScheduledTime)
+			if err != nil {
+				fmt.Println(err)
+				return microerror.Maskf(notAllowedError, "Scheduled time has not the right time format, please use 'YYYY-MM-DD HH:MM' as the time format.")
+			}
+			scheduledTime = t.Format(time.RFC822)
+		}
+	}
 
 	config := commonconfig.New(r.flag.config)
 	{
@@ -94,7 +108,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				},
 			},
 		}
-		msg = fmt.Sprintf("Cluster '%s' is scheduled on '%v' to update to release version '%s'\n", name, scheduledTime, targetRelease)
+		messageFormat := `An upgrade of cluster %s to release %s has been scheduled for
+
+		%v, (%v)
+		`
+		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
 	} else {
 		patches = cluster.PatchOptions{
 			PatchSpecs: []cluster.PatchSpec{

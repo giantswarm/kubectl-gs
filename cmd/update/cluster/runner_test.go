@@ -27,7 +27,7 @@ func Test_run(t *testing.T) {
 		{
 			name:    "update cluster with a scheduled time",
 			storage: []runtime.Object{newCluster("abcd1", "default", "16.0.1"), newAWSCluster("abcd1", "default", "16.0.1")},
-			flags:   flag{Name: "abcd1", ReleaseVersion: "16.1.0", ScheduledTime: "30 Jan 22 12:00 UTC", Provider: "aws"},
+			flags:   flag{Name: "abcd1", ReleaseVersion: "16.1.0", ScheduledTime: "2022-01-01 01:00", Provider: "aws"},
 		},
 		{
 			name:    "update cluster immediately",
