@@ -134,7 +134,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteOpenStackTemplate(ctx, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

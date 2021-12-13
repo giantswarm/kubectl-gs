@@ -6,13 +6,16 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
+	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/openstack"
 )
 
-func WriteOpenStackTemplate(ctx context.Context, out io.Writer, config ClusterCRsConfig) error {
+func WriteCAPOTemplate(ctx context.Context, out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
 	data := struct {
 		Description       string
 		KubernetesVersion string
+		ClusterName       string
 		Name              string
 		Namespace         string
 		Organization      string
@@ -33,10 +36,10 @@ func WriteOpenStackTemplate(ctx context.Context, out io.Writer, config ClusterCR
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.9",
-		Name:              config.Name,
+		ClusterName:       config.ClusterName,
+		Name:              config.NodePoolID,
 		Namespace:         config.Namespace,
 		Organization:      config.Organization,
-		PodsCIDR:          config.PodsCIDR,
 		ReleaseVersion:    config.ReleaseVersion,
 
 		Cloud:                config.Cloud,
@@ -52,12 +55,7 @@ func WriteOpenStackTemplate(ctx context.Context, out io.Writer, config ClusterCR
 		RootVolumeSourceUUID: config.RootVolumeSourceUUID,
 	}
 
-	var templates []templateConfig
-	for _, t := range openstack.GetTemplates() {
-		templates = append(templates, templateConfig(t))
-	}
-
-	err := runMutation(ctx, data, templates, out)
+	err = runMutation(ctx, nil, data, openstack.GetTemplates(), out)
 	if err != nil {
 		return microerror.Mask(err)
 	}

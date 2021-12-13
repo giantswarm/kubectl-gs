@@ -13,12 +13,6 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	apiyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
-	"k8s.io/client-go/discovery"
-	memory "k8s.io/client-go/discovery/cached"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/restmapper"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
@@ -37,6 +31,19 @@ type NodePoolCRsConfig struct {
 	VMSize            string
 	AzureUseSpotVms   bool
 	AzureSpotMaxPrice float32
+
+	//Openstack only.
+	Cloud                string   // OPENSTACK_CLOUD
+	CloudConfig          string   // <no equivalent env var>>
+	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
+	ExternalNetworkID    string   // <no equivalent env var>
+	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
+	ImageName            string   // OPENSTACK_IMAGE_NAME
+	NodeCIDR             string   // <no equivalent env var>
+	NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
+	RootVolumeDiskSize   string   // <no equivalent env var>
+	RootVolumeSourceType string   // <no equivalent env var>
+	RootVolumeSourceUUID string   // <no equivalent env var>
 
 	// Common.
 	FileName          string
@@ -117,19 +124,6 @@ func toInt32Ptr(i int32) *int32 {
 func runMutation(ctx context.Context, client k8sclient.Interface, templateData interface{}, input []string, output io.Writer) error {
 	var err error
 
-	// Create a DiscoveryClient to get the GVR.
-	dc, err := discovery.NewDiscoveryClientForConfig(client.RESTConfig())
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// Create a DynamicClient to execute our request.
-	dyn, err := dynamic.NewForConfig(client.RESTConfig())
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
 	for _, t := range input {
 		// Add separators to make the entire file valid yaml and allow easy appending.
 		_, err = output.Write([]byte("---\n"))
@@ -140,51 +134,6 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		var buf bytes.Buffer
 		// Template from our inputs.
 		err = te.Execute(&buf, templateData)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		// Transform to unstructured.Unstructured.
-		obj := &unstructured.Unstructured{}
-		dec := apiyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
-		_, gvk, err := dec.Decode(buf.Bytes(), nil, obj)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		// Mapping needed for the dynamic client.
-		mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		// Get namespace information from object.
-		namespace, namespaced, err := unstructured.NestedString(obj.Object, "metadata", "namespace")
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		var defaultedObj *unstructured.Unstructured
-		// Execute our request as a `DryRun` - no resources will be persisted.
-		if namespaced {
-			defaultedObj, err = dyn.Resource(mapping.Resource).Namespace(namespace).Create(ctx, obj, metav1.CreateOptions{DryRun: []string{"All"}})
-			if err != nil {
-				// TODO handle different kinds of errors (e.g. validation) here.
-				return microerror.Mask(err)
-			}
-		} else {
-			defaultedObj, err = dyn.Resource(mapping.Resource).Create(ctx, obj, metav1.CreateOptions{DryRun: []string{"All"}})
-			if err != nil {
-				// TODO handle different kinds of errors (e.g. validation) here.
-				return microerror.Mask(err)
-			}
-		}
-		// Strip `managedFields` for better readability.
-		unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "managedFields")
-		// Strip some metadata fields for better UX.
-		unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "creationTimestamp")
-		unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "generation")
-		unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "selfLink")
-		unstructured.RemoveNestedField(defaultedObj.Object, "metadata", "uid")
-		// Unstructured to JSON.
-		buf = *new(bytes.Buffer)
-		err = dec.Encode(defaultedObj, &buf)
 		if err != nil {
 			return microerror.Mask(err)
 		}

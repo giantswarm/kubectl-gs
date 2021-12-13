@@ -8,6 +8,7 @@ metadata:
     giantswarm.io/cluster: {{ .Name }}
     cluster.x-k8s.io/cluster-name: {{ .Name }}
     giantswarm.io/organization: {{ .Organization }}
+    cluster-apps-operator.giantswarm.io/version: 0.6.0
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
@@ -21,7 +22,9 @@ spec:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
     kind: KubeadmControlPlane
     name: {{ .Name }}
+    namespace: {{ .Namespace }}
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
     kind: OpenStackCluster
     name: {{ .Name }}
+    namespace: {{ .Namespace }}

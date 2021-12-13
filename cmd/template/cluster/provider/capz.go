@@ -93,7 +93,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		templates = append(templates, templateConfig(t))
 	}
 
-	err = runMutation(ctx, client, data, templates, out)
+	err = runMutation(ctx, data, templates, out)
 	if err != nil {
 		return microerror.Mask(err)
 	}
