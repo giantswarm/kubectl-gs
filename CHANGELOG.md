@@ -21,7 +21,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io`.
+- Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io` for `kubectl-gs login` command.
 
 ## [1.55.0] - 2021-12-06
 
