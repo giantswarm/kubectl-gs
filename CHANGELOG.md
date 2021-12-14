@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support cluster updates and scheduling cluster updates.
+
 ## [1.57.0] - 2021-12-09
 
 ### Changed

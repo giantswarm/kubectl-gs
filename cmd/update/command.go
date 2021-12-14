@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd/update/app"
+	"github.com/giantswarm/kubectl-gs/cmd/update/cluster"
 )
 
 const (
@@ -59,6 +60,23 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var clusterCmd *cobra.Command
+	{
+		c := cluster.Config{
+			Logger: config.Logger,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		clusterCmd, err = cluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -78,6 +96,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(appCmd)
+	c.AddCommand(clusterCmd)
 
 	return c, nil
 }
