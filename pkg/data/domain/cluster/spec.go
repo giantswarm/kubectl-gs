@@ -16,11 +16,22 @@ type GetOptions struct {
 	Namespace string
 }
 
+type PatchOptions struct {
+	PatchSpecs []PatchSpec
+}
+
+type PatchSpec struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
+
 // Interface represents the contract for the clusters service.
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
+	Patch(context.Context, runtime.Object, PatchOptions) error
 }
 
 type Resource interface {

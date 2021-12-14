@@ -6,7 +6,7 @@ orbs:
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2021.11
+      - image: cimg/base:2021.12
     steps:
       - checkout
       - run: |
@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: cimg/go:1.17.3
+      - image: cimg/go:1.17.5
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38

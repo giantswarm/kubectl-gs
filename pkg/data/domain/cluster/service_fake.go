@@ -2,10 +2,14 @@ package cluster
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 )
@@ -50,4 +54,20 @@ func (ms *FakeService) Get(ctx context.Context, options GetOptions) (Resource, e
 	}
 
 	return result, nil
+}
+
+func (ms *FakeService) Patch(ctx context.Context, object runtime.Object, options PatchOptions) error {
+	var err error
+
+	bytes, err := json.Marshal(options.PatchSpecs)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = ms.service.client.K8sClient.CtrlClient().Patch(ctx, object, runtimeclient.RawPatch(types.JSONPatchType, bytes))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }
