@@ -1,0 +1,36 @@
+apiVersion: cluster.x-k8s.io/v1alpha4
+kind: ClusterClass
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  controlPlane:
+    ref:
+      apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+      kind: KubeadmControlPlaneTemplate
+      name: {{ .Name }}
+  workers:
+    machineDeployments:
+    - class: {{ .Name }}-worker
+      template:
+        bootstrap:
+          ref:
+            apiVersion: bootstrap.cluster.x-k8s.io/v1alpha4
+            kind: KubeadmConfigTemplate
+            name: {{ .Name }}
+        infrastructure:
+          ref:
+            apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+            kind: OpenStackMachineTemplate
+            name: {{ .Name }}
+        metadata:
+          labels:
+            cluster.x-k8s.io/cluster-name: {{ .Name }}
+            giantswarm.io/cluster: {{ .Name }}
+            giantswarm.io/organization: {{ .Organization }}
+            release.giantswarm.io/version: {{ .ReleaseVersion }}
+  infrastructure:
+    ref:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+      kind: OpenStackClusterTemplate
+      name: {{ .Name }}

@@ -17,11 +17,23 @@ spec:
       cidrBlocks:
       - {{ .PodsCIDR }}
 {{- end }}
-  controlPlaneRef:
-    apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
-    kind: KubeadmControlPlane
-    name: {{ .Name }}
-  infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
-    kind: OpenStackCluster
-    name: {{ .Name }}
+  topology:
+    class: {{ .Name }}
+    version: {{ .KubernetesVersion }}
+    controlPlane:
+      replicas: 1
+      labels:
+        cluster.x-k8s.io/cluster-name: {{ .Name }}
+        giantswarm.io/cluster: {{ .Name }}
+        giantswarm.io/organization: {{ .Organization }}
+        release.giantswarm.io/version: {{ .ReleaseVersion }}
+    workers:
+      machineDeployments:
+      - class: {{ .Name }}-worker
+        name: {{ .Name }}-worker
+        replicas: 3
+        labels:
+          cluster.x-k8s.io/cluster-name: {{ .Name }}
+          giantswarm.io/cluster: {{ .Name }}
+          giantswarm.io/organization: {{ .Organization }}
+          release.giantswarm.io/version: {{ .ReleaseVersion }}

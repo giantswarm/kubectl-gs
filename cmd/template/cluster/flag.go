@@ -107,8 +107,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "ubuntu-2004-kube-v1.20.9", "Image name (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeMachineFlavor, flagOpenStackNodeMachineFlavor, "", "Node machine flavor (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.RootVolumeDiskSize, flagOpenStackRootVolumeDiskSize, "", "Root volume disk size (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.RootVolumeDiskSize, flagOpenStackRootVolumeDiskSize, "50", "Root volume disk size (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "image", "Root volume source type (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
 
@@ -135,7 +135,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
-	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "v20.0.0-alpha1", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
