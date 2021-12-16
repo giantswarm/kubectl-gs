@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Populate the nodepool release label for AWS provider
+
 ## [1.58.0] - 2021-12-14
 
 ### Added
