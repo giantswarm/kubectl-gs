@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Adjust `login` to consider other prefixes while parsing the MC API endpoint.
+
 ## [1.58.1] - 2021-12-17
 
 ### Fixed
