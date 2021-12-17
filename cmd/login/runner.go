@@ -488,5 +488,8 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 	reg := regexp.MustCompile(`:[0-9]+$`)
 	clusterServer = reg.ReplaceAllString(clusterServer, "")
 
+	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
+	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
+
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
 }
