@@ -47,11 +47,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	appConfig := templateapp.Config{
+		AppName:           r.flag.AppName,
 		Catalog:           r.flag.Catalog,
-		Name:              r.flag.Name,
-		Namespace:         r.flag.Namespace,
 		Cluster:           r.flag.Cluster,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
+		InCluster:         r.flag.InCluster,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
 		Version:           r.flag.Version,
 	}
 
@@ -61,9 +63,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
+		var assetName string
+		if r.flag.InCluster {
+			assetName = key.GenerateAssetName(r.flag.Name, "userconfig")
+		} else {
+			assetName = key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster)
+		}
+
 		secretConfig := templateapp.SecretConfig{
 			Data:      userConfigSecretData,
-			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
+			Name:      assetName,
 			Namespace: r.flag.Cluster,
 		}
 		userSecret, err := templateapp.NewSecret(secretConfig)
@@ -86,9 +95,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				return microerror.Mask(err)
 			}
 		}
+
+		var assetName string
+		if r.flag.InCluster {
+			assetName = key.GenerateAssetName(r.flag.Name, "userconfig")
+		} else {
+			assetName = key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster)
+		}
+
 		configMapConfig := templateapp.ConfigMapConfig{
 			Data:      configMapData,
-			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
+			Name:      assetName,
 			Namespace: r.flag.Cluster,
 		}
 		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)

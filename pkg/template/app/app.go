@@ -14,6 +14,7 @@ type Config struct {
 	Catalog                    string
 	Cluster                    string
 	DefaultingEnabled          bool
+	InCluster                  bool
 	Name                       string
 	Namespace                  string
 	NamespaceConfigAnnotations map[string]string
@@ -70,7 +71,7 @@ func NewAppCR(config Config) ([]byte, error) {
 			Name:      config.Name,
 			Namespace: config.Namespace,
 			KubeConfig: applicationv1alpha1.AppSpecKubeConfig{
-				InCluster: false,
+				InCluster: config.InCluster,
 			},
 			UserConfig: userConfig,
 			Version:    config.Version,
@@ -81,7 +82,7 @@ func NewAppCR(config Config) ([]byte, error) {
 		},
 	}
 
-	if !config.DefaultingEnabled {
+	if !config.DefaultingEnabled && !config.InCluster {
 		appCR.SetLabels(map[string]string{
 			"app-operator.giantswarm.io/version": "1.0.0",
 		})
@@ -178,7 +179,7 @@ func printAppCR(appCR *v1alpha1.App, defaultingEnabled bool) ([]byte, error) {
 	if defaultingEnabled {
 		delete(spec, "config")
 		spec["kubeConfig"] = map[string]bool{
-			"inCluster": false,
+			"inCluster": appCR.Spec.KubeConfig.InCluster,
 		}
 	}
 
