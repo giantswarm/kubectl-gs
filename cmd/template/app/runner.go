@@ -46,8 +46,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var userConfigSecretYaml []byte
 	var err error
 
+	appName := r.flag.AppName
+	if appName == "" {
+		appName = r.flag.Name
+	}
+
 	appConfig := templateapp.Config{
-		AppName:           r.flag.AppName,
+		AppName:           appName,
 		Catalog:           r.flag.Catalog,
 		Cluster:           r.flag.Cluster,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
@@ -57,23 +62,30 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Version:           r.flag.Version,
 	}
 
+	var assetName string
+	if r.flag.InCluster {
+		assetName = key.GenerateAssetName(appName, "userconfig")
+	} else {
+		assetName = key.GenerateAssetName(appName, "userconfig", r.flag.Cluster)
+	}
+
+	var namespace string
+	if r.flag.InCluster {
+		namespace = r.flag.Namespace
+	} else {
+		namespace = r.flag.Cluster
+	}
+
 	if r.flag.flagUserSecret != "" {
 		userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.flagUserSecret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		var assetName string
-		if r.flag.InCluster {
-			assetName = key.GenerateAssetName(r.flag.Name, "userconfig")
-		} else {
-			assetName = key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster)
-		}
-
 		secretConfig := templateapp.SecretConfig{
 			Data:      userConfigSecretData,
 			Name:      assetName,
-			Namespace: r.flag.Cluster,
+			Namespace: namespace,
 		}
 		userSecret, err := templateapp.NewSecret(secretConfig)
 		if err != nil {
@@ -96,17 +108,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 		}
 
-		var assetName string
-		if r.flag.InCluster {
-			assetName = key.GenerateAssetName(r.flag.Name, "userconfig")
-		} else {
-			assetName = key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster)
-		}
-
 		configMapConfig := templateapp.ConfigMapConfig{
 			Data:      configMapData,
 			Name:      assetName,
-			Namespace: r.flag.Cluster,
+			Namespace: namespace,
 		}
 		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
