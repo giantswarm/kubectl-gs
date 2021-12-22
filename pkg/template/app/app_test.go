@@ -18,6 +18,7 @@ func Test_NewAppCR(t *testing.T) {
 		{
 			name: "case 0: flawless flow",
 			config: Config{
+				AppName:           "nginx-ingress-controller-app",
 				Catalog:           "giantswarm",
 				Cluster:           "eggs2",
 				DefaultingEnabled: true,
@@ -30,6 +31,7 @@ func Test_NewAppCR(t *testing.T) {
 		{
 			name: "case 1: defaulting disabled",
 			config: Config{
+				AppName:           "nginx-ingress-controller-app",
 				Catalog:           "giantswarm",
 				Cluster:           "eggs2",
 				DefaultingEnabled: false,
@@ -42,6 +44,7 @@ func Test_NewAppCR(t *testing.T) {
 		{
 			name: "case 2: user values",
 			config: Config{
+				AppName:                 "nginx-ingress-controller-app",
 				Catalog:                 "giantswarm",
 				Cluster:                 "eggs2",
 				DefaultingEnabled:       true,
@@ -55,6 +58,7 @@ func Test_NewAppCR(t *testing.T) {
 		{
 			name: "case 3: user secrets with defauting disabled",
 			config: Config{
+				AppName:              "nginx-ingress-controller-app",
 				Catalog:              "giantswarm",
 				Cluster:              "eggs2",
 				DefaultingEnabled:    false,

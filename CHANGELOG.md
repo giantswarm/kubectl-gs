@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--in-cluster` flag to `template app` command to support installation of MC apps.
+
 ### Fixed
 
 - Adjust `login` to consider other prefixes while parsing the MC API endpoint.
