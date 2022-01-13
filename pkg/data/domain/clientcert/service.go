@@ -47,10 +47,7 @@ func (s *Service) Create(ctx context.Context, clientCert *ClientCert) error {
 }
 
 func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
-	kp := clientCert.Object()
-	namespace := runtimeclient.InNamespace(clientCert.CertConfig.Namespace)
-
-	err := s.client.K8sClient.CtrlClient().DeleteAllOf(ctx, kp, namespace)
+	err := s.client.K8sClient.CtrlClient().Delete(ctx, clientCert.CertConfig)
 	if apierrors.IsNotFound(err) {
 		// Resource was already deleted.
 	} else if err != nil {
