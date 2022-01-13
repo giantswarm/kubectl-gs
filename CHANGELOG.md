@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.58.2] - 2022-01-13
+
 ### Added
 
 - Add `--in-cluster` flag to `template app` command to support installation of MC apps.
@@ -697,7 +699,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.2...HEAD
+[1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
 [1.58.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.0...v1.58.1
 [1.58.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.57.0...v1.58.0
 [1.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.56.0...v1.57.0
