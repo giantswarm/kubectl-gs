@@ -114,6 +114,7 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
 		// Transform to unstructured.Unstructured.
 		obj := &unstructured.Unstructured{}
 		dec := apiyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)

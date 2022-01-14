@@ -134,7 +134,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, c.K8sClient, output, config)
+		if r.flag.TplType == "raw" {
+			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
+		} else if r.flag.TplType == "appcr" {
+			err = provider.WriteOpenStackTemplateAppCR(ctx, c.K8sClient, output, config)
+		} else {
+			return microerror.Maskf(invalidFlagError, "Type '%s' is not supported.\n", r.flag.TplType)
+		}
+
 		if err != nil {
 			return microerror.Mask(err)
 		}
