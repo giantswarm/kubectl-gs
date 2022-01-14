@@ -19,10 +19,11 @@ import (
 const (
 	giantswarmNamespace = "giantswarm"
 
-	providerAll    = "All"
-	providerAWS    = "AWS"
-	providerAzure  = "Azure"
-	providerVMware = "VMware"
+	providerAll       = "All"
+	providerAWS       = "AWS"
+	providerAzure     = "Azure"
+	providerOpenStack = "OpenStack"
+	providerVSphere   = "vSphere"
 )
 
 type runner struct {
@@ -47,6 +48,7 @@ type controller struct {
 
 var (
 	crds = []crd{
+		// All
 		{
 			DisplayName: "Cluster",
 			Name:        "clusters.cluster.x-k8s.io",
@@ -102,6 +104,7 @@ var (
 			Name:        "kubeadmconfigtemplates.bootstrap.cluster.x-k8s.io",
 			Provider:    providerAll,
 		},
+		// AWS
 		{
 			DisplayName: "AWS Cluster",
 			Name:        "awsclusters.infrastructure.cluster.x-k8s.io",
@@ -122,6 +125,7 @@ var (
 			Name:        "awsmachinetemplates.infrastructure.cluster.x-k8s.io",
 			Provider:    providerAWS,
 		},
+		// Azure
 		{
 			DisplayName: "Azure Cluster",
 			Name:        "azureclusters.infrastructure.cluster.x-k8s.io",
@@ -142,30 +146,47 @@ var (
 			Name:        "azuremachinetemplates.infrastructure.cluster.x-k8s.io",
 			Provider:    providerAzure,
 		},
+		// Open Stack
 		{
-			DisplayName: "VMware Cluster",
+			DisplayName: "OpenStack Cluster",
+			Name:        "openstackclusters.infrastructure.cluster.x-k8s.io",
+			Provider:    providerOpenStack,
+		},
+		{
+			DisplayName: "OpenStack Machine",
+			Name:        "openstackmachines.infrastructure.cluster.x-k8s.io",
+			Provider:    providerOpenStack,
+		},
+		{
+			DisplayName: "OpenStack Machine Template",
+			Name:        "openstackmachinetemplates.infrastructure.cluster.x-k8s.io",
+			Provider:    providerOpenStack,
+		},
+		// vSphere
+		{
+			DisplayName: "vSphere Cluster",
 			Name:        "vsphereclusters.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware Machine",
+			DisplayName: "vSphere Machine",
 			Name:        "vspheremachines.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware Machine Template",
+			DisplayName: "vSphere Machine Template",
 			Name:        "vspheremachinetemplates.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware VM",
+			DisplayName: "vSphere VM",
 			Name:        "vspherevms.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware HAProxy",
+			DisplayName: "vSphere HAProxy",
 			Name:        "haproxyloadbalancers.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 	}
 
@@ -201,10 +222,16 @@ var (
 			Provider:      providerAzure,
 		},
 		{
-			DisplayName:   "VMWare Provider",
-			LabelSelector: "app.kubernetes.io/name=cluster-api-provider-vmware",
+			DisplayName:   "OpenStack Provider",
+			LabelSelector: "app.kubernetes.io/name=cluster-api-provider-openstack",
 			ContainerName: "manager",
-			Provider:      providerVMware,
+			Provider:      providerOpenStack,
+		},
+		{
+			DisplayName:   "vSphere Provider",
+			LabelSelector: "app.kubernetes.io/name=cluster-api-provider-vsphere",
+			ContainerName: "manager",
+			Provider:      providerVSphere,
 		},
 	}
 )

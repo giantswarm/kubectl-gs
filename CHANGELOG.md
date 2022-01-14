@@ -7,6 +7,54 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.58.2] - 2022-01-13
+
+### Added
+
+- Add `--in-cluster` flag to `template app` command to support installation of MC apps.
+
+### Fixed
+
+- `login` command: Prevent deletion of all CertConfig resources in a namespace, instead delete only one.
+- Adjust `login` to consider other prefixes while parsing the MC API endpoint.
+
+## [1.58.1] - 2021-12-17
+
+### Fixed
+
+- Populate the nodepool release label for AWS provider
+
+## [1.58.0] - 2021-12-14
+
+### Added
+
+- Add support cluster updates and scheduling cluster updates.
+
+## [1.57.0] - 2021-12-09
+
+### Changed
+
+- Modify `STATUS` column of `get releases` command table output to display release state.
+
+## [1.56.0] - 2021-12-07
+
+### Added
+
+- Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io` for `kubectl-gs login` command.
+
+## [1.55.0] - 2021-12-06
+
+### Added
+
+- Add alpha support for OpenStack cluster templating.
+
+## [1.54.0] - 2021-12-03
+
+### Fixed
+
+- Fix a problem preventing the `login` command from creating a client certificate for older workload clusters on Azure.
+- Fix the problem where the `template cluster` output for a v20 Cluster API cluster on AWS contained a bad infrastructure reference, resulting in the cluster not being provisioned.
+
 ## [1.53.0] - 2021-11-29
 
 ### Changed
@@ -651,7 +699,14 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.2...HEAD
+[1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
+[1.58.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.0...v1.58.1
+[1.58.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.57.0...v1.58.0
+[1.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.56.0...v1.57.0
+[1.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.55.0...v1.56.0
+[1.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.54.0...v1.55.0
+[1.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...v1.54.0
 [1.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...v1.53.0
 [1.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0

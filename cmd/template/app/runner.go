@@ -46,13 +46,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var userConfigSecretYaml []byte
 	var err error
 
+	appName := r.flag.AppName
+	if appName == "" {
+		appName = r.flag.Name
+	}
+
 	appConfig := templateapp.Config{
+		AppName:           appName,
 		Catalog:           r.flag.Catalog,
-		Name:              r.flag.Name,
-		Namespace:         r.flag.Namespace,
 		Cluster:           r.flag.Cluster,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
+		InCluster:         r.flag.InCluster,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
 		Version:           r.flag.Version,
+	}
+
+	var assetName string
+	if r.flag.InCluster {
+		assetName = key.GenerateAssetName(appName, "userconfig")
+	} else {
+		assetName = key.GenerateAssetName(appName, "userconfig", r.flag.Cluster)
+	}
+
+	var namespace string
+	if r.flag.InCluster {
+		namespace = r.flag.Namespace
+	} else {
+		namespace = r.flag.Cluster
 	}
 
 	if r.flag.flagUserSecret != "" {
@@ -63,8 +84,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		secretConfig := templateapp.SecretConfig{
 			Data:      userConfigSecretData,
-			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
-			Namespace: r.flag.Cluster,
+			Name:      assetName,
+			Namespace: namespace,
 		}
 		userSecret, err := templateapp.NewSecret(secretConfig)
 		if err != nil {
@@ -86,10 +107,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				return microerror.Mask(err)
 			}
 		}
+
 		configMapConfig := templateapp.ConfigMapConfig{
 			Data:      configMapData,
-			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
-			Namespace: r.flag.Cluster,
+			Name:      assetName,
+			Namespace: namespace,
 		}
 		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
