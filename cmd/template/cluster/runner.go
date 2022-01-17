@@ -141,13 +141,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.TplType == "raw" {
 			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
 		} else if r.flag.TplType == "appcr" {
-			c := templateapp.Config{
+			appRunner := &templateapp.Runner{
+				Flag:   &templateapp.Flag{},
 				Logger: r.logger,
 				Stderr: r.stderr,
 				Stdout: r.stdout,
 			}
 
-			err = provider.WriteOpenStackTemplateAppCR(ctx, c, config)
+			err = provider.WriteOpenStackTemplateAppCR(ctx, appRunner, config)
 		} else {
 			return microerror.Maskf(invalidFlagError, "Type '%s' is not supported.\n", r.flag.TplType)
 		}

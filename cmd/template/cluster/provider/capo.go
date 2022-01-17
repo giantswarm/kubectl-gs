@@ -9,7 +9,6 @@ import (
 	templateapp "github.com/giantswarm/kubectl-gs/cmd/template/app"
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/microerror"
-	"github.com/spf13/cobra"
 )
 
 func WriteOpenStackTemplateRaw(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
@@ -68,57 +67,36 @@ func WriteOpenStackTemplateRaw(ctx context.Context, client k8sclient.Interface, 
 	return nil
 }
 
-func WriteOpenStackTemplateAppCR(ctx context.Context, cmdConfig templateapp.Config, config ClusterCRsConfig) error {
+func WriteOpenStackTemplateAppCR(ctx context.Context, runner *templateapp.Runner, config ClusterCRsConfig) error {
 	var err error
 
-	var clusterAppCmd *cobra.Command
-	{
-		clusterAppCmd, err = templateapp.New(cmdConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	clusterAppFlags := &templateapp.Flag{
+		AppName:           config.Name,
+		Catalog:           "control-plane-catalog",
+		InCluster:         true,
+		Name:              "cluster-openstack",
+		Namespace:         fmt.Sprintf("org-%s", config.Organization),
+		Version:           "0.1.0",
+		FlagUserConfigMap: config.UserConfigMap,
 	}
 
-	var defaultAppsAppCmd *cobra.Command
-	{
-		defaultAppsAppCmd, err = templateapp.New(cmdConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	clusterAppArgs := []string{
-		fmt.Sprintf("--app-name=%s", config.Name),
-		fmt.Sprintf("--namespace=org-%s", config.Organization),
-		"--name=cluster-openstack",
-		"--catalog=control-plane-catalog",
-		"--in-cluster=true",
-		"--version=0.1.0",
-	}
-
-	if config.UserConfigMap != "" {
-		clusterAppArgs = append(clusterAppArgs, fmt.Sprintf("--user-configmap=%s", config.UserConfigMap))
-	}
-
-	// Need to replace the args before executing `template app` command, so that
-	// it gets the right set and do not complain on extra ones.
-	clusterAppCmd.SetArgs(clusterAppArgs)
-	err = clusterAppCmd.Execute()
+	runner.Flag = clusterAppFlags
+	err = runner.Run(nil, []string{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	defaultAppsAppArgs := []string{
-		fmt.Sprintf("--cluster=%s", config.Name),
-		"--app-name=openstack-default-apps",
-		"--namespace=kube-system",
-		"--name=default-apps-openstack",
-		"--catalog=control-plane-catalog",
-		"--version=0.1.0",
+	defaultAppsAppFlags := &templateapp.Flag{
+		AppName:   "openstack-default-apps",
+		Catalog:   "control-plane-catalog",
+		Cluster:   config.Name,
+		Name:      "default-apps-openstack",
+		Namespace: "kube-system",
+		Version:   "0.1.0",
 	}
 
-	defaultAppsAppCmd.SetArgs(defaultAppsAppArgs)
-	err = defaultAppsAppCmd.Execute()
+	runner.Flag = defaultAppsAppFlags
+	err = runner.Run(nil, []string{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
