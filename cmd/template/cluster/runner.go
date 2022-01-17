@@ -81,7 +81,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
 
-			UserConfigMap: r.flag.ClusterApp.UserConfigMap,
+			ClusterAppVersion:        r.flag.ClusterApp.ClusterAppVersion,
+			DefaultAppsAppVersion:    r.flag.ClusterApp.DefaultAppsAppVersion,
+			ClusterUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
+			DefaultAppsUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {

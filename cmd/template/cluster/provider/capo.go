@@ -76,8 +76,8 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, runner *templateapp.Runner
 		InCluster:         true,
 		Name:              "cluster-openstack",
 		Namespace:         fmt.Sprintf("org-%s", config.Organization),
-		Version:           "0.1.0",
-		FlagUserConfigMap: config.UserConfigMap,
+		Version:           config.ClusterAppVersion,
+		FlagUserConfigMap: config.ClusterUserConfigMap,
 	}
 
 	runner.Flag = clusterAppFlags
@@ -87,12 +87,13 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, runner *templateapp.Runner
 	}
 
 	defaultAppsAppFlags := &templateapp.Flag{
-		AppName:   "openstack-default-apps",
-		Catalog:   "control-plane-catalog",
-		Cluster:   config.Name,
-		Name:      "default-apps-openstack",
-		Namespace: "kube-system",
-		Version:   "0.1.0",
+		AppName:           "openstack-default-apps",
+		Catalog:           "control-plane-catalog",
+		Cluster:           config.Name,
+		Name:              "default-apps-openstack",
+		Namespace:         fmt.Sprintf("org-%s", config.Organization),
+		Version:           config.DefaultAppsAppVersion,
+		FlagUserConfigMap: config.DefaultAppsUserConfigMap,
 	}
 
 	runner.Flag = defaultAppsAppFlags

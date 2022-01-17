@@ -23,7 +23,10 @@ const (
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	// Cluster App only.
-	flagClusterAppConfigMap = "user-configmap"
+	flagClusterAppVersion     = "cluster-app-version"
+	flagDefaultAppsAppVersion = "default-apps-app-version"
+	flagClusterConfigMap      = "cluster-user-configmap"
+	flagDefaultAppsConfigMap  = "default-apps-user-configmap"
 
 	// OpenStack only.
 	flagOpenStackCloud                = "cloud"
@@ -73,7 +76,10 @@ type openStackFlag struct {
 }
 
 type clusterAppFlag struct {
-	UserConfigMap string
+	ClusterUserConfigMap     string
+	DefaultAppsUserConfigMap string
+	ClusterAppVersion        string
+	DefaultAppsAppVersion    string
 }
 
 type flag struct {
@@ -123,8 +129,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
 
-	// OpenStack only.
-	cmd.Flags().StringVar(&f.ClusterApp.UserConfigMap, flagClusterAppConfigMap, "", "Path to the user values configmap YAML file (OpenStack App CR only).")
+	// OpenStack App only.
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterAppVersion, flagClusterAppVersion, "0.1.0", "Cluster App version to be installed. (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppVersion, flagDefaultAppsAppVersion, "0.1.0", "Default Apps App version to be installed. (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterUserConfigMap, flagClusterConfigMap, "", "Path to the user values configmap YAML file for Cluster App (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsUserConfigMap, flagDefaultAppsConfigMap, "", "Path to the user values configmap YAML file for Default Apps App (OpenStack App CR only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)

@@ -76,8 +76,8 @@ func (r *Runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		namespace = r.Flag.Cluster
 	}
 
-	if r.Flag.flagUserSecret != "" {
-		userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), r.Flag.flagUserSecret)
+	if r.Flag.FlagUserSecret != "" {
+		userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), r.Flag.FlagUserSecret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -125,13 +125,13 @@ func (r *Runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	namespaceAnnotations, err := annotations.Parse(r.Flag.flagNamespaceConfigAnnotations)
+	namespaceAnnotations, err := annotations.Parse(r.Flag.FlagNamespaceConfigAnnotations)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	appConfig.NamespaceConfigAnnotations = namespaceAnnotations
 
-	namespaceLabels, err := labels.Parse(r.Flag.flagNamespaceConfigLabels)
+	namespaceLabels, err := labels.Parse(r.Flag.FlagNamespaceConfigLabels)
 	if err != nil {
 		return microerror.Mask(err)
 	}

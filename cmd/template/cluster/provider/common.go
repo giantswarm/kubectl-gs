@@ -52,7 +52,10 @@ type ClusterCRsConfig struct {
 	Namespace      string
 	PodsCIDR       string
 
-	UserConfigMap string
+	ClusterUserConfigMap     string
+	DefaultAppsUserConfigMap string
+	ClusterAppVersion        string
+	DefaultAppsAppVersion    string
 }
 
 type templateConfig struct {
