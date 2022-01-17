@@ -22,6 +22,9 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
+	// Cluster App only.
+	flagClusterAppConfigMap = "user-configmap"
+
 	// OpenStack only.
 	flagOpenStackCloud                = "cloud"
 	flagOpenStackCloudConfig          = "cloud-config"
@@ -69,12 +72,17 @@ type openStackFlag struct {
 	NodeCIDR             string   // <no equivalent env var>
 }
 
+type clusterAppFlag struct {
+	UserConfigMap string
+}
+
 type flag struct {
 	Provider string
 	TplType  string
 
-	AWS       awsFlag
-	OpenStack openStackFlag
+	AWS        awsFlag
+	OpenStack  openStackFlag
+	ClusterApp clusterAppFlag
 
 	// Common.
 	ClusterIDDeprecated string
@@ -114,6 +122,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
+
+	// OpenStack only.
+	cmd.Flags().StringVar(&f.ClusterApp.UserConfigMap, flagClusterAppConfigMap, "", "Path to the user values configmap YAML file (OpenStack App CR only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
@@ -268,7 +279,7 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Release == "" {
+	if f.TplType != "appcr" && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

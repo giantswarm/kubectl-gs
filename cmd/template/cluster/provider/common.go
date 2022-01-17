@@ -51,6 +51,8 @@ type ClusterCRsConfig struct {
 	Labels         map[string]string
 	Namespace      string
 	PodsCIDR       string
+
+	UserConfigMap string
 }
 
 type templateConfig struct {

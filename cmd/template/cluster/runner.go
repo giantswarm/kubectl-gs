@@ -14,6 +14,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	templateapp "github.com/giantswarm/kubectl-gs/cmd/template/app"
+
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
@@ -78,6 +80,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeDiskSize:   r.flag.OpenStack.RootVolumeDiskSize,
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
+
+			UserConfigMap: r.flag.ClusterApp.UserConfigMap,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -137,7 +141,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.TplType == "raw" {
 			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
 		} else if r.flag.TplType == "appcr" {
-			err = provider.WriteOpenStackTemplateAppCR(ctx, c.K8sClient, output, config)
+			c := templateapp.Config{
+				Logger: r.logger,
+				Stderr: r.stderr,
+				Stdout: r.stdout,
+			}
+
+			err = provider.WriteOpenStackTemplateAppCR(ctx, c, config)
 		} else {
 			return microerror.Maskf(invalidFlagError, "Type '%s' is not supported.\n", r.flag.TplType)
 		}
