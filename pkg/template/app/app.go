@@ -3,12 +3,13 @@ package app
 import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 type Config struct {
