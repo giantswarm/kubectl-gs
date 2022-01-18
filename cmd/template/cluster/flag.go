@@ -24,8 +24,8 @@ const (
 
 	// Cluster App only.
 	flagClusterAppVersion        = "cluster-app-version"
-	flagDefaultAppsAppVersion    = "default-apps-app-version"
 	flagClusterUserConfigMap     = "cluster-user-configmap"
+	flagDefaultAppsAppVersion    = "default-apps-app-version"
 	flagDefaultAppsUserConfigMap = "default-apps-user-configmap"
 
 	// OpenStack only.
