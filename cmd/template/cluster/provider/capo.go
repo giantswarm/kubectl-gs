@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"text/template"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
-	templateapp "github.com/giantswarm/kubectl-gs/cmd/template/app"
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
+	"github.com/giantswarm/kubectl-gs/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/yaml"
 )
 
 func WriteOpenStackTemplateRaw(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
@@ -67,37 +71,92 @@ func WriteOpenStackTemplateRaw(ctx context.Context, client k8sclient.Interface, 
 	return nil
 }
 
-func WriteOpenStackTemplateAppCR(ctx context.Context, runner *templateapp.Runner, config ClusterCRsConfig) error {
+func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) error {
+	var userConfigConfigMapYaml []byte
 	var err error
 
-	clusterAppFlags := &templateapp.Flag{
-		AppName:           config.Name,
-		Catalog:           "control-plane-catalog",
-		InCluster:         true,
-		Name:              "cluster-openstack",
-		Namespace:         fmt.Sprintf("org-%s", config.Organization),
-		Version:           config.ClusterAppVersion,
-		FlagUserConfigMap: config.ClusterUserConfigMap,
+	clusterAppOutput := templateapp.AppCROutput{}
+	defaultAppsAppOutput := templateapp.AppCROutput{}
+
+	clusterAppConfig := templateapp.Config{
+		AppName:   config.Name,
+		Catalog:   "control-plane-catalog",
+		InCluster: true,
+		Name:      "cluster-openstack",
+		Namespace: fmt.Sprintf("org-%s", config.Organization),
+		Version:   config.ClusterAppVersion,
 	}
 
-	runner.Flag = clusterAppFlags
-	err = runner.Run(nil, []string{})
+	defaultAppsAppConfig := templateapp.Config{
+		AppName:   "openstack-default-apps",
+		Catalog:   "control-plane-catalog",
+		InCluster: true,
+		Name:      "default-apps-openstack",
+		Namespace: fmt.Sprintf("org-%s", config.Organization),
+		Version:   config.DefaultAppsAppVersion,
+	}
+
+	userConfig := templateapp.UserConfig{
+		Name:      config.Name,
+		Namespace: fmt.Sprintf("org-%s", config.Organization),
+	}
+
+	if config.ClusterAppUserConfigMap != "" {
+		userConfig.Path = config.ClusterAppUserConfigMap
+
+		userConfigMap, err := templateapp.NewConfigMap(userConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		clusterAppConfig.UserConfigConfigMapName = userConfigMap.GetName()
+
+		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		clusterAppOutput.UserConfigConfigMap = string(userConfigConfigMapYaml)
+	}
+
+	if config.DefaultAppsAppUserConfigMap != "" {
+		userConfig.Path = config.DefaultAppsAppUserConfigMap
+
+		userConfigMap, err := templateapp.NewConfigMap(userConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		defaultAppsAppConfig.UserConfigConfigMapName = userConfigMap.GetName()
+
+		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		defaultAppsAppOutput.UserConfigConfigMap = string(userConfigConfigMapYaml)
+	}
+
+	clusterAppCRYaml, err := templateapp.NewAppCR(clusterAppConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	defaultAppsAppFlags := &templateapp.Flag{
-		AppName:           "openstack-default-apps",
-		Catalog:           "control-plane-catalog",
-		Cluster:           config.Name,
-		Name:              "default-apps-openstack",
-		Namespace:         fmt.Sprintf("org-%s", config.Organization),
-		Version:           config.DefaultAppsAppVersion,
-		FlagUserConfigMap: config.DefaultAppsUserConfigMap,
+	clusterAppOutput.AppCR = string(clusterAppCRYaml)
+
+	defaultAppsAppCRYaml, err := templateapp.NewAppCR(defaultAppsAppConfig)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	runner.Flag = defaultAppsAppFlags
-	err = runner.Run(nil, []string{})
+	defaultAppsAppOutput.AppCR = string(defaultAppsAppCRYaml)
+
+	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
+
+	err = t.Execute(os.Stdout, clusterAppOutput)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = t.Execute(os.Stdout, defaultAppsAppOutput)
 	if err != nil {
 		return microerror.Mask(err)
 	}

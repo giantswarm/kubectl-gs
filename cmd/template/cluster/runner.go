@@ -14,8 +14,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	templateapp "github.com/giantswarm/kubectl-gs/cmd/template/app"
-
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
@@ -81,10 +79,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
 
-			ClusterAppVersion:        r.flag.ClusterApp.ClusterAppVersion,
-			DefaultAppsAppVersion:    r.flag.ClusterApp.DefaultAppsAppVersion,
-			ClusterUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
-			DefaultAppsUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
+			ClusterAppVersion:           r.flag.ClusterApp.ClusterAppVersion,
+			DefaultAppsAppVersion:       r.flag.ClusterApp.DefaultAppsAppVersion,
+			ClusterAppUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
+			DefaultAppsAppUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -141,19 +139,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		if r.flag.TplType == "raw" {
+		if r.flag.TemplateType == "raw" {
 			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
-		} else if r.flag.TplType == "appcr" {
-			appRunner := &templateapp.Runner{
-				Flag:   &templateapp.Flag{},
-				Logger: r.logger,
-				Stderr: r.stderr,
-				Stdout: r.stdout,
-			}
-
-			err = provider.WriteOpenStackTemplateAppCR(ctx, appRunner, config)
+		} else if r.flag.TemplateType == "app" {
+			err = provider.WriteOpenStackTemplateAppCR(ctx, config)
 		} else {
-			return microerror.Maskf(invalidFlagError, "Type '%s' is not supported.\n", r.flag.TplType)
+			return microerror.Maskf(invalidFlagError, "Type '%s' is not supported.\n", r.flag.TemplateType)
 		}
 
 		if err != nil {

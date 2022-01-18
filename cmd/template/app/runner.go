@@ -8,7 +8,6 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
@@ -18,17 +17,17 @@ import (
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
-type Runner struct {
-	Flag   *Flag
-	Logger micrologger.Logger
-	Stdout io.Writer
-	Stderr io.Writer
+type runner struct {
+	flag   *flag
+	logger micrologger.Logger
+	stderr io.Writer
+	stdout io.Writer
 }
 
-func (r *Runner) Run(cmd *cobra.Command, args []string) error {
+func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	err := r.Flag.Validate()
+	err := r.flag.Validate()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -41,49 +40,44 @@ func (r *Runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *Runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var userConfigConfigMapYaml []byte
 	var userConfigSecretYaml []byte
 	var err error
 
-	appName := r.Flag.AppName
+	appName := r.flag.AppName
 	if appName == "" {
-		appName = r.Flag.Name
+		appName = r.flag.Name
 	}
 
 	appConfig := templateapp.Config{
 		AppName:           appName,
-		Catalog:           r.Flag.Catalog,
-		Cluster:           r.Flag.Cluster,
-		DefaultingEnabled: r.Flag.DefaultingEnabled,
-		InCluster:         r.Flag.InCluster,
-		Name:              r.Flag.Name,
-		Namespace:         r.Flag.Namespace,
-		Version:           r.Flag.Version,
+		Catalog:           r.flag.Catalog,
+		Cluster:           r.flag.Cluster,
+		DefaultingEnabled: r.flag.DefaultingEnabled,
+		InCluster:         r.flag.InCluster,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
+		Version:           r.flag.Version,
 	}
 
 	var assetName string
-	if r.Flag.InCluster {
+	if r.flag.InCluster {
 		assetName = key.GenerateAssetName(appName, "userconfig")
 	} else {
-		assetName = key.GenerateAssetName(appName, "userconfig", r.Flag.Cluster)
+		assetName = key.GenerateAssetName(appName, "userconfig", r.flag.Cluster)
 	}
 
 	var namespace string
-	if r.Flag.InCluster {
-		namespace = r.Flag.Namespace
+	if r.flag.InCluster {
+		namespace = r.flag.Namespace
 	} else {
-		namespace = r.Flag.Cluster
+		namespace = r.flag.Cluster
 	}
 
-	if r.Flag.FlagUserSecret != "" {
-		userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), r.Flag.FlagUserSecret)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		secretConfig := templateapp.SecretConfig{
-			Data:      userConfigSecretData,
+	if r.flag.flagUserSecret != "" {
+		secretConfig := templateapp.UserConfig{
+			Path:      r.flag.flagUserSecret,
 			Name:      assetName,
 			Namespace: namespace,
 		}
@@ -99,20 +93,13 @@ func (r *Runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	if r.Flag.FlagUserConfigMap != "" {
-		var configMapData string
-		if r.Flag.FlagUserConfigMap != "" {
-			configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), r.Flag.FlagUserConfigMap)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		configMapConfig := templateapp.ConfigMapConfig{
-			Data:      configMapData,
+	if r.flag.flagUserConfigMap != "" {
+		configMapConfig := templateapp.UserConfig{
+			Path:      r.flag.flagUserConfigMap,
 			Name:      assetName,
 			Namespace: namespace,
 		}
+
 		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
 			return microerror.Mask(err)
@@ -125,13 +112,13 @@ func (r *Runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	namespaceAnnotations, err := annotations.Parse(r.Flag.FlagNamespaceConfigAnnotations)
+	namespaceAnnotations, err := annotations.Parse(r.flag.flagNamespaceConfigAnnotations)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	appConfig.NamespaceConfigAnnotations = namespaceAnnotations
 
-	namespaceLabels, err := labels.Parse(r.Flag.FlagNamespaceConfigLabels)
+	namespaceLabels, err := labels.Parse(r.flag.flagNamespaceConfigLabels)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -142,13 +129,7 @@ func (r *Runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	type AppCROutput struct {
-		AppCR               string
-		UserConfigSecret    string
-		UserConfigConfigMap string
-	}
-
-	appCROutput := AppCROutput{
+	appCROutput := templateapp.AppCROutput{
 		AppCR:               string(appCRYaml),
 		UserConfigConfigMap: string(userConfigConfigMapYaml),
 		UserConfigSecret:    string(userConfigSecretYaml),

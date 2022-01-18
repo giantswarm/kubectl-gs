@@ -3,7 +3,9 @@ package app
 import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
@@ -24,16 +26,16 @@ type Config struct {
 	Version                    string
 }
 
-type SecretConfig struct {
-	Data      []byte
+type UserConfig struct {
 	Name      string
 	Namespace string
+	Path      string
 }
 
-type ConfigMapConfig struct {
-	Data      string
-	Name      string
-	Namespace string
+type AppCROutput struct {
+	AppCR               string
+	UserConfigSecret    string
+	UserConfigConfigMap string
 }
 
 func NewAppCR(config Config) ([]byte, error) {
@@ -117,7 +119,12 @@ func NewAppCR(config Config) ([]byte, error) {
 	return printAppCR(appCR, config.DefaultingEnabled)
 }
 
-func NewConfigMap(config ConfigMapConfig) (*corev1.ConfigMap, error) {
+func NewConfigMap(config UserConfig) (*corev1.ConfigMap, error) {
+	configMapData, err := key.ReadConfigMapYamlFromFile(afero.NewOsFs(), config.Path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
@@ -128,14 +135,19 @@ func NewConfigMap(config ConfigMapConfig) (*corev1.ConfigMap, error) {
 			Namespace: config.Namespace,
 		},
 		Data: map[string]string{
-			"values": config.Data,
+			"values": configMapData,
 		},
 	}
 
 	return configMap, nil
 }
 
-func NewSecret(config SecretConfig) (*corev1.Secret, error) {
+func NewSecret(config UserConfig) (*corev1.Secret, error) {
+	userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), config.Path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
@@ -146,7 +158,7 @@ func NewSecret(config SecretConfig) (*corev1.Secret, error) {
 			Namespace: config.Namespace,
 		},
 		Data: map[string][]byte{
-			"values": config.Data,
+			"values": userConfigSecretData,
 		},
 	}
 

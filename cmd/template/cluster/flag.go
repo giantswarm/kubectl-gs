@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	flagProvider = "provider"
-	flagTplType  = "template-type"
+	flagProvider     = "provider"
+	flagTemplateType = "template-type"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
@@ -23,10 +23,10 @@ const (
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	// Cluster App only.
-	flagClusterAppVersion     = "cluster-app-version"
-	flagDefaultAppsAppVersion = "default-apps-app-version"
-	flagClusterConfigMap      = "cluster-user-configmap"
-	flagDefaultAppsConfigMap  = "default-apps-user-configmap"
+	flagClusterAppVersion        = "cluster-app-version"
+	flagDefaultAppsAppVersion    = "default-apps-app-version"
+	flagClusterUserConfigMap     = "cluster-user-configmap"
+	flagDefaultAppsUserConfigMap = "default-apps-user-configmap"
 
 	// OpenStack only.
 	flagOpenStackCloud                = "cloud"
@@ -83,8 +83,8 @@ type clusterAppFlag struct {
 }
 
 type flag struct {
-	Provider string
-	TplType  string
+	Provider     string
+	TemplateType string
 
 	AWS        awsFlag
 	OpenStack  openStackFlag
@@ -109,7 +109,7 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
-	cmd.Flags().StringVar(&f.TplType, flagTplType, "raw", "Type of the template. Could be one of: raw, appcr. If application, cluster will be templated as an App CR. (default raw)")
+	cmd.Flags().StringVar(&f.TemplateType, flagTemplateType, "raw", "Type of the template. Could be one of: raw, app. If application, cluster will be templated as an App CR. (default raw)")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
@@ -132,8 +132,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// OpenStack App only.
 	cmd.Flags().StringVar(&f.ClusterApp.ClusterAppVersion, flagClusterAppVersion, "0.1.0", "Cluster App version to be installed. (OpenStack App CR only).")
 	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppVersion, flagDefaultAppsAppVersion, "0.1.0", "Default Apps App version to be installed. (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.ClusterUserConfigMap, flagClusterConfigMap, "", "Path to the user values configmap YAML file for Cluster App (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsUserConfigMap, flagDefaultAppsConfigMap, "", "Path to the user values configmap YAML file for Default Apps App (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterUserConfigMap, flagClusterUserConfigMap, "", "Path to the user values configmap YAML file for Cluster App (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsUserConfigMap, flagDefaultAppsUserConfigMap, "", "Path to the user values configmap YAML file for Default Apps App (OpenStack App CR only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
@@ -288,7 +288,7 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.TplType != "appcr" && f.Release == "" {
+	if f.TemplateType != "app" && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

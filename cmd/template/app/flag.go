@@ -25,7 +25,7 @@ const (
 	flagVersion                    = "version"
 )
 
-type Flag struct {
+type flag struct {
 	AppName                        string
 	Catalog                        string
 	Cluster                        string
@@ -34,13 +34,13 @@ type Flag struct {
 	Name                           string
 	Namespace                      string
 	Version                        string
-	FlagNamespaceConfigAnnotations []string
-	FlagNamespaceConfigLabels      []string
-	FlagUserConfigMap              string
-	FlagUserSecret                 string
+	flagNamespaceConfigAnnotations []string
+	flagNamespaceConfigLabels      []string
+	flagUserConfigMap              string
+	flagUserSecret                 string
 }
 
-func (f *Flag) Init(cmd *cobra.Command) {
+func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AppName, flagAppName, "", "Optionally set a different name for the App CR.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog name where app is stored.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app in the Catalog.")
@@ -48,14 +48,14 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Name of the cluster the app will be deployed to.")
 	cmd.Flags().BoolVar(&f.DefaultingEnabled, flagDefaultingEnabled, true, "Don't template fields that will be defaulted.")
 	cmd.Flags().BoolVar(&f.InCluster, flagInCluster, false, fmt.Sprintf("Deploy the app in the current management cluster rather than in a workload cluster. If this is set, --%s will be ignored.", flagCluster))
-	cmd.Flags().StringVar(&f.FlagUserConfigMap, flagUserConfigMap, "", "Path to the user values configmap YAML file.")
-	cmd.Flags().StringVar(&f.FlagUserSecret, flagUserSecret, "", "Path to the user secrets YAML file.")
+	cmd.Flags().StringVar(&f.flagUserConfigMap, flagUserConfigMap, "", "Path to the user values configmap YAML file.")
+	cmd.Flags().StringVar(&f.flagUserSecret, flagUserSecret, "", "Path to the user secrets YAML file.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to be installed.")
-	cmd.Flags().StringSliceVar(&f.FlagNamespaceConfigAnnotations, flagNamespaceConfigAnnotations, nil, "Namespace configuration annotations in form key=value.")
-	cmd.Flags().StringSliceVar(&f.FlagNamespaceConfigLabels, flagNamespaceConfigLabels, nil, "Namespace configuration labels in form key=value.")
+	cmd.Flags().StringSliceVar(&f.flagNamespaceConfigAnnotations, flagNamespaceConfigAnnotations, nil, "Namespace configuration annotations in form key=value.")
+	cmd.Flags().StringSliceVar(&f.flagNamespaceConfigLabels, flagNamespaceConfigLabels, nil, "Namespace configuration labels in form key=value.")
 }
 
-func (f *Flag) Validate() error {
+func (f *flag) Validate() error {
 	if f.Catalog == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagCatalog)
 	}
@@ -72,12 +72,12 @@ func (f *Flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
 	}
 
-	_, err := labels.Parse(f.FlagNamespaceConfigLabels)
+	_, err := labels.Parse(f.flagNamespaceConfigLabels)
 	if err != nil {
 		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagNamespaceConfigLabels, err)
 	}
 
-	_, err = annotations.Parse(f.FlagNamespaceConfigAnnotations)
+	_, err = annotations.Parse(f.flagNamespaceConfigAnnotations)
 	if err != nil {
 		return microerror.Maskf(invalidFlagError, "--%s must contain valid annotation definitions (%s)", flagNamespaceConfigAnnotations, err)
 	}
