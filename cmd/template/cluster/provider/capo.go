@@ -79,7 +79,7 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 	defaultAppsAppOutput := templateapp.AppCROutput{}
 
 	clusterAppConfig := templateapp.Config{
-		AppName:   config.Name,
+		AppName:   fmt.Sprintf("%s-cluster", config.Name),
 		Catalog:   "control-plane-catalog",
 		InCluster: true,
 		Name:      "cluster-openstack",
@@ -88,8 +88,8 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 	}
 
 	defaultAppsAppConfig := templateapp.Config{
-		AppName:   "openstack-default-apps",
-		Catalog:   "control-plane-catalog",
+		AppName:   fmt.Sprintf("%s-default-apps", config.Name),
+		Catalog:   "default",
 		InCluster: true,
 		Name:      "default-apps-openstack",
 		Namespace: fmt.Sprintf("org-%s", config.Organization),
@@ -97,11 +97,11 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 	}
 
 	userConfig := templateapp.UserConfig{
-		Name:      config.Name,
 		Namespace: fmt.Sprintf("org-%s", config.Organization),
 	}
 
 	if config.ClusterAppUserConfigMap != "" {
+		userConfig.Name = fmt.Sprintf("%s-userconfig", clusterAppConfig.AppName)
 		userConfig.Path = config.ClusterAppUserConfigMap
 
 		userConfigMap, err := templateapp.NewConfigMap(userConfig)
@@ -119,6 +119,7 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 	}
 
 	if config.DefaultAppsAppUserConfigMap != "" {
+		userConfig.Name = fmt.Sprintf("%s-userconfig", defaultAppsAppConfig.AppName)
 		userConfig.Path = config.DefaultAppsAppUserConfigMap
 
 		userConfigMap, err := templateapp.NewConfigMap(userConfig)

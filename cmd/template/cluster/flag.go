@@ -109,7 +109,7 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
-	cmd.Flags().StringVar(&f.TemplateType, flagTemplateType, "raw", "Type of the template. Could be one of: raw, app. If application, cluster will be templated as an App CR. (default raw)")
+	cmd.Flags().StringVar(&f.TemplateType, flagTemplateType, "raw", "Type of the template. Could be one of: raw, app. If app, cluster will be templated as an App CR. (default raw)")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
