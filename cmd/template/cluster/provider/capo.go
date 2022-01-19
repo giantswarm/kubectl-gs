@@ -80,7 +80,7 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 	defaultAppsAppOutput := templateapp.AppCROutput{}
 
 	clusterAppConfig := templateapp.Config{
-		AppName:   fmt.Sprintf("%s-cluster", config.Name),
+		AppName:   config.Name,
 		Catalog:   "control-plane-catalog",
 		InCluster: true,
 		Name:      "cluster-openstack",
