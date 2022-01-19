@@ -148,6 +148,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceUUID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
 
+	_ = cmd.Flags().MarkHidden(flagTemplateType)
+	_ = cmd.Flags().MarkHidden(flagClusterAppVersion)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsAppVersion)
+	_ = cmd.Flags().MarkHidden(flagClusterUserConfigMap)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsUserConfigMap)
+
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
