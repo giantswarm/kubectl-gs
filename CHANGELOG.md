@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support to `template cluster --provider openstack` for templating clusters as App CRs.
+
 ## [1.58.2] - 2022-01-13
 
 ### Added

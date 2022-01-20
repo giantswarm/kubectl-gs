@@ -21,6 +21,13 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
+	// Cluster App only.
+	flagClusterAppVersion        = "cluster-app-version"
+	flagClusterUserConfigMap     = "cluster-user-configmap"
+	flagClusterTopology          = "cluster-topology"
+	flagDefaultAppsAppVersion    = "default-apps-app-version"
+	flagDefaultAppsUserConfigMap = "default-apps-user-configmap"
+
 	// OpenStack only.
 	flagOpenStackCloud                = "cloud"
 	flagOpenStackCloudConfig          = "cloud-config"
@@ -68,11 +75,20 @@ type openStackFlag struct {
 	NodeCIDR             string   // <no equivalent env var>
 }
 
+type clusterAppFlag struct {
+	ClusterUserConfigMap     string
+	ClusterAppVersion        string
+	ClusterTopology          bool
+	DefaultAppsUserConfigMap string
+	DefaultAppsAppVersion    string
+}
+
 type flag struct {
 	Provider string
 
-	AWS       awsFlag
-	OpenStack openStackFlag
+	AWS        awsFlag
+	OpenStack  openStackFlag
+	ClusterApp clusterAppFlag
 
 	// Common.
 	ClusterIDDeprecated string
@@ -112,6 +128,13 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
 
+	// OpenStack App only.
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterUserConfigMap, flagClusterUserConfigMap, "", "Path to the user values configmap YAML file for Cluster App (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterAppVersion, flagClusterAppVersion, "0.1.0", "Cluster App version to be installed. (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsUserConfigMap, flagDefaultAppsUserConfigMap, "", "Path to the user values configmap YAML file for Default Apps App (OpenStack App CR only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppVersion, flagDefaultAppsAppVersion, "0.1.0", "Default Apps App version to be installed. (OpenStack App CR only).")
+	cmd.Flags().BoolVar(&f.ClusterApp.ClusterTopology, flagClusterTopology, false, "Templated cluster as an App CR. (OpenStack App CR only).")
+
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
@@ -124,6 +147,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceType)
 	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceUUID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
+
+	_ = cmd.Flags().MarkHidden(flagClusterTopology)
+	_ = cmd.Flags().MarkHidden(flagClusterAppVersion)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsAppVersion)
+	_ = cmd.Flags().MarkHidden(flagClusterUserConfigMap)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsUserConfigMap)
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
@@ -265,7 +294,7 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Release == "" {
+	if !f.ClusterApp.ClusterTopology && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

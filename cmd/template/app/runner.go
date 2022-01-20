@@ -8,7 +8,6 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
@@ -21,8 +20,8 @@ import (
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
-	stdout io.Writer
 	stderr io.Writer
+	stdout io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -77,13 +76,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.flagUserSecret != "" {
-		userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.flagUserSecret)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		secretConfig := templateapp.SecretConfig{
-			Data:      userConfigSecretData,
+		secretConfig := templateapp.UserConfig{
+			Path:      r.flag.flagUserSecret,
 			Name:      assetName,
 			Namespace: namespace,
 		}
@@ -100,19 +94,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.flagUserConfigMap != "" {
-		var configMapData string
-		if r.flag.flagUserConfigMap != "" {
-			configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), r.flag.flagUserConfigMap)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		configMapConfig := templateapp.ConfigMapConfig{
-			Data:      configMapData,
+		configMapConfig := templateapp.UserConfig{
+			Path:      r.flag.flagUserConfigMap,
 			Name:      assetName,
 			Namespace: namespace,
 		}
+
 		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
 			return microerror.Mask(err)
@@ -142,13 +129,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	type AppCROutput struct {
-		AppCR               string
-		UserConfigSecret    string
-		UserConfigConfigMap string
-	}
-
-	appCROutput := AppCROutput{
+	appCROutput := templateapp.AppCROutput{
 		AppCR:               string(appCRYaml),
 		UserConfigConfigMap: string(userConfigConfigMapYaml),
 		UserConfigSecret:    string(userConfigSecretYaml),

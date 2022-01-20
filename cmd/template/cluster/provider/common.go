@@ -51,6 +51,12 @@ type ClusterCRsConfig struct {
 	Labels         map[string]string
 	Namespace      string
 	PodsCIDR       string
+
+	// App settings
+	ClusterAppUserConfigMap     string
+	ClusterAppVersion           string
+	DefaultAppsAppUserConfigMap string
+	DefaultAppsAppVersion       string
 }
 
 type templateConfig struct {
@@ -114,6 +120,7 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
 		// Transform to unstructured.Unstructured.
 		obj := &unstructured.Unstructured{}
 		dec := apiyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
