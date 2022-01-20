@@ -139,12 +139,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		if r.flag.TemplateType == "raw" {
-			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
-		} else if r.flag.TemplateType == "app" {
+		if r.flag.ClusterApp.ClusterTopology {
 			err = provider.WriteOpenStackTemplateAppCR(ctx, config)
 		} else {
-			return microerror.Maskf(invalidFlagError, "Type '%s' is not supported.\n", r.flag.TemplateType)
+			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
 		}
 
 		if err != nil {
