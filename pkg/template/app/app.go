@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -9,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -24,6 +27,7 @@ type Config struct {
 	NamespaceConfigLabels      map[string]string
 	UserConfigConfigMapName    string
 	UserConfigSecretName       string
+	Organization               string
 	Version                    string
 }
 
@@ -41,10 +45,16 @@ type AppCROutput struct {
 
 func NewAppCR(config Config) ([]byte, error) {
 	userConfig := applicationv1alpha1.AppSpecUserConfig{}
+	appLabels := map[string]string{}
 
+	// When templating App CR for an organization namespace add
+	// `giantswarm.io/cluster` label for cluster selection.
 	var namespace string
 	if config.InCluster {
 		namespace = config.Namespace
+	} else if config.Organization != "" {
+		namespace = fmt.Sprintf("org-%s", config.Organization)
+		appLabels[label.Cluster] = config.Cluster
 	} else {
 		namespace = config.Cluster
 	}
@@ -71,6 +81,7 @@ func NewAppCR(config Config) ([]byte, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.AppName,
 			Namespace: namespace,
+			Labels:    appLabels,
 		},
 		Spec: applicationv1alpha1.AppSpec{
 			Catalog:   config.Catalog,

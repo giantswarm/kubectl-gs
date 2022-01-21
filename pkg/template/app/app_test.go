@@ -82,6 +82,20 @@ func Test_NewAppCR(t *testing.T) {
 			},
 			expectedGoldenFile: "app_override_app_name_yaml_output.golden",
 		},
+		{
+			name: "case 5: flawless flow for organization",
+			config: Config{
+				AppName:           "nginx-ingress-controller-app",
+				Catalog:           "giantswarm",
+				Cluster:           "eggs2",
+				DefaultingEnabled: true,
+				Name:              "nginx-ingress-controller-app",
+				Namespace:         "kube-system",
+				Organization:      "giantswarm",
+				Version:           "1.17.0",
+			},
+			expectedGoldenFile: "app_flawless_flow_organization_yaml_output.golden",
+		},
 	}
 
 	for i, tc := range testCases {
