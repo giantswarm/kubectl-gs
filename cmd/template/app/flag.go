@@ -71,12 +71,6 @@ func (f *flag) Validate() error {
 	if !f.InCluster && f.Cluster == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagCluster)
 	}
-	// Once we fully migrate to org namespace, checking for
-	// the `organization` flag should be mandatory.
-	//
-	/*if !f.InCluster && f.Organization == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
-	}*/
 	if f.Version == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
 	}
