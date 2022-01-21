@@ -52,8 +52,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		appName = r.flag.Name
 	}
 
-	// Since organization may be provided in a mixed-cases form,
-	// make sure it is lowercased before using.
+	// Since organization may be provided in a mixed-cased form,
+	// make sure it is lowercased.
 	organization := strings.ToLower(r.flag.Organization)
 
 	appConfig := templateapp.Config{
