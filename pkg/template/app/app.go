@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
+
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
