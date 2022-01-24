@@ -107,9 +107,12 @@ func NewAppCR(config Config) ([]byte, error) {
 	}
 
 	if !config.DefaultingEnabled && !config.InCluster {
-		appCR.SetLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "1.0.0",
-		})
+
+		if config.Organization == "" {
+			appCR.SetLabels(map[string]string{
+				"app-operator.giantswarm.io/version": "1.0.0",
+			})
+		}
 
 		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
 			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{

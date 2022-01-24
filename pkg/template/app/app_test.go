@@ -96,6 +96,20 @@ func Test_NewAppCR(t *testing.T) {
 			},
 			expectedGoldenFile: "app_flawless_flow_organization_yaml_output.golden",
 		},
+		{
+			name: "case 6: defaulting disabled for organization",
+			config: Config{
+				AppName:           "nginx-ingress-controller-app",
+				Catalog:           "giantswarm",
+				Cluster:           "eggs2",
+				DefaultingEnabled: false,
+				Name:              "nginx-ingress-controller-app",
+				Namespace:         "kube-system",
+				Organization:      "giantswarm",
+				Version:           "1.17.0",
+			},
+			expectedGoldenFile: "app_defaulting_disabled_organization_yaml_output.golden",
+		},
 	}
 
 	for i, tc := range testCases {
