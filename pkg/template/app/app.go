@@ -53,9 +53,13 @@ func NewAppCR(config Config) ([]byte, error) {
 	var crNamespace string
 	if config.InCluster {
 		crNamespace = config.Namespace
+		appLabels[label.AppOperatorVersion] = "0.0.0"
 	} else if config.Organization != "" {
 		crNamespace = fmt.Sprintf("org-%s", config.Organization)
 		appLabels[label.Cluster] = config.Cluster
+	} else if !config.DefaultingEnabled {
+		appLabels[label.AppOperatorVersion] = "1.0.0"
+		crNamespace = config.Cluster
 	} else {
 		crNamespace = config.Cluster
 	}
@@ -100,20 +104,7 @@ func NewAppCR(config Config) ([]byte, error) {
 		},
 	}
 
-	if config.InCluster {
-		appCR.SetLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "0.0.0",
-		})
-	}
-
 	if !config.DefaultingEnabled && !config.InCluster {
-
-		if config.Organization == "" {
-			appCR.SetLabels(map[string]string{
-				"app-operator.giantswarm.io/version": "1.0.0",
-			})
-		}
-
 		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
 			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
 				Name:      config.Cluster + "-cluster-values",
