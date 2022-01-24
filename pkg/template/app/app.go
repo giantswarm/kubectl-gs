@@ -48,8 +48,11 @@ func NewAppCR(config Config) ([]byte, error) {
 	userConfig := applicationv1alpha1.AppSpecUserConfig{}
 	appLabels := map[string]string{}
 
-	// When templating App CR for an organization namespace add
-	// `giantswarm.io/cluster` label for cluster selection.
+	// Accomodating all the label cases here:
+	// 1. In-cluster Apps get unique label
+	// 2. Org-namespaced Apps get cluster label
+	// 3. Cluster-namespaced Apps with defaulting disabled gets default version label
+	// 4. Cluster-namespaced Apps with defaulting enabled gets nothing
 	var crNamespace string
 	if config.InCluster {
 		crNamespace = config.Namespace
