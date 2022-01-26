@@ -79,8 +79,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
 
+			ClusterAppCatalog:           r.flag.ClusterApp.ClusterAppCatalog,
 			ClusterAppVersion:           r.flag.ClusterApp.ClusterAppVersion,
 			ClusterAppUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
+			DefaultAppsAppCatalog:       r.flag.ClusterApp.DefaultAppsAppCatalog,
 			DefaultAppsAppVersion:       r.flag.ClusterApp.DefaultAppsAppVersion,
 			DefaultAppsAppUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
 		}

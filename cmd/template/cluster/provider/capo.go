@@ -81,7 +81,7 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 
 	clusterAppConfig := templateapp.Config{
 		AppName:   config.Name,
-		Catalog:   "control-plane-catalog",
+		Catalog:   config.ClusterAppCatalog,
 		InCluster: true,
 		Name:      "cluster-openstack",
 		Namespace: fmt.Sprintf("org-%s", config.Organization),
@@ -90,7 +90,7 @@ func WriteOpenStackTemplateAppCR(ctx context.Context, config ClusterCRsConfig) e
 
 	defaultAppsAppConfig := templateapp.Config{
 		AppName:   fmt.Sprintf("%s-default-apps", config.Name),
-		Catalog:   "default",
+		Catalog:   config.DefaultAppsAppCatalog,
 		InCluster: true,
 		Name:      "default-apps-openstack",
 		Namespace: fmt.Sprintf("org-%s", config.Organization),
