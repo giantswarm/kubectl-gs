@@ -56,6 +56,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to be installed.")
 	cmd.Flags().StringSliceVar(&f.flagNamespaceConfigAnnotations, flagNamespaceConfigAnnotations, nil, "Namespace configuration annotations in form key=value.")
 	cmd.Flags().StringSliceVar(&f.flagNamespaceConfigLabels, flagNamespaceConfigLabels, nil, "Namespace configuration labels in form key=value.")
+
+	_ = cmd.Flags().MarkHidden(flagOrganization)
 }
 
 func (f *flag) Validate() error {

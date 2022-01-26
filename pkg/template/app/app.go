@@ -51,8 +51,7 @@ func NewAppCR(config Config) ([]byte, error) {
 	// Accomodating all the label cases here:
 	// 1. In-cluster Apps get unique label
 	// 2. Org-namespaced Apps get cluster label
-	// 3. Cluster-namespaced Apps with defaulting disabled gets default version label
-	// 4. Cluster-namespaced Apps with defaulting enabled gets nothing
+	// 3. Cluster-namespaced Apps with defaulting enabled gets nothing
 	var crNamespace string
 	if config.InCluster {
 		crNamespace = config.Namespace
@@ -60,9 +59,6 @@ func NewAppCR(config Config) ([]byte, error) {
 	} else if config.Organization != "" {
 		crNamespace = fmt.Sprintf("org-%s", config.Organization)
 		appLabels[label.Cluster] = config.Cluster
-	} else if !config.DefaultingEnabled {
-		appLabels[label.AppOperatorVersion] = "1.0.0"
-		crNamespace = config.Cluster
 	} else {
 		crNamespace = config.Cluster
 	}
