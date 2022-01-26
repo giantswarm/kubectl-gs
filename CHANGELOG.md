@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add support to `template cluster --provider openstack` for templating clusters as App CRs.
 
+### Changed
+
+- Use `v1beta1` api version when templating ClusterAPI manifests on Azure.
+
 ## [1.58.2] - 2022-01-13
 
 ### Added
