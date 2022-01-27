@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1alpha4
+apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
   annotations:
@@ -12,17 +12,15 @@ metadata:
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
-{{- if .PodsCIDR }}
   clusterNetwork:
     pods:
       cidrBlocks:
-      - {{ .PodsCIDR }}
-{{- end }}
+      - {{ or .PodsCIDR "192.168.0.0/16" }}
   controlPlaneRef:
-    apiVersion: controlplane.cluster.x-k8s.io/v1alpha4
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
     name: {{ .Name }}-control-plane
   infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: AzureCluster
     name: {{ .Name }}

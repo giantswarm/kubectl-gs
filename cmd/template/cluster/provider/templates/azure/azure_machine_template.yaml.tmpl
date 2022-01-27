@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: AzureMachineTemplate
 metadata:
   labels:
@@ -11,6 +11,11 @@ metadata:
   namespace: {{ .Namespace }}
 spec:
   template:
+    metadata:
+      labels:
+        "release.giantswarm.io/version": "{{ .Version }}"
+        "giantswarm.io/organization": "{{ .Organization }}"
+        "cluster.x-k8s.io/watch-filter": "capi"
     spec:
       dataDisks:
       - diskSizeGB: 256
