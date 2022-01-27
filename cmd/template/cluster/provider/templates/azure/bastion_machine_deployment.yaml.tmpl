@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1alpha3
+apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
   creationTimestamp: null
@@ -33,7 +33,7 @@ spec:
         dataSecretName: {{ .Name }}-bastion
       clusterName: {{ .Name }}
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha4
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: AzureMachineTemplate
         name: {{ .Name }}-bastion
       version: v0.0.0
