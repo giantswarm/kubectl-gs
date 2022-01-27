@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [1.60.0] - 2022-01-27
+
 ### Changed
 
 - Use `v1beta1` api version when templating ClusterAPI manifests on Azure.
@@ -709,7 +711,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
 [1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
 [1.58.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.0...v1.58.1
