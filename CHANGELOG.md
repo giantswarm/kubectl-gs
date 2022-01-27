@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for templating App CRs in organization namespace.
+
 ## [1.60.0] - 2022-01-27
 
 ### Changed

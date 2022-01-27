@@ -1,8 +1,6 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
-  labels:
-    app-operator.giantswarm.io/version: 1.0.0
   name: nginx-ingress-controller-app
   namespace: eggs2
 spec:

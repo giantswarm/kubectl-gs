@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/giantswarm/microerror"
@@ -50,6 +52,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		appName = r.flag.Name
 	}
 
+	// Since organization may be provided in a mixed-cased form,
+	// make sure it is lowercased.
+	organization := strings.ToLower(r.flag.Organization)
+
 	appConfig := templateapp.Config{
 		AppName:           appName,
 		Catalog:           r.flag.Catalog,
@@ -58,6 +64,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		InCluster:         r.flag.InCluster,
 		Name:              r.flag.Name,
 		Namespace:         r.flag.Namespace,
+		Organization:      organization,
 		Version:           r.flag.Version,
 	}
 
@@ -68,9 +75,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		assetName = key.GenerateAssetName(appName, "userconfig", r.flag.Cluster)
 	}
 
+	// If organization is passed to the command use it as the indicator for
+	// templating App CR in org namespace.
 	var namespace string
 	if r.flag.InCluster {
 		namespace = r.flag.Namespace
+	} else if appConfig.Organization != "" {
+		namespace = fmt.Sprintf("org-%s", appConfig.Organization)
 	} else {
 		namespace = r.flag.Cluster
 	}
