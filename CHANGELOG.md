@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Enable `cluster-topology` templates for OpenStack by default.
+- Update default `cluster-openstack` version to 0.3.0.
+
 ### Added
 
 - Add support for templating App CRs in organization namespace.

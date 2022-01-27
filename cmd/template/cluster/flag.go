@@ -141,7 +141,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppCatalog, flagDefaultAppsAppCatalog, "giantswarm", "Default Apps App version to be installed. (OpenStack App CR only).")
 	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppVersion, flagDefaultAppsAppVersion, "0.1.0", "Default Apps App version to be installed. (OpenStack App CR only).")
 	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsUserConfigMap, flagDefaultAppsUserConfigMap, "", "Path to the user values configmap YAML file for Default Apps App (OpenStack App CR only).")
-	cmd.Flags().BoolVar(&f.ClusterApp.ClusterTopology, flagClusterTopology, false, "Templated cluster as an App CR. (OpenStack App CR only).")
+	cmd.Flags().BoolVar(&f.ClusterApp.ClusterTopology, flagClusterTopology, true, "Templated cluster as an App CR. (OpenStack App CR only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
