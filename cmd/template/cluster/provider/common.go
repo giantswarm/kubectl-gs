@@ -53,8 +53,10 @@ type ClusterCRsConfig struct {
 	PodsCIDR       string
 
 	// App settings
+	ClusterAppCatalog           string
 	ClusterAppUserConfigMap     string
 	ClusterAppVersion           string
+	DefaultAppsAppCatalog       string
 	DefaultAppsAppUserConfigMap string
 	DefaultAppsAppVersion       string
 }
