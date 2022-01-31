@@ -59,6 +59,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	appConfig := templateapp.Config{
 		AppName:           appName,
 		Catalog:           r.flag.Catalog,
+		CatalogNamespace:  r.flag.CatalogNamespace,
 		Cluster:           r.flag.Cluster,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
 		InCluster:         r.flag.InCluster,

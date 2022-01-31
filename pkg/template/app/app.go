@@ -18,6 +18,7 @@ import (
 type Config struct {
 	AppName                    string
 	Catalog                    string
+	CatalogNamespace           string
 	Cluster                    string
 	DefaultingEnabled          bool
 	InCluster                  bool
@@ -100,6 +101,10 @@ func NewAppCR(config Config) ([]byte, error) {
 				Labels:      config.NamespaceConfigLabels,
 			},
 		},
+	}
+
+	if config.CatalogNamespace != "" {
+		appCR.Spec.CatalogNamespace = config.CatalogNamespace
 	}
 
 	if !config.DefaultingEnabled && !config.InCluster {
