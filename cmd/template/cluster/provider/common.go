@@ -32,6 +32,7 @@ type ClusterCRsConfig struct {
 	Cloud                string   // OPENSTACK_CLOUD
 	CloudConfig          string   // <no equivalent env var>>
 	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
+	EnableOIDC           bool     // <no equivalent env var>>
 	ExternalNetworkID    string   // <no equivalent env var>
 	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
 	ImageName            string   // OPENSTACK_IMAGE_NAME
@@ -52,13 +53,12 @@ type ClusterCRsConfig struct {
 	Namespace      string
 	PodsCIDR       string
 
-	// App settings
-	ClusterAppCatalog           string
-	ClusterAppUserConfigMap     string
-	ClusterAppVersion           string
-	DefaultAppsAppCatalog       string
-	DefaultAppsAppUserConfigMap string
-	DefaultAppsAppVersion       string
+	// Helm-based clusters only.
+	BaseConfig         string
+	ClusterCatalog     string
+	ClusterVersion     string
+	DefaultAppsCatalog string
+	DefaultAppsVersion string
 }
 
 type templateConfig struct {

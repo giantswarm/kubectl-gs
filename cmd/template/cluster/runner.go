@@ -70,6 +70,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			Cloud:                r.flag.OpenStack.Cloud,
 			CloudConfig:          r.flag.OpenStack.CloudConfig,
 			DNSNameservers:       r.flag.OpenStack.DNSNameservers,
+			EnableOIDC:           r.flag.OpenStack.EnableOIDC,
 			ExternalNetworkID:    r.flag.OpenStack.ExternalNetworkID,
 			FailureDomain:        r.flag.OpenStack.FailureDomain,
 			ImageName:            r.flag.OpenStack.ImageName,
@@ -79,12 +80,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
 
-			ClusterAppCatalog:           r.flag.ClusterApp.ClusterAppCatalog,
-			ClusterAppVersion:           r.flag.ClusterApp.ClusterAppVersion,
-			ClusterAppUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
-			DefaultAppsAppCatalog:       r.flag.ClusterApp.DefaultAppsAppCatalog,
-			DefaultAppsAppVersion:       r.flag.ClusterApp.DefaultAppsAppVersion,
-			DefaultAppsAppUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
+			BaseConfig:         r.flag.ClusterApp.BaseConfig,
+			ClusterCatalog:     r.flag.ClusterApp.ClusterCatalog,
+			ClusterVersion:     r.flag.ClusterApp.ClusterVersion,
+			DefaultAppsCatalog: r.flag.ClusterApp.DefaultAppsCatalog,
+			DefaultAppsVersion: r.flag.ClusterApp.DefaultAppsVersion,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -141,12 +141,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		if r.flag.ClusterApp.ClusterTopology {
-			err = provider.WriteOpenStackTemplateAppCR(ctx, config)
-		} else {
-			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
-		}
-
+		err = provider.WriteOpenStackTemplate(ctx, c.K8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

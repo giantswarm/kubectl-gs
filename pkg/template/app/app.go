@@ -36,6 +36,7 @@ type UserConfig struct {
 	Name      string
 	Namespace string
 	Path      string
+	Data      string
 }
 
 type AppCROutput struct {
@@ -130,9 +131,15 @@ func NewAppCR(config Config) ([]byte, error) {
 }
 
 func NewConfigMap(config UserConfig) (*corev1.ConfigMap, error) {
-	configMapData, err := key.ReadConfigMapYamlFromFile(afero.NewOsFs(), config.Path)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var configMapData string
+	if config.Data != "" {
+		configMapData = config.Data
+	} else {
+		var err error
+		configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), config.Path)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	configMap := &corev1.ConfigMap{

@@ -21,19 +21,18 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
-	// Cluster App only.
-	flagClusterAppCatalog        = "cluster-app-catalog"
-	flagClusterAppVersion        = "cluster-app-version"
-	flagClusterUserConfigMap     = "cluster-user-configmap"
-	flagClusterTopology          = "cluster-topology"
-	flagDefaultAppsAppCatalog    = "default-apps-app-catalog"
-	flagDefaultAppsAppVersion    = "default-apps-app-version"
-	flagDefaultAppsUserConfigMap = "default-apps-user-configmap"
+	// Helm-based clusters only.
+	flagBaseConfig         = "base-config"
+	flagClusterCatalog     = "cluster-catalog"
+	flagClusterVersion     = "cluster-version"
+	flagDefaultAppsCatalog = "default-apps-catalog"
+	flagDefaultAppsVersion = "default-apps-version"
 
 	// OpenStack only.
 	flagOpenStackCloud                = "cloud"
 	flagOpenStackCloudConfig          = "cloud-config"
 	flagOpenStackDNSNameservers       = "dns-nameservers"
+	flagEnableOIDC                    = "enable-oidc"
 	flagOpenStackExternalNetworkID    = "external-network-id"
 	flagOpenStackFailureDomain        = "failure-domain"
 	flagOpenStackImageName            = "image-name"
@@ -67,6 +66,7 @@ type openStackFlag struct {
 	Cloud                string   // OPENSTACK_CLOUD
 	CloudConfig          string   // <no equivalent env var>
 	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
+	EnableOIDC           bool     // <no equivalent env var>
 	ExternalNetworkID    string   // <no equivalent env var>
 	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
 	ImageName            string   // OPENSTACK_IMAGE_NAME
@@ -78,15 +78,13 @@ type openStackFlag struct {
 }
 
 type clusterAppFlag struct {
-	ClusterTopology bool
+	BaseConfig string
 
-	ClusterAppCatalog    string
-	ClusterAppVersion    string
-	ClusterUserConfigMap string
+	ClusterCatalog string
+	ClusterVersion string
 
-	DefaultAppsAppVersion    string
-	DefaultAppsAppCatalog    string
-	DefaultAppsUserConfigMap string
+	DefaultAppsVersion string
+	DefaultAppsCatalog string
 }
 
 type flag struct {
@@ -122,26 +120,25 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 
 	// OpenStack only.
-	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "openstack", "Name of cloud (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "cloud-config", "Name of cloud config (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
+	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagEnableOIDC, false, "Enable OIDC (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "ubuntu-2004-kube-v1.20.9", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "", "Image name (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeMachineFlavor, flagOpenStackNodeMachineFlavor, "", "Node machine flavor (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeDiskSize, flagOpenStackRootVolumeDiskSize, "", "Root volume disk size (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
 
-	// OpenStack App only.
-	cmd.Flags().StringVar(&f.ClusterApp.ClusterAppCatalog, flagClusterAppCatalog, "giantswarm", "Cluster App version to be installed. (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.ClusterAppVersion, flagClusterAppVersion, "0.3.0", "Cluster App version to be installed. (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.ClusterUserConfigMap, flagClusterUserConfigMap, "", "Path to the user values configmap YAML file for Cluster App (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppCatalog, flagDefaultAppsAppCatalog, "giantswarm", "Default Apps App version to be installed. (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsAppVersion, flagDefaultAppsAppVersion, "0.1.0", "Default Apps App version to be installed. (OpenStack App CR only).")
-	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsUserConfigMap, flagDefaultAppsUserConfigMap, "", "Path to the user values configmap YAML file for Default Apps App (OpenStack App CR only).")
-	cmd.Flags().BoolVar(&f.ClusterApp.ClusterTopology, flagClusterTopology, true, "Templated cluster as an App CR. (OpenStack App CR only).")
+	// Helm-based clusters only.
+	cmd.Flags().StringVar(&f.ClusterApp.BaseConfig, flagBaseConfig, "", "Path to values used as base cluster config (OpenStack only).")
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterCatalog, flagClusterCatalog, "giantswarm", "Cluster App version to be installed. (OpenStack only).")
+	cmd.Flags().StringVar(&f.ClusterApp.ClusterVersion, flagClusterVersion, "", "Cluster App version to be installed. (OpenStack only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsCatalog, flagDefaultAppsCatalog, "giantswarm", "Default Apps App version to be installed. (OpenStack only).")
+	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsVersion, flagDefaultAppsVersion, "", "Default Apps App version to be installed. (OpenStack only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
@@ -156,13 +153,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceUUID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
 
-	_ = cmd.Flags().MarkHidden(flagClusterTopology)
-	_ = cmd.Flags().MarkHidden(flagClusterAppCatalog)
-	_ = cmd.Flags().MarkHidden(flagClusterAppVersion)
-	_ = cmd.Flags().MarkHidden(flagClusterUserConfigMap)
-	_ = cmd.Flags().MarkHidden(flagDefaultAppsAppCatalog)
-	_ = cmd.Flags().MarkHidden(flagDefaultAppsAppVersion)
-	_ = cmd.Flags().MarkHidden(flagDefaultAppsUserConfigMap)
+	_ = cmd.Flags().MarkHidden(flagBaseConfig)
+	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
+	_ = cmd.Flags().MarkHidden(flagClusterVersion)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsVersion)
 
 	// Common.
 	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
@@ -304,7 +299,7 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if !f.ClusterApp.ClusterTopology && f.Release == "" {
+	if f.Provider != "openstack" && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
