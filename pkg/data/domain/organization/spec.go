@@ -15,9 +15,12 @@ type Organization struct {
 	Organization *securityv1alpha1.Organization
 }
 
-// Collection wraps a list of organizations.
 type Collection struct {
 	Items []Organization
+}
+
+type Interface interface {
+	Get(context.Context, GetOptions) (Resource, error)
 }
 
 type GetOptions struct {
@@ -26,10 +29,6 @@ type GetOptions struct {
 
 type Resource interface {
 	Object() runtime.Object
-}
-
-type Interface interface {
-	Get(context.Context, GetOptions) (Resource, error)
 }
 
 func (k *Organization) Object() runtime.Object {
