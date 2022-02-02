@@ -3,8 +3,6 @@
 package organization
 
 import (
-	"context"
-
 	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,10 +15,6 @@ type Organization struct {
 
 type Collection struct {
 	Items []Organization
-}
-
-type Interface interface {
-	Get(context.Context, GetOptions) (Resource, error)
 }
 
 type GetOptions struct {
