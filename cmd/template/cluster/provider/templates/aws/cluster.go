@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
+
 	"github.com/giantswarm/kubectl-gs/pkg/id"
 )
 
