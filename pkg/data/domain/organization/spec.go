@@ -43,12 +43,11 @@ func (c *Collection) Object() runtime.Object {
 	}
 
 	for _, item := range c.Items {
-		obj := item.Object()
-		if obj == nil {
+		if item.Organization == nil {
 			continue
 		}
 		raw := runtime.RawExtension{
-			Object: obj,
+			Object: item.Object(),
 		}
 		list.Items = append(list.Items, raw)
 	}
