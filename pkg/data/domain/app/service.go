@@ -11,11 +11,10 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/appcatalog"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 )
 
@@ -23,13 +22,13 @@ var _ Interface = &Service{}
 
 // Config represent the input parameters that New takes to produce a valid app getter Service.
 type Config struct {
-	Client *client.Client
+	Client client.Client
 }
 
 // Service is the object we'll hang the app getter methods on.
 type Service struct {
 	catalogDataService catalogdata.Interface
-	client             *client.Client
+	client             client.Client
 }
 
 // New returns a new app getter Service.
@@ -132,10 +131,10 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		return microerror.Mask(err)
 	}
 
-	patch := runtimeclient.MergeFrom(appCR.DeepCopy())
+	patch := client.MergeFrom(appCR.DeepCopy())
 	appCR.Spec.Version = version
 
-	err = s.client.K8sClient.CtrlClient().Patch(ctx, appCR, patch)
+	err = s.client.Patch(ctx, appCR, patch)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -242,13 +241,13 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 	appCollection := &Collection{}
 
 	{
-		lo := &runtimeclient.ListOptions{
+		lo := &client.ListOptions{
 			Namespace: namespace,
 		}
 
 		apps := &applicationv1alpha1.AppList{}
 		{
-			err = s.client.K8sClient.CtrlClient().List(ctx, apps, lo)
+			err = s.client.List(ctx, apps, lo)
 			if apimeta.IsNoMatchError(err) {
 				return nil, microerror.Mask(noMatchError)
 			} else if err != nil {
@@ -275,7 +274,7 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 	app := &App{}
 	{
 		appCR := &applicationv1alpha1.App{}
-		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
+		err = s.client.Get(ctx, client.ObjectKey{
 			Namespace: namespace,
 			Name:      name,
 		}, appCR)

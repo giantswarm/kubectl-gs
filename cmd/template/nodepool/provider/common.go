@@ -6,9 +6,9 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"

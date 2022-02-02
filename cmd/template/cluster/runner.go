@@ -7,8 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/id"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/kubectl-gs/pkg/id"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -131,12 +132,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteAWSTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteAzureTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -144,14 +145,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.ClusterApp.ClusterTopology {
 			err = provider.WriteOpenStackTemplateAppCR(ctx, config)
 		} else {
-			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
+			err = provider.WriteOpenStackTemplateRaw(ctx, c, output, config)
 		}
 
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderVSphere:
-		err = provider.WriteVSphereTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteVSphereTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
@@ -16,7 +17,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
@@ -322,7 +322,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	var client *dataClient.Client
+	var client k8sclient.Interface
 	{
 		client, err = config.GetClient(r.logger)
 		if err != nil {
@@ -333,7 +333,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	var clientCertService clientcert.Interface
 	{
 		serviceConfig := clientcert.Config{
-			Client: client,
+			Client: client.CtrlClient(),
 		}
 		clientCertService, err = clientcert.New(serviceConfig)
 		if err != nil {
@@ -344,7 +344,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	var organizationService organization.Interface
 	{
 		serviceConfig := organization.Config{
-			Client: client,
+			Client: client.CtrlClient(),
 		}
 		organizationService, err = organization.New(serviceConfig)
 		if err != nil {
@@ -355,18 +355,15 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	var clusterService cluster.Interface
 	{
 		serviceConfig := cluster.Config{
-			Client: client,
+			Client: client.CtrlClient(),
 		}
-		clusterService, err = cluster.New(serviceConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		clusterService = cluster.New(serviceConfig)
 	}
 
 	var releaseService release.Interface
 	{
 		serviceConfig := release.Config{
-			Client: client,
+			Client: client.CtrlClient(),
 		}
 		releaseService, err = release.New(serviceConfig)
 		if err != nil {

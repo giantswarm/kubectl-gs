@@ -2,18 +2,17 @@ package nodepool
 
 import (
 	"github.com/giantswarm/microerror"
-
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ Interface = &Service{}
 
 type Config struct {
-	Client *client.Client
+	Client client.Client
 }
 
 type Service struct {
-	client *client.Client
+	client client.Client
 }
 
 func New(config Config) (Interface, error) {

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-
-	dataClient "github.com/giantswarm/kubectl-gs/pkg/data/client"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -53,21 +52,21 @@ func (cc *CommonConfig) GetProvider() (string, error) {
 	return provider, nil
 }
 
-func (cc *CommonConfig) GetClient(logger micrologger.Logger) (*dataClient.Client, error) {
+func (cc *CommonConfig) GetClient(logger micrologger.Logger) (k8sclient.Interface, error) {
 	restConfig, err := cc.configFlags.ToRESTConfig()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	config := dataClient.Config{
+	config := k8sclient.ClientsConfig{
 		Logger:        logger,
-		K8sRestConfig: restConfig,
+		RestConfig: restConfig,
 	}
 
-	client, err := dataClient.New(config)
+	k8sClients, err := k8sclient.NewClients(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return client, nil
+	return k8sClients, nil
 }

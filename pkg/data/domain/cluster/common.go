@@ -91,7 +91,7 @@ func (s *Service) Patch(ctx context.Context, object runtime.Object, options Patc
 		return microerror.Mask(err)
 	}
 
-	err = s.client.K8sClient.CtrlClient().Patch(ctx, object, client.RawPatch(types.JSONPatchType, bytes))
+	err = s.client.Patch(ctx, object, client.RawPatch(types.JSONPatchType, bytes))
 	if err != nil {
 		return microerror.Mask(err)
 	}

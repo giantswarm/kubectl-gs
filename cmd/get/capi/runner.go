@@ -256,13 +256,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var client k8sclient.Interface
 	{
 		config := commonconfig.New(r.flag.config)
-		c, err := config.GetClient(r.logger)
+		var err error
+		client, err = config.GetClient(r.logger)
 
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		client = c.K8sClient
 	}
 
 	table := &metav1.Table{

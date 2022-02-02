@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/id"
+	"github.com/giantswarm/kubectl-gs/pkg/id"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool/provider"
 
