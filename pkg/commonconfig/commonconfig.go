@@ -59,7 +59,7 @@ func (cc *CommonConfig) GetClient(logger micrologger.Logger) (k8sclient.Interfac
 	}
 
 	config := k8sclient.ClientsConfig{
-		Logger:        logger,
+		Logger:     logger,
 		RestConfig: restConfig,
 	}
 

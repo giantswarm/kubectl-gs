@@ -32,7 +32,7 @@ type Service struct {
 }
 
 // New returns a new app getter Service.
-func New(config Config) (Interface, error) {
+func New(config Config) (*Service, error) {
 	var err error
 
 	if config.Client == nil {

@@ -5,8 +5,8 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 

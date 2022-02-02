@@ -10,15 +10,19 @@ import (
 	"testing"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
@@ -120,7 +124,7 @@ func Test_run(t *testing.T) {
 
 			out := new(bytes.Buffer)
 			runner := &runner{
-				service: app.NewFakeService(tc.storage),
+				service: newAppService(t, tc.storage...),
 				flag:    flag,
 				stdout:  out,
 			}
@@ -217,4 +221,27 @@ func newCatalog(catalogName string) *applicationv1alpha1.Catalog {
 	}
 
 	return c
+}
+
+func newAppService(t *testing.T, object ...runtime.Object) *app.Service {
+	clientScheme, err := scheme.NewScheme()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	appService, err := app.New(app.Config{
+		Client: clients.CtrlClient(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	return appService
 }

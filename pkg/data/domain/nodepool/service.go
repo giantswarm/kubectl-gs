@@ -15,7 +15,7 @@ type Service struct {
 	client client.Client
 }
 
-func New(config Config) (Interface, error) {
+func New(config Config) (*Service, error) {
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}

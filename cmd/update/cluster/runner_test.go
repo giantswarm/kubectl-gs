@@ -7,14 +7,18 @@ import (
 	"testing"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
@@ -52,7 +56,7 @@ func Test_run(t *testing.T) {
 			runner := &runner{
 				flag:    flag,
 				stdout:  out,
-				service: cluster.NewFakeService(tc.storage),
+				service: newClusterService(t, tc.storage...),
 			}
 
 			err = runner.run(ctx, nil, []string{})
@@ -104,4 +108,22 @@ func newAWSCluster(name, namespace, targetRelease string) *infrastructurev1alpha
 	}
 
 	return c
+}
+
+func newClusterService(t *testing.T, object ...runtime.Object) *cluster.Service {
+	clientScheme, err := scheme.NewScheme()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	return cluster.New(cluster.Config{
+		Client: clients.CtrlClient(),
+	})
 }
