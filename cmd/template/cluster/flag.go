@@ -44,17 +44,14 @@ const (
 	flagOpenStackRootVolumeSourceUUID = "root-volume-source-uuid"
 
 	// Common.
-	flagClusterIDDeprecated = "cluster-id"
-	flagControlPlaneAZ      = "control-plane-az"
-	flagDescription         = "description"
-	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
-	flagName                = "name"
-	flagOutput              = "output"
-	flagOrganization        = "organization"
-	flagOwner               = "owner" // TODO: Remove some time after December 2021
-	flagPodsCIDR            = "pods-cidr"
-	flagRelease             = "release"
-	flagLabel               = "label"
+	flagControlPlaneAZ = "control-plane-az"
+	flagDescription    = "description"
+	flagName           = "name"
+	flagOutput         = "output"
+	flagOrganization   = "organization"
+	flagPodsCIDR       = "pods-cidr"
+	flagRelease        = "release"
+	flagLabel          = "label"
 )
 
 type awsFlag struct {
@@ -97,17 +94,15 @@ type flag struct {
 	ClusterApp clusterAppFlag
 
 	// Common.
-	ClusterIDDeprecated string
-	ControlPlaneAZ      []string
-	Description         string
-	MasterAZ            []string
-	Name                string
-	Output              string
-	Organization        string
-	Owner               string
-	PodsCIDR            string
-	Release             string
-	Label               []string
+	ControlPlaneAZ []string
+	Description    string
+	MasterAZ       []string
+	Name           string
+	Output         string
+	Organization   string
+	PodsCIDR       string
+	Release        string
+	Label          []string
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -165,27 +160,17 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagDefaultAppsUserConfigMap)
 
 	// Common.
-	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
-	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, nil, "Replaced by --control-plane-az.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagAWSEKS)
-
-	// TODO: Remove the flag completely some time after August 2021
-	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
-
-	// TODO: Remove around December 2021
-	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
-	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
@@ -208,13 +193,6 @@ func (f *flag) Validate() error {
 
 		f.ControlPlaneAZ = f.MasterAZ
 		f.MasterAZ = nil
-	}
-
-	// Handle legacy cluster ID, pass it to cluster name flag.
-	// TODO: Remove around December 2021
-	if f.ClusterIDDeprecated != "" {
-		f.Name = f.ClusterIDDeprecated
-		f.ClusterIDDeprecated = ""
 	}
 
 	validProviders := []string{
@@ -270,18 +248,8 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// TODO: Remove the flag completely some time after December 2021
-	if f.Owner == "" && f.Organization == "" {
+	if f.Organization == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
-	}
-
-	if f.Owner != "" {
-		if f.Organization != "" {
-			return microerror.Maskf(invalidFlagError, "--%s and --%s cannot be combined", flagOwner, flagOrganization)
-		}
-
-		f.Organization = f.Owner
-		f.Owner = ""
 	}
 
 	{
