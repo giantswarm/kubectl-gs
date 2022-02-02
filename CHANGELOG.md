@@ -12,6 +12,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Enable `cluster-topology` templates for OpenStack by default.
 - Update default `cluster-openstack` version to 0.3.0.
 
+### Removed
+
+- Remove deprecated `--cluster-id` flag. Replaced by `--cluster-name`.
+- Remove deprecated `--owner` flag. Replaced by `--organization`.
+- Remove deprecated `--master-az` flag. Replaced by `--control-plane-az`.
+- Remove deprecated `--nodepool-name` flag. Replaced by `--description`.
+- Remove deprecated `--nodex-min` flag. Replaced by `--nodes-min`.
+- Remove deprecated `--nodex-max` flag. Replaced by `--nodes-max`.
+
 ### Added
 
 - Add support for templating App CRs in organization namespace.
