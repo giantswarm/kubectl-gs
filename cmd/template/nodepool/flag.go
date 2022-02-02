@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -19,6 +20,8 @@ const (
 	flagOnDemandBaseCapacity                = "on-demand-base-capacity"
 	flagOnDemandPercentageAboveBaseCapacity = "on-demand-percentage-above-base-capacity"
 	flagUseAlikeInstanceTypes               = "use-alike-instance-types"
+	flagEKS                                 = "aws-eks"
+	flagClusterNamespace                    = "aws-cluster-namespace"
 
 	// Azure only.
 	flagAzureVMSize          = "azure-vm-size"
@@ -26,18 +29,14 @@ const (
 	flagAzureSpotVMsMaxPrice = "azure-spot-vms-max-price"
 
 	// Common.
-	flagAvailabilityZones      = "availability-zones"
-	flagClusterIDDeprecated    = "cluster-id"
-	flagClusterName            = "cluster-name"
-	flagDescription            = "description"
-	flagNodepoolNameDeprecated = "nodepool-name"
-	flagNodesMax               = "nodes-max"
-	flagNodesMin               = "nodes-min"
-	flagNodexMax               = "nodex-max"
-	flagNodexMin               = "nodex-min"
-	flagOutput                 = "output"
-	flagOwner                  = "owner"
-	flagRelease                = "release"
+	flagAvailabilityZones = "availability-zones"
+	flagClusterName       = "cluster-name"
+	flagDescription       = "description"
+	flagNodesMax          = "nodes-max"
+	flagNodesMin          = "nodes-min"
+	flagOutput            = "output"
+	flagOrganization      = "organization"
+	flagRelease           = "release"
 )
 
 const (
@@ -54,6 +53,8 @@ type flag struct {
 	OnDemandBaseCapacity                int
 	OnDemandPercentageAboveBaseCapacity int
 	UseAlikeInstanceTypes               bool
+	EKS                                 bool
+	ClusterNamespace                    string
 
 	// Azure only.
 	AzureVMSize          string
@@ -61,21 +62,17 @@ type flag struct {
 	AzureSpotVMsMaxPrice float32
 
 	// Common.
-	AvailabilityZones      []string
-	ClusterIDDeprecated    string
-	ClusterName            string
-	Description            string
-	NodepoolNameDeprecated string
-	NodesMax               int
-	NodesMin               int
-	Output                 string
-	Owner                  string
-	Release                string
+	AvailabilityZones []string
+	ClusterName       string
+	Description       string
+	NodesMax          int
+	NodesMin          int
+	Output            string
+	Organization      string
+	Release           string
 
-	// Deprecated
-	// Can be removed in a future version around March 2021 or later.
-	NodexMin int
-	NodexMax int
+	config genericclioptions.RESTClientGetter
+	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -87,6 +84,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OnDemandBaseCapacity, flagOnDemandBaseCapacity, 0, "Number of base capacity for On demand instance distribution. Default is 0. Only available on AWS.")
 	cmd.Flags().IntVar(&f.OnDemandPercentageAboveBaseCapacity, flagOnDemandPercentageAboveBaseCapacity, 100, "Percentage above base capacity for On demand instance distribution. Default is 100. Only available on AWS.")
 	cmd.Flags().BoolVar(&f.UseAlikeInstanceTypes, flagUseAlikeInstanceTypes, false, "Whether to use similar instances types as a fallback. Only available on AWS.")
+	cmd.Flags().BoolVar(&f.EKS, flagEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
+	cmd.Flags().StringVar(&f.ClusterNamespace, flagClusterNamespace, "", "Namespace of the cluster to add the node pool to. Defaults to the organization namespace from v16.0.0 and to `default` before.")
 
 	// Azure only.
 	cmd.Flags().StringVar(&f.AzureVMSize, flagAzureVMSize, "Standard_D4s_v3", "Azure VM size to use for workers, e.g. 'Standard_D4s_v3'.")
@@ -95,25 +94,25 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.AvailabilityZones, flagAvailabilityZones, []string{}, "List of availability zones to use, instead of setting a number. Use comma to separate values.")
-	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Cluster ID (deprecated).")
 	cmd.Flags().StringVar(&f.ClusterName, flagClusterName, "", "Name of the cluster to add the node pool to.")
-	cmd.Flags().StringVar(&f.NodepoolNameDeprecated, flagNodepoolNameDeprecated, "", "Node pool description (deprecated).")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the node pool's purpose.")
 	cmd.Flags().IntVar(&f.NodesMax, flagNodesMax, maxNodes, fmt.Sprintf("Maximum number of worker nodes for the node pool. (default %d)", maxNodes))
 	cmd.Flags().IntVar(&f.NodesMin, flagNodesMin, minNodes, fmt.Sprintf("Minimum number of worker nodes for the node pool. (default %d)", minNodes))
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
-	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty to match the workload cluster version via the Management API.")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 
-	// This can be removed in a future version around March 2021 or later.
-	cmd.Flags().IntVar(&f.NodexMax, flagNodexMax, 0, "")
-	cmd.Flags().IntVar(&f.NodexMin, flagNodexMin, 0, "")
-	_ = cmd.Flags().MarkDeprecated(flagNodexMax, "")
-	_ = cmd.Flags().MarkDeprecated(flagNodexMin, "")
+	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
+	_ = cmd.Flags().MarkHidden(flagEKS)
 
-	// To be removed around December 2021
-	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "use --cluster-name instead")
-	_ = cmd.Flags().MarkDeprecated(flagNodepoolNameDeprecated, "use --description instead")
+	f.config = genericclioptions.NewConfigFlags(true)
+	f.print = genericclioptions.NewPrintFlags("")
+	f.print.OutputFormat = nil
+
+	// Merging current command flags and config flags,
+	// to be able to override kubectl-specific ones.
+	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
+	f.print.AddFlags(cmd)
 }
 
 func (f *flag) Validate() error {
@@ -142,16 +141,6 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// To be removed around December 2021
-	if f.ClusterIDDeprecated != "" && f.ClusterName == "" {
-		f.ClusterName = f.ClusterIDDeprecated
-		f.ClusterIDDeprecated = ""
-	}
-	if f.NodepoolNameDeprecated != "" && f.Description == "" {
-		f.Description = f.NodepoolNameDeprecated
-		f.NodepoolNameDeprecated = ""
-	}
-
 	if f.ClusterName == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagClusterName)
 	}
@@ -160,13 +149,6 @@ func (f *flag) Validate() error {
 	}
 
 	{
-		if f.NodexMin > 0 {
-			return microerror.Maskf(invalidFlagError, "please use --nodes-min instead of --nodex-min")
-		}
-		if f.NodexMax > 0 {
-			return microerror.Maskf(invalidFlagError, "please use --nodes-max instead of --nodex-max")
-		}
-
 		// Validate scaling.
 		if f.NodesMax < 0 {
 			return microerror.Maskf(invalidFlagError, "--%s must be >= 0", flagNodesMax)
@@ -179,8 +161,12 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Owner == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
+	if f.Organization == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+	}
+
+	if f.Release == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
 	{

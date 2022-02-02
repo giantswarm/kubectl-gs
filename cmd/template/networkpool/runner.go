@@ -50,7 +50,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			CIDRBlock:       r.flag.CIDRBlock,
 			FileName:        networkPoolCRFileName,
 			NetworkPoolName: r.flag.NetworkPoolName,
-			Owner:           r.flag.Owner,
+			Organization:    r.flag.Organization,
 		}
 
 		if config.NetworkPoolName == "" {

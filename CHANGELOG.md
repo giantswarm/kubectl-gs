@@ -7,6 +7,308 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Enable `cluster-topology` templates for OpenStack by default.
+- Update default `cluster-openstack` version to 0.3.0.
+
+### Removed
+
+- Remove deprecated `--cluster-id` flag from `get nodepools`, `template cluster`, and `template nodepool` commands. Replaced by `--cluster-name`.
+- Remove deprecated `--owner` flag from `template cluster`, `template networkpool`, and `template nodepool` commands. Replaced by `--organization`.
+- Remove deprecated `--master-az` flag from `template cluster` command. Replaced by `--control-plane-az`.
+- Remove deprecated `--nodepool-name` flag from `template nodepool` command. Replaced by `--description`.
+- Remove deprecated `--nodex-min` flag from `template nodepool` command. Replaced by `--nodes-min`.
+- Remove deprecated `--nodex-max` flag from `template nodepool` command. Replaced by `--nodes-max`.
+
+### Added
+
+- Add support for templating App CRs in organization namespace.
+- Add `--catalog-namespace` flag to `template app`.
+
+## [1.60.0] - 2022-01-27
+
+### Changed
+
+- Use `v1beta1` api version when templating ClusterAPI manifests on Azure.
+
+## [1.59.0] - 2022-01-26
+
+### Added
+
+- Add support to `template cluster --provider openstack` for templating clusters as App CRs.
+
+## [1.58.2] - 2022-01-13
+
+### Added
+
+- Add `--in-cluster` flag to `template app` command to support installation of MC apps.
+
+### Fixed
+
+- `login` command: Prevent deletion of all CertConfig resources in a namespace, instead delete only one.
+- Adjust `login` to consider other prefixes while parsing the MC API endpoint.
+
+## [1.58.1] - 2021-12-17
+
+### Fixed
+
+- Populate the nodepool release label for AWS provider
+
+## [1.58.0] - 2021-12-14
+
+### Added
+
+- Add support cluster updates and scheduling cluster updates.
+
+## [1.57.0] - 2021-12-09
+
+### Changed
+
+- Modify `STATUS` column of `get releases` command table output to display release state.
+
+## [1.56.0] - 2021-12-07
+
+### Added
+
+- Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io` for `kubectl-gs login` command.
+
+## [1.55.0] - 2021-12-06
+
+### Added
+
+- Add alpha support for OpenStack cluster templating.
+
+## [1.54.0] - 2021-12-03
+
+### Fixed
+
+- Fix a problem preventing the `login` command from creating a client certificate for older workload clusters on Azure.
+- Fix the problem where the `template cluster` output for a v20 Cluster API cluster on AWS contained a bad infrastructure reference, resulting in the cluster not being provisioned.
+
+## [1.53.0] - 2021-11-29
+
+### Changed
+
+- Disable version caching for the `selfupdate` command, so you will always get the latest version right after it's released.
+- Make the `--release` flag mandatory in the `template cluster` and `template nodepool` subcommands.
+
+## [1.52.0] - 2021-11-23
+
+### Changed
+
+- Replace the `CREATED` column with `AGE` in all the `get` subcommand table outputs.
+
+## [1.51.0] - 2021-11-18
+
+### Added
+
+- Add the ability of executing the management cluster login part of the `login` command with a `ServiceAccount` token.
+
+## [1.50.1] - 2021-11-17
+
+### Fixed
+
+- Strip ':<port>' suffix when requesting a client certificate.
+
+## [1.50.0] - 2021-11-17
+
+### Added
+
+- Add `--self-contained` flag to `kubectl-gs login` command for workload clusters to allow output of standalone kubeconfig file.
+
+## [1.49.0] - 2021-11-16
+
+### Changed
+
+- Validate `--certificate-ttl` flag of the `login` command.
+
+## [1.48.1] - 2021-11-11
+
+### Fixed
+
+- Fix self-update command suggestion in the update warning.
+
+## [1.48.0] - 2021-11-11
+
+### Changed
+
+- Allow using `ServiceAccount` tokens for creating workload cluster certificates.
+- Let users override their kubectl config using flags in the `login` command.
+
+## [1.47.0] - 2021-11-09
+
+### Added
+
+- Print warning after running any command if there is a newer version available.
+- Implement command for self-updating (`kubectl gs selfupdate`).
+
+### Changed
+
+- Make the `--organization` flag optional when using the `login` command with a workload cluster. The cluster will be searched in all the organization namespaces that the user has access to.
+
+## [1.46.0] - 2021-11-09
+
+### Added
+
+- Find `Cluster` resources on AWS based on the `giantswarm.io/cluster` label if the `cluster.x-k8s.io/cluster-name` label does not yield results.
+- Add `cluster.x-k8s.io/cluster-name` label to all CRs created by AWS Cluster and Nodepol templating.
+
+### Changed
+
+- Usa CAPI templates for all releases from `v20.0.0-alpha1` onwards, to include alpha and beta releases.
+- Move AWS Cluster templating from `apiextensions`
+- Move AWS Node Pool templating from `apiextensions`
+
+## [1.45.0] - 2021-10-26
+
+### Added
+
+- Add support for updating `App` CRs.
+
+## [1.44.0] - 2021-10-25
+
+### Added
+
+- Add support for creating workload cluster client certificates using the `login` command.
+
+## [1.43.1] - 2021-10-15
+
+### Fixed
+
+- Fix a problem with fetching Catalog CRs in `validate apps`.
+- Fixing a problem where the function to fetch the SSH secret to generate the templates was using `inCluster` config ignoring the kubeconfig.
+
+## [1.43.0] - 2021-10-13
+
+### Added
+
+- Add templating for EKS clusters using the management cluster API
+- Add templating for EKS node pools using the management cluster API
+- Add templating for CAPA node pools using the management cluster API
+
+### Changed
+
+- In the `get catalogs` command output, rename the colum `APP VERSION` to `UPSTREAM VERSION` and change the column order.
+
+## [1.42.1] - 2021-10-08
+
+### Fixed
+
+- Fix a problem where the template subcommands would be slower than expected because of obsolete API requests.
+
+## [1.42.0] - 2021-10-07
+
+### Added
+
+- Add CRs to create a bastion host in CAPZ cluster template.
+- Enable termination events for CAPZ node pools.
+
+## [1.41.1] - 2021-10-04
+
+### Changed
+
+- Use org-namespace for AWS Clusters by default
+
+## [1.41.0] - 2021-10-04
+
+### Added
+
+- Nodepool nodes are labeled with nodepool id on AWS using `giantswarm.io/machine-pool`.
+- `MachinePool` and `AzureMachinePool` are labeled with the `giantswarm.io/machine-pool` label.
+- `get releases` command to return details of available releases.
+
+## [1.40.0] - 2021-09-24
+
+### Added
+
+- Nodepool nodes are labeled with nodepool id on Azure using `giantswarm.io/machine-pool`.
+
+### Changed
+
+- Update the `template cluster` command to add CAPI defaults and validation using the management cluster API.
+
+## [1.39.2] - 2021-09-17
+
+### Changed
+
+- In the `template cluster` and `template nodepool` commands, the `--owner` flag got replaced by `--organization`.
+
+## [1.39.1] - 2021-09-14
+
+### Added
+
+- The `template organization` command now also offers an `--output` flag to specify an output path optionally.
+
+### Changed
+
+- In the `template` commands, the flag `--owner` is replaced by `--organization`.
+- Make the `login` command be able to start a new authentication flow if one of the tokens of an existing authentication provider are not present.
+- Update cluster templating error messages for `--name` flag to use correct terminology
+
+## [1.39.0] - 2021-09-10
+
+### Added
+
+- Add support for templating `Organization` CRs.
+
+### Changed
+
+- Allow providing Kubernetes API URLs with prefixes to the `login` command.
+
+## [1.38.0] - 2021-09-08
+
+### Added
+
+- Add tags to enable `cluster autoscaler` to Azure Node Pool template.
+- Enable system assigned identity in Azure CAPI clusters' master nodes.
+- Set routing table in master subnet in Azure CAPI clusters.
+
+### Fixed
+
+- Set `cluster.giantswarm.io/description` annotation for `Cluster` CR in template generation command on Azure.
+- Set `machine-pool.giantswarm.io/name` annotation for `MachinePool` CR in template generation command on Azure.
+
+## [1.37.0] - 2021-09-03
+
+### Changed
+
+- Template cluster and nodepool resources in the org-namespace from AWS release `16.0.0` onwards.
+
+### Added
+
+- Added `aws-cluster-namespace` flag for nodepools to override the standard namespace to support nodepool creation for
+  upgraded >v16.0.0 clusters that remain in the default namespace.
+- Added support to generate templates for CAPZ clusters and node pools.
+
+## [1.36.0] - 2021-08-26
+
+### Added
+
+- `kubectl gs login` now offers the flag `--callback-port` to specify the port number the OIDC callback server on localhost should use.
+
+## [1.35.1] - 2021-08-24
+
+### Added### Added
+
+- Update the Dockerfile to include kuebctl v1.19 and be based on Alpine v3.14.1.
+
+### Fixed
+
+- Make the `login` command continue to work even if opening the default browser fails.
+
+## [1.35.0] - 2021-08-11
+
+### Changed
+
+- Apply only `v1alpha3` CRs on provider AWS.
+
+### Added
+
+- Add CRs to create bastion host, when creating a CAPI cluster via `template cluster` command.
+- Add configuration to allow SSH for Giant Swarm employees when creating CAPI cluster. Applies to `template cluster` and `template nodepool` commands.
+- Update template version for CAPA cluster and nodepool templating to version 0.6.8
+
 ## [1.34.0] - 2021-07-30
 
 Throughout our UIs and documentation we are aligning our terminology regarding cluster and node pool details, to use consistent terminology matching our Management API. The unique, immutable identifier that was formerly called ID in our user interfaces, is now called the name. The user-friendly, changeable description of the cluster's and node pool's purpose was called name in our UIs and is now called the description.
@@ -52,8 +354,8 @@ If you are upgrading from an earlier releases, apply these changes to migrate an
 
 ### Added
 
-- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS. 
-- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS. 
+- Add templating using CAPA upstream templates for clusters in release version `v20.0.0` on AWS.
+- Add templating using CAPA upstream templates for machinepools in release version `v20.0.0` on AWS.
 - Add optional `--release` flag to nodepool templating so that the new functionality can be used for CAPA versions.
 
 ### Fixed
@@ -428,7 +730,43 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
+[1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
+[1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
+[1.58.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.0...v1.58.1
+[1.58.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.57.0...v1.58.0
+[1.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.56.0...v1.57.0
+[1.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.55.0...v1.56.0
+[1.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.54.0...v1.55.0
+[1.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...v1.54.0
+[1.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...v1.53.0
+[1.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...v1.52.0
+[1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
+[1.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.0...v1.50.1
+[1.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.49.0...v1.50.0
+[1.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.1...v1.49.0
+[1.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.48.0...v1.48.1
+[1.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.47.0...v1.48.0
+[1.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.46.0...v1.47.0
+[1.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.45.0...v1.46.0
+[1.45.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.44.0...v1.45.0
+[1.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.1...v1.44.0
+[1.43.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.43.0...v1.43.1
+[1.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.1...v1.43.0
+[1.42.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.42.0...v1.42.1
+[1.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.1...v1.42.0
+[1.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.41.0...v1.41.1
+[1.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.40.0...v1.41.0
+[1.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.2...v1.40.0
+[1.39.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.1...v1.39.2
+[1.39.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.39.0...v1.39.1
+[1.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.38.0...v1.39.0
+[1.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.37.0...v1.38.0
+[1.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.36.0...v1.37.0
+[1.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.1...v1.36.0
+[1.35.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.35.0...v1.35.1
+[1.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.32.0...v1.33.0
 [1.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.31.0...v1.32.0

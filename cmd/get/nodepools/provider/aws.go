@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 func GetAWSTable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
@@ -18,7 +19,7 @@ func GetAWSTable(npResource nodepool.Resource, capabilities *feature.Service) *m
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "Name", Type: "string"},
 			{Name: "Cluster Name", Type: "string"},
-			{Name: "Created", Type: "string", Format: "date-time"},
+			{Name: "Age", Type: "string", Format: "date-time"},
 			{Name: "Condition", Type: "string"},
 			{Name: "Nodes Min/Max", Type: "string"},
 			{Name: "Nodes Desired", Type: "integer"},
@@ -64,7 +65,7 @@ func getAWSNodePoolRow(
 		Cells: []interface{}{
 			nodePool.MachineDeployment.GetName(),
 			key.ClusterID(nodePool.MachineDeployment),
-			nodePool.MachineDeployment.CreationTimestamp.UTC(),
+			output.TranslateTimestampSince(nodePool.MachineDeployment.CreationTimestamp),
 			getAWSLatestCondition(nodePool, capabilities),
 			getAWSAutoscaling(nodePool, capabilities),
 			nodePool.MachineDeployment.Status.Replicas,

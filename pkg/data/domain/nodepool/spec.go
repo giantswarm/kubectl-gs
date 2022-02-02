@@ -3,11 +3,11 @@ package nodepool
 import (
 	"context"
 
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha2 "sigs.k8s.io/cluster-api/api/v1alpha2"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
@@ -29,10 +29,10 @@ type Resource interface {
 // Nodepool abstracts away provider-specific
 // node pool resources.
 type Nodepool struct {
-	MachineDeployment *capiv1alpha2.MachineDeployment
+	MachineDeployment *capiv1alpha3.MachineDeployment
 	MachinePool       *capiexpv1alpha3.MachinePool
 
-	AWSMachineDeployment *infrastructurev1alpha2.AWSMachineDeployment
+	AWSMachineDeployment *infrastructurev1alpha3.AWSMachineDeployment
 	AzureMachinePool     *capzexpv1alpha3.AzureMachinePool
 }
 

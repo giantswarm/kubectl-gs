@@ -1,0 +1,38 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: MachineDeployment
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    cluster.x-k8s.io/role: bastion
+    cluster.x-k8s.io/watch-filter: capi
+    giantswarm.io/cluster: {{ .Name }}
+    giantswarm.io/organization: {{ .Organization }}
+    release.giantswarm.io/version: {{ .ReleaseVersion }}
+  name: {{ .Name }}-bastion
+  namespace: {{ .Namespace }}
+spec:
+  clusterName: {{ .Name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ .Name }}
+      cluster.x-k8s.io/deployment-name: {{ .Name }}-bastion
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: {{ .Name }}
+        cluster.x-k8s.io/deployment-name: {{ .Name }}-bastion
+    spec:
+      bootstrap:
+        dataSecretName: {{ .Name }}-bastion-ignition
+      clusterName: {{ .Name }}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: AWSMachineTemplate
+        name: {{ .Name }}-bastion
+      version: v0.0.0

@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/get/catalogs"
 	"github.com/giantswarm/kubectl-gs/cmd/get/clusters"
 	"github.com/giantswarm/kubectl-gs/cmd/get/nodepools"
+	"github.com/giantswarm/kubectl-gs/cmd/get/releases"
 )
 
 const (
@@ -137,6 +138,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var releasesCmd *cobra.Command
+	{
+		c := releases.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		releasesCmd, err = releases.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -160,6 +179,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(clusterApiCmd)
 	c.AddCommand(clustersCmd)
 	c.AddCommand(nodepoolsCmd)
+	c.AddCommand(releasesCmd)
 
 	return c, nil
 }

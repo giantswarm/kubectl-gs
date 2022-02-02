@@ -1,0 +1,47 @@
+{
+  "extends": [
+    "config:base",
+    ":reviewer(team:team-rainbow)"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": [".*giantswarm.*"],
+      "groupName": "giantswarm modules"
+    },
+    {
+      "matchPackagePatterns": ["^k8s.io", "^sigs.k8s.io"],
+      "groupName": "k8s modules"
+    },
+    {
+      "excludePackagePatterns": [".*giantswarm.*" ,"^k8s.io", "^sigs.k8s.io"],
+      "groupName": "etc modules"
+    },
+    {
+      "matchPackagePatterns": ["^k8s.io"],
+      "allowedVersions": "< 0.21.0"
+    },
+    {
+      "matchPackageNames": ["sigs.k8s.io/controller-runtime"],
+      "allowedVersions": "< 0.7.0"
+    },
+     {
+       "matchPackagePatterns": ["github.com/giantswarm/apiextensions*"],
+       "allowedVersions": ">= 4.0.0"
+     },
+     {
+       "excludePackagePatterns": ["sigs.k8s.io/cluster-api*"],
+       "groupName": "capi modules"
+     }
+  ],
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "dependencyDashboard": true,
+  "ignorePaths": [
+    ".github/workflows/zz_generated.*",
+    ".github/workflows/codeql-analysis.yml"
+  ],
+  "ignoreDeps": [
+    "architect",
+    "zricethezav/gitleaks-action"
+  ],
+  "schedule": [ "after 9am on thursday" ]
+}

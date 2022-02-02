@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Test_getBasePath(t *testing.T) {
+func Test_GetBasePath(t *testing.T) {
 	testCases := []struct {
 		name           string
 		url            string
@@ -44,15 +44,20 @@ func Test_getBasePath(t *testing.T) {
 			errorMatcher: IsUnknownUrlType,
 		},
 		{
-			name:         "case 5: using giant swarm api url",
-			url:          "https://api.g8s.test.eu-west-1.aws.coolio.com",
-			errorMatcher: IsUnknownUrlType,
+			name:           "case 5: using giant swarm api url",
+			url:            "https://api.g8s.test.eu-west-1.aws.coolio.com",
+			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
+		},
+		{
+			name:           "case 5: new style url",
+			url:            "https://api.installation.customer.gigantic.io:6443",
+			expectedResult: "installation.customer.gigantic.io",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			basePath, err := getBasePath(tc.url)
+			basePath, err := GetBasePath(tc.url)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))
@@ -64,7 +69,7 @@ func Test_getBasePath(t *testing.T) {
 			}
 
 			if basePath != tc.expectedResult {
-				t.Fatalf("base path not expected, got: %s", basePath)
+				t.Fatalf("base path not expected, got: %s, want: %s", basePath, tc.expectedResult)
 			}
 		})
 	}

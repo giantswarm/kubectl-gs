@@ -1,0 +1,52 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AzureCluster
+metadata:
+  labels:
+    "release.giantswarm.io/version": "{{ .Version }}"
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+    "cluster.x-k8s.io/watch-filter": "capi"
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  location: ""
+  networkSpec:
+    subnets:
+    - name: {{ .Name }}-controlplane-subnet
+      role: control-plane
+      routeTable:
+        name: {{ .Name }}-node-routetable
+      securityGroup:
+        name: {{ .Name }}-controlplane-nsg
+        securityRules:
+        - description: Allow K8s API Server
+          destination: '*'
+          destinationPorts: "6443"
+          direction: Inbound
+          name: allow_apiserver
+          priority: 2201
+          protocol: Tcp
+          source: '*'
+          sourcePorts: '*'
+    - role: node
+      name: {{ .Name }}-bastion
+      cidrBlocks:
+      - 10.2.0.0/16
+      securityGroup:
+        name: {{ .Name }}-bastion
+        securityRules:
+        - name: "allow-ssh"
+          description: "Allow SSH access from the internet"
+          protocol: Tcp
+          direction: Inbound
+          priority: 100
+          destinationPorts: "22"
+          destination: "*"
+          sourcePorts: "*"
+          source: "*"
+    vnet:
+      name: {{ .Name }}-vnet
+      cidrBlocks:
+      - 10.0.0.0/8
+  resourceGroup: {{ .Name }}

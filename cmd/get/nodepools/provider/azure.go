@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
@@ -19,7 +20,7 @@ func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) 
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "Name", Type: "string"},
 			{Name: "Cluster Name", Type: "string"},
-			{Name: "Created", Type: "string", Format: "date-time"},
+			{Name: "Age", Type: "string", Format: "date-time"},
 			{Name: "Condition", Type: "string"},
 			{Name: "Nodes Min/Max", Type: "string"},
 			{Name: "Nodes Desired", Type: "integer"},
@@ -63,7 +64,7 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 		Cells: []interface{}{
 			nodePool.MachinePool.GetName(),
 			nodePool.MachinePool.Labels[capiv1alpha3.ClusterLabelName],
-			nodePool.MachinePool.CreationTimestamp.UTC(),
+			output.TranslateTimestampSince(nodePool.MachinePool.CreationTimestamp),
 			getAzureLatestCondition(nodePool, capabilities),
 			getAzureAutoscaling(nodePool, capabilities),
 			nodePool.MachinePool.Status.Replicas,

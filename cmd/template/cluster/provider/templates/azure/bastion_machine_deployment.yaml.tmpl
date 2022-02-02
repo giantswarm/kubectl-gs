@@ -1,0 +1,39 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  creationTimestamp: null
+  labels:
+    "release.giantswarm.io/version": "{{ .Version }}"
+    cluster.x-k8s.io/role: bastion
+    "giantswarm.io/cluster": "{{ .Name }}"
+    "cluster.x-k8s.io/cluster-name": "{{ .Name }}"
+    "giantswarm.io/organization": "{{ .Organization }}"
+    "cluster.x-k8s.io/watch-filter": "capi"
+  name: {{ .Name }}-bastion
+  namespace: {{ .Namespace }}
+spec:
+  clusterName: {{ .Name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: {{ .Name }}
+      cluster.x-k8s.io/deployment-name: {{ .Name }}-bastion
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: {{ .Name }}
+        cluster.x-k8s.io/deployment-name: {{ .Name }}-bastion
+    spec:
+      bootstrap:
+        dataSecretName: {{ .Name }}-bastion
+      clusterName: {{ .Name }}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: AzureMachineTemplate
+        name: {{ .Name }}-bastion
+      version: v0.0.0

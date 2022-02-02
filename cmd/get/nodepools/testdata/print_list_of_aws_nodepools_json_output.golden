@@ -5,7 +5,7 @@
     "items": [
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha2",
+            "apiVersion": "cluster.x-k8s.io/v1alpha3",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
@@ -18,11 +18,12 @@
                 }
             },
             "spec": {
+                "clusterName": "",
                 "selector": {},
                 "template": {
                     "metadata": {},
                     "spec": {
-                        "metadata": {},
+                        "clusterName": "",
                         "bootstrap": {},
                         "infrastructureRef": {}
                     }
@@ -35,7 +36,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha2",
+            "apiVersion": "cluster.x-k8s.io/v1alpha3",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
@@ -48,11 +49,12 @@
                 }
             },
             "spec": {
+                "clusterName": "",
                 "selector": {},
                 "template": {
                     "metadata": {},
                     "spec": {
-                        "metadata": {},
+                        "clusterName": "",
                         "bootstrap": {},
                         "infrastructureRef": {}
                     }
@@ -65,7 +67,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha2",
+            "apiVersion": "cluster.x-k8s.io/v1alpha3",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
@@ -78,11 +80,12 @@
                 }
             },
             "spec": {
+                "clusterName": "",
                 "selector": {},
                 "template": {
                     "metadata": {},
                     "spec": {
-                        "metadata": {},
+                        "clusterName": "",
                         "bootstrap": {},
                         "infrastructureRef": {}
                     }
@@ -95,7 +98,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha2",
+            "apiVersion": "cluster.x-k8s.io/v1alpha3",
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
@@ -108,11 +111,12 @@
                 }
             },
             "spec": {
+                "clusterName": "",
                 "selector": {},
                 "template": {
                     "metadata": {},
                     "spec": {
-                        "metadata": {},
+                        "clusterName": "",
                         "bootstrap": {},
                         "infrastructureRef": {}
                     }
@@ -125,7 +129,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha2",
+            "apiVersion": "cluster.x-k8s.io/v1alpha3",
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
@@ -138,11 +142,12 @@
                 }
             },
             "spec": {
+                "clusterName": "",
                 "selector": {},
                 "template": {
                     "metadata": {},
                     "spec": {
-                        "metadata": {},
+                        "clusterName": "",
                         "bootstrap": {},
                         "infrastructureRef": {}
                     }
@@ -155,7 +160,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha2",
+            "apiVersion": "cluster.x-k8s.io/v1alpha3",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",
@@ -168,11 +173,12 @@
                 }
             },
             "spec": {
+                "clusterName": "",
                 "selector": {},
                 "template": {
                     "metadata": {},
                     "spec": {
-                        "metadata": {},
+                        "clusterName": "",
                         "bootstrap": {},
                         "infrastructureRef": {}
                     }

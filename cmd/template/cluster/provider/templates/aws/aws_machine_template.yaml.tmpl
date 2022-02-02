@@ -1,0 +1,17 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AWSMachineTemplate
+metadata:
+  labels:
+    release.giantswarm.io/version: {{ .ReleaseVersion }}
+    giantswarm.io/cluster: {{ .Name }}
+    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    giantswarm.io/organization: {{ .Organization }}
+    cluster.x-k8s.io/watch-filter: capi
+    cluster.x-k8s.io/role: control-plane
+  name: {{ .Name }}-control-plane
+  namespace: {{ .Namespace }}
+spec:
+  template:
+    spec:
+      iamInstanceProfile: control-plane-{{ .Name }}
+      sshKeyName: ""

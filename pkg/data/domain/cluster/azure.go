@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -19,7 +20,9 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 	{
 		clusterCollection := &capzv1alpha3.AzureClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusterCollection, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(clusterCollection.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
@@ -35,7 +38,9 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 	clusters := &capiv1alpha3.ClusterList{}
 	{
 		err = s.client.K8sClient.CtrlClient().List(ctx, clusters, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(clusters.Items) == 0 {
 			return nil, microerror.Mask(noResourcesError)
@@ -82,7 +87,9 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 	{
 		crs := &capiv1alpha3.ClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
@@ -100,7 +107,9 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 	{
 		crs := &capzv1alpha3.AzureClusterList{}
 		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
-		if err != nil {
+		if apierrors.IsForbidden(err) {
+			return nil, microerror.Mask(insufficientPermissionsError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 

@@ -2,13 +2,14 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
@@ -21,8 +22,8 @@ import (
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
-	stdout io.Writer
 	stderr io.Writer
+	stdout io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -46,25 +47,51 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var userConfigSecretYaml []byte
 	var err error
 
+	appName := r.flag.AppName
+	if appName == "" {
+		appName = r.flag.Name
+	}
+
+	// Since organization may be provided in a mixed-cased form,
+	// make sure it is lowercased.
+	organization := strings.ToLower(r.flag.Organization)
+
 	appConfig := templateapp.Config{
+		AppName:           appName,
 		Catalog:           r.flag.Catalog,
-		Name:              r.flag.Name,
-		Namespace:         r.flag.Namespace,
+		CatalogNamespace:  r.flag.CatalogNamespace,
 		Cluster:           r.flag.Cluster,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
+		InCluster:         r.flag.InCluster,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
+		Organization:      organization,
 		Version:           r.flag.Version,
 	}
 
-	if r.flag.flagUserSecret != "" {
-		userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), r.flag.flagUserSecret)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	var assetName string
+	if r.flag.InCluster {
+		assetName = key.GenerateAssetName(appName, "userconfig")
+	} else {
+		assetName = key.GenerateAssetName(appName, "userconfig", r.flag.Cluster)
+	}
 
-		secretConfig := templateapp.SecretConfig{
-			Data:      userConfigSecretData,
-			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
-			Namespace: r.flag.Cluster,
+	// If organization is passed to the command use it as the indicator for
+	// templating App CR in org namespace.
+	var namespace string
+	if r.flag.InCluster {
+		namespace = r.flag.Namespace
+	} else if appConfig.Organization != "" {
+		namespace = fmt.Sprintf("org-%s", appConfig.Organization)
+	} else {
+		namespace = r.flag.Cluster
+	}
+
+	if r.flag.flagUserSecret != "" {
+		secretConfig := templateapp.UserConfig{
+			Path:      r.flag.flagUserSecret,
+			Name:      assetName,
+			Namespace: namespace,
 		}
 		userSecret, err := templateapp.NewSecret(secretConfig)
 		if err != nil {
@@ -79,18 +106,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.flagUserConfigMap != "" {
-		var configMapData string
-		if r.flag.flagUserConfigMap != "" {
-			configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), r.flag.flagUserConfigMap)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+		configMapConfig := templateapp.UserConfig{
+			Path:      r.flag.flagUserConfigMap,
+			Name:      assetName,
+			Namespace: namespace,
 		}
-		configMapConfig := templateapp.ConfigMapConfig{
-			Data:      configMapData,
-			Name:      key.GenerateAssetName(r.flag.Name, "userconfig", r.flag.Cluster),
-			Namespace: r.flag.Cluster,
-		}
+
 		userConfigMap, err := templateapp.NewConfigMap(configMapConfig)
 		if err != nil {
 			return microerror.Mask(err)
@@ -120,13 +141,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	type AppCROutput struct {
-		AppCR               string
-		UserConfigSecret    string
-		UserConfigConfigMap string
-	}
-
-	appCROutput := AppCROutput{
+	appCROutput := templateapp.AppCROutput{
 		AppCR:               string(appCRYaml),
 		UserConfigConfigMap: string(userConfigConfigMapYaml),
 		UserConfigSecret:    string(userConfigSecretYaml),

@@ -99,19 +99,37 @@ func (s *Service) getAll(ctx context.Context, options GetOptions) (Resource, err
 func (s *Service) getByName(ctx context.Context, namespace, name string, labelSelector labels.Selector) (Resource, error) {
 	var err error
 
-	catalogCR := &applicationv1alpha1.Catalog{}
+	var namespaces []string
 	{
+		if namespace != "" {
+			// If the app CR has a catalog namespace we only check that.
+			namespaces = []string{namespace}
+		} else {
+			// Otherwise we check the default namespace for public
+			// catalogs and giantswarm for internal catalogs.
+			namespaces = []string{metav1.NamespaceDefault, "giantswarm"}
+		}
+	}
+
+	catalogCR := &applicationv1alpha1.Catalog{}
+
+	for _, ns := range namespaces {
 		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
-			Namespace: namespace,
+			Namespace: ns,
 			Name:      name,
 		}, catalogCR)
 		if apierrors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
+			// no-op
+			continue
 		} else if apimeta.IsNoMatchError(err) {
 			return nil, microerror.Mask(noMatchError)
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
+	}
+
+	if catalogCR == nil || catalogCR.Name == "" {
+		return nil, microerror.Maskf(notFoundError, "catalog %#q", name)
 	}
 
 	entries := &applicationv1alpha1.AppCatalogEntryList{}

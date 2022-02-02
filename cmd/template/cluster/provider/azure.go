@@ -1,11 +1,13 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"text/template"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +24,30 @@ const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+	var err error
+
+	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if isCapiVersion {
+		err = WriteCAPZTemplate(ctx, client, out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		err = WriteGSAzureTemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func WriteGSAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 	var err error
 
 	var azureClusterCRYaml, clusterCRYaml, azureMasterMachineCRYaml []byte
@@ -79,7 +104,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 			Labels: map[string]string{
 				label.Cluster:                 config.Name,
 				capiv1alpha3.ClusterLabelName: config.Name,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
@@ -121,7 +146,7 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 				label.Cluster:                             config.Name,
 				capiv1alpha3.ClusterLabelName:             config.Name,
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
-				label.Organization:                        config.Owner,
+				label.Organization:                        config.Organization,
 				label.ReleaseVersion:                      config.ReleaseVersion,
 			},
 		},

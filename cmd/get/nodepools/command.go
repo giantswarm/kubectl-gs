@@ -25,7 +25,7 @@ Output columns:
 
 - NAME: Unique identifier of the node pool.
 - CLUSTER NAME: Unique identifier of the cluster that the node pool belongs to.
-- CREATED: Date and time of the node pool CR creation.
+- AGE: How long ago was the node pool created.
 - CONDITION: Latest condition reported for the node pool.
 - NODES MIN/MAX: Node pool autoscaler settings (if supported).
 - NODES DESIRED: The total number of nodes that the node pool should have.

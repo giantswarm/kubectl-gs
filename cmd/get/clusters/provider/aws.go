@@ -1,12 +1,13 @@
 package provider
 
 import (
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha2"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
@@ -15,7 +16,7 @@ func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
 
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
-		{Name: "Created", Type: "string", Format: "date-time"},
+		{Name: "Age", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},
 		{Name: "Organization", Type: "string"},
@@ -35,14 +36,14 @@ func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
 }
 
 func getAWSClusterRow(c cluster.Cluster) metav1.TableRow {
-	if c.V1Alpha2Cluster == nil || c.AWSCluster == nil {
+	if c.Cluster == nil || c.AWSCluster == nil {
 		return metav1.TableRow{}
 	}
 
 	return metav1.TableRow{
 		Cells: []interface{}{
 			c.AWSCluster.GetName(),
-			c.AWSCluster.CreationTimestamp.UTC(),
+			output.TranslateTimestampSince(c.AWSCluster.CreationTimestamp),
 			getLatestAWSCondition(c.AWSCluster.Status.Cluster.Conditions),
 			c.AWSCluster.Labels[label.ReleaseVersion],
 			c.AWSCluster.Labels[label.Organization],
@@ -54,7 +55,7 @@ func getAWSClusterRow(c cluster.Cluster) metav1.TableRow {
 	}
 }
 
-func getLatestAWSCondition(conditions []infrastructurev1alpha2.CommonClusterStatusCondition) string {
+func getLatestAWSCondition(conditions []infrastructurev1alpha3.CommonClusterStatusCondition) string {
 	if len(conditions) < 1 {
 		return naValue
 	}

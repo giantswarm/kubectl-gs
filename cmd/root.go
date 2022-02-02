@@ -14,7 +14,9 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
 	"github.com/giantswarm/kubectl-gs/cmd/logout"
+	"github.com/giantswarm/kubectl-gs/cmd/selfupdate"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
+	"github.com/giantswarm/kubectl-gs/cmd/update"
 	"github.com/giantswarm/kubectl-gs/cmd/validate"
 	"github.com/giantswarm/kubectl-gs/pkg/project"
 )
@@ -101,6 +103,9 @@ func New(config Config) (*cobra.Command, error) {
 	{
 		c := template.Config{
 			Logger: config.Logger,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}
@@ -144,6 +149,36 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var updateCmd *cobra.Command
+	{
+		c := update.Config{
+			Logger:          config.Logger,
+			K8sConfigAccess: config.K8sConfigAccess,
+			Stderr:          config.Stderr,
+			Stdout:          config.Stdout,
+		}
+
+		updateCmd, err = update.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var selfUpdateCmd *cobra.Command
+	{
+		c := selfupdate.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+			Stderr:     config.Stderr,
+			Stdout:     config.Stdout,
+		}
+
+		selfUpdateCmd, err = selfupdate.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -154,13 +189,14 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:           name,
-		Short:         description,
-		Long:          description,
-		RunE:          r.Run,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Version:       project.Version(),
+		Use:                name,
+		Short:              description,
+		Long:               description,
+		RunE:               r.Run,
+		PersistentPostRunE: r.PersistentPostRun,
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Version:            project.Version(),
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
@@ -171,11 +207,13 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
+	c.AddCommand(getCmd)
 	c.AddCommand(loginCmd)
 	c.AddCommand(logoutCmd)
 	c.AddCommand(templateCmd)
-	c.AddCommand(getCmd)
+	c.AddCommand(updateCmd)
 	c.AddCommand(validateCmd)
+	c.AddCommand(selfUpdateCmd)
 
 	return c, nil
 }

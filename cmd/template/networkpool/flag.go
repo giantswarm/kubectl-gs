@@ -12,7 +12,7 @@ const (
 	flagCIDRBlock       = "cidr-block"
 	flagNetworkPoolName = "networkpool-name"
 	flagOutput          = "output"
-	flagOwner           = "owner"
+	flagOrganization    = "organization"
 )
 
 type flag struct {
@@ -20,14 +20,14 @@ type flag struct {
 	CIDRBlock       string
 	NetworkPoolName string
 	Output          string
-	Owner           string
+	Organization    string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.NetworkPoolName, flagNetworkPoolName, "", "NetworkPool identifier.")
 	cmd.Flags().StringVar(&f.CIDRBlock, flagCIDRBlock, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization.")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 }
 
 func (f *flag) Validate() error {
@@ -42,8 +42,9 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagCIDRBlock)
 		}
 	}
-	if f.Owner == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOwner)
+
+	if f.Organization == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
 	}
 
 	return nil

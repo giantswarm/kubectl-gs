@@ -150,7 +150,7 @@ func newResource(name string) *TestResource {
 
 	r.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "testing.domain.coolio.com",
-		Version: "v1alpha2",
+		Version: "v1alpha3",
 		Kind:    "TestResource",
 	})
 

@@ -1,0 +1,37 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AWSMachineTemplate
+metadata:
+  creationTimestamp: null
+  labels:
+    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    cluster.x-k8s.io/role: bastion
+    cluster.x-k8s.io/watch-filter: capi
+    giantswarm.io/cluster: {{ .Name }}
+    giantswarm.io/organization: {{ .Organization }}
+    release.giantswarm.io/version: {{ .ReleaseVersion }}
+  name: {{ .Name }}-bastion
+  namespace: {{ .Namespace }}
+spec:
+  template:
+    spec:
+      additionalSecurityGroups:
+      - filters:
+        - name: tag:sigs.k8s.io/cluster-api-provider-aws/role
+          values:
+          - bastion
+        - name: tag:sigs.k8s.io/cluster-api-provider-aws/cluster/{{ .Name }}
+          values:
+          - owned
+      cloudInit:
+        insecureSkipSecretsManager: true
+      imageLookupFormat: Flatcar-stable-*
+      imageLookupOrg: "075585003325"
+      instanceType: t3.small
+      publicIP: true
+      subnet:
+        filters:
+        - name: tag:sigs.k8s.io/cluster-api-provider-aws/role
+          values:
+          - public
+      uncompressedUserData: true
+      sshKeyName: ""

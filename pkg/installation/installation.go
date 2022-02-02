@@ -28,7 +28,7 @@ type Installation struct {
 }
 
 func New(ctx context.Context, fromUrl string) (*Installation, error) {
-	basePath, err := getBasePath(fromUrl)
+	basePath, err := GetBasePath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -1,12 +1,14 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
 	"text/template"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -21,10 +23,86 @@ import (
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
+	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
+	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if isCapiVersion {
+		err = WriteCAPZTemplate(ctx, client, out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		err = WriteGSAzureTemplate(out, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
+	var err error
+
+	var sshSSOPublicKey string
+	{
+		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	data := struct {
+		KubernetesVersion  string
+		ClusterName        string
+		Description        string
+		MaxSize            int
+		MinSize            int
+		Name               string
+		Namespace          string
+		Organization       string
+		Replicas           int
+		SSHDConfig         string
+		SSOPublicKey       string
+		StorageAccountType string
+		Version            string
+		VMSize             string
+	}{
+		KubernetesVersion:  "v1.19.9",
+		ClusterName:        config.ClusterName,
+		Description:        config.Description,
+		MaxSize:            config.NodesMax,
+		MinSize:            config.NodesMin,
+		Name:               config.NodePoolID,
+		Namespace:          key.OrganizationNamespaceFromName(config.Organization),
+		Organization:       config.Organization,
+		Replicas:           config.NodesMin,
+		SSHDConfig:         key.NodeSSHDConfigEncoded(),
+		SSOPublicKey:       sshSSOPublicKey,
+		StorageAccountType: key.AzureStorageAccountTypeForVMSize(config.VMSize),
+		Version:            config.ReleaseVersion,
+		VMSize:             config.VMSize,
+	}
+
+	t := template.Must(template.New(config.FileName).Parse(azurenodepooltemplate.GetTemplate()))
+	err = t.Execute(out, data)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func WriteGSAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	var err error
 
 	var azureMachinePoolCRYaml, machinePoolCRYaml, sparkCRYaml []byte
@@ -101,7 +179,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolID,
-				label.Organization:            config.Owner,
+				label.Organization:            config.Organization,
 			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{

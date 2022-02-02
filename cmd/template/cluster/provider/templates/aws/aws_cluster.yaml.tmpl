@@ -1,0 +1,17 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AWSCluster
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: {{ .Name }}
+    cluster.x-k8s.io/watch-filter: capi
+    giantswarm.io/cluster: {{ .Name }}
+    giantswarm.io/organization: {{ .Organization }}
+    release.giantswarm.io/version: {{ .ReleaseVersion }}
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  bastion:
+    enabled: false
+  identityRef:
+    kind: AWSClusterRoleIdentity
+    name: {{ .Name }}
