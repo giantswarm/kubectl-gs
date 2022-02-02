@@ -131,7 +131,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeDiskSize, flagOpenStackRootVolumeDiskSize, "", "Root volume disk size (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes.")
+	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
 
 	// Helm-based clusters only.
 	cmd.Flags().StringVar(&f.ClusterApp.BaseConfig, flagBaseConfig, "", "Path to values used as base cluster config (OpenStack only).")
