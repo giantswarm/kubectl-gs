@@ -25,7 +25,7 @@
       "allowedVersions": "< 0.7.0"
     },
     {
-      "matchedPackageNames": ["github.com/giantswarm/apiextensions/v3"],
+      "matchPackageNames": ["github.com/giantswarm/apiextensions/v3"],
       "allowedVersions": ">= 4.0.0"
     }
   ],
