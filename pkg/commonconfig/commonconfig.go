@@ -10,6 +10,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 const (
@@ -59,8 +60,9 @@ func (cc *CommonConfig) GetClient(logger micrologger.Logger) (k8sclient.Interfac
 	}
 
 	config := k8sclient.ClientsConfig{
-		Logger:     logger,
-		RestConfig: restConfig,
+		Logger:        logger,
+		RestConfig:    restConfig,
+		SchemeBuilder: scheme.NewSchemeBuilder(),
 	}
 
 	k8sClients, err := k8sclient.NewClients(config)
