@@ -73,7 +73,7 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 		InCluster: true,
 		Name:      "cluster-openstack",
 		Namespace: fmt.Sprintf("org-%s", config.Organization),
-		Version:   config.ClusterVersion,
+		Version:   clusterVersion,
 	}
 
 	defaultAppsAppConfig := templateapp.Config{
@@ -82,7 +82,7 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 		InCluster: true,
 		Name:      "default-apps-openstack",
 		Namespace: fmt.Sprintf("org-%s", config.Organization),
-		Version:   config.DefaultAppsVersion,
+		Version:   defaultAppsVersion,
 	}
 
 	userConfig := templateapp.UserConfig{
