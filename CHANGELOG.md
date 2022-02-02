@@ -14,12 +14,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Removed
 
-- Remove deprecated `--cluster-id` flag. Replaced by `--cluster-name`.
-- Remove deprecated `--owner` flag. Replaced by `--organization`.
-- Remove deprecated `--master-az` flag. Replaced by `--control-plane-az`.
-- Remove deprecated `--nodepool-name` flag. Replaced by `--description`.
-- Remove deprecated `--nodex-min` flag. Replaced by `--nodes-min`.
-- Remove deprecated `--nodex-max` flag. Replaced by `--nodes-max`.
+- Remove deprecated `--cluster-id` flag from `get nodepools`, `template cluster`, and `template nodepool` commands. Replaced by `--cluster-name`.
+- Remove deprecated `--owner` flag from `template cluster`, `template networkpool`, and `template nodepool` commands. Replaced by `--organization`.
+- Remove deprecated `--master-az` flag from `template cluster` command. Replaced by `--control-plane-az`.
+- Remove deprecated `--nodepool-name` flag from `template nodepool` command. Replaced by `--description`.
+- Remove deprecated `--nodex-min` flag from `template nodepool` command. Replaced by `--nodes-min`.
+- Remove deprecated `--nodex-max` flag from `template nodepool` command. Replaced by `--nodes-max`.
 
 ### Added
 
