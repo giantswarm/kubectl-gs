@@ -25,6 +25,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add support for templating App CRs in organization namespace.
 - Add `--catalog-namespace` flag to `template app`.
+- Add `--keep-context` flag to `login`.
 
 ## [1.60.0] - 2022-01-27
 
@@ -377,7 +378,7 @@ If you are upgrading from an earlier releases, apply these changes to migrate an
 ### Changed
 
 - Extend `template app` to only output required fields, the flag `--defaulting-enabled`
-can be set to false to disable this.
+  can be set to false to disable this.
 
 ## [1.29.2] - 2021-06-17
 
@@ -730,7 +731,7 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
 [1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
 [1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
