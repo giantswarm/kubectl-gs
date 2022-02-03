@@ -5,13 +5,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/giantswarm/kubectl-gs/pkg/id"
-
-	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool/provider"
-
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool/provider"
+	"github.com/giantswarm/kubectl-gs/pkg/id"
 )
 
 const (

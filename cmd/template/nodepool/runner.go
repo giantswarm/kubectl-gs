@@ -6,15 +6,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/giantswarm/kubectl-gs/pkg/id"
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
+	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-
-	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
-	"github.com/spf13/cobra"
+	"github.com/giantswarm/kubectl-gs/pkg/id"
 )
 
 const (

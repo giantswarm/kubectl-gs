@@ -20,8 +20,6 @@ import (
 )
 
 const (
-	giantswarmNamespace = "giantswarm"
-
 	providerAll       = "All"
 	providerAWS       = "AWS"
 	providerAzure     = "Azure"
