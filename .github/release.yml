@@ -1,0 +1,21 @@
+# Configuration for GitHub automatic release notes.
+# See https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+#
+# Note: changes here should also be reflected in pull_request_template.md
+
+changelog:
+  exclude:
+    labels:
+      - dependencies
+      - dev-change
+      - refactor
+  categories:
+    - title: Breaking changes
+      labels:
+        - breaking-change
+    - title: New features
+      labels:
+        - feature
+    - title: Other changes
+      labels:
+        - "*"
