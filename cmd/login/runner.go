@@ -284,7 +284,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	// Store kubeconfig and CA certificate.
-	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI)
+	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.KeepContext)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -297,10 +297,21 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if firstLogin {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
-		fmt.Fprintf(r.stdout, " ")
+		if r.flag.KeepContext {
+			fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'.", contextName)
+			fmt.Fprintf(r.stdout, " ")
+		} else {
+			fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
+			fmt.Fprintf(r.stdout, " ")
+		}
 	}
-	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+	if r.flag.KeepContext {
+		fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+	} else {
+		fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+	}
 	fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
 	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 
