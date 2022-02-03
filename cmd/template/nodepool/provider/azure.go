@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"text/template"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,6 +24,7 @@ import (
 
 	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
@@ -197,10 +197,9 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err := expcapzv1alpha3.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("expcapzv1alpha3.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)
@@ -215,10 +214,9 @@ func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
 func newSparkCRRef(obj runtime.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err := corev1alpha1.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("corev1alpha1.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)

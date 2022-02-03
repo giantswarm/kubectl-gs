@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 const (
@@ -177,13 +178,11 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 }
 
 func newCAPZClusterInfraRef(obj runtime.Object) *corev1.ObjectReference {
-	var err error
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err = capzv1alpha3.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("capzv1alpha3.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)

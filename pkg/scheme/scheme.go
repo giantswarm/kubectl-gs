@@ -1,22 +1,34 @@
 package scheme
 
 import (
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	gscore "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	infrastructure "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	provider "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	release "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	k8score "k8s.io/api/core/v1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapz "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapi "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
 func NewSchemeBuilder() []func(*runtime.Scheme) error {
 	return []func(*runtime.Scheme) error{
-		apiextensionsv1.AddToScheme,        // Needed for CustomResourceDefinitions
-		applicationv1alpha1.AddToScheme,    // Needed by app service for Apps and Catalogs
-		capi.AddToScheme,                   // Needed by cluster service for CAPI Clusters
-		corev1.AddToScheme,                 // Needed by app service for Secrets and ConfigMaps
-		infrastructurev1alpha3.AddToScheme, // Needed by cluster service for pre-CAPI Clusters
+		apiextensions.AddToScheme,  // CustomResourceDefinition
+		application.AddToScheme,    // App, Catalog
+		capi.AddToScheme,           // Cluster
+		expcapi.AddToScheme,        // AWSMachinePool
+		k8score.AddToScheme,        // Secret, ConfigMap
+		infrastructure.AddToScheme, // AWSCluster (Giant Swarm CAPI)
+		capz.AddToScheme,           // AzureCluster
+		expcapz.AddToScheme,        // AzureMachinePool
+		gscore.AddToScheme,         // Spark
+		provider.AddToScheme,       // AWSConfig/AzureConfig
+		release.AddToScheme,        // Release
 	}
 }
 
