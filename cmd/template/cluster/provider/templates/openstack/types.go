@@ -1,19 +1,19 @@
 package openstack
 
 type ClusterConfig struct {
-	ClusterDescription string                 `json:"clusterDescription,omitempty"`
-	DNSNameservers     []string               `json:"dnsNameservers,omitempty"`
-	Organization       string                 `json:"organization,omitempty"`
-	CloudConfig        string                 `json:"cloudConfig,omitempty"`
-	CloudName          string                 `json:"cloudName,omitempty"`
-	NodeCIDR           string                 `json:"nodeCIDR,omitempty"`
-	ExternalNetworkID  string                 `json:"externalNetworkID,omitempty"`
-	OIDC               *OIDC                  `json:"oidc,omitempty"`
-	Bastion            *Bastion               `json:"bastion,omitempty"`
-	RootVolume         *RootVolume            `json:"rootVolume,omitempty"`
-	NodeClasses        map[string]NodeClasses `json:"nodeClasses,omitempty"`
-	ControlPlane       *ControlPlane          `json:"controlPlane,omitempty"`
-	NodePools          []NodePools            `json:"nodePools,omitempty"`
+	ClusterDescription string               `json:"clusterDescription,omitempty"`
+	DNSNameservers     []string             `json:"dnsNameservers,omitempty"`
+	Organization       string               `json:"organization,omitempty"`
+	CloudConfig        string               `json:"cloudConfig,omitempty"`
+	CloudName          string               `json:"cloudName,omitempty"`
+	NodeCIDR           string               `json:"nodeCIDR,omitempty"`
+	ExternalNetworkID  string               `json:"externalNetworkID,omitempty"`
+	OIDC               *OIDC                `json:"oidc,omitempty"`
+	Bastion            *Bastion             `json:"bastion,omitempty"`
+	RootVolume         *RootVolume          `json:"rootVolume,omitempty"`
+	NodeClasses        map[string]NodeClass `json:"nodeClasses,omitempty"`
+	ControlPlane       *ControlPlane        `json:"controlPlane,omitempty"`
+	NodePools          []NodePool           `json:"nodePools,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -42,8 +42,7 @@ type RootVolume struct {
 	SourceUUID string `json:"sourceUUID"`
 }
 
-type NodeClasses struct {
-	Name          string `json:"name"`
+type NodeClass struct {
 	MachineFlavor string `json:"machineFlavor"`
 	DiskSize      int    `json:"diskSize"`
 }
@@ -54,7 +53,7 @@ type ControlPlane struct {
 	Replicas      int    `json:"replicas"`
 }
 
-type NodePools struct {
+type NodePool struct {
 	Name     string `json:"name"`
 	Class    string `json:"class"`
 	Replicas int    `json:"replicas"`

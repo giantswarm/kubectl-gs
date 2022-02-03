@@ -22,27 +22,40 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-type ClusterCRsConfig struct {
-	// AWS only.
+type AWSConfig struct {
 	EKS                bool
 	ExternalSNAT       bool
 	ControlPlaneSubnet string
+}
 
-	// OpenStack only.
-	Cloud                string   // OPENSTACK_CLOUD
-	CloudConfig          string   // <no equivalent env var>>
-	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
-	EnableOIDC           bool     // <no equivalent env var>>
-	ExternalNetworkID    string   // <no equivalent env var>
-	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
-	ImageName            string   // OPENSTACK_IMAGE_NAME
-	NodeCIDR             string   // <no equivalent env var>
-	NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
-	RootVolumeDiskSize   string   // <no equivalent env var>
-	RootVolumeSourceType string   // <no equivalent env var>
-	RootVolumeSourceUUID string   // <no equivalent env var>
+type OpenStackConfig struct {
+	Cloud                     string
+	CloudConfig               string
+	DNSNameservers            []string
+	EnableOIDC                bool
+	ExternalNetworkID         string
+	FailureDomain             string
+	NodeCIDR                  string
+	NodeImageUUID             string
+	BastionMachineFlavor      string
+	BastionDiskSize           int
+	BastionImageUUID          string
+	ControlPlaneMachineFlavor string
+	ControlPlaneDiskSize      int
+	ControlPlaneReplicas      int
+	WorkerMachineFlavor       string
+	WorkerDiskSize            int
+	WorkerReplicas            int
+}
 
-	// Common.
+type AppConfig struct {
+	ClusterCatalog     string
+	ClusterVersion     string
+	DefaultAppsCatalog string
+	DefaultAppsVersion string
+}
+
+type ClusterConfig struct {
 	FileName       string
 	ControlPlaneAZ []string
 	Description    string
@@ -53,12 +66,9 @@ type ClusterCRsConfig struct {
 	Namespace      string
 	PodsCIDR       string
 
-	// Helm-based clusters only.
-	BaseConfig         string
-	ClusterCatalog     string
-	ClusterVersion     string
-	DefaultAppsCatalog string
-	DefaultAppsVersion string
+	App       AppConfig
+	AWS       AWSConfig
+	OpenStack OpenStackConfig
 }
 
 type templateConfig struct {
@@ -66,7 +76,7 @@ type templateConfig struct {
 	Data string
 }
 
-func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
+func newCAPIV1Alpha3ClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
 	cluster := &capiv1alpha3.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",

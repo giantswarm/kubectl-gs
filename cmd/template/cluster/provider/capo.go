@@ -18,185 +18,207 @@ import (
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
-func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterCRsConfig) error {
-	var userConfigConfigMapYaml []byte
-	var err error
-
-	clusterAppOutput := templateapp.AppCROutput{}
-	defaultAppsAppOutput := templateapp.AppCROutput{}
-
-	clusterVersion := config.ClusterVersion
-	if clusterVersion == "" {
-		var catalogEntryList applicationv1alpha1.AppCatalogEntryList
-		err = k8sClient.CtrlClient().List(ctx, &catalogEntryList, &client.ListOptions{
-			LabelSelector: labels.SelectorFromSet(map[string]string{
-				"app.kubernetes.io/name":            "cluster-openstack",
-				"application.giantswarm.io/catalog": config.ClusterCatalog,
-				"latest":                            "true",
-			}),
-			Namespace: "default",
-		})
-
-		if err != nil {
-			return microerror.Mask(err)
-		} else if len(catalogEntryList.Items) != 1 {
-			return nil
-		}
-
-		clusterVersion = catalogEntryList.Items[0].Spec.Version
+func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+	err := templateClusterOpenstack(ctx, k8sClient, output, config)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	defaultAppsVersion := config.DefaultAppsVersion
-	if defaultAppsVersion == "" {
-		var catalogEntryList applicationv1alpha1.AppCatalogEntryList
-		err = k8sClient.CtrlClient().List(ctx, &catalogEntryList, &client.ListOptions{
-			LabelSelector: labels.SelectorFromSet(map[string]string{
-				"app.kubernetes.io/name":            "default-apps-openstack",
-				"application.giantswarm.io/catalog": config.DefaultAppsCatalog,
-				"latest":                            "true",
-			}),
-			Namespace: "default",
-		})
+	err = templateDefaultAppsOpenstack(ctx, k8sClient, output, config)
+	return microerror.Mask(err)
+}
 
-		if err != nil {
-			return microerror.Mask(err)
-		} else if len(catalogEntryList.Items) != 1 {
-			return nil
-		}
+func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+	appName := config.Name
+	configMapName := fmt.Sprintf("%s-userconfig", appName)
 
-		defaultAppsVersion = catalogEntryList.Items[0].Spec.Version
-	}
-
-	clusterAppConfig := templateapp.Config{
-		AppName:   config.Name,
-		Catalog:   config.ClusterCatalog,
-		InCluster: true,
-		Name:      "cluster-openstack",
-		Namespace: fmt.Sprintf("org-%s", config.Organization),
-		Version:   clusterVersion,
-	}
-
-	defaultAppsAppConfig := templateapp.Config{
-		AppName:   fmt.Sprintf("%s-default-apps", config.Name),
-		Catalog:   config.DefaultAppsCatalog,
-		InCluster: true,
-		Name:      "default-apps-openstack",
-		Namespace: fmt.Sprintf("org-%s", config.Organization),
-		Version:   defaultAppsVersion,
-	}
-
-	userConfig := templateapp.UserConfig{
-		Namespace: fmt.Sprintf("org-%s", config.Organization),
-	}
-
+	var configMapYAML []byte
 	{
-		userConfig.Name = fmt.Sprintf("%s-userconfig", clusterAppConfig.AppName)
-
 		flagValues := openstack.ClusterConfig{
-			CloudName:         config.Cloud,
-			CloudConfig:       config.CloudConfig,
-			DNSNameservers:    config.DNSNameservers,
-			ExternalNetworkID: config.ExternalNetworkID,
-			NodeCIDR:          config.NodeCIDR,
-			Organization:      config.Organization,
+			ClusterDescription: config.Description,
+			DNSNameservers:     config.OpenStack.DNSNameservers,
+			Organization:       config.Organization,
+			CloudConfig:        config.OpenStack.CloudConfig,
+			CloudName:          config.OpenStack.Cloud,
+			NodeCIDR:           config.OpenStack.NodeCIDR,
+			ExternalNetworkID:  config.OpenStack.ExternalNetworkID,
+			Bastion: &openstack.Bastion{
+				Flavor: config.OpenStack.BastionMachineFlavor,
+				RootVolume: openstack.MachineRootVolume{
+					DiskSize:   config.OpenStack.BastionDiskSize,
+					SourceUUID: config.OpenStack.BastionImageUUID,
+				},
+			},
+			RootVolume: &openstack.RootVolume{
+				Enabled:    true,
+				SourceUUID: config.OpenStack.NodeImageUUID,
+			},
+			NodeClasses: map[string]openstack.NodeClass{
+				"default": {
+					MachineFlavor: config.OpenStack.WorkerMachineFlavor,
+					DiskSize:      config.OpenStack.WorkerDiskSize,
+				},
+			},
+			ControlPlane: &openstack.ControlPlane{
+				MachineFlavor: config.OpenStack.ControlPlaneMachineFlavor,
+				DiskSize:      config.OpenStack.ControlPlaneDiskSize,
+				Replicas:      config.OpenStack.ControlPlaneReplicas,
+			},
+			NodePools: []openstack.NodePool{
+				{
+					Name:     "default",
+					Class:    "default",
+					Replicas: config.OpenStack.WorkerReplicas,
+				},
+			},
+			OIDC: &openstack.OIDC{
+				Enabled: config.OpenStack.EnableOIDC,
+			},
 		}
 
-		if config.EnableOIDC {
-			flagValues.OIDC = &openstack.OIDC{
-				Enabled: true,
-			}
-		}
-
-		var fileValues openstack.ClusterConfig
-		if config.BaseConfig != "" {
-			content, err := os.ReadFile(config.BaseConfig)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			err = yaml.Unmarshal(content, &fileValues)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		userConfig.Data, err = openstack.GenerateClusterConfigMapValues(flagValues, fileValues)
+		configData, err := openstack.GenerateClusterValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		userConfigMap, err := templateapp.NewConfigMap(userConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		clusterAppConfig.UserConfigConfigMapName = userConfigMap.GetName()
-
-		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
+		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
+			Name:      configMapName,
+			Namespace: fmt.Sprintf("org-%s", config.Organization),
+			Data:      configData,
+		})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		clusterAppOutput.UserConfigConfigMap = string(userConfigConfigMapYaml)
+		configMapYAML, err = yaml.Marshal(userConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
+	var appYAML []byte
 	{
-		userConfig.Name = fmt.Sprintf("%s-userconfig", defaultAppsAppConfig.AppName)
-
-		flagValues := openstack.DefaultAppsConfig{
-			ClusterName:  config.Name,
-			Organization: config.Organization,
-		}
-
-		if config.EnableOIDC {
-			flagValues.OIDC = &openstack.OIDC{
-				Enabled: true,
+		appVersion := config.App.DefaultAppsVersion
+		if appVersion == "" {
+			var err error
+			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "cluster-openstack", config.App.DefaultAppsCatalog)
+			if err != nil {
+				return microerror.Mask(err)
 			}
 		}
 
-		userConfig.Data, err = openstack.GenerateDefaultAppsConfigMapValues(flagValues)
+		clusterAppConfig := templateapp.Config{
+			AppName:                 config.Name,
+			Catalog:                 config.App.ClusterCatalog,
+			InCluster:               true,
+			Name:                    "cluster-openstack",
+			Namespace:               fmt.Sprintf("org-%s", config.Organization),
+			Version:                 appVersion,
+			UserConfigConfigMapName: configMapName,
+		}
+
+		var err error
+		appYAML, err = templateapp.NewAppCR(clusterAppConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		userConfigMap, err := templateapp.NewConfigMap(userConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		defaultAppsAppConfig.UserConfigConfigMapName = userConfigMap.GetName()
-
-		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		defaultAppsAppOutput.UserConfigConfigMap = string(userConfigConfigMapYaml)
 	}
-
-	clusterAppCRYaml, err := templateapp.NewAppCR(clusterAppConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	clusterAppOutput.AppCR = string(clusterAppCRYaml)
-
-	defaultAppsAppCRYaml, err := templateapp.NewAppCR(defaultAppsAppConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	defaultAppsAppOutput.AppCR = string(defaultAppsAppCRYaml)
 
 	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
 
-	err = t.Execute(output, clusterAppOutput)
-	if err != nil {
-		return microerror.Mask(err)
+	err := t.Execute(output, templateapp.AppCROutput{
+		AppCR:               string(appYAML),
+		UserConfigConfigMap: string(configMapYAML),
+	})
+	return microerror.Mask(err)
+}
+
+func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+	appName := fmt.Sprintf("%s-default-apps", config.Name)
+	configMapName := fmt.Sprintf("%s-userconfig", appName)
+
+	var configMapYAML []byte
+	{
+		flagValues := openstack.DefaultAppsConfig{
+			ClusterName:  config.Name,
+			Organization: config.Organization,
+			OIDC: &openstack.OIDC{
+				Enabled: config.OpenStack.EnableOIDC,
+			},
+		}
+
+		configData, err := openstack.GenerateDefaultAppsValues(flagValues)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
+			Name:      configMapName,
+			Namespace: fmt.Sprintf("org-%s", config.Organization),
+			Data:      configData,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		configMapYAML, err = yaml.Marshal(userConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	err = t.Execute(output, defaultAppsAppOutput)
-	if err != nil {
-		return microerror.Mask(err)
+	var appYAML []byte
+	{
+		appVersion := config.App.DefaultAppsVersion
+		if appVersion == "" {
+			var err error
+			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "default-apps-openstack", config.App.DefaultAppsCatalog)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		var err error
+		appYAML, err = templateapp.NewAppCR(templateapp.Config{
+			AppName:                 appName,
+			Catalog:                 config.App.DefaultAppsCatalog,
+			InCluster:               true,
+			Name:                    "default-apps-openstack",
+			Namespace:               fmt.Sprintf("org-%s", config.Organization),
+			Version:                 appVersion,
+			UserConfigConfigMapName: configMapName,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	return nil
+	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
+
+	err := t.Execute(output, templateapp.AppCROutput{
+		UserConfigConfigMap: string(configMapYAML),
+		AppCR:               string(appYAML),
+	})
+	return microerror.Mask(err)
+}
+
+func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
+	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
+	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(map[string]string{
+			"app.kubernetes.io/name":            app,
+			"application.giantswarm.io/catalog": catalog,
+			"latest":                            "true",
+		}),
+		Namespace: "default",
+	})
+
+	if err != nil {
+		return "", microerror.Mask(err)
+	} else if len(catalogEntryList.Items) != 1 {
+		message := fmt.Sprintf("version not specified for %s and latest release couldn't be determined in %s catalog", app, catalog)
+		return "", microerror.Maskf(invalidFlagError, message)
+	}
+
+	return catalogEntryList.Items[0].Spec.Version, nil
 }

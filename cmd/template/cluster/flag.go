@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
@@ -21,26 +22,30 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
-	// Helm-based clusters only.
-	flagBaseConfig         = "base-config"
+	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
 	flagClusterVersion     = "cluster-version"
 	flagDefaultAppsCatalog = "default-apps-catalog"
 	flagDefaultAppsVersion = "default-apps-version"
 
 	// OpenStack only.
-	flagOpenStackCloud                = "cloud"
-	flagOpenStackCloudConfig          = "cloud-config"
-	flagOpenStackDNSNameservers       = "dns-nameservers"
-	flagEnableOIDC                    = "enable-oidc"
-	flagOpenStackExternalNetworkID    = "external-network-id"
-	flagOpenStackFailureDomain        = "failure-domain"
-	flagOpenStackImageName            = "image-name"
-	flagOpenStackNodeMachineFlavor    = "node-machine-flavor"
-	flagOpenStackNodeCIDR             = "node-cidr"
-	flagOpenStackRootVolumeDiskSize   = "root-volume-disk-size"
-	flagOpenStackRootVolumeSourceType = "root-volume-source-type"
-	flagOpenStackRootVolumeSourceUUID = "root-volume-source-uuid"
+	flagOpenStackCloud                     = "cloud"
+	flagOpenStackCloudConfig               = "cloud-config"
+	flagOpenStackDNSNameservers            = "dns-nameservers"
+	flagOpenStackEnableOIDC                = "enable-oidc"
+	flagOpenStackExternalNetworkID         = "external-network-id"
+	flagOpenStackFailureDomain             = "failure-domain"
+	flagOpenStackNodeCIDR                  = "node-cidr"
+	flagOpenStackNodeImageUUID             = "node-image-uuid"
+	flagOpenStackBastionMachineFlavor      = "bastion-machine-flavor"
+	flagOpenStackBastionDiskSize           = "bastion-disk-size"
+	flagOpenStackBastionImageUUID          = "bastion-image-uuid"
+	flagOpenStackControlPlaneMachineFlavor = "control-plane-machine-flavor"
+	flagOpenStackControlPlaneDiskSize      = "control-plane-disk-size"
+	flagOpenStackControlPlaneReplicas      = "control-plane-replicas"
+	flagOpenStackWorkerMachineFlavor       = "worker-machine-flavor"
+	flagOpenStackWorkerDiskSize            = "worker-disk-size"
+	flagOpenStackWorkerReplicas            = "worker-replicas"
 
 	// Common.
 	flagControlPlaneAZ = "control-plane-az"
@@ -53,43 +58,8 @@ const (
 	flagLabel          = "label"
 )
 
-type awsFlag struct {
-	ControlPlaneSubnet string
-	ExternalSNAT       bool
-	EKS                bool
-}
-
-type openStackFlag struct {
-	Cloud                string   // OPENSTACK_CLOUD
-	CloudConfig          string   // <no equivalent env var>
-	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
-	EnableOIDC           bool     // <no equivalent env var>
-	ExternalNetworkID    string   // <no equivalent env var>
-	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
-	ImageName            string   // OPENSTACK_IMAGE_NAME
-	NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
-	RootVolumeDiskSize   string   // <no equivalent env var>
-	RootVolumeSourceType string   // <no equivalent env var>
-	RootVolumeSourceUUID string   // <no equivalent env var>
-	NodeCIDR             string   // <no equivalent env var>
-}
-
-type clusterAppFlag struct {
-	BaseConfig string
-
-	ClusterCatalog string
-	ClusterVersion string
-
-	DefaultAppsVersion string
-	DefaultAppsCatalog string
-}
-
 type flag struct {
 	Provider string
-
-	AWS        awsFlag
-	OpenStack  openStackFlag
-	ClusterApp clusterAppFlag
 
 	// Common.
 	ControlPlaneAZ []string
@@ -101,6 +71,11 @@ type flag struct {
 	PodsCIDR       string
 	Release        string
 	Label          []string
+
+	// Provider-specific
+	AWS       provider.AWSConfig
+	OpenStack provider.OpenStackConfig
+	App       provider.AppConfig
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -118,37 +93,46 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
-	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagEnableOIDC, false, "Enable OIDC (OpenStack only).")
+	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagOpenStackEnableOIDC, false, "Enable OIDC (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ImageName, flagOpenStackImageName, "", "Image name (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.NodeMachineFlavor, flagOpenStackNodeMachineFlavor, "", "Node machine flavor (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.RootVolumeDiskSize, flagOpenStackRootVolumeDiskSize, "", "Root volume disk size (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceType, flagOpenStackRootVolumeSourceType, "", "Root volume source type (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.RootVolumeSourceUUID, flagOpenStackRootVolumeSourceUUID, "", "Root volume source UUID (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.BastionImageUUID, flagOpenStackBastionImageUUID, "", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.NodeImageUUID, flagOpenStackNodeImageUUID, "", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.WorkerMachineFlavor, flagOpenStackWorkerMachineFlavor, "", "Node machine flavor (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ControlPlaneMachineFlavor, flagOpenStackControlPlaneMachineFlavor, "", "Root volume disk size (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.BastionMachineFlavor, flagOpenStackBastionMachineFlavor, "", "Root volume source type (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.BastionDiskSize, flagOpenStackBastionDiskSize, 10, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.ControlPlaneDiskSize, flagOpenStackControlPlaneDiskSize, 10, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.WorkerDiskSize, flagOpenStackWorkerDiskSize, 10, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.ControlPlaneReplicas, flagOpenStackControlPlaneReplicas, 1, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 2, "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
 
-	// Helm-based clusters only.
-	cmd.Flags().StringVar(&f.ClusterApp.BaseConfig, flagBaseConfig, "", "Path to values used as base cluster config (OpenStack only).")
-	cmd.Flags().StringVar(&f.ClusterApp.ClusterCatalog, flagClusterCatalog, "giantswarm", "Cluster App version to be installed. (OpenStack only).")
-	cmd.Flags().StringVar(&f.ClusterApp.ClusterVersion, flagClusterVersion, "", "Cluster App version to be installed. (OpenStack only).")
-	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsCatalog, flagDefaultAppsCatalog, "giantswarm", "Default Apps App version to be installed. (OpenStack only).")
-	cmd.Flags().StringVar(&f.ClusterApp.DefaultAppsVersion, flagDefaultAppsVersion, "", "Default Apps App version to be installed. (OpenStack only).")
+	// App-based clusters only.
+	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "giantswarm", "Catalog for cluster app. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "giantswarm", "Catalog for cluster default apps app. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created. (OpenStack only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
 	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
+	_ = cmd.Flags().MarkHidden(flagOpenStackEnableOIDC)
 	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackFailureDomain)
-	_ = cmd.Flags().MarkHidden(flagOpenStackImageName)
-	_ = cmd.Flags().MarkHidden(flagOpenStackNodeMachineFlavor)
-	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeDiskSize)
-	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceType)
-	_ = cmd.Flags().MarkHidden(flagOpenStackRootVolumeSourceUUID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
+	_ = cmd.Flags().MarkHidden(flagOpenStackNodeImageUUID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackBastionMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackBastionDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackBastionImageUUID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneReplicas)
+	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
 
-	_ = cmd.Flags().MarkHidden(flagBaseConfig)
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
 	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
@@ -259,6 +243,36 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
 			}
 		case key.ProviderOpenStack:
+			if f.OpenStack.FailureDomain == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackFailureDomain)
+			}
+			if f.OpenStack.Cloud == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloud)
+			}
+			if f.OpenStack.CloudConfig == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloudConfig)
+			}
+			if f.OpenStack.BastionImageUUID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionImageUUID)
+			}
+			if f.OpenStack.NodeImageUUID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackNodeImageUUID)
+			}
+			if f.OpenStack.ExternalNetworkID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
+			}
+			if f.OpenStack.BastionMachineFlavor == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionMachineFlavor)
+			}
+			if f.OpenStack.ControlPlaneMachineFlavor == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneMachineFlavor)
+			}
+			if f.OpenStack.WorkerMachineFlavor == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerMachineFlavor)
+			}
+			if f.OpenStack.ExternalNetworkID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
+			}
 			if f.OpenStack.NodeCIDR != "" {
 				if !validateCIDR(f.OpenStack.NodeCIDR) {
 					return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
