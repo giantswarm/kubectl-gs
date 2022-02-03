@@ -298,10 +298,10 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if firstLogin {
 		if r.flag.KeepContext {
-			fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'.", contextName)
+			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
 			fmt.Fprintf(r.stdout, " ")
 		} else {
-			fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
+			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
 			fmt.Fprintf(r.stdout, " ")
 		}
 	}
