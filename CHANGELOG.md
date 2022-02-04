@@ -14,6 +14,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add support for self-contained kubeconfig creation for management cluster context.
 - Add `--keep-context` flag to `login`.
 
 ## [2.0.0] - 2022-02-04
@@ -34,7 +35,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add support for self-contained kubeconfig creation for management cluster context.
 - Add support for templating App CRs in organization namespace.
 - Add `--catalog-namespace` flag to `template app`.
 

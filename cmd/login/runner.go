@@ -182,9 +182,10 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	var contextAlreadySelected bool
 	var newLoginRequired bool
+	var selfContained bool
 
 	contextName := kubeconfig.GenerateKubeContextName(codeName)
-	err := switchContext(ctx, r.k8sConfigAccess, contextName)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.flag.KeepContext || (len(r.flag.SelfContained) > 0))
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) {
@@ -193,7 +194,9 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 		return microerror.Mask(err)
 	}
 
-	if newLoginRequired || len(r.flag.SelfContained) > 0 {
+	selfContained = len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0)
+
+	if newLoginRequired || selfContained {
 		config, err := r.k8sConfigAccess.GetStartingConfig()
 		if err != nil {
 			return microerror.Mask(err)
@@ -216,7 +219,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else {
+	} else if !(r.flag.KeepContext || selfContained) {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
@@ -437,7 +440,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 	} else {
-		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath, r.flag.KeepContext)
 		if err != nil {
 			return microerror.Mask(err)
 		}

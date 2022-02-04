@@ -200,7 +200,7 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 
 // switchContext modifies the existing kubeconfig, and switches the currently
 // active context to the one specified.
-func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string) error {
+func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string, keepContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -254,8 +254,9 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	} else if authType == kubeconfig.AuthTypeUnknown {
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
-
-	config.CurrentContext = newContextName
+	if !keepContext {
+		config.CurrentContext = newContextName
+	}
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
 	if err != nil {
