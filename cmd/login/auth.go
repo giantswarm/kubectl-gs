@@ -26,7 +26,7 @@ type authInfo struct {
 
 // storeCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool) error {
+func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, keepContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -105,8 +105,10 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		// Add context configuration to config.
 		config.Contexts[contextName] = initialContext
 
-		// Select newly created context as current.
-		config.CurrentContext = contextName
+		if !keepContext {
+			// Select newly created context as current.
+			config.CurrentContext = contextName
+		}
 	}
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
