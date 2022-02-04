@@ -168,45 +168,12 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 // loginWithKubeContextName switches the active kubernetes context to
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
-	var contextAlreadySelected bool
-
 	codeName := kubeconfig.GetCodeNameFromKubeContext(contextName)
-	err := switchContext(ctx, r.k8sConfigAccess, contextName)
-	if IsContextAlreadySelected(err) {
-		contextAlreadySelected = true
-	} else if IsNewLoginRequired(err) {
-		config, err := r.k8sConfigAccess.GetStartingConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		authType := kubeconfig.GetAuthType(config, contextName)
-		if authType == kubeconfig.AuthTypeAuthProvider {
-			// If we get here, we are sure that the kubeconfig context exists.
-			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-			issuer := authProvider.Config[Issuer]
-
-			err = r.loginWithURL(ctx, issuer, false, "")
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		return nil
-	} else if err != nil {
+	err := r.loginWithCodeName(ctx, codeName)
+	if err != nil {
 		return microerror.Mask(err)
 	}
-
 	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
-
-	if contextAlreadySelected {
-		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else {
-		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
-	}
-
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
-
 	return nil
 }
 
@@ -284,7 +251,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	// Store kubeconfig and CA certificate.
-	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI)
+	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.KeepContext)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -297,10 +264,21 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if firstLogin {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected.", contextName)
-		fmt.Fprintf(r.stdout, " ")
+		if r.flag.KeepContext {
+			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
+			fmt.Fprintf(r.stdout, " ")
+		} else {
+			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
+			fmt.Fprintf(r.stdout, " ")
+		}
 	}
-	fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+	if r.flag.KeepContext {
+		fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+	} else {
+		fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+	}
 	fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
 	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 
@@ -401,7 +379,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		}
 	}
 
-	releaseVersion, err := getClusterReleaseVersion(c, provider)
+	releaseVersion, err := getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
 	if err != nil {
 		return microerror.Mask(err)
 	}
