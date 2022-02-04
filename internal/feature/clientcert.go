@@ -9,6 +9,6 @@ var clientCert = Feature{
 		MinVersion: "13.0.0",
 	},
 	ProviderAWS: Capability{
-		MinVersion: "13.0.0",
+		MinVersion: "16.0.1",
 	},
 }

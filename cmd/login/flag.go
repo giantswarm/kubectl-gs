@@ -47,7 +47,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
 	cmd.Flags().StringVar(&f.WCSelfContained, flagWCSelfContained, "", fmt.Sprintf("Create a self-contained kubectl config with embedded credentials and write it to this path. Requires --%s.", flagWCName))
 	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`How long the client certificate should live for. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Requires --%s.`, flagWCName))
-	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, true, fmt.Sprintf(`Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
+	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())

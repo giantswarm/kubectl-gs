@@ -393,7 +393,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	}
 }
 
-func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
+func getClusterReleaseVersion(c *cluster.Cluster, provider string, unsafe bool) (string, error) {
 	if c.Cluster.Labels == nil {
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s does not have a release version label.", name)
 	}
@@ -403,9 +403,12 @@ func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, erro
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s has an invalid release version.", name)
 	}
 
-	err := validateReleaseVersion(releaseVersion, provider)
-	if err != nil {
-		return "", microerror.Mask(err)
+	// We skip the validation if unsafe namespaces feature is active since this allows us to log into clusters in all versions
+	if !unsafe {
+		err := validateReleaseVersion(releaseVersion, provider)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
 	}
 
 	return releaseVersion, nil
@@ -444,7 +447,7 @@ func validateReleaseVersion(version, provider string) error {
 	}
 
 	if provider == key.ProviderAWS {
-		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v13.0.0 or newer in order to allow client certificate creation.")
+		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation.")
 	}
 
 	return microerror.Maskf(unsupportedReleaseVersionError, "The workload cluster release does not allow client certificate creation.")
