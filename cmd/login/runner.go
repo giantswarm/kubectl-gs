@@ -284,9 +284,16 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	// Store kubeconfig and CA certificate.
-	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI)
-	if err != nil {
-		return microerror.Mask(err)
+	if len(r.flag.SelfContained) > 0 {
+		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	if len(authResult.email) > 0 {
@@ -441,13 +448,13 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	var contextExists bool
 	var contextName string
-	if len(r.flag.WCSelfContained) > 0 {
-		contextName, contextExists, err = printCredential(r.k8sConfigAccess, r.fs, r.flag.WCSelfContained, clientCertResource, secret, clusterBasePath)
+	if len(r.flag.SelfContained) > 0 {
+		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, clusterBasePath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
-		contextName, contextExists, err = storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -461,9 +468,9 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
-	if len(r.flag.WCSelfContained) > 0 {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.WCSelfContained)
-		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.WCSelfContained)
+	if len(r.flag.SelfContained) > 0 {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else if contextExists {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
 		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")

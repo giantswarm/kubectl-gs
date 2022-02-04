@@ -136,8 +136,8 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 	return secret, nil
 }
 
-// storeCredential saves the created client certificate credentials into the kubectl config.
-func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// storeWCCredentials saves the created client certificate credentials into the kubectl config.
+func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -209,8 +209,8 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 	return contextName, contextExists, nil
 }
 
-// printCredential saves the created client certificate credentials into a separate kubectl config file.
-func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
+func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
