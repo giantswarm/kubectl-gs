@@ -10,6 +10,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active.
+- Simplify log in with context name
+
+### Added
+
+- Add `--keep-context` flag to `login`.
+
+## [2.0.0] - 2022-02-04
+
+### Changed
+
 - Enable `cluster-topology` templates for OpenStack by default.
 - Update default `cluster-openstack` version to 0.3.0.
 
@@ -731,7 +741,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0
 [1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
 [1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
