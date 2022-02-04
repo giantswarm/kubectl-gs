@@ -383,7 +383,7 @@ If you are upgrading from an earlier releases, apply these changes to migrate an
 ### Changed
 
 - Extend `template app` to only output required fields, the flag `--defaulting-enabled`
-  can be set to false to disable this.
+can be set to false to disable this.
 
 ## [1.29.2] - 2021-06-17
 
