@@ -169,12 +169,19 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	var contextAlreadySelected bool
+	var newLoginRequired bool
 
 	codeName := kubeconfig.GetCodeNameFromKubeContext(contextName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) {
+		newLoginRequired = true
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if newLoginRequired || len(r.flag.SelfContained) > 0 {
 		config, err := r.k8sConfigAccess.GetStartingConfig()
 		if err != nil {
 			return microerror.Mask(err)
@@ -193,8 +200,6 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		}
 
 		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
 	}
 
 	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
@@ -283,13 +288,13 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 		}
 	}
 
-	// Store kubeconfig and CA certificate.
-	if len(r.flag.SelfContained) > 0 {
+	if len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0) {
 		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
+		// Store kubeconfig and CA certificate.
 		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI)
 		if err != nil {
 			return microerror.Mask(err)
