@@ -367,7 +367,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 		return <-clustersCh, nil
 
 	case 0:
-		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.\nMake sure you have access to the cluster's organization namespace.", name)
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.\nMake sure you have access to the cluster's organization namespace. You can try the --%s flag to search for legacy clusters that may reside outside the organization namespace. This might fail for non-admin users.", name, flagWCInsecureNamespace)
 
 	default:
 		{
