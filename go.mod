@@ -128,6 +128,5 @@ replace (
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	k8s.io/client-go => k8s.io/client-go v0.18.19
 	sigs.k8s.io/cluster-api v0.3.15-0.20210309173700-34de71aaaac8 => github.com/giantswarm/cluster-api v0.3.13-gs
-	sigs.k8s.io/cluster-api-provider-aws v0.6.4 => github.com/giantswarm/cluster-api-provider-aws v0.6.5-gs1
 	sigs.k8s.io/cluster-api-provider-azure v0.4.11 => github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3
 )
