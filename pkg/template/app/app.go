@@ -1,17 +1,24 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 type Config struct {
 	AppName                    string
 	Catalog                    string
+	CatalogNamespace           string
 	Cluster                    string
 	DefaultingEnabled          bool
 	InCluster                  bool
@@ -21,42 +28,52 @@ type Config struct {
 	NamespaceConfigLabels      map[string]string
 	UserConfigConfigMapName    string
 	UserConfigSecretName       string
+	Organization               string
 	Version                    string
 }
 
-type SecretConfig struct {
-	Data      []byte
+type UserConfig struct {
 	Name      string
 	Namespace string
+	Path      string
 }
 
-type ConfigMapConfig struct {
-	Data      string
-	Name      string
-	Namespace string
+type AppCROutput struct {
+	AppCR               string
+	UserConfigSecret    string
+	UserConfigConfigMap string
 }
 
 func NewAppCR(config Config) ([]byte, error) {
 	userConfig := applicationv1alpha1.AppSpecUserConfig{}
+	appLabels := map[string]string{}
 
-	var namespace string
+	// Accomodating all the label cases here:
+	// 1. In-cluster Apps get unique label
+	// 2. Org-namespaced Apps get cluster label
+	// 3. Cluster-namespaced Apps with defaulting enabled gets nothing
+	var crNamespace string
 	if config.InCluster {
-		namespace = config.Namespace
+		crNamespace = config.Namespace
+		appLabels[label.AppOperatorVersion] = "0.0.0"
+	} else if config.Organization != "" {
+		crNamespace = fmt.Sprintf("org-%s", config.Organization)
+		appLabels[label.Cluster] = config.Cluster
 	} else {
-		namespace = config.Cluster
+		crNamespace = config.Cluster
 	}
 
 	if config.UserConfigConfigMapName != "" {
 		userConfig.ConfigMap = applicationv1alpha1.AppSpecUserConfigConfigMap{
 			Name:      config.UserConfigConfigMapName,
-			Namespace: namespace,
+			Namespace: crNamespace,
 		}
 	}
 
 	if config.UserConfigSecretName != "" {
 		userConfig.Secret = applicationv1alpha1.AppSpecUserConfigSecret{
 			Name:      config.UserConfigSecretName,
-			Namespace: namespace,
+			Namespace: crNamespace,
 		}
 	}
 
@@ -67,7 +84,8 @@ func NewAppCR(config Config) ([]byte, error) {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.AppName,
-			Namespace: namespace,
+			Namespace: crNamespace,
+			Labels:    appLabels,
 		},
 		Spec: applicationv1alpha1.AppSpec{
 			Catalog:   config.Catalog,
@@ -85,21 +103,15 @@ func NewAppCR(config Config) ([]byte, error) {
 		},
 	}
 
-	if config.InCluster {
-		appCR.SetLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "0.0.0",
-		})
+	if config.CatalogNamespace != "" {
+		appCR.Spec.CatalogNamespace = config.CatalogNamespace
 	}
 
 	if !config.DefaultingEnabled && !config.InCluster {
-		appCR.SetLabels(map[string]string{
-			"app-operator.giantswarm.io/version": "1.0.0",
-		})
-
 		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
 			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
 				Name:      config.Cluster + "-cluster-values",
-				Namespace: config.Cluster,
+				Namespace: crNamespace,
 			},
 		}
 		appCR.Spec.KubeConfig = applicationv1alpha1.AppSpecKubeConfig{
@@ -109,7 +121,7 @@ func NewAppCR(config Config) ([]byte, error) {
 			InCluster: false,
 			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
 				Name:      config.Cluster + "-kubeconfig",
-				Namespace: config.Cluster,
+				Namespace: crNamespace,
 			},
 		}
 	}
@@ -117,7 +129,12 @@ func NewAppCR(config Config) ([]byte, error) {
 	return printAppCR(appCR, config.DefaultingEnabled)
 }
 
-func NewConfigMap(config ConfigMapConfig) (*corev1.ConfigMap, error) {
+func NewConfigMap(config UserConfig) (*corev1.ConfigMap, error) {
+	configMapData, err := key.ReadConfigMapYamlFromFile(afero.NewOsFs(), config.Path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	configMap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
@@ -128,14 +145,19 @@ func NewConfigMap(config ConfigMapConfig) (*corev1.ConfigMap, error) {
 			Namespace: config.Namespace,
 		},
 		Data: map[string]string{
-			"values": config.Data,
+			"values": configMapData,
 		},
 	}
 
 	return configMap, nil
 }
 
-func NewSecret(config SecretConfig) (*corev1.Secret, error) {
+func NewSecret(config UserConfig) (*corev1.Secret, error) {
+	userConfigSecretData, err := key.ReadSecretYamlFromFile(afero.NewOsFs(), config.Path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	secret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Secret",
@@ -146,7 +168,7 @@ func NewSecret(config SecretConfig) (*corev1.Secret, error) {
 			Namespace: config.Namespace,
 		},
 		Data: map[string][]byte{
-			"values": config.Data,
+			"values": userConfigSecretData,
 		},
 	}
 

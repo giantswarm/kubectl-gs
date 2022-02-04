@@ -7,6 +7,37 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Enable `cluster-topology` templates for OpenStack by default.
+- Update default `cluster-openstack` version to 0.3.0.
+
+### Removed
+
+- Remove deprecated `--cluster-id` flag from `get nodepools`, `template cluster`, and `template nodepool` commands. Replaced by `--cluster-name`.
+- Remove deprecated `--owner` flag from `template cluster`, `template networkpool`, and `template nodepool` commands. Replaced by `--organization`.
+- Remove deprecated `--master-az` flag from `template cluster` command. Replaced by `--control-plane-az`.
+- Remove deprecated `--nodepool-name` flag from `template nodepool` command. Replaced by `--description`.
+- Remove deprecated `--nodex-min` flag from `template nodepool` command. Replaced by `--nodes-min`.
+- Remove deprecated `--nodex-max` flag from `template nodepool` command. Replaced by `--nodes-max`.
+
+### Added
+
+- Add support for templating App CRs in organization namespace.
+- Add `--catalog-namespace` flag to `template app`.
+
+## [1.60.0] - 2022-01-27
+
+### Changed
+
+- Use `v1beta1` api version when templating ClusterAPI manifests on Azure.
+
+## [1.59.0] - 2022-01-26
+
+### Added
+
+- Add support to `template cluster --provider openstack` for templating clusters as App CRs.
+
 ## [1.58.2] - 2022-01-13
 
 ### Added
@@ -699,7 +730,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.2...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
+[1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
 [1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
 [1.58.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.0...v1.58.1
 [1.58.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.57.0...v1.58.0

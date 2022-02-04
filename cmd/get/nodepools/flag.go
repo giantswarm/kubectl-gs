@@ -6,15 +6,13 @@ import (
 )
 
 const (
-	flagAllNamespaces       = "all-namespaces"
-	flagClusterIDDeprecated = "cluster-id"
-	flagClusterName         = "cluster-name"
+	flagAllNamespaces = "all-namespaces"
+	flagClusterName   = "cluster-name"
 )
 
 type flag struct {
-	AllNamespaces       bool
-	ClusterIDDeprecated string
-	ClusterName         string
+	AllNamespaces bool
+	ClusterName   string
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -22,11 +20,7 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
-	cmd.Flags().StringVarP(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "", "Set this to a cluster name to only show this cluster's node pools")
 	cmd.Flags().StringVarP(&f.ClusterName, flagClusterName, "c", "", "Only show node pools of the cluster with this name")
-
-	// TODO: remove by ~ December 2021
-	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "use --cluster-name instead")
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
@@ -38,11 +32,5 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	// Apply --clsuter-id value to --cluster-name
-	// TODO: remove by ~ December 2021
-	if f.ClusterIDDeprecated != "" && f.ClusterName == "" {
-		f.ClusterName = f.ClusterIDDeprecated
-	}
-
 	return nil
 }

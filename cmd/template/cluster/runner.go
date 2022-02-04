@@ -78,6 +78,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			RootVolumeDiskSize:   r.flag.OpenStack.RootVolumeDiskSize,
 			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
 			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
+
+			ClusterAppCatalog:           r.flag.ClusterApp.ClusterAppCatalog,
+			ClusterAppVersion:           r.flag.ClusterApp.ClusterAppVersion,
+			ClusterAppUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
+			DefaultAppsAppCatalog:       r.flag.ClusterApp.DefaultAppsAppCatalog,
+			DefaultAppsAppVersion:       r.flag.ClusterApp.DefaultAppsAppVersion,
+			DefaultAppsAppUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -134,7 +141,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, c.K8sClient, output, config)
+		if r.flag.ClusterApp.ClusterTopology {
+			err = provider.WriteOpenStackTemplateAppCR(ctx, config)
+		} else {
+			err = provider.WriteOpenStackTemplateRaw(ctx, c.K8sClient, output, config)
+		}
+
 		if err != nil {
 			return microerror.Mask(err)
 		}
