@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--keep-context` flag to `login`.
+
+## [2.0.0] - 2022-02-04
+
 ### Changed
 
 - Enable `cluster-topology` templates for OpenStack by default.
@@ -25,7 +31,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add support for templating App CRs in organization namespace.
 - Add `--catalog-namespace` flag to `template app`.
-- Add `--keep-context` flag to `login`.
 
 ## [1.60.0] - 2022-01-27
 
@@ -731,7 +736,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0
 [1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
 [1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
