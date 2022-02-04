@@ -122,7 +122,7 @@ require (
 
 replace (
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.2
-	github.com/dgrijalva/jwt-go => github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
+	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/docker/docker => github.com/moby/moby v20.10.9+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
