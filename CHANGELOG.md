@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active.
 - Simplify log in with context name
 
 ### Added

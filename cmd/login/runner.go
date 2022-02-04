@@ -379,7 +379,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		}
 	}
 
-	releaseVersion, err := getClusterReleaseVersion(c, provider)
+	releaseVersion, err := getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
 	if err != nil {
 		return microerror.Mask(err)
 	}
