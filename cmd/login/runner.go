@@ -169,9 +169,54 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	var contextAlreadySelected bool
-	var newLoginRequired bool
 
 	codeName := kubeconfig.GetCodeNameFromKubeContext(contextName)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName)
+	if IsContextAlreadySelected(err) {
+		contextAlreadySelected = true
+	} else if IsNewLoginRequired(err) {
+		config, err := r.k8sConfigAccess.GetStartingConfig()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		authType := kubeconfig.GetAuthType(config, contextName)
+		if authType == kubeconfig.AuthTypeAuthProvider {
+			// If we get here, we are sure that the kubeconfig context exists.
+			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
+			issuer := authProvider.Config[Issuer]
+
+			err = r.loginWithURL(ctx, issuer, false, "")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
+
+	if contextAlreadySelected {
+		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
+	} else {
+		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
+	}
+
+	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
+
+	return nil
+}
+
+// loginWithCodeName switches the active kubernetes context to
+// one with the name derived from the installation code name.
+func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
+	var contextAlreadySelected bool
+	var newLoginRequired bool
+
+	contextName := kubeconfig.GenerateKubeContextName(codeName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
@@ -200,51 +245,6 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		}
 
 		return nil
-	}
-
-	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
-
-	if contextAlreadySelected {
-		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else {
-		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
-	}
-
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
-
-	return nil
-}
-
-// loginWithCodeName switches the active kubernetes context to
-// one with the name derived from the installation code name.
-func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
-	var contextAlreadySelected bool
-
-	contextName := kubeconfig.GenerateKubeContextName(codeName)
-	err := switchContext(ctx, r.k8sConfigAccess, contextName)
-	if IsContextAlreadySelected(err) {
-		contextAlreadySelected = true
-	} else if IsNewLoginRequired(err) {
-		config, err := r.k8sConfigAccess.GetStartingConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		authType := kubeconfig.GetAuthType(config, contextName)
-		if authType == kubeconfig.AuthTypeAuthProvider {
-			// If we get here, we are sure that the kubeconfig context exists.
-			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-			issuer := authProvider.Config[Issuer]
-
-			err = r.loginWithURL(ctx, issuer, false, "")
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
 	}
 
 	if contextAlreadySelected {
