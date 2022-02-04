@@ -1,19 +1,19 @@
 package openstack
 
 type ClusterConfig struct {
-	ClusterDescription string               `json:"clusterDescription,omitempty"`
-	DNSNameservers     []string             `json:"dnsNameservers,omitempty"`
-	Organization       string               `json:"organization,omitempty"`
-	CloudConfig        string               `json:"cloudConfig,omitempty"`
-	CloudName          string               `json:"cloudName,omitempty"`
-	NodeCIDR           string               `json:"nodeCIDR,omitempty"`
-	ExternalNetworkID  string               `json:"externalNetworkID,omitempty"`
-	OIDC               *OIDC                `json:"oidc,omitempty"`
-	Bastion            *Bastion             `json:"bastion,omitempty"`
-	RootVolume         *RootVolume          `json:"rootVolume,omitempty"`
-	NodeClasses        map[string]NodeClass `json:"nodeClasses,omitempty"`
-	ControlPlane       *ControlPlane        `json:"controlPlane,omitempty"`
-	NodePools          []NodePool           `json:"nodePools,omitempty"`
+	ClusterDescription string        `json:"clusterDescription,omitempty"`
+	DNSNameservers     []string      `json:"dnsNameservers,omitempty"`
+	Organization       string        `json:"organization,omitempty"`
+	CloudConfig        string        `json:"cloudConfig,omitempty"`
+	CloudName          string        `json:"cloudName,omitempty"`
+	NodeCIDR           string        `json:"nodeCIDR,omitempty"`
+	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
+	OIDC               *OIDC         `json:"oidc,omitempty"`
+	Bastion            *Bastion      `json:"bastion,omitempty"`
+	RootVolume         *RootVolume   `json:"rootVolume,omitempty"`
+	NodeClasses        []NodeClass   `json:"nodeClasses,omitempty"`
+	ControlPlane       *ControlPlane `json:"controlPlane,omitempty"`
+	NodePools          []NodePool    `json:"nodePools,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -43,6 +43,7 @@ type RootVolume struct {
 }
 
 type NodeClass struct {
+	Name          string `json:"name"`
 	MachineFlavor string `json:"machineFlavor"`
 	DiskSize      int    `json:"diskSize"`
 }

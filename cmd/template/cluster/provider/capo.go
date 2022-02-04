@@ -53,8 +53,9 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 				Enabled:    true,
 				SourceUUID: config.OpenStack.NodeImageUUID,
 			},
-			NodeClasses: map[string]openstack.NodeClass{
-				"default": {
+			NodeClasses: []openstack.NodeClass{
+				{
+					Name:          "default",
 					MachineFlavor: config.OpenStack.WorkerMachineFlavor,
 					DiskSize:      config.OpenStack.WorkerDiskSize,
 				},
