@@ -288,9 +288,8 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 		}
 	}
 
-<<<<<<< HEAD
 	if len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0) {
-		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained, r.flag.KeepContext)
+		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -300,12 +299,6 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 		if err != nil {
 			return microerror.Mask(err)
 		}
-=======
-	// Store kubeconfig and CA certificate.
-	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.KeepContext)
-	if err != nil {
-		return microerror.Mask(err)
->>>>>>> master
 	}
 
 	if len(authResult.email) > 0 {
