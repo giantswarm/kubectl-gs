@@ -447,7 +447,7 @@ func validateReleaseVersion(version, provider string) error {
 	}
 
 	if provider == key.ProviderAWS {
-		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation.")
+		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation. You can try the --%s flag to skip validation and try logging into older clusters. This might fail for non-admin users.", flagWCInsecureNamespace)
 	}
 
 	return microerror.Maskf(unsupportedReleaseVersionError, "The workload cluster release does not allow client certificate creation.")
