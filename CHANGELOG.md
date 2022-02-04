@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active
+- Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active.
 - Enable `cluster-topology` templates for OpenStack by default.
 - Update default `cluster-openstack` version to 0.3.0.
 
