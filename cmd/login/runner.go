@@ -121,7 +121,8 @@ func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
 func (r *runner) setLoginOptions(ctx context.Context) {
 	originContext, err := r.tryToGetCurrentContext(ctx)
 	if err != nil {
-		fmt.Fprintln(r.stdout, "Failed trying to determine current context. %s", err)
+		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
+
 	}
 	r.loginOptions = LoginOptions{
 		originContext:     originContext,
