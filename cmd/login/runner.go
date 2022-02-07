@@ -122,7 +122,6 @@ func (r *runner) setLoginOptions(ctx context.Context) {
 	originContext, err := r.tryToGetCurrentContext(ctx)
 	if err != nil {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
-
 	}
 	r.loginOptions = LoginOptions{
 		originContext:     originContext,
@@ -486,13 +485,14 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	//
-
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
 	if r.loginOptions.selfContainedWC {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
+	} else if !r.loginOptions.switchToWCcontext {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
 		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
