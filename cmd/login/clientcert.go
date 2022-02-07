@@ -217,7 +217,7 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 }
 
 // printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -258,6 +258,15 @@ func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, fil
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
+	// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
+	if loginOptions.originContext != "" {
+		config.CurrentContext = loginOptions.originContext
+		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	}
+
 	return contextName, false, nil
 }
 

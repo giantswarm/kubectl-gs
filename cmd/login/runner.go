@@ -468,7 +468,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	var contextExists bool
 	var contextName string
 	if r.loginOptions.selfContainedWC {
-		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, clusterBasePath)
+		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, clusterBasePath, r.loginOptions)
 		if err != nil {
 			return microerror.Mask(err)
 		}
