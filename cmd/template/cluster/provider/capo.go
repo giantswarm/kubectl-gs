@@ -99,7 +99,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 
 	var appYAML []byte
 	{
-		appVersion := config.App.DefaultAppsVersion
+		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
 			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "cluster-openstack", config.App.DefaultAppsCatalog)
