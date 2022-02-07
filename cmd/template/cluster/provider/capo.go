@@ -102,7 +102,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "cluster-openstack", config.App.DefaultAppsCatalog)
+			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "cluster-openstack", config.App.ClusterCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
