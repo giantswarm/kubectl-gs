@@ -25,7 +25,7 @@ const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
@@ -48,7 +48,7 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	return nil
 }
 
-func WriteGSAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteGSAzureTemplate(out io.Writer, config ClusterConfig) error {
 	var err error
 
 	var azureClusterCRYaml, clusterCRYaml, azureMasterMachineCRYaml []byte
@@ -93,7 +93,7 @@ func WriteGSAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 	return nil
 }
 
-func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
+func newAzureClusterCR(config ClusterConfig) *capzv1alpha3.AzureCluster {
 	cr := &capzv1alpha3.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
@@ -129,7 +129,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 	return cr
 }
 
-func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
+func newAzureMasterMachineCR(config ClusterConfig) *capzv1alpha3.AzureMachine {
 	var failureDomain *string
 	if len(config.ControlPlaneAZ) > 0 {
 		failureDomain = &config.ControlPlaneAZ[0]

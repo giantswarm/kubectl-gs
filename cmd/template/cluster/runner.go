@@ -50,9 +50,9 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	var config provider.ClusterCRsConfig
+	var config provider.ClusterConfig
 	{
-		config = provider.ClusterCRsConfig{
+		config = provider.ClusterConfig{
 			ControlPlaneAZ: r.flag.ControlPlaneAZ,
 			Description:    r.flag.Description,
 			Name:           r.flag.Name,
@@ -61,28 +61,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ReleaseVersion: r.flag.Release,
 			Namespace:      metav1.NamespaceDefault,
 
-			ControlPlaneSubnet: r.flag.AWS.ControlPlaneSubnet,
-			ExternalSNAT:       r.flag.AWS.ExternalSNAT,
-			EKS:                r.flag.AWS.EKS,
-
-			Cloud:                r.flag.OpenStack.Cloud,
-			CloudConfig:          r.flag.OpenStack.CloudConfig,
-			DNSNameservers:       r.flag.OpenStack.DNSNameservers,
-			ExternalNetworkID:    r.flag.OpenStack.ExternalNetworkID,
-			FailureDomain:        r.flag.OpenStack.FailureDomain,
-			ImageName:            r.flag.OpenStack.ImageName,
-			NodeCIDR:             r.flag.OpenStack.NodeCIDR,
-			NodeMachineFlavor:    r.flag.OpenStack.NodeMachineFlavor,
-			RootVolumeDiskSize:   r.flag.OpenStack.RootVolumeDiskSize,
-			RootVolumeSourceType: r.flag.OpenStack.RootVolumeSourceType,
-			RootVolumeSourceUUID: r.flag.OpenStack.RootVolumeSourceUUID,
-
-			ClusterAppCatalog:           r.flag.ClusterApp.ClusterAppCatalog,
-			ClusterAppVersion:           r.flag.ClusterApp.ClusterAppVersion,
-			ClusterAppUserConfigMap:     r.flag.ClusterApp.ClusterUserConfigMap,
-			DefaultAppsAppCatalog:       r.flag.ClusterApp.DefaultAppsAppCatalog,
-			DefaultAppsAppVersion:       r.flag.ClusterApp.DefaultAppsAppVersion,
-			DefaultAppsAppUserConfigMap: r.flag.ClusterApp.DefaultAppsUserConfigMap,
+			App:       r.flag.App,
+			AWS:       r.flag.AWS,
+			OpenStack: r.flag.OpenStack,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -139,12 +120,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		if r.flag.ClusterApp.ClusterTopology {
-			err = provider.WriteOpenStackTemplateAppCR(ctx, config)
-		} else {
-			err = provider.WriteOpenStackTemplateRaw(ctx, c, output, config)
-		}
-
+		err = provider.WriteOpenStackTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
