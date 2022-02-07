@@ -25,19 +25,19 @@ func TestCommonConfig_GetProvider(t *testing.T) {
 			expectedResult: key.ProviderAzure,
 		},
 		{
-			name:           "case 2: KVM url",
-			k8sApiURL:      "https://g8s.test.eu-west-1.kvm.coolio.com",
-			expectedResult: key.ProviderKVM,
+			name:           "case 2: OpenStack url",
+			k8sApiURL:      "https://test12.customer.coolio.com",
+			expectedResult: key.ProviderOpenStack,
 		},
 		{
 			name:           "case 3: URL containing 'aws', but not AWS",
-			k8sApiURL:      "https://g8s.jaws.eu-west-1.kvm.coolio.com",
-			expectedResult: key.ProviderKVM,
+			k8sApiURL:      "https://aws12.customer.coolio.com",
+			expectedResult: key.ProviderOpenStack,
 		},
 		{
 			name:           "case 4: URL containing 'azure', but not Azure",
-			k8sApiURL:      "https://g8s.sazure.eu-west-1.kvm.coolio.com",
-			expectedResult: key.ProviderKVM,
+			k8sApiURL:      "https://azure12.customer.coolio.com",
+			expectedResult: key.ProviderOpenStack,
 		},
 	}
 
