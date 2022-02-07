@@ -182,7 +182,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	var contextAlreadySelected bool
 	var newLoginRequired bool
-	var selfContained bool
+	selfContained := len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0)
 
 	contextName := kubeconfig.GenerateKubeContextName(codeName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.flag.KeepContext || (len(r.flag.SelfContained) > 0))
@@ -190,11 +190,11 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) {
 		newLoginRequired = true
+	} else if IsTokenRenewalFailed(err) && selfContained {
+		newLoginRequired = true
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
-
-	selfContained = len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0)
 
 	if newLoginRequired || selfContained {
 		config, err := r.k8sConfigAccess.GetStartingConfig()
