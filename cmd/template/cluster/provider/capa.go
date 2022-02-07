@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	var sshSSOPublicKey string
@@ -59,7 +59,7 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 	return nil
 }
 
-func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	data := struct {
