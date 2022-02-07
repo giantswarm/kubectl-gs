@@ -26,7 +26,7 @@ type authInfo struct {
 
 // storeMCCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, keepContext bool) error {
+func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, switchContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -105,7 +105,7 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 		// Add context configuration to config.
 		config.Contexts[contextName] = initialContext
 
-		if !keepContext {
+		if switchContext {
 			// Select newly created context as current.
 			config.CurrentContext = contextName
 		}
@@ -200,7 +200,7 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 
 // switchContext modifies the existing kubeconfig, and switches the currently
 // active context to the one specified.
-func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string, keepContext bool) error {
+func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string, switchContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -254,7 +254,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	} else if authType == kubeconfig.AuthTypeUnknown {
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
-	if !keepContext {
+	if switchContext {
 		config.CurrentContext = newContextName
 	}
 
