@@ -257,8 +257,8 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 
 		}
 	}
-
-	if len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0) {
+	selfContained := len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0)
+	if selfContained {
 		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
@@ -278,25 +278,29 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-	if firstLogin {
-		if r.flag.KeepContext {
-			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
-			fmt.Fprintf(r.stdout, " ")
-		} else {
-			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
-			fmt.Fprintf(r.stdout, " ")
-		}
-	}
-
-	if r.flag.KeepContext {
-		fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+	if selfContained {
+		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else {
-		fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+		if firstLogin {
+			if r.flag.KeepContext || selfContained {
+				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
+				fmt.Fprintf(r.stdout, " ")
+			} else {
+				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
+				fmt.Fprintf(r.stdout, " ")
+			}
+		}
 
+		if r.flag.KeepContext {
+			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+		} else {
+			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+		}
+		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
-	fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
-	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
-
 	return nil
 }
 
