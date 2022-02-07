@@ -140,7 +140,7 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 }
 
 // storeWCCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, keepContext bool) (string, bool, error) {
+func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -200,9 +200,11 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 		// Add context configuration to config.
 		config.Contexts[contextName] = context
 
-		// Select newly created context as current.
-		if !keepContext {
+		// Select newly created context as current or revert to origin context if that is desired
+		if loginOptions.switchToWCcontext {
 			config.CurrentContext = contextName
+		} else if loginOptions.originContext != "" {
+			config.CurrentContext = loginOptions.originContext
 		}
 	}
 
