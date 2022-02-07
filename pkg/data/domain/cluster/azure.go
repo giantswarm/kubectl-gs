@@ -19,7 +19,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 	var azureClusters map[string]*capzv1alpha3.AzureCluster
 	{
 		clusterCollection := &capzv1alpha3.AzureClusterList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, clusterCollection, inNamespace)
+		err = s.client.List(ctx, clusterCollection, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
 		} else if err != nil {
@@ -37,7 +37,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 
 	clusters := &capiv1alpha3.ClusterList{}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, clusters, inNamespace)
+		err = s.client.List(ctx, clusters, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
 		} else if err != nil {
@@ -86,7 +86,7 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 
 	{
 		crs := &capiv1alpha3.ClusterList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
 		} else if err != nil {
@@ -106,7 +106,7 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 
 	{
 		crs := &capzv1alpha3.AzureClusterList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
 		} else if err != nil {

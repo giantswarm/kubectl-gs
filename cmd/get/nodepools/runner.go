@@ -115,7 +115,7 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	}
 
 	serviceConfig := nodepool.Config{
-		Client: client,
+		Client: client.CtrlClient(),
 	}
 	r.service, err = nodepool.New(serviceConfig)
 	if err != nil {

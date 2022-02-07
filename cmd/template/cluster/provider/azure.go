@@ -6,8 +6,8 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 const (
@@ -177,13 +178,11 @@ func newAzureMasterMachineCR(config ClusterConfig) *capzv1alpha3.AzureMachine {
 }
 
 func newCAPZClusterInfraRef(obj runtime.Object) *corev1.ObjectReference {
-	var err error
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err = capzv1alpha3.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("capzv1alpha3.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)

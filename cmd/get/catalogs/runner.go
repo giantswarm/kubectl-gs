@@ -126,7 +126,7 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	}
 
 	serviceConfig := catalogdata.Config{
-		Client: client,
+		Client: client.CtrlClient(),
 	}
 	r.service, err = catalogdata.New(serviceConfig)
 	if err != nil {
