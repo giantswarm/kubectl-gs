@@ -218,9 +218,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToMCcontext)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
-	} else if IsNewLoginRequired(err) {
-		newLoginRequired = true
-	} else if IsTokenRenewalFailed(err) && r.loginOptions.selfContainedMC {
+	} else if IsNewLoginRequired(err) || IsTokenRenewalFailed(err) {
 		newLoginRequired = true
 	} else if err != nil {
 		return microerror.Mask(err)

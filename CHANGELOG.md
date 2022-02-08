@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `login` command: Try logging in again if token renewal fails.
+- Add `security` API group to scheme in order to get `organizations` during `login`.  
+
 ### Changed
 
 - Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active.
