@@ -2,10 +2,11 @@ package app
 
 import (
 	"github.com/giantswarm/app/v5/pkg/values"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
 	appdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
 	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/pkg/helmbinary"
@@ -15,13 +16,13 @@ var _ Interface = &Service{}
 
 // Config represents the values that New() needs in order to create a valid app service.
 type Config struct {
-	Client *client.Client
+	Client k8sclient.Interface
 	Logger micrologger.Logger
 }
 
 // Service represents an instance of the App service.
 type Service struct {
-	client             *client.Client
+	client             client.Client
 	appDataService     appdata.Interface
 	catalogDataService catalogdata.Interface
 	helmbinaryService  helmbinary.Interface
@@ -46,7 +47,7 @@ func New(config Config) (Interface, error) {
 	var appDataService appdata.Interface
 	{
 		c := appdata.Config{
-			Client: config.Client,
+			Client: config.Client.CtrlClient(),
 		}
 
 		appDataService, err = appdata.New(c)
@@ -58,7 +59,7 @@ func New(config Config) (Interface, error) {
 	var catalogDataService catalogdata.Interface
 	{
 		c := catalogdata.Config{
-			Client: config.Client,
+			Client: config.Client.CtrlClient(),
 		}
 
 		catalogDataService, err = catalogdata.New(c)
@@ -70,7 +71,7 @@ func New(config Config) (Interface, error) {
 	var helmbinaryService helmbinary.Interface
 	{
 		c := helmbinary.Config{
-			Client: config.Client,
+			Client: config.Client.CtrlClient(),
 		}
 
 		helmbinaryService, err = helmbinary.New(c)
@@ -82,7 +83,7 @@ func New(config Config) (Interface, error) {
 	var valuesService *values.Values
 	{
 		c := values.Config{
-			K8sClient: config.Client.K8sClient.K8sClient(),
+			K8sClient: config.Client.K8sClient(),
 			Logger:    config.Logger,
 		}
 
@@ -93,7 +94,7 @@ func New(config Config) (Interface, error) {
 	}
 
 	s := &Service{
-		client:              config.Client,
+		client:              config.Client.CtrlClient(),
 		appDataService:      appDataService,
 		catalogDataService:  catalogDataService,
 		helmbinaryService:   helmbinaryService,

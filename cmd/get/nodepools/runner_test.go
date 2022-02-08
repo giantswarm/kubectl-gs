@@ -6,14 +6,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
@@ -129,9 +133,10 @@ func Test_run(t *testing.T) {
 				config:      genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig),
 				ClusterName: tc.clusterName,
 			}
+
 			out := new(bytes.Buffer)
 			runner := &runner{
-				service:  nodepool.NewFakeService(tc.storage),
+				service:  newClusterService(t, tc.storage...),
 				flag:     flag,
 				stdout:   out,
 				provider: key.ProviderAWS,
@@ -171,4 +176,27 @@ func Test_run(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newClusterService(t *testing.T, object ...runtime.Object) *nodepool.Service {
+	clientScheme, err := scheme.NewScheme()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	service, err := nodepool.New(nodepool.Config{
+		Client: clients.CtrlClient(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	return service
 }

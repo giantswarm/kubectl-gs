@@ -5,8 +5,8 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
@@ -23,7 +23,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	}
 
 	if isCapiVersion {
-		if config.EKS {
+		if config.AWS.EKS {
 			err = WriteCAPAEKSTemplate(ctx, client, out, config)
 			if err != nil {
 				return microerror.Mask(err)
@@ -44,13 +44,13 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	return nil
 }
 
-func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteGSAWSTemplate(out io.Writer, config ClusterConfig) error {
 	var err error
 
 	crsConfig := aws.ClusterCRsConfig{
 		ClusterID: config.Name,
 
-		ExternalSNAT:   config.ExternalSNAT,
+		ExternalSNAT:   config.AWS.ExternalSNAT,
 		MasterAZ:       config.ControlPlaneAZ,
 		Description:    config.Description,
 		PodsCIDR:       config.PodsCIDR,
@@ -64,8 +64,8 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterCRsConfig) error {
 		return microerror.Mask(err)
 	}
 
-	if config.ControlPlaneSubnet != "" {
-		crs.AWSCluster.Annotations[annotation.AWSSubnetSize] = config.ControlPlaneSubnet
+	if config.AWS.ControlPlaneSubnet != "" {
+		crs.AWSCluster.Annotations[annotation.AWSSubnetSize] = config.AWS.ControlPlaneSubnet
 	}
 
 	if key.IsOrgNamespaceVersion(config.ReleaseVersion) {

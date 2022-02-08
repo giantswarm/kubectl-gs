@@ -89,7 +89,7 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	}
 
 	serviceConfig := app.Config{
-		Client: client,
+		Client: client.CtrlClient(),
 	}
 	r.service, err = app.New(serviceConfig)
 	if err != nil {
