@@ -24,9 +24,9 @@ type authInfo struct {
 	refreshToken string
 }
 
-// storeCredentials stores the installation's CA certificate, and
+// storeMCCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, keepContext bool) error {
+func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, switchContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -105,7 +105,7 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 		// Add context configuration to config.
 		config.Contexts[contextName] = initialContext
 
-		if !keepContext {
+		if switchContext {
 			// Select newly created context as current.
 			config.CurrentContext = contextName
 		}
@@ -119,9 +119,88 @@ func storeCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.In
 	return nil
 }
 
+// printMCCredentials saves the installation's CA certificate, and
+// writes the configuration for the k8s api access into a separate file.
+func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, filePath string) error {
+	kUsername := fmt.Sprintf("gs-%s-%s", authResult.username, i.Codename)
+	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
+	clusterName := fmt.Sprintf("gs-%s", i.Codename)
+
+	// Store CA certificate.
+	err := kubeconfig.WriteCertificate(i.CACert, clusterName, fs)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	var server string
+	{
+		if internalAPI {
+			server = i.K8sInternalApiURL
+		} else {
+			server = i.K8sApiURL
+		}
+	}
+
+	var certPath string
+	{
+		certPath, err = kubeconfig.GetKubeCertFilePath(clusterName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	authInfo := clientcmdapi.NewAuthInfo()
+	{
+		if len(authResult.clientID) > 0 {
+			authInfo.AuthProvider = &clientcmdapi.AuthProviderConfig{
+				Name: "oidc",
+				Config: map[string]string{
+					ClientID:     authResult.clientID,
+					IDToken:      authResult.token,
+					Issuer:       i.AuthURL,
+					RefreshToken: authResult.refreshToken,
+				},
+			}
+		} else {
+			authInfo.Token = authResult.token
+		}
+	}
+
+	kubeconfig := clientcmdapi.Config{
+		APIVersion: "v1",
+		Kind:       "Config",
+		Clusters: map[string]*clientcmdapi.Cluster{
+			contextName: {
+				Server:               server,
+				CertificateAuthority: certPath,
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			contextName: {
+				Cluster:  clusterName,
+				AuthInfo: kUsername,
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			kUsername: authInfo,
+		},
+		CurrentContext: contextName,
+	}
+	if exists, err := afero.Exists(fs, filePath); exists {
+		return microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", filePath)
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+	err = clientcmd.WriteToFile(kubeconfig, filePath)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	return nil
+}
+
 // switchContext modifies the existing kubeconfig, and switches the currently
 // active context to the one specified.
-func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string) error {
+func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string, switchContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -175,8 +254,9 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	} else if authType == kubeconfig.AuthTypeUnknown {
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
-
-	config.CurrentContext = newContextName
+	if switchContext {
+		config.CurrentContext = newContextName
+	}
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
 	if err != nil {

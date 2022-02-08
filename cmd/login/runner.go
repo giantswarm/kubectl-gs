@@ -31,9 +31,19 @@ type runner struct {
 	fs     afero.Fs
 
 	k8sConfigAccess clientcmd.ConfigAccess
+	loginOptions    LoginOptions
 
 	stdout io.Writer
 	stderr io.Writer
+}
+
+type LoginOptions struct {
+	isWCLogin         bool
+	selfContainedMC   bool
+	selfContainedWC   bool
+	switchToMCcontext bool
+	switchToWCcontext bool
+	originContext     string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -44,6 +54,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Mask(err)
 	}
 
+	r.setLoginOptions(ctx)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)
@@ -55,10 +66,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	isCreatingClientCert := len(r.flag.WCName) > 0
-
 	if len(args) < 1 {
-		err = r.tryToReuseExistingContext(ctx, isCreatingClientCert)
+		err = r.tryToReuseExistingContext(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -92,7 +101,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	if isCreatingClientCert {
+	if r.loginOptions.isWCLogin {
 		err = r.createClusterClientCert(ctx)
 		if err != nil {
 			return microerror.Mask(err)
@@ -101,8 +110,30 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	return nil
 }
+func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
+	config, err := r.k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return config.CurrentContext, nil
+}
 
-func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClientCert bool) error {
+func (r *runner) setLoginOptions(ctx context.Context) {
+	originContext, err := r.tryToGetCurrentContext(ctx)
+	if err != nil {
+		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
+	}
+	r.loginOptions = LoginOptions{
+		originContext:   originContext,
+		isWCLogin:       len(r.flag.WCName) > 0,
+		selfContainedMC: len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0),
+		selfContainedWC: len(r.flag.SelfContained) > 0 && len(r.flag.WCName) > 0,
+	}
+	r.loginOptions.switchToMCcontext = r.loginOptions.isWCLogin || !(r.loginOptions.selfContainedMC || r.flag.KeepContext)
+	r.loginOptions.switchToWCcontext = r.loginOptions.isWCLogin && !(r.loginOptions.selfContainedWC || r.flag.KeepContext)
+}
+
+func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 	config, err := r.k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -140,7 +171,7 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context, isCreatingClient
 		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
 		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 
-		if isCreatingClientCert {
+		if r.loginOptions.isWCLogin {
 			err = r.createClusterClientCert(ctx)
 			if err != nil {
 				return microerror.Mask(err)
@@ -181,12 +212,21 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 // one with the name derived from the installation code name.
 func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	var contextAlreadySelected bool
+	var newLoginRequired bool
 
 	contextName := kubeconfig.GenerateKubeContextName(codeName)
-	err := switchContext(ctx, r.k8sConfigAccess, contextName)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToMCcontext)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) {
+		newLoginRequired = true
+	} else if IsTokenRenewalFailed(err) && r.loginOptions.selfContainedMC {
+		newLoginRequired = true
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if newLoginRequired || r.loginOptions.selfContainedMC {
 		config, err := r.k8sConfigAccess.GetStartingConfig()
 		if err != nil {
 			return microerror.Mask(err)
@@ -205,13 +245,11 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 		}
 
 		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
 	}
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else {
+	} else if !r.loginOptions.isWCLogin && r.loginOptions.switchToMCcontext {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
@@ -249,11 +287,17 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 
 		}
 	}
-
-	// Store kubeconfig and CA certificate.
-	err = storeCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.KeepContext)
-	if err != nil {
-		return microerror.Mask(err)
+	if r.loginOptions.selfContainedMC {
+		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	} else {
+		// Store kubeconfig and CA certificate.
+		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToMCcontext)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	if len(authResult.email) > 0 {
@@ -263,25 +307,29 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-	if firstLogin {
-		if r.flag.KeepContext {
-			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
-			fmt.Fprintf(r.stdout, " ")
-		} else {
-			fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
-			fmt.Fprintf(r.stdout, " ")
-		}
-	}
-
-	if r.flag.KeepContext {
-		fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+	if r.loginOptions.selfContainedMC {
+		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else {
-		fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+		if firstLogin {
+			if !r.loginOptions.switchToMCcontext {
+				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
+				fmt.Fprintf(r.stdout, " ")
+			} else {
+				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
+				fmt.Fprintf(r.stdout, " ")
+			}
+		}
 
+		if !r.loginOptions.switchToMCcontext {
+			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+		} else {
+			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+		}
+		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
-	fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
-	fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
-
 	return nil
 }
 
@@ -416,13 +464,13 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	var contextExists bool
 	var contextName string
-	if len(r.flag.WCSelfContained) > 0 {
-		contextName, contextExists, err = printCredential(r.k8sConfigAccess, r.fs, r.flag.WCSelfContained, clientCertResource, secret, clusterBasePath)
+	if r.loginOptions.selfContainedWC {
+		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, clusterBasePath, r.loginOptions)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
-		contextName, contextExists, err = storeCredential(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath)
+		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath, r.loginOptions)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -436,9 +484,12 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
-	if len(r.flag.WCSelfContained) > 0 {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.WCSelfContained)
-		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.WCSelfContained)
+	if r.loginOptions.selfContainedWC {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
+	} else if !r.loginOptions.switchToWCcontext {
+		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
 		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
