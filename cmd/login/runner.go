@@ -124,13 +124,13 @@ func (r *runner) setLoginOptions(ctx context.Context) {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
 	r.loginOptions = LoginOptions{
-		originContext:     originContext,
-		isWCLogin:         len(r.flag.WCName) > 0,
-		selfContainedMC:   len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0),
-		selfContainedWC:   len(r.flag.SelfContained) > 0 && len(r.flag.WCName) > 0,
-		switchToMCcontext: !r.flag.KeepContext || len(r.flag.WCName) > 0,
-		switchToWCcontext: !r.flag.KeepContext && len(r.flag.WCName) > 0,
+		originContext:   originContext,
+		isWCLogin:       len(r.flag.WCName) > 0,
+		selfContainedMC: len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0),
+		selfContainedWC: len(r.flag.SelfContained) > 0 && len(r.flag.WCName) > 0,
 	}
+	r.loginOptions.switchToMCcontext = r.loginOptions.isWCLogin || !(r.loginOptions.selfContainedMC || r.flag.KeepContext)
+	r.loginOptions.switchToWCcontext = r.loginOptions.isWCLogin && !(r.loginOptions.selfContainedWC || r.flag.KeepContext)
 }
 
 func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
