@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.1.0] - 2022-02-08
+
 ### Fixed
 
 - `login` command: Try logging in again if token renewal fails.
@@ -747,7 +749,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0
 [1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
