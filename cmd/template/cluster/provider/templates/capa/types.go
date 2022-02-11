@@ -49,5 +49,5 @@ type MachinePool struct {
 	MinSize           int      `json:"minSize"`
 	MaxSize           int      `json:"maxSize"`
 	RootVolumeSizeGB  int      `json:"rootVolumeSizeGB"`
-	CustomNodeLabels  []string
+	CustomNodeLabels  []string `json:"customNodeLabels"`
 }
