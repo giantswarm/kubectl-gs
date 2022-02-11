@@ -201,7 +201,7 @@ func SSHSSOPublicKey(ctx context.Context, client runtimeclient.Client) (string, 
 		return "", microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
 	}
 
-	sshSSOPublicKey := base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
+	sshSSOPublicKey := string(secretList.Items[0].Data["value"])
 
 	return sshSSOPublicKey, nil
 }

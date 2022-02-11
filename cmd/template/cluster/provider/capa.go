@@ -2,16 +2,27 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"os"
+	"sigs.k8s.io/yaml"
+	"text/template"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/aws"
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
+const (
+	DefaultAppsRepoName = "default-apps-aws"
+	ClusterAWSRepoName  = "cluster-aws"
+)
+
+func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output *os.File, config ClusterConfig) error {
 	var err error
 
 	var sshSSOPublicKey string
@@ -21,42 +32,16 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 			return microerror.Mask(err)
 		}
 	}
+	config.AWS.SSHSSOPublicKey = sshSSOPublicKey
 
-	data := struct {
-		BastionSSHDConfig string
-		Description       string
-		KubernetesVersion string
-		Name              string
-		Namespace         string
-		Organization      string
-		PodsCIDR          string
-		ReleaseVersion    string
-		SSHDConfig        string
-		SSOPublicKey      string
-	}{
-		BastionSSHDConfig: key.BastionSSHDConfigEncoded(),
-		Description:       config.Description,
-		KubernetesVersion: "v1.19.9",
-		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
-		Organization:      config.Organization,
-		PodsCIDR:          config.PodsCIDR,
-		ReleaseVersion:    config.ReleaseVersion,
-		SSHDConfig:        key.NodeSSHDConfigEncoded(),
-		SSOPublicKey:      sshSSOPublicKey,
-	}
-
-	var templates []templateConfig
-	for _, t := range aws.GetAWSTemplates() {
-		templates = append(templates, templateConfig(t))
-	}
-
-	err = runMutation(ctx, client, data, templates, out)
+	err = templateClusterAWS(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	return nil
+	err = templateDefaultAppsAWS(ctx, client, output, config)
+	return microerror.Mask(err)
+
 }
 
 func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
@@ -89,4 +74,156 @@ func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out i
 	}
 
 	return nil
+}
+
+func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+	appName := config.Name
+	configMapName := userConfigMapName(appName)
+
+	var configMapYAML []byte
+	{
+		flagValues := capa.ClusterConfig{
+			ClusterDescription: config.Description,
+			Organization:       config.Organization,
+
+			AWS: &capa.AWS{
+				Region:  config.AWS.AWSRegion,
+				RoleARN: config.AWS.AWSRoleARN,
+			},
+			Network: &capa.Network{
+				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
+				VPCCIDR:                    config.AWS.NetworkVPCCIDR,
+			},
+			Bastion: &capa.Bastion{
+				InstanceType: config.AWS.BastionInstanceType,
+				Replicas:     config.AWS.BastionReplicas,
+			},
+			ControlPlane: &capa.ControlPlane{
+				InstanceType:      config.AWS.ControlPlaneInstanceType,
+				Replicas:          config.OpenStack.ControlPlaneReplicas,
+				AvailabilityZones: config.AWS.ControlPlaneAvailabilityZones,
+			},
+		}
+
+		configData, err := capa.GenerateClusterValues(flagValues)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
+			Name:      configMapName,
+			Namespace: organizationNamespace(config.Organization),
+			Data:      configData,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		configMapYAML, err = yaml.Marshal(userConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var appYAML []byte
+	{
+		appVersion := config.App.ClusterVersion
+		if appVersion == "" {
+			var err error
+			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterAWSRepoName, config.App.ClusterCatalog)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		clusterAppConfig := templateapp.Config{
+			AppName:                 config.Name,
+			Catalog:                 config.App.ClusterCatalog,
+			InCluster:               true,
+			Name:                    ClusterAWSRepoName,
+			Namespace:               organizationNamespace(config.Organization),
+			Version:                 appVersion,
+			UserConfigConfigMapName: configMapName,
+		}
+
+		var err error
+		appYAML, err = templateapp.NewAppCR(clusterAppConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
+
+	err := t.Execute(output, templateapp.AppCROutput{
+		AppCR:               string(appYAML),
+		UserConfigConfigMap: string(configMapYAML),
+	})
+	return microerror.Mask(err)
+}
+
+func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+	appName := fmt.Sprintf("%s-default-apps", config.Name)
+	configMapName := userConfigMapName(appName)
+
+	var configMapYAML []byte
+	{
+		flagValues := capa.DefaultAppsConfig{
+			ClusterName:  config.Name,
+			Organization: config.Organization,
+		}
+
+		configData, err := capa.GenerateDefaultAppsValues(flagValues)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
+			Name:      configMapName,
+			Namespace: organizationNamespace(config.Organization),
+			Data:      configData,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		configMapYAML, err = yaml.Marshal(userConfigMap)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var appYAML []byte
+	{
+		appVersion := config.App.DefaultAppsVersion
+		if appVersion == "" {
+			var err error
+			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsRepoName, config.App.DefaultAppsCatalog)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		var err error
+		appYAML, err = templateapp.NewAppCR(templateapp.Config{
+			AppName:                 appName,
+			Catalog:                 config.App.DefaultAppsCatalog,
+			InCluster:               true,
+			Name:                    DefaultAppsRepoName,
+			Namespace:               organizationNamespace(config.Organization),
+			Version:                 appVersion,
+			UserConfigConfigMapName: configMapName,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
+
+	err := t.Execute(output, templateapp.AppCROutput{
+		UserConfigConfigMap: string(configMapYAML),
+		AppCR:               string(appYAML),
+	})
+	return microerror.Mask(err)
 }

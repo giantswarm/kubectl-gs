@@ -3,9 +3,11 @@ package provider
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"text/template"
 
+	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
@@ -13,12 +15,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	apiyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/discovery"
 	memory "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
 
@@ -26,6 +30,18 @@ type AWSConfig struct {
 	EKS                bool
 	ExternalSNAT       bool
 	ControlPlaneSubnet string
+
+	// for CAPA
+	AWSRegion                     string
+	AWSRoleARN                    string
+	NetworkAZUsageLimit           int
+	NetworkVPCCIDR                string
+	BastionInstanceType           string
+	BastionReplicas               int
+	ControlPlaneInstanceType      string
+	ControlPlaneReplicas          int
+	ControlPlaneAvailabilityZones []string
+	SSHSSOPublicKey               string
 }
 
 type OpenStackConfig struct {
@@ -190,4 +206,33 @@ func runMutation(ctx context.Context, client k8sclient.Interface, templateData i
 		}
 	}
 	return nil
+}
+
+func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
+	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
+	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(map[string]string{
+			"app.kubernetes.io/name":            app,
+			"application.giantswarm.io/catalog": catalog,
+			"latest":                            "true",
+		}),
+		Namespace: "default",
+	})
+
+	if err != nil {
+		return "", microerror.Mask(err)
+	} else if len(catalogEntryList.Items) != 1 {
+		message := fmt.Sprintf("version not specified for %s and latest release couldn't be determined in %s catalog", app, catalog)
+		return "", microerror.Maskf(invalidFlagError, message)
+	}
+
+	return catalogEntryList.Items[0].Spec.Version, nil
+}
+
+func organizationNamespace(org string) string {
+	return fmt.Sprintf("org-%s", org)
+}
+
+func userConfigMapName(app string) string {
+	return fmt.Sprintf("%s-userconfig", app)
 }
