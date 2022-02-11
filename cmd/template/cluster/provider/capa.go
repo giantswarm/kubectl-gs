@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sigs.k8s.io/yaml"
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
-	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/aws"
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
 const (
