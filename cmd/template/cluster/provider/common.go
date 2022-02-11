@@ -39,7 +39,6 @@ type AWSConfig struct {
 	BastionInstanceType      string
 	BastionReplicas          int
 	ControlPlaneInstanceType string
-	ControlPlaneReplicas     int
 	SSHSSOPublicKey          string
 }
 
@@ -57,7 +56,6 @@ type OpenStackConfig struct {
 	BastionImageUUID          string
 	ControlPlaneMachineFlavor string
 	ControlPlaneDiskSize      int
-	ControlPlaneReplicas      int
 	WorkerMachineFlavor       string
 	WorkerDiskSize            int
 	WorkerReplicas            int
@@ -71,15 +69,16 @@ type AppConfig struct {
 }
 
 type ClusterConfig struct {
-	FileName       string
-	ControlPlaneAZ []string
-	Description    string
-	Name           string
-	Organization   string
-	ReleaseVersion string
-	Labels         map[string]string
-	Namespace      string
-	PodsCIDR       string
+	FileName             string
+	ControlPlaneAZ       []string
+	ControlPlaneReplicas int
+	Description          string
+	Name                 string
+	Organization         string
+	ReleaseVersion       string
+	Labels               map[string]string
+	Namespace            string
+	PodsCIDR             string
 
 	App       AppConfig
 	AWS       AWSConfig

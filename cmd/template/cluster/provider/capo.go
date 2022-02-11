@@ -60,7 +60,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 			ControlPlane: &openstack.ControlPlane{
 				MachineFlavor: config.OpenStack.ControlPlaneMachineFlavor,
 				DiskSize:      config.OpenStack.ControlPlaneDiskSize,
-				Replicas:      config.OpenStack.ControlPlaneReplicas,
+				Replicas:      config.ControlPlaneReplicas,
 			},
 			NodePools: []openstack.NodePool{
 				{

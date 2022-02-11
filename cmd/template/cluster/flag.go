@@ -29,7 +29,6 @@ const (
 	flagBastionInstanceType      = "bastion-instance-type"
 	flagBastionReplicas          = "bastion-replicas"
 	flagControlPlaneInstanceType = "control-plane-instance-type"
-	flagControlPlaneReplicas     = "control-plane-replicas"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -51,35 +50,36 @@ const (
 	flagOpenStackBastionImageUUID          = "bastion-image-uuid"
 	flagOpenStackControlPlaneMachineFlavor = "control-plane-machine-flavor"
 	flagOpenStackControlPlaneDiskSize      = "control-plane-disk-size"
-	flagOpenStackControlPlaneReplicas      = "control-plane-replicas"
 	flagOpenStackWorkerMachineFlavor       = "worker-machine-flavor"
 	flagOpenStackWorkerDiskSize            = "worker-disk-size"
 	flagOpenStackWorkerReplicas            = "worker-replicas"
 
 	// Common.
-	flagControlPlaneAZ = "control-plane-az"
-	flagDescription    = "description"
-	flagName           = "name"
-	flagOutput         = "output"
-	flagOrganization   = "organization"
-	flagPodsCIDR       = "pods-cidr"
-	flagRelease        = "release"
-	flagLabel          = "label"
+	flagControlPlaneAZ       = "control-plane-az"
+	flagControlPlaneReplicas = "control-plane-replicas"
+	flagDescription          = "description"
+	flagName                 = "name"
+	flagOutput               = "output"
+	flagOrganization         = "organization"
+	flagPodsCIDR             = "pods-cidr"
+	flagRelease              = "release"
+	flagLabel                = "label"
 )
 
 type flag struct {
 	Provider string
 
 	// Common.
-	ControlPlaneAZ []string
-	Description    string
-	MasterAZ       []string
-	Name           string
-	Output         string
-	Organization   string
-	PodsCIDR       string
-	Release        string
-	Label          []string
+	ControlPlaneAZ       []string
+	ControlPlaneReplicas int
+	Description          string
+	MasterAZ             []string
+	Name                 string
+	Output               string
+	Organization         string
+	PodsCIDR             string
+	Release              string
+	Label                []string
 
 	// Provider-specific
 	AWS       provider.AWSConfig
@@ -104,7 +104,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
 	cmd.Flags().IntVar(&f.AWS.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
-	cmd.Flags().IntVar(&f.AWS.ControlPlaneReplicas, flagControlPlaneReplicas, 1, "Replica count fro Control plane nodes, should be an odd number like 1 or 3.")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
@@ -121,7 +120,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OpenStack.BastionDiskSize, flagOpenStackBastionDiskSize, 10, "Root volume source UUID (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.ControlPlaneDiskSize, flagOpenStackControlPlaneDiskSize, 10, "Root volume source UUID (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.WorkerDiskSize, flagOpenStackWorkerDiskSize, 10, "Root volume source UUID (OpenStack only).")
-	cmd.Flags().IntVar(&f.OpenStack.ControlPlaneReplicas, flagOpenStackControlPlaneReplicas, 1, "Root volume source UUID (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 2, "Root volume source UUID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
 
@@ -145,7 +143,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackBastionImageUUID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneMachineFlavor)
 	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneDiskSize)
-	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneReplicas)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerDiskSize)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
@@ -166,6 +163,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
+	cmd.Flags().IntVar(&f.ControlPlaneReplicas, flagControlPlaneReplicas, 1, "Replica count fro Control plane nodes, should be an odd number like 1 or 3.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
@@ -264,7 +262,7 @@ func (f *flag) Validate() error {
 			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
 			}
-			isCapiVersion, err := key.IsCAPIVersion(f.Release)
+			isCapiVersion, err := key.IsCAPIVersion(strings.TrimPrefix(f.Release, "v"))
 			if err != nil {
 				return microerror.Mask(err)
 			}
