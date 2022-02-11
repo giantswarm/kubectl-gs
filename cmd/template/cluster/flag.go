@@ -22,6 +22,15 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
+	flagAWSRegion                = "region"
+	flagAWSRoleARN               = "role-arn"
+	flagNetworkAZUsageLimit      = "az-usage-limit"
+	flagNetworkVPCCidr           = "vpc-cidr"
+	flagBastionInstanceType      = "bastion-instance-type"
+	flagBastionReplicas          = "bastion-replicas"
+	flagControlPlaneInstanceType = "control-plane-instance-type"
+	flagControlPlaneReplicas     = "control-plane-replicas"
+
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
 	flagClusterVersion     = "cluster-version"
@@ -88,6 +97,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
+	cmd.Flags().StringVar(&f.AWS.AWSRegion, flagAWSRegion, "", "AWS region where cluster will be created")
+	cmd.Flags().StringVar(&f.AWS.AWSRoleARN, flagAWSRoleARN, "", "ARN of the role that will be used for cluster creation.")
+	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
+	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
+	cmd.Flags().StringVar(&f.AWS.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
+	cmd.Flags().IntVar(&f.AWS.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
+	cmd.Flags().StringVar(&f.AWS.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
+	cmd.Flags().IntVar(&f.AWS.ControlPlaneReplicas, flagControlPlaneReplicas, 1, "Replica count fro Control plane nodes, should be an odd number like 1 or 3.")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
@@ -132,6 +149,15 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerDiskSize)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
+
+	_ = cmd.Flags().MarkHidden(flagAWSRegion)
+	_ = cmd.Flags().MarkHidden(flagAWSRoleARN)
+	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
+	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
+	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
+	_ = cmd.Flags().MarkHidden(flagNetworkAZUsageLimit)
+	_ = cmd.Flags().MarkHidden(flagControlPlaneReplicas)
+	_ = cmd.Flags().MarkHidden(flagControlPlaneInstanceType)
 
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
@@ -238,6 +264,22 @@ func (f *flag) Validate() error {
 			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
 			}
+			isCapiVersion, err := key.IsCAPIVersion(f.Release)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if isCapiVersion {
+				if f.AWS.AWSRegion == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSRegion)
+				}
+				if f.AWS.AWSRoleARN == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSRoleARN)
+				}
+				if f.ControlPlaneAZ == nil {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)
+				}
+			}
+
 		case key.ProviderAzure:
 			if len(f.ControlPlaneAZ) > 1 {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)

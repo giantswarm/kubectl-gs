@@ -100,8 +100,8 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			},
 			ControlPlane: &capa.ControlPlane{
 				InstanceType:      config.AWS.ControlPlaneInstanceType,
-				Replicas:          config.OpenStack.ControlPlaneReplicas,
-				AvailabilityZones: config.AWS.ControlPlaneAvailabilityZones,
+				Replicas:          config.AWS.ControlPlaneReplicas,
+				AvailabilityZones: config.ControlPlaneAZ,
 			},
 		}
 

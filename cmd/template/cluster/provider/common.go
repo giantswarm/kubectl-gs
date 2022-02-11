@@ -32,16 +32,15 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 
 	// for CAPA
-	AWSRegion                     string
-	AWSRoleARN                    string
-	NetworkAZUsageLimit           int
-	NetworkVPCCIDR                string
-	BastionInstanceType           string
-	BastionReplicas               int
-	ControlPlaneInstanceType      string
-	ControlPlaneReplicas          int
-	ControlPlaneAvailabilityZones []string
-	SSHSSOPublicKey               string
+	AWSRegion                string
+	AWSRoleARN               string
+	NetworkAZUsageLimit      int
+	NetworkVPCCIDR           string
+	BastionInstanceType      string
+	BastionReplicas          int
+	ControlPlaneInstanceType string
+	ControlPlaneReplicas     int
+	SSHSSOPublicKey          string
 }
 
 type OpenStackConfig struct {
