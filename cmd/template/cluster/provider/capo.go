@@ -61,9 +61,14 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				MachineFlavor: config.OpenStack.ControlPlaneMachineFlavor,
-				DiskSize:      config.OpenStack.ControlPlaneDiskSize,
-				Replicas:      config.OpenStack.ControlPlaneReplicas,
+				OIDCIssuerURL:     config.OIDC.IssuerURL,
+				OIDCCAFile:        config.OIDC.CAFile,
+				OIDCClientID:      config.OIDC.ClientID,
+				OIDCUsernameClaim: config.OIDC.UsernameClaim,
+				OIDCGroupsClaim:   config.OIDC.GroupsClaim,
+				MachineFlavor:     config.OpenStack.ControlPlaneMachineFlavor,
+				DiskSize:          config.OpenStack.ControlPlaneDiskSize,
+				Replicas:          config.OpenStack.ControlPlaneReplicas,
 			},
 			NodePools: []openstack.NodePool{
 				{
@@ -71,9 +76,6 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 					Class:    "default",
 					Replicas: config.OpenStack.WorkerReplicas,
 				},
-			},
-			OIDC: &openstack.OIDC{
-				Enabled: config.OpenStack.EnableOIDC,
 			},
 		}
 
@@ -143,9 +145,6 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 		flagValues := openstack.DefaultAppsConfig{
 			ClusterName:  config.Name,
 			Organization: config.Organization,
-			OIDC: &openstack.OIDC{
-				Enabled: config.OpenStack.EnableOIDC,
-			},
 		}
 
 		configData, err := openstack.GenerateDefaultAppsValues(flagValues)

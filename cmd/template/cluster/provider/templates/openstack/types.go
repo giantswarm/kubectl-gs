@@ -8,7 +8,6 @@ type ClusterConfig struct {
 	CloudName          string        `json:"cloudName,omitempty"`
 	NodeCIDR           string        `json:"nodeCIDR,omitempty"`
 	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
-	OIDC               *OIDC         `json:"oidc,omitempty"`
 	Bastion            *Bastion      `json:"bastion,omitempty"`
 	RootVolume         *RootVolume   `json:"rootVolume,omitempty"`
 	NodeClasses        []NodeClass   `json:"nodeClasses,omitempty"`
@@ -19,11 +18,6 @@ type ClusterConfig struct {
 type DefaultAppsConfig struct {
 	ClusterName  string `json:"clusterName,omitempty"`
 	Organization string `json:"organization,omitempty"`
-	OIDC         *OIDC  `json:"oidc,omitempty"`
-}
-
-type OIDC struct {
-	Enabled bool `json:"enabled"`
 }
 
 type MachineRootVolume struct {
@@ -49,9 +43,14 @@ type NodeClass struct {
 }
 
 type ControlPlane struct {
-	MachineFlavor string `json:"machineFlavor"`
-	DiskSize      int    `json:"diskSize"`
-	Replicas      int    `json:"replicas"`
+	MachineFlavor     string `json:"machineFlavor"`
+	DiskSize          int    `json:"diskSize"`
+	OIDCIssuerURL     string `json:"oidcIssuerURL"`
+	OIDCCAFile        string `json:"oidcCAFile"`
+	OIDCClientID      string `json:"oidcClientID"`
+	OIDCUsernameClaim string `json:"oidcUsernameClaim"`
+	OIDCGroupsClaim   string `json:"oidcGroupsClaim"`
+	Replicas          int    `json:"replicas"`
 }
 
 type NodePool struct {

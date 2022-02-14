@@ -32,7 +32,6 @@ const (
 	flagOpenStackCloud                     = "cloud"
 	flagOpenStackCloudConfig               = "cloud-config"
 	flagOpenStackDNSNameservers            = "dns-nameservers"
-	flagOpenStackEnableOIDC                = "enable-oidc"
 	flagOpenStackExternalNetworkID         = "external-network-id"
 	flagOpenStackFailureDomain             = "failure-domain"
 	flagOpenStackNodeCIDR                  = "node-cidr"
@@ -48,29 +47,39 @@ const (
 	flagOpenStackWorkerReplicas            = "worker-replicas"
 
 	// Common.
-	flagControlPlaneAZ = "control-plane-az"
-	flagDescription    = "description"
-	flagName           = "name"
-	flagOutput         = "output"
-	flagOrganization   = "organization"
-	flagPodsCIDR       = "pods-cidr"
-	flagRelease        = "release"
-	flagLabel          = "label"
+	flagControlPlaneAZ    = "control-plane-az"
+	flagDescription       = "description"
+	flagName              = "name"
+	flagOIDCIssuerURL     = "oidc-issuer-url"
+	flagOIDCCAFile        = "oidc-ca-file"
+	flagOIDCClientID      = "oidc-client-id"
+	flagOIDCUsernameClaim = "oidc-username-claim"
+	flagOIDCGroupsClaim   = "oidc-groups-claim"
+	flagOutput            = "output"
+	flagOrganization      = "organization"
+	flagPodsCIDR          = "pods-cidr"
+	flagRelease           = "release"
+	flagLabel             = "label"
 )
 
 type flag struct {
 	Provider string
 
 	// Common.
-	ControlPlaneAZ []string
-	Description    string
-	MasterAZ       []string
-	Name           string
-	Output         string
-	Organization   string
-	PodsCIDR       string
-	Release        string
-	Label          []string
+	ControlPlaneAZ    []string
+	Description       string
+	MasterAZ          []string
+	Name              string
+	OIDCIssuerURL     string
+	OIDCCAFile        string
+	OIDCClientID      string
+	OIDCUsernameClaim string
+	OIDCGroupsClaim   string
+	Output            string
+	Organization      string
+	PodsCIDR          string
+	Release           string
+	Label             []string
 
 	// Provider-specific
 	AWS       provider.AWSConfig
@@ -93,7 +102,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
-	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagOpenStackEnableOIDC, false, "Enable OIDC (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.BastionImageUUID, flagOpenStackBastionImageUUID, "", "Image name (OpenStack only).")
@@ -118,7 +126,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
 	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
-	_ = cmd.Flags().MarkHidden(flagOpenStackEnableOIDC)
 	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackFailureDomain)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
@@ -142,6 +149,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
+	cmd.Flags().StringVar(&f.OIDCIssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
+	cmd.Flags().StringVar(&f.OIDCCAFile, flagOIDCCAFile, "", "OIDC CA FilePath.")
+	cmd.Flags().StringVar(&f.OIDCClientID, flagOIDCClientID, "", "OIDC client ID.")
+	cmd.Flags().StringVar(&f.OIDCUsernameClaim, flagOIDCUsernameClaim, "", "OIDC username claim.")
+	cmd.Flags().StringVar(&f.OIDCGroupsClaim, flagOIDCGroupsClaim, "", "OIDC groups claim.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")

@@ -32,7 +32,6 @@ type OpenStackConfig struct {
 	Cloud                     string
 	CloudConfig               string
 	DNSNameservers            []string
-	EnableOIDC                bool
 	ExternalNetworkID         string
 	FailureDomain             string
 	NodeCIDR                  string
@@ -65,10 +64,19 @@ type ClusterConfig struct {
 	Labels         map[string]string
 	Namespace      string
 	PodsCIDR       string
+	OIDC           *OIDC
 
 	App       AppConfig
 	AWS       AWSConfig
 	OpenStack OpenStackConfig
+}
+
+type OIDC struct {
+	IssuerURL     string
+	CAFile        string
+	ClientID      string
+	UsernameClaim string
+	GroupsClaim   string
 }
 
 type templateConfig struct {

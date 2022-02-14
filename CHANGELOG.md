@@ -7,6 +7,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+<<<<<<< Updated upstream
 ## [2.1.0] - 2022-02-08
 
 ### Fixed
@@ -404,6 +405,14 @@ can be set to false to disable this.
 
 ## [1.29.1] - 2021-06-16
 
+=======
+### Added
+
+- Add OIDC setting flags on the template command.
+
+### Added
+
+>>>>>>> Stashed changes
 - Modify the AWS subnet validation for machine deployments.
 
 ## [1.29.0] - 2021-06-15
