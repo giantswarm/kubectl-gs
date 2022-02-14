@@ -26,7 +26,7 @@ type ClusterCRsConfig struct {
 	Credential        string
 	Domain            string
 	ExternalSNAT      bool
-	MasterAZ          []string
+	ControlPlaneAZ    []string
 	Description       string
 	PodsCIDR          string
 	Owner             string
@@ -119,9 +119,9 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 	}
 
 	// Single master node
-	if len(c.MasterAZ) == 1 {
+	if len(c.ControlPlaneAZ) == 1 {
 		awsClusterCR.Spec.Provider.Master = v1alpha3.AWSClusterSpecProviderMaster{
-			AvailabilityZone: c.MasterAZ[0],
+			AvailabilityZone: c.ControlPlaneAZ[0],
 			InstanceType:     defaultMasterInstanceType,
 		}
 	}
@@ -151,7 +151,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
-			AvailabilityZones: c.MasterAZ,
+			AvailabilityZones: c.ControlPlaneAZ,
 			InstanceType:      defaultMasterInstanceType,
 		},
 	}
@@ -225,7 +225,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{
-			Replicas: len(c.MasterAZ),
+			Replicas: len(c.ControlPlaneAZ),
 			InfrastructureRef: corev1.ObjectReference{
 				APIVersion: obj.TypeMeta.APIVersion,
 				Kind:       obj.TypeMeta.Kind,

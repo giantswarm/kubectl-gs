@@ -43,33 +43,24 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 			NodeCIDR:           config.OpenStack.NodeCIDR,
 			ExternalNetworkID:  config.OpenStack.ExternalNetworkID,
 			Bastion: &openstack.Bastion{
-				Flavor: config.OpenStack.BastionMachineFlavor,
-				RootVolume: openstack.MachineRootVolume{
-					DiskSize:   config.OpenStack.BastionDiskSize,
-					SourceUUID: config.OpenStack.BastionImageUUID,
-				},
-			},
-			RootVolume: &openstack.RootVolume{
-				Enabled:    true,
-				SourceUUID: config.OpenStack.NodeImageUUID,
+				MachineConfig: openstack.MachineConfig(config.OpenStack.Bastion),
 			},
 			NodeClasses: []openstack.NodeClass{
 				{
 					Name:          "default",
-					MachineFlavor: config.OpenStack.WorkerMachineFlavor,
-					DiskSize:      config.OpenStack.WorkerDiskSize,
+					MachineConfig: openstack.MachineConfig(config.OpenStack.Worker),
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				MachineFlavor: config.OpenStack.ControlPlaneMachineFlavor,
-				DiskSize:      config.OpenStack.ControlPlaneDiskSize,
+				MachineConfig: openstack.MachineConfig(config.OpenStack.ControlPlane),
 				Replicas:      config.OpenStack.ControlPlaneReplicas,
 			},
 			NodePools: []openstack.NodePool{
 				{
-					Name:     "default",
-					Class:    "default",
-					Replicas: config.OpenStack.WorkerReplicas,
+					Class:         "default",
+					FailureDomain: config.OpenStack.WorkerFailureDomain,
+					Name:          "default",
+					Replicas:      config.OpenStack.WorkerReplicas,
 				},
 			},
 			OIDC: &openstack.OIDC{

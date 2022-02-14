@@ -66,10 +66,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			OpenStack: r.flag.OpenStack,
 		}
 
-		if len(r.flag.MasterAZ) > 0 {
-			config.ControlPlaneAZ = r.flag.MasterAZ
-		}
-
 		if config.Name == "" {
 			config.Name = id.Generate()
 		}
