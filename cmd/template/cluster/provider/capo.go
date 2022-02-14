@@ -61,14 +61,9 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				OIDCIssuerURL:     config.OIDC.IssuerURL,
-				OIDCCAFile:        config.OIDC.CAFile,
-				OIDCClientID:      config.OIDC.ClientID,
-				OIDCUsernameClaim: config.OIDC.UsernameClaim,
-				OIDCGroupsClaim:   config.OIDC.GroupsClaim,
-				MachineFlavor:     config.OpenStack.ControlPlaneMachineFlavor,
-				DiskSize:          config.OpenStack.ControlPlaneDiskSize,
-				Replicas:          config.OpenStack.ControlPlaneReplicas,
+				MachineFlavor: config.OpenStack.ControlPlaneMachineFlavor,
+				DiskSize:      config.OpenStack.ControlPlaneDiskSize,
+				Replicas:      config.OpenStack.ControlPlaneReplicas,
 			},
 			NodePools: []openstack.NodePool{
 				{
@@ -77,6 +72,16 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 					Replicas: config.OpenStack.WorkerReplicas,
 				},
 			},
+		}
+
+		if config.OIDC.IssuerURL != "" {
+			flagValues.OIDC = &openstack.OIDC{
+				IssuerURL:     config.OIDC.IssuerURL,
+				CAFile:        config.OIDC.CAFile,
+				ClientID:      config.OIDC.ClientID,
+				UsernameClaim: config.OIDC.UsernameClaim,
+				GroupsClaim:   config.OIDC.GroupsClaim,
+			}
 		}
 
 		configData, err := openstack.GenerateClusterValues(flagValues)

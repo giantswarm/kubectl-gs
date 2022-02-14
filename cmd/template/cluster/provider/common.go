@@ -64,7 +64,7 @@ type ClusterConfig struct {
 	Labels         map[string]string
 	Namespace      string
 	PodsCIDR       string
-	OIDC           *OIDC
+	OIDC           OIDC
 
 	App       AppConfig
 	AWS       AWSConfig

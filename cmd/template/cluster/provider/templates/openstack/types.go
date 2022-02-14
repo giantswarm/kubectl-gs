@@ -13,6 +13,7 @@ type ClusterConfig struct {
 	NodeClasses        []NodeClass   `json:"nodeClasses,omitempty"`
 	ControlPlane       *ControlPlane `json:"controlPlane,omitempty"`
 	NodePools          []NodePool    `json:"nodePools,omitempty"`
+	OIDC               *OIDC         `json:"oidc,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -43,14 +44,17 @@ type NodeClass struct {
 }
 
 type ControlPlane struct {
-	MachineFlavor     string `json:"machineFlavor"`
-	DiskSize          int    `json:"diskSize"`
-	OIDCIssuerURL     string `json:"oidcIssuerURL"`
-	OIDCCAFile        string `json:"oidcCAFile"`
-	OIDCClientID      string `json:"oidcClientID"`
-	OIDCUsernameClaim string `json:"oidcUsernameClaim"`
-	OIDCGroupsClaim   string `json:"oidcGroupsClaim"`
-	Replicas          int    `json:"replicas"`
+	MachineFlavor string `json:"machineFlavor"`
+	DiskSize      int    `json:"diskSize"`
+	Replicas      int    `json:"replicas"`
+}
+
+type OIDC struct {
+	IssuerURL     string `json:"issuerURL"`
+	CAFile        string `json:"caFile"`
+	ClientID      string `json:"clientID"`
+	UsernameClaim string `json:"usernameClaim"`
+	GroupsClaim   string `json:"groupsClaim"`
 }
 
 type NodePool struct {

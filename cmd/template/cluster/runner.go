@@ -63,6 +63,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			App:       r.flag.App,
 			AWS:       r.flag.AWS,
+			OIDC:      r.flag.OIDC,
 			OpenStack: r.flag.OpenStack,
 		}
 

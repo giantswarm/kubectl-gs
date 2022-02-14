@@ -66,25 +66,21 @@ type flag struct {
 	Provider string
 
 	// Common.
-	ControlPlaneAZ    []string
-	Description       string
-	MasterAZ          []string
-	Name              string
-	OIDCIssuerURL     string
-	OIDCCAFile        string
-	OIDCClientID      string
-	OIDCUsernameClaim string
-	OIDCGroupsClaim   string
-	Output            string
-	Organization      string
-	PodsCIDR          string
-	Release           string
-	Label             []string
+	ControlPlaneAZ []string
+	Description    string
+	MasterAZ       []string
+	Name           string
+	Output         string
+	Organization   string
+	PodsCIDR       string
+	Release        string
+	Label          []string
 
 	// Provider-specific
 	AWS       provider.AWSConfig
 	OpenStack provider.OpenStackConfig
 	App       provider.AppConfig
+	OIDC      provider.OIDC
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -149,11 +145,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
-	cmd.Flags().StringVar(&f.OIDCIssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
-	cmd.Flags().StringVar(&f.OIDCCAFile, flagOIDCCAFile, "", "OIDC CA FilePath.")
-	cmd.Flags().StringVar(&f.OIDCClientID, flagOIDCClientID, "", "OIDC client ID.")
-	cmd.Flags().StringVar(&f.OIDCUsernameClaim, flagOIDCUsernameClaim, "", "OIDC username claim.")
-	cmd.Flags().StringVar(&f.OIDCGroupsClaim, flagOIDCGroupsClaim, "", "OIDC groups claim.")
+	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "OIDC CA FilePath.")
+	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
+	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "", "OIDC username claim.")
+	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "", "OIDC groups claim.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
