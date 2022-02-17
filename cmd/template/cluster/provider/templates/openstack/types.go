@@ -6,6 +6,8 @@ type ClusterConfig struct {
 	Organization       string        `json:"organization,omitempty"`
 	CloudConfig        string        `json:"cloudConfig,omitempty"`
 	CloudName          string        `json:"cloudName,omitempty"`
+	ClusterName        string        `json:"clusterName,omitempty"`
+	KubernetesVersion  string        `json:"kubernetesVersion,omitempty"`
 	NodeCIDR           string        `json:"nodeCIDR,omitempty"`
 	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
 	OIDC               *OIDC         `json:"oidc,omitempty"`
@@ -38,7 +40,7 @@ type Bastion struct {
 
 type ControlPlane struct {
 	MachineConfig `json:",inline"`
-	Replicas      int `json:"replicas"`
+	Replicas      int `json:"replicas,omitempty"`
 }
 
 type NodeClass struct {

@@ -47,9 +47,8 @@ type OpenStackConfig struct {
 	ControlPlane MachineConfig
 	Worker       MachineConfig
 
-	ControlPlaneReplicas int
-	WorkerFailureDomain  string
-	WorkerReplicas       int
+	WorkerFailureDomain string
+	WorkerReplicas      int
 }
 
 type AppConfig struct {
@@ -60,15 +59,16 @@ type AppConfig struct {
 }
 
 type ClusterConfig struct {
-	FileName       string
-	ControlPlaneAZ []string
-	Description    string
-	Name           string
-	Organization   string
-	ReleaseVersion string
-	Labels         map[string]string
-	Namespace      string
-	PodsCIDR       string
+	KubernetesVersion string
+	FileName          string
+	ControlPlaneAZ    []string
+	Description       string
+	Name              string
+	Organization      string
+	ReleaseVersion    string
+	Labels            map[string]string
+	Namespace         string
+	PodsCIDR          string
 
 	App       AppConfig
 	AWS       AWSConfig

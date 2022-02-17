@@ -51,28 +51,30 @@ const (
 	flagOpenStackWorkerReplicas             = "worker-replicas"
 
 	// Common.
-	flagControlPlaneAZ = "control-plane-az"
-	flagDescription    = "description"
-	flagName           = "name"
-	flagOutput         = "output"
-	flagOrganization   = "organization"
-	flagPodsCIDR       = "pods-cidr"
-	flagRelease        = "release"
-	flagLabel          = "label"
+	flagControlPlaneAZ    = "control-plane-az"
+	flagDescription       = "description"
+	flagKubernetesVersion = "kubernetes-version"
+	flagName              = "name"
+	flagOutput            = "output"
+	flagOrganization      = "organization"
+	flagPodsCIDR          = "pods-cidr"
+	flagRelease           = "release"
+	flagLabel             = "label"
 )
 
 type flag struct {
 	Provider string
 
 	// Common.
-	ControlPlaneAZ []string
-	Description    string
-	Name           string
-	Output         string
-	Organization   string
-	PodsCIDR       string
-	Release        string
-	Label          []string
+	ControlPlaneAZ    []string
+	Description       string
+	KubernetesVersion string
+	Name              string
+	Output            string
+	Organization      string
+	PodsCIDR          string
+	Release           string
+	Label             []string
 
 	// Provider-specific
 	AWS       provider.AWSConfig
@@ -104,12 +106,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.Bastion.Image, flagOpenStackBastionImage, "", "Bastion machine image (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.Bastion.Flavor, flagOpenStackBastionMachineFlavor, "", "Bastion machine flavor (OpenStack only).")
 	// control plane
-	cmd.Flags().BoolVar(&f.OpenStack.Bastion.BootFromVolume, flagOpenStackControlPlaneBootFromVolume, false, "Control plane boot from volume (OpenStack only).")
+	cmd.Flags().BoolVar(&f.OpenStack.ControlPlane.BootFromVolume, flagOpenStackControlPlaneBootFromVolume, false, "Control plane boot from volume (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.ControlPlane.DiskSize, flagOpenStackControlPlaneDiskSize, 0, "Control plane machine root volume disk size (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ControlPlane.Image, flagOpenStackControlPlaneImage, "", "Control plane machine image (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ControlPlane.Flavor, flagOpenStackControlPlaneMachineFlavor, "", "Control plane machine flavor (OpenStack only).")
 	// workers
-	cmd.Flags().BoolVar(&f.OpenStack.Bastion.BootFromVolume, flagOpenStackWorkerBootFromVolume, false, "Default worker node pool boot from volume (OpenStack only).")
+	cmd.Flags().BoolVar(&f.OpenStack.Worker.BootFromVolume, flagOpenStackWorkerBootFromVolume, false, "Default worker node pool boot from volume (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.Worker.DiskSize, flagOpenStackWorkerDiskSize, 0, "Default worker node pool machine root volume disk size (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.WorkerFailureDomain, flagOpenStackWorkerFailureDomain, "", "Default worker node pool failure domain (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.Worker.Image, flagOpenStackWorkerImage, "", "Default worker node pool machine image name (OpenStack only).")
@@ -149,6 +151,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// Common.
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
+	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, "v1.20.9", "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
@@ -239,9 +242,6 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
 			}
 		case key.ProviderOpenStack:
-			if len(f.ControlPlaneAZ)%2 != 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be an odd number number of values (usually 1 or 3 for non-HA and HA respectively)", flagControlPlaneAZ)
-			}
 			if f.OpenStack.Cloud == "" {
 				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloud)
 			}
@@ -283,15 +283,22 @@ func (f *flag) Validate() error {
 			if f.OpenStack.WorkerFailureDomain == "" {
 				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerFailureDomain)
 			}
-			var validFailureDomain bool
-			for _, az := range f.ControlPlaneAZ {
-				if f.OpenStack.WorkerFailureDomain == az {
-					validFailureDomain = true
-					break
+			if len(f.ControlPlaneAZ) != 0 {
+				if len(f.ControlPlaneAZ)%2 != 1 {
+					return microerror.Maskf(invalidFlagError, "--%s must be an odd number number of values (usually 1 or 3 for non-HA and HA respectively)", flagControlPlaneAZ)
 				}
-			}
-			if !validFailureDomain {
-				return microerror.Maskf(invalidFlagError, "--%s must be among the AZs specified with --%s", flagOpenStackWorkerFailureDomain, flagControlPlaneAZ)
+
+				var validFailureDomain bool
+				for _, az := range f.ControlPlaneAZ {
+					if f.OpenStack.WorkerFailureDomain == az {
+						validFailureDomain = true
+						break
+					}
+				}
+
+				if !validFailureDomain {
+					return microerror.Maskf(invalidFlagError, "--%s must be among the AZs specified with --%s", flagOpenStackWorkerFailureDomain, flagControlPlaneAZ)
+				}
 			}
 			if f.OpenStack.Worker.BootFromVolume && f.OpenStack.Worker.DiskSize < 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackWorkerDiskSize, flagOpenStackWorkerBootFromVolume)

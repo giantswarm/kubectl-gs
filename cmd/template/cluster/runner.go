@@ -53,13 +53,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var config provider.ClusterConfig
 	{
 		config = provider.ClusterConfig{
-			ControlPlaneAZ: r.flag.ControlPlaneAZ,
-			Description:    r.flag.Description,
-			Name:           r.flag.Name,
-			Organization:   r.flag.Organization,
-			PodsCIDR:       r.flag.PodsCIDR,
-			ReleaseVersion: r.flag.Release,
-			Namespace:      metav1.NamespaceDefault,
+			ControlPlaneAZ:    r.flag.ControlPlaneAZ,
+			Description:       r.flag.Description,
+			KubernetesVersion: r.flag.KubernetesVersion,
+			Name:              r.flag.Name,
+			Organization:      r.flag.Organization,
+			PodsCIDR:          r.flag.PodsCIDR,
+			ReleaseVersion:    r.flag.Release,
+			Namespace:         metav1.NamespaceDefault,
 
 			App:       r.flag.App,
 			AWS:       r.flag.AWS,

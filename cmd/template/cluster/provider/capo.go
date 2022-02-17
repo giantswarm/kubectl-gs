@@ -32,11 +32,18 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 	appName := config.Name
 	configMapName := fmt.Sprintf("%s-userconfig", appName)
 
+	controlPlaneReplicas := 1
+	if len(config.ControlPlaneAZ) > 0 {
+		controlPlaneReplicas = len(config.ControlPlaneAZ)
+	}
+
 	var configMapYAML []byte
 	{
 		flagValues := openstack.ClusterConfig{
 			ClusterDescription: config.Description,
+			ClusterName:        config.Name,
 			DNSNameservers:     config.OpenStack.DNSNameservers,
+			KubernetesVersion:  config.KubernetesVersion,
 			Organization:       config.Organization,
 			CloudConfig:        config.OpenStack.CloudConfig,
 			CloudName:          config.OpenStack.Cloud,
@@ -53,7 +60,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 			},
 			ControlPlane: &openstack.ControlPlane{
 				MachineConfig: openstack.MachineConfig(config.OpenStack.ControlPlane),
-				Replicas:      config.OpenStack.ControlPlaneReplicas,
+				Replicas:      controlPlaneReplicas,
 			},
 			NodePools: []openstack.NodePool{
 				{
@@ -100,7 +107,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 		}
 
 		clusterAppConfig := templateapp.Config{
-			AppName:                 config.Name,
+			AppName:                 fmt.Sprintf("%s-cluster", config.Name),
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    "cluster-openstack",
