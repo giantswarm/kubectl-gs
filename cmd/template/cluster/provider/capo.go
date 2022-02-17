@@ -30,7 +30,7 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 
 func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
 	appName := config.Name
-	configMapName := fmt.Sprintf("%s-userconfig", appName)
+	configMapName := fmt.Sprintf("%s-cluster-userconfig", appName)
 
 	controlPlaneReplicas := 1
 	if len(config.ControlPlaneAZ) > 0 {
