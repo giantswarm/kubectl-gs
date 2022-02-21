@@ -7,22 +7,16 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/id"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/labels"
-
 	"github.com/giantswarm/kubectl-gs/internal/key"
-)
-
-const (
-	clusterCRFileName = "clusterCR"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/pkg/id"
+	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
 
 type runner struct {
@@ -56,20 +50,20 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	var config provider.ClusterCRsConfig
+	var config provider.ClusterConfig
 	{
-		config = provider.ClusterCRsConfig{
-			FileName:           clusterCRFileName,
-			ControlPlaneAZ:     r.flag.ControlPlaneAZ,
-			ControlPlaneSubnet: r.flag.ControlPlaneSubnet,
-			ExternalSNAT:       r.flag.ExternalSNAT,
-			EKS:                r.flag.EKS,
-			Description:        r.flag.Description,
-			Name:               r.flag.Name,
-			Organization:       r.flag.Organization,
-			PodsCIDR:           r.flag.PodsCIDR,
-			ReleaseVersion:     r.flag.Release,
-			Namespace:          metav1.NamespaceDefault,
+		config = provider.ClusterConfig{
+			ControlPlaneAZ: r.flag.ControlPlaneAZ,
+			Description:    r.flag.Description,
+			Name:           r.flag.Name,
+			Organization:   r.flag.Organization,
+			PodsCIDR:       r.flag.PodsCIDR,
+			ReleaseVersion: r.flag.Release,
+			Namespace:      metav1.NamespaceDefault,
+
+			App:       r.flag.App,
+			AWS:       r.flag.AWS,
+			OpenStack: r.flag.OpenStack,
 		}
 
 		if len(r.flag.MasterAZ) > 0 {
@@ -88,7 +82,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		if r.flag.Provider == key.ProviderAzure {
+		if r.flag.Provider != key.ProviderAWS {
 			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 		}
 	}
@@ -116,17 +110,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteAWSTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteAzureTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case key.ProviderVsphere:
-		err = provider.WriteCAPVTemplate(ctx, c.K8sClient, output, config)
+	case key.ProviderOpenStack:
+		err = provider.WriteOpenStackTemplate(ctx, c, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	case key.ProviderVSphere:
+		err = provider.WriteVSphereTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

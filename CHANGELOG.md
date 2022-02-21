@@ -7,9 +7,110 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.1.0] - 2022-02-08
+
+### Fixed
+
+- `login` command: Try logging in again if token renewal fails.
+- Add `security` API group to scheme in order to get `organizations` during `login`.  
+
+### Changed
+
+- Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active.
+- Simplify log in with context name
+
+### Added
+
+- Add support for self-contained kubeconfig creation for management cluster context.
+- Add `--keep-context` flag to `login`.
+
+## [2.0.0] - 2022-02-04
+
+### Changed
+
+- Enable `cluster-topology` templates for OpenStack by default.
+- Update default `cluster-openstack` version to 0.3.0.
+
+### Removed
+
+- Remove deprecated `--cluster-id` flag from `get nodepools`, `template cluster`, and `template nodepool` commands. Replaced by `--cluster-name`.
+- Remove deprecated `--owner` flag from `template cluster`, `template networkpool`, and `template nodepool` commands. Replaced by `--organization`.
+- Remove deprecated `--master-az` flag from `template cluster` command. Replaced by `--control-plane-az`.
+- Remove deprecated `--nodepool-name` flag from `template nodepool` command. Replaced by `--description`.
+- Remove deprecated `--nodex-min` flag from `template nodepool` command. Replaced by `--nodes-min`.
+- Remove deprecated `--nodex-max` flag from `template nodepool` command. Replaced by `--nodes-max`.
+
+### Added
+
+- Add support for templating App CRs in organization namespace.
+- Add `--catalog-namespace` flag to `template app`.
+
+## [1.60.0] - 2022-01-27
+
+### Changed
+
+- Use `v1beta1` api version when templating ClusterAPI manifests on Azure.
+
+## [1.59.0] - 2022-01-26
+
+### Added
+
+- Add support to `template cluster --provider openstack` for templating clusters as App CRs.
+
+## [1.58.2] - 2022-01-13
+
+### Added
+
+- Add `--in-cluster` flag to `template app` command to support installation of MC apps.
+
+### Fixed
+
+- `login` command: Prevent deletion of all CertConfig resources in a namespace, instead delete only one.
+- Adjust `login` to consider other prefixes while parsing the MC API endpoint.
+
+## [1.58.1] - 2021-12-17
+
+### Fixed
+
+- Populate the nodepool release label for AWS provider
+
+## [1.58.0] - 2021-12-14
+
+### Added
+
+- Add support cluster updates and scheduling cluster updates.
+
+## [1.57.0] - 2021-12-09
+
+### Changed
+
+- Modify `STATUS` column of `get releases` command table output to display release state.
+
+## [1.56.0] - 2021-12-07
+
+### Added
+
+- Add support for the new URL scheme `api.INSTALLATION.OWNER_ID.gigantic.io` for `kubectl-gs login` command.
+
+## [1.55.0] - 2021-12-06
+
+### Added
+
+- Add alpha support for OpenStack cluster templating.
+
+## [1.54.0] - 2021-12-03
+
+### Fixed
+
+- Fix a problem preventing the `login` command from creating a client certificate for older workload clusters on Azure.
+- Fix the problem where the `template cluster` output for a v20 Cluster API cluster on AWS contained a bad infrastructure reference, resulting in the cluster not being provisioned.
+
+## [1.53.0] - 2021-11-29
+
 ### Changed
 
 - Disable version caching for the `selfupdate` command, so you will always get the latest version right after it's released.
+- Make the `--release` flag mandatory in the `template cluster` and `template nodepool` subcommands.
 
 ## [1.52.0] - 2021-11-23
 
@@ -648,7 +749,19 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...HEAD
+[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0
+[1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
+[1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
+[1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2
+[1.58.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.0...v1.58.1
+[1.58.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.57.0...v1.58.0
+[1.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.56.0...v1.57.0
+[1.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.55.0...v1.56.0
+[1.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.54.0...v1.55.0
+[1.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.53.0...v1.54.0
+[1.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.52.0...v1.53.0
 [1.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.1...v1.51.0
 [1.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v1.50.0...v1.50.1

@@ -9,20 +9,22 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/cli-runtime/pkg/printers"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
-	giantswarmNamespace = "giantswarm"
-
-	providerAll    = "All"
-	providerAWS    = "AWS"
-	providerAzure  = "Azure"
-	providerVMware = "VMware"
+	providerAll       = "All"
+	providerAWS       = "AWS"
+	providerAzure     = "Azure"
+	providerOpenStack = "OpenStack"
+	providerVSphere   = "vSphere"
 )
 
 type runner struct {
@@ -47,6 +49,7 @@ type controller struct {
 
 var (
 	crds = []crd{
+		// All
 		{
 			DisplayName: "Cluster",
 			Name:        "clusters.cluster.x-k8s.io",
@@ -102,6 +105,7 @@ var (
 			Name:        "kubeadmconfigtemplates.bootstrap.cluster.x-k8s.io",
 			Provider:    providerAll,
 		},
+		// AWS
 		{
 			DisplayName: "AWS Cluster",
 			Name:        "awsclusters.infrastructure.cluster.x-k8s.io",
@@ -122,6 +126,7 @@ var (
 			Name:        "awsmachinetemplates.infrastructure.cluster.x-k8s.io",
 			Provider:    providerAWS,
 		},
+		// Azure
 		{
 			DisplayName: "Azure Cluster",
 			Name:        "azureclusters.infrastructure.cluster.x-k8s.io",
@@ -142,30 +147,47 @@ var (
 			Name:        "azuremachinetemplates.infrastructure.cluster.x-k8s.io",
 			Provider:    providerAzure,
 		},
+		// Open Stack
 		{
-			DisplayName: "VMware Cluster",
+			DisplayName: "OpenStack Cluster",
+			Name:        "openstackclusters.infrastructure.cluster.x-k8s.io",
+			Provider:    providerOpenStack,
+		},
+		{
+			DisplayName: "OpenStack Machine",
+			Name:        "openstackmachines.infrastructure.cluster.x-k8s.io",
+			Provider:    providerOpenStack,
+		},
+		{
+			DisplayName: "OpenStack Machine Template",
+			Name:        "openstackmachinetemplates.infrastructure.cluster.x-k8s.io",
+			Provider:    providerOpenStack,
+		},
+		// vSphere
+		{
+			DisplayName: "vSphere Cluster",
 			Name:        "vsphereclusters.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware Machine",
+			DisplayName: "vSphere Machine",
 			Name:        "vspheremachines.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware Machine Template",
+			DisplayName: "vSphere Machine Template",
 			Name:        "vspheremachinetemplates.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware VM",
+			DisplayName: "vSphere VM",
 			Name:        "vspherevms.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 		{
-			DisplayName: "VMware HAProxy",
+			DisplayName: "vSphere HAProxy",
 			Name:        "haproxyloadbalancers.infrastructure.cluster.x-k8s.io",
-			Provider:    providerVMware,
+			Provider:    providerVSphere,
 		},
 	}
 
@@ -201,10 +223,16 @@ var (
 			Provider:      providerAzure,
 		},
 		{
-			DisplayName:   "VMWare Provider",
-			LabelSelector: "app.kubernetes.io/name=cluster-api-provider-vmware",
+			DisplayName:   "OpenStack Provider",
+			LabelSelector: "cluster.x-k8s.io/provider=infrastructure-openstack,control-plane=capo-controller-manager",
 			ContainerName: "manager",
-			Provider:      providerVMware,
+			Provider:      providerOpenStack,
+		},
+		{
+			DisplayName:   "vSphere Provider",
+			LabelSelector: "app.kubernetes.io/name=cluster-api-provider-vsphere",
+			ContainerName: "manager",
+			Provider:      providerVSphere,
 		},
 	}
 )
@@ -226,16 +254,15 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	var client k8sclient.Interface
+	var k8sClients k8sclient.Interface
 	{
 		config := commonconfig.New(r.flag.config)
-		c, err := config.GetClient(r.logger)
+		var err error
+		k8sClients, err = config.GetClient(r.logger)
 
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		client = c.K8sClient
 	}
 
 	table := &metav1.Table{
@@ -247,19 +274,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		},
 	}
 
-	for _, crd := range crds {
-		foundCrd, err := client.ExtClient().ApiextensionsV1().CustomResourceDefinitions().Get(
-			ctx,
-			crd.Name,
-			metav1.GetOptions{},
-		)
-		if err != nil && !errors.IsNotFound(err) {
-			return microerror.Mask(err)
-		}
+	crdList, err := k8sClients.ExtClient().ApiextensionsV1().CustomResourceDefinitions().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
-		if errors.IsNotFound(err) {
+	crdMap := map[string]apiextensionsv1.CustomResourceDefinition{}
+	for _, crd := range crdList.Items {
+		crdMap[crd.Name] = crd
+	}
+
+	for _, crd := range crds {
+		foundCrd, ok := crdMap[crd.Name]
+		if !ok {
 			row := metav1.TableRow{Cells: []interface{}{"CRD", crd.Provider, crd.DisplayName, "NONE"}}
 			table.Rows = append(table.Rows, row)
+			continue
 		}
 
 		for _, version := range foundCrd.Spec.Versions {
@@ -269,18 +299,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	for _, controller := range controllers {
-		version := "NONE"
-
-		podList, err := client.K8sClient().CoreV1().Pods(giantswarmNamespace).List(
-			ctx,
-			metav1.ListOptions{
-				LabelSelector: controller.LabelSelector,
-			},
-		)
+		selector, err := labels.Parse(controller.LabelSelector)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
+		var podList v1.PodList
+		err = k8sClients.CtrlClient().List(ctx, &podList, &client.ListOptions{LabelSelector: selector})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		version := "NONE"
 		for _, pod := range podList.Items {
 			for _, container := range pod.Spec.Containers {
 				if container.Name == "manager" {
@@ -294,7 +324,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	printer := printers.NewTablePrinter(printers.PrintOptions{})
-	err := printer.PrintObj(table, r.stdout)
+	err = printer.PrintObj(table, r.stdout)
 	if err != nil {
 		return microerror.Mask(err)
 	}

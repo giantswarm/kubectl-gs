@@ -2,8 +2,12 @@ package cluster
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -77,4 +81,20 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resou
 	}
 
 	return clusterCollection, nil
+}
+
+func (s *Service) Patch(ctx context.Context, object runtime.Object, options PatchOptions) error {
+	var err error
+
+	bytes, err := json.Marshal(options.PatchSpecs)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = s.client.Patch(ctx, object, client.RawPatch(types.JSONPatchType, bytes))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }

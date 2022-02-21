@@ -107,7 +107,7 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	}
 
 	serviceConfig := release.Config{
-		Client: client,
+		Client: client.CtrlClient(),
 	}
 	r.service, err = release.New(serviceConfig)
 	if err != nil {

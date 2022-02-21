@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
@@ -17,44 +18,64 @@ const (
 	flagProvider = "provider"
 
 	// AWS only.
-	flagExternalSNAT       = "external-snat"
-	flagEKS                = "aws-eks"
-	flagPodsCIDR           = "pods-cidr"
-	flagControlPlaneSubnet = "control-plane-subnet"
+	flagAWSExternalSNAT       = "external-snat"
+	flagAWSEKS                = "aws-eks"
+	flagAWSControlPlaneSubnet = "control-plane-subnet"
+
+	// App-based clusters only.
+	flagClusterCatalog     = "cluster-catalog"
+	flagClusterVersion     = "cluster-version"
+	flagDefaultAppsCatalog = "default-apps-catalog"
+	flagDefaultAppsVersion = "default-apps-version"
+
+	// OpenStack only.
+	flagOpenStackCloud                     = "cloud"
+	flagOpenStackCloudConfig               = "cloud-config"
+	flagOpenStackDNSNameservers            = "dns-nameservers"
+	flagOpenStackEnableOIDC                = "enable-oidc"
+	flagOpenStackExternalNetworkID         = "external-network-id"
+	flagOpenStackFailureDomain             = "failure-domain"
+	flagOpenStackNodeCIDR                  = "node-cidr"
+	flagOpenStackNodeImageUUID             = "node-image-uuid"
+	flagOpenStackBastionMachineFlavor      = "bastion-machine-flavor"
+	flagOpenStackBastionDiskSize           = "bastion-disk-size"
+	flagOpenStackBastionImageUUID          = "bastion-image-uuid"
+	flagOpenStackControlPlaneMachineFlavor = "control-plane-machine-flavor"
+	flagOpenStackControlPlaneDiskSize      = "control-plane-disk-size"
+	flagOpenStackControlPlaneReplicas      = "control-plane-replicas"
+	flagOpenStackWorkerMachineFlavor       = "worker-machine-flavor"
+	flagOpenStackWorkerDiskSize            = "worker-disk-size"
+	flagOpenStackWorkerReplicas            = "worker-replicas"
 
 	// Common.
-	flagClusterIDDeprecated = "cluster-id"
-	flagControlPlaneAZ      = "control-plane-az"
-	flagDescription         = "description"
-	flagMasterAZ            = "master-az" // TODO: Remove some time after August 2021
-	flagName                = "name"
-	flagOutput              = "output"
-	flagOrganization        = "organization"
-	flagOwner               = "owner" // TODO: Remove some time after December 2021
-	flagRelease             = "release"
-	flagLabel               = "label"
+	flagControlPlaneAZ = "control-plane-az"
+	flagDescription    = "description"
+	flagName           = "name"
+	flagOutput         = "output"
+	flagOrganization   = "organization"
+	flagPodsCIDR       = "pods-cidr"
+	flagRelease        = "release"
+	flagLabel          = "label"
 )
 
 type flag struct {
 	Provider string
 
-	// AWS only.
-	ControlPlaneSubnet string
-	ExternalSNAT       bool
-	EKS                bool
-	PodsCIDR           string
-
 	// Common.
-	ClusterIDDeprecated string
-	ControlPlaneAZ      []string
-	Description         string
-	MasterAZ            []string
-	Name                string
-	Output              string
-	Organization        string
-	Owner               string
-	Release             string
-	Label               []string
+	ControlPlaneAZ []string
+	Description    string
+	MasterAZ       []string
+	Name           string
+	Output         string
+	Organization   string
+	PodsCIDR       string
+	Release        string
+	Label          []string
+
+	// Provider-specific
+	AWS       provider.AWSConfig
+	OpenStack provider.OpenStackConfig
+	App       provider.AppConfig
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -64,32 +85,71 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
-	cmd.Flags().StringVar(&f.ControlPlaneSubnet, flagControlPlaneSubnet, "", "Subnet used for the Control Plane.")
-	cmd.Flags().BoolVar(&f.ExternalSNAT, flagExternalSNAT, false, "AWS CNI configuration.")
-	cmd.Flags().BoolVar(&f.EKS, flagEKS, false, "Enable EKS. Only available for AWS Release v20.0.0 (CAPA)")
-	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
+	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
+	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
+
+	// OpenStack only.
+	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
+	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
+	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagOpenStackEnableOIDC, false, "Enable OIDC (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.FailureDomain, flagOpenStackFailureDomain, "", "Failure domain (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.BastionImageUUID, flagOpenStackBastionImageUUID, "", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.NodeImageUUID, flagOpenStackNodeImageUUID, "", "Image name (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.WorkerMachineFlavor, flagOpenStackWorkerMachineFlavor, "", "Node machine flavor (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.ControlPlaneMachineFlavor, flagOpenStackControlPlaneMachineFlavor, "", "Root volume disk size (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.BastionMachineFlavor, flagOpenStackBastionMachineFlavor, "", "Root volume source type (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.BastionDiskSize, flagOpenStackBastionDiskSize, 10, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.ControlPlaneDiskSize, flagOpenStackControlPlaneDiskSize, 10, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.WorkerDiskSize, flagOpenStackWorkerDiskSize, 10, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.ControlPlaneReplicas, flagOpenStackControlPlaneReplicas, 1, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 2, "Root volume source UUID (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
+
+	// App-based clusters only.
+	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "giantswarm", "Catalog for cluster app. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "giantswarm", "Catalog for cluster default apps app. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created. (OpenStack only).")
+
+	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
+	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
+	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
+	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
+	_ = cmd.Flags().MarkHidden(flagOpenStackEnableOIDC)
+	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackFailureDomain)
+	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
+	_ = cmd.Flags().MarkHidden(flagOpenStackNodeImageUUID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackBastionMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackBastionDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackBastionImageUUID)
+	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneReplicas)
+	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
+	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerDiskSize)
+	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
+
+	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
+	_ = cmd.Flags().MarkHidden(flagClusterVersion)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsVersion)
 
 	// Common.
-	cmd.Flags().StringVar(&f.ClusterIDDeprecated, flagClusterIDDeprecated, "", "Unique identifier of the cluster (deprecated).")
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
-	cmd.Flags().StringSliceVar(&f.MasterAZ, flagMasterAZ, nil, "Replaced by --control-plane-az.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
-	cmd.Flags().StringVar(&f.Owner, flagOwner, "", "Workload cluster owner organization (deprecated).")
-	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release. If not given, this remains empty for defaulting to the most recent one via the Management API.")
+	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
-	_ = cmd.Flags().MarkHidden(flagEKS)
-
-	// TODO: Remove the flag completely some time after August 2021
-	_ = cmd.Flags().MarkDeprecated(flagMasterAZ, "please use --control-plane-az.")
-
-	// TODO: Remove around December 2021
-	_ = cmd.Flags().MarkDeprecated(flagOwner, "please use --organization instead.")
-	_ = cmd.Flags().MarkDeprecated(flagClusterIDDeprecated, "please use --name instead.")
+	_ = cmd.Flags().MarkHidden(flagAWSEKS)
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
@@ -114,17 +174,11 @@ func (f *flag) Validate() error {
 		f.MasterAZ = nil
 	}
 
-	// Handle legacy cluster ID, pass it to cluster name flag.
-	// TODO: Remove around December 2021
-	if f.ClusterIDDeprecated != "" {
-		f.Name = f.ClusterIDDeprecated
-		f.ClusterIDDeprecated = ""
-	}
-
 	validProviders := []string{
 		key.ProviderAWS,
 		key.ProviderAzure,
-		key.ProviderVsphere,
+		key.ProviderOpenStack,
+		key.ProviderVSphere,
 	}
 	isValidProvider := false
 	for _, p := range validProviders {
@@ -159,10 +213,10 @@ func (f *flag) Validate() error {
 			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
 		}
 
-		if f.ControlPlaneSubnet != "" {
-			matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.ControlPlaneSubnet)
+		if f.AWS.ControlPlaneSubnet != "" {
+			matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
 			if err == nil && !matchedSubnet {
-				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagControlPlaneSubnet)
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
 			}
 		}
 	}
@@ -173,18 +227,8 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// TODO: Remove the flag completely some time after December 2021
-	if f.Owner == "" && f.Organization == "" {
+	if f.Organization == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
-	}
-
-	if f.Owner != "" {
-		if f.Organization != "" {
-			return microerror.Maskf(invalidFlagError, "--%s and --%s cannot be combined", flagOwner, flagOrganization)
-		}
-
-		f.Organization = f.Owner
-		f.Owner = ""
 	}
 
 	{
@@ -198,11 +242,46 @@ func (f *flag) Validate() error {
 			if len(f.ControlPlaneAZ) > 1 {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
 			}
+		case key.ProviderOpenStack:
+			if f.OpenStack.FailureDomain == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackFailureDomain)
+			}
+			if f.OpenStack.Cloud == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloud)
+			}
+			if f.OpenStack.CloudConfig == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloudConfig)
+			}
+			if f.OpenStack.BastionImageUUID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionImageUUID)
+			}
+			if f.OpenStack.NodeImageUUID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackNodeImageUUID)
+			}
+			if f.OpenStack.ExternalNetworkID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
+			}
+			if f.OpenStack.BastionMachineFlavor == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionMachineFlavor)
+			}
+			if f.OpenStack.ControlPlaneMachineFlavor == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneMachineFlavor)
+			}
+			if f.OpenStack.WorkerMachineFlavor == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerMachineFlavor)
+			}
+			if f.OpenStack.ExternalNetworkID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
+			}
+			if f.OpenStack.NodeCIDR != "" {
+				if !validateCIDR(f.OpenStack.NodeCIDR) {
+					return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
+				}
+			}
 		}
 	}
 
-	// Validate release version for non-aws clusters.
-	if f.Provider != key.ProviderAWS && f.Release == "" {
+	if f.Provider != "openstack" && f.Release == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 

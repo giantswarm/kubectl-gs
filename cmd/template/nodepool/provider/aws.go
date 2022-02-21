@@ -60,6 +60,8 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 		OnDemandPercentageAboveBaseCapacity: config.OnDemandPercentageAboveBaseCapacity,
 		Owner:                               config.Organization,
 		UseAlikeInstanceTypes:               config.UseAlikeInstanceTypes,
+		ReleaseVersion:                      config.ReleaseVersion,
+		ReleaseComponents:                   config.ReleaseComponents,
 	}
 
 	crs, err := aws.NewNodePoolCRs(crsConfig)

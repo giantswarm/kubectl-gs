@@ -11,10 +11,12 @@ metadata:
   name: {{ .Name }}
   namespace: {{ .Namespace }}
 spec:
+{{- if .PodsCIDR }}
   clusterNetwork:
     pods:
       cidrBlocks:
-      - 192.168.0.0/16
+      - {{ .PodsCIDR }}
+{{- end }}
   controlPlaneEndpoint:
     host: 10.0.6.191
     port: 6443

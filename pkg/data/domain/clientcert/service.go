@@ -8,19 +8,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/microerror"
-	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ Interface = (*Service)(nil)
 
 type Config struct {
-	Client *client.Client
+	Client client.Client
 }
 
 type Service struct {
-	client *client.Client
+	client client.Client
 }
 
 func New(config Config) (*Service, error) {
@@ -38,7 +36,7 @@ func New(config Config) (*Service, error) {
 func (s *Service) Create(ctx context.Context, clientCert *ClientCert) error {
 	kp := clientCert.Object()
 
-	err := s.client.K8sClient.CtrlClient().Create(ctx, kp)
+	err := s.client.Create(ctx, kp)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -47,10 +45,7 @@ func (s *Service) Create(ctx context.Context, clientCert *ClientCert) error {
 }
 
 func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
-	kp := clientCert.Object()
-	namespace := runtimeclient.InNamespace(clientCert.CertConfig.Namespace)
-
-	err := s.client.K8sClient.CtrlClient().DeleteAllOf(ctx, kp, namespace)
+	err := s.client.Delete(ctx, clientCert.CertConfig)
 	if apierrors.IsNotFound(err) {
 		// Resource was already deleted.
 	} else if err != nil {
@@ -61,10 +56,17 @@ func (s *Service) Delete(ctx context.Context, clientCert *ClientCert) error {
 }
 
 func (s *Service) GetCredential(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
-	secret, err := s.client.K8sClient.K8sClient().CoreV1().Secrets(namespace).Get(ctx, name, metav1.GetOptions{})
+	secret := &corev1.Secret{}
+	err := s.client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, secret)
 	if apierrors.IsNotFound(err) {
-		return nil, microerror.Mask(notFoundError)
-	} else if err != nil {
+		// Try in default namespace for legacy azure clusters.
+		err = s.client.Get(ctx, client.ObjectKey{Name: name, Namespace: metav1.NamespaceDefault}, secret)
+		if apierrors.IsNotFound(err) {
+			return nil, microerror.Mask(notFoundError)
+		}
+	}
+
+	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 

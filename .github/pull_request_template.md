@@ -1,10 +1,14 @@
-<--
+_Description goes here_
 
-When creating a pull request for `kubectl-gs`, please consider:
+---
 
-- Provide a link to the issue, and please describe the goal you are trying to accomplish in this description.
-- SIG UX cares about almost all changes here and is always happy to offer feedback. Simply request a review.
-- Add a user-friendly description of your change to `CHANGELOG.md`.
-- Our public [kubectl-gs documentation](https://docs.giantswarm.io/ui-api/kubectl-gs/) may need an update to reflect the change you are making.
+As the creator of a pull request, please consider:
 
--->
+- [ ] Describe the goal you are trying to accomplish here, above the line.
+- [ ] Add a user-friendly description of your change to `CHANGELOG.md`.
+- [ ] Provide a link to the issue you are solving or working towards, if available.
+- [ ] Request SIG UX for review. They care about almost all user-facing changes.
+- [ ] Update the public [kubectl-gs documentation](https://docs.giantswarm.io/ui-api/kubectl-gs/) to reflect the changes here.
+- [ ] add the `breaking-change` label to the PR if the change you are making changes the existing behaviour. Examples: removal of a flag, removal of a command, change of a default value. (Such changes should be released with a **major version** bump.)
+
+Feel free to remove this checklist when done.

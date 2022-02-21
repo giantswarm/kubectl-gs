@@ -1,29 +1,17 @@
 package cluster
 
-import (
-	"github.com/giantswarm/microerror"
-
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
-)
-
-var _ Interface = &Service{}
-
-type Config struct {
-	Client *client.Client
-}
+import "sigs.k8s.io/controller-runtime/pkg/client"
 
 type Service struct {
-	client *client.Client
+	client client.Client
 }
 
-func New(config Config) (Interface, error) {
-	if config.Client == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
-	}
+type Config struct {
+	Client client.Client
+}
 
-	s := &Service{
+func New(config Config) *Service {
+	return &Service{
 		client: config.Client,
 	}
-
-	return s, nil
 }
