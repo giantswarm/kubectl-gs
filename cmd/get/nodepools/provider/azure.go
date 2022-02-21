@@ -79,6 +79,9 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 
 func getAzureLatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
 	releaseVersion := key.ReleaseVersion(nodePool.MachinePool)
+	if releaseVersion == "" {
+		return naValue
+	}
 	isSupported := capabilities.Supports(feature.NodePoolConditions, releaseVersion)
 	if !isSupported {
 		return naValue
@@ -93,6 +96,9 @@ func getAzureLatestCondition(nodePool nodepool.Nodepool, capabilities *feature.S
 
 func getAzureAutoscaling(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
 	releaseVersion := key.ReleaseVersion(nodePool.MachinePool)
+	if releaseVersion == "" {
+		return naValue
+	}
 	isSupported := capabilities.Supports(feature.Autoscaling, releaseVersion)
 	if !isSupported {
 		return naValue
