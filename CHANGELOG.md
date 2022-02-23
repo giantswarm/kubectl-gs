@@ -11,12 +11,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add OIDC flags on the template cluster command for Cluster API.
 
+### Fixed
+
+- Fixed crash if listing nodepools when one is missing the release version label
+
 ## [2.1.0] - 2022-02-08
 
 ### Fixed
 
 - `login` command: Try logging in again if token renewal fails.
-- Add `security` API group to scheme in order to get `organizations` during `login`.  
+- Add `security` API group to scheme in order to get `organizations` during `login`.
 
 ### Changed
 
