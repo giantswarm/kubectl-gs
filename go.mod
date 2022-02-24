@@ -22,7 +22,7 @@ require (
 	github.com/spf13/afero v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
 	k8s.io/api v0.18.19
 	k8s.io/apiextensions-apiserver v0.18.19
 	k8s.io/apimachinery v0.18.19
@@ -30,7 +30,7 @@ require (
 	k8s.io/client-go v0.18.19
 	sigs.k8s.io/cluster-api v0.3.15-0.20210309173700-34de71aaaac8
 	sigs.k8s.io/cluster-api-provider-azure v0.4.11
-	sigs.k8s.io/controller-runtime v0.6.4
+	sigs.k8s.io/controller-runtime v0.6.5
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -100,9 +100,9 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
-	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
-	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
