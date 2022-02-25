@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Improve flag handling and naming for `template cluster` command (no user facing changes).
+
 ## [2.1.1] - 2022-02-25
 
 ### Fixed
