@@ -9,7 +9,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- Fixed crash if listing nodepools when one is missing the release version label
+- Fixed crash if listing nodepools when one is missing the release version label.
+- Add audit log configuration file to the `KubeadmControlPlane` CR.
+- Use the CAPZ controller manager env vars for control-plane identity when authenticating to Azure API.
 
 ## [2.1.0] - 2022-02-08
 
