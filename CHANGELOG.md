@@ -11,12 +11,20 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
 
+## [2.1.1] - 2022-02-25
+
+### Fixed
+
+- Fixed crash if listing nodepools when one is missing the release version label.
+- Add audit log configuration file to the `KubeadmControlPlane` CR.
+- Use the CAPZ controller manager env vars for control-plane identity when authenticating to Azure API.
+
 ## [2.1.0] - 2022-02-08
 
 ### Fixed
 
 - `login` command: Try logging in again if token renewal fails.
-- Add `security` API group to scheme in order to get `organizations` during `login`.  
+- Add `security` API group to scheme in order to get `organizations` during `login`.
 
 ### Changed
 
@@ -753,7 +761,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0
 [1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
