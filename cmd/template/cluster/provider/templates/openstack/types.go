@@ -6,10 +6,11 @@ type ClusterConfig struct {
 	Organization       string        `json:"organization,omitempty"`
 	CloudConfig        string        `json:"cloudConfig,omitempty"`
 	CloudName          string        `json:"cloudName,omitempty"`
+	ClusterName        string        `json:"clusterName,omitempty"`
+	KubernetesVersion  string        `json:"kubernetesVersion,omitempty"`
 	NodeCIDR           string        `json:"nodeCIDR,omitempty"`
 	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
 	Bastion            *Bastion      `json:"bastion,omitempty"`
-	RootVolume         *RootVolume   `json:"rootVolume,omitempty"`
 	NodeClasses        []NodeClass   `json:"nodeClasses,omitempty"`
 	ControlPlane       *ControlPlane `json:"controlPlane,omitempty"`
 	NodePools          []NodePool    `json:"nodePools,omitempty"`
@@ -21,32 +22,25 @@ type DefaultAppsConfig struct {
 	Organization string `json:"organization,omitempty"`
 }
 
-type MachineRootVolume struct {
-	DiskSize   int    `json:"diskSize"`
-	SourceUUID string `json:"sourceUUID"`
+type MachineConfig struct {
+	BootFromVolume bool   `json:"bootFromVolume"`
+	DiskSize       int    `json:"diskSize"`
+	Flavor         string `json:"flavor"`
+	Image          string `json:"image"`
 }
 
 type Bastion struct {
-	Flavor     string            `json:"flavor"`
-	Image      string            `json:"image"`
-	RootVolume MachineRootVolume `json:"rootVolume"`
+	MachineConfig `json:",inline"`
 }
 
-type RootVolume struct {
-	Enabled    bool   `json:"enabled"`
-	SourceUUID string `json:"sourceUUID"`
+type ControlPlane struct {
+	MachineConfig `json:",inline"`
+	Replicas      int `json:"replicas,omitempty"`
 }
 
 type NodeClass struct {
 	Name          string `json:"name"`
-	MachineFlavor string `json:"machineFlavor"`
-	DiskSize      int    `json:"diskSize"`
-}
-
-type ControlPlane struct {
-	MachineFlavor string `json:"machineFlavor"`
-	DiskSize      int    `json:"diskSize"`
-	Replicas      int    `json:"replicas"`
+	MachineConfig `json:",inline"`
 }
 
 type OIDC struct {
@@ -58,7 +52,8 @@ type OIDC struct {
 }
 
 type NodePool struct {
-	Name     string `json:"name"`
-	Class    string `json:"class"`
-	Replicas int    `json:"replicas"`
+	Class         string `json:"class"`
+	FailureDomain string `json:"failureDomain,omitempty"`
+	Name          string `json:"name"`
+	Replicas      int    `json:"replicas"`
 }

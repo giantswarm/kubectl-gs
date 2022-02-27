@@ -28,23 +28,28 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 }
 
+type MachineConfig struct {
+	BootFromVolume bool
+	DiskSize       int
+	Flavor         string
+	Image          string
+}
+
 type OpenStackConfig struct {
-	Cloud                     string
-	CloudConfig               string
-	DNSNameservers            []string
-	ExternalNetworkID         string
-	FailureDomain             string
-	NodeCIDR                  string
-	NodeImageUUID             string
-	BastionMachineFlavor      string
-	BastionDiskSize           int
-	BastionImageUUID          string
-	ControlPlaneMachineFlavor string
-	ControlPlaneDiskSize      int
-	ControlPlaneReplicas      int
-	WorkerMachineFlavor       string
-	WorkerDiskSize            int
-	WorkerReplicas            int
+	Cloud             string
+	CloudConfig       string
+	DNSNameservers    []string
+	
+  bool
+	ExternalNetworkID string
+	NodeCIDR          string
+
+	Bastion      MachineConfig
+	ControlPlane MachineConfig
+	Worker       MachineConfig
+
+	WorkerFailureDomain string
+	WorkerReplicas      int
 }
 
 type AppConfig struct {
@@ -55,16 +60,16 @@ type AppConfig struct {
 }
 
 type ClusterConfig struct {
-	FileName       string
-	ControlPlaneAZ []string
-	Description    string
-	Name           string
-	Organization   string
-	ReleaseVersion string
-	Labels         map[string]string
-	Namespace      string
-	PodsCIDR       string
-	OIDC           OIDC
+	KubernetesVersion string
+	FileName          string
+	ControlPlaneAZ    []string
+	Description       string
+	Name              string
+	Organization      string
+	ReleaseVersion    string
+	Labels            map[string]string
+	Namespace         string
+	PodsCIDR          string
 
 	App       AppConfig
 	AWS       AWSConfig
