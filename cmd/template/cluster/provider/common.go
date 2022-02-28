@@ -42,6 +42,8 @@ type OpenStackConfig struct {
 	EnableOIDC        bool
 	ExternalNetworkID string
 	NodeCIDR          string
+	NetworkName       string
+	SubnetName        string
 
 	Bastion      MachineConfig
 	ControlPlane MachineConfig

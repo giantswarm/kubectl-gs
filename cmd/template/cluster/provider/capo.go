@@ -48,6 +48,8 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 			CloudConfig:        config.OpenStack.CloudConfig,
 			CloudName:          config.OpenStack.Cloud,
 			NodeCIDR:           config.OpenStack.NodeCIDR,
+			NetworkName:        config.OpenStack.NetworkName,
+			SubnetName:         config.OpenStack.SubnetName,
 			ExternalNetworkID:  config.OpenStack.ExternalNetworkID,
 			Bastion: &openstack.Bastion{
 				MachineConfig: openstack.MachineConfig(config.OpenStack.Bastion),
