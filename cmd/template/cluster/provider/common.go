@@ -36,11 +36,11 @@ type MachineConfig struct {
 }
 
 type OpenStackConfig struct {
-	Cloud             string
-	CloudConfig       string
-	DNSNameservers    []string
-	
-  bool
+	Cloud          string
+	CloudConfig    string
+	DNSNameservers []string
+
+	bool
 	ExternalNetworkID string
 	NodeCIDR          string
 
@@ -70,6 +70,7 @@ type ClusterConfig struct {
 	Labels            map[string]string
 	Namespace         string
 	PodsCIDR          string
+	OIDC              OIDC
 
 	App       AppConfig
 	AWS       AWSConfig

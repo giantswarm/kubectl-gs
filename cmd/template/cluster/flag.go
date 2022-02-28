@@ -55,6 +55,11 @@ const (
 	flagDescription       = "description"
 	flagKubernetesVersion = "kubernetes-version"
 	flagName              = "name"
+	flagOIDCIssuerURL     = "oidc-issuer-url"
+	flagOIDCCAFile        = "oidc-ca-file"
+	flagOIDCClientID      = "oidc-client-id"
+	flagOIDCUsernameClaim = "oidc-username-claim"
+	flagOIDCGroupsClaim   = "oidc-groups-claim"
 	flagOutput            = "output"
 	flagOrganization      = "organization"
 	flagPodsCIDR          = "pods-cidr"
@@ -155,8 +160,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "OIDC CA FilePath.")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
-	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
-	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
+	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "", "OIDC username claim.")
+	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "", "OIDC groups claim.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
