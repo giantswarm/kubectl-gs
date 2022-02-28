@@ -32,7 +32,6 @@ const (
 	flagOpenStackCloud                      = "cloud"
 	flagOpenStackCloudConfig                = "cloud-config"
 	flagOpenStackDNSNameservers             = "dns-nameservers"
-	flagOpenStackEnableOIDC                 = "enable-oidc"
 	flagOpenStackExternalNetworkID          = "external-network-id"
 	flagOpenStackNodeCIDR                   = "node-cidr"
 	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume"

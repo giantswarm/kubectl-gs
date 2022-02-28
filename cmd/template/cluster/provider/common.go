@@ -40,7 +40,6 @@ type OpenStackConfig struct {
 	CloudConfig    string
 	DNSNameservers []string
 
-	bool
 	ExternalNetworkID string
 	NodeCIDR          string
 
