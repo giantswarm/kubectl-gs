@@ -44,9 +44,9 @@ type NodeClass struct {
 }
 
 type OIDC struct {
-	IssuerURL     string `json:"issuerURL"`
+	IssuerURL     string `json:"issuerUrl"`
 	CAFile        string `json:"caFile"`
-	ClientID      string `json:"clientID"`
+	ClientID      string `json:"clientId"`
 	UsernameClaim string `json:"usernameClaim"`
 	GroupsClaim   string `json:"groupsClaim"`
 }
