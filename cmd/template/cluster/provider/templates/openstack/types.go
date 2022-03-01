@@ -9,6 +9,8 @@ type ClusterConfig struct {
 	ClusterName        string        `json:"clusterName,omitempty"`
 	KubernetesVersion  string        `json:"kubernetesVersion,omitempty"`
 	NodeCIDR           string        `json:"nodeCIDR,omitempty"`
+	NetworkName        string        `json:"networkName,omitempty"`
+	SubnetName         string        `json:"subnetName,omitempty"`
 	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
 	OIDC               *OIDC         `json:"oidc,omitempty"`
 	Bastion            *Bastion      `json:"bastion,omitempty"`
