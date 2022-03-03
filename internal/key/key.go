@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	// IDChars represents the character set used to generate cluster IDs.
+	// NameChars represents the character set used to generate cluster IDs.
 	// (does not contain 1 and l, to avoid confusion)
-	IDChars = "023456789abcdefghijkmnopqrstuvwxyz"
+	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
 	// NameLengthLong represents the number of characters used to create a cluster ID when --enable-long-names feature flag is used.
 	NameLengthLong = 10
 	// NameLengthShort represents the number of characters used to create a cluster ID.
@@ -66,7 +66,7 @@ func ValidateName(name string, enableLongNames bool) (bool, error) {
 
 func GenerateName(enableLongNames bool) (string, error) {
 	for {
-		letterRunes := []rune(IDChars)
+		letterRunes := []rune(NameChars)
 		length := NameLengthShort
 		if enableLongNames {
 			length = NameLengthLong
@@ -74,7 +74,7 @@ func GenerateName(enableLongNames bool) (string, error) {
 		characters := make([]rune, length)
 		rand.Seed(time.Now().UnixNano())
 		for i := range characters {
-			characters[i] = letterRunes[rand.Intn(len(letterRunes))]
+			characters[i] = letterRunes[rand.Intn(len(letterRunes))] //nolint:gosec
 		}
 
 		generatedName := string(characters)
