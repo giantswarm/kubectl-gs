@@ -42,12 +42,16 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var configMapYaml []byte
 	var secretYaml []byte
-	var err error
+
+	catalogID, err := key.GenerateName(r.flag.AllowLongNames)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	config := templatecatalog.Config{
 		Description: r.flag.Description,
 		LogoURL:     r.flag.LogoURL,
-		ID:          key.GenerateID(),
+		ID:          catalogID,
 		Name:        r.flag.Name,
 		Namespace:   r.flag.Namespace,
 		URL:         r.flag.URL,

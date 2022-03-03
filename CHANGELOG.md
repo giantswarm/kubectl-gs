@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--enable-long-names` feature flag to allow resource names longer than 5 characters. Only for internal testing.
+
 ### Changed
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).

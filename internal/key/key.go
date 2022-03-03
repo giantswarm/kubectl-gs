@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -26,39 +25,25 @@ const (
 	// IDChars represents the character set used to generate cluster IDs.
 	// (does not contain 1 and l, to avoid confusion)
 	IDChars = "023456789abcdefghijkmnopqrstuvwxyz"
-	// IDLength represents the number of characters used to create a cluster ID.
-	IDLength = 5
+	// NameLengthLong represents the number of characters used to create a cluster ID when --enable-long-names feature flag is used.
+	NameLengthLong = 10
+	// NameLengthShort represents the number of characters used to create a cluster ID.
+	NameLengthShort = 5
 
 	organizationNamespaceFormat = "org-%s"
 )
 
 const (
-	AWSBastionInstanceType = "t3.small"
-
-	CAPIRoleLabel = "cluster.x-k8s.io/role"
-	CAPARoleTag   = "tag:sigs.k8s.io/cluster-api-provider-aws/role"
-
-	FlatcarAMIOwner      = "075585003325"
-	FlatcarChinaAMIOwner = "306934455918"
-
-	RoleBastion = "bastion"
-
 	RoleLabel           = "role"
 	SSHSSOPubKeyLabel   = "ssh-sso-public-key"
 	GiantswarmNamespace = "giantswarm"
-
-	ControllerRuntimeBurstValue = 200
 )
 
 const (
-	// FirstOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
+	// FirstAWSOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
 	FirstAWSOrgNamespaceRelease = "16.0.0"
 	FirstCAPIRelease            = "20.0.0-alpha1"
 )
-
-func BastionResourceName(clusterName string) string {
-	return fmt.Sprintf("%s-bastion", clusterName)
-}
 
 func BastionSSHDConfigEncoded() string {
 	return base64.StdEncoding.EncodeToString([]byte(bastionSSHDConfig))
@@ -68,61 +53,44 @@ func NodeSSHDConfigEncoded() string {
 	return base64.StdEncoding.EncodeToString([]byte(nodeSSHDConfig))
 }
 
-func CAPAClusterOwnedTag(clusterName string) string {
-	return fmt.Sprintf("tag:sigs.k8s.io/cluster-api-provider-aws/cluster/%s", clusterName)
-}
-
-func FlatcarAWSAccountID(awsRegion string) string {
-	if strings.Contains(awsRegion, "cn-") {
-		return FlatcarChinaAMIOwner
-	} else {
-		return FlatcarAMIOwner
+func ValidateName(name string, enableLongNames bool) (bool, error) {
+	maxLength := NameLengthShort
+	if enableLongNames {
+		maxLength = NameLengthLong
 	}
+
+	pattern := fmt.Sprintf("^[a-z][a-z0-9]{0,%d}$", maxLength-1)
+	matched, err := regexp.MatchString(pattern, name)
+	return matched, microerror.Mask(err)
 }
 
-func GenerateID() string {
-	compiledRegexp, _ := regexp.Compile("^[a-z]+$")
-
-	/* #nosec G404 */
+func GenerateName(enableLongNames bool) (string, error) {
 	for {
 		letterRunes := []rune(IDChars)
-		b := make([]rune, IDLength)
+		length := NameLengthShort
+		if enableLongNames {
+			length = NameLengthLong
+		}
+		characters := make([]rune, length)
 		rand.Seed(time.Now().UnixNano())
-		for i := range b {
-			b[i] = letterRunes[rand.Intn(len(letterRunes))]
+		for i := range characters {
+			characters[i] = letterRunes[rand.Intn(len(letterRunes))]
 		}
 
-		id := string(b)
+		generatedName := string(characters)
 
-		if _, err := strconv.Atoi(id); err == nil {
-			// ID is made up of numbers only, which we want to avoid.
+		if valid, err := ValidateName(generatedName, enableLongNames); err != nil {
+			return "", microerror.Mask(err)
+		} else if !valid {
 			continue
 		}
 
-		matched := compiledRegexp.MatchString(id)
-		if matched {
-			// ID is made up of letters only, which we also avoid.
-			continue
-		}
-
-		return id
+		return generatedName, nil
 	}
 }
 
 func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
-}
-
-func GetCAPAEnvVars() []string {
-	return []string{"AWS_SUBNET", "AWS_CONTROL_PLANE_MACHINE_TYPE", "AWS_REGION", "AWS_SSH_KEY_NAME"}
-}
-
-func GetControlPlaneInstanceProfile(clusterID string) string {
-	return fmt.Sprintf("control-plane-%s", clusterID)
-}
-
-func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
-	return fmt.Sprintf("nodes-%s-%s", machinePoolID, clusterID)
 }
 
 // IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
@@ -154,7 +122,7 @@ func IsOrgNamespaceVersion(version string) bool {
 	return releaseVersion.GE(*OrgNamespaceVersion)
 }
 
-// readConfigMapFromFile reads a configmap from a YAML file.
+// ReadConfigMapYamlFromFile reads a configmap from a YAML file.
 func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {
@@ -170,7 +138,7 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	return string(data), nil
 }
 
-// readSecretFromFile reads a configmap from a YAML file.
+// ReadSecretYamlFromFile reads a configmap from a YAML file.
 func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {

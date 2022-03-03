@@ -82,7 +82,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Description:        config.Description,
 		MaxSize:            config.NodesMax,
 		MinSize:            config.NodesMin,
-		Name:               config.NodePoolID,
+		Name:               config.NodePoolName,
 		Namespace:          key.OrganizationNamespaceFromName(config.Organization),
 		Organization:       config.Organization,
 		Replicas:           config.NodesMin,
@@ -173,12 +173,12 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.NodePoolID,
+			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
-				label.MachinePool:             config.NodePoolID,
+				label.MachinePool:             config.NodePoolName,
 				label.Organization:            config.Organization,
 			},
 		},

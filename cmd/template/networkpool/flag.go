@@ -9,6 +9,7 @@ import (
 
 const (
 	// Common.
+	flagEnableLongNames = "enable-long-names"
 	flagCIDRBlock       = "cidr-block"
 	flagNetworkPoolName = "networkpool-name"
 	flagOutput          = "output"
@@ -17,6 +18,7 @@ const (
 
 type flag struct {
 	// Common.
+	AllowLongNames  bool
 	CIDRBlock       string
 	NetworkPoolName string
 	Output          string
@@ -24,10 +26,13 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&f.AllowLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.NetworkPoolName, flagNetworkPoolName, "", "NetworkPool identifier.")
 	cmd.Flags().StringVar(&f.CIDRBlock, flagCIDRBlock, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
+
+	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
 }
 
 func (f *flag) Validate() error {
