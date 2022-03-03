@@ -50,7 +50,7 @@ type ClusterCRs struct {
 
 func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 	// Default some essentials in case certain information are not given. E.g.
-	// the workload cluster ID may be provided by the user.
+	// the workload cluster name may be provided by the user.
 	{
 		if config.ClusterName == "" {
 			generatedName, err := key.GenerateName(config.EnableLongNames)

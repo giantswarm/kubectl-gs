@@ -22,12 +22,12 @@ import (
 )
 
 const (
-	// NameChars represents the character set used to generate cluster IDs.
+	// NameChars represents the character set used to generate resource names.
 	// (does not contain 1 and l, to avoid confusion)
 	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
-	// NameLengthLong represents the number of characters used to create a cluster ID when --enable-long-names feature flag is used.
+	// NameLengthLong represents the number of characters used to create a resource name when --enable-long-names feature flag is used.
 	NameLengthLong = 10
-	// NameLengthShort represents the number of characters used to create a cluster ID.
+	// NameLengthShort represents the number of characters used to create a resource name.
 	NameLengthShort = 5
 
 	organizationNamespaceFormat = "org-%s"
