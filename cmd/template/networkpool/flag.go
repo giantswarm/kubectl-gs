@@ -9,8 +9,8 @@ import (
 
 const (
 	// Common.
-	flagEnableLongNames = "enable-long-names"
 	flagCIDRBlock       = "cidr-block"
+	flagEnableLongNames = "enable-long-names"
 	flagNetworkPoolName = "networkpool-name"
 	flagOutput          = "output"
 	flagOrganization    = "organization"

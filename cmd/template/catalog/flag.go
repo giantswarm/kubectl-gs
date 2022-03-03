@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	flagEnableLongNames = "enable-long-names"
 	flagConfigMap       = "configmap"
 	flagDescription     = "description"
+	flagEnableLongNames = "enable-long-names"
 	flagLogoURL         = "logo"
 	flagName            = "name"
 	flagNamespace       = "namespace"
@@ -19,9 +19,9 @@ const (
 )
 
 type flag struct {
-	EnableLongNames bool
 	ConfigMap       string
 	Description     string
+	EnableLongNames bool
 	LogoURL         string
 	Name            string
 	Namespace       string
@@ -30,9 +30,9 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.ConfigMap, flagConfigMap, "", "Path to a configmap file.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "Catalog description.")
+	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.LogoURL, flagLogoURL, "", "Catalog logo URL.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Catalog name.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the catalog will be created.")

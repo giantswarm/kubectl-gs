@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -203,17 +204,17 @@ func (f *flag) Validate() error {
 	}
 
 	if f.Name != "" {
-		maxLength := key.NameLengthShort
-		if f.EnableLongNames {
-			maxLength = key.NameLengthLong
-		}
-		if len(f.Name) > maxLength {
-			return microerror.Maskf(invalidFlagError, "--%s must not be longer than %d characters", flagName, maxLength)
-		}
-
-		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.Name)
-		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
+		valid, err := key.ValidateName(f.Name, f.EnableLongNames)
+		if err != nil {
+			return microerror.Mask(err)
+		} else if !valid {
+			message := fmt.Sprintf("--%s must only contain alphanumeric characters, start with a letter", flagName)
+			maxLength := key.NameLengthShort
+			if f.EnableLongNames {
+				maxLength = key.NameLengthLong
+			}
+			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
+			return microerror.Maskf(invalidFlagError, message)
 		}
 	}
 
