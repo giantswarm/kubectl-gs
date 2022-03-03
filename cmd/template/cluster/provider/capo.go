@@ -27,46 +27,46 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 
 func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
 	appName := config.Name
-	configMapName := fmt.Sprintf("%s-userconfig", appName)
+	configMapName := fmt.Sprintf("%s-cluster-userconfig", appName)
+
+	controlPlaneReplicas := 1
+	if len(config.ControlPlaneAZ) > 0 {
+		controlPlaneReplicas = len(config.ControlPlaneAZ)
+	}
 
 	var configMapYAML []byte
 	{
 		flagValues := openstack.ClusterConfig{
 			ClusterDescription: config.Description,
+			ClusterName:        config.Name,
 			DNSNameservers:     config.OpenStack.DNSNameservers,
+			KubernetesVersion:  config.KubernetesVersion,
 			Organization:       config.Organization,
 			CloudConfig:        config.OpenStack.CloudConfig,
 			CloudName:          config.OpenStack.Cloud,
 			NodeCIDR:           config.OpenStack.NodeCIDR,
+			NetworkName:        config.OpenStack.NetworkName,
+			SubnetName:         config.OpenStack.SubnetName,
 			ExternalNetworkID:  config.OpenStack.ExternalNetworkID,
 			Bastion: &openstack.Bastion{
-				Flavor: config.OpenStack.BastionMachineFlavor,
-				RootVolume: openstack.MachineRootVolume{
-					DiskSize:   config.OpenStack.BastionDiskSize,
-					SourceUUID: config.OpenStack.BastionImageUUID,
-				},
-			},
-			RootVolume: &openstack.RootVolume{
-				Enabled:    true,
-				SourceUUID: config.OpenStack.NodeImageUUID,
+				MachineConfig: openstack.MachineConfig(config.OpenStack.Bastion),
 			},
 			NodeClasses: []openstack.NodeClass{
 				{
 					Name:          "default",
-					MachineFlavor: config.OpenStack.WorkerMachineFlavor,
-					DiskSize:      config.OpenStack.WorkerDiskSize,
+					MachineConfig: openstack.MachineConfig(config.OpenStack.Worker),
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				MachineFlavor: config.OpenStack.ControlPlaneMachineFlavor,
-				DiskSize:      config.OpenStack.ControlPlaneDiskSize,
-				Replicas:      config.ControlPlaneReplicas,
+				MachineConfig: openstack.MachineConfig(config.OpenStack.ControlPlane),
+				Replicas:      controlPlaneReplicas,
 			},
 			NodePools: []openstack.NodePool{
 				{
-					Name:     "default",
-					Class:    "default",
-					Replicas: config.OpenStack.WorkerReplicas,
+					Class:         "default",
+					FailureDomain: config.OpenStack.WorkerFailureDomain,
+					Name:          "default",
+					Replicas:      config.OpenStack.WorkerReplicas,
 				},
 			},
 			OIDC: &openstack.OIDC{
@@ -106,7 +106,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 		}
 
 		clusterAppConfig := templateapp.Config{
-			AppName:                 config.Name,
+			AppName:                 fmt.Sprintf("%s-cluster", config.Name),
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    "cluster-openstack",

@@ -52,7 +52,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterConfig) error {
 		ClusterID: config.Name,
 
 		ExternalSNAT:   config.AWS.ExternalSNAT,
-		MasterAZ:       config.ControlPlaneAZ,
+		ControlPlaneAZ: config.ControlPlaneAZ,
 		Description:    config.Description,
 		PodsCIDR:       config.PodsCIDR,
 		Owner:          config.Organization,
