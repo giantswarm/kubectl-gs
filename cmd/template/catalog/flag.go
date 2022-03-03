@@ -19,18 +19,18 @@ const (
 )
 
 type flag struct {
-	AllowLongNames bool
-	ConfigMap      string
-	Description    string
-	LogoURL        string
-	Name           string
-	Namespace      string
-	Secret         string
-	URL            string
+	EnableLongNames bool
+	ConfigMap       string
+	Description     string
+	LogoURL         string
+	Name            string
+	Namespace       string
+	Secret          string
+	URL             string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().BoolVar(&f.AllowLongNames, flagEnableLongNames, false, "Allow long names.")
+	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.ConfigMap, flagConfigMap, "", "Path to a configmap file.")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "Catalog description.")
 	cmd.Flags().StringVar(&f.LogoURL, flagLogoURL, "", "Catalog logo URL.")

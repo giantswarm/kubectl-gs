@@ -53,7 +53,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if config.NetworkPoolName == "" {
-			generatedName, err := key.GenerateName(r.flag.AllowLongNames)
+			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
 			if err != nil {
 				return microerror.Mask(err)
 			}

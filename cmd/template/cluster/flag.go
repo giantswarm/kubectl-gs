@@ -168,6 +168,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
+	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
+
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagAWSEKS)
 
