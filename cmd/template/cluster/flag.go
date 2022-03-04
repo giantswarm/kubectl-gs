@@ -163,7 +163,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, "v1.20.9", "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
-	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "OIDC CA FilePath.")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
 	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
 	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
