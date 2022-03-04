@@ -34,7 +34,6 @@ const (
 	flagOpenStackCloud                      = "cloud"
 	flagOpenStackCloudConfig                = "cloud-config"
 	flagOpenStackDNSNameservers             = "dns-nameservers"
-	flagOpenStackEnableOIDC                 = "enable-oidc"
 	flagOpenStackExternalNetworkID          = "external-network-id"
 	flagOpenStackNodeCIDR                   = "node-cidr"
 	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume"
@@ -59,6 +58,11 @@ const (
 	flagDescription       = "description"
 	flagKubernetesVersion = "kubernetes-version"
 	flagName              = "name"
+	flagOIDCIssuerURL     = "oidc-issuer-url"
+	flagOIDCCAFile        = "oidc-ca-file"
+	flagOIDCClientID      = "oidc-client-id"
+	flagOIDCUsernameClaim = "oidc-username-claim"
+	flagOIDCGroupsClaim   = "oidc-groups-claim"
 	flagOutput            = "output"
 	flagOrganization      = "organization"
 	flagPodsCIDR          = "pods-cidr"
@@ -85,6 +89,7 @@ type flag struct {
 	AWS       provider.AWSConfig
 	OpenStack provider.OpenStackConfig
 	App       provider.AppConfig
+	OIDC      provider.OIDC
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -103,7 +108,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
-	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagOpenStackEnableOIDC, false, "Enable OIDC (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NetworkName, flagOpenStackNetworkName, "", "Existing network name. Used when CIDR for nodes are not set (OpenStack only).")
@@ -136,7 +140,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
 	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
-	_ = cmd.Flags().MarkHidden(flagOpenStackEnableOIDC)
 	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNetworkName)
@@ -163,6 +166,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, "v1.20.9", "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
+	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
+	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
+	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
+	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")

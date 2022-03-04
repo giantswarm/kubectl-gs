@@ -12,21 +12,16 @@ type ClusterConfig struct {
 	NetworkName        string        `json:"networkName,omitempty"`
 	SubnetName         string        `json:"subnetName,omitempty"`
 	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
-	OIDC               *OIDC         `json:"oidc,omitempty"`
 	Bastion            *Bastion      `json:"bastion,omitempty"`
 	NodeClasses        []NodeClass   `json:"nodeClasses,omitempty"`
 	ControlPlane       *ControlPlane `json:"controlPlane,omitempty"`
 	NodePools          []NodePool    `json:"nodePools,omitempty"`
+	OIDC               *OIDC         `json:"oidc,omitempty"`
 }
 
 type DefaultAppsConfig struct {
 	ClusterName  string `json:"clusterName,omitempty"`
 	Organization string `json:"organization,omitempty"`
-	OIDC         *OIDC  `json:"oidc,omitempty"`
-}
-
-type OIDC struct {
-	Enabled bool `json:"enabled"`
 }
 
 type MachineConfig struct {
@@ -48,6 +43,14 @@ type ControlPlane struct {
 type NodeClass struct {
 	Name          string `json:"name"`
 	MachineConfig `json:",inline"`
+}
+
+type OIDC struct {
+	IssuerURL     string `json:"issuerUrl"`
+	CAFile        string `json:"caFile"`
+	ClientID      string `json:"clientId"`
+	UsernameClaim string `json:"usernameClaim"`
+	GroupsClaim   string `json:"groupsClaim"`
 }
 
 type NodePool struct {
