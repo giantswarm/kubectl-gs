@@ -10,7 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add OIDC flags on the template cluster command for Cluster API.
+- Add OIDC flags to the `template cluster` command (OpenStack only).
 
 ### Changed
 
