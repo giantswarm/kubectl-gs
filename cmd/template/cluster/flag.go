@@ -35,6 +35,8 @@ const (
 	flagOpenStackExternalNetworkID          = "external-network-id"
 	flagOpenStackNodeCIDR                   = "node-cidr"
 	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume"
+	flagOpenStackNetworkName                = "network-name"
+	flagOpenStackSubnetName                 = "subnet-name"
 	flagOpenStackBastionDiskSize            = "bastion-disk-size"
 	flagOpenStackBastionImage               = "bastion-image"
 	flagOpenStackBastionMachineFlavor       = "bastion-machine-flavor"
@@ -104,6 +106,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.NetworkName, flagOpenStackNetworkName, "", "Existing network name. Used when CIDR for nodes are not set (OpenStack only).")
+	cmd.Flags().StringVar(&f.OpenStack.SubnetName, flagOpenStackSubnetName, "", "Existing subnet name. Used when CIDR for nodes are not set (OpenStack only).")
 	// bastion
 	cmd.Flags().BoolVar(&f.OpenStack.Bastion.BootFromVolume, flagOpenStackBastionBootFromVolume, false, "Bastion boot from volume (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.Bastion.DiskSize, flagOpenStackBastionDiskSize, 10, "Bastion machine root volume disk size (OpenStack only).")
@@ -134,6 +138,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
 	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
+	_ = cmd.Flags().MarkHidden(flagOpenStackNetworkName)
+	_ = cmd.Flags().MarkHidden(flagOpenStackSubnetName)
 	_ = cmd.Flags().MarkHidden(flagOpenStackBastionMachineFlavor)
 	_ = cmd.Flags().MarkHidden(flagOpenStackBastionDiskSize)
 	_ = cmd.Flags().MarkHidden(flagOpenStackBastionImage)
@@ -260,8 +266,17 @@ func (f *flag) Validate() error {
 				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
 			}
 			if f.OpenStack.NodeCIDR != "" {
+				if f.OpenStack.NetworkName != "" || f.OpenStack.SubnetName != "" {
+					return microerror.Maskf(invalidFlagError, "--%s and --%s must be empty when --%s is used",
+						flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
+				}
 				if !validateCIDR(f.OpenStack.NodeCIDR) {
 					return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
+				}
+			} else {
+				if f.OpenStack.NetworkName == "" || f.OpenStack.SubnetName == "" {
+					return microerror.Maskf(invalidFlagError, "--%s and --%s must be set when --%s is empty",
+						flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
 				}
 			}
 			// bastion
