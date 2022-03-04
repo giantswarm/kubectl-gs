@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+
+### Added
+
+- Add OIDC flags to the `template cluster` command (OpenStack only).
+
 ### Changed
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
