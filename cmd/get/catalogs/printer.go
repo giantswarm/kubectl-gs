@@ -61,6 +61,14 @@ func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
 }
 
+func getAppCatalogEntryDescription(description string) string {
+	if len(description) > 80 {
+		return fmt.Sprintf("%s...", description[:80])
+	}
+
+	return description
+}
+
 func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
@@ -69,6 +77,7 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 			ace.Spec.Version,
 			ace.Spec.AppVersion,
 			output.TranslateTimestampSince(ace.CreationTimestamp),
+			getAppCatalogEntryDescription(ace.Spec.Chart.Description),
 		},
 	}
 }
@@ -83,6 +92,7 @@ func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
 		{Name: "Version", Type: "string"},
 		{Name: "Upstream Version", Type: "string"},
 		{Name: "Age", Type: "string", Format: "date-time"},
+		{Name: "Description", Type: "string", Format: "string"},
 	}
 
 	for _, ace := range catalogResource.Entries.Items {
