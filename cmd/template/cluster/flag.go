@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	flagProvider = "provider"
+	flagEnableLongNames = "enable-long-names"
+	flagProvider        = "provider"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
@@ -69,7 +71,8 @@ const (
 )
 
 type flag struct {
-	Provider string
+	EnableLongNames bool
+	Provider        string
 
 	// Common.
 	ControlPlaneAZ    []string
@@ -93,6 +96,7 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
@@ -173,6 +177,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 
+	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
+
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagAWSEKS)
 
@@ -206,25 +212,17 @@ func (f *flag) Validate() error {
 	}
 
 	if f.Name != "" {
-		if len(f.Name) != key.IDLength {
-			return microerror.Maskf(invalidFlagError, "--%s must be of length %d", flagName, key.IDLength)
-		}
-
-		matchedLettersOnly, err := regexp.MatchString("^[a-z]+$", f.Name)
-		if err == nil && matchedLettersOnly {
-			// strings is letters only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagName)
-		}
-
-		matchedNumbersOnly, err := regexp.MatchString("^[0-9]+$", f.Name)
-		if err == nil && matchedNumbersOnly {
-			// strings is numbers only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one letter", flagName)
-		}
-
-		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.Name)
-		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
+		valid, err := key.ValidateName(f.Name, f.EnableLongNames)
+		if err != nil {
+			return microerror.Mask(err)
+		} else if !valid {
+			message := fmt.Sprintf("--%s must only contain alphanumeric characters, start with a letter", flagName)
+			maxLength := key.NameLengthShort
+			if f.EnableLongNames {
+				maxLength = key.NameLengthLong
+			}
+			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
+			return microerror.Maskf(invalidFlagError, message)
 		}
 	}
 
