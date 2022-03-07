@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add `--enable-long-names` feature flag to `template cluster/networkpool/nodepool` to allow resource names longer than 5 characters. Only for internal testing.
 
+### Changed
+
+- Add missing availability zones to cluster configuration for OpenStack.
+
 ## [2.2.0] - 2022-03-04
 
 ### Added

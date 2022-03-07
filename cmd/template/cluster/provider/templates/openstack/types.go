@@ -36,8 +36,9 @@ type Bastion struct {
 }
 
 type ControlPlane struct {
-	MachineConfig `json:",inline"`
-	Replicas      int `json:"replicas,omitempty"`
+	MachineConfig     `json:",inline"`
+	Replicas          int      `json:"replicas,omitempty"`
+	AvailabilityZones []string `json:"availabilityZones,omitempty"`
 }
 
 type NodeClass struct {
