@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add description column to the `get catalog` limited to 80 characters.
+
+### Added
+
 - Add support for templating App CRs in organization namespace.
 
 ## [1.60.0] - 2022-01-27
