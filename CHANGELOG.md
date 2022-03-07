@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add basic test function for `login` runner.
+
 ### Changed
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
