@@ -10,12 +10,15 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/id"
+	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
 
@@ -34,7 +37,26 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
-	err := r.flag.Validate()
+	commonConfig := commonconfig.New(r.flag.config)
+	k8sClient, err := commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	var ingress v1beta1.Ingress
+	err = k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Name: "happa", Namespace: "giantswarm"}, &ingress)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	installationService, err := installation.New(ctx, ingress.Spec.Rules[0].Host)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.flag.Provider = installationService.Provider
+
+	err = r.flag.Validate()
 	if err != nil {
 		return microerror.Mask(err)
 	}

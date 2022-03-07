@@ -211,3 +211,18 @@ Description=Set Bastion zone as ready by creating /run/cluster-api/bootstrap-suc
 Type=oneshot
 ExecStart=/bin/sh -c 'mkdir -p /run/cluster-api/ ; echo "success" >/run/cluster-api/bootstrap-success.complete'
 `
+
+const OpenStackUserconfigTemplate = `cloudProviderOpenstack:
+  configMap:
+    values: |
+      openstack-cinder-csi:
+        clusterID: giant_swarm_cluster_{{ .ManagementCluster }}_{{ .ClusterName }}
+      openstack-cloud-controller-manager:
+        controllerExtraArgs: |-
+          - --cluster-name=giant_swarm_cluster_{{ .ManagementCluster }}_{{ .ClusterName }}
+netExporter:
+  configMap:
+    values: |
+      dns:
+        service: kube-dns
+`

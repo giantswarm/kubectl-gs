@@ -65,6 +65,7 @@ type ClusterConfig struct {
 	FileName          string
 	ControlPlaneAZ    []string
 	Description       string
+	ManagementCluster string
 	Name              string
 	Organization      string
 	ReleaseVersion    string

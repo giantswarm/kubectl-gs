@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -16,6 +17,11 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
+)
+
+var (
+	appCRTemplate      = template.Must(template.New("appCR").Parse(key.AppCRTemplate))
+	userConfigTemplate = template.Must(template.New("userConfig").Parse(key.OpenStackUserconfigTemplate))
 )
 
 func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
@@ -132,13 +138,31 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 		}
 	}
 
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err := t.Execute(output, templateapp.AppCROutput{
+	err := appCRTemplate.Execute(output, templateapp.AppCROutput{
 		AppCR:               string(appYAML),
 		UserConfigConfigMap: string(configMapYAML),
 	})
 	return microerror.Mask(err)
+}
+
+func templateDefaultAppsOpenstackUserConfig(clusterName, managementCluster string) (map[string]interface{}, error) {
+	templateData := struct {
+		ClusterName       string
+		ManagementCluster string
+	}{
+		ClusterName:       clusterName,
+		ManagementCluster: managementCluster,
+	}
+
+	var buffer bytes.Buffer
+	err := userConfigTemplate.Execute(&buffer, templateData)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	userConfigs := map[string]interface{}{}
+	err = yaml.Unmarshal(buffer.Bytes(), &userConfigs)
+	return userConfigs, microerror.Mask(err)
 }
 
 func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
@@ -147,9 +171,15 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 
 	var configMapYAML []byte
 	{
+		userConfig, err := templateDefaultAppsOpenstackUserConfig(config.Name, config.ManagementCluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
 		flagValues := openstack.DefaultAppsConfig{
 			ClusterName:  config.Name,
 			Organization: config.Organization,
+			UserConfig:   userConfig,
 		}
 
 		configData, err := openstack.GenerateDefaultAppsValues(flagValues)

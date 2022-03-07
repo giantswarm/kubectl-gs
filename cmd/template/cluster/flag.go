@@ -3,7 +3,6 @@ package cluster
 import (
 	"net"
 	"regexp"
-	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -93,8 +92,6 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
-
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
@@ -187,24 +184,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	var err error
-	validProviders := []string{
-		key.ProviderAWS,
-		key.ProviderAzure,
-		key.ProviderOpenStack,
-		key.ProviderVSphere,
-	}
-	isValidProvider := false
-	for _, p := range validProviders {
-		if f.Provider == p {
-			isValidProvider = true
-			break
-		}
-	}
-	if !isValidProvider {
-		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
-	}
-
 	if f.Name != "" {
 		if len(f.Name) != key.IDLength {
 			return microerror.Maskf(invalidFlagError, "--%s must be of length %d", flagName, key.IDLength)
@@ -339,7 +318,7 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
-	_, err = labels.Parse(f.Label)
+	_, err := labels.Parse(f.Label)
 	if err != nil {
 		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
 	}
