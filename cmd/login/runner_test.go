@@ -16,48 +16,68 @@ func TestLogin(t *testing.T) {
 	testCases := []struct {
 		name        string
 		startConfig *clientcmdapi.Config
-		mcArg       string
+		mcArg       []string
 		expectError *microerror.Error
 	}{
+		// Empty starting config, logging into MC using codename
 		{
 			name:        "case 0",
 			startConfig: &clientcmdapi.Config{},
-			mcArg:       "codename",
+			mcArg:       []string{"codename"},
 			expectError: contextDoesNotExistError,
 		},
+		// Empty starting config, logging into MC using context
 		{
 			name:        "case 1",
 			startConfig: &clientcmdapi.Config{},
-			mcArg:       "gs-codename",
+			mcArg:       []string{"gs-codename"},
 			expectError: contextDoesNotExistError,
 		},
+		// Valid starting config, logging into MC using codename
 		{
 			name:        "case 2",
-			startConfig: createValidTestConfig(),
-			mcArg:       "gs-codename",
+			startConfig: createValidTestConfigMC(),
+			mcArg:       []string{"gs-codename"},
 		},
 		{
 			name:        "case 3",
-			startConfig: createValidTestConfig(),
-			mcArg:       "codename",
+			startConfig: createValidTestConfigMC(),
+			mcArg:       []string{"gs-othercodename"},
+			expectError: contextDoesNotExistError,
 		},
+		// Valid starting config, logging into MC using context
 		{
 			name:        "case 4",
-			startConfig: createValidTestConfig(),
-			mcArg:       "othercodename",
-			expectError: contextDoesNotExistError,
+			startConfig: createValidTestConfigMC(),
+			mcArg:       []string{"codename"},
 		},
 		{
 			name:        "case 5",
-			startConfig: createValidTestConfig(),
-			mcArg:       "gs-othercodename",
+			startConfig: createValidTestConfigMC(),
+			mcArg:       []string{"othercodename"},
 			expectError: contextDoesNotExistError,
 		},
+		// Valid starting config, logging into MC using URL
 		{
 			name:        "case 6",
-			startConfig: createValidTestConfig(),
-			mcArg:       "https://anything.com",
+			startConfig: createValidTestConfigMC(),
+			mcArg:       []string{"https://anything.com"},
 			expectError: unknownUrlError,
+		},
+		// Valid starting config, Try to reuse existing context
+		{
+			name:        "case 7",
+			startConfig: createValidTestConfigMC(),
+		},
+		{
+			name:        "case 8",
+			startConfig: createValidTestConfigWC(),
+		},
+		// Empty starting config, Try to reuse existing context
+		{
+			name:        "case 9",
+			startConfig: &clientcmdapi.Config{},
+			expectError: selectedContextNonCompatibleError,
 		},
 	}
 
@@ -82,7 +102,7 @@ func TestLogin(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = r.Run(&cobra.Command{}, []string{tc.mcArg})
+			err = r.Run(&cobra.Command{}, tc.mcArg)
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
 					t.Fatalf("unexpected error: %s", err.Error())
@@ -94,7 +114,29 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-func createValidTestConfig() *clientcmdapi.Config {
+func createValidTestConfigWC() *clientcmdapi.Config {
+	const (
+		server = "https://anything.com:8080"
+		token  = "the-token"
+	)
+
+	config := clientcmdapi.NewConfig()
+	config.Clusters["gs-codename-cluster"] = &clientcmdapi.Cluster{
+		Server: server,
+	}
+	config.AuthInfos["gs-codename-cluster-user"] = &clientcmdapi.AuthInfo{
+		Token: token,
+	}
+	config.Contexts["gs-codename-cluster"] = &clientcmdapi.Context{
+		Cluster:  "gs-codename-cluster",
+		AuthInfo: "gs-codename-cluster-user",
+	}
+	config.CurrentContext = "gs-codename-cluster"
+
+	return config
+}
+
+func createValidTestConfigMC() *clientcmdapi.Config {
 	const (
 		server = "https://anything.com:8080"
 		token  = "the-token"
