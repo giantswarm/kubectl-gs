@@ -23,7 +23,7 @@ const (
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	flagAWSRegion                = "region"
-	flagAWSRoleARN               = "role-arn"
+	flagAWSRole                  = "role"
 	flagNetworkAZUsageLimit      = "az-usage-limit"
 	flagNetworkVPCCidr           = "vpc-cidr"
 	flagBastionInstanceType      = "bastion-instance-type"
@@ -104,7 +104,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().StringVar(&f.AWS.AWSRegion, flagAWSRegion, "", "AWS region where cluster will be created")
-	cmd.Flags().StringVar(&f.AWS.AWSRoleARN, flagAWSRoleARN, "", "ARN of the role that will be used for cluster creation.")
+	cmd.Flags().StringVar(&f.AWS.AWSRole, flagAWSRole, "", "Name of the AWSClusterRole that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().StringVar(&f.AWS.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
@@ -166,7 +166,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
 
 	_ = cmd.Flags().MarkHidden(flagAWSRegion)
-	_ = cmd.Flags().MarkHidden(flagAWSRoleARN)
+	_ = cmd.Flags().MarkHidden(flagAWSRole)
 	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
 	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
 	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
@@ -269,9 +269,6 @@ func (f *flag) Validate() error {
 			if isCapiVersion {
 				if f.AWS.AWSRegion == "" {
 					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSRegion)
-				}
-				if f.AWS.AWSRoleARN == "" {
-					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSRoleARN)
 				}
 				if f.ControlPlaneAZ == nil {
 					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)

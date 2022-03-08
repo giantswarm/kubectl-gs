@@ -87,8 +87,8 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Organization:       config.Organization,
 
 			AWS: &capa.AWS{
-				Region:  config.AWS.AWSRegion,
-				RoleARN: config.AWS.AWSRoleARN,
+				Region: config.AWS.AWSRegion,
+				Role:   config.AWS.AWSRole,
 			},
 			Network: &capa.Network{
 				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,

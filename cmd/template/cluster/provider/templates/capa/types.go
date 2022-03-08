@@ -6,10 +6,10 @@ type ClusterConfig struct {
 	AWS                *AWS           `json:"aws,omitempty"`
 	Network            *Network       `json:"network,omitempty"`
 	Bastion            *Bastion       `json:"bastion,omitempty"`
-	ControlPlane       *ControlPlane  `json:"controlPlane"`
-	MachinePools       *[]MachinePool `json:"machinePools"`
-	SSHSSOPublicKey    string         `json:"sshSSOPublicKey"`
-	FlatcarAWSAccount  string         `json:"flatcarAWSAccount"`
+	ControlPlane       *ControlPlane  `json:"controlPlane,omitempty"`
+	MachinePools       *[]MachinePool `json:"machinePools,omitempty"`
+	SSHSSOPublicKey    string         `json:"sshSSOPublicKey,omitempty"`
+	FlatcarAWSAccount  string         `json:"flatcarAWSAccount,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -18,8 +18,8 @@ type DefaultAppsConfig struct {
 }
 
 type AWS struct {
-	Region  string `json:"region,omitempty"`
-	RoleARN string `json:"roleARN,omitempty"`
+	Region string `json:"region,omitempty"`
+	Role   string `json:"awsClusterRole,omitempty"`
 }
 
 type Network struct {
@@ -43,11 +43,11 @@ type ControlPlane struct {
 }
 
 type MachinePool struct {
-	Name              string   `json:"name"`
+	Name              string   `json:"name,omitempty"`
 	AvailabilityZones []string `json:"availabilityZones,omitempty"`
 	InstanceType      string   `json:"instanceType,omitempty"`
-	MinSize           int      `json:"minSize"`
-	MaxSize           int      `json:"maxSize"`
-	RootVolumeSizeGB  int      `json:"rootVolumeSizeGB"`
-	CustomNodeLabels  []string `json:"customNodeLabels"`
+	MinSize           int      `json:"minSize,omitempty"`
+	MaxSize           int      `json:"maxSize,omitempty"`
+	RootVolumeSizeGB  int      `json:"rootVolumeSizeGB,omitempty"`
+	CustomNodeLabels  []string `json:"customNodeLabels,omitempty"`
 }

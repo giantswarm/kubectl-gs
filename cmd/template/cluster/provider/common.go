@@ -33,7 +33,7 @@ type AWSConfig struct {
 
 	// for CAPA
 	AWSRegion                string
-	AWSRoleARN               string
+	AWSRole                  string
 	NetworkAZUsageLimit      int
 	NetworkVPCCIDR           string
 	BastionInstanceType      string
