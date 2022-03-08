@@ -7,10 +7,12 @@ import (
 
 const (
 	flagAllNamespaces = "all-namespaces"
+	flagMaxColWidth   = "max-col-width"
 )
 
 type flag struct {
 	AllNamespaces bool
+	MaxColWidth   uint
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
@@ -18,6 +20,7 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	cmd.Flags().UintVar(&f.MaxColWidth, flagMaxColWidth, 80, "maximum column width for output table")
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")

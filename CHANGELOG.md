@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add description column to the `get catalog` limited to 80 characters.
 - Add `--enable-long-names` feature flag to `template cluster/networkpool/nodepool` to allow resource names longer than 5 characters. Only for internal testing.
 
 ### Changed
