@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	flagProvider = "provider"
+	flagEnableLongNames = "enable-long-names"
+	flagProvider        = "provider"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
@@ -32,7 +34,6 @@ const (
 	flagOpenStackCloud                      = "cloud"
 	flagOpenStackCloudConfig                = "cloud-config"
 	flagOpenStackDNSNameservers             = "dns-nameservers"
-	flagOpenStackEnableOIDC                 = "enable-oidc"
 	flagOpenStackExternalNetworkID          = "external-network-id"
 	flagOpenStackNodeCIDR                   = "node-cidr"
 	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume"
@@ -57,6 +58,11 @@ const (
 	flagDescription       = "description"
 	flagKubernetesVersion = "kubernetes-version"
 	flagName              = "name"
+	flagOIDCIssuerURL     = "oidc-issuer-url"
+	flagOIDCCAFile        = "oidc-ca-file"
+	flagOIDCClientID      = "oidc-client-id"
+	flagOIDCUsernameClaim = "oidc-username-claim"
+	flagOIDCGroupsClaim   = "oidc-groups-claim"
 	flagOutput            = "output"
 	flagOrganization      = "organization"
 	flagPodsCIDR          = "pods-cidr"
@@ -65,7 +71,8 @@ const (
 )
 
 type flag struct {
-	Provider string
+	EnableLongNames bool
+	Provider        string
 
 	// Common.
 	ControlPlaneAZ    []string
@@ -82,12 +89,14 @@ type flag struct {
 	AWS       provider.AWSConfig
 	OpenStack provider.OpenStackConfig
 	App       provider.AppConfig
+	OIDC      provider.OIDC
 
 	config genericclioptions.RESTClientGetter
 	print  *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
@@ -99,7 +108,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
 	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
-	cmd.Flags().BoolVar(&f.OpenStack.EnableOIDC, flagOpenStackEnableOIDC, false, "Enable OIDC (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
 	cmd.Flags().StringVar(&f.OpenStack.NetworkName, flagOpenStackNetworkName, "", "Existing network name. Used when CIDR for nodes are not set (OpenStack only).")
@@ -132,7 +140,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
 	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
-	_ = cmd.Flags().MarkHidden(flagOpenStackEnableOIDC)
 	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
 	_ = cmd.Flags().MarkHidden(flagOpenStackNetworkName)
@@ -159,11 +166,18 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, "v1.20.9", "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
+	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
+	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
+	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
+	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
+
+	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagAWSEKS)
@@ -198,25 +212,17 @@ func (f *flag) Validate() error {
 	}
 
 	if f.Name != "" {
-		if len(f.Name) != key.IDLength {
-			return microerror.Maskf(invalidFlagError, "--%s must be of length %d", flagName, key.IDLength)
-		}
-
-		matchedLettersOnly, err := regexp.MatchString("^[a-z]+$", f.Name)
-		if err == nil && matchedLettersOnly {
-			// strings is letters only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one number", flagName)
-		}
-
-		matchedNumbersOnly, err := regexp.MatchString("^[0-9]+$", f.Name)
-		if err == nil && matchedNumbersOnly {
-			// strings is numbers only, which we avoid
-			return microerror.Maskf(invalidFlagError, "--%s must contain at least one letter", flagName)
-		}
-
-		matched, err := regexp.MatchString("^[a-z][a-z0-9]+$", f.Name)
-		if err == nil && !matched {
-			return microerror.Maskf(invalidFlagError, "--%s must only contain alphanumeric characters, and start with a letter", flagName)
+		valid, err := key.ValidateName(f.Name, f.EnableLongNames)
+		if err != nil {
+			return microerror.Mask(err)
+		} else if !valid {
+			message := fmt.Sprintf("--%s must only contain alphanumeric characters, start with a letter", flagName)
+			maxLength := key.NameLengthShort
+			if f.EnableLongNames {
+				maxLength = key.NameLengthLong
+			}
+			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
+			return microerror.Maskf(invalidFlagError, message)
 		}
 	}
 
