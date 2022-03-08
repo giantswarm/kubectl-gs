@@ -8,12 +8,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/giantswarm/kubectl-gs/pkg/installation"
 )
 
 func TestLogin(t *testing.T) {
