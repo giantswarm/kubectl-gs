@@ -107,15 +107,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	var maxColWidth uint
-	{
-		maxColWidth, err = cmd.InheritedFlags().GetUint("max-col-width")
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	err = r.printOutput(catalogResource, maxColWidth)
+	err = r.printOutput(catalogResource, r.flag.MaxColWidth)
 	if err != nil {
 		return microerror.Mask(err)
 	}
