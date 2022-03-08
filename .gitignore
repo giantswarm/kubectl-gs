@@ -2,4 +2,3 @@ kubectl-gs*
 bin-dist
 .vscode
 .DS_Store
-cmd/login/test

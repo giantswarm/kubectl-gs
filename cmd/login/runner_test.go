@@ -2,6 +2,7 @@ package login
 
 import (
 	"bytes"
+	"os"
 	"strconv"
 	"testing"
 
@@ -62,16 +63,21 @@ func TestLogin(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			configDir, err := os.MkdirTemp("", "loginTest")
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			r := runner{
 				k8sConfigAccess: &clientcmd.ClientConfigLoadingRules{
-					ExplicitPath: "test/config.yaml",
+					ExplicitPath: configDir + "/config.yaml",
 				},
 				stdout: new(bytes.Buffer),
 				flag: &flag{
 					WCCertTTL: "8h",
 				},
 			}
-			err := clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)
+			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)
 			}
