@@ -139,8 +139,8 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 	return secret, nil
 }
 
-// storeCredential saves the created client certificate credentials into the kubectl config.
-func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// storeWCCredentials saves the created client certificate credentials into the kubectl config.
+func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -200,8 +200,12 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 		// Add context configuration to config.
 		config.Contexts[contextName] = context
 
-		// Select newly created context as current.
-		config.CurrentContext = contextName
+		// Select newly created context as current or revert to origin context if that is desired
+		if loginOptions.switchToWCcontext {
+			config.CurrentContext = contextName
+		} else if loginOptions.originContext != "" {
+			config.CurrentContext = loginOptions.originContext
+		}
 	}
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
@@ -212,8 +216,8 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 	return contextName, contextExists, nil
 }
 
-// printCredential saves the created client certificate credentials into a separate kubectl config file.
-func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
+func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -254,6 +258,15 @@ func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePa
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
+	// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
+	if loginOptions.originContext != "" {
+		config.CurrentContext = loginOptions.originContext
+		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	}
+
 	return contextName, false, nil
 }
 

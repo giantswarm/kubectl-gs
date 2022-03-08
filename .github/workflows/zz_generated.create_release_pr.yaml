@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@4.15.0
+#    devctl@4.20.1
 #
 name: Create Release PR
 on:
@@ -91,7 +91,7 @@ jobs:
           else
             version="${version#v}" # Strip "v" prefix.
           fi
-          repo_name="$(echo '${{ github.repository }}' | awk -F '/' '{print $1}')"
+          repo_name="$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')"
           echo "repo_name=\"$repo_name\" base=\"$base\" head=\"$head\" version=\"$version\""
           echo "::set-output name=repo_name::${repo_name}"
           echo "::set-output name=base::${base}"
@@ -121,9 +121,9 @@ jobs:
         uses: giantswarm/install-binary-action@v1.0.0
         with:
           binary: "architect"
-          version: "5.3.0"
+          version: "6.1.0"
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ needs.gather_facts.outputs.branch }}
       - name: Prepare release changes

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool/provider"
-	"github.com/giantswarm/kubectl-gs/pkg/id"
+	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 const (
@@ -53,7 +53,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if config.NetworkPoolName == "" {
-			config.NetworkPoolName = id.Generate()
+			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			config.NetworkPoolName = generatedName
 		}
 	}
 

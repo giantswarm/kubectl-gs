@@ -107,7 +107,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	err = r.printOutput(catalogResource)
+	err = r.printOutput(catalogResource, r.flag.MaxColWidth)
 	if err != nil {
 		return microerror.Mask(err)
 	}

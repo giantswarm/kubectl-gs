@@ -6,56 +6,57 @@ type ClusterConfig struct {
 	Organization       string        `json:"organization,omitempty"`
 	CloudConfig        string        `json:"cloudConfig,omitempty"`
 	CloudName          string        `json:"cloudName,omitempty"`
+	ClusterName        string        `json:"clusterName,omitempty"`
+	KubernetesVersion  string        `json:"kubernetesVersion,omitempty"`
 	NodeCIDR           string        `json:"nodeCIDR,omitempty"`
+	NetworkName        string        `json:"networkName,omitempty"`
+	SubnetName         string        `json:"subnetName,omitempty"`
 	ExternalNetworkID  string        `json:"externalNetworkID,omitempty"`
-	OIDC               *OIDC         `json:"oidc,omitempty"`
 	Bastion            *Bastion      `json:"bastion,omitempty"`
-	RootVolume         *RootVolume   `json:"rootVolume,omitempty"`
 	NodeClasses        []NodeClass   `json:"nodeClasses,omitempty"`
 	ControlPlane       *ControlPlane `json:"controlPlane,omitempty"`
 	NodePools          []NodePool    `json:"nodePools,omitempty"`
+	OIDC               *OIDC         `json:"oidc,omitempty"`
 }
 
 type DefaultAppsConfig struct {
 	ClusterName  string `json:"clusterName,omitempty"`
 	Organization string `json:"organization,omitempty"`
-	OIDC         *OIDC  `json:"oidc,omitempty"`
 }
 
-type OIDC struct {
-	Enabled bool `json:"enabled"`
-}
-
-type MachineRootVolume struct {
-	DiskSize   int    `json:"diskSize"`
-	SourceUUID string `json:"sourceUUID"`
+type MachineConfig struct {
+	BootFromVolume bool   `json:"bootFromVolume"`
+	DiskSize       int    `json:"diskSize"`
+	Flavor         string `json:"flavor"`
+	Image          string `json:"image"`
 }
 
 type Bastion struct {
-	Flavor     string            `json:"flavor"`
-	Image      string            `json:"image"`
-	RootVolume MachineRootVolume `json:"rootVolume"`
+	MachineConfig `json:",inline"`
 }
 
-type RootVolume struct {
-	Enabled    bool   `json:"enabled"`
-	SourceUUID string `json:"sourceUUID"`
+type ControlPlane struct {
+	MachineConfig     `json:",inline"`
+	Replicas          int      `json:"replicas,omitempty"`
+	AvailabilityZones []string `json:"availabilityZones,omitempty"`
 }
 
 type NodeClass struct {
 	Name          string `json:"name"`
-	MachineFlavor string `json:"machineFlavor"`
-	DiskSize      int    `json:"diskSize"`
+	MachineConfig `json:",inline"`
 }
 
-type ControlPlane struct {
-	MachineFlavor string `json:"machineFlavor"`
-	DiskSize      int    `json:"diskSize"`
-	Replicas      int    `json:"replicas"`
+type OIDC struct {
+	IssuerURL     string `json:"issuerUrl"`
+	CAFile        string `json:"caFile"`
+	ClientID      string `json:"clientId"`
+	UsernameClaim string `json:"usernameClaim"`
+	GroupsClaim   string `json:"groupsClaim"`
 }
 
 type NodePool struct {
-	Name     string `json:"name"`
-	Class    string `json:"class"`
-	Replicas int    `json:"replicas"`
+	Class         string `json:"class"`
+	FailureDomain string `json:"failureDomain,omitempty"`
+	Name          string `json:"name"`
+	Replicas      int    `json:"replicas"`
 }

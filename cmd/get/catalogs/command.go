@@ -27,6 +27,7 @@ Output columns:
 - NAMESPACE: Namespace of the catalog.
 - URL: URL for the Helm chart repository.
 - AGE: How long ago was the catalog created.
+- DESCRIPTION: Helm chart description.
 
 Getting a catalog by name will display the latest versions of the apps
 in this catalog according to semantic versioning.
@@ -37,7 +38,8 @@ Output columns:
 - APP NAME: Name of the app.
 - APP VERSION: Upstream version of the app.
 - VERSION: Latest version of the app.
-- AGE: How long ago was the app release created.`
+- AGE: How long ago was the app release created.
+- DESCRIPTION: Helm chart description.`
 
 	examples = `  # List all public app catalogs
   kubectl gs get catalogs

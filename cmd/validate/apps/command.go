@@ -33,7 +33,7 @@ This command requires a helm 3 binary called 'helm' in your $PATH.
 
 Output columns:
 
-- NAMESPACE: Namespace the App CR is installed in. Corresponds to a Cluster ID.
+- NAMESPACE: Namespace the App CR is installed in. This will generally be the cluster or organization namespace.
 - NAME: Name of the app being validated.
 - VERSION: Version of the app.
 - ERRORS: Number of validation errors.	`
