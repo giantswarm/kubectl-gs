@@ -37,7 +37,7 @@ func (s *Service) getByName(ctx context.Context, name, namespace string, activeO
 	r := &Release{}
 	{
 		rel := &releasev1alpha1.Release{}
-		err = s.client.K8sClient.CtrlClient().Get(ctx, runtimeclient.ObjectKey{
+		err = s.client.Get(ctx, runtimeclient.ObjectKey{
 			Namespace: namespace,
 			Name:      name,
 		}, rel)
@@ -69,7 +69,7 @@ func (s *Service) getAll(ctx context.Context, namespace string, activeOnly bool)
 	{
 		releases := &releasev1alpha1.ReleaseList{}
 		{
-			err = s.client.K8sClient.CtrlClient().List(ctx, releases, &runtimeclient.ListOptions{
+			err = s.client.List(ctx, releases, &runtimeclient.ListOptions{
 				Namespace: namespace,
 			})
 			if apimeta.IsNoMatchError(err) {

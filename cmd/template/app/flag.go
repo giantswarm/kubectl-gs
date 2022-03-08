@@ -13,6 +13,7 @@ import (
 const (
 	flagAppName                    = "app-name"
 	flagCatalog                    = "catalog"
+	flagCatalogNamespace           = "catalog-namespace"
 	flagCluster                    = "cluster"
 	flagDefaultingEnabled          = "defaulting-enabled"
 	flagInCluster                  = "in-cluster"
@@ -29,6 +30,7 @@ const (
 type flag struct {
 	AppName                        string
 	Catalog                        string
+	CatalogNamespace               string
 	Cluster                        string
 	DefaultingEnabled              bool
 	InCluster                      bool
@@ -45,6 +47,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AppName, flagAppName, "", "Optionally set a different name for the App CR.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog name where app is stored.")
+	cmd.Flags().StringVar(&f.CatalogNamespace, flagCatalogNamespace, "", "Catalog namespace where Catalog CR is stored if outside the default namespace.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app in the Catalog.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the app will be deployed.")
 	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Name of the cluster the app will be deployed to.")

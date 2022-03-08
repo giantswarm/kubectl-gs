@@ -4,7 +4,7 @@ import (
 	"context"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -23,7 +23,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (R
 	var awsMDs map[string]*infrastructurev1alpha3.AWSMachineDeployment
 	{
 		mdCollection := &infrastructurev1alpha3.AWSMachineDeploymentList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, mdCollection, labelSelector, inNamespace)
+		err = s.client.List(ctx, mdCollection, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(mdCollection.Items) == 0 {
@@ -39,7 +39,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (R
 
 	machineDeployments := &capiv1alpha3.MachineDeploymentList{}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, machineDeployments, labelSelector, inNamespace)
+		err = s.client.List(ctx, machineDeployments, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(machineDeployments.Items) == 0 {
@@ -86,7 +86,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID strin
 
 	{
 		crs := &capiv1alpha3.MachineDeploymentList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -104,7 +104,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID strin
 
 	{
 		crs := &infrastructurev1alpha3.AWSMachineDeploymentList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

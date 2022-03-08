@@ -18,6 +18,7 @@ import (
 type Config struct {
 	AppName                    string
 	Catalog                    string
+	CatalogNamespace           string
 	Cluster                    string
 	DefaultingEnabled          bool
 	InCluster                  bool
@@ -35,6 +36,7 @@ type UserConfig struct {
 	Name      string
 	Namespace string
 	Path      string
+	Data      string
 }
 
 type AppCROutput struct {
@@ -102,6 +104,10 @@ func NewAppCR(config Config) ([]byte, error) {
 		},
 	}
 
+	if config.CatalogNamespace != "" {
+		appCR.Spec.CatalogNamespace = config.CatalogNamespace
+	}
+
 	if !config.DefaultingEnabled && !config.InCluster {
 		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
 			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
@@ -125,9 +131,15 @@ func NewAppCR(config Config) ([]byte, error) {
 }
 
 func NewConfigMap(config UserConfig) (*corev1.ConfigMap, error) {
-	configMapData, err := key.ReadConfigMapYamlFromFile(afero.NewOsFs(), config.Path)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var configMapData string
+	if config.Data != "" {
+		configMapData = config.Data
+	} else {
+		var err error
+		configMapData, err = key.ReadConfigMapYamlFromFile(afero.NewOsFs(), config.Path)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	configMap := &corev1.ConfigMap{

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
@@ -83,6 +83,9 @@ func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error)
 				Organizations:       config.groups,
 				TTL:                 config.ttl,
 			},
+			VersionBundle: corev1alpha1.CertConfigSpecVersionBundle{
+				Version: config.certOperatorVersion,
+			},
 		},
 	}
 
@@ -136,8 +139,8 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 	return secret, nil
 }
 
-// storeCredential saves the created client certificate credentials into the kubectl config.
-func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// storeWCCredentials saves the created client certificate credentials into the kubectl config.
+func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -197,8 +200,12 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 		// Add context configuration to config.
 		config.Contexts[contextName] = context
 
-		// Select newly created context as current.
-		config.CurrentContext = contextName
+		// Select newly created context as current or revert to origin context if that is desired
+		if loginOptions.switchToWCcontext {
+			config.CurrentContext = contextName
+		} else if loginOptions.originContext != "" {
+			config.CurrentContext = loginOptions.originContext
+		}
 	}
 
 	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
@@ -209,8 +216,8 @@ func storeCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, client
 	return contextName, contextExists, nil
 }
 
-// printCredential saves the created client certificate credentials into a separate kubectl config file.
-func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string) (string, bool, error) {
+// printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
+func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -251,6 +258,15 @@ func printCredential(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePa
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
+	// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
+	if loginOptions.originContext != "" {
+		config.CurrentContext = loginOptions.originContext
+		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	}
+
 	return contextName, false, nil
 }
 
@@ -364,7 +380,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 		return <-clustersCh, nil
 
 	case 0:
-		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.\nMake sure you have access to the cluster's organization namespace.", name)
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.\nMake sure you have access to the cluster's organization namespace. You can try the --%s flag to search for legacy clusters that may reside outside the organization namespace. This might fail for non-admin users.", name, flagWCInsecureNamespace)
 
 	default:
 		{
@@ -390,7 +406,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	}
 }
 
-func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
+func getClusterReleaseVersion(c *cluster.Cluster, provider string, unsafe bool) (string, error) {
 	if c.Cluster.Labels == nil {
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s does not have a release version label.", name)
 	}
@@ -400,9 +416,12 @@ func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, erro
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s has an invalid release version.", name)
 	}
 
-	err := validateReleaseVersion(releaseVersion, provider)
-	if err != nil {
-		return "", microerror.Mask(err)
+	// We skip the validation if unsafe namespaces feature is active since this allows us to log into clusters in all versions
+	if !unsafe {
+		err := validateReleaseVersion(releaseVersion, provider)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
 	}
 
 	return releaseVersion, nil
@@ -441,7 +460,7 @@ func validateReleaseVersion(version, provider string) error {
 	}
 
 	if provider == key.ProviderAWS {
-		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation.")
+		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation. You can try the --%s flag to skip validation and try logging into older clusters. This might fail for non-admin users.", flagWCInsecureNamespace)
 	}
 
 	return microerror.Maskf(unsupportedReleaseVersionError, "The workload cluster release does not allow client certificate creation.")

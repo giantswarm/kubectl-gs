@@ -6,8 +6,8 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,13 +18,14 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterCRsConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
@@ -47,7 +48,7 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	return nil
 }
 
-func WriteGSAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
+func WriteGSAzureTemplate(out io.Writer, config ClusterConfig) error {
 	var err error
 
 	var azureClusterCRYaml, clusterCRYaml, azureMasterMachineCRYaml []byte
@@ -92,7 +93,7 @@ func WriteGSAzureTemplate(out io.Writer, config ClusterCRsConfig) error {
 	return nil
 }
 
-func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
+func newAzureClusterCR(config ClusterConfig) *capzv1alpha3.AzureCluster {
 	cr := &capzv1alpha3.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
@@ -128,7 +129,7 @@ func newAzureClusterCR(config ClusterCRsConfig) *capzv1alpha3.AzureCluster {
 	return cr
 }
 
-func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine {
+func newAzureMasterMachineCR(config ClusterConfig) *capzv1alpha3.AzureMachine {
 	var failureDomain *string
 	if len(config.ControlPlaneAZ) > 0 {
 		failureDomain = &config.ControlPlaneAZ[0]
@@ -177,13 +178,11 @@ func newAzureMasterMachineCR(config ClusterCRsConfig) *capzv1alpha3.AzureMachine
 }
 
 func newCAPZClusterInfraRef(obj runtime.Object) *corev1.ObjectReference {
-	var err error
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err = capzv1alpha3.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("capzv1alpha3.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)

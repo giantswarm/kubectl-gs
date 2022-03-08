@@ -10,10 +10,68 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add description column to the `get catalog` limited to 80 characters.
+- Add `--enable-long-names` feature flag to `template cluster/networkpool/nodepool` to allow resource names longer than 5 characters. Only for internal testing.
+
+### Changed
+
+- Add missing availability zones to cluster configuration for OpenStack.
+
+## [2.2.0] - 2022-03-04
+
+### Added
+
+- Add OIDC flags to the `template cluster` command (OpenStack only).
+
+### Changed
+
+- Improve flag handling and naming for `template cluster` command (no user facing changes).
+- Add new flags for `template cluster --provider-openstack` to be able to use existing networks and subnets.
+
+## [2.1.1] - 2022-02-25
+
+### Fixed
+
+- Fixed crash if listing nodepools when one is missing the release version label.
+- Add audit log configuration file to the `KubeadmControlPlane` CR.
+- Use the CAPZ controller manager env vars for control-plane identity when authenticating to Azure API.
+
+## [2.1.0] - 2022-02-08
+
+### Fixed
+
+- `login` command: Try logging in again if token renewal fails.
+- Add `security` API group to scheme in order to get `organizations` during `login`.
+
+### Changed
+
+- Enable logging into clusters in all versions and namespaces if `--insecure-namespace` flag is active.
+- Simplify log in with context name
+
+### Added
+
+- Add support for self-contained kubeconfig creation for management cluster context.
+- Add `--keep-context` flag to `login`.
+
+## [2.0.0] - 2022-02-04
+
+### Changed
+
+- Enable `cluster-topology` templates for OpenStack by default.
+- Update default `cluster-openstack` version to 0.3.0.
+
+### Removed
+
+- Remove deprecated `--cluster-id` flag from `get nodepools`, `template cluster`, and `template nodepool` commands. Replaced by `--cluster-name`.
+- Remove deprecated `--owner` flag from `template cluster`, `template networkpool`, and `template nodepool` commands. Replaced by `--organization`.
+- Remove deprecated `--master-az` flag from `template cluster` command. Replaced by `--control-plane-az`.
+- Remove deprecated `--nodepool-name` flag from `template nodepool` command. Replaced by `--description`.
+- Remove deprecated `--nodex-min` flag from `template nodepool` command. Replaced by `--nodes-min`.
+- Remove deprecated `--nodex-max` flag from `template nodepool` command. Replaced by `--nodes-max`.
 
 ### Added
 
 - Add support for templating App CRs in organization namespace.
+- Add `--catalog-namespace` flag to `template app`.
 
 ## [1.60.0] - 2022-01-27
 
@@ -719,7 +777,11 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...v2.2.0
+[2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0
 [1.60.0]: https://github.com/giantswarm/giantswarm/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/giantswarm/giantswarm/compare/v1.58.2...v1.59.0
 [1.58.2]: https://github.com/giantswarm/kubectl-gs/compare/v1.58.1...v1.58.2

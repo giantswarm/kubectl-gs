@@ -6,9 +6,9 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,43 +22,68 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-type ClusterCRsConfig struct {
-	// AWS only.
+type AWSConfig struct {
 	EKS                bool
 	ExternalSNAT       bool
 	ControlPlaneSubnet string
+}
 
-	// OpenStack only.
-	Cloud                string   // OPENSTACK_CLOUD
-	CloudConfig          string   // <no equivalent env var>>
-	DNSNameservers       []string // OPENSTACK_DNS_NAMESERVERS
-	ExternalNetworkID    string   // <no equivalent env var>
-	FailureDomain        string   // OPENSTACK_FAILURE_DOMAIN
-	ImageName            string   // OPENSTACK_IMAGE_NAME
-	NodeCIDR             string   // <no equivalent env var>
-	NodeMachineFlavor    string   // OPENSTACK_NODE_MACHINE_FLAVOR
-	RootVolumeDiskSize   string   // <no equivalent env var>
-	RootVolumeSourceType string   // <no equivalent env var>
-	RootVolumeSourceUUID string   // <no equivalent env var>
+type MachineConfig struct {
+	BootFromVolume bool
+	DiskSize       int
+	Flavor         string
+	Image          string
+}
 
-	// Common.
-	FileName       string
-	ControlPlaneAZ []string
-	Description    string
-	Name           string
-	Organization   string
-	ReleaseVersion string
-	Labels         map[string]string
-	Namespace      string
-	PodsCIDR       string
+type OpenStackConfig struct {
+	Cloud          string
+	CloudConfig    string
+	DNSNameservers []string
 
-	// App settings
-	ClusterAppCatalog           string
-	ClusterAppUserConfigMap     string
-	ClusterAppVersion           string
-	DefaultAppsAppCatalog       string
-	DefaultAppsAppUserConfigMap string
-	DefaultAppsAppVersion       string
+	ExternalNetworkID string
+	NodeCIDR          string
+	NetworkName       string
+	SubnetName        string
+
+	Bastion      MachineConfig
+	ControlPlane MachineConfig
+	Worker       MachineConfig
+
+	WorkerFailureDomain string
+	WorkerReplicas      int
+}
+
+type AppConfig struct {
+	ClusterCatalog     string
+	ClusterVersion     string
+	DefaultAppsCatalog string
+	DefaultAppsVersion string
+}
+
+type ClusterConfig struct {
+	KubernetesVersion string
+	FileName          string
+	ControlPlaneAZ    []string
+	Description       string
+	Name              string
+	Organization      string
+	ReleaseVersion    string
+	Labels            map[string]string
+	Namespace         string
+	PodsCIDR          string
+	OIDC              OIDC
+
+	App       AppConfig
+	AWS       AWSConfig
+	OpenStack OpenStackConfig
+}
+
+type OIDC struct {
+	IssuerURL     string
+	CAFile        string
+	ClientID      string
+	UsernameClaim string
+	GroupsClaim   string
 }
 
 type templateConfig struct {
@@ -66,7 +91,7 @@ type templateConfig struct {
 	Data string
 }
 
-func newCAPIV1Alpha3ClusterCR(config ClusterCRsConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
+func newCAPIV1Alpha3ClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
 	cluster := &capiv1alpha3.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",

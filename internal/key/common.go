@@ -3,8 +3,8 @@ package key
 import (
 	"strconv"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 )
 
 func ReleaseVersion(getter LabelsGetter) string {

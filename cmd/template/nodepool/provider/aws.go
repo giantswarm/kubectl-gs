@@ -51,9 +51,9 @@ func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
 	crsConfig := aws.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,
 		AWSInstanceType:                     config.AWSInstanceType,
-		ClusterID:                           config.ClusterName,
+		ClusterName:                         config.ClusterName,
 		Description:                         config.Description,
-		MachineDeploymentID:                 config.NodePoolID,
+		MachineDeploymentName:               config.NodePoolName,
 		NodesMax:                            config.NodesMax,
 		NodesMin:                            config.NodesMin,
 		OnDemandBaseCapacity:                config.OnDemandBaseCapacity,

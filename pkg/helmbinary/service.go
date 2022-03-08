@@ -7,20 +7,19 @@ import (
 	"os/exec"
 
 	"github.com/giantswarm/microerror"
-
-	"github.com/giantswarm/kubectl-gs/pkg/data/client"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ Interface = &Service{}
 
 // Config represent the input parameters that New takes to produce a valid helmbinary Service.
 type Config struct {
-	Client *client.Client
+	Client client.Client
 }
 
 // Service is the object we'll hang the helmbinary methods on.
 type Service struct {
-	client *client.Client
+	client client.Client
 }
 
 // New returns a new helmbinary Service.

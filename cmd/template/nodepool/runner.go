@@ -6,15 +6,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/id"
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
+	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-
-	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -68,8 +66,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			EKS:                                 r.flag.EKS,
 		}
 
-		if config.NodePoolID == "" {
-			config.NodePoolID = id.Generate()
+		if config.NodePoolName == "" {
+			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			config.NodePoolName = generatedName
 		}
 
 		// Remove leading 'v' from release flag input.
@@ -110,12 +113,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteAWSTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, c.K8sClient, output, config)
+		err = provider.WriteAzureTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

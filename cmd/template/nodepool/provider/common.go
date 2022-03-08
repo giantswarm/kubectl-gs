@@ -6,10 +6,10 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +40,7 @@ type NodePoolCRsConfig struct {
 
 	// Common.
 	FileName          string
-	NodePoolID        string
+	NodePoolName      string
 	AvailabilityZones []string
 	ClusterName       string
 	Description       string
@@ -59,12 +59,12 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.NodePoolID,
+			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
-				label.MachinePool:             config.NodePoolID,
+				label.MachinePool:             config.NodePoolName,
 				label.Organization:            config.Organization,
 			},
 			Annotations: map[string]string{
@@ -97,7 +97,7 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			APIVersion: "core.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.NodePoolID,
+			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterName,

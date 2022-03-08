@@ -6,14 +6,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
@@ -50,9 +54,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newCAPIV1alpha3Cluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", nil),
+				newCAPIV1alpha3Cluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
 				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newCAPIV1alpha3Cluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", nil),
+				newCAPIV1alpha3Cluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               []string{"f930q"},
@@ -86,8 +90,9 @@ func Test_run(t *testing.T) {
 				config: genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig),
 			}
 			out := new(bytes.Buffer)
+
 			runner := &runner{
-				service:  cluster.NewFakeService(tc.storage),
+				service:  newClusterService(t, tc.storage...),
 				flag:     flag,
 				stdout:   out,
 				provider: key.ProviderAWS,
@@ -127,4 +132,22 @@ func Test_run(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newClusterService(t *testing.T, object ...runtime.Object) *cluster.Service {
+	clientScheme, err := scheme.NewScheme()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
+		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	return cluster.New(cluster.Config{
+		Client: clients.CtrlClient(),
+	})
 }

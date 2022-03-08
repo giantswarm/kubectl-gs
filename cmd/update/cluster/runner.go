@@ -147,12 +147,9 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 	}
 
 	serviceConfig := cluster.Config{
-		Client: client,
+		Client: client.CtrlClient(),
 	}
-	r.service, err = cluster.New(serviceConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	r.service = cluster.New(serviceConfig)
 
 	return nil
 }

@@ -3,7 +3,7 @@ package nodepool
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -24,7 +24,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) 
 	var azureMPs map[string]*capzexpv1alpha3.AzureMachinePool
 	{
 		mpCollection := &capzexpv1alpha3.AzureMachinePoolList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, mpCollection, labelSelector, inNamespace)
+		err = s.client.List(ctx, mpCollection, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(mpCollection.Items) == 0 {
@@ -40,7 +40,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) 
 
 	machinePools := &capiexpv1alpha3.MachinePoolList{}
 	{
-		err = s.client.K8sClient.CtrlClient().List(ctx, machinePools, labelSelector, inNamespace)
+		err = s.client.List(ctx, machinePools, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		} else if len(machinePools.Items) == 0 {
@@ -90,7 +90,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID str
 
 	{
 		crs := &capiexpv1alpha3.MachinePoolList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -108,7 +108,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID str
 
 	{
 		crs := &capzexpv1alpha3.AzureMachinePoolList{}
-		err = s.client.K8sClient.CtrlClient().List(ctx, crs, labelSelector, inNamespace)
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

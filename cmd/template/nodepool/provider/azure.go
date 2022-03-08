@@ -7,15 +7,14 @@ import (
 	"strconv"
 	"text/template"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,6 +24,7 @@ import (
 
 	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
@@ -82,7 +82,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		Description:        config.Description,
 		MaxSize:            config.NodesMax,
 		MinSize:            config.NodesMin,
-		Name:               config.NodePoolID,
+		Name:               config.NodePoolName,
 		Namespace:          key.OrganizationNamespaceFromName(config.Organization),
 		Organization:       config.Organization,
 		Replicas:           config.NodesMin,
@@ -173,12 +173,12 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.NodePoolID,
+			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
-				label.MachinePool:             config.NodePoolID,
+				label.MachinePool:             config.NodePoolName,
 				label.Organization:            config.Organization,
 			},
 		},
@@ -197,10 +197,9 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err := expcapzv1alpha3.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("expcapzv1alpha3.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)
@@ -215,10 +214,9 @@ func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
 func newSparkCRRef(obj runtime.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err := corev1alpha1.AddToScheme(s)
+		s, err := scheme.NewScheme()
 		if err != nil {
-			panic(fmt.Sprintf("corev1alpha1.AddToScheme: %+v", err))
+			panic(microerror.Pretty(err, true))
 		}
 
 		infrastructureCRRef, err = reference.GetReference(s, obj)
