@@ -15,6 +15,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Add missing availability zones to cluster configuration for OpenStack.
+- Change default catalog for `cluster-*` and `default-apps-*` apps from `giantswarm` to `cluster`.
 
 ## [2.2.0] - 2022-03-04
 

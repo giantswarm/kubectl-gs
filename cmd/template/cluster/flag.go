@@ -131,9 +131,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 0, "Default worker node pool replicas (OpenStack only).")
 
 	// App-based clusters only.
-	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "giantswarm", "Catalog for cluster app. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app. (OpenStack only).")
 	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "giantswarm", "Catalog for cluster default apps app. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app. (OpenStack only).")
 	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created. (OpenStack only).")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
