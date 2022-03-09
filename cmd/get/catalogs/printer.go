@@ -13,7 +13,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
-func (r *runner) printOutput(catalogResource catalogdata.Resource) error {
+func (r *runner) printOutput(catalogResource catalogdata.Resource, maxColWidth uint) error {
 	var (
 		err      error
 		printer  printers.ResourcePrinter
@@ -22,7 +22,7 @@ func (r *runner) printOutput(catalogResource catalogdata.Resource) error {
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
-		resource = getTable(catalogResource)
+		resource = getTable(catalogResource, maxColWidth)
 		printOptions := printers.PrintOptions{}
 		printer = printers.NewTablePrinter(printOptions)
 	case output.IsOutputName(r.flag.print.OutputFormat):
@@ -61,7 +61,15 @@ func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
 }
 
-func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.TableRow {
+func getAppCatalogEntryDescription(description string, maxColWidth uint) string {
+	if uint(len(description)) > maxColWidth {
+		return fmt.Sprintf("%s...", description[:maxColWidth])
+	}
+
+	return description
+}
+
+func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry, maxColWidth uint) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			ace.Spec.Catalog.Name,
@@ -69,11 +77,12 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 			ace.Spec.Version,
 			ace.Spec.AppVersion,
 			output.TranslateTimestampSince(ace.CreationTimestamp),
+			getAppCatalogEntryDescription(ace.Spec.Chart.Description, maxColWidth),
 		},
 	}
 }
 
-func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
+func getCatalogEntryTable(catalogResource *catalogdata.Catalog, maxColWidth uint) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -83,10 +92,11 @@ func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
 		{Name: "Version", Type: "string"},
 		{Name: "Upstream Version", Type: "string"},
 		{Name: "Age", Type: "string", Format: "date-time"},
+		{Name: "Description", Type: "string", Format: "string"},
 	}
 
 	for _, ace := range catalogResource.Entries.Items {
-		table.Rows = append(table.Rows, getAppCatalogEntryRow(ace))
+		table.Rows = append(table.Rows, getAppCatalogEntryRow(ace, maxColWidth))
 	}
 
 	return table
@@ -133,10 +143,10 @@ func getCatalogTable(catalogResource catalogdata.Resource) *metav1.Table {
 	return table
 }
 
-func getTable(catalogResource catalogdata.Resource) *metav1.Table {
+func getTable(catalogResource catalogdata.Resource, maxColWidth uint) *metav1.Table {
 	switch c := catalogResource.(type) {
 	case *catalogdata.Catalog:
-		return getCatalogEntryTable(c)
+		return getCatalogEntryTable(c, maxColWidth)
 	case *catalogdata.Collection:
 		return getCatalogTable(c)
 	}

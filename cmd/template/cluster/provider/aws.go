@@ -49,7 +49,7 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterConfig) error {
 	var err error
 
 	crsConfig := aws.ClusterCRsConfig{
-		ClusterID: config.Name,
+		ClusterName: config.Name,
 
 		ExternalSNAT:   config.AWS.ExternalSNAT,
 		ControlPlaneAZ: config.ControlPlaneAZ,

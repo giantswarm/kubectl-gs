@@ -7,6 +7,22 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add description column to the `get catalog` limited to 80 characters.
+- Add `--enable-long-names` feature flag to `template cluster/networkpool/nodepool` to allow resource names longer than 5 characters. Only for internal testing.
+
+### Changed
+
+- Add missing availability zones to cluster configuration for OpenStack.
+- Change default catalog for `cluster-*` and `default-apps-*` apps from `giantswarm` to `cluster`.
+
+## [2.2.0] - 2022-03-04
+
+### Added
+
+- Add OIDC flags to the `template cluster` command (OpenStack only).
+
 ### Changed
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
@@ -762,7 +778,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0

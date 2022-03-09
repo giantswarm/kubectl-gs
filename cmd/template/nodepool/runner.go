@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/id"
 )
 
 const (
@@ -67,8 +66,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			EKS:                                 r.flag.EKS,
 		}
 
-		if config.NodePoolID == "" {
-			config.NodePoolID = id.Generate()
+		if config.NodePoolName == "" {
+			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			config.NodePoolName = generatedName
 		}
 
 		// Remove leading 'v' from release flag input.

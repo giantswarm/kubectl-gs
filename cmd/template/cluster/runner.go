@@ -15,7 +15,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/id"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
 
@@ -64,11 +63,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			App:       r.flag.App,
 			AWS:       r.flag.AWS,
+			OIDC:      r.flag.OIDC,
 			OpenStack: r.flag.OpenStack,
 		}
 
 		if config.Name == "" {
-			config.Name = id.Generate()
+			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			config.Name = generatedName
 		}
 
 		// Remove leading 'v' from release flag input.
