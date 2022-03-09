@@ -177,7 +177,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
 	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
 	_ = cmd.Flags().MarkHidden(flagNetworkAZUsageLimit)
-	_ = cmd.Flags().MarkHidden(flagControlPlaneReplicas)
 	_ = cmd.Flags().MarkHidden(flagControlPlaneInstanceType)
 
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
