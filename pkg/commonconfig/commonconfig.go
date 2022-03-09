@@ -47,7 +47,7 @@ func (cc *CommonConfig) GetProvider() (string, error) {
 		provider = key.ProviderAzure
 
 	default:
-		provider = key.ProviderKVM
+		provider = key.ProviderOpenStack
 	}
 
 	return provider, nil
