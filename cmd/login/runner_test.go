@@ -2,14 +2,19 @@ package login
 
 import (
 	"bytes"
+	"context"
 	"os"
+	"reflect"
 	"strconv"
 	"testing"
 
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/giantswarm/kubectl-gs/pkg/installation"
 )
 
 func TestLogin(t *testing.T) {
@@ -114,6 +119,103 @@ func TestLogin(t *testing.T) {
 	}
 }
 
+func TestMCLoginWithInstallation(t *testing.T) {
+	testCases := []struct {
+		name        string
+		startConfig *clientcmdapi.Config
+		flags       *flag
+		expectError *microerror.Error
+	}{
+		// empty start config
+		{
+			name:        "case 0",
+			startConfig: &clientcmdapi.Config{},
+			flags:       &flag{},
+		},
+		// filled start config
+		{
+			name:        "case 1",
+			startConfig: createValidTestConfigMC(),
+			flags:       &flag{},
+		},
+		// self contained file
+		{
+			name:        "case 2",
+			startConfig: createValidTestConfigMC(),
+			flags: &flag{
+				SelfContained: "/codename.yaml",
+			},
+		},
+		// keeping WC context
+		{
+			name:        "case 3",
+			startConfig: createValidTestConfigWC(),
+			flags: &flag{
+				KeepContext: true,
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			configDir, err := os.MkdirTemp("", "loginTest")
+			if err != nil {
+				t.Fatal(err)
+			}
+			fs := afero.NewOsFs()
+			if len(tc.flags.SelfContained) > 0 {
+				tc.flags.SelfContained = configDir + tc.flags.SelfContained
+			}
+
+			r := runner{
+				k8sConfigAccess: &clientcmd.ClientConfigLoadingRules{
+					ExplicitPath: configDir + "/config.yaml",
+				},
+				flag:   tc.flags,
+				stdout: new(bytes.Buffer),
+				fs:     afero.NewBasePathFs(fs, configDir),
+			}
+			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			originConfig, err := r.k8sConfigAccess.GetStartingConfig()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			ctx := context.TODO()
+			r.setLoginOptions(ctx, []string{"codename"})
+
+			err = r.loginWithInstallation(ctx, "token", CreateTestInstallation())
+			if err != nil {
+				if microerror.Cause(err) != tc.expectError {
+					t.Fatalf("unexpected error: %s", err.Error())
+				}
+			} else if tc.expectError != nil {
+				t.Fatalf("unexpected success")
+			}
+
+			targetConfig, err := r.k8sConfigAccess.GetStartingConfig()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.flags.KeepContext && targetConfig.CurrentContext != originConfig.CurrentContext {
+				t.Fatalf("expected to keep context %s, got context %s", originConfig.CurrentContext, targetConfig.CurrentContext)
+			}
+			if len(tc.flags.SelfContained) > 0 {
+				if _, err := os.Stat(configDir + "/codename.yaml"); err != nil {
+					t.Fatalf("expected self-contained config file: %s", err)
+				}
+				if !reflect.DeepEqual(targetConfig, originConfig) {
+					t.Fatal("expected origin config to not be modified.")
+				}
+			}
+
+		})
+	}
+}
+
 func createValidTestConfigWC() *clientcmdapi.Config {
 	const (
 		server = "https://anything.com:8080"
@@ -156,4 +258,15 @@ func createValidTestConfigMC() *clientcmdapi.Config {
 	config.CurrentContext = "gs-codename"
 
 	return config
+}
+
+func CreateTestInstallation() *installation.Installation {
+	return &installation.Installation{
+		K8sApiURL:         "https://g8s.codename.eu-west-1.aws.gigantic.io",
+		K8sInternalApiURL: "https://g8s.codename.internal.eu-west-1.aws.gigantic.io",
+		AuthURL:           "https://dex.g8s.codename.eu-west-1.aws.gigantic.io",
+		Provider:          "aws",
+		Codename:          "codename",
+		CACert:            "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----",
+	}
 }

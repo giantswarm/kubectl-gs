@@ -101,6 +101,41 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	if installation.GetUrlType(path) == installation.UrlTypeHappa {
 		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
+	err = r.loginWithInstallation(ctx, tokenOverride, i)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
+	if r.loginOptions.selfContainedMC {
+		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
+	} else {
+		if firstLogin {
+			if !r.loginOptions.switchToMCcontext {
+				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
+				fmt.Fprintf(r.stdout, " ")
+			} else {
+				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
+				fmt.Fprintf(r.stdout, " ")
+			}
+		}
+
+		if !r.loginOptions.switchToMCcontext {
+			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+		} else {
+			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+
+		}
+		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
+		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+	}
+	return nil
+
+}
+
+func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string, i *installation.Installation) error {
+	var err error
 
 	var authResult authInfo
 	{
@@ -134,31 +169,6 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
 	} else {
 		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
-	}
-
-	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-	if r.loginOptions.selfContainedMC {
-		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
-		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
-	} else {
-		if firstLogin {
-			if !r.loginOptions.switchToMCcontext {
-				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
-				fmt.Fprintf(r.stdout, " ")
-			} else {
-				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
-				fmt.Fprintf(r.stdout, " ")
-			}
-		}
-
-		if !r.loginOptions.switchToMCcontext {
-			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
-		} else {
-			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
-
-		}
-		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
-		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
 	return nil
 }
