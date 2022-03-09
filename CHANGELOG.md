@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.3.0] - 2022-03-09
+
 ### Added
 
 - Add description column to the `get catalog` limited to 80 characters.
@@ -779,7 +781,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
