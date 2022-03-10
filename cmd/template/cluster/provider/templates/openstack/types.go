@@ -20,9 +20,8 @@ type ClusterConfig struct {
 }
 
 type DefaultAppsConfig struct {
-	ClusterName  string                 `json:"clusterName,omitempty"`
-	Organization string                 `json:"organization,omitempty"`
-	UserConfig   map[string]interface{} `json:"userConfig,omitempty"`
+	ClusterName  string `json:"clusterName,omitempty"`
+	Organization string `json:"organization,omitempty"`
 }
 
 type MachineConfig struct {

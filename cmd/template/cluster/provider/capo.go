@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -20,8 +19,7 @@ import (
 )
 
 var (
-	appCRTemplate      = template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-	userConfigTemplate = template.Must(template.New("userConfig").Parse(key.OpenStackUserconfigTemplate))
+	appCRTemplate = template.Must(template.New("appCR").Parse(key.AppCRTemplate))
 )
 
 func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
@@ -145,41 +143,15 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 	return microerror.Mask(err)
 }
 
-func templateDefaultAppsOpenstackUserConfig(clusterName, managementCluster string) (map[string]interface{}, error) {
-	templateData := struct {
-		ClusterName       string
-		ManagementCluster string
-	}{
-		ClusterName:       clusterName,
-		ManagementCluster: managementCluster,
-	}
-
-	var buffer bytes.Buffer
-	err := userConfigTemplate.Execute(&buffer, templateData)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	userConfigs := map[string]interface{}{}
-	err = yaml.Unmarshal(buffer.Bytes(), &userConfigs)
-	return userConfigs, microerror.Mask(err)
-}
-
 func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := fmt.Sprintf("%s-userconfig", appName)
 
 	var configMapYAML []byte
 	{
-		userConfig, err := templateDefaultAppsOpenstackUserConfig(config.Name, config.ManagementCluster)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
 		flagValues := openstack.DefaultAppsConfig{
 			ClusterName:  config.Name,
 			Organization: config.Organization,
-			UserConfig:   userConfig,
 		}
 
 		configData, err := openstack.GenerateDefaultAppsValues(flagValues)
