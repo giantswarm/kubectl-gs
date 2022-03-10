@@ -41,7 +41,7 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 			return microerror.Mask(err)
 		}
 	} else {
-		err = WriteGSAzureTemplate(out, config)
+		err = WriteGSAzureTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -102,8 +102,12 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 	return nil
 }
 
-func WriteGSAzureTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
+	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	var azureMachinePoolCRYaml, machinePoolCRYaml, sparkCRYaml []byte
 	{
@@ -180,6 +184,8 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolName,
 				label.Organization:            config.Organization,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
+				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{

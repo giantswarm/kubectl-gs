@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Set correct labels of GiantSwarm components on cluster templates.
+
 ### Changed
 
 - `login`: simplify description for the `--certificate-ttl` flag.
