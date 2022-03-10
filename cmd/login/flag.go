@@ -49,7 +49,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))
 	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
-	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`How long the client certificate should live for. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h". Requires --%s.`, flagWCName))
+	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`How long the client certificate should live for. Valid time units are "ms", "s", "m", "h". Requires --%s.`, flagWCName))
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
