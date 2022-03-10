@@ -65,8 +65,9 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				MachineConfig: openstack.MachineConfig(config.OpenStack.ControlPlane),
-				Replicas:      controlPlaneReplicas,
+				MachineConfig:     openstack.MachineConfig(config.OpenStack.ControlPlane),
+				Replicas:          controlPlaneReplicas,
+				AvailabilityZones: config.ControlPlaneAZ,
 			},
 			NodePools: []openstack.NodePool{
 				{
