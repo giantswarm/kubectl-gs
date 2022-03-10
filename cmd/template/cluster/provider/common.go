@@ -229,7 +229,7 @@ func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalo
 			"application.giantswarm.io/catalog": catalog,
 			"latest":                            "true",
 		}),
-		Namespace: "default",
+		Namespace: "giantswarm",
 	})
 
 	if err != nil {
