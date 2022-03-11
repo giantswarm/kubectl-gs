@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--visibility` flag to `template catalog` to set label to control display in web UI.
+
 ### Changed
 
 - `login`: simplify description for the `--certificate-ttl` flag.
