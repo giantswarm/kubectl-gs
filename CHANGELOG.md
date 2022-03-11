@@ -9,7 +9,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add `--visibility` flag to `template catalog` to set label to control display in web UI.
+- Add `--visibility` flag to `template catalog` to add label to control display in web UI.
+
+## [2.3.1] - 2022-03-11
+
+### Fixed
+
+- Set correct labels of GiantSwarm components on cluster templates.
 
 ### Changed
 
@@ -789,7 +795,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1

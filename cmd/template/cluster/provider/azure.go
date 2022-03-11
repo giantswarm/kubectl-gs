@@ -39,7 +39,7 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 			return microerror.Mask(err)
 		}
 	} else {
-		err = WriteGSAzureTemplate(out, config)
+		err = WriteGSAzureTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -48,8 +48,13 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	return nil
 }
 
-func WriteGSAzureTemplate(out io.Writer, config ClusterConfig) error {
+func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
+
+	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	var azureClusterCRYaml, clusterCRYaml, azureMasterMachineCRYaml []byte
 	{
@@ -107,6 +112,7 @@ func newAzureClusterCR(config ClusterConfig) *capzv1alpha3.AzureCluster {
 				capiv1alpha3.ClusterLabelName: config.Name,
 				label.Organization:            config.Organization,
 				label.ReleaseVersion:          config.ReleaseVersion,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 			},
 		},
 		Spec: capzv1alpha3.AzureClusterSpec{
@@ -149,6 +155,7 @@ func newAzureMasterMachineCR(config ClusterConfig) *capzv1alpha3.AzureMachine {
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
 				label.Organization:                        config.Organization,
 				label.ReleaseVersion:                      config.ReleaseVersion,
+				label.AzureOperatorVersion:                config.ReleaseComponents["azure-operator"],
 			},
 		},
 		Spec: capzv1alpha3.AzureMachineSpec{
