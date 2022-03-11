@@ -69,6 +69,7 @@ type ClusterConfig struct {
 	Name              string
 	Organization      string
 	ReleaseVersion    string
+	ReleaseComponents map[string]string
 	Labels            map[string]string
 	Namespace         string
 	PodsCIDR          string
@@ -106,6 +107,8 @@ func newCAPIV1Alpha3ClusterCR(config ClusterConfig, infrastructureRef *corev1.Ob
 				capiv1alpha3.ClusterLabelName: config.Name,
 				label.Organization:            config.Organization,
 				label.ReleaseVersion:          config.ReleaseVersion,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
+				label.ClusterOperatorVersion:  config.ReleaseComponents["cluster-operator"],
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: config.Description,

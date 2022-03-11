@@ -55,6 +55,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Name:        r.flag.Name,
 		Namespace:   r.flag.Namespace,
 		URL:         r.flag.URL,
+		Visibility:  r.flag.Visibility,
 	}
 
 	if r.flag.ConfigMap != "" {
