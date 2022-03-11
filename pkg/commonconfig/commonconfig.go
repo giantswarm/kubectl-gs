@@ -42,6 +42,7 @@ func New(config CommonConfigConfig) (*CommonConfig, error) {
 
 	return &CommonConfig{
 		clientGetter: config.ClientGetter,
+		httpClient:   http.DefaultClient,
 		logger:       config.Logger,
 	}, nil
 }
