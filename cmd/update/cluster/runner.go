@@ -65,7 +65,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	config := commonconfig.New(r.flag.config)
+	config, err := commonconfig.New(commonconfig.CommonConfigConfig{
+		ClientGetter: r.flag.config,
+		Logger:       r.logger,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	{
 		err = r.getService(config)
 		if err != nil {
@@ -141,7 +148,7 @@ func (r *runner) getService(config *commonconfig.CommonConfig) error {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := config.GetClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}

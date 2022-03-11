@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -21,6 +22,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
+	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
@@ -246,12 +248,12 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	}
 
 	if contextAlreadySelected {
-		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
 	} else if !r.loginOptions.isWCLogin && r.loginOptions.switchToMCcontext {
-		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
+	_, _ = fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 
 	return nil
 }
@@ -259,15 +261,28 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 // loginWithURL performs the OIDC login into an installation's
 // k8s api with a happa/k8s api URL.
 func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool, tokenOverride string) error {
-	i, err := installation.New(ctx, path)
-	if installation.IsUnknownUrlType(err) {
-		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Management API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
-	} else if err != nil {
+	athenaClient, err := graphql.NewClient(graphql.ClientImplConfig{
+		HttpClient: http.DefaultClient,
+		Url:        path,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	installationService, err := installation.New(installation.Config{
+		AthenaClient: athenaClient,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	installationInfo, err := installationService.GetInfo(ctx)
+	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	if installation.GetUrlType(path) == installation.UrlTypeHappa {
-		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
+		_, _ = fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", installationInfo.K8sApiURL))
 	}
 
 	var authResult authInfo
@@ -278,7 +293,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 				token:    tokenOverride,
 			}
 		} else {
-			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
+			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, installationInfo, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -286,25 +301,25 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 		}
 	}
 	if r.loginOptions.selfContainedMC {
-		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
+		err = printMCCredentials(r.k8sConfigAccess, installationInfo, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
 		// Store kubeconfig and CA certificate.
-		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToMCcontext)
+		err = storeMCCredentials(r.k8sConfigAccess, installationInfo, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToMCcontext)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	if len(authResult.email) > 0 {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, installationInfo.Codename))
 	} else {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, installationInfo.Codename))
 	}
 
-	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
+	contextName := kubeconfig.GenerateKubeContextName(installationInfo.Codename)
 	if r.loginOptions.selfContainedMC {
 		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
@@ -325,18 +340,22 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
 
 		}
-		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
+		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", installationInfo.Codename)
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
 	return nil
 }
 
 func (r *runner) createClusterClientCert(ctx context.Context) error {
-	var err error
+	config, err := commonconfig.New(commonconfig.CommonConfigConfig{
+		ClientGetter: r.flag.config,
+		Logger:       r.logger,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
-	config := commonconfig.New(r.flag.config)
-
-	provider, err := config.GetProvider()
+	provider, err := config.GetProvider(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -348,7 +367,7 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 
 	var client k8sclient.Interface
 	{
-		client, err = config.GetClient(r.logger)
+		client, err = config.GetClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}

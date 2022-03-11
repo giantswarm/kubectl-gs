@@ -9,6 +9,7 @@ import (
 	securityv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/microerror"
 	k8score "k8s.io/api/core/v1"
+	networking "k8s.io/api/networking/v1beta1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -31,6 +32,7 @@ func NewSchemeBuilder() []func(*runtime.Scheme) error {
 		provider.AddToScheme,         // AWSConfig/AzureConfig
 		release.AddToScheme,          // Release
 		securityv1alpha1.AddToScheme, // Organizations
+		networking.AddToScheme,       // Ingress
 	}
 }
 

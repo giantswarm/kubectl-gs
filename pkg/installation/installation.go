@@ -3,11 +3,12 @@ package installation
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/graphql"
 )
 
@@ -18,7 +19,15 @@ const (
 	internalAPIPrefix = "internal"
 )
 
-type Installation struct {
+type Config struct {
+	AthenaClient graphql.Client
+}
+
+type Service struct {
+	athenaClient graphql.Client
+}
+
+type Info struct {
 	K8sApiURL         string
 	K8sInternalApiURL string
 	AuthURL           string
@@ -27,42 +36,38 @@ type Installation struct {
 	CACert            string
 }
 
-func New(ctx context.Context, fromUrl string) (*Installation, error) {
-	basePath, err := GetBasePath(fromUrl)
+func New(config Config) (*Service, error) {
+	if config.AthenaClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AthenaClient must not be empty", config)
+	}
+
+	return &Service{
+		athenaClient: config.AthenaClient,
+	}, nil
+}
+
+func (s *Service) GetInfo(ctx context.Context) (*Info, error) {
+	info, err := getInstallationInfo(ctx, s.athenaClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var gqlClient graphql.Client
-	{
-		httpClient := http.DefaultClient
-		httpClient.Timeout = requestTimeout
-
-		athenaUrl := getAthenaUrl(basePath)
-		config := graphql.ClientImplConfig{
-			HttpClient: httpClient,
-			Url:        fmt.Sprintf("%s/graphql", athenaUrl),
-		}
-		gqlClient, err = graphql.NewClient(config)
+	k8sInternalAPIURL := info.Kubernetes.ApiUrl
+	if info.Identity.Provider == key.ProviderAWS {
+		parsedURL, err := url.Parse(info.Kubernetes.ApiUrl)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		k8sInternalAPIURL = fmt.Sprintf("https://%s-%s", internalAPIPrefix, parsedURL.Host)
 	}
 
-	info, err := getInstallationInfo(ctx, gqlClient)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	k8sInternalAPI := fmt.Sprintf("https://%s-%s", internalAPIPrefix, basePath)
-	i := &Installation{
+	return &Info{
 		K8sApiURL:         info.Kubernetes.ApiUrl,
-		K8sInternalApiURL: k8sInternalAPI,
+		K8sInternalApiURL: k8sInternalAPIURL,
 		AuthURL:           info.Kubernetes.AuthUrl,
 		Provider:          info.Identity.Provider,
 		Codename:          info.Identity.Codename,
 		CACert:            info.Kubernetes.CaCert,
-	}
-
-	return i, nil
+	}, nil
 }

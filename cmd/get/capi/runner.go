@@ -256,10 +256,15 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var k8sClients k8sclient.Interface
 	{
-		config := commonconfig.New(r.flag.config)
-		var err error
-		k8sClients, err = config.GetClient(r.logger)
+		config, err := commonconfig.New(commonconfig.CommonConfigConfig{
+			ClientGetter: r.flag.config,
+			Logger:       r.logger,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
+		k8sClients, err = config.GetClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}

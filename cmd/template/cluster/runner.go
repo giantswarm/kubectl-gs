@@ -10,14 +10,11 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	"k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 )
 
@@ -36,24 +33,18 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
-	commonConfig := commonconfig.New(r.flag.config)
-	k8sClient, err := commonConfig.GetClient(r.logger)
+	config, err := commonconfig.New(commonconfig.CommonConfigConfig{
+		ClientGetter: r.flag.config,
+		Logger:       r.logger,
+	})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	var ingress v1beta1.Ingress
-	err = k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Name: "happa", Namespace: "giantswarm"}, &ingress)
+	r.flag.Provider, err = config.GetProvider(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	installationService, err := installation.New(ctx, ingress.Spec.Rules[0].Host)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	r.flag.Provider = installationService.Provider
 
 	err = r.flag.Validate()
 	if err != nil {
@@ -111,8 +102,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	commonConfig := commonconfig.New(r.flag.config)
-	c, err := commonConfig.GetClient(r.logger)
+	commonConfig, err := commonconfig.New(commonconfig.CommonConfigConfig{
+		ClientGetter: r.flag.config,
+		Logger:       r.logger,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	k8sClient, err := commonConfig.GetClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -134,22 +131,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, c, output, config)
+		err = provider.WriteAWSTemplate(ctx, k8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, c, output, config)
+		err = provider.WriteAzureTemplate(ctx, k8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, c, output, config)
+		err = provider.WriteOpenStackTemplate(ctx, k8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderVSphere:
-		err = provider.WriteVSphereTemplate(ctx, c, output, config)
+		err = provider.WriteVSphereTemplate(ctx, k8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

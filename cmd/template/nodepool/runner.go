@@ -90,8 +90,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	commonConfig := commonconfig.New(r.flag.config)
-	c, err := commonConfig.GetClient(r.logger)
+	commonConfig, err := commonconfig.New(commonconfig.CommonConfigConfig{
+		ClientGetter: r.flag.config,
+		Logger:       r.logger,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	k8sClient, err := commonConfig.GetClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -113,12 +120,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, c, output, config)
+		err = provider.WriteAWSTemplate(ctx, k8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, c, output, config)
+		err = provider.WriteAzureTemplate(ctx, k8sClient, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

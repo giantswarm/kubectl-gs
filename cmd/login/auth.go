@@ -26,7 +26,7 @@ type authInfo struct {
 
 // storeMCCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, switchContext bool) error {
+func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Info, authResult authInfo, fs afero.Fs, internalAPI bool, switchContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -121,7 +121,7 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 
 // printMCCredentials saves the installation's CA certificate, and
 // writes the configuration for the k8s api access into a separate file.
-func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, filePath string) error {
+func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Info, authResult authInfo, fs afero.Fs, internalAPI bool, filePath string) error {
 	kUsername := fmt.Sprintf("gs-%s-%s", authResult.username, i.Codename)
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	clusterName := fmt.Sprintf("gs-%s", i.Codename)
