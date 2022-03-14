@@ -41,7 +41,7 @@ jobs:
     docker:
       - image: "cimg/go:1.17.7-browsers"
     steps:
-      - browser-tools/install-chrome
+      - browser-tools/install-browser-tools
 
 workflows:
   go-build:
