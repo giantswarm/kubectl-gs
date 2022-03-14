@@ -50,6 +50,8 @@ workflows:
       - architect/go-build:
           name: go-build
           binary: kubectl-gs
+          requires:
+            - install-browser
           filters:
             tags:
               only: /^v.*/
