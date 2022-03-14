@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   architect: giantswarm/architect@4.13.0
+  browser-tools: circleci/browser-tools@1.2.4
 
 jobs:
   debug-tag:
@@ -36,10 +37,16 @@ jobs:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
 
+  install-browser:
+    docker:
+      - image: "cimg/go:1.17.7-browsers"
+    steps:
+      - browser-tools/install-chrome
 
 workflows:
   go-build:
     jobs:
+      - install-browser
       - architect/go-build:
           name: go-build
           binary: kubectl-gs
