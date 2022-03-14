@@ -24,42 +24,60 @@ import (
 func TestOIDC(t *testing.T) {
 	testCases := []struct {
 		name string
-		key  *rsa.PrivateKey
 
 		expectClientID string
 		expectError    bool
 	}{
 		{
 			name:           "case 0",
-			key:            getKey(),
 			expectClientID: clientID,
 			expectError:    false,
-		},
-		{
-			name:        "case 0",
-			key:         getInvalidKey(),
-			expectError: true,
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			var err error
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
+			// generate a key
+			key, err := getKey()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// mock the OIDC issuer
 			var issuer string
 			hf := func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/auth" {
 					http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
 				} else if r.URL.Path == "/token" {
+					token, err := getToken(issuer, key)
+					if err != nil {
+						t.Fatal(err)
+					}
 					w.Header().Set("Content-Type", "text/plain")
-					io.WriteString(w, getToken(issuer, tc.key))
+					_, err = io.WriteString(w, token)
+					if err != nil {
+						t.Fatal(err)
+					}
 				} else if r.URL.Path == "/keys" {
+					webKey, err := getJSONWebKey(key)
+					if err != nil {
+						t.Fatal(err)
+					}
 					w.Header().Set("Content-Type", "application/json")
-					io.WriteString(w, getJSONWebKey(tc.key))
+					_, err = io.WriteString(w, webKey)
+					if err != nil {
+						t.Fatal(err)
+					}
 				} else {
 					w.Header().Set("Content-Type", "application/json")
-					io.WriteString(w, strings.ReplaceAll(getIssuerData(), "ISSUER", issuer))
+					_, err = io.WriteString(w, strings.ReplaceAll(getIssuerData(), "ISSUER", issuer))
+					if err != nil {
+						t.Fatal(err)
+					}
 				}
 			}
 			s := httptest.NewServer(http.HandlerFunc(hf))
@@ -67,6 +85,7 @@ func TestOIDC(t *testing.T) {
 
 			issuer = s.URL
 
+			// running the OIDC process
 			authInfo, err := handleOIDC(ctx, new(bytes.Buffer), new(bytes.Buffer), CreateTestInstallationWithIssuer(issuer), false, 8080)
 			if err != nil {
 				if !tc.expectError {
@@ -82,11 +101,15 @@ func TestOIDC(t *testing.T) {
 	}
 }
 
-func getToken(issuer string, key *rsa.PrivateKey) string {
+func getToken(issuer string, key *rsa.PrivateKey) (string, error) {
+	idToken, err := getRawToken(issuer, key)
+	if err != nil {
+		return "", err
+	}
 	params := url.Values{}
-	params.Add("id_token", getRawToken(issuer, key))
+	params.Add("id_token", idToken)
 	params.Add("access_token", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9")
-	return params.Encode()
+	return params.Encode(), nil
 }
 
 func CreateTestInstallationWithIssuer(issuer string) *installation.Installation {
@@ -100,15 +123,18 @@ func CreateTestInstallationWithIssuer(issuer string) *installation.Installation 
 	}
 }
 
-func getRawToken(issuer string, key *rsa.PrivateKey) string {
+func getRawToken(issuer string, key *rsa.PrivateKey) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := make(jwt.MapClaims)
 	claims["iss"] = issuer
 	claims["aud"] = clientID
 	claims["exp"] = time.Now().Add(time.Hour).Unix()
 	token.Claims = claims
-	tokenString, _ := token.SignedString(key)
-	return tokenString
+	tokenString, err := token.SignedString(key)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }
 
 func getIssuerData() string {
@@ -151,17 +177,15 @@ func getIssuerData() string {
 	}`
 }
 
-func getKey() *rsa.PrivateKey {
-	key, _ := rsa.GenerateKey(rand.Reader, 1024)
-	return key
+func getKey() (*rsa.PrivateKey, error) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
 }
 
-func getInvalidKey() *rsa.PrivateKey {
-	key, _ := rsa.GenerateKey(rand.Reader, 100)
-	return key
-}
-
-func getJSONWebKey(key *rsa.PrivateKey) string {
+func getJSONWebKey(key *rsa.PrivateKey) (string, error) {
 	jwk := jose.JSONWebKeySet{
 		Keys: []jose.JSONWebKey{
 			{
@@ -169,6 +193,9 @@ func getJSONWebKey(key *rsa.PrivateKey) string {
 				Algorithm: "RS256",
 			},
 		}}
-	json, _ := json.Marshal(jwk)
-	return string(json)
+	json, err := json.Marshal(jwk)
+	if err != nil {
+		return "", err
+	}
+	return string(json), nil
 }
