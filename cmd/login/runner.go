@@ -281,10 +281,6 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 		return microerror.Mask(err)
 	}
 
-	if installation.GetUrlType(path) == installation.UrlTypeHappa {
-		_, _ = fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", installationInfo.K8sApiURL))
-	}
-
 	var authResult authInfo
 	{
 		if len(tokenOverride) > 0 {
