@@ -45,8 +45,8 @@ type AWSConfig struct {
 
 type AWSMachinePoolConfig struct {
 	Name             string
-	Min              int
-	Max              int
+	MinSize          int
+	MaxSize          int
 	AZs              []string
 	InstanceType     string
 	RootVolumeSizeGB int
