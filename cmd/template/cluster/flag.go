@@ -195,6 +195,13 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
 	_ = cmd.Flags().MarkHidden(flagNetworkAZUsageLimit)
 	_ = cmd.Flags().MarkHidden(flagControlPlaneInstanceType)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolName)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolInstanceType)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolAZs)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolCustomNodeLabels)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolRootVolumeSizeGB)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
 
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
