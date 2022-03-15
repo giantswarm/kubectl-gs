@@ -87,8 +87,8 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Organization:       config.Organization,
 
 			AWS: &capa.AWS{
-				Region: config.AWS.AWSRegion,
-				Role:   config.AWS.AWSRole,
+				Region: config.AWS.Region,
+				Role:   config.AWS.Role,
 			},
 			Network: &capa.Network{
 				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
@@ -102,6 +102,17 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				InstanceType:      config.AWS.ControlPlaneInstanceType,
 				Replicas:          3,
 				AvailabilityZones: config.ControlPlaneAZ,
+			},
+			MachinePools: &[]capa.MachinePool{
+				{
+					Name:              config.AWS.MachinePool.Name,
+					AvailabilityZones: config.AWS.MachinePool.AZs,
+					InstanceType:      config.AWS.MachinePool.InstanceType,
+					MinSize:           config.AWS.MachinePool.Min,
+					MaxSize:           config.AWS.MachinePool.Max,
+					RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
+					CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
+				},
 			},
 		}
 

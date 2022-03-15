@@ -32,14 +32,25 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 
 	// for CAPA
-	AWSRegion                string
-	AWSRole                  string
+	Region                   string
+	Role                     string
+	MachinePool              AWSMachinePoolConfig
 	NetworkAZUsageLimit      int
 	NetworkVPCCIDR           string
 	BastionInstanceType      string
 	BastionReplicas          int
 	ControlPlaneInstanceType string
 	SSHSSOPublicKey          string
+}
+
+type AWSMachinePoolConfig struct {
+	Name             string
+	Min              int
+	Max              int
+	AZs              []string
+	InstanceType     string
+	RootVolumeSizeGB int
+	CustomNodeLabels []string
 }
 
 type MachineConfig struct {
