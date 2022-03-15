@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -124,6 +125,7 @@ func Test_run(t *testing.T) {
 
 			out := new(bytes.Buffer)
 			runner := &runner{
+				logger:  microloggertest.New(),
 				service: newAppService(t, tc.storage...),
 				flag:    flag,
 				stdout:  out,

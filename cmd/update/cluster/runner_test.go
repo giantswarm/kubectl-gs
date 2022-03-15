@@ -9,6 +9,7 @@ import (
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger/microloggertest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -54,6 +55,7 @@ func Test_run(t *testing.T) {
 
 			out := new(bytes.Buffer)
 			runner := &runner{
+				logger:  microloggertest.New(),
 				flag:    flag,
 				stdout:  out,
 				service: newClusterService(t, tc.storage...),

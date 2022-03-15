@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -136,6 +137,7 @@ func Test_run(t *testing.T) {
 
 			out := new(bytes.Buffer)
 			runner := &runner{
+				logger:   microloggertest.New(),
 				service:  newClusterService(t, tc.storage...),
 				flag:     flag,
 				stdout:   out,
