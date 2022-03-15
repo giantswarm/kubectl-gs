@@ -15,6 +15,7 @@ const (
 	flagNamespace   = "namespace"
 	flagSecret      = "secret"
 	flagURL         = "url"
+	flagVisibility  = "visibility"
 )
 
 type flag struct {
@@ -25,6 +26,7 @@ type flag struct {
 	Namespace   string
 	Secret      string
 	URL         string
+	Visibility  string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -35,6 +37,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the catalog will be created.")
 	cmd.Flags().StringVar(&f.Secret, flagSecret, "", "Path to a secret file.")
 	cmd.Flags().StringVar(&f.URL, flagURL, "", "Catalog storage URL.")
+	cmd.Flags().StringVar(&f.Visibility, flagVisibility, "public", "Visibility label for whether catalog appears in the web UI.")
 }
 
 func (f *flag) Validate() error {

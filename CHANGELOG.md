@@ -9,8 +9,25 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add `--visibility` flag to `template catalog` to add label to control display in web UI.
+
+## [2.3.1] - 2022-03-11
+
+### Fixed
+
+- Set correct labels of GiantSwarm components on cluster templates.
+
+### Changed
+
+- `login`: simplify description for the `--certificate-ttl` flag.
+
+## [2.3.0] - 2022-03-09
+
+### Added
+
 - Add description column to the `get catalog` limited to 80 characters.
 - Add `--enable-long-names` feature flag to `template cluster/networkpool/nodepool` to allow resource names longer than 5 characters. Only for internal testing.
+- Implement `get clusters` command for OpenStack.
 
 ### Changed
 
@@ -778,7 +795,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.0...v2.3.1
+[2.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0

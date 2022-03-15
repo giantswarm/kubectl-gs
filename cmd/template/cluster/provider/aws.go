@@ -36,7 +36,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out *os.F
 			}
 		}
 	} else {
-		err = WriteGSAWSTemplate(out, config)
+		err = WriteGSAWSTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -45,7 +45,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out *os.F
 	return nil
 }
 
-func WriteGSAWSTemplate(out io.Writer, config ClusterConfig) error {
+func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	crsConfig := aws.ClusterCRsConfig{
@@ -58,6 +58,11 @@ func WriteGSAWSTemplate(out io.Writer, config ClusterConfig) error {
 		Owner:          config.Organization,
 		ReleaseVersion: config.ReleaseVersion,
 		Labels:         config.Labels,
+	}
+
+	crsConfig.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	crs, err := aws.NewClusterCRs(crsConfig)

@@ -66,6 +66,8 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
 				label.MachinePool:             config.NodePoolName,
 				label.Organization:            config.Organization,
+				label.ReleaseVersion:          config.ReleaseVersion,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 			},
 			Annotations: map[string]string{
 				annotation.MachinePoolName: config.Description,
@@ -102,6 +104,7 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			Labels: map[string]string{
 				label.Cluster:                 config.ClusterName,
 				capiv1alpha3.ClusterLabelName: config.ClusterName,
+				label.ReleaseVersion:          config.ReleaseVersion,
 			},
 		},
 		Spec: corev1alpha1.SparkSpec{},
