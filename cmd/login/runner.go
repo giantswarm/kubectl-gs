@@ -141,7 +141,7 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 
 		if r.loginOptions.isWCLogin {
-			err = r.createClusterClientCert(ctx)
+			err = r.handleWCLogin(ctx)
 			if err != nil {
 				return microerror.Mask(err)
 			}
