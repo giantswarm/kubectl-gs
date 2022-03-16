@@ -137,6 +137,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		startConfig *clientcmdapi.Config
 		flags       *flag
 		token       string
+		skipInCI    bool
 
 		expectError *microerror.Error
 	}{
@@ -173,6 +174,8 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			token: "token",
 		},
 		// OIDC flow
+		// This case is skipped in the CI because the oidc function enforces opening a browser window
+		// TODO: refactor the function to not enforce that anymore, run this test case in CI
 		{
 			name: "case 4",
 			flags: &flag{
@@ -180,11 +183,17 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				CallbackServerPort: 8080,
 			},
 			startConfig: &clientcmdapi.Config{},
+			skipInCI:    true,
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			if _, ok := os.LookupEnv("CI"); ok {
+				if tc.skipInCI {
+					t.Skip()
+				}
+			}
 			var err error
 
 			configDir, err := os.MkdirTemp("", "loginTest")
