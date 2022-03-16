@@ -24,6 +24,21 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
+	flagAWSRegion                      = "region"
+	flagAWSRole                        = "role"
+	flagNetworkAZUsageLimit            = "az-usage-limit"
+	flagNetworkVPCCidr                 = "vpc-cidr"
+	flagBastionInstanceType            = "bastion-instance-type"
+	flagBastionReplicas                = "bastion-replicas"
+	flagControlPlaneInstanceType       = "control-plane-instance-type"
+	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
+	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
+	flagAWSMachinePoolName             = "machine-pool-name"
+	flagAWSMachinePoolAZs              = "machine-pool-azs"
+	flagAWSMachinePoolInstanceType     = "machine-pool-instance-type"
+	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
+	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
+
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
 	flagClusterVersion     = "cluster-version"
@@ -100,9 +115,26 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
-	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
-	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().StringVar(&f.AWS.Region, flagAWSRegion, "", "AWS region where cluster will be created")
+	cmd.Flags().StringVar(&f.AWS.Role, flagAWSRole, "", "Name of the AWSClusterRole that will be used for cluster creation.")
+	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
+	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
+	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
+	// aws bastion
+	cmd.Flags().StringVar(&f.AWS.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
+	cmd.Flags().IntVar(&f.AWS.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
+	// aws control plane
+	cmd.Flags().StringVar(&f.AWS.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
+	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
+	// aws machine pool
+	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "machine-pool0", "AWS Machine pool name")
+	cmd.Flags().StringVar(&f.AWS.MachinePool.InstanceType, flagAWSMachinePoolInstanceType, "m5.xlarge", "AWS Machine pool instance type")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.MinSize, flagAWSMachinePoolMinSize, 3, "AWS Machine pool min size")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.MaxSize, flagAWSMachinePoolMaxSize, 10, "AWS Machine pool max size")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 300, "AWS Machine pool disk size")
+	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
+	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
@@ -155,6 +187,21 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerImage)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
+
+	_ = cmd.Flags().MarkHidden(flagAWSRegion)
+	_ = cmd.Flags().MarkHidden(flagAWSRole)
+	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
+	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
+	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
+	_ = cmd.Flags().MarkHidden(flagNetworkAZUsageLimit)
+	_ = cmd.Flags().MarkHidden(flagControlPlaneInstanceType)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolName)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolInstanceType)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolAZs)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolCustomNodeLabels)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolRootVolumeSizeGB)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
 
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
@@ -243,6 +290,22 @@ func (f *flag) Validate() error {
 			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
 			}
+			isCapiVersion, err := key.IsCAPIVersion(strings.TrimPrefix(f.Release, "v"))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if isCapiVersion {
+				if f.AWS.Region == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSRegion)
+				}
+				if f.ControlPlaneAZ == nil {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)
+				}
+				if f.AWS.MachinePool.AZs == nil {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSMachinePoolAZs)
+				}
+			}
+
 			if f.AWS.ControlPlaneSubnet != "" {
 				matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
 				if err == nil && !matchedSubnet {

@@ -57,6 +57,7 @@ func NewAppCR(config Config) ([]byte, error) {
 	if config.InCluster {
 		crNamespace = config.Namespace
 		appLabels[label.AppOperatorVersion] = "0.0.0"
+		appLabels[label.ManagedBy] = "flux"
 	} else if config.Organization != "" {
 		crNamespace = fmt.Sprintf("org-%s", config.Organization)
 		appLabels[label.Cluster] = config.Cluster
