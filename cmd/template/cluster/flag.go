@@ -302,7 +302,7 @@ func (f *flag) Validate() error {
 					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)
 				}
 				if f.AWS.MachinePool.AZs == nil {
-					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSMachinePoolAZs)
 				}
 			}
 
