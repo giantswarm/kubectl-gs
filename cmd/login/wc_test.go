@@ -162,7 +162,7 @@ func TestWCLogin(t *testing.T) {
 	}
 }
 
-func createSecret(ctx context.Context, client k8sclient.Interface) error {
+func createSecret(ctx context.Context, client k8sclient.Interface) {
 	var certConfigs corev1alpha1.CertConfigList
 	var err error
 
@@ -180,19 +180,20 @@ func createSecret(ctx context.Context, client k8sclient.Interface) error {
 
 	err = backoff.Retry(o, b)
 	if err != nil {
-		return err
+		fmt.Print(err)
+		return
 	}
 
 	if len(certConfigs.Items) != 1 {
-		return fmt.Errorf("Expected 1 certConfig, got %v", len(certConfigs.Items))
+		fmt.Printf("Expected 1 certConfig, got %v", len(certConfigs.Items))
+		return
 	}
 	secretName := certConfigs.Items[0].Name
 	secretNamespace := certConfigs.Items[0].Namespace
 	err = client.CtrlClient().Create(ctx, getSecret(secretName, secretNamespace))
 	if err != nil {
-		return err
+		fmt.Print(err)
 	}
-	return nil
 }
 
 func getOrganization() *securityv1alpha1.Organization {
