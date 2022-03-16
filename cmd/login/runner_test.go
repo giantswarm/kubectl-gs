@@ -202,6 +202,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				},
 				flag:   tc.flags,
 				stdout: new(bytes.Buffer),
+				stderr: new(bytes.Buffer),
 				fs:     afero.NewBasePathFs(fs, configDir),
 			}
 			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)

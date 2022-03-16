@@ -42,7 +42,6 @@ workflows:
       - architect/go-build:
           name: go-build
           binary: kubectl-gs
-          os: darwin
           filters:
             tags:
               only: /^v.*/
