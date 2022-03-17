@@ -39,13 +39,15 @@ import (
 
 func TestWCLogin(t *testing.T) {
 	testCases := []struct {
-		name        string
-		flags       *flag
-		expectError *microerror.Error
+		name                 string
+		flags                *flag
+		clustersInNamespaces map[string]string
+		expectError          *microerror.Error
 	}{
 		// Logging into WC
 		{
-			name: "case 0",
+			name:                 "case 0",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -53,7 +55,8 @@ func TestWCLogin(t *testing.T) {
 		},
 		// Logging into WC that does not exist
 		{
-			name: "case 1",
+			name:                 "case 1",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
 			flags: &flag{
 				WCName:    "anothercluster",
 				WCCertTTL: "8h",
@@ -62,7 +65,8 @@ func TestWCLogin(t *testing.T) {
 		},
 		// self contained file
 		{
-			name: "case 2",
+			name:                 "case 2",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
 			flags: &flag{
 				WCName:        "cluster",
 				WCCertTTL:     "8h",
@@ -71,11 +75,51 @@ func TestWCLogin(t *testing.T) {
 		},
 		// keeping MC context
 		{
-			name: "case 2",
+			name:                 "case 3",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
 			flags: &flag{
 				WCName:      "cluster",
 				WCCertTTL:   "8h",
 				KeepContext: true,
+			},
+		},
+		// Explicit organization
+		{
+			name:                 "case 4",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			flags: &flag{
+				WCName:         "cluster",
+				WCCertTTL:      "8h",
+				WCOrganization: "organization",
+			},
+		},
+		// Several clusters in several namespaces exist
+		{
+			name:                 "case 5",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization", "anothercluster": "default"},
+			flags: &flag{
+				WCName:    "cluster",
+				WCCertTTL: "8h",
+			},
+		},
+		// Trying to log into a cluster in default namespace without insecure namespace
+		{
+			name:                 "case 6",
+			clustersInNamespaces: map[string]string{"cluster": "default"},
+			flags: &flag{
+				WCName:    "cluster",
+				WCCertTTL: "8h",
+			},
+			expectError: clusterNotFoundError,
+		},
+		// Trying to log into a cluster in default namespace with insecure namespace
+		{
+			name:                 "case 6",
+			clustersInNamespaces: map[string]string{"cluster": "default"},
+			flags: &flag{
+				WCName:              "cluster",
+				WCCertTTL:           "8h",
+				WCInsecureNamespace: true,
 			},
 		},
 	}
@@ -116,13 +160,15 @@ func TestWCLogin(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				err = client.CtrlClient().Create(ctx, getCluster())
-				if err != nil {
-					t.Fatal(err)
-				}
-				err = client.CtrlClient().Create(ctx, getAWSCluster())
-				if err != nil {
-					t.Fatal(err)
+				for wcName, wcNamespace := range tc.clustersInNamespaces {
+					err = client.CtrlClient().Create(ctx, getCluster(wcName, wcNamespace))
+					if err != nil {
+						t.Fatal(err)
+					}
+					err = client.CtrlClient().Create(ctx, getAWSCluster(wcName, wcNamespace))
+					if err != nil {
+						t.Fatal(err)
+					}
 				}
 				err = client.CtrlClient().Create(ctx, getRelease())
 				if err != nil {
@@ -209,17 +255,17 @@ func getOrganization() *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster() *capiv1alpha3.Cluster {
+func getCluster(name string, namespace string) *capiv1alpha3.Cluster {
 	cluster := &capiv1alpha3.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "cluster",
-			Namespace: "org-organization",
+			Name:      name,
+			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:        "cluster",
+				label.Cluster:        name,
 				label.Organization:   "organization",
 				label.ReleaseVersion: "17.0.0",
 			},
@@ -229,17 +275,17 @@ func getCluster() *capiv1alpha3.Cluster {
 
 	return cluster
 }
-func getAWSCluster() *infrastructurev1alpha3.AWSCluster {
+func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSCluster {
 	cr := &infrastructurev1alpha3.AWSCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AWSCluster",
 			APIVersion: "infrastructure.giantswarm.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "cluster",
-			Namespace: "org-organization",
+			Name:      name,
+			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:        "cluster",
+				label.Cluster:        name,
 				label.Organization:   "organization",
 				label.ReleaseVersion: "17.0.0",
 			},

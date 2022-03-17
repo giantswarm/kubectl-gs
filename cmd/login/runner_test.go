@@ -95,6 +95,17 @@ func TestLogin(t *testing.T) {
 			startConfig: &clientcmdapi.Config{},
 			expectError: selectedContextNonCompatibleError,
 		},
+		// Valid starting config with authprovider info, reuse context
+		{
+			name:        "case 10",
+			startConfig: createValidTestConfigAuthProvider(),
+		},
+		// Valid starting config with authprovider info
+		{
+			name:        "case 10",
+			mcArg:       []string{"codename"},
+			startConfig: createValidTestConfigAuthProvider(),
+		},
 	}
 
 	for i, tc := range testCases {
@@ -336,6 +347,36 @@ func createValidTestConfigMC() *clientcmdapi.Config {
 	}
 	config.AuthInfos["gs-user-codename"] = &clientcmdapi.AuthInfo{
 		Token: token,
+	}
+	config.Contexts["gs-codename"] = &clientcmdapi.Context{
+		Cluster:  "gs-codename",
+		AuthInfo: "gs-user-codename",
+	}
+	config.CurrentContext = "gs-codename"
+
+	return config
+}
+
+func createValidTestConfigAuthProvider() *clientcmdapi.Config {
+	const (
+		server       = "https://anything.com:8080"
+		token        = "the-token"
+		clientid     = "id"
+		refreshToken = "the-fresh-token"
+	)
+
+	config := clientcmdapi.NewConfig()
+	config.Clusters["gs-codename"] = &clientcmdapi.Cluster{
+		Server: server,
+	}
+	config.AuthInfos["gs-user-codename"] = &clientcmdapi.AuthInfo{
+		AuthProvider: &clientcmdapi.AuthProviderConfig{
+			Config: map[string]string{ClientID: clientid,
+				Issuer:       server,
+				IDToken:      token,
+				RefreshToken: refreshToken,
+			},
+		},
 	}
 	config.Contexts["gs-codename"] = &clientcmdapi.Context{
 		Cluster:  "gs-codename",
