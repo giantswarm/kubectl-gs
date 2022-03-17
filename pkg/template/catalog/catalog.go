@@ -2,6 +2,7 @@ package catalog
 
 import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -15,6 +16,7 @@ type Config struct {
 	Namespace            string
 	LogoURL              string
 	URL                  string
+	Visibility           string
 }
 
 func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
@@ -38,6 +40,11 @@ func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
 		}
 	}
 
+	labelValues := map[string]string{}
+	if config.Visibility != "" {
+		labelValues[label.CatalogVisibility] = config.Visibility
+	}
+
 	catalogCR := &applicationv1alpha1.Catalog{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Catalog",
@@ -46,6 +53,7 @@ func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
+			Labels:    labelValues,
 		},
 		Spec: applicationv1alpha1.CatalogSpec{
 			Config:      catalogConfig,

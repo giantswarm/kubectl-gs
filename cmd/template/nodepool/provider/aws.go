@@ -36,7 +36,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 			}
 		}
 	} else {
-		err = WriteGSAWSTemplate(out, config)
+		err = WriteGSAWSTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -45,8 +45,12 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	return nil
 }
 
-func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
+	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	crsConfig := aws.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,

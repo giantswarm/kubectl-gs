@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/blang/semver/v4"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
@@ -169,9 +170,24 @@ func SSHSSOPublicKey(ctx context.Context, client runtimeclient.Client) (string, 
 		return "", microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
 	}
 
-	sshSSOPublicKey := base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
+	sshSSOPublicKey := string(secretList.Items[0].Data["value"])
 
 	return sshSSOPublicKey, nil
+}
+
+func GetReleaseComponents(ctx context.Context, client runtimeclient.Client, releaseName string) (map[string]string, error) {
+	releaseComponents := make(map[string]string)
+	release := &releasev1alpha1.Release{}
+	err := client.Get(ctx, runtimeclient.ObjectKey{Namespace: "", Name: fmt.Sprintf("v%s", releaseName)}, release)
+	if err != nil {
+		return releaseComponents, microerror.Mask(err)
+	}
+
+	for _, component := range release.Spec.Components {
+		releaseComponents[component.Name] = component.Version
+	}
+
+	return releaseComponents, nil
 }
 
 func UbuntuSudoersConfigEncoded() string {

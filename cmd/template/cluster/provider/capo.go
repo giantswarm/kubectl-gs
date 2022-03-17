@@ -6,11 +6,8 @@ import (
 	"os"
 	"text/template"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/labels"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
@@ -61,8 +58,9 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				MachineConfig: openstack.MachineConfig(config.OpenStack.ControlPlane),
-				Replicas:      controlPlaneReplicas,
+				MachineConfig:     openstack.MachineConfig(config.OpenStack.ControlPlane),
+				Replicas:          controlPlaneReplicas,
+				AvailabilityZones: config.ControlPlaneAZ,
 			},
 			NodePools: []openstack.NodePool{
 				{
@@ -205,25 +203,4 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 		AppCR:               string(appYAML),
 	})
 	return microerror.Mask(err)
-}
-
-func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
-	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
-	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(map[string]string{
-			"app.kubernetes.io/name":            app,
-			"application.giantswarm.io/catalog": catalog,
-			"latest":                            "true",
-		}),
-		Namespace: "default",
-	})
-
-	if err != nil {
-		return "", microerror.Mask(err)
-	} else if len(catalogEntryList.Items) != 1 {
-		message := fmt.Sprintf("version not specified for %s and latest release couldn't be determined in %s catalog", app, catalog)
-		return "", microerror.Maskf(invalidFlagError, message)
-	}
-
-	return catalogEntryList.Items[0].Spec.Version, nil
 }
