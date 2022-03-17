@@ -21,20 +21,15 @@ import (
 
 func (r *runner) handleWCLogin(ctx context.Context) error {
 	// At the moment, the only available login option for WC is client cert
-	return r.createClusterClientCert(ctx)
+	return r.handleWCClientCert(ctx)
 }
 
-func (r *runner) createClusterClientCert(ctx context.Context) error {
+func (r *runner) handleWCClientCert(ctx context.Context) error {
 	var err error
 
 	config := commonconfig.New(r.flag.config)
 
 	provider, err := config.GetProvider()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = validateProvider(provider)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -45,6 +40,17 @@ func (r *runner) createClusterClientCert(ctx context.Context) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+	// At the moment, the only available login option for WC is client cert
+	return r.createClusterClientCert(ctx, client, provider)
+}
+
+func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) error {
+	var err error
+
+	err = validateProvider(provider)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	var clientCertService clientcert.Interface
