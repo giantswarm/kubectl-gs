@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -62,13 +64,26 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		appName = r.flag.Name
 	}
 
+	latestEntry, err := getLatestAppCatalogEntry(ctx, c.CtrlClient(), r.flag.Name, r.flag.Catalog)
+	if err != nil && r.flag.Version == "" {
+		message := fmt.Sprintf("version not specified for %s and latest release couldn't be determined in %s catalog", r.flag.Name, r.flag.Catalog)
+		return microerror.Maskf(invalidFlagError, message)
+	}
 	if r.flag.Version == "" {
-		version, err := getLatestVersion(ctx, c.CtrlClient(), r.flag.Name, r.flag.Catalog)
+		r.flag.Version = latestEntry.Spec.Version
+	}
+
+	val, ok := latestEntry.Annotations[annotation.InClusterApp]
+	if ok {
+		inCluster, err := strconv.ParseBool(val)
 		if err != nil {
-			return microerror.Mask(err)
+			inCluster = false
+		}
+		if inCluster != r.flag.InCluster {
+			r.logger.Debugf(ctx, "setting in-cluster to %t due to %#q annotation", inCluster, annotation.InClusterApp)
 		}
 
-		r.flag.Version = version
+		r.flag.InCluster = inCluster
 	}
 
 	// Since organization may be provided in a mixed-cased form,
@@ -176,7 +191,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
+func getLatestAppCatalogEntry(ctx context.Context, ctrlClient client.Client, app, catalog string) (applicationv1alpha1.AppCatalogEntry, error) {
 	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
 	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
 		LabelSelector: pkglabels.SelectorFromSet(map[string]string{
@@ -188,11 +203,10 @@ func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalo
 	})
 
 	if err != nil {
-		return "", microerror.Mask(err)
+		return applicationv1alpha1.AppCatalogEntry{}, microerror.Mask(err)
 	} else if len(catalogEntryList.Items) != 1 {
-		message := fmt.Sprintf("version not specified for %s and latest release couldn't be determined in %s catalog", app, catalog)
-		return "", microerror.Maskf(invalidFlagError, message)
+		return applicationv1alpha1.AppCatalogEntry{}, microerror.Mask(err)
 	}
 
-	return catalogEntryList.Items[0].Spec.Version, nil
+	return catalogEntryList.Items[0], nil
 }
