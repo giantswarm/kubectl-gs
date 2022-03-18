@@ -10,6 +10,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add `--visibility` flag to `template catalog` to add label to control display in web UI.
+- Default app version to latest `AppCatalogEntry` CR in `template app` if its not set.
+- Default `.spec.kubeConfig.inCluster` to true in `template app` if `AppCatalogEntry`
+CR has `application.giantswarm.io/in-cluster-app` annotation.
 
 ## [2.3.1] - 2022-03-11
 
