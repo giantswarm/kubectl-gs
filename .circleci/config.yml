@@ -36,7 +36,6 @@ jobs:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
 
-
 workflows:
   go-build:
     jobs:

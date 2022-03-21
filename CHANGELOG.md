@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add tests for `kubectl gs login`.
 - Add `--visibility` flag to `template catalog` to add label to control display in web UI.
 
 ## [2.3.1] - 2022-03-11
