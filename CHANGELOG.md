@@ -14,6 +14,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Add tests for `kubectl gs login`.
 - Add `--visibility` flag to `template catalog` to add label to control display in web UI.
 
+### Fixed
+
+- Look up cluster-related AppCatalogEntries in the `giantswarm` namespace instead of the `default` namespace.
+
 ## [2.3.1] - 2022-03-11
 
 ### Fixed
