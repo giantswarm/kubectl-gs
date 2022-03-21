@@ -33,6 +33,7 @@ func TestLogin(t *testing.T) {
 		name        string
 		startConfig *clientcmdapi.Config
 		mcArg       []string
+		flags       *flag
 		expectError *microerror.Error
 	}{
 		// Empty starting config, logging into MC using codename
@@ -40,6 +41,9 @@ func TestLogin(t *testing.T) {
 			name:        "case 0",
 			startConfig: &clientcmdapi.Config{},
 			mcArg:       []string{"codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			expectError: contextDoesNotExistError,
 		},
 		// Empty starting config, logging into MC using context
@@ -47,64 +51,119 @@ func TestLogin(t *testing.T) {
 			name:        "case 1",
 			startConfig: &clientcmdapi.Config{},
 			mcArg:       []string{"gs-codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			expectError: contextDoesNotExistError,
 		},
 		// Valid starting config, logging into MC using codename
 		{
 			name:        "case 2",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
 			mcArg:       []string{"gs-codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 		},
 		{
 			name:        "case 3",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
 			mcArg:       []string{"gs-othercodename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			expectError: contextDoesNotExistError,
 		},
 		// Valid starting config, logging into MC using context
 		{
 			name:        "case 4",
-			startConfig: createValidTestConfigMC(),
-			mcArg:       []string{"codename"},
+			startConfig: createValidTestConfig("", false),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			mcArg: []string{"codename"},
 		},
 		{
 			name:        "case 5",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
 			mcArg:       []string{"othercodename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			expectError: contextDoesNotExistError,
 		},
 		// Valid starting config, logging into MC using URL
 		{
 			name:        "case 6",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
 			mcArg:       []string{"https://anything.com"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			expectError: unknownUrlError,
 		},
 		// Valid starting config, Try to reuse existing context
 		{
 			name:        "case 7",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 		},
 		{
 			name:        "case 8",
-			startConfig: createValidTestConfigWC(),
+			startConfig: createValidTestConfig("-cluster", false),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 		},
 		// Empty starting config, Try to reuse existing context
 		{
 			name:        "case 9",
 			startConfig: &clientcmdapi.Config{},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			expectError: selectedContextNonCompatibleError,
 		},
 		// Valid starting config with authprovider info, reuse context
 		{
-			name:        "case 10",
-			startConfig: createValidTestConfigAuthProvider(),
+			name: "case 10",
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			startConfig: createValidTestConfig("", true),
 		},
 		// Valid starting config with authprovider info
 		{
-			name:        "case 10",
+			name: "case 10",
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 			mcArg:       []string{"codename"},
-			startConfig: createValidTestConfigAuthProvider(),
+			startConfig: createValidTestConfig("", true),
+		},
+		// Valid starting config with authprovider info, self contained
+		{
+			name: "case 11",
+			flags: &flag{
+				WCCertTTL:     "8h",
+				SelfContained: "/codename.yaml",
+			},
+			mcArg:       []string{"codename"},
+			startConfig: createValidTestConfig("", true),
+			expectError: unknownUrlError,
+		},
+		// Valid starting config with authprovider info, self contained
+		{
+			name: "case 11",
+			flags: &flag{
+				WCCertTTL:     "8h",
+				SelfContained: "/codename.yaml",
+			},
+			mcArg:       []string{"codename"},
+			startConfig: createValidTestConfig("", true),
+			expectError: unknownUrlError,
 		},
 	}
 
@@ -114,15 +173,18 @@ func TestLogin(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			fs := afero.NewOsFs()
+			if len(tc.flags.SelfContained) > 0 {
+				tc.flags.SelfContained = configDir + tc.flags.SelfContained
+			}
 
 			r := runner{
 				k8sConfigAccess: &clientcmd.ClientConfigLoadingRules{
 					ExplicitPath: configDir + "/config.yaml",
 				},
 				stdout: new(bytes.Buffer),
-				flag: &flag{
-					WCCertTTL: "8h",
-				},
+				flag:   tc.flags,
+				fs:     afero.NewBasePathFs(fs, configDir),
 			}
 			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
@@ -162,14 +224,14 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		// filled start config
 		{
 			name:        "case 1",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
 			flags:       &flag{},
 			token:       "token",
 		},
 		// self contained file
 		{
 			name:        "case 2",
-			startConfig: createValidTestConfigMC(),
+			startConfig: createValidTestConfig("", false),
 			flags: &flag{
 				SelfContained: "/codename.yaml",
 			},
@@ -178,7 +240,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		// keeping WC context
 		{
 			name:        "case 3",
-			startConfig: createValidTestConfigWC(),
+			startConfig: createValidTestConfig("-cluster", false),
 			flags: &flag{
 				KeepContext: true,
 			},
@@ -313,76 +375,39 @@ func TestMCLoginWithInstallation(t *testing.T) {
 	}
 }
 
-func createValidTestConfigWC() *clientcmdapi.Config {
-	const (
-		server = "https://anything.com:8080"
-		token  = "the-token"
-	)
-
-	config := clientcmdapi.NewConfig()
-	config.Clusters["gs-codename-cluster"] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.AuthInfos["gs-codename-cluster-user"] = &clientcmdapi.AuthInfo{
-		Token: token,
-	}
-	config.Contexts["gs-codename-cluster"] = &clientcmdapi.Context{
-		Cluster:  "gs-codename-cluster",
-		AuthInfo: "gs-codename-cluster-user",
-	}
-	config.CurrentContext = "gs-codename-cluster"
-
-	return config
-}
-
-func createValidTestConfigMC() *clientcmdapi.Config {
-	const (
-		server = "https://anything.com:8080"
-		token  = "the-token"
-	)
-
-	config := clientcmdapi.NewConfig()
-	config.Clusters["gs-codename"] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.AuthInfos["gs-user-codename"] = &clientcmdapi.AuthInfo{
-		Token: token,
-	}
-	config.Contexts["gs-codename"] = &clientcmdapi.Context{
-		Cluster:  "gs-codename",
-		AuthInfo: "gs-user-codename",
-	}
-	config.CurrentContext = "gs-codename"
-
-	return config
-}
-
-func createValidTestConfigAuthProvider() *clientcmdapi.Config {
+func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Config {
 	const (
 		server       = "https://anything.com:8080"
 		token        = "the-token"
 		clientid     = "id"
 		refreshToken = "the-fresh-token"
 	)
+	clustername := "codename" + wcSuffix
 
 	config := clientcmdapi.NewConfig()
-	config.Clusters["gs-codename"] = &clientcmdapi.Cluster{
+	config.Clusters["gs-"+clustername] = &clientcmdapi.Cluster{
 		Server: server,
 	}
-	config.AuthInfos["gs-user-codename"] = &clientcmdapi.AuthInfo{
-		AuthProvider: &clientcmdapi.AuthProviderConfig{
-			Config: map[string]string{ClientID: clientid,
-				Issuer:       server,
-				IDToken:      token,
-				RefreshToken: refreshToken,
+	config.Contexts["gs-"+clustername] = &clientcmdapi.Context{
+		Cluster:  "gs-" + clustername,
+		AuthInfo: "gs-user-" + clustername,
+	}
+	config.CurrentContext = "gs-" + clustername
+	if authProvider {
+		config.AuthInfos["gs-user-"+clustername] = &clientcmdapi.AuthInfo{
+			AuthProvider: &clientcmdapi.AuthProviderConfig{
+				Config: map[string]string{ClientID: clientid,
+					Issuer:       server,
+					IDToken:      token,
+					RefreshToken: refreshToken,
+				},
 			},
-		},
+		}
+	} else {
+		config.AuthInfos["gs-user-"+clustername] = &clientcmdapi.AuthInfo{
+			Token: token,
+		}
 	}
-	config.Contexts["gs-codename"] = &clientcmdapi.Context{
-		Cluster:  "gs-codename",
-		AuthInfo: "gs-user-codename",
-	}
-	config.CurrentContext = "gs-codename"
 
 	return config
 }

@@ -143,7 +143,7 @@ func TestWCLogin(t *testing.T) {
 				flag:   tc.flags,
 				fs:     afero.NewBasePathFs(fs, configDir),
 			}
-			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *createValidTestConfigMC(), false)
+			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *createValidTestConfig("", false), false)
 			if err != nil {
 				t.Fatal(err)
 			}
