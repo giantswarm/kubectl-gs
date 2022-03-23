@@ -132,6 +132,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			return microerror.Mask(err)
 		}
 
+		userConfigMap.ObjectMeta.Labels = map[string]string{}
 		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
@@ -205,6 +206,7 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			return microerror.Mask(err)
 		}
 
+		userConfigMap.ObjectMeta.Labels = map[string]string{}
 		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
