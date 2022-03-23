@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add cluster name label to CAPA Apps and ConfigMaps created with `kubectl-gs template`
+
 ## [2.4.0] - 2022-03-21
 
 ### Added
