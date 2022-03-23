@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.5.0] - 2022-03-23
+
 ### Added
 
 - Add cluster name label to CAPA Apps and ConfigMaps created with `kubectl-gs template`
@@ -806,7 +808,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...v2.3.0
