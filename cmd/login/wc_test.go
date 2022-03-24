@@ -39,6 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
@@ -221,7 +222,7 @@ func TestWCLogin(t *testing.T) {
 						if err != nil {
 							t.Fatal(err)
 						}
-					case "openstack":
+					case key.ProviderOpenStack:
 						err = client.CtrlClient().Create(ctx, getSecret(wcName+"-ca", wcNamespace, getCAdata()))
 						if err != nil {
 							fmt.Print(err)

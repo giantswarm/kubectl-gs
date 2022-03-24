@@ -12,6 +12,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
@@ -122,7 +123,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		}
 	}
 	var releaseVersion, certOperatorVersion string
-	if provider != "openstack" {
+	if provider != key.ProviderOpenStack {
 		releaseVersion, err = getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
 		if err != nil {
 			return microerror.Mask(err)
@@ -174,7 +175,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 			return microerror.Mask(err)
 		}
 	}
-	if provider != "openstack" {
+	if provider != key.ProviderOpenStack {
 		// Cleaning up leftover resources.
 		err = cleanUpClientCertResources(ctx, clientCertService, clientCertResource)
 		if err != nil {
@@ -205,7 +206,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, clientCert *clientcert.ClientCert, provider string) (*v1.Secret, error) {
 	var secret *v1.Secret
 	var err error
-	if provider != "openstack" {
+	if provider != key.ProviderOpenStack {
 		// apply the certConfig
 		err = clientCertService.Create(ctx, clientCert)
 		if err != nil {
