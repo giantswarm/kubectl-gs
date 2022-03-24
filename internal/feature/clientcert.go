@@ -11,4 +11,7 @@ var clientCert = Feature{
 	ProviderAWS: Capability{
 		MinVersion: "16.0.1",
 	},
+	ProviderOpenStack: Capability{
+		MinVersion: "20.0.0-alpha1",
+	},
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
@@ -120,15 +121,17 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 			return microerror.Mask(err)
 		}
 	}
+	var releaseVersion, certOperatorVersion string
+	if provider != "openstack" {
+		releaseVersion, err = getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	releaseVersion, err := getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	certOperatorVersion, err := getCertOperatorVersion(ctx, releaseService, releaseVersion)
-	if err != nil {
-		return microerror.Mask(err)
+		certOperatorVersion, err = getCertOperatorVersion(ctx, releaseService, releaseVersion)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess)
@@ -152,8 +155,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return microerror.Mask(err)
 	}
 
-	// Retrieve client certificate credential.
-	secret, err := fetchCredential(ctx, provider, clientCertService, clientCertResource)
+	secret, err := r.getCredentials(ctx, clientCertService, clientCertResource, provider)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -172,11 +174,12 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 			return microerror.Mask(err)
 		}
 	}
-
-	// Cleaning up leftover resources.
-	err = cleanUpClientCertResources(ctx, clientCertService, clientCertResource)
-	if err != nil {
-		return microerror.Mask(err)
+	if provider != "openstack" {
+		// Cleaning up leftover resources.
+		err = cleanUpClientCertResources(ctx, clientCertService, clientCertResource)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
@@ -199,6 +202,34 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 	return nil
 }
 
+func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, clientCert *clientcert.ClientCert, provider string) (*v1.Secret, error) {
+	var secret *v1.Secret
+	var err error
+	if provider != "openstack" {
+		// apply the certConfig
+		err = clientCertService.Create(ctx, clientCert)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		// Retrieve client certificate credential.
+		secret, err = fetchCredential(ctx, provider, clientCertService, clientCert)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else {
+		// Retrieve the WC CA-secret.
+		ca, err := clientCertService.GetCredential(ctx, clientCert.CertConfig.GetNamespace(), clientCert.CertConfig.Spec.Cert.ClusterID+"-ca")
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		secret, err = generateCredential(ctx, ca, clientCert)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+	return secret, nil
+}
+
 func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
@@ -213,6 +244,7 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 
 	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
 	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
+	clusterServer = strings.TrimPrefix(clusterServer, "https://api.")
 
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
 }

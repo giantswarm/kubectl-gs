@@ -2,8 +2,15 @@ package login
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
+	"math"
+	"math/big"
 	"strings"
 	"sync"
 	"time"
@@ -101,12 +108,6 @@ func createCert(ctx context.Context, clientCertService clientcert.Interface, con
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
-	err = clientCertService.Create(ctx, clientCert)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	return clientCert, nil
 }
 
@@ -137,6 +138,89 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 	}
 
 	return secret, nil
+}
+
+func generateCredential(ctx context.Context, ca *corev1.Secret, cert *clientcert.ClientCert) (*corev1.Secret, error) {
+	var caPEM, certPEM, keyPEM []byte
+	{
+		// Get the WCs CA data
+		caPEM = ca.Data["tls.crt"]
+		caCert, err := getCert(caPEM)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		caPrivKeyPEM := ca.Data["tls.key"]
+		caPrivKey, err := getPrivKey(caPrivKeyPEM)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		// Create the Certificate
+		exp, err := time.ParseDuration(cert.CertConfig.Spec.Cert.TTL)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		serial, err := rand.Int(rand.Reader, new(big.Int).SetInt64(math.MaxInt64))
+		if err != nil {
+			return nil, microerror.Maskf(invalidConfigError, "Failed to generate client certificate serial number.")
+		}
+		certificate := &x509.Certificate{
+			SerialNumber:       serial,
+			SignatureAlgorithm: x509.SHA256WithRSA,
+			Subject: pkix.Name{
+				Organization: cert.CertConfig.Spec.Cert.Organizations,
+				CommonName:   cert.CertConfig.Spec.Cert.CommonName,
+			},
+			NotBefore:   time.Now(),
+			NotAfter:    time.Now().Add(exp),
+			KeyUsage:    x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageKeyAgreement,
+			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		}
+
+		// Create the key
+		certPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		keyPEM = getPrivKeyPEM(certPrivKey)
+
+		// Sign the certificate
+		certBytes, err := x509.CreateCertificate(rand.Reader, certificate, caCert, &certPrivKey.PublicKey, caPrivKey)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		certPEM = getCertPEM(certBytes)
+
+	}
+	secret := &corev1.Secret{
+		Data: map[string][]byte{
+			credentialKeyCertCA:  caPEM,
+			credentialKeyCertCRT: certPEM,
+			credentialKeyCertKey: keyPEM,
+		},
+	}
+	return secret, nil
+}
+
+func getCertPEM(cert []byte) []byte {
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: cert,
+	})
+}
+func getCert(certPEM []byte) (*x509.Certificate, error) {
+	block, _ := pem.Decode(certPEM)
+	return x509.ParseCertificate(block.Bytes)
+}
+func getPrivKeyPEM(key *rsa.PrivateKey) []byte {
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	})
+}
+func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(keyPEM)
+	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
 // storeWCCredentials saves the created client certificate credentials into the kubectl config.
@@ -446,11 +530,11 @@ func getCertOperatorVersion(ctx context.Context, releaseService release.Interfac
 }
 
 func validateProvider(provider string) error {
-	if provider == key.ProviderAWS || provider == key.ProviderAzure {
-		return nil
+	if provider == key.ProviderKVM {
+		return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is not supported on KVM.")
 	}
 
-	return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is only supported on AWS and Azure.")
+	return nil
 }
 
 func validateReleaseVersion(version, provider string) error {
