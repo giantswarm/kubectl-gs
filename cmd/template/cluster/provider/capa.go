@@ -11,6 +11,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
+
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/aws"
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -130,6 +132,9 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			return microerror.Mask(err)
 		}
 
+		userConfigMap.ObjectMeta.Labels = map[string]string{}
+		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
+
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
@@ -155,6 +160,9 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			ExtraLabels: map[string]string{
+				k8smetadata.Cluster: config.Name,
+			},
 		}
 
 		var err error
@@ -198,6 +206,9 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			return microerror.Mask(err)
 		}
 
+		userConfigMap.ObjectMeta.Labels = map[string]string{}
+		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
+
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
@@ -224,6 +235,9 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			ExtraLabels: map[string]string{
+				k8smetadata.Cluster: config.Name,
+			},
 		})
 		if err != nil {
 			return microerror.Mask(err)

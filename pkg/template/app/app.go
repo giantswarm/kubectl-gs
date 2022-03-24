@@ -30,6 +30,8 @@ type Config struct {
 	UserConfigSecretName       string
 	Organization               string
 	Version                    string
+	ExtraLabels                map[string]string
+	ExtraAnnotations           map[string]string
 }
 
 type UserConfig struct {
@@ -65,6 +67,10 @@ func NewAppCR(config Config) ([]byte, error) {
 		crNamespace = config.Cluster
 	}
 
+	for key, val := range config.ExtraLabels {
+		appLabels[key] = val
+	}
+
 	if config.UserConfigConfigMapName != "" {
 		userConfig.ConfigMap = applicationv1alpha1.AppSpecUserConfigConfigMap{
 			Name:      config.UserConfigConfigMapName,
@@ -85,9 +91,10 @@ func NewAppCR(config Config) ([]byte, error) {
 			APIVersion: "application.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.AppName,
-			Namespace: crNamespace,
-			Labels:    appLabels,
+			Name:        config.AppName,
+			Namespace:   crNamespace,
+			Labels:      appLabels,
+			Annotations: config.ExtraAnnotations,
 		},
 		Spec: applicationv1alpha1.AppSpec{
 			Catalog:   config.Catalog,
