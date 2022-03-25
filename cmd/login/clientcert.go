@@ -224,7 +224,7 @@ func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 }
 
 // storeWCCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
+func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterServer string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -234,7 +234,6 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
-	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
 
 	certCRT := credential.Data[credentialKeyCertCRT]
 	certKey := credential.Data[credentialKeyCertKey]
@@ -301,7 +300,7 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 }
 
 // printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
+func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterServer string, loginOptions LoginOptions) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -315,7 +314,7 @@ func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, fil
 		Kind:       "Config",
 		Clusters: map[string]*clientcmdapi.Cluster{
 			contextName: {
-				Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
+				Server:                   clusterServer,
 				CertificateAuthorityData: credential.Data[credentialKeyCertCA],
 			},
 		},

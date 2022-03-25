@@ -161,16 +161,18 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return microerror.Mask(err)
 	}
 
+	serverAddress := getServerAddress(clientCertResource.CertConfig.Spec.Cert.ClusterID, clusterBasePath, provider)
+
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	var contextExists bool
 	var contextName string
 	if r.loginOptions.selfContainedWC {
-		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, clusterBasePath, r.loginOptions)
+		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, serverAddress, r.loginOptions)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
-		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, clusterBasePath, r.loginOptions)
+		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, serverAddress, r.loginOptions)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -238,6 +240,7 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 	}
 
 	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
+	clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
 
 	// Ensure any trailing ports are trimmed.
 	reg := regexp.MustCompile(`:[0-9]+$`)
@@ -245,7 +248,18 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 
 	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
 	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
-	clusterServer = strings.TrimPrefix(clusterServer, "https://api.")
+
+	// Some management clusters have an api.$INSTALLATION prefix
+	clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
 
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
+}
+
+func getServerAddress(clusterID string, clusterBasePath string, provider string) string {
+	switch provider {
+	case key.ProviderOpenStack:
+		return fmt.Sprintf("https://api.%s.%s", clusterID, clusterBasePath)
+	default:
+		return fmt.Sprintf("https://api.%s.k8s.%s", clusterID, clusterBasePath)
+	}
 }
