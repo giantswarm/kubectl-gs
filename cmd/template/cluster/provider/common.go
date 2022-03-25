@@ -32,15 +32,11 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 
 	// for CAPA
-	Region                   string
-	Role                     string
-	MachinePool              AWSMachinePoolConfig
-	NetworkAZUsageLimit      int
-	NetworkVPCCIDR           string
-	BastionInstanceType      string
-	BastionReplicas          int
-	ControlPlaneInstanceType string
-	SSHSSOPublicKey          string
+	Role                string
+	MachinePool         AWSMachinePoolConfig
+	NetworkAZUsageLimit int
+	NetworkVPCCIDR      string
+	SSHSSOPublicKey     string
 }
 
 type AWSMachinePoolConfig struct {
@@ -49,6 +45,21 @@ type AWSMachinePoolConfig struct {
 	MaxSize          int
 	AZs              []string
 	InstanceType     string
+	RootVolumeSizeGB int
+	CustomNodeLabels []string
+}
+
+type GCPConfig struct {
+	Project           string
+	FailureDomains    []string
+	MachineDeployment GCPMachineDeployment
+}
+
+type GCPMachineDeployment struct {
+	Name             string
+	FailureDomain    string
+	InstanceType     string
+	Replicas         int
 	RootVolumeSizeGB int
 	CustomNodeLabels []string
 }
@@ -99,8 +110,14 @@ type ClusterConfig struct {
 	PodsCIDR          string
 	OIDC              OIDC
 
+	Region                   string
+	BastionInstanceType      string
+	BastionReplicas          int
+	ControlPlaneInstanceType string
+
 	App       AppConfig
 	AWS       AWSConfig
+	GCP       GCPConfig
 	OpenStack OpenStackConfig
 }
 
