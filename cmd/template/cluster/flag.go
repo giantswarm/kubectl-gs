@@ -223,6 +223,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
 
+	_ = cmd.Flags().MarkHidden(flagGCPProject)
+	_ = cmd.Flags().MarkHidden(flagGCPFailureDomains)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentName)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentFailureDomain)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentRootDiskSize)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentReplicas)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentInstanceType)
+
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
 	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
