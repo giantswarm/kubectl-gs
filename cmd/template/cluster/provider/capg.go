@@ -7,10 +7,10 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	capg "github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/gcp"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
