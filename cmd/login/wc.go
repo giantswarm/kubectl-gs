@@ -259,7 +259,7 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 func getServerAddress(clusterID string, clusterBasePath string, provider string) string {
 	switch provider {
 	case key.ProviderOpenStack:
-		return fmt.Sprintf("https://api.%s.%s", clusterID, clusterBasePath)
+		return fmt.Sprintf("https://api.%s.%s:6443", clusterID, clusterBasePath)
 	default:
 		return fmt.Sprintf("https://api.%s.k8s.%s", clusterID, clusterBasePath)
 	}
