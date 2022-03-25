@@ -140,7 +140,7 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 	return secret, nil
 }
 
-func generateCredential(ctx context.Context, ca *corev1.Secret, cert *clientcert.ClientCert) (*corev1.Secret, error) {
+func generateCredential(ctx context.Context, ca *corev1.Secret, config clientCertConfig) (*corev1.Secret, error) {
 	var caPEM, certPEM, keyPEM []byte
 	{
 		// Get the WCs CA data
@@ -156,7 +156,7 @@ func generateCredential(ctx context.Context, ca *corev1.Secret, cert *clientcert
 		}
 
 		// Create the Certificate
-		exp, err := time.ParseDuration(cert.CertConfig.Spec.Cert.TTL)
+		exp, err := time.ParseDuration(config.ttl)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -168,8 +168,8 @@ func generateCredential(ctx context.Context, ca *corev1.Secret, cert *clientcert
 			SerialNumber:       serial,
 			SignatureAlgorithm: x509.SHA256WithRSA,
 			Subject: pkix.Name{
-				Organization: cert.CertConfig.Spec.Cert.Organizations,
-				CommonName:   cert.CertConfig.Spec.Cert.CommonName,
+				Organization: config.groups,
+				CommonName:   fmt.Sprintf("%s.%s.%s", serial.String(), config.clusterName, config.clusterBasePath),
 			},
 			NotBefore:   time.Now(),
 			NotAfter:    time.Now().Add(exp),

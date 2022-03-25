@@ -151,12 +151,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		certOperatorVersion: certOperatorVersion,
 	}
 
-	clientCertResource, err := createCert(ctx, clientCertService, certConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	secret, err := r.getCredentials(ctx, clientCertService, clientCertResource, provider)
+	clientCertResource, secret, err := r.getCredentials(ctx, clientCertService, certConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -205,32 +200,38 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 	return nil
 }
 
-func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, clientCert *clientcert.ClientCert, provider string) (*v1.Secret, error) {
+func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, config clientCertConfig) (*clientcert.ClientCert, *v1.Secret, error) {
 	var secret *v1.Secret
 	var err error
-	if provider != key.ProviderOpenStack {
+
+	clientCert, err := createCert(ctx, clientCertService, config)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	if config.provider != key.ProviderOpenStack {
 		// apply the certConfig
 		err = clientCertService.Create(ctx, clientCert)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, nil, microerror.Mask(err)
 		}
 		// Retrieve client certificate credential.
-		secret, err = fetchCredential(ctx, provider, clientCertService, clientCert)
+		secret, err = fetchCredential(ctx, config.provider, clientCertService, clientCert)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, nil, microerror.Mask(err)
 		}
 	} else {
 		// Retrieve the WC CA-secret.
 		ca, err := clientCertService.GetCredential(ctx, clientCert.CertConfig.GetNamespace(), clientCert.CertConfig.Spec.Cert.ClusterID+"-ca")
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, nil, microerror.Mask(err)
 		}
-		secret, err = generateCredential(ctx, ca, clientCert)
+		secret, err = generateCredential(ctx, ca, config)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, nil, microerror.Mask(err)
 		}
 	}
-	return secret, nil
+	return clientCert, secret, nil
 }
 
 func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) {
