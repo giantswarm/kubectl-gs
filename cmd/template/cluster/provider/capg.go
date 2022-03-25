@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	capg "github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/gcp"
 	"os"
 	"text/template"
 
@@ -12,8 +11,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
-
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/capa"
+	capg "github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/gcp"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
@@ -146,12 +144,12 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 
 	var configMapYAML []byte
 	{
-		flagValues := capa.DefaultAppsConfig{
+		flagValues := capg.DefaultAppsConfig{
 			ClusterName:  config.Name,
 			Organization: config.Organization,
 		}
 
-		configData, err := capa.GenerateDefaultAppsValues(flagValues)
+		configData, err := capg.GenerateDefaultAppsValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
