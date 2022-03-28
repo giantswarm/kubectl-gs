@@ -239,7 +239,7 @@ func TestWCLogin(t *testing.T) {
 			// this is running in a go routine to simulate cert-operator creating the secret
 			go createSecret(ctx, client)
 
-			err = r.createClusterClientCert(ctx, client, tc.provider)
+			_, _, err = r.createClusterClientCert(ctx, client, tc.provider)
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
 					t.Fatalf("unexpected error: %s", err.Error())

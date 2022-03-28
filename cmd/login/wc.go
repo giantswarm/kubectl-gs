@@ -21,6 +21,100 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
+func (r *runner) getServiceSet(client k8sclient.Interface) (serviceSet, error) {
+	var err error
+
+	var clientCertService clientcert.Interface
+	{
+		serviceConfig := clientcert.Config{
+			Client: client.CtrlClient(),
+		}
+		clientCertService, err = clientcert.New(serviceConfig)
+		if err != nil {
+			return serviceSet{}, microerror.Mask(err)
+		}
+	}
+
+	var organizationService organization.Interface
+	{
+		serviceConfig := organization.Config{
+			Client: client.CtrlClient(),
+		}
+		organizationService, err = organization.New(serviceConfig)
+		if err != nil {
+			return serviceSet{}, microerror.Mask(err)
+		}
+	}
+
+	var clusterService cluster.Interface
+	{
+		serviceConfig := cluster.Config{
+			Client: client.CtrlClient(),
+		}
+		clusterService = cluster.New(serviceConfig)
+	}
+
+	var releaseService release.Interface
+	{
+		serviceConfig := release.Config{
+			Client: client.CtrlClient(),
+		}
+		releaseService, err = release.New(serviceConfig)
+		if err != nil {
+			return serviceSet{}, microerror.Mask(err)
+		}
+	}
+
+	return serviceSet{
+		clientCertService:   clientCertService,
+		organizationService: organizationService,
+		clusterService:      clusterService,
+		releaseService:      releaseService,
+	}, nil
+}
+
+func (r *runner) getCluster(ctx context.Context, services serviceSet, provider string) (*cluster.Cluster, error) {
+	var err error
+	var c *cluster.Cluster
+
+	var namespaces []string
+	if len(r.flag.WCOrganization) > 0 {
+		orgNamespace, err := getOrganizationNamespace(ctx, services.organizationService, r.flag.WCOrganization)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		namespaces = append(namespaces, orgNamespace)
+	} else {
+		namespaces, err = getAllOrganizationNamespaces(ctx, services.organizationService)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	if r.flag.WCInsecureNamespace {
+		namespaces = append(namespaces, "default")
+	}
+
+	c, err = findCluster(ctx, services.clusterService, services.organizationService, provider, r.flag.WCName, namespaces...)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return c, nil
+}
+
+func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, services serviceSet, ctx context.Context) (string, error) {
+	if provider == key.ProviderOpenStack {
+		return "", nil
+	}
+	releaseVersion, err := getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return getCertOperatorVersion(ctx, services.releaseService, releaseVersion)
+}
+
 func (r *runner) handleWCLogin(ctx context.Context) error {
 	// At the moment, the only available login option for WC is client cert
 	return r.handleWCClientCert(ctx)
@@ -44,143 +138,10 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 		}
 	}
 	// At the moment, the only available login option for WC is client cert
-	return r.createClusterClientCert(ctx, client, provider)
-}
-
-func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) error {
-	var err error
-
-	err = validateProvider(provider)
+	contextName, contextExists, err := r.createClusterClientCert(ctx, client, provider)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	var clientCertService clientcert.Interface
-	{
-		serviceConfig := clientcert.Config{
-			Client: client.CtrlClient(),
-		}
-		clientCertService, err = clientcert.New(serviceConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var organizationService organization.Interface
-	{
-		serviceConfig := organization.Config{
-			Client: client.CtrlClient(),
-		}
-		organizationService, err = organization.New(serviceConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var clusterService cluster.Interface
-	{
-		serviceConfig := cluster.Config{
-			Client: client.CtrlClient(),
-		}
-		clusterService = cluster.New(serviceConfig)
-	}
-
-	var releaseService release.Interface
-	{
-		serviceConfig := release.Config{
-			Client: client.CtrlClient(),
-		}
-		releaseService, err = release.New(serviceConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var c *cluster.Cluster
-	{
-		var namespaces []string
-		if len(r.flag.WCOrganization) > 0 {
-			orgNamespace, err := getOrganizationNamespace(ctx, organizationService, r.flag.WCOrganization)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			namespaces = append(namespaces, orgNamespace)
-		} else {
-			namespaces, err = getAllOrganizationNamespaces(ctx, organizationService)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		if r.flag.WCInsecureNamespace {
-			namespaces = append(namespaces, "default")
-		}
-
-		c, err = findCluster(ctx, clusterService, organizationService, provider, r.flag.WCName, namespaces...)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-	var releaseVersion, certOperatorVersion string
-	if provider != key.ProviderOpenStack {
-		releaseVersion, err = getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		certOperatorVersion, err = getCertOperatorVersion(ctx, releaseService, releaseVersion)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	certConfig := clientCertConfig{
-		provider:            provider,
-		clusterName:         r.flag.WCName,
-		clusterNamespace:    c.Cluster.GetNamespace(),
-		organizationName:    r.flag.WCOrganization,
-		ttl:                 r.flag.WCCertTTL,
-		groups:              r.flag.WCCertGroups,
-		clusterBasePath:     clusterBasePath,
-		certOperatorVersion: certOperatorVersion,
-	}
-
-	clientCertResource, secret, err := r.getCredentials(ctx, clientCertService, certConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	serverAddress := getServerAddress(clientCertResource.CertConfig.Spec.Cert.ClusterID, clusterBasePath, provider)
-
-	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
-	var contextExists bool
-	var contextName string
-	if r.loginOptions.selfContainedWC {
-		contextName, contextExists, err = printWCCredentials(r.k8sConfigAccess, r.fs, r.flag.SelfContained, clientCertResource, secret, serverAddress, r.loginOptions)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else {
-		contextName, contextExists, err = storeWCCredentials(r.k8sConfigAccess, r.fs, clientCertResource, secret, serverAddress, r.loginOptions)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-	if provider != key.ProviderOpenStack {
-		// Cleaning up leftover resources.
-		err = cleanUpClientCertResources(ctx, clientCertService, clientCertResource)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
 	if r.loginOptions.selfContainedWC {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
@@ -200,29 +161,85 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 	return nil
 }
 
-func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, config clientCertConfig) (*clientcert.ClientCert, *v1.Secret, error) {
-	var secret *v1.Secret
+func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) (string, bool, error) {
 	var err error
 
-	clientCert, err := createCert(ctx, clientCertService, config)
+	err = validateProvider(provider)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return "", false, microerror.Mask(err)
 	}
 
-	if config.provider != key.ProviderOpenStack {
-		// apply the certConfig
-		err = clientCertService.Create(ctx, clientCert)
+	services, err := r.getServiceSet(client)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	c, err := r.getCluster(ctx, services, provider)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	certOperatorVersion, err := r.getCertOperatorVersion(c, provider, services, ctx)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess, provider)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	certConfig := clientCertConfig{
+		provider:            provider,
+		clusterName:         r.flag.WCName,
+		clusterNamespace:    c.Cluster.GetNamespace(),
+		organizationName:    r.flag.WCOrganization,
+		ttl:                 r.flag.WCCertTTL,
+		groups:              r.flag.WCCertGroups,
+		clusterBasePath:     clusterBasePath,
+		certOperatorVersion: certOperatorVersion,
+	}
+
+	clientCertResource, secret, err := r.getCredentials(ctx, services.clientCertService, certConfig)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	credentialConfig := credentialConfig{
+		clusterID:     r.flag.WCName,
+		certCRT:       secret.Data[credentialKeyCertCRT],
+		certKey:       secret.Data[credentialKeyCertKey],
+		certCA:        secret.Data[credentialKeyCertCA],
+		clusterServer: getServerAddress(certConfig),
+		filePath:      r.flag.SelfContained,
+		loginOptions:  r.loginOptions,
+	}
+
+	contextName, contextExists, err := r.storeWCCredentials(credentialConfig)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	if clientCertResource != nil {
+		// Cleaning up leftover resources.
+		err = cleanUpClientCertResources(ctx, services.clientCertService, clientCertResource)
 		if err != nil {
-			return nil, nil, microerror.Mask(err)
+			return "", false, microerror.Mask(err)
 		}
-		// Retrieve client certificate credential.
-		secret, err = fetchCredential(ctx, config.provider, clientCertService, clientCert)
-		if err != nil {
-			return nil, nil, microerror.Mask(err)
-		}
-	} else {
+	}
+
+	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
+	return contextName, contextExists, nil
+}
+
+func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, config clientCertConfig) (*clientcert.ClientCert, *v1.Secret, error) {
+	var secret *v1.Secret
+	var clientCert *clientcert.ClientCert
+	var err error
+
+	if config.provider == key.ProviderOpenStack {
 		// Retrieve the WC CA-secret.
-		ca, err := clientCertService.GetCredential(ctx, clientCert.CertConfig.GetNamespace(), clientCert.CertConfig.Spec.Cert.ClusterID+"-ca")
+		ca, err := clientCertService.GetCredential(ctx, config.clusterNamespace, config.clusterName+"-ca")
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
@@ -230,11 +247,36 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
+		return nil, secret, nil
+	}
+
+	clientCert, err = createCert(ctx, clientCertService, config)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+	// apply the certConfig
+	err = clientCertService.Create(ctx, clientCert)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+	// Retrieve client certificate credential.
+	secret, err = fetchCredential(ctx, config.provider, clientCertService, clientCert)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
 	}
 	return clientCert, secret, nil
 }
 
-func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) {
+func (r *runner) storeWCCredentials(c credentialConfig) (string, bool, error) {
+
+	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
+	if r.loginOptions.selfContainedWC && c.filePath != "" {
+		return printWCCredentials(r.k8sConfigAccess, r.fs, c)
+	}
+	return storeWCCredentials(r.k8sConfigAccess, r.fs, c)
+}
+
+func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (string, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -250,17 +292,19 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess) (string, error) 
 	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
 	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
 
-	// Some management clusters have an api.$INSTALLATION prefix
-	clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
+	// openstack clusters have an api.$INSTALLATION prefix
+	if provider == key.ProviderOpenStack {
+		clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
+	}
 
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
 }
 
-func getServerAddress(clusterID string, clusterBasePath string, provider string) string {
-	switch provider {
+func getServerAddress(certconfig clientCertConfig) string {
+	switch certconfig.provider {
 	case key.ProviderOpenStack:
-		return fmt.Sprintf("https://api.%s.%s:6443", clusterID, clusterBasePath)
+		return fmt.Sprintf("https://api.%s.%s:6443", certconfig.clusterName, certconfig.clusterBasePath)
 	default:
-		return fmt.Sprintf("https://api.%s.k8s.%s", clusterID, clusterBasePath)
+		return fmt.Sprintf("https://api.%s.k8s.%s", certconfig.clusterName, certconfig.clusterBasePath)
 	}
 }
