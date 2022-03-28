@@ -63,6 +63,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			App:       r.flag.App,
 			AWS:       r.flag.AWS,
+			GCP:       r.flag.GCP,
 			OIDC:      r.flag.OIDC,
 			OpenStack: r.flag.OpenStack,
 		}
@@ -118,6 +119,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	case key.ProviderAzure:
 		err = provider.WriteAzureTemplate(ctx, c, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	case key.ProviderGCP:
+		err = provider.WriteGCPTemplate(ctx, c, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

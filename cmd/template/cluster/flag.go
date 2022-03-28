@@ -24,13 +24,10 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
-	flagAWSRegion                      = "region"
-	flagAWSRole                        = "role"
-	flagNetworkAZUsageLimit            = "az-usage-limit"
-	flagNetworkVPCCidr                 = "vpc-cidr"
-	flagBastionInstanceType            = "bastion-instance-type"
-	flagBastionReplicas                = "bastion-replicas"
-	flagControlPlaneInstanceType       = "control-plane-instance-type"
+	flagAWSRole             = "role"
+	flagNetworkAZUsageLimit = "az-usage-limit"
+	flagNetworkVPCCidr      = "vpc-cidr"
+
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
 	flagAWSMachinePoolName             = "machine-pool-name"
@@ -38,6 +35,15 @@ const (
 	flagAWSMachinePoolInstanceType     = "machine-pool-instance-type"
 	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
+
+	// GCP only.
+	flagGCPProject                        = "project"
+	flagGCPFailureDomains                 = "gcp-failure-domains"
+	flagGCPMachineDeploymentName          = "gcp-machine-deployment-name"
+	flagGCPMachineDeploymentInstanceType  = "gcp-machine-deployment-instance-type"
+	flagGCPMachineDeploymentFailureDomain = "gcp-machine-deployment-failure-domain"
+	flagGCPMachineDeploymentReplicas      = "gcp-machine-deployment-replicas"
+	flagGCPMachineDeploymentRootDiskSize  = "gcp-machine-deployment-disk-size"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -69,20 +75,24 @@ const (
 	flagOpenStackWorkerReplicas             = "worker-replicas"
 
 	// Common.
-	flagControlPlaneAZ    = "control-plane-az"
-	flagDescription       = "description"
-	flagKubernetesVersion = "kubernetes-version"
-	flagName              = "name"
-	flagOIDCIssuerURL     = "oidc-issuer-url"
-	flagOIDCCAFile        = "oidc-ca-file"
-	flagOIDCClientID      = "oidc-client-id"
-	flagOIDCUsernameClaim = "oidc-username-claim"
-	flagOIDCGroupsClaim   = "oidc-groups-claim"
-	flagOutput            = "output"
-	flagOrganization      = "organization"
-	flagPodsCIDR          = "pods-cidr"
-	flagRelease           = "release"
-	flagLabel             = "label"
+	flagRegion                   = "region"
+	flagBastionInstanceType      = "bastion-instance-type"
+	flagBastionReplicas          = "bastion-replicas"
+	flagControlPlaneInstanceType = "control-plane-instance-type"
+	flagControlPlaneAZ           = "control-plane-az"
+	flagDescription              = "description"
+	flagKubernetesVersion        = "kubernetes-version"
+	flagName                     = "name"
+	flagOIDCIssuerURL            = "oidc-issuer-url"
+	flagOIDCCAFile               = "oidc-ca-file"
+	flagOIDCClientID             = "oidc-client-id"
+	flagOIDCUsernameClaim        = "oidc-username-claim"
+	flagOIDCGroupsClaim          = "oidc-groups-claim"
+	flagOutput                   = "output"
+	flagOrganization             = "organization"
+	flagPodsCIDR                 = "pods-cidr"
+	flagRelease                  = "release"
+	flagLabel                    = "label"
 )
 
 type flag struct {
@@ -90,18 +100,23 @@ type flag struct {
 	Provider        string
 
 	// Common.
-	ControlPlaneAZ    []string
-	Description       string
-	KubernetesVersion string
-	Name              string
-	Output            string
-	Organization      string
-	PodsCIDR          string
-	Release           string
-	Label             []string
+	ControlPlaneAZ           []string
+	Description              string
+	KubernetesVersion        string
+	Name                     string
+	Output                   string
+	Organization             string
+	PodsCIDR                 string
+	Release                  string
+	Label                    []string
+	Region                   string
+	BastionInstanceType      string
+	BastionReplicas          int
+	ControlPlaneInstanceType string
 
 	// Provider-specific
 	AWS       provider.AWSConfig
+	GCP       provider.GCPConfig
 	OpenStack provider.OpenStackConfig
 	App       provider.AppConfig
 	OIDC      provider.OIDC
@@ -115,17 +130,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
-	cmd.Flags().StringVar(&f.AWS.Region, flagAWSRegion, "", "AWS region where cluster will be created")
 	cmd.Flags().StringVar(&f.AWS.Role, flagAWSRole, "", "Name of the AWSClusterRole that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
-	// aws bastion
-	cmd.Flags().StringVar(&f.AWS.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
-	cmd.Flags().IntVar(&f.AWS.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
 	// aws control plane
-	cmd.Flags().StringVar(&f.AWS.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	// aws machine pool
 	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "machine-pool0", "AWS Machine pool name")
@@ -135,6 +145,16 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 300, "AWS Machine pool disk size")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
+
+	// GCP only.
+	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "GCP project name")
+	cmd.Flags().StringSliceVar(&f.GCP.FailureDomains, flagGCPFailureDomains, nil, "GCP cluster failure domains")
+
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.Name, flagGCPMachineDeploymentName, "worker0", "GCP project name")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n1-standard-2", "GCP worker instance type")
+	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "GCP worker replicas")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "GCP worker failure domain")
+	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "GCP worker root disk size")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
@@ -188,7 +208,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
 
-	_ = cmd.Flags().MarkHidden(flagAWSRegion)
+	_ = cmd.Flags().MarkHidden(flagRegion)
 	_ = cmd.Flags().MarkHidden(flagAWSRole)
 	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
 	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
@@ -203,6 +223,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
 
+	_ = cmd.Flags().MarkHidden(flagGCPProject)
+	_ = cmd.Flags().MarkHidden(flagGCPFailureDomains)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentName)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentFailureDomain)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentRootDiskSize)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentReplicas)
+	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentInstanceType)
+
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
 	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
@@ -210,6 +238,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes.")
+	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, "v1.20.9", "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
@@ -223,6 +252,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS region where cluster will be created")
+	// bastion
+	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
+	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
 
 	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
 
@@ -244,6 +277,7 @@ func (f *flag) Validate() error {
 	validProviders := []string{
 		key.ProviderAWS,
 		key.ProviderAzure,
+		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,
 	}
@@ -295,8 +329,8 @@ func (f *flag) Validate() error {
 				return microerror.Mask(err)
 			}
 			if isCapiVersion {
-				if f.AWS.Region == "" {
-					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSRegion)
+				if f.Region == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagRegion)
 				}
 				if f.ControlPlaneAZ == nil {
 					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)
@@ -311,6 +345,16 @@ func (f *flag) Validate() error {
 				if err == nil && !matchedSubnet {
 					return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
 				}
+			}
+		case key.ProviderGCP:
+			if f.Region == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagRegion)
+			}
+			if f.GCP.Project == "" {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPProject)
+			}
+			if f.GCP.FailureDomains == nil {
+				return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPFailureDomains)
 			}
 		case key.ProviderAzure:
 			if len(f.ControlPlaneAZ) > 1 {
@@ -396,8 +440,14 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.Provider != "openstack" && f.Release == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+	if f.Release == "" {
+		if f.Provider == "openstack" {
+			// skip release validation
+		} else if f.Provider == "gcp" {
+			// skip release validation
+		} else {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+		}
 	}
 
 	_, err = labels.Parse(f.Label)

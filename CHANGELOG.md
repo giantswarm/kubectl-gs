@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Add templating for CAPG clusters.
+
 ## [2.5.0] - 2022-03-23
 
 ### Added
