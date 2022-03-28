@@ -82,6 +82,10 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 	appName := config.Name
 	configMapName := userConfigMapName(appName)
 
+	if config.AWS.MachinePool.AZs == nil || len(config.AWS.MachinePool.AZs) == 0 {
+		config.AWS.MachinePool.AZs = config.ControlPlaneAZ
+	}
+
 	var configMapYAML []byte
 	{
 		flagValues := capa.ClusterConfig{
