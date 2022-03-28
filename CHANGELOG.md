@@ -8,6 +8,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ## [Unreleased]
 
 - Add templating for CAPG clusters.
+- Support `openstack` provider in `login` command
 
 ## [2.5.0] - 2022-03-23
 

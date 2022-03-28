@@ -10,6 +10,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 
 	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
@@ -160,7 +161,7 @@ func TestWCLogin(t *testing.T) {
 		},
 		// Trying to log into a cluster on openstack
 		{
-			name:                 "case 9",
+			name:                 "case 10",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
 			flags: &flag{
 				WCName:    "cluster",
@@ -201,8 +202,8 @@ func TestWCLogin(t *testing.T) {
 			client := FakeK8sClient()
 			ctx := context.Background()
 			{
-				// We create some resources
-				err = client.CtrlClient().Create(ctx, getOrganization())
+
+				err = client.CtrlClient().Create(ctx, getOrganization("org-organization"))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -226,6 +227,10 @@ func TestWCLogin(t *testing.T) {
 						err = client.CtrlClient().Create(ctx, getSecret(wcName+"-ca", wcNamespace, getCAdata()))
 						if err != nil {
 							fmt.Print(err)
+						}
+						err = client.CtrlClient().Create(ctx, getOrganization("org-anotherorganization"))
+						if err != nil {
+							t.Fatal(err)
 						}
 					}
 				}
@@ -301,14 +306,14 @@ func createSecret(ctx context.Context, client k8sclient.Interface) {
 	}
 }
 
-func getOrganization() *securityv1alpha1.Organization {
+func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	organization := &securityv1alpha1.Organization{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "organization",
+			Name: strings.TrimPrefix(orgnamespace, "org-"),
 		},
 		Spec: securityv1alpha1.OrganizationSpec{},
 		Status: securityv1alpha1.OrganizationStatus{
-			Namespace: "org-organization",
+			Namespace: orgnamespace,
 		},
 	}
 	return organization

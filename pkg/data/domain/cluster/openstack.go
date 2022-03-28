@@ -97,7 +97,7 @@ func (s *Service) getByNameOpenStack(ctx context.Context, name, namespace string
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
 		} else if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Mask(notFoundError)
 		}
 
 		capiCluster.TypeMeta = meta.TypeMeta{

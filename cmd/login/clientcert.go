@@ -542,8 +542,8 @@ func getCertOperatorVersion(ctx context.Context, releaseService release.Interfac
 }
 
 func validateProvider(provider string) error {
-	if provider == key.ProviderKVM {
-		return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is not supported on KVM.")
+	if provider != key.ProviderAWS && provider != key.ProviderAzure && provider != key.ProviderOpenStack {
+		return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is not supported on provider %s.", provider)
 	}
 
 	return nil
