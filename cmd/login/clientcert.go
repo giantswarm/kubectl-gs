@@ -215,6 +215,7 @@ func generateCredential(ctx context.Context, ca *corev1.Secret, config clientCer
 			credentialKeyCertCRT: certPEM,
 			credentialKeyCertKey: keyPEM,
 		},
+		Type: corev1.SecretTypeTLS,
 	}
 	return secret, nil
 }

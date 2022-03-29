@@ -163,9 +163,7 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 	return nil
 }
 
-func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) (string, bool, error) {
-	var err error
-
+func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
 	err = validateProvider(provider)
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -217,11 +215,12 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		loginOptions:  r.loginOptions,
 	}
 
-	contextName, contextExists, err := r.storeWCCredentials(credentialConfig)
+	contextName, contextExists, err = r.storeWCCredentials(credentialConfig)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
+	// We only clean up if a clientCertResource has been created (non CAPI case)
 	if clientCertResource != nil {
 		// Cleaning up leftover resources.
 		err = cleanUpClientCertResources(ctx, services.clientCertService, clientCertResource)
@@ -235,7 +234,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 }
 
 func (r *runner) getCredentials(ctx context.Context, clientCertService clientcert.Interface, config clientCertConfig) (*clientcert.ClientCert, *v1.Secret, error) {
-	var secret *v1.Secret
+	var clientCertsecret *v1.Secret
 	var clientCert *clientcert.ClientCert
 	var err error
 
@@ -246,11 +245,11 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
-		secret, err = generateCredential(ctx, ca, config)
+		clientCertsecret, err = generateCredential(ctx, ca, config)
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
-		return nil, secret, nil
+		return nil, clientCertsecret, nil
 	}
 
 	clientCert, err = createCert(ctx, clientCertService, config)
@@ -263,11 +262,11 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 		return nil, nil, microerror.Mask(err)
 	}
 	// Retrieve client certificate credential.
-	secret, err = fetchCredential(ctx, config.provider, clientCertService, clientCert)
+	clientCertsecret, err = fetchCredential(ctx, config.provider, clientCertService, clientCert)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
-	return clientCert, secret, nil
+	return clientCert, clientCertsecret, nil
 }
 
 func (r *runner) storeWCCredentials(c credentialConfig) (string, bool, error) {

@@ -13,7 +13,6 @@ import (
 	"strings"
 	"testing"
 
-	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
@@ -24,7 +23,6 @@ import (
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8scrdclient"
 	"github.com/giantswarm/microerror"
-
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -41,6 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
 func TestWCLogin(t *testing.T) {
@@ -430,40 +429,12 @@ type fakeK8sClient struct {
 }
 
 func FakeK8sClient() k8sclient.Interface {
-	var err error
-
 	var k8sClient k8sclient.Interface
 	{
-		scheme := runtime.NewScheme()
-		err = capiv1alpha3.AddToScheme(scheme)
+		scheme, err := scheme.NewScheme()
 		if err != nil {
 			panic(err)
 		}
-		err = capz.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = infrastructurev1alpha3.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = application.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = releasev1alpha1.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = securityv1alpha1.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		err = corev1alpha1.AddToScheme(scheme)
-		if err != nil {
-			panic(err)
-		}
-		_ = fakek8s.AddToScheme(scheme)
 		client := fakek8s.NewSimpleClientset()
 		g8sclient := fakeg8s.NewSimpleClientset()
 
