@@ -238,6 +238,7 @@ func getPrivKeyPEM(key *rsa.PrivateKey) []byte {
 		Bytes: x509.MarshalPKCS1PrivateKey(key),
 	})
 }
+
 func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(keyPEM)
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
