@@ -104,15 +104,19 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 }
 
 func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, services serviceSet, ctx context.Context) (string, error) {
-	if provider == key.ProviderOpenStack {
-		return "", nil
-	}
 	releaseVersion, err := getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-
-	return getCertOperatorVersion(ctx, services.releaseService, releaseVersion)
+	certOperatorVersion, err := getCertOperatorVersion(ctx, services.releaseService, releaseVersion)
+	// If the release does not contain cert-operator anymore (e.g. in CAPI versions) we return an empty string
+	// In this case we try to create the client certificate using the MC PKI
+	if IsMissingComponent(err) {
+		return "", nil
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return certOperatorVersion, nil
 }
 
 func (r *runner) handleWCLogin(ctx context.Context) error {
@@ -237,7 +241,8 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 	var clientCert *clientcert.ClientCert
 	var err error
 
-	if config.provider == key.ProviderOpenStack {
+	// If cert-operator is not running (as in CAPI) we attempt to use the MC PKI to create a certificate
+	if config.certOperatorVersion == "" {
 		// Retrieve the WC CA-secret.
 		ca, err := clientCertService.GetCredential(ctx, config.clusterNamespace, config.clusterName+"-ca")
 		if err != nil {
@@ -283,7 +288,6 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 	}
 
 	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
-	clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
 
 	// Ensure any trailing ports are trimmed.
 	reg := regexp.MustCompile(`:[0-9]+$`)
@@ -294,7 +298,12 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 
 	// openstack clusters have an api.$INSTALLATION prefix
 	if provider == key.ProviderOpenStack {
-		clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
+		if _, contextType := kubeconfig.IsKubeContext(config.CurrentContext); contextType == kubeconfig.ContextTypeMC {
+			clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
+			clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
+		} else {
+			return "", microerror.Maskf(selectedContextNonCompatibleError, "Can not parse MC codename from context %v. Valid MC context schema is `gs-$CODENAME`.", config.CurrentContext)
+		}
 	}
 
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil

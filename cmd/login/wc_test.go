@@ -40,7 +40,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
@@ -49,6 +48,7 @@ func TestWCLogin(t *testing.T) {
 		name                 string
 		flags                *flag
 		provider             string
+		capi                 bool
 		clustersInNamespaces map[string]string
 		expectError          *microerror.Error
 	}{
@@ -168,6 +168,7 @@ func TestWCLogin(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 			provider: "openstack",
+			capi:     true,
 		},
 	}
 
@@ -202,8 +203,11 @@ func TestWCLogin(t *testing.T) {
 			client := FakeK8sClient()
 			ctx := context.Background()
 			{
-
 				err = client.CtrlClient().Create(ctx, getOrganization("org-organization"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				err = client.CtrlClient().Create(ctx, getRelease(tc.capi))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -212,37 +216,33 @@ func TestWCLogin(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					switch tc.provider {
-					case "aws":
-						err = client.CtrlClient().Create(ctx, getAWSCluster(wcName, wcNamespace))
-						if err != nil {
-							t.Fatal(err)
-						}
-					case "azure":
-						err = client.CtrlClient().Create(ctx, getAzureCluster(wcName, wcNamespace))
-						if err != nil {
-							t.Fatal(err)
-						}
-					case key.ProviderOpenStack:
+					if tc.capi {
 						err = client.CtrlClient().Create(ctx, getSecret(wcName+"-ca", wcNamespace, getCAdata()))
 						if err != nil {
 							fmt.Print(err)
 						}
-						err = client.CtrlClient().Create(ctx, getOrganization("org-anotherorganization"))
-						if err != nil {
-							t.Fatal(err)
+					} else {
+						switch tc.provider {
+						case "aws":
+							err = client.CtrlClient().Create(ctx, getAWSCluster(wcName, wcNamespace))
+							if err != nil {
+								t.Fatal(err)
+							}
+						case "azure":
+							err = client.CtrlClient().Create(ctx, getAzureCluster(wcName, wcNamespace))
+							if err != nil {
+								t.Fatal(err)
+							}
 						}
 					}
-				}
-				err = client.CtrlClient().Create(ctx, getRelease())
-				if err != nil {
-					t.Fatal(err)
 				}
 			}
 			r.setLoginOptions(ctx, []string{"codename"})
 
 			// this is running in a go routine to simulate cert-operator creating the secret
-			go createSecret(ctx, client)
+			if !tc.capi {
+				go createSecret(ctx, client)
+			}
 
 			_, _, err = r.createClusterClientCert(ctx, client, tc.provider)
 			if err != nil {
@@ -382,21 +382,21 @@ func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSClu
 
 	return cr
 }
-func getRelease() *releasev1alpha1.Release {
+func getRelease(capi bool) *releasev1alpha1.Release {
 	cr := &releasev1alpha1.Release{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "v20.0.0",
 		},
-		Spec: releasev1alpha1.ReleaseSpec{
-			Components: []releasev1alpha1.ReleaseSpecComponent{
-				{
-					Name:    "cert-operator",
-					Version: "1.0.0",
-				},
-			},
-		},
+		Spec: releasev1alpha1.ReleaseSpec{},
 	}
-
+	if !capi {
+		cr.Spec.Components = []releasev1alpha1.ReleaseSpecComponent{
+			{
+				Name:    "cert-operator",
+				Version: "1.0.0",
+			},
+		}
+	}
 	return cr
 }
 func getSecret(name string, namespace string, data map[string][]byte) *corev1.Secret {
