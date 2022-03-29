@@ -125,8 +125,6 @@ func (r *runner) handleWCLogin(ctx context.Context) error {
 }
 
 func (r *runner) handleWCClientCert(ctx context.Context) error {
-	var err error
-
 	config := commonconfig.New(r.flag.config)
 
 	provider, err := config.GetProvider()
