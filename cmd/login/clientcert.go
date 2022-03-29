@@ -225,6 +225,7 @@ func getCertPEM(cert []byte) []byte {
 		Bytes: cert,
 	})
 }
+
 func getCert(certPEM []byte) (*x509.Certificate, error) {
 	block, _ := pem.Decode(certPEM)
 	return x509.ParseCertificate(block.Bytes)
