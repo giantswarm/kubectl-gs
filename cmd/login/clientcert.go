@@ -230,6 +230,7 @@ func getCert(certPEM []byte) (*x509.Certificate, error) {
 	block, _ := pem.Decode(certPEM)
 	return x509.ParseCertificate(block.Bytes)
 }
+
 func getPrivKeyPEM(key *rsa.PrivateKey) []byte {
 	return pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
