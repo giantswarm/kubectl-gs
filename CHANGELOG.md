@@ -7,14 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-- Add templating for CAPG clusters.
 - In `kubectl gs login`, add support for workload clusters on OpenStack.
+- Add templating for clusters using Cluster API provider Google Cloud (CAPG).
 
 ## [2.5.0] - 2022-03-23
 
 ### Added
 
-- Add cluster name label to CAPA Apps and ConfigMaps created with `kubectl-gs template`
+- Add cluster name label to Cluster API provider AWS (CAPA) Apps and ConfigMaps created with `kubectl-gs template`
 
 ## [2.4.0] - 2022-03-21
 
