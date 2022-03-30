@@ -104,7 +104,13 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 }
 
 func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, services serviceSet, ctx context.Context) (string, error) {
-	releaseVersion, err := getClusterReleaseVersion(c, provider, r.flag.WCInsecureNamespace)
+	// Pure CAPI providers (e.g. openstack) do not have release CRs and labels nor do they run cert-operator. so we return an empty string.
+	// In this case wecreate the client certificate using the MC PKI
+	if key.IsPureCAPIProvider(provider) {
+		return "", nil
+	}
+
+	releaseVersion, err := getClusterReleaseVersion(c, provider)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

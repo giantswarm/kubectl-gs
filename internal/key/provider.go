@@ -8,3 +8,12 @@ const (
 	ProviderOpenStack = "openstack"
 	ProviderVSphere   = "vsphere"
 )
+
+// PureCAPIProviders is the list of all providers which are purely based on or fully migrated to CAPI
+func PureCAPIProviders() []string {
+	return []string{
+		ProviderGCP,
+		ProviderVSphere,
+		ProviderOpenStack,
+	}
+}

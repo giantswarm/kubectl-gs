@@ -38,6 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
+	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
@@ -206,9 +207,11 @@ func TestWCLogin(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				err = client.CtrlClient().Create(ctx, getRelease(tc.capi))
-				if err != nil {
-					t.Fatal(err)
+				if !key.IsPureCAPIProvider(tc.provider) {
+					err = client.CtrlClient().Create(ctx, getRelease(tc.capi))
+					if err != nil {
+						t.Fatal(err)
+					}
 				}
 				for wcName, wcNamespace := range tc.clustersInNamespaces {
 					err = client.CtrlClient().Create(ctx, getCluster(wcName, wcNamespace))

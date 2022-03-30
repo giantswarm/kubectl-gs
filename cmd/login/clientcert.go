@@ -25,7 +25,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	kgslabel "github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
@@ -505,7 +504,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	}
 }
 
-func getClusterReleaseVersion(c *cluster.Cluster, provider string, unsafe bool) (string, error) {
+func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
 	if c.Cluster.Labels == nil {
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s does not have a release version label.", name)
 	}
@@ -513,14 +512,6 @@ func getClusterReleaseVersion(c *cluster.Cluster, provider string, unsafe bool) 
 	releaseVersion := c.Cluster.Labels[label.ReleaseVersion]
 	if len(releaseVersion) < 1 {
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s has an invalid release version.", name)
-	}
-
-	// We skip the validation if unsafe namespaces feature is active since this allows us to log into clusters in all versions
-	if !unsafe {
-		err := validateReleaseVersion(releaseVersion, provider)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
 	}
 
 	return releaseVersion, nil
@@ -550,17 +541,4 @@ func validateProvider(provider string) error {
 	}
 
 	return nil
-}
-
-func validateReleaseVersion(version, provider string) error {
-	featureService := feature.New(provider)
-	if featureService.Supports(feature.ClientCert, version) {
-		return nil
-	}
-
-	if provider == key.ProviderAWS {
-		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation. You can try the --%s flag to skip validation and try logging into older clusters. This might fail for non-admin users.", flagWCInsecureNamespace)
-	}
-
-	return microerror.Maskf(unsupportedReleaseVersionError, "The workload cluster release does not allow client certificate creation.")
 }
