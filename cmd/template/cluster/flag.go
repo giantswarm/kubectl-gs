@@ -324,22 +324,6 @@ func (f *flag) Validate() error {
 			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
 				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
 			}
-			isCapiVersion, err := key.IsCAPIVersion(strings.TrimPrefix(f.Release, "v"))
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			if isCapiVersion {
-				if f.Region == "" {
-					return microerror.Maskf(invalidFlagError, "--%s is required", flagRegion)
-				}
-				if f.ControlPlaneAZ == nil {
-					return microerror.Maskf(invalidFlagError, "--%s is required", flagControlPlaneAZ)
-				}
-				if f.AWS.MachinePool.AZs == nil {
-					return microerror.Maskf(invalidFlagError, "--%s is required", flagAWSMachinePoolAZs)
-				}
-			}
-
 			if f.AWS.ControlPlaneSubnet != "" {
 				matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
 				if err == nil && !matchedSubnet {

@@ -7,7 +7,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
 - Add templating for clusters using Cluster API provider Google Cloud (CAPG).
+
+### Changed
+
+- Make the region and availability zones flags optional for CAPA clusters.
 
 ## [2.5.0] - 2022-03-23
 
