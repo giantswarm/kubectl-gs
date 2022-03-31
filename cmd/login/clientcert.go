@@ -206,7 +206,6 @@ func generateCredential(ctx context.Context, ca *corev1.Secret, config clientCer
 			return nil, microerror.Mask(err)
 		}
 		certPEM = getCertPEM(certBytes)
-
 	}
 	secret := &corev1.Secret{
 		Data: map[string][]byte{
