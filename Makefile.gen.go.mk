@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@4.20.1
+#    devctl@4.23.0
 #
 
 PACKAGE_DIR    := ./bin-dist
