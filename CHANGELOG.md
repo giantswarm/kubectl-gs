@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.7.0] - 2022-04-01
+
 - In `kubectl gs login`, add support for workload clusters on OpenStack.
 
 ## [2.6.0] - 2022-03-31
@@ -820,7 +822,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.1...v2.4.0
