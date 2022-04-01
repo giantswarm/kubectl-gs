@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- In `kubectl gs login`, add support for workload clusters on OpenStack.
+
 ## [2.6.0] - 2022-03-31
 
 ### Added

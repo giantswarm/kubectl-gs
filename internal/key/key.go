@@ -109,6 +109,21 @@ func IsCAPIVersion(version string) (bool, error) {
 	return releaseVersion.GE(*capiVersion), nil
 }
 
+// IsPureCAPIProvider returns whether a given provider is purely based on or fully migrated to CAPI
+func IsPureCAPIProvider(provider string) bool {
+	return contains(PureCAPIProviders(), provider)
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
 // IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
 func IsOrgNamespaceVersion(version string) bool {
 	// TODO: this has to return true as soon as v16.0.0 is the newest version
