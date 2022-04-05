@@ -1,7 +1,9 @@
 package selfupdate
 
 import (
+	"fmt"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/blang/semver"
@@ -138,7 +140,10 @@ func (u *Updater) getLatestVersion() (semver.Version, error) {
 		u.cache.LatestVersion = latestVersion.Version.String()
 		// We ignore the error, because if saving fails, we'll just
 		// fetch the version again next time.
-		_ = u.cache.Persist(u.cacheDir)
+		err := u.cache.Persist(u.cacheDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "WARNING: Failed to persist the cache with error: %s", err)
+		}
 	}
 
 	return latestVersion.Version, nil
