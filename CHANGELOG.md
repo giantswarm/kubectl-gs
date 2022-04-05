@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Improved description of the `--control-plane-az` parameter when templating a cluster.
 
+### Fixed
+
+- Create cache directory if it does not exist, yet.
+
 ## [2.7.0] - 2022-04-01
 
 - In `kubectl gs login`, add support for workload clusters on OpenStack.
