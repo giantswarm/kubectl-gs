@@ -262,7 +262,6 @@ jobs:
       GO_VERSION: 1.17.8
       ARTIFACT_DIR: bin-dist
       TAG: v${{ needs.gather_facts.outputs.version }}
-      FILE_NAME: ""
     needs:
       - create_release
       - gather_facts
