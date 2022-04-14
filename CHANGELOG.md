@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.7.3] - 2022-04-14
+
 ## [2.7.2] - 2022-04-14
 
 ### Added
@@ -834,7 +836,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.3...HEAD
+[2.7.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.2...v2.7.3
 [2.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...v2.7.0
