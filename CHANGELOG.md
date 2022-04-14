@@ -9,6 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.7.3] - 2022-04-14
 
+- Really build signed windows binaries.
+
 ## [2.7.2] - 2022-04-14
 
 ### Added
