@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.7.1] - 2022-04-14
+
 ### Changed
 
 - Improved description of the `--control-plane-az` parameter when templating a cluster.
@@ -826,7 +828,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...HEAD
+[2.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.4.0...v2.5.0
