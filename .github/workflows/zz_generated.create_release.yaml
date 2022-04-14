@@ -284,7 +284,7 @@ jobs:
         run: make package-${{ matrix.platform }}
       - name: Specify package file name based on platform
         run: |
-          if [[ "${{ matrix.platform }}" -eq "windows-amd64" ]]; then
+          if [[ "${{ matrix.platform }}" == "windows-amd64" ]]; then
             echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.zip" >> $GITHUB_ENV
           else
             echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz" >> $GITHUB_ENV
