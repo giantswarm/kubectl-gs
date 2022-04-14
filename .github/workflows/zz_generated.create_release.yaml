@@ -262,6 +262,7 @@ jobs:
       GO_VERSION: 1.17.8
       ARTIFACT_DIR: bin-dist
       TAG: v${{ needs.gather_facts.outputs.version }}
+      FILE_NAME: ""
     needs:
       - create_release
       - gather_facts
@@ -281,10 +282,15 @@ jobs:
           ref: ${{ env.TAG }}
       - name: Create ${{ matrix.platform }} package
         run: make package-${{ matrix.platform }}
+      - name: Specify package file name based on platform
+        run: |
+          if [[ "${{ matrix.platform }}" -eq "windows-amd64" ]]; then
+            echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.zip" >> $GITHUB_ENV
+          else
+            echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz" >> $GITHUB_ENV
+          fi
       - name: Add ${{ matrix.platform }} package to release
         uses: actions/upload-release-asset@v1
-        env:
-          FILE_NAME: ${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.ARTIFACT_DIR }}/${{ env.FILE_NAME }}
