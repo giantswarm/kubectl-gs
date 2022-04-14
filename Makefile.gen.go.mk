@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@4.24.1
+#    devctl@5.1.2
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -98,7 +98,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 		  -v ${PWD}/certs:/mnt/certs \
 		  -v ${PWD}:/mnt/binaries \
 		  --user ${USERID}:${GROUPID} \
-		  quay.io/giantswarm/signcode-util:latest \
+		  quay.io/giantswarm/signcode-util:1.0.0 \
 		  sign \
 		  -pkcs12 /mnt/certs/code-signing.p12 \
 		  -n "Giant Swarm CLI tool $(APPLICATION)" \
