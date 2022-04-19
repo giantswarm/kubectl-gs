@@ -91,7 +91,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 	@if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" != "" ]; then \
 		echo 'Signing the Windows binary'; \
 		mkdir -p certs; \
-		echo ${CODE_SIGNING_CERT_BUNDLE_BASE64} | base64 -d > certs/code-signing.p12; \
+		echo "${CODE_SIGNING_CERT_BUNDLE_BASE64}" | base64 -d > certs/code-signing.p12; \
 		mv ${APPLICATION}-v${VERSION}-windows-amd64.exe ${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe; \
 		docker run --rm -ti \
 			-v ${PWD}/certs:/mnt/certs \
