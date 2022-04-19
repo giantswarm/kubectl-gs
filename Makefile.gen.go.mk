@@ -98,7 +98,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 		  -v ${PWD}/certs:/mnt/certs \
 		  -v ${PWD}:/mnt/binaries \
 		  --user ${USERID}:${GROUPID} \
-		  quay.io/giantswarm/signcode-util:1.0.0 \
+		  quay.io/giantswarm/signcode-util:1.1.1 \
 		  sign \
 		  -pkcs12 /mnt/certs/code-signing.p12 \
 		  -n "Giant Swarm CLI tool $(APPLICATION)" \
