@@ -15,3 +15,7 @@ jobs:
         fetch-depth: '0'
     - name: gitleaks-action
       uses: zricethezav/gitleaks-action@v1.6.0
+    - name: Debug make
+      run: make --version
+    - name: List packages
+      run: dpkg --list
