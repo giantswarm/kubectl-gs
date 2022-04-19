@@ -12,9 +12,6 @@ import (
 )
 
 type Config struct {
-	// GithubToken will be used when fetching versions
-	// from private GitHub repositories.
-	GithubToken string
 	// CurrentVersion is the currently installed version
 	// of the application.
 	CurrentVersion string
@@ -26,7 +23,6 @@ type Config struct {
 }
 
 type Updater struct {
-	githubToken    string
 	currentVersion semver.Version
 	repository     string
 	cacheDir       string
@@ -46,8 +42,7 @@ func New(c Config) (*Updater, error) {
 	var err error
 
 	u := &Updater{
-		githubToken: c.GithubToken,
-		cacheDir:    c.CacheDir,
+		cacheDir: c.CacheDir,
 	}
 
 	{
@@ -65,8 +60,10 @@ func New(c Config) (*Updater, error) {
 	}
 
 	{
+		// APIToken is empty here to suppress the use of the GITHUB_TOKEN
+		// environment variable or any .gitconfig token.
 		u.selfUpdater, err = selfupdate.NewUpdater(selfupdate.Config{
-			APIToken: u.githubToken,
+			APIToken: "",
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
