@@ -22,7 +22,6 @@ jobs:
           cat <<EOF
           ${{ toJson(github) }}
           EOF
-
   gather_facts:
     name: Gather facts
     runs-on: ubuntu-20.04
