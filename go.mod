@@ -10,7 +10,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/giantswarm/apiextensions/v3 v3.39.0
 	github.com/giantswarm/app/v5 v5.6.1
-	github.com/giantswarm/appcatalog v0.6.0
+	github.com/giantswarm/appcatalog v0.7.0
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v5 v5.12.0
 	github.com/giantswarm/k8smetadata v0.10.1
@@ -68,7 +68,6 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobuffalo/flect v0.2.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.3.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/btree v1.0.0 // indirect
