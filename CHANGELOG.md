@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.7.6] - 2022-04-19
 
-## [2.7.5] - 2022-04-14
+- Build signed Windows binaries
 
 ## [2.7.2] - 2022-04-14
 
