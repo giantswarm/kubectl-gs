@@ -22,6 +22,11 @@ jobs:
           cat <<EOF
           ${{ toJson(github) }}
           EOF
+      - name: Debug make
+        run: make --version
+      - name: List packages
+        run: dpkg --list
+
   gather_facts:
     name: Gather facts
     runs-on: ubuntu-20.04
@@ -284,10 +289,6 @@ jobs:
           ref: ${{ env.TAG }}
       - name: Create ${{ matrix.platform }} package
         run: make package-${{ matrix.platform }}
-      - name: Debug make
-        run: make --version
-      - name: List packages
-        run: dpkg --list
       - name: Specify package file name based on platform
         run: |
           if [[ "${{ matrix.platform }}" == "windows-amd64" ]]; then
