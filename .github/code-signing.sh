@@ -5,8 +5,6 @@ VERSION=$2
 
 echo "APPLICATION=${APPLICATION}"
 echo "VERSION=${VERSION}"
-echo "USERID=${USERID}"
-echo "GROUPID=${GROUPID}"
 echo "PWD=${PWD}"
 
 if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" = "" ]; then
@@ -30,7 +28,7 @@ mv ${APPLICATION}-v${VERSION}-windows-amd64.exe ${APPLICATION}-v${VERSION}-windo
 docker run --rm \
 	-v ${PWD}/certs:/mnt/certs \
 	-v ${PWD}:/mnt/binaries \
-	--user ${USERID}:${GROUPID} \
+	--user 1000:1000 \
 	quay.io/giantswarm/signcode-util:1.1.1 \
 	sign \
 	-pkcs12 /mnt/certs/code-signing.p12 \
