@@ -32,7 +32,6 @@ docker pull --quiet quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION}
 docker run --rm \
 	-v ${PWD}/certs:/mnt/certs \
 	-v ${PWD}:/mnt/binaries \
-	--user 1000:1000 \
 	quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION} \
 	sign \
 	-pkcs12 /mnt/certs/code-signing.p12 \
