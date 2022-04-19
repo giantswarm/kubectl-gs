@@ -3,7 +3,7 @@
 APPLICATION=$1
 VERSION=$2
 
-SIGNCODE_UTIL_VERSION=1.1.1
+SIGNCODE_UTIL=quay.io/giantswarm/signcode-util:1.1.1
 
 echo "APPLICATION=${APPLICATION}"
 echo "VERSION=${VERSION}"
@@ -27,12 +27,12 @@ echo "${CODE_SIGNING_CERT_BUNDLE_BASE64}" | base64 -d > certs/code-signing.p12
 
 mv ${APPLICATION}-v${VERSION}-windows-amd64.exe ${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe
 
-docker pull --quiet quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION}
+docker pull --quiet ${SIGNCODE_UTIL}
 
 docker run --rm \
 	-v ${PWD}/certs:/mnt/certs \
 	-v ${PWD}:/mnt/binaries \
-	quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION} \
+	${SIGNCODE_UTIL} \
 	sign \
 	-pkcs12 /mnt/certs/code-signing.p12 \
 	-n "Giant Swarm CLI tool ${APPLICATION}" \
@@ -46,6 +46,6 @@ echo "Verifying the signed binary"
 
 docker run --rm \
 	-v ${PWD}:/mnt/binaries \
-	quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION} \
+	${SIGNCODE_UTIL} \
 	verify \
 	/mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe
