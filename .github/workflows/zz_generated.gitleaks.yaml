@@ -15,7 +15,5 @@ jobs:
         fetch-depth: '0'
     - name: gitleaks-action
       uses: zricethezav/gitleaks-action@v1.6.0
-    - name: Debug make
-      run: make --version
-    - name: List packages
-      run: dpkg --list
+    - name: DEBUGGING - trying to build a windows binary
+      run: make package-windows-amd64
