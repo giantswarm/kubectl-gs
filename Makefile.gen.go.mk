@@ -89,7 +89,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: DIR=$(PACKAGE_DIR)/
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(VERSION)-windows-amd64.exe
 	@echo "====> $@"
 
-	@ if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" != "" ]; then \
+	@if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" != "" ]; then \
 	  echo 'Signing the Windows binary'; \
 	  mkdir -p certs; \
 	  echo ${CODE_SIGNING_CERT_BUNDLE_BASE64} | base64 -d > certs/code-signing.p12; \
