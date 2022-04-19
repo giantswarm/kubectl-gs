@@ -88,7 +88,6 @@ package-windows-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.z
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: DIR=$(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(VERSION)-windows-amd64.exe
 	@echo "====> $@"
-
 	@if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" != "" ]; then \
 		echo 'Signing the Windows binary'; \
 		mkdir -p certs; \
@@ -108,7 +107,6 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 			-out /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe \
 			-pass $(CODE_SIGNING_CERT_BUNDLE_PASSWORD); \
 	fi;
-
 	@echo "Creating directory $(DIR)"
 	mkdir -p $(DIR)
 	cp $< $(DIR)/$(APPLICATION).exe
