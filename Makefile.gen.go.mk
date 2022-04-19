@@ -88,8 +88,7 @@ package-windows-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.z
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: DIR=$(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(VERSION)-windows-amd64.exe
 	@echo "====> $@"
-	pwd
-	/bin/sh .github/code-signing.sh kubectl-gs 11.22.33
+	/bin/sh .github/windows-code-signing.sh $(APPLICATION) $(VERSION)
 	@echo "Creating directory $(DIR)"
 	mkdir -p $(DIR)
 	cp $< $(DIR)/$(APPLICATION).exe
