@@ -105,7 +105,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 			-t http://timestamp.digicert.com -verbose \
 			-in /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe \
 			-out /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe \
-			-pass $(CODE_SIGNING_CERT_BUNDLE_PASSWORD); \
+			-pass \"${CODE_SIGNING_CERT_BUNDLE_PASSWORD}\"; \
 	fi;
 	@echo "Creating directory $(DIR)"
 	mkdir -p $(DIR)
