@@ -10,12 +10,12 @@ echo "VERSION=${VERSION}"
 echo "PWD=${PWD}"
 
 if [ "${CODE_SIGNING_CERT_BUNDLE_PASSWORD}" = "" ]; then
-    echo "Variable CODE_SIGNING_CERT_BUNDLE_PASSWORD not set."
+	echo "Variable CODE_SIGNING_CERT_BUNDLE_PASSWORD not set."
 	exit 1
 fi;
 
 if [ "${CODE_SIGNING_CERT_BUNDLE_BASE64}" = "" ]; then
-    echo "Variable CODE_SIGNING_CERT_BUNDLE_BASE64 not set."
+	echo "Variable CODE_SIGNING_CERT_BUNDLE_BASE64 not set."
 	exit 1
 fi;
 
@@ -45,7 +45,7 @@ docker run --rm \
 echo "Verifying the signed binary"
 
 docker run --rm \
-  -v ${PWD}:/mnt/binaries \
-  quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION} \
-  verify \
-  /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe
+	-v ${PWD}:/mnt/binaries \
+	quay.io/giantswarm/signcode-util:${SIGNCODE_UTIL_VERSION} \
+	verify \
+	/mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe
