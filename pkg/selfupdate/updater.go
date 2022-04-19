@@ -130,6 +130,10 @@ func (u *Updater) getLatestVersion() (semver.Version, error) {
 	}
 
 	if latestVersion == nil {
+		token := os.Getenv("GITHUB_TOKEN")
+		if token != "" {
+			return semver.Version{}, microerror.Maskf(versionNotFoundError, "please check whether the GITHUB_TOKEN env variable is a token with access to %s", u.repository)
+		}
 		return semver.Version{}, microerror.Maskf(versionNotFoundError, "couldn't find the latest version and/or release assets on GitHub, probably due to token without access to the repository %s.", u.repository)
 	}
 
