@@ -22,10 +22,6 @@ jobs:
           cat <<EOF
           ${{ toJson(github) }}
           EOF
-      - name: Debug make
-        run: make --version
-      - name: List packages
-        run: dpkg --list
 
   gather_facts:
     name: Gather facts

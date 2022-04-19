@@ -9,18 +9,9 @@ on: [pull_request]
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GO_VERSION: 1.17.8
-      ARTIFACT_DIR: bin-dist
-      TAG: 10.11.12
-      CODE_SIGNING_CERT_BUNDLE_BASE64: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_BASE64 }}
-      CODE_SIGNING_CERT_BUNDLE_PASSWORD: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_PASSWORD }}
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: '0'
     - name: gitleaks-action
       uses: zricethezav/gitleaks-action@v1.6.0
-    - name: DEBUGGING - trying to build a windows binary
-      run: make package-windows-amd64
