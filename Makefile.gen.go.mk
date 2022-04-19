@@ -100,8 +100,8 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(V
 			quay.io/giantswarm/signcode-util:1.1.1 \
 			sign \
 			-pkcs12 /mnt/certs/code-signing.p12 \
-			-n \"Giant Swarm CLI tool $(APPLICATION)\" \
-			-i https://github.com/giantswarm/$(APPLICATION) \
+			-n \"Giant Swarm CLI tool ${APPLICATION}\" \
+			-i https://github.com/giantswarm/${APPLICATION} \
 			-t http://timestamp.digicert.com -verbose \
 			-in /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe \
 			-out /mnt/binaries/${APPLICATION}-v${VERSION}-windows-amd64.exe \
