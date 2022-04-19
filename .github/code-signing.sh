@@ -27,7 +27,7 @@ echo "${CODE_SIGNING_CERT_BUNDLE_BASE64}" | base64 -d > certs/code-signing.p12
 
 mv ${APPLICATION}-v${VERSION}-windows-amd64.exe ${APPLICATION}-v${VERSION}-windows-amd64-unsigned.exe
 
-docker run --rm -ti \
+docker run --rm \
 	-v ${PWD}/certs:/mnt/certs \
 	-v ${PWD}:/mnt/binaries \
 	--user ${USERID}:${GROUPID} \
@@ -43,7 +43,7 @@ docker run --rm -ti \
 
 echo "Verifying the signed binary"
 
-docker run --rm -ti \
+docker run --rm \
   -v ${PWD}:/mnt/binaries \
   quay.io/giantswarm/signcode-util:latest \
   verify \
