@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.7.11] - 2022-04-20
+
 ### Fixed
 
 - Disable colored output on Windows to avoid printing of ANSII escape codes.
@@ -837,7 +839,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.10...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.11...HEAD
+[2.7.11]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.10...v2.7.11
 [2.7.10]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...v2.7.10
 [2.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...v2.7.0
