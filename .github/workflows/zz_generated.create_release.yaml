@@ -254,17 +254,14 @@ jobs:
       matrix:
         platform:
           - darwin-amd64
-          - darwin-arm64
           - linux-amd64
+          - darwin-arm64
           - linux-arm64
-          - windows-amd64
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GO_VERSION: 1.17.8
       ARTIFACT_DIR: bin-dist
       TAG: v${{ needs.gather_facts.outputs.version }}
-      CODE_SIGNING_CERT_BUNDLE_BASE64: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_BASE64 }}
-      CODE_SIGNING_CERT_BUNDLE_PASSWORD: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_PASSWORD }}
     needs:
       - create_release
       - gather_facts
@@ -284,15 +281,10 @@ jobs:
           ref: ${{ env.TAG }}
       - name: Create ${{ matrix.platform }} package
         run: make package-${{ matrix.platform }}
-      - name: Specify package file name based on platform
-        run: |
-          if [[ "${{ matrix.platform }}" == "windows-amd64" ]]; then
-            echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.zip" >> $GITHUB_ENV
-          else
-            echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz" >> $GITHUB_ENV
-          fi
       - name: Add ${{ matrix.platform }} package to release
         uses: actions/upload-release-asset@v1
+        env:
+          FILE_NAME: ${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.ARTIFACT_DIR }}/${{ env.FILE_NAME }}
