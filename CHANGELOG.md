@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Disable colored output on Windows to avoid printing of ANSII escape codes.
+
 ## [2.7.10] - 2022-04-20
 
 - Build signed Windows binaries
