@@ -9,15 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.7.10] - 2022-04-20
 
-## [2.7.9] - 2022-04-19
-
 - Build signed Windows binaries
-
-## [2.7.2] - 2022-04-14
-
-### Added
-
-- Build windows binaries.
+- Extend CI config to include the Windows package in the Krew index when a new release is published
 
 ## [2.7.1] - 2022-04-14
 
@@ -841,9 +834,7 @@ This release supports rendering for CRs:
 - `App`
 
 [Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.10...HEAD
-[2.7.10]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.9...v2.7.10
-[2.7.9]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.2...v2.7.9
-[2.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...v2.7.2
+[2.7.10]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...v2.7.10
 [2.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.5.0...v2.6.0
