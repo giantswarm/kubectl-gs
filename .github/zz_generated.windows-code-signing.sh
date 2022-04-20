@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# DO NOT EDIT. Generated with:
+#
+#    devctl@5.2.0
+#
+
 APPLICATION=$1
 VERSION=$2
 

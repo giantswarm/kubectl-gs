@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@5.1.2
+#    devctl@5.2.0
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -88,7 +88,7 @@ package-windows-amd64: $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.z
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: DIR=$(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64
 $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-windows-amd64.zip: $(APPLICATION)-v$(VERSION)-windows-amd64.exe
 	@echo "====> $@"
-	/bin/sh .github/windows-code-signing.sh $(APPLICATION) $(VERSION)
+	/bin/sh .github/zz_generated.windows-code-signing.sh $(APPLICATION) $(VERSION)
 	@echo "Creating directory $(DIR)"
 	mkdir -p $(DIR)
 	cp $< $(DIR)/$(APPLICATION).exe
