@@ -3,12 +3,12 @@ package cluster
 import (
 	"context"
 
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -36,7 +36,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 		}
 	}
 
-	clusters := &capiv1alpha3.ClusterList{}
+	clusters := &capiv1beta1.ClusterList{}
 	{
 		err = s.client.List(ctx, clusters, inNamespace)
 		if apierrors.IsForbidden(err) {
@@ -55,7 +55,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 
 			if awsCluster, exists := awsClusters[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1alpha3",
+					APIVersion: "cluster.x-k8s.io/v1beta1",
 					Kind:       "Cluster",
 				}
 				awsCluster.TypeMeta = infrastructurev1alpha3.NewAWSClusterTypeMeta()
@@ -81,9 +81,9 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 
 	{
 		labelSelector := runtimeClient.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: name,
+			capiv1beta1.ClusterLabelName: name,
 		}
-		crs := &capiv1alpha3.ClusterList{}
+		crs := &capiv1beta1.ClusterList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
@@ -110,7 +110,7 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		cluster.Cluster = &crs.Items[0]
 
 		cluster.Cluster.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
 		}
 	}

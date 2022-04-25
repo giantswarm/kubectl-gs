@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -38,9 +38,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get nodepools",
 			storage: []runtime.Object{
-				newCAPIv1alpha3MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newcapiv1beta1MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
 				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha3MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiv1beta1MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
 				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
 			},
 			args:               nil,
@@ -55,9 +55,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get nodepool by name",
 			storage: []runtime.Object{
-				newCAPIv1alpha3MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newcapiv1beta1MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
 				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha3MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiv1beta1MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
 				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
 			},
 			args:               []string{"f930q"},
@@ -72,9 +72,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 4: get nodepool by name, with no infrastructure ref",
 			storage: []runtime.Object{
-				newCAPIv1alpha3MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newcapiv1beta1MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
 				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha3MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiv1beta1MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
@@ -82,11 +82,11 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 5: get nodepools by cluster name",
 			storage: []runtime.Object{
-				newCAPIv1alpha3MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newcapiv1beta1MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
 				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha3MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiv1beta1MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
 				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newCAPIv1alpha3MachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
+				newcapiv1beta1MachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
 				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
 			},
 			args:               nil,
@@ -96,11 +96,11 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 6: get nodepools by name and cluster name",
 			storage: []runtime.Object{
-				newCAPIv1alpha3MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newcapiv1beta1MachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
 				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newCAPIv1alpha3MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiv1beta1MachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
 				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newCAPIv1alpha3MachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
+				newcapiv1beta1MachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
 				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
 			},
 			args:               []string{"f930q"},

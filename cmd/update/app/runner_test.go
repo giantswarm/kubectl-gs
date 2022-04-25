@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"

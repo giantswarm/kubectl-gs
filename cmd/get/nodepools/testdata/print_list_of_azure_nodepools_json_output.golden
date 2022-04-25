@@ -5,7 +5,7 @@
     "items": [
         {
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "org-giantswarm",
@@ -42,7 +42,7 @@
         },
         {
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "org-giantswarm",
@@ -79,7 +79,7 @@
         },
         {
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "org-giantswarm",
@@ -116,7 +116,7 @@
         },
         {
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "f930q",
                 "namespace": "org-giantswarm",
@@ -153,7 +153,7 @@
         },
         {
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "9f012",
                 "namespace": "org-giantswarm",
@@ -190,7 +190,7 @@
         },
         {
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "org-giantswarm",

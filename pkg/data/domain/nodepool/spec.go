@@ -3,12 +3,12 @@ package nodepool
 import (
 	"context"
 
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 )
 
 type GetOptions struct {
@@ -29,11 +29,11 @@ type Resource interface {
 // Nodepool abstracts away provider-specific
 // node pool resources.
 type Nodepool struct {
-	MachineDeployment *capiv1alpha3.MachineDeployment
-	MachinePool       *capiexpv1alpha3.MachinePool
+	MachineDeployment *capiv1beta1.MachineDeployment
+	MachinePool       *capiexp.MachinePool
 
 	AWSMachineDeployment *infrastructurev1alpha3.AWSMachineDeployment
-	AzureMachinePool     *capzexpv1alpha3.AzureMachinePool
+	AzureMachinePool     *capzexp.AzureMachinePool
 }
 
 func (n *Nodepool) Object() runtime.Object {

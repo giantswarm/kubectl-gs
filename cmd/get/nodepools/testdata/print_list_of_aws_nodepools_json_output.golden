@@ -5,7 +5,7 @@
     "items": [
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
@@ -36,7 +36,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
@@ -67,7 +67,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
@@ -98,7 +98,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
@@ -129,7 +129,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
@@ -160,7 +160,7 @@
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",

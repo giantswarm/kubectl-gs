@@ -3,12 +3,12 @@ package cluster
 import (
 	"context"
 
-	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	infrastructure "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 type GetOptions struct {

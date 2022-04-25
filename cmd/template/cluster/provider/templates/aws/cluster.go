@@ -1,13 +1,13 @@
 package aws
 
 import (
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	apiv1alpha3 "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -193,7 +193,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 	clusterCR := &apiv1alpha3.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
