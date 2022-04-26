@@ -19,5 +19,5 @@ status:
   - lastTransitionTime: null
     status: "True"
     type: Created
-  controlPlaneInitialized: false
+  controlPlaneReady: false
   infrastructureReady: false

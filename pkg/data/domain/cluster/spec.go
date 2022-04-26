@@ -37,7 +37,7 @@ type Interface interface {
 }
 
 type Resource interface {
-	Object() client.Object
+	Object() runtime.Object
 }
 
 // Cluster contains the resources needed to represent a cluster on any supported provider.
@@ -53,7 +53,15 @@ type Cluster struct {
 	AzureCluster *capz.AzureCluster
 }
 
-func (n *Cluster) Object() client.Object {
+func (n *Cluster) Object() runtime.Object {
+	if n.Cluster != nil {
+		return n.Cluster
+	}
+
+	return nil
+}
+
+func (n *Cluster) ClientObject() client.Object {
 	if n.Cluster != nil {
 		return n.Cluster
 	}
@@ -66,7 +74,7 @@ type Collection struct {
 	Items []Cluster
 }
 
-func (cc *Collection) Object() client.Object {
+func (cc *Collection) Object() runtime.Object {
 	list := &meta.List{
 		TypeMeta: meta.TypeMeta{
 			Kind:       "List",

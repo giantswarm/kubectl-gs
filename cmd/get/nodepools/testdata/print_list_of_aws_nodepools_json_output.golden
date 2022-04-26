@@ -31,7 +31,10 @@
             },
             "status": {
                 "replicas": 2,
-                "readyReplicas": 2
+                "updatedReplicas": 0,
+                "readyReplicas": 2,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
@@ -62,7 +65,10 @@
             },
             "status": {
                 "replicas": 5,
-                "readyReplicas": 2
+                "updatedReplicas": 0,
+                "readyReplicas": 2,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
@@ -93,7 +99,10 @@
             },
             "status": {
                 "replicas": 10,
-                "readyReplicas": 10
+                "updatedReplicas": 0,
+                "readyReplicas": 10,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
@@ -124,7 +133,10 @@
             },
             "status": {
                 "replicas": 3,
-                "readyReplicas": 1
+                "updatedReplicas": 0,
+                "readyReplicas": 1,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
@@ -155,7 +167,10 @@
             },
             "status": {
                 "replicas": 1,
-                "readyReplicas": 1
+                "updatedReplicas": 0,
+                "readyReplicas": 1,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
@@ -186,7 +201,10 @@
             },
             "status": {
                 "replicas": 5,
-                "readyReplicas": 5
+                "updatedReplicas": 0,
+                "readyReplicas": 5,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         }
     ]

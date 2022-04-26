@@ -22,7 +22,7 @@
     },
     "status": {
         "infrastructureReady": false,
-        "controlPlaneInitialized": false,
+        "controlPlaneReady": false,
         "conditions": [
             {
                 "type": "Created",

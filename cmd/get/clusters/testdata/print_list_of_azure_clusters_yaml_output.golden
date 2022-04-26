@@ -17,7 +17,7 @@ items:
       host: ""
       port: 0
   status:
-    controlPlaneInitialized: false
+    controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
   kind: Cluster
@@ -40,7 +40,7 @@ items:
     - lastTransitionTime: null
       status: "True"
       type: Created
-    controlPlaneInitialized: false
+    controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
   kind: Cluster
@@ -66,7 +66,7 @@ items:
     - lastTransitionTime: null
       status: "True"
       type: Creating
-    controlPlaneInitialized: false
+    controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
   kind: Cluster
@@ -85,7 +85,7 @@ items:
       host: ""
       port: 0
   status:
-    controlPlaneInitialized: false
+    controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
   kind: Cluster
@@ -108,7 +108,7 @@ items:
     - lastTransitionTime: null
       status: "True"
       type: Deleting
-    controlPlaneInitialized: false
+    controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
   kind: Cluster
@@ -134,7 +134,7 @@ items:
     - lastTransitionTime: null
       status: "True"
       type: Created
-    controlPlaneInitialized: false
+    controlPlaneReady: false
     infrastructureReady: false
 kind: List
 metadata: {}

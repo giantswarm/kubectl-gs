@@ -26,6 +26,9 @@
     },
     "status": {
         "replicas": 3,
-        "readyReplicas": 1
+        "updatedReplicas": 0,
+        "readyReplicas": 1,
+        "availableReplicas": 0,
+        "unavailableReplicas": 0
     }
 }

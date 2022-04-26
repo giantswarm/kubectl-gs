@@ -19,5 +19,8 @@ spec:
       clusterName: ""
       infrastructureRef: {}
 status:
+  availableReplicas: 0
   readyReplicas: 1
   replicas: 3
+  unavailableReplicas: 0
+  updatedReplicas: 0

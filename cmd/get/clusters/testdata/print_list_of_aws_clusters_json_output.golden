@@ -27,7 +27,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneReady": false
             }
         },
         {
@@ -54,7 +54,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Created",
@@ -88,7 +88,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Created",
@@ -127,7 +127,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneReady": false
             }
         },
         {
@@ -154,7 +154,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Deleting",
@@ -188,7 +188,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Deleting",
