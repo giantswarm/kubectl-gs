@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type GetOptions struct {
@@ -32,11 +33,11 @@ type PatchSpec struct {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
-	Patch(context.Context, runtime.Object, PatchOptions) error
+	Patch(context.Context, client.Object, PatchOptions) error
 }
 
 type Resource interface {
-	Object() runtime.Object
+	Object() client.Object
 }
 
 // Cluster contains the resources needed to represent a cluster on any supported provider.
@@ -52,7 +53,7 @@ type Cluster struct {
 	AzureCluster *capz.AzureCluster
 }
 
-func (n *Cluster) Object() runtime.Object {
+func (n *Cluster) Object() client.Object {
 	if n.Cluster != nil {
 		return n.Cluster
 	}
@@ -65,7 +66,7 @@ type Collection struct {
 	Items []Cluster
 }
 
-func (cc *Collection) Object() runtime.Object {
+func (cc *Collection) Object() client.Object {
 	list := &meta.List{
 		TypeMeta: meta.TypeMeta{
 			Kind:       "List",

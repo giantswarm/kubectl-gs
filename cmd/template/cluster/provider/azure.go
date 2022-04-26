@@ -11,11 +11,11 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/utils/pointer"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -187,7 +187,7 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 	return machine
 }
 
-func newCAPZClusterInfraRef(obj runtime.Object) *corev1.ObjectReference {
+func newCAPZClusterInfraRef(obj client.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
 		s, err := scheme.NewScheme()
