@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
+	"k8s.io/utils/pointer"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/yaml"
@@ -120,8 +121,10 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 			NetworkSpec: capz.NetworkSpec{
 				APIServerLB: capz.LoadBalancerSpec{
 					Name: fmt.Sprintf("%s-%s-%s", config.Name, "API", "PublicLoadBalancer"),
-					SKU:  "Standard",
-					Type: "Public",
+					LoadBalancerClassSpec: capz.LoadBalancerClassSpec{
+						SKU:  "Standard",
+						Type: "Public",
+					},
 					FrontendIPs: []capz.FrontendIP{
 						{
 							Name: fmt.Sprintf("%s-%s-%s-%s", config.Name, "API", "PublicLoadBalancer", "Frontend"),
@@ -172,8 +175,8 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			OSDisk: capz.OSDisk{
 				OSType:      "Linux",
 				CachingType: "ReadWrite",
-				DiskSizeGB:  int32(50),
-				ManagedDisk: capz.ManagedDisk{
+				DiskSizeGB:  pointer.Int32(50),
+				ManagedDisk: &capz.ManagedDiskParameters{
 					StorageAccountType: "Premium_LRS",
 				},
 			},

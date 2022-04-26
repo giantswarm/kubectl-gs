@@ -18,7 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	expcapz "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	"sigs.k8s.io/yaml"
 
@@ -157,7 +157,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 }
 
 func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapz.AzureMachinePool {
-	var spot *v1alpha3.SpotVMOptions
+	var spot *capz.SpotVMOptions
 	if config.AzureUseSpotVms {
 		var maxPrice resource.Quantity
 		if config.AzureSpotMaxPrice > 0 {
@@ -166,7 +166,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapz.AzureMachinePool {
 		} else {
 			maxPrice = resource.MustParse("-1")
 		}
-		spot = &v1alpha3.SpotVMOptions{
+		spot = &capz.SpotVMOptions{
 			MaxPrice: &maxPrice,
 		}
 	}

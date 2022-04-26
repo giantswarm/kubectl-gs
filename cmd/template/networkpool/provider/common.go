@@ -4,11 +4,10 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
-
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/util"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -22,13 +21,13 @@ type NetworkPoolCRsConfig struct {
 func WriteTemplate(out io.Writer, config NetworkPoolCRsConfig) error {
 	var err error
 
-	crsConfig := v1alpha3.NetworkPoolCRsConfig{
+	crsConfig := util.NetworkPoolCRsConfig{
 		CIDRBlock:     config.CIDRBlock,
 		NetworkPoolID: config.NetworkPoolName,
 		Owner:         config.Organization,
 	}
 
-	crs, err := v1alpha3.NewNetworkPoolCRs(crsConfig)
+	crs, err := util.NewNetworkPoolCRs(crsConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}

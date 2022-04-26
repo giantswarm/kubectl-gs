@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ClientCert struct {
@@ -18,7 +19,7 @@ type Collection struct {
 }
 
 type Resource interface {
-	Object() runtime.Object
+	Object() client.Object
 }
 
 type Interface interface {
@@ -27,7 +28,7 @@ type Interface interface {
 	GetCredential(ctx context.Context, namespace, name string) (*corev1.Secret, error)
 }
 
-func (k *ClientCert) Object() runtime.Object {
+func (k *ClientCert) Object() client.Object {
 	if k.CertConfig != nil {
 		return k.CertConfig
 	}
@@ -35,7 +36,7 @@ func (k *ClientCert) Object() runtime.Object {
 	return nil
 }
 
-func (c *Collection) Object() runtime.Object {
+func (c *Collection) Object() client.ObjectList {
 	list := &metav1.List{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "List",
