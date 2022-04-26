@@ -14,9 +14,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capzexpv1beta1 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capiexpv1beta1 "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
@@ -325,10 +325,10 @@ func newAWSNodePool(name, clusterName, created, release, description string, nod
 	return np
 }
 
-func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1alpha3.AzureMachinePool {
+func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1beta1.AzureMachinePool {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	n := &capzexpv1alpha3.AzureMachinePool{
+	n := &capzexpv1beta1.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
 			Kind:       "AzureMachinePool",
@@ -349,10 +349,10 @@ func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1a
 	return n
 }
 
-func newCAPIexpv1alpha3MachinePool(name, clusterName, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexpv1alpha3.MachinePool {
+func newCAPIexpv1beta1MachinePool(name, clusterName, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexpv1beta1.MachinePool {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	n := &capiexpv1alpha3.MachinePool{
+	n := &capiexpv1beta1.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
 			Kind:       "MachinePool",
@@ -373,7 +373,7 @@ func newCAPIexpv1alpha3MachinePool(name, clusterName, created, release, descript
 				annotation.MachinePoolName: description,
 			},
 		},
-		Status: capiexpv1alpha3.MachinePoolStatus{
+		Status: capiexpv1beta1.MachinePoolStatus{
 			Replicas:      int32(nodesDesired),
 			ReadyReplicas: int32(nodesReady),
 		},
@@ -384,7 +384,7 @@ func newCAPIexpv1alpha3MachinePool(name, clusterName, created, release, descript
 
 func newAzureNodePool(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
 	azureMP := newAzureMachinePool(name, clusterName, created, release)
-	mp := newCAPIexpv1alpha3MachinePool(name, clusterName, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
+	mp := newCAPIexpv1beta1MachinePool(name, clusterName, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
 
 	np := &nodepool.Nodepool{
 		MachinePool:      mp,

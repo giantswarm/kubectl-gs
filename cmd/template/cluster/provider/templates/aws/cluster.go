@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1alpha3 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -42,7 +42,7 @@ type ClusterCRsConfig struct {
 // +k8s:deepcopy-gen=false
 
 type ClusterCRs struct {
-	Cluster         *apiv1alpha3.Cluster
+	Cluster         *capiv1beta1.Cluster
 	AWSCluster      *v1alpha3.AWSCluster
 	G8sControlPlane *v1alpha3.G8sControlPlane
 	AWSControlPlane *v1alpha3.AWSControlPlane
@@ -103,7 +103,7 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 				label.Cluster:                c.ClusterName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				capiv1beta1.ClusterLabelName: c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSClusterSpec{
@@ -160,7 +160,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 				label.ControlPlane:           c.ControlPlaneName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				capiv1beta1.ClusterLabelName: c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
@@ -170,7 +170,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 	}
 }
 
-func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Cluster {
+func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capiv1beta1.Cluster {
 	clusterLabels := map[string]string{}
 	{
 		for key, value := range c.Labels {
@@ -180,7 +180,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 		gsLabels := map[string]string{
 			label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
 			label.Cluster:                c.ClusterName,
-			apiv1alpha3.ClusterLabelName: c.ClusterName,
+			capiv1beta1.ClusterLabelName: c.ClusterName,
 			label.Organization:           c.Owner,
 			label.ReleaseVersion:         c.ReleaseVersion,
 		}
@@ -190,7 +190,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 		}
 	}
 
-	clusterCR := &apiv1alpha3.Cluster{
+	clusterCR := &capiv1beta1.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -203,7 +203,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 			},
 			Labels: clusterLabels,
 		},
-		Spec: apiv1alpha3.ClusterSpec{
+		Spec: capiv1beta1.ClusterSpec{
 			InfrastructureRef: &corev1.ObjectReference{
 				APIVersion: obj.TypeMeta.APIVersion,
 				Kind:       obj.TypeMeta.Kind,
@@ -234,7 +234,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 				label.ControlPlane:           c.ControlPlaneName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				capiv1beta1.ClusterLabelName: c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{

@@ -32,7 +32,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
@@ -319,23 +319,23 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster(name string, namespace string) *capiv1alpha3.Cluster {
-	cluster := &capiv1alpha3.Cluster{
+func getCluster(name string, namespace string) *capiv1beta1.Cluster {
+	cluster := &capiv1beta1.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                 name,
-				capiv1alpha3.ClusterLabelName: name,
-				label.Organization:            "organization",
-				label.ReleaseVersion:          "20.0.0",
+				label.Cluster:                name,
+				capiv1beta1.ClusterLabelName: name,
+				label.Organization:           "organization",
+				label.ReleaseVersion:         "20.0.0",
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{},
+		Spec: capiv1beta1.ClusterSpec{},
 	}
 
 	return cluster
@@ -350,10 +350,10 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                 name,
-				capiv1alpha3.ClusterLabelName: name,
-				label.Organization:            "organization",
-				label.ReleaseVersion:          "20.0.0",
+				label.Cluster:                name,
+				capiv1beta1.ClusterLabelName: name,
+				label.Organization:           "organization",
+				label.ReleaseVersion:         "20.0.0",
 			},
 		},
 		Spec: capz.AzureClusterSpec{},
@@ -371,10 +371,10 @@ func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSClu
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                 name,
-				capiv1alpha3.ClusterLabelName: name,
-				label.Organization:            "organization",
-				label.ReleaseVersion:          "20.0.0",
+				label.Cluster:                name,
+				capiv1beta1.ClusterLabelName: name,
+				label.Organization:           "organization",
+				label.ReleaseVersion:         "20.0.0",
 			},
 		},
 		Spec: infrastructurev1alpha3.AWSClusterSpec{},

@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1alpha3 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -38,7 +38,7 @@ type NodePoolCRsConfig struct {
 // +k8s:deepcopy-gen=false
 
 type NodePoolCRs struct {
-	MachineDeployment    *apiv1alpha3.MachineDeployment
+	MachineDeployment    *capiv1beta1.MachineDeployment
 	AWSMachineDeployment *v1alpha3.AWSMachineDeployment
 }
 
@@ -94,7 +94,7 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 				label.MachineDeployment:      c.MachineDeploymentName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				capiv1beta1.ClusterLabelName: c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSMachineDeploymentSpec{
@@ -124,8 +124,8 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 	}
 }
 
-func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsConfig) *apiv1alpha3.MachineDeployment {
-	return &apiv1alpha3.MachineDeployment{
+func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsConfig) *capiv1beta1.MachineDeployment {
+	return &capiv1beta1.MachineDeployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachineDeployment",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -142,13 +142,13 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 				label.MachineDeployment:      c.MachineDeploymentName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				capiv1beta1.ClusterLabelName: c.ClusterName,
 			},
 		},
-		Spec: apiv1alpha3.MachineDeploymentSpec{
+		Spec: capiv1beta1.MachineDeploymentSpec{
 			ClusterName: c.ClusterName,
-			Template: apiv1alpha3.MachineTemplateSpec{
-				Spec: apiv1alpha3.MachineSpec{
+			Template: capiv1beta1.MachineTemplateSpec{
+				Spec: capiv1beta1.MachineSpec{
 					ClusterName: c.ClusterName,
 					InfrastructureRef: corev1.ObjectReference{
 						APIVersion: obj.TypeMeta.APIVersion,
