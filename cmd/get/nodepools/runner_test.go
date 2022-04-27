@@ -185,7 +185,7 @@ func newClusterService(t *testing.T, object ...runtime.Object) *nodepool.Service
 	}
 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))

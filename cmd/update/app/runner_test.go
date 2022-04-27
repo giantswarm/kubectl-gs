@@ -230,7 +230,7 @@ func newAppService(t *testing.T, object ...runtime.Object) *app.Service {
 	}
 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
