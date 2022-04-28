@@ -8,6 +8,7 @@ import (
 	"time"
 
 	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
+	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
@@ -15,7 +16,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -330,7 +330,7 @@ func newAzureMachinePool(name, clusterName, created, release string) *capzexp.Az
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
 	n := &capzexp.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
 			Kind:       "AzureMachinePool",
 		},
 		ObjectMeta: metav1.ObjectMeta{

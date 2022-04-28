@@ -4,10 +4,10 @@ import (
 	"context"
 
 	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
+	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -59,7 +59,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) 
 					Kind:       "MachinePool",
 				}
 				azureMP.TypeMeta = metav1.TypeMeta{
-					APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
+					APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
 					Kind:       "AzureMachinePool",
 				}
 
@@ -119,7 +119,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID str
 		np.AzureMachinePool = &crs.Items[0]
 
 		np.AzureMachinePool.TypeMeta = metav1.TypeMeta{
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
 			Kind:       "AzureMachinePool",
 		}
 	}

@@ -13,13 +13,13 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/reference"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	expcapz "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
@@ -156,8 +156,8 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 	return nil
 }
 
-func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapz.AzureMachinePool {
-	var spot *capz.SpotVMOptions
+func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
+	var spot *infrav1.SpotVMOptions
 	if config.AzureUseSpotVms {
 		var maxPrice resource.Quantity
 		if config.AzureSpotMaxPrice > 0 {
@@ -166,15 +166,15 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapz.AzureMachinePool {
 		} else {
 			maxPrice = resource.MustParse("-1")
 		}
-		spot = &capz.SpotVMOptions{
+		spot = &infrav1.SpotVMOptions{
 			MaxPrice: &maxPrice,
 		}
 	}
 
-	azureMp := &expcapz.AzureMachinePool{
+	azureMp := &capzexp.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachinePool",
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolName,
@@ -188,8 +188,8 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapz.AzureMachinePool {
 				label.ReleaseVersion:       config.ReleaseVersion,
 			},
 		},
-		Spec: expcapz.AzureMachinePoolSpec{
-			Template: expcapz.AzureMachinePoolMachineTemplate{
+		Spec: capzexp.AzureMachinePoolSpec{
+			Template: capzexp.AzureMachineTemplate{
 				VMSize:        config.VMSize,
 				SSHPublicKey:  "",
 				SpotVMOptions: spot,
