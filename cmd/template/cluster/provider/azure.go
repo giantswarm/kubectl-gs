@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/utils/pointer"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
@@ -67,7 +67,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 
 		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
 
-		clusterCR := newcapiv1beta1ClusterCR(config, infrastructureRef)
+		clusterCR := newcapiClusterCR(config, infrastructureRef)
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -109,11 +109,11 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 			Name:      config.Name,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                config.Name,
-				capiv1beta1.ClusterLabelName: config.Name,
-				label.Organization:           config.Organization,
-				label.ReleaseVersion:         config.ReleaseVersion,
-				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
+				label.Cluster:              config.Name,
+				capi.ClusterLabelName:      config.Name,
+				label.Organization:         config.Organization,
+				label.ReleaseVersion:       config.ReleaseVersion,
+				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
 			},
 		},
 		Spec: capz.AzureClusterSpec{
@@ -153,12 +153,12 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			Name:      fmt.Sprintf("%s-master-%d", config.Name, 0),
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                            config.Name,
-				capiv1beta1.ClusterLabelName:             config.Name,
-				capiv1beta1.MachineControlPlaneLabelName: "true",
-				label.Organization:                       config.Organization,
-				label.ReleaseVersion:                     config.ReleaseVersion,
-				label.AzureOperatorVersion:               config.ReleaseComponents["azure-operator"],
+				label.Cluster:                     config.Name,
+				capi.ClusterLabelName:             config.Name,
+				capi.MachineControlPlaneLabelName: "true",
+				label.Organization:                config.Organization,
+				label.ReleaseVersion:              config.ReleaseVersion,
+				label.AzureOperatorVersion:        config.ReleaseComponents["azure-operator"],
 			},
 		},
 		Spec: capz.AzureMachineSpec{

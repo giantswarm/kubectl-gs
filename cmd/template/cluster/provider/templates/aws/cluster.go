@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -42,7 +42,7 @@ type ClusterCRsConfig struct {
 // +k8s:deepcopy-gen=false
 
 type ClusterCRs struct {
-	Cluster         *capiv1beta1.Cluster
+	Cluster         *capi.Cluster
 	AWSCluster      *v1alpha3.AWSCluster
 	G8sControlPlane *v1alpha3.G8sControlPlane
 	AWSControlPlane *v1alpha3.AWSControlPlane
@@ -99,11 +99,11 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awsclusters.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
-				label.AWSOperatorVersion:     c.ReleaseComponents["aws-operator"],
-				label.Cluster:                c.ClusterName,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
-				capiv1beta1.ClusterLabelName: c.ClusterName,
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            c.ClusterName,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
+				capi.ClusterLabelName:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSClusterSpec{
@@ -155,12 +155,12 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awscontrolplanes.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
-				label.AWSOperatorVersion:     c.ReleaseComponents["aws-operator"],
-				label.Cluster:                c.ClusterName,
-				label.ControlPlane:           c.ControlPlaneName,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
-				capiv1beta1.ClusterLabelName: c.ClusterName,
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            c.ClusterName,
+				label.ControlPlane:       c.ControlPlaneName,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
+				capi.ClusterLabelName:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
@@ -170,7 +170,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 	}
 }
 
-func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capiv1beta1.Cluster {
+func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	clusterLabels := map[string]string{}
 	{
 		for key, value := range c.Labels {
@@ -180,7 +180,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capiv1beta1.Clu
 		gsLabels := map[string]string{
 			label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
 			label.Cluster:                c.ClusterName,
-			capiv1beta1.ClusterLabelName: c.ClusterName,
+			capi.ClusterLabelName:        c.ClusterName,
 			label.Organization:           c.Owner,
 			label.ReleaseVersion:         c.ReleaseVersion,
 		}
@@ -190,7 +190,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capiv1beta1.Clu
 		}
 	}
 
-	clusterCR := &capiv1beta1.Cluster{
+	clusterCR := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -203,7 +203,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capiv1beta1.Clu
 			},
 			Labels: clusterLabels,
 		},
-		Spec: capiv1beta1.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: &corev1.ObjectReference{
 				APIVersion: obj.TypeMeta.APIVersion,
 				Kind:       obj.TypeMeta.Kind,
@@ -234,7 +234,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 				label.ControlPlane:           c.ControlPlaneName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				capiv1beta1.ClusterLabelName: c.ClusterName,
+				capi.ClusterLabelName:        c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{

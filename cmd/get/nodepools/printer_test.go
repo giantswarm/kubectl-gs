@@ -14,9 +14,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capzexpv1beta1 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexpv1beta1 "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
@@ -285,10 +285,10 @@ func newAWSMachineDeployment(name, clusterName, created, release, description st
 	return n
 }
 
-func newcapiv1beta1MachineDeployment(name, clusterName, created, release string, nodesDesired, nodesReady int) *capiv1beta1.MachineDeployment {
+func newcapiMachineDeployment(name, clusterName, created, release string, nodesDesired, nodesReady int) *capi.MachineDeployment {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	n := &capiv1beta1.MachineDeployment{
+	n := &capi.MachineDeployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "MachineDeployment",
@@ -304,7 +304,7 @@ func newcapiv1beta1MachineDeployment(name, clusterName, created, release string,
 				label.Cluster:           clusterName,
 			},
 		},
-		Status: capiv1beta1.MachineDeploymentStatus{
+		Status: capi.MachineDeploymentStatus{
 			Replicas:      int32(nodesDesired),
 			ReadyReplicas: int32(nodesReady),
 		},
@@ -315,7 +315,7 @@ func newcapiv1beta1MachineDeployment(name, clusterName, created, release string,
 
 func newAWSNodePool(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
 	awsMD := newAWSMachineDeployment(name, clusterName, created, release, description, nodesMin, nodesMax)
-	md := newcapiv1beta1MachineDeployment(name, clusterName, created, release, nodesDesired, nodesReady)
+	md := newcapiMachineDeployment(name, clusterName, created, release, nodesDesired, nodesReady)
 
 	np := &nodepool.Nodepool{
 		MachineDeployment:    md,
@@ -325,10 +325,10 @@ func newAWSNodePool(name, clusterName, created, release, description string, nod
 	return np
 }
 
-func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1beta1.AzureMachinePool {
+func newAzureMachinePool(name, clusterName, created, release string) *capzexp.AzureMachinePool {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	n := &capzexpv1beta1.AzureMachinePool{
+	n := &capzexp.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
 			Kind:       "AzureMachinePool",
@@ -338,10 +338,10 @@ func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1b
 			Namespace:         "org-giantswarm",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.MachinePool:            name,
-				label.ReleaseVersion:         release,
-				label.Organization:           "giantswarm",
-				capiv1beta1.ClusterLabelName: clusterName,
+				label.MachinePool:     name,
+				label.ReleaseVersion:  release,
+				label.Organization:    "giantswarm",
+				capi.ClusterLabelName: clusterName,
 			},
 		},
 	}
@@ -349,10 +349,10 @@ func newAzureMachinePool(name, clusterName, created, release string) *capzexpv1b
 	return n
 }
 
-func newCAPIexpv1beta1MachinePool(name, clusterName, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexpv1beta1.MachinePool {
+func newCAPIexpMachinePool(name, clusterName, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexp.MachinePool {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	n := &capiexpv1beta1.MachinePool{
+	n := &capiexp.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
 			Kind:       "MachinePool",
@@ -362,10 +362,10 @@ func newCAPIexpv1beta1MachinePool(name, clusterName, created, release, descripti
 			Namespace:         "org-giantswarm",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.MachinePool:            name,
-				label.ReleaseVersion:         release,
-				label.Organization:           "giantswarm",
-				capiv1beta1.ClusterLabelName: clusterName,
+				label.MachinePool:     name,
+				label.ReleaseVersion:  release,
+				label.Organization:    "giantswarm",
+				capi.ClusterLabelName: clusterName,
 			},
 			Annotations: map[string]string{
 				annotation.NodePoolMinSize: fmt.Sprintf("%d", nodesMin),
@@ -373,7 +373,7 @@ func newCAPIexpv1beta1MachinePool(name, clusterName, created, release, descripti
 				annotation.MachinePoolName: description,
 			},
 		},
-		Status: capiexpv1beta1.MachinePoolStatus{
+		Status: capiexp.MachinePoolStatus{
 			Replicas:      int32(nodesDesired),
 			ReadyReplicas: int32(nodesReady),
 		},
@@ -384,7 +384,7 @@ func newCAPIexpv1beta1MachinePool(name, clusterName, created, release, descripti
 
 func newAzureNodePool(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
 	azureMP := newAzureMachinePool(name, clusterName, created, release)
-	mp := newCAPIexpv1beta1MachinePool(name, clusterName, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
+	mp := newCAPIexpMachinePool(name, clusterName, created, release, description, nodesMin, nodesMax, nodesDesired, nodesReady)
 
 	np := &nodepool.Nodepool{
 		MachinePool:      mp,

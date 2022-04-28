@@ -21,7 +21,7 @@ import (
 	memory "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
@@ -134,8 +134,8 @@ type templateConfig struct {
 	Data string
 }
 
-func newcapiv1beta1ClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capiv1beta1.Cluster {
-	cluster := &capiv1beta1.Cluster{
+func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capi.Cluster {
+	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -145,7 +145,7 @@ func newcapiv1beta1ClusterCR(config ClusterConfig, infrastructureRef *corev1.Obj
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                config.Name,
-				capiv1beta1.ClusterLabelName: config.Name,
+				capi.ClusterLabelName:        config.Name,
 				label.Organization:           config.Organization,
 				label.ReleaseVersion:         config.ReleaseVersion,
 				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
@@ -155,7 +155,7 @@ func newcapiv1beta1ClusterCR(config ClusterConfig, infrastructureRef *corev1.Obj
 				annotation.ClusterDescription: config.Description,
 			},
 		},
-		Spec: capiv1beta1.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: infrastructureRef,
 		},
 	}

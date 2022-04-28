@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
@@ -248,10 +248,10 @@ func Test_printOutput(t *testing.T) {
 	}
 }
 
-func newcapiv1beta1Cluster(id, created, release, org, description string, conditions []string) *capiv1beta1.Cluster {
+func newcapiCluster(id, created, release, org, description string, conditions []string) *capi.Cluster {
 	location, _ := time.LoadLocation("UTC")
 	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	c := &capiv1beta1.Cluster{
+	c := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
@@ -261,9 +261,9 @@ func newcapiv1beta1Cluster(id, created, release, org, description string, condit
 			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.ReleaseVersion:         release,
-				label.Organization:           org,
-				capiv1beta1.ClusterLabelName: id,
+				label.ReleaseVersion:  release,
+				label.Organization:    org,
+				capi.ClusterLabelName: id,
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: description,
@@ -271,10 +271,10 @@ func newcapiv1beta1Cluster(id, created, release, org, description string, condit
 		},
 	}
 
-	resConditions := make([]capiv1beta1.Condition, 0, len(conditions))
+	resConditions := make([]capi.Condition, 0, len(conditions))
 	for _, condition := range conditions {
-		resConditions = append(resConditions, capiv1beta1.Condition{
-			Type:   capiv1beta1.ConditionType(condition),
+		resConditions = append(resConditions, capi.Condition{
+			Type:   capi.ConditionType(condition),
 			Status: "True",
 		})
 	}
@@ -292,10 +292,10 @@ func newAWSClusterResource(id, created, release, org, description string, condit
 			Namespace:         "default",
 			CreationTimestamp: metav1.NewTime(parsedCreationDate),
 			Labels: map[string]string{
-				label.ReleaseVersion:         release,
-				label.Organization:           org,
-				label.Cluster:                id,
-				capiv1beta1.ClusterLabelName: id,
+				label.ReleaseVersion:  release,
+				label.Organization:    org,
+				label.Cluster:         id,
+				capi.ClusterLabelName: id,
 			},
 		},
 		Spec: infrastructurev1alpha3.AWSClusterSpec{
@@ -321,7 +321,7 @@ func newAWSClusterResource(id, created, release, org, description string, condit
 
 func newAWSCluster(id, created, release, org, description string, conditions []string) *cluster.Cluster {
 	awsCluster := newAWSClusterResource(id, created, release, org, description, conditions)
-	capiCluster := newcapiv1beta1Cluster(id, "default", release, org, description, conditions)
+	capiCluster := newcapiCluster(id, "default", release, org, description, conditions)
 
 	c := &cluster.Cluster{
 		AWSCluster: awsCluster,
@@ -341,7 +341,7 @@ func newAzureClusterResource(id, namespace string) *capz.AzureCluster {
 			Name:      id,
 			Namespace: namespace,
 			Labels: map[string]string{
-				capiv1beta1.ClusterLabelName: id,
+				capi.ClusterLabelName: id,
 			}},
 	}
 
@@ -350,7 +350,7 @@ func newAzureClusterResource(id, namespace string) *capz.AzureCluster {
 
 func newAzureCluster(id, created, release, org, description string, conditions []string) *cluster.Cluster {
 	azureCluster := newAzureClusterResource(id, "default")
-	capiCluster := newcapiv1beta1Cluster(id, created, release, org, description, conditions)
+	capiCluster := newcapiCluster(id, created, release, org, description, conditions)
 
 	c := &cluster.Cluster{
 		AzureCluster: azureCluster,

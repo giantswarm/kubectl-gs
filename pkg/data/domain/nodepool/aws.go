@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,7 +37,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (R
 		}
 	}
 
-	machineDeployments := &capiv1beta1.MachineDeploymentList{}
+	machineDeployments := &capi.MachineDeploymentList{}
 	{
 		err = s.client.List(ctx, machineDeployments, labelSelector, inNamespace)
 		if err != nil {
@@ -85,7 +85,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID strin
 	np := &Nodepool{}
 
 	{
-		crs := &capiv1beta1.MachineDeploymentList{}
+		crs := &capi.MachineDeploymentList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)

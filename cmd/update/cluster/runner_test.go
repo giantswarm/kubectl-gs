@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
@@ -67,8 +67,8 @@ func Test_run(t *testing.T) {
 	}
 }
 
-func newCluster(name, namespace, targetRelease string) *capiv1beta1.Cluster {
-	c := &capiv1beta1.Cluster{
+func newCluster(name, namespace, targetRelease string) *capi.Cluster {
+	c := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
@@ -77,8 +77,8 @@ func newCluster(name, namespace, targetRelease string) *capiv1beta1.Cluster {
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				capiv1beta1.ClusterLabelName: name,
-				label.ReleaseVersion:         "16.0.1",
+				capi.ClusterLabelName: name,
+				label.ReleaseVersion:  "16.0.1",
 			},
 			Annotations: map[string]string{
 				"cluster.giantswarm.io/description": "fake-cluster",

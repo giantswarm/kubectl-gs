@@ -7,7 +7,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -38,10 +38,10 @@ func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) 
 			var iClusterName, jClusterName string
 
 			if n.Items[i].MachinePool != nil && n.Items[i].MachinePool.Labels != nil {
-				iClusterName = n.Items[i].MachinePool.Labels[capiv1beta1.ClusterLabelName]
+				iClusterName = n.Items[i].MachinePool.Labels[capi.ClusterLabelName]
 			}
 			if n.Items[j].MachinePool != nil && n.Items[j].MachinePool.Labels != nil {
-				jClusterName = n.Items[j].MachinePool.Labels[capiv1beta1.ClusterLabelName]
+				jClusterName = n.Items[j].MachinePool.Labels[capi.ClusterLabelName]
 			}
 
 			return strings.Compare(iClusterName, jClusterName) > 0
@@ -63,7 +63,7 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachinePool.GetName(),
-			nodePool.MachinePool.Labels[capiv1beta1.ClusterLabelName],
+			nodePool.MachinePool.Labels[capi.ClusterLabelName],
 			output.TranslateTimestampSince(nodePool.MachinePool.CreationTimestamp),
 			getAzureLatestCondition(nodePool, capabilities),
 			getAzureAutoscaling(nodePool, capabilities),

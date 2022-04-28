@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -38,7 +38,7 @@ type NodePoolCRsConfig struct {
 // +k8s:deepcopy-gen=false
 
 type NodePoolCRs struct {
-	MachineDeployment    *capiv1beta1.MachineDeployment
+	MachineDeployment    *capi.MachineDeployment
 	AWSMachineDeployment *v1alpha3.AWSMachineDeployment
 }
 
@@ -89,12 +89,12 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awsmachinedeployments.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
-				label.AWSOperatorVersion:     c.ReleaseComponents["aws-operator"],
-				label.Cluster:                c.ClusterName,
-				label.MachineDeployment:      c.MachineDeploymentName,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
-				capiv1beta1.ClusterLabelName: c.ClusterName,
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            c.ClusterName,
+				label.MachineDeployment:  c.MachineDeploymentName,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
+				capi.ClusterLabelName:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSMachineDeploymentSpec{
@@ -124,8 +124,8 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 	}
 }
 
-func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsConfig) *capiv1beta1.MachineDeployment {
-	return &capiv1beta1.MachineDeployment{
+func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsConfig) *capi.MachineDeployment {
+	return &capi.MachineDeployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachineDeployment",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -142,13 +142,13 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 				label.MachineDeployment:      c.MachineDeploymentName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				capiv1beta1.ClusterLabelName: c.ClusterName,
+				capi.ClusterLabelName:        c.ClusterName,
 			},
 		},
-		Spec: capiv1beta1.MachineDeploymentSpec{
+		Spec: capi.MachineDeploymentSpec{
 			ClusterName: c.ClusterName,
-			Template: capiv1beta1.MachineTemplateSpec{
-				Spec: capiv1beta1.MachineSpec{
+			Template: capi.MachineTemplateSpec{
+				Spec: capi.MachineSpec{
 					ClusterName: c.ClusterName,
 					InfrastructureRef: corev1.ObjectReference{
 						APIVersion: obj.TypeMeta.APIVersion,

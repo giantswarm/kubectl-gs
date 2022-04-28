@@ -19,8 +19,8 @@ import (
 	memory "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	expcapiv1beta1 "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	expcapi "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -52,8 +52,8 @@ type NodePoolCRsConfig struct {
 	Namespace         string
 }
 
-func newcapiv1beta1MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *expcapiv1beta1.MachinePool {
-	mp := &expcapiv1beta1.MachinePool{
+func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *expcapi.MachinePool {
+	mp := &expcapi.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
 			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
@@ -62,26 +62,26 @@ func newcapiv1beta1MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *co
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                config.ClusterName,
-				capiv1beta1.ClusterLabelName: config.ClusterName,
-				label.MachinePool:            config.NodePoolName,
-				label.Organization:           config.Organization,
-				label.ReleaseVersion:         config.ReleaseVersion,
-				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
+				label.Cluster:              config.ClusterName,
+				capi.ClusterLabelName:      config.ClusterName,
+				label.MachinePool:          config.NodePoolName,
+				label.Organization:         config.Organization,
+				label.ReleaseVersion:       config.ReleaseVersion,
+				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
 			},
 			Annotations: map[string]string{
 				annotation.MachinePoolName: config.Description,
 			},
 		},
-		Spec: expcapiv1beta1.MachinePoolSpec{
+		Spec: expcapi.MachinePoolSpec{
 			ClusterName:    config.ClusterName,
 			Replicas:       toInt32Ptr(int32(config.NodesMin)),
 			FailureDomains: config.AvailabilityZones,
-			Template: capiv1beta1.MachineTemplateSpec{
-				Spec: capiv1beta1.MachineSpec{
+			Template: capi.MachineTemplateSpec{
+				Spec: capi.MachineSpec{
 					ClusterName:       config.ClusterName,
 					InfrastructureRef: *infrastructureRef,
-					Bootstrap: capiv1beta1.Bootstrap{
+					Bootstrap: capi.Bootstrap{
 						ConfigRef: bootstrapConfigRef,
 					},
 				},
@@ -102,9 +102,9 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                config.ClusterName,
-				capiv1beta1.ClusterLabelName: config.ClusterName,
-				label.ReleaseVersion:         config.ReleaseVersion,
+				label.Cluster:         config.ClusterName,
+				capi.ClusterLabelName: config.ClusterName,
+				label.ReleaseVersion:  config.ReleaseVersion,
 			},
 		},
 		Spec: corev1alpha1.SparkSpec{},

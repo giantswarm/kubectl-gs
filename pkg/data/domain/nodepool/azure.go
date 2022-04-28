@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -17,7 +17,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) 
 
 	labelSelector := runtimeClient.MatchingLabels{}
 	if len(clusterID) > 0 {
-		labelSelector[capiv1beta1.ClusterLabelName] = clusterID
+		labelSelector[capi.ClusterLabelName] = clusterID
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 
@@ -82,7 +82,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID str
 		label.MachinePool: id,
 	}
 	if len(clusterID) > 0 {
-		labelSelector[capiv1beta1.ClusterLabelName] = clusterID
+		labelSelector[capi.ClusterLabelName] = clusterID
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 

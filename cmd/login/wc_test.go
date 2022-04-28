@@ -32,7 +32,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
@@ -319,8 +319,8 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster(name string, namespace string) *capiv1beta1.Cluster {
-	cluster := &capiv1beta1.Cluster{
+func getCluster(name string, namespace string) *capi.Cluster {
+	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -329,13 +329,13 @@ func getCluster(name string, namespace string) *capiv1beta1.Cluster {
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                name,
-				capiv1beta1.ClusterLabelName: name,
-				label.Organization:           "organization",
-				label.ReleaseVersion:         "20.0.0",
+				label.Cluster:         name,
+				capi.ClusterLabelName: name,
+				label.Organization:    "organization",
+				label.ReleaseVersion:  "20.0.0",
 			},
 		},
-		Spec: capiv1beta1.ClusterSpec{},
+		Spec: capi.ClusterSpec{},
 	}
 
 	return cluster
@@ -350,10 +350,10 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                name,
-				capiv1beta1.ClusterLabelName: name,
-				label.Organization:           "organization",
-				label.ReleaseVersion:         "20.0.0",
+				label.Cluster:         name,
+				capi.ClusterLabelName: name,
+				label.Organization:    "organization",
+				label.ReleaseVersion:  "20.0.0",
 			},
 		},
 		Spec: capz.AzureClusterSpec{},
@@ -371,10 +371,10 @@ func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSClu
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                name,
-				capiv1beta1.ClusterLabelName: name,
-				label.Organization:           "organization",
-				label.ReleaseVersion:         "20.0.0",
+				label.Cluster:         name,
+				capi.ClusterLabelName: name,
+				label.Organization:    "organization",
+				label.ReleaseVersion:  "20.0.0",
 			},
 		},
 		Spec: infrastructurev1alpha3.AWSClusterSpec{},

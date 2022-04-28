@@ -7,7 +7,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -35,7 +35,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 		}
 	}
 
-	clusters := &capiv1beta1.ClusterList{}
+	clusters := &capi.ClusterList{}
 	{
 		err = s.client.List(ctx, clusters, inNamespace)
 		if apierrors.IsForbidden(err) {
@@ -78,14 +78,14 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 	var err error
 
 	labelSelector := runtimeClient.MatchingLabels{
-		capiv1beta1.ClusterLabelName: name,
+		capi.ClusterLabelName: name,
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 
 	cluster := &Cluster{}
 
 	{
-		crs := &capiv1beta1.ClusterList{}
+		crs := &capi.ClusterList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)

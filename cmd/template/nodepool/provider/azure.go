@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
@@ -126,7 +126,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
 		bootstrapConfigRef := newSparkCRRef(sparkCR)
 
-		machinePoolCR := newcapiv1beta1MachinePoolCR(config, infrastructureRef, bootstrapConfigRef)
+		machinePoolCR := newcapiMachinePoolCR(config, infrastructureRef, bootstrapConfigRef)
 		{
 			machinePoolCR.GetAnnotations()[annotation.NodePoolMinSize] = strconv.Itoa(config.NodesMin)
 			machinePoolCR.GetAnnotations()[annotation.NodePoolMaxSize] = strconv.Itoa(config.NodesMax)
@@ -180,12 +180,12 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapz.AzureMachinePool {
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                config.ClusterName,
-				capiv1beta1.ClusterLabelName: config.ClusterName,
-				label.MachinePool:            config.NodePoolName,
-				label.Organization:           config.Organization,
-				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
-				label.ReleaseVersion:         config.ReleaseVersion,
+				label.Cluster:              config.ClusterName,
+				capi.ClusterLabelName:      config.ClusterName,
+				label.MachinePool:          config.NodePoolName,
+				label.Organization:         config.Organization,
+				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
+				label.ReleaseVersion:       config.ReleaseVersion,
 			},
 		},
 		Spec: expcapz.AzureMachinePoolSpec{
