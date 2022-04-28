@@ -3,12 +3,12 @@ package nodepool
 import (
 	"context"
 
+	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -55,7 +55,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) 
 
 			if azureMP, exists := azureMPs[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "exp.cluster.x-k8s.io/v1beta1",
+					APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
 					Kind:       "MachinePool",
 				}
 				azureMP.TypeMeta = metav1.TypeMeta{
@@ -101,7 +101,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID str
 		np.MachinePool = &crs.Items[0]
 
 		np.MachinePool.TypeMeta = metav1.TypeMeta{
-			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
+			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
 			Kind:       "MachinePool",
 		}
 	}
