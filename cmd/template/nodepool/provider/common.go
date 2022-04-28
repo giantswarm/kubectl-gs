@@ -6,6 +6,7 @@ import (
 	"io"
 	"text/template"
 
+	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
@@ -19,8 +20,8 @@ import (
 	memory "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	expcapi "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -52,8 +53,8 @@ type NodePoolCRsConfig struct {
 	Namespace         string
 }
 
-func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *expcapi.MachinePool {
-	mp := &expcapi.MachinePool{
+func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *capiexp.MachinePool {
+	mp := &capiexp.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
 			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
@@ -73,15 +74,15 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 				annotation.MachinePoolName: config.Description,
 			},
 		},
-		Spec: expcapi.MachinePoolSpec{
+		Spec: capiexp.MachinePoolSpec{
 			ClusterName:    config.ClusterName,
 			Replicas:       toInt32Ptr(int32(config.NodesMin)),
 			FailureDomains: config.AvailabilityZones,
-			Template: capi.MachineTemplateSpec{
-				Spec: capi.MachineSpec{
+			Template: clusterv1.MachineTemplateSpec{
+				Spec: clusterv1.MachineSpec{
 					ClusterName:       config.ClusterName,
 					InfrastructureRef: *infrastructureRef,
-					Bootstrap: capi.Bootstrap{
+					Bootstrap: clusterv1.Bootstrap{
 						ConfigRef: bootstrapConfigRef,
 					},
 				},

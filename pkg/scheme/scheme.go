@@ -2,6 +2,7 @@ package scheme
 
 import (
 	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	gscore "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	provider "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
@@ -14,7 +15,6 @@ import (
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	expcapz "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	expcapi "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 )
 
 func NewSchemeBuilder() []func(*runtime.Scheme) error {
@@ -22,7 +22,7 @@ func NewSchemeBuilder() []func(*runtime.Scheme) error {
 		apiextensions.AddToScheme,    // CustomResourceDefinition
 		application.AddToScheme,      // App, Catalog
 		capi.AddToScheme,             // Cluster
-		expcapi.AddToScheme,          // AWSMachinePool
+		capiexp.AddToScheme,          // AWSMachinePool
 		k8score.AddToScheme,          // Secret, ConfigMap
 		infrastructure.AddToScheme,   // AWSCluster (Giant Swarm CAPI)
 		capz.AddToScheme,             // AzureCluster
