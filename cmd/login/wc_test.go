@@ -344,7 +344,7 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
