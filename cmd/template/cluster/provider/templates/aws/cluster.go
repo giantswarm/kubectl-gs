@@ -88,10 +88,6 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 
 func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 	awsClusterCR := &v1alpha3.AWSCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindAWSCluster,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,
@@ -144,10 +140,6 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 
 func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 	return &v1alpha3.AWSControlPlane{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindAWSControlPlane,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ControlPlaneName,
 			Namespace: metav1.NamespaceDefault,
@@ -191,10 +183,6 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	}
 
 	clusterCR := &capi.Cluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1beta1",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,
@@ -218,10 +206,6 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 
 func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1alpha3.G8sControlPlane {
 	return &v1alpha3.G8sControlPlane{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindG8sControlPlane,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ControlPlaneName,
 			Namespace: metav1.NamespaceDefault,

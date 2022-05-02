@@ -101,10 +101,6 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 
 func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AzureCluster",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
@@ -145,10 +141,6 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 	}
 
 	machine := &capz.AzureMachine{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AzureMachine",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-master-%d", config.Name, 0),
 			Namespace: config.Namespace,

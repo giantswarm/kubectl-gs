@@ -78,10 +78,6 @@ func NewNodePoolCRs(config NodePoolCRsConfig) (NodePoolCRs, error) {
 
 func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployment {
 	return &v1alpha3.AWSMachineDeployment{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindAWSMachineDeployment,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.MachineDeploymentName,
 			Namespace: metav1.NamespaceDefault,
@@ -126,10 +122,6 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 
 func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsConfig) *capi.MachineDeployment {
 	return &capi.MachineDeployment{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "MachineDeployment",
-			APIVersion: "cluster.x-k8s.io/v1beta1",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.MachineDeploymentName,
 			Namespace: metav1.NamespaceDefault,
