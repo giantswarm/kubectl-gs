@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.8.1] - 2022-05-03
+
 ### Fixed
 
 - Fixed missing `Kind` in `template` command.
@@ -849,7 +851,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.1...HEAD
+[2.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.11...v2.8.0
 [2.7.11]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.10...v2.7.11
 [2.7.10]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...v2.7.10
