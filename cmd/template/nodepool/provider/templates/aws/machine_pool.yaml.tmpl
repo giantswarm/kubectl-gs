@@ -1,4 +1,4 @@
-apiVersion: exp.cluster.x-k8s.io/v1alpha3
+apiVersion: exp.cluster.x-k8s.io/v1beta1
 kind: MachinePool
 metadata:
   name: {{ .Name }}
@@ -19,12 +19,12 @@ spec:
     spec:
       bootstrap:
         configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfig
           name: {{ .Name }}
       clusterName: {{ .ClusterName }}
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: AWSMachinePool
         name: {{ .Name }}
       version: {{ .KubernetesVersion }}

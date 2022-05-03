@@ -1,20 +1,20 @@
 package scheme
 
 import (
-	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	gscore "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	infrastructure "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
-	provider "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
-	release "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
-	securityv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/security/v1alpha1"
+	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
+	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
+	gscore "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
+	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
+	provider "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/microerror"
+	release "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	k8score "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapz "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapi "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 func NewSchemeBuilder() []func(*runtime.Scheme) error {
@@ -22,11 +22,11 @@ func NewSchemeBuilder() []func(*runtime.Scheme) error {
 		apiextensions.AddToScheme,    // CustomResourceDefinition
 		application.AddToScheme,      // App, Catalog
 		capi.AddToScheme,             // Cluster
-		expcapi.AddToScheme,          // AWSMachinePool
+		capiexp.AddToScheme,          // AWSMachinePool
 		k8score.AddToScheme,          // Secret, ConfigMap
 		infrastructure.AddToScheme,   // AWSCluster (Giant Swarm CAPI)
 		capz.AddToScheme,             // AzureCluster
-		expcapz.AddToScheme,          // AzureMachinePool
+		capzexp.AddToScheme,          // AzureMachinePool
 		gscore.AddToScheme,           // Spark
 		provider.AddToScheme,         // AWSConfig/AzureConfig
 		release.AddToScheme,          // Release

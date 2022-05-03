@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -61,7 +61,7 @@ func (s *Service) getAllOpenStack(ctx context.Context, namespace string) (Resour
 	for _, capiCluster := range clusterList.Items {
 		clusterCopy := capiCluster.DeepCopy()
 		clusterCopy.TypeMeta = meta.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
 		}
 		cluster := Cluster{
@@ -103,7 +103,7 @@ func (s *Service) getByNameOpenStack(ctx context.Context, name, namespace string
 		}
 
 		capiCluster.TypeMeta = meta.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
 		}
 		cluster.Cluster = &capiCluster

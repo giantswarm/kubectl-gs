@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -37,9 +37,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
-				newCAPIV1alpha3Cluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", nil),
+				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", nil),
 				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newCAPIV1alpha3Cluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", nil),
+				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", nil),
 				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               nil,
@@ -54,9 +54,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newCAPIV1alpha3Cluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
+				newcapiCluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
 				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newCAPIV1alpha3Cluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				newcapiCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               []string{"f930q"},
@@ -71,9 +71,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 4: get cluster by id, with no infrastructure cluster",
 			storage: []runtime.Object{
-				newCAPIV1alpha3Cluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", nil),
+				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", nil),
 				newAWSClusterResource("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
-				newCAPIV1alpha3Cluster("f930q", "default", "11.0.0", "some-other", "test cluster 3", nil),
+				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 3", nil),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
@@ -141,7 +141,7 @@ func newClusterService(t *testing.T, object ...runtime.Object) *cluster.Service 
 	}
 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))

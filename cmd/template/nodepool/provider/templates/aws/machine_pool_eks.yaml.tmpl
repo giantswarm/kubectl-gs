@@ -1,4 +1,4 @@
-apiVersion: exp.cluster.x-k8s.io/v1alpha3
+apiVersion: exp.cluster.x-k8s.io/v1beta1
 kind: MachinePool
 metadata:
   name: {{ .Name }}
@@ -21,6 +21,6 @@ spec:
         dataSecretName: ""
       clusterName: {{ .ClusterName }}
       infrastructureRef:
-        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: AWSManagedMachinePool
         name: {{ .Name }}

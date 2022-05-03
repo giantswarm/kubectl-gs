@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"

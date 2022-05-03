@@ -5,7 +5,7 @@
     "items": [
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
@@ -27,12 +27,12 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneReady": false
             }
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
@@ -54,7 +54,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Created",
@@ -66,7 +66,7 @@
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
@@ -88,7 +88,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Created",
@@ -105,7 +105,7 @@
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
@@ -127,12 +127,12 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneReady": false
             }
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
@@ -154,7 +154,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Deleting",
@@ -166,7 +166,7 @@
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",
@@ -188,7 +188,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Deleting",

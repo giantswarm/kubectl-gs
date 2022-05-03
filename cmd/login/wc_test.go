@@ -13,16 +13,14 @@ import (
 	"strings"
 	"testing"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
-	securityv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/security/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
-	fakeg8s "github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned/fake"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
+	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8scrdclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8scrdclient"
 	"github.com/giantswarm/microerror"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -33,8 +31,8 @@ import (
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
@@ -321,41 +319,33 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster(name string, namespace string) *capiv1alpha3.Cluster {
-	cluster := &capiv1alpha3.Cluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
-		},
+func getCluster(name string, namespace string) *capi.Cluster {
+	cluster := &capi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                 name,
-				capiv1alpha3.ClusterLabelName: name,
-				label.Organization:            "organization",
-				label.ReleaseVersion:          "20.0.0",
+				label.Cluster:         name,
+				capi.ClusterLabelName: name,
+				label.Organization:    "organization",
+				label.ReleaseVersion:  "20.0.0",
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{},
+		Spec: capi.ClusterSpec{},
 	}
 
 	return cluster
 }
 func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AzureCluster",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                 name,
-				capiv1alpha3.ClusterLabelName: name,
-				label.Organization:            "organization",
-				label.ReleaseVersion:          "20.0.0",
+				label.Cluster:         name,
+				capi.ClusterLabelName: name,
+				label.Organization:    "organization",
+				label.ReleaseVersion:  "20.0.0",
 			},
 		},
 		Spec: capz.AzureClusterSpec{},
@@ -365,18 +355,14 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 }
 func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSCluster {
 	cr := &infrastructurev1alpha3.AWSCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AWSCluster",
-			APIVersion: "infrastructure.giantswarm.io/v1alpha3",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				label.Cluster:                 name,
-				capiv1alpha3.ClusterLabelName: name,
-				label.Organization:            "organization",
-				label.ReleaseVersion:          "20.0.0",
+				label.Cluster:         name,
+				capi.ClusterLabelName: name,
+				label.Organization:    "organization",
+				label.ReleaseVersion:  "20.0.0",
 			},
 		},
 		Spec: infrastructurev1alpha3.AWSClusterSpec{},
@@ -428,7 +414,6 @@ func getCAdata() map[string][]byte {
 type fakeK8sClient struct {
 	ctrlClient client.Client
 	k8sClient  *fakek8s.Clientset
-	g8sclient  *fakeg8s.Clientset
 }
 
 func FakeK8sClient() k8sclient.Interface {
@@ -439,12 +424,10 @@ func FakeK8sClient() k8sclient.Interface {
 			panic(err)
 		}
 		client := fakek8s.NewSimpleClientset()
-		g8sclient := fakeg8s.NewSimpleClientset()
 
 		k8sClient = &fakeK8sClient{
-			ctrlClient: fake.NewFakeClientWithScheme(scheme),
+			ctrlClient: fake.NewClientBuilder().WithScheme(scheme).Build(),
 			k8sClient:  client,
-			g8sclient:  g8sclient,
 		}
 	}
 
@@ -465,10 +448,6 @@ func (f *fakeK8sClient) DynClient() dynamic.Interface {
 
 func (f *fakeK8sClient) ExtClient() apiextensionsclient.Interface {
 	return nil
-}
-
-func (f *fakeK8sClient) G8sClient() versioned.Interface {
-	return f.g8sclient
 }
 
 func (f *fakeK8sClient) K8sClient() kubernetes.Interface {
