@@ -12,6 +12,10 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
+const (
+	kindAWSMachineDeployment = "AWSMachineDeployment"
+)
+
 // +k8s:deepcopy-gen=false
 
 type NodePoolCRsConfig struct {

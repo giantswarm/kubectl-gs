@@ -14,6 +14,9 @@ import (
 
 const (
 	defaultMasterInstanceType = "m5.xlarge"
+	kindAWSCluster            = "AWSCluster"
+	kindAWSControlPlane       = "AWSControlPlane"
+	kindG8sControlPlane       = "G8sControlPlane"
 )
 
 // +k8s:deepcopy-gen=false
