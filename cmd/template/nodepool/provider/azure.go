@@ -172,6 +172,10 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
 	}
 
 	azureMp := &capzexp.AzureMachinePool{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "AzureMachinePool",
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
