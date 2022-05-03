@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.8.0] - 2022-05-03
 
+### Changed
+
+- Bump CAPI (cluster-api) dependencies to v1beta1
+
 ## [2.7.11] - 2022-04-20
 
 ### Fixed
