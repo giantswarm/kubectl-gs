@@ -14,9 +14,6 @@ import (
 
 const (
 	defaultMasterInstanceType = "m5.xlarge"
-	kindAWSCluster            = "AWSCluster"
-	kindAWSControlPlane       = "AWSControlPlane"
-	kindG8sControlPlane       = "G8sControlPlane"
 )
 
 // +k8s:deepcopy-gen=false
@@ -88,10 +85,6 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 
 func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 	awsClusterCR := &v1alpha3.AWSCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindAWSCluster,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,
@@ -144,10 +137,6 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 
 func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 	return &v1alpha3.AWSControlPlane{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindAWSControlPlane,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ControlPlaneName,
 			Namespace: metav1.NamespaceDefault,
@@ -191,10 +180,13 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	}
 
 	clusterCR := &capi.Cluster{
+<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
+=======
+>>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,
@@ -218,10 +210,6 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 
 func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1alpha3.G8sControlPlane {
 	return &v1alpha3.G8sControlPlane{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindG8sControlPlane,
-			APIVersion: v1alpha3.SchemeGroupVersion.String(),
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ControlPlaneName,
 			Namespace: metav1.NamespaceDefault,

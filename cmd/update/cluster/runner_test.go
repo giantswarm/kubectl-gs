@@ -69,10 +69,13 @@ func Test_run(t *testing.T) {
 
 func newCluster(name, namespace, targetRelease string) *capi.Cluster {
 	c := &capi.Cluster{
+<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
 		},
+=======
+>>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -91,10 +94,6 @@ func newCluster(name, namespace, targetRelease string) *capi.Cluster {
 
 func newAWSCluster(name, namespace, targetRelease string) *infrastructurev1alpha3.AWSCluster {
 	c := &infrastructurev1alpha3.AWSCluster{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "infrastructure.giantswarm.io/v1alpha3",
-			Kind:       "AWSCluster",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
