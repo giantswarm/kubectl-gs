@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed missing `Kind` in `template` command.
+
 ## [2.8.0] - 2022-05-03
 
 ### Changed
