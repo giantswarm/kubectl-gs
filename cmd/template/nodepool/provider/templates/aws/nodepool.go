@@ -118,13 +118,10 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 
 func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsConfig) *capi.MachineDeployment {
 	return &capi.MachineDeployment{
-<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachineDeployment",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
-=======
->>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.MachineDeploymentName,
 			Namespace: metav1.NamespaceDefault,

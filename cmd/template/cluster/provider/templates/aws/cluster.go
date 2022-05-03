@@ -180,13 +180,10 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	}
 
 	clusterCR := &capi.Cluster{
-<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
-=======
->>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,

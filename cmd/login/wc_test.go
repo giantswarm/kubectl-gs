@@ -321,13 +321,10 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 
 func getCluster(name string, namespace string) *capi.Cluster {
 	cluster := &capi.Cluster{
-<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
-=======
->>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -345,13 +342,10 @@ func getCluster(name string, namespace string) *capi.Cluster {
 }
 func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
-<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
 			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 		},
-=======
->>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,

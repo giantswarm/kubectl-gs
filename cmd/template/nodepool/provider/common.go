@@ -55,13 +55,10 @@ type NodePoolCRsConfig struct {
 
 func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *capiexp.MachinePool {
 	mp := &capiexp.MachinePool{
-<<<<<<< HEAD
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
 			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
 		},
-=======
->>>>>>> main
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
