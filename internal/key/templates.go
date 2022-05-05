@@ -210,4 +210,6 @@ Description=Set Bastion zone as ready by creating /run/cluster-api/bootstrap-suc
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c 'mkdir -p /run/cluster-api/ ; echo "success" >/run/cluster-api/bootstrap-success.complete'
+
+[Install]\nWantedBy=multi-user.target
 `

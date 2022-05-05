@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- base64 encode ssh key for CAPZ clusters.
+- Fix bastion systemd unit on CAPZ clusters.
+- Make CAPZ clusters compatible with cluster-apps-operator new version.
+
 ## [2.8.1] - 2022-05-03
 
 ### Fixed
