@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.9.0] - 2022-05-05
+
 ### Changed
 
 - base64 encode ssh key for CAPZ clusters.
@@ -857,7 +859,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.0...HEAD
+[2.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.1...v2.9.0
 [2.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.11...v2.8.0
 [2.7.11]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.10...v2.7.11
