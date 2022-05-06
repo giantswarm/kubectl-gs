@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.9.1] - 2022-05-06
+
 ### Changed
 
 - Fix retry fetching clientcert secret in the `default` namespace for legacy azure clusters.
@@ -863,7 +865,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.1...HEAD
+[2.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.1...v2.9.0
 [2.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.11...v2.8.0
