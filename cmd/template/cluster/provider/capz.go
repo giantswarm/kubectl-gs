@@ -51,7 +51,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		}
 
 		var tpl bytes.Buffer
-		t := template.Must(template.New(config.FileName).Parse(fmt.Sprintf(key.BastionIgnitionTemplate, config.Name, key.BastionSSHDConfigEncoded(), sshSSOPublicKey)))
+		t := template.Must(template.New(config.FileName).Parse(fmt.Sprintf(key.BastionIgnitionTemplate, config.Name, key.BastionSSHDConfigEncoded(), base64.StdEncoding.EncodeToString([]byte(sshSSOPublicKey)))))
 		err = t.Execute(&tpl, data)
 		if err != nil {
 			return microerror.Mask(err)
