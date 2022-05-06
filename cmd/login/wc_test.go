@@ -241,7 +241,7 @@ func TestWCLogin(t *testing.T) {
 
 			// this is running in a go routine to simulate cert-operator creating the secret
 			if !tc.capi {
-				go createSecret(ctx, client)
+				go createSecret(ctx, client, tc.provider)
 			}
 
 			_, _, err = r.createClusterClientCert(ctx, client, tc.provider)
@@ -272,7 +272,7 @@ func TestWCLogin(t *testing.T) {
 	}
 }
 
-func createSecret(ctx context.Context, client k8sclient.Interface) {
+func createSecret(ctx context.Context, client k8sclient.Interface, provider string) {
 	var certConfigs corev1alpha1.CertConfigList
 	var err error
 
@@ -300,6 +300,9 @@ func createSecret(ctx context.Context, client k8sclient.Interface) {
 	}
 	secretName := certConfigs.Items[0].Name
 	secretNamespace := certConfigs.Items[0].Namespace
+	if provider == key.ProviderAzure {
+		secretNamespace = metav1.NamespaceDefault
+	}
 	err = client.CtrlClient().Create(ctx, getSecret(secretName, secretNamespace, nil))
 	if err != nil {
 		fmt.Print(err)

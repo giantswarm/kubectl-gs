@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Fix retry fetching clientcert secret in the `default` namespace for legacy azure clusters.
+
 ### Fixed
 
 - Fixed missing `Kind` in `template` command.

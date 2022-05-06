@@ -36,7 +36,7 @@ import (
 
 const (
 	credentialRetryTimeout    = 1 * time.Second
-	credentialMaxRetryTimeout = 5 * time.Minute
+	credentialMaxRetryTimeout = 10 * time.Second
 
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
@@ -148,7 +148,13 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 
 	err = backoff.Retry(o, b)
 	if clientcert.IsNotFound(err) {
-		return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
+		if provider == key.ProviderAzure {
+			// Try in default namespace for legacy azure clusters.
+			secret, err = clientCertService.GetCredential(ctx, metav1.NamespaceDefault, clientCert.CertConfig.Name)
+		}
+		if clientcert.IsNotFound(err) {
+			return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
+		}
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
