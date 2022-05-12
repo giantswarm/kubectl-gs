@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--enforce-context` flag to `login` command which allows switching to kubectl contexts with arbitrary names.
+
 ## [2.9.1] - 2022-05-06
 
 ### Changed

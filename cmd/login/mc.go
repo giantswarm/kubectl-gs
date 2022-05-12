@@ -13,7 +13,7 @@ import (
 )
 
 func (r *runner) handleMCLogin(ctx context.Context, installationIdentifier string) error {
-	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC {
+	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC || r.flag.EnforceContext {
 		return r.loginWithKubeContextName(ctx, installationIdentifier)
 
 	} else if kubeconfig.IsCodeName(installationIdentifier) {
@@ -31,22 +31,9 @@ func (r *runner) handleMCLogin(ctx context.Context, installationIdentifier strin
 // loginWithKubeContextName switches the active kubernetes context to
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
-	codeName := kubeconfig.GetCodeNameFromKubeContext(contextName)
-	err := r.loginWithCodeName(ctx, codeName)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
-	return nil
-}
-
-// loginWithCodeName switches the active kubernetes context to
-// one with the name derived from the installation code name.
-func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	var contextAlreadySelected bool
 	var newLoginRequired bool
 
-	contextName := kubeconfig.GenerateKubeContextName(codeName)
 	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToMCcontext)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
@@ -83,8 +70,18 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
+	return nil
+}
 
+// loginWithCodeName switches the active kubernetes context to
+// one with the name derived from the installation code name.
+func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
+	contextName := kubeconfig.GenerateKubeContextName(codeName)
+	err := r.loginWithKubeContextName(ctx, contextName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
 	return nil
 }
 
