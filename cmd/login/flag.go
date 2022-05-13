@@ -14,7 +14,6 @@ const (
 	flagInternalAPI    = "internal-api"
 	callbackServerPort = "callback-port"
 	flagKeepContext    = "keep-context"
-	flagEnforceContext = "enforce-context"
 
 	flagWCName              = "workload-cluster"
 	flagWCOrganization      = "organization"
