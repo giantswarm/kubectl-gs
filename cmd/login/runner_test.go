@@ -435,7 +435,8 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 func createNonDefaultTestConfig() *clientcmdapi.Config {
 	const (
 		server      = "https://anything.com:8080"
-		token       = "the-token"
+		clientkey   = "the-key"
+		clientcert  = "the-cert"
 		clustername = "arbitraryname"
 	)
 
@@ -449,9 +450,8 @@ func createNonDefaultTestConfig() *clientcmdapi.Config {
 	}
 	config.CurrentContext = clustername
 	config.AuthInfos["user-"+clustername] = &clientcmdapi.AuthInfo{
-		Token: token,
-	}
-
+		ClientCertificateData: []byte(clientcert),
+		ClientKeyData:         []byte(clientkey)}
 	return config
 }
 
