@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Allow to reuse any current context in `login` command by omitting the argument. This allows creating clientCerts for WCs in an arbitrary MC context. (not following `gs-codename` format)
+
 ## [2.9.1] - 2022-05-06
 
 ### Changed

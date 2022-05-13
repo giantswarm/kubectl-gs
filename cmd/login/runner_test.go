@@ -165,6 +165,24 @@ func TestLogin(t *testing.T) {
 			startConfig: createValidTestConfig("", true),
 			expectError: unknownUrlError,
 		},
+		// Logging into non default context with argument
+		{
+			name:        "case 12",
+			startConfig: createNonDefaultTestConfig(),
+			mcArg:       []string{"arbitraryname"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			expectError: contextDoesNotExistError,
+		},
+		// Logging into non default context without argument
+		{
+			name:        "case 13",
+			startConfig: createNonDefaultTestConfig(),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
 	}
 
 	for i, tc := range testCases {
@@ -409,6 +427,29 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 		}
 	}
 
+	return config
+}
+
+func createNonDefaultTestConfig() *clientcmdapi.Config {
+	const (
+		server      = "https://anything.com:8080"
+		clientkey   = "the-key"
+		clientcert  = "the-cert"
+		clustername = "arbitraryname"
+	)
+
+	config := clientcmdapi.NewConfig()
+	config.Clusters[clustername] = &clientcmdapi.Cluster{
+		Server: server,
+	}
+	config.Contexts[clustername] = &clientcmdapi.Context{
+		Cluster:  clustername,
+		AuthInfo: "user-" + clustername,
+	}
+	config.CurrentContext = clustername
+	config.AuthInfos["user-"+clustername] = &clientcmdapi.AuthInfo{
+		ClientCertificateData: []byte(clientcert),
+		ClientKeyData:         []byte(clientkey)}
 	return config
 }
 
