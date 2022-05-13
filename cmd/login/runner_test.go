@@ -165,7 +165,7 @@ func TestLogin(t *testing.T) {
 			startConfig: createValidTestConfig("", true),
 			expectError: unknownUrlError,
 		},
-		// Logging into non default context
+		// Logging into non default context with argument
 		{
 			name:        "case 12",
 			startConfig: createNonDefaultTestConfig(),
@@ -175,14 +175,12 @@ func TestLogin(t *testing.T) {
 			},
 			expectError: contextDoesNotExistError,
 		},
-		// Logging into non default context
+		// Logging into non default context without argument
 		{
 			name:        "case 13",
 			startConfig: createNonDefaultTestConfig(),
-			mcArg:       []string{"arbitraryname"},
 			flags: &flag{
-				WCCertTTL:      "8h",
-				EnforceContext: true,
+				WCCertTTL: "8h",
 			},
 		},
 	}

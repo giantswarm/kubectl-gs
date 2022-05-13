@@ -13,7 +13,7 @@ import (
 )
 
 func (r *runner) handleMCLogin(ctx context.Context, installationIdentifier string) error {
-	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC || r.flag.EnforceContext {
+	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC {
 		return r.loginWithKubeContextName(ctx, installationIdentifier)
 
 	} else if kubeconfig.IsCodeName(installationIdentifier) {

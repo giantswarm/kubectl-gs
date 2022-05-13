@@ -29,7 +29,6 @@ type flag struct {
 	ClusterAdmin       bool
 	InternalAPI        bool
 	KeepContext        bool
-	EnforceContext     bool
 
 	WCName              string
 	WCOrganization      string
@@ -47,7 +46,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.InternalAPI, flagInternalAPI, false, "Use Internal API in the kube config.")
 	cmd.Flags().StringVar(&f.SelfContained, flagSelfContained, "", "Create a self-contained kubectl config with embedded credentials and write it to this path.")
 	cmd.Flags().BoolVar(&f.KeepContext, flagKeepContext, false, "Keep the current kubectl context. If not set/false, will set the current-context to the one representing the cluster to log in to.")
-	cmd.Flags().BoolVar(&f.EnforceContext, flagEnforceContext, false, "Enforce login using kubectl context name. If set/true, the first argument will be interpreted as a context name, even without gs- prefix.")
 
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))

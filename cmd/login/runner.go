@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
 type runner struct {
@@ -60,7 +58,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	// Try to reuse the current context if no MC argument is given
 	if !r.loginOptions.isMCLogin {
-		return r.tryToReuseExistingContext(ctx)
+		err = r.tryToReuseExistingContext(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	} else {
 		// MC argument can be a kubernetes context name,
 		// installation code name, or happa/k8s api URL.
@@ -107,60 +108,10 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
 	currentContext := config.CurrentContext
-	kubeContextType := kubeconfig.GetKubeContextType(currentContext)
-
-	switch kubeContextType {
-	case kubeconfig.ContextTypeMC:
-		authType := kubeconfig.GetAuthType(config, currentContext)
-		if authType == kubeconfig.AuthTypeAuthProvider {
-			authProvider, exists := kubeconfig.GetAuthProvider(config, currentContext)
-			if !exists {
-				return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
-			}
-
-			err = validateOIDCProvider(authProvider)
-			if IsNewLoginRequired(err) {
-				issuer := authProvider.Config[Issuer]
-
-				err = r.loginWithURL(ctx, issuer, false, "")
-				if err != nil {
-					return microerror.Mask(err)
-				}
-
-				return nil
-			} else if err != nil {
-				return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
-			}
-		} else if authType == kubeconfig.AuthTypeUnknown {
-			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", currentContext)
-		}
-
-		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
-		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
-
-		if r.loginOptions.isWCLogin {
-			err = r.handleWCLogin(ctx)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		return nil
-
-	case kubeconfig.ContextTypeWC:
-		codeName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
-		clusterName := kubeconfig.GetClusterNameFromKubeContext(currentContext)
-		fmt.Fprint(r.stdout, color.GreenString("You are logged in to the workload cluster '%s' of installation '%s'.\n", clusterName, codeName))
-
-		return nil
-
-	default:
-		if currentContext != "" {
-			return microerror.Maskf(selectedContextNonCompatibleError, "The current context '%s' does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.", currentContext)
-		}
-
+	if currentContext != "" {
+		return r.loginWithKubeContextName(ctx, currentContext)
+	} else {
 		return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
 	}
 }
