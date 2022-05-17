@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Allow to remove the cluster upgrade schedule.
+- Allow to remove the scheduled update time from the cluster.
 
 ## [2.10.0] - 2022-05-13
 
