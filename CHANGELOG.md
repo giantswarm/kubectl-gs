@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Allow to remove the cluster upgrade schedule.
+
 ## [2.10.0] - 2022-05-13
 
 ### Added
