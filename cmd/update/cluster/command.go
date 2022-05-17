@@ -26,7 +26,7 @@ Options:
   --name <cluster-name>             	Name of the cluster to update.
   --namespace <cluster-namespace>   	Namespace of the cluster.
   --release-version <release-version>   Update the cluster to a release version. The release version must be higher than the current release version.
-  --remove-schedule				Optionally: Remove the scheduled time from the cluster.
+  --remove-schedule			Optionally: Remove the scheduled time from the cluster.
   --scheduled-time <scheduled-time>     Optionally: Scheduled time when cluster should be updated, time format 'YYYY-MM-DD HH:MM'.
   --provider <provider> 		Name of the provider.`
 
