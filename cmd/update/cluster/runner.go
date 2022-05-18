@@ -97,21 +97,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var patches cluster.PatchOptions
 	var msg string
-	if r.flag.RemoveSchedule {
-		patches = cluster.PatchOptions{
-			PatchSpecs: []cluster.PatchSpec{
-				{
-					Op:   "remove",
-					Path: fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetRelease)),
-				},
-				{
-					Op:   "remove",
-					Path: fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetTime)),
-				},
-			},
-		}
-		msg = fmt.Sprintf("The schedule for upgrading the cluster %s has been removed\n", name)
-	} else if scheduledTime != "" {
+	if scheduledTime != "" {
 		patches = cluster.PatchOptions{
 			PatchSpecs: []cluster.PatchSpec{
 				{
