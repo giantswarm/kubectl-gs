@@ -7,10 +7,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Added
-
-- Allow to remove the scheduled update time from the cluster.
-
 ## [2.10.0] - 2022-05-13
 
 ### Added

@@ -9,7 +9,6 @@ import (
 const (
 	flagName           = "name"
 	flagReleaseVersion = "release-version"
-	flagRemoveSchedule = "remove-schedule"
 	flagScheduledTime  = "scheduled-time"
 	flagProvider       = "provider"
 )
@@ -19,7 +18,6 @@ type flag struct {
 	print          *genericclioptions.PrintFlags
 	Name           string
 	ReleaseVersion string
-	RemoveSchedule bool
 	ScheduledTime  string
 	Provider       string
 }
@@ -28,8 +26,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the cluster to update.")
 
 	cmd.Flags().StringVar(&f.ReleaseVersion, flagReleaseVersion, "", "Update the cluster to a release version. The release version must be higher than the current release version.")
-
-	cmd.Flags().BoolVar(&f.RemoveSchedule, flagRemoveSchedule, false, "Remove the schedule time from the cluster.")
 
 	cmd.Flags().StringVar(&f.ScheduledTime, flagScheduledTime, "", "Optionally: Scheduled time when cluster should be updated. The value has to be in RFC822 Format and UTC time zone.")
 
