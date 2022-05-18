@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.11.0] - 2022-05-18
+
 ### Added
 
 - Allow to remove the scheduled update time from the cluster.
@@ -875,7 +877,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.10.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.0...HEAD
+[2.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.10.0...v2.11.0
 [2.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.1...v2.10.0
 [2.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.1...v2.9.0
