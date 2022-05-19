@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add a NOTES column to the output of listing and getting App resources. The column contains information why the last Helm release attempt failed if so, empty otherwiseg
+- Add a NOTES column to the output of the `get apps` command. The column contains information why the last Helm release attempt failed if so, empty otherwise.
 
 ## [2.10.0] - 2022-05-13
 
