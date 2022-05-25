@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Use provided name as cluster name when using `kubectl-gs template cluster --provider gcp`
+
 ## [2.11.0] - 2022-05-19
 
 ### Added

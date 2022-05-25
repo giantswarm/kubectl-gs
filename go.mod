@@ -130,6 +130,7 @@ require (
 )
 
 replace (
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.4 // [CVE-2022-23648]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.2
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/docker/docker => github.com/moby/moby v20.10.12+incompatible // Use moby v20.10.x to fix build issue on darwin.
