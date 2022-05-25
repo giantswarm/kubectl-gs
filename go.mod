@@ -130,10 +130,13 @@ require (
 )
 
 replace (
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.4 // [CVE-2022-23648]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.2
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/docker/docker => github.com/moby/moby v20.10.12+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
+	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.12.0 // [CVE-2022-29153]
+	github.com/hashicorp/consul/sdk => github.com/hashicorp/consul/sdk v0.9.0 // [CVE-2022-29153]
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
