@@ -1,6 +1,7 @@
 package capg
 
 type ClusterConfig struct {
+	ClusterName         string               `json:"clusterName,omitempty"`
 	ClusterDescription  string               `json:"clusterDescription,omitempty"`
 	Organization        string               `json:"organization,omitempty"`
 	GCP                 *GCP                 `json:"gcp,omitempty"`
