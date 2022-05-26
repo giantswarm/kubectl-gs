@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Pass region flag to template config
+
 ## [2.11.1] - 2022-05-25
 
 ### Fixed
