@@ -300,7 +300,7 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
 
 	// openstack clusters have an api.$INSTALLATION prefix
-	if provider == key.ProviderOpenStack {
+	if key.IsPureCAPIProvider(provider) {
 		if _, contextType := kubeconfig.IsKubeContext(config.CurrentContext); contextType == kubeconfig.ContextTypeMC {
 			clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
 			clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
@@ -313,8 +313,8 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 }
 
 func getServerAddress(certconfig clientCertConfig) string {
-	switch certconfig.provider {
-	case key.ProviderOpenStack:
+	switch {
+	case key.IsPureCAPIProvider(certconfig.provider):
 		return fmt.Sprintf("https://api.%s.%s:6443", certconfig.clusterName, certconfig.clusterBasePath)
 	default:
 		return fmt.Sprintf("https://api.%s.k8s.%s", certconfig.clusterName, certconfig.clusterBasePath)

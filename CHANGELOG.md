@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Make `kubectl gs login` to work on GCP clusters.
+
 ## [2.11.2] - 2022-05-26
 
 ### Fixed
