@@ -60,6 +60,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			PodsCIDR:          r.flag.PodsCIDR,
 			ReleaseVersion:    r.flag.Release,
 			Namespace:         metav1.NamespaceDefault,
+			Region:            r.flag.Region,
 
 			App:       r.flag.App,
 			AWS:       r.flag.AWS,
