@@ -216,7 +216,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		certCRT:       secret.Data[credentialKeyCertCRT],
 		certKey:       secret.Data[credentialKeyCertKey],
 		certCA:        secret.Data[credentialKeyCertCA],
-		clusterServer: getServerAddress(certConfig),
+		clusterServer: fmt.Sprintf("%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port),
 		filePath:      r.flag.SelfContained,
 		loginOptions:  r.loginOptions,
 	}
@@ -310,13 +310,4 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 	}
 
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
-}
-
-func getServerAddress(certconfig clientCertConfig) string {
-	switch certconfig.provider {
-	case key.ProviderOpenStack:
-		return fmt.Sprintf("https://api.%s.%s:6443", certconfig.clusterName, certconfig.clusterBasePath)
-	default:
-		return fmt.Sprintf("https://api.%s.k8s.%s", certconfig.clusterName, certconfig.clusterBasePath)
-	}
 }
