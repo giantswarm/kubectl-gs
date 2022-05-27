@@ -216,7 +216,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		certCRT:       secret.Data[credentialKeyCertCRT],
 		certKey:       secret.Data[credentialKeyCertKey],
 		certCA:        secret.Data[credentialKeyCertCA],
-		clusterServer: fmt.Sprintf("%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port),
+		clusterServer: fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port),
 		filePath:      r.flag.SelfContained,
 		loginOptions:  r.loginOptions,
 	}
