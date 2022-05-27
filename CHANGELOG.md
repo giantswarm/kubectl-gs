@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- When loging in, take the k8s API endpoint from the `Cluster` CR rather than calculating it.
+
 ## [2.11.2] - 2022-05-26
 
 ### Fixed
