@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- When loging in, take the k8s API endpoint from the `Cluster` CR rather than calculating it.
 - Make `kubectl gs login` to work on GCP clusters.
 
 ## [2.11.2] - 2022-05-26
