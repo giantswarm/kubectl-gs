@@ -54,6 +54,12 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace strin
 				return nil, microerror.Mask(err)
 			}
 
+		case key.ProviderGCP:
+			cluster, err = s.getByNameGCP(ctx, name, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 		default:
 			return nil, microerror.Mask(invalidProviderError)
 		}
@@ -82,6 +88,12 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resou
 
 		case key.ProviderOpenStack:
 			clusterCollection, err = s.getAllOpenStack(ctx, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderGCP:
+			clusterCollection, err = s.getAllGCP(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

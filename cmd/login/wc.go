@@ -299,8 +299,8 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
 	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
 
-	// openstack clusters have an api.$INSTALLATION prefix
-	if provider == key.ProviderOpenStack {
+	// pure CAPI clusters have an api.$INSTALLATION prefix
+	if key.IsPureCAPIProvider(provider) {
 		if _, contextType := kubeconfig.IsKubeContext(config.CurrentContext); contextType == kubeconfig.ContextTypeMC {
 			clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
 			clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
