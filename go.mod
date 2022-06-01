@@ -10,11 +10,11 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/giantswarm/apiextensions-application v0.3.1
 	github.com/giantswarm/apiextensions/v6 v6.0.0
-	github.com/giantswarm/app/v6 v6.6.1
+	github.com/giantswarm/app/v6 v6.10.0
 	github.com/giantswarm/appcatalog v0.7.0
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8smetadata v0.10.1
+	github.com/giantswarm/k8smetadata v0.11.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v0.6.0
 	github.com/giantswarm/release-operator/v3 v3.2.0
