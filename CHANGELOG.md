@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.12.0] - 2022-06-02
+
 ### Changed
 
 - When loging in, take the k8s API endpoint from the `Cluster` CR rather than calculating it.
@@ -894,7 +896,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...HEAD
+[2.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...v2.12.0
 [2.11.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.1...v2.11.2
 [2.11.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.0...v2.11.1
 [2.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.10.0...v2.11.0
