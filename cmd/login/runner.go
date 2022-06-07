@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -44,7 +45,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Mask(err)
 	}
 
-	r.setLoginOptions(ctx, args)
+	r.setLoginOptions(ctx, &args)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)
@@ -87,15 +88,27 @@ func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
 	return config.CurrentContext, nil
 }
 
-func (r *runner) setLoginOptions(ctx context.Context, args []string) {
+func (r *runner) tryToGetContextFlag(ctx context.Context) (string, error) {
+	config, ok := r.flag.config.(*genericclioptions.ConfigFlags)
+	if !ok {
+		return "", nil
+	}
+	return *config.Context, nil
+}
+
+func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	originContext, err := r.tryToGetCurrentContext(ctx)
 	if err != nil {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
+	contextFlag, err := r.tryToGetContextFlag(ctx)
+	if err == nil && contextFlag != "" && len(*args) < 1 {
+		*args = append(*args, contextFlag)
+	}
 	r.loginOptions = LoginOptions{
 		originContext:   originContext,
 		isWCLogin:       len(r.flag.WCName) > 0,
-		isMCLogin:       !(len(args) < 1),
+		isMCLogin:       !(len(*args) < 1),
 		selfContainedMC: len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0),
 		selfContainedWC: len(r.flag.SelfContained) > 0 && len(r.flag.WCName) > 0,
 	}

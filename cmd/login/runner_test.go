@@ -17,11 +17,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/to"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"gopkg.in/square/go-jose.v2"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -136,7 +138,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Valid starting config with authprovider info
 		{
-			name: "case 10",
+			name: "case 11",
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
@@ -145,7 +147,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Valid starting config with authprovider info, self contained
 		{
-			name: "case 11",
+			name: "case 12",
 			flags: &flag{
 				WCCertTTL:     "8h",
 				SelfContained: "/codename.yaml",
@@ -156,7 +158,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Valid starting config with authprovider info, self contained
 		{
-			name: "case 11",
+			name: "case 13",
 			flags: &flag{
 				WCCertTTL:     "8h",
 				SelfContained: "/codename.yaml",
@@ -167,7 +169,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Logging into non default context with argument
 		{
-			name:        "case 12",
+			name:        "case 14",
 			startConfig: createNonDefaultTestConfig(),
 			mcArg:       []string{"arbitraryname"},
 			flags: &flag{
@@ -177,11 +179,42 @@ func TestLogin(t *testing.T) {
 		},
 		// Logging into non default context without argument
 		{
-			name:        "case 13",
+			name:        "case 15",
 			startConfig: createNonDefaultTestConfig(),
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
+		},
+		// Logging in without argument
+		{
+			name:        "case 16",
+			startConfig: createValidTestConfig("", false),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		// Logging in without argument using context flag
+		{
+			name:        "case 17",
+			startConfig: addExtraContext(createValidTestConfig("", false)),
+			flags: &flag{
+				WCCertTTL: "8h",
+				config: &genericclioptions.ConfigFlags{
+					Context: to.StringPtr("gs-anothercodename"),
+				},
+			},
+		},
+		// Logging in without argument using context flag but context does not exist
+		{
+			name:        "case 17",
+			startConfig: createValidTestConfig("", false),
+			flags: &flag{
+				WCCertTTL: "8h",
+				config: &genericclioptions.ConfigFlags{
+					Context: to.StringPtr("gs-anothercodename"),
+				},
+			},
+			expectError: contextDoesNotExistError,
 		},
 	}
 
@@ -361,7 +394,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 
 			issuer = s.URL
 
-			r.setLoginOptions(ctx, []string{"codename"})
+			r.setLoginOptions(ctx, &[]string{"codename"})
 
 			err = r.loginWithInstallation(ctx, tc.token, CreateTestInstallationWithIssuer(issuer))
 
@@ -427,6 +460,28 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 		}
 	}
 
+	return config
+}
+
+func addExtraContext(config *clientcmdapi.Config) *clientcmdapi.Config {
+	const (
+		server          = "https://something.com:8080"
+		token           = "the-other-token"
+		clientid        = "id"
+		refreshToken    = "the-fresh-other-token"
+		existingcontext = "anothercodename"
+	)
+	// adding another context to the kubeconfig
+	config.Clusters["gs-"+existingcontext] = &clientcmdapi.Cluster{
+		Server: server,
+	}
+	config.Contexts["gs-"+existingcontext] = &clientcmdapi.Context{
+		Cluster:  "gs-" + existingcontext,
+		AuthInfo: "gs-user-" + existingcontext,
+	}
+	config.AuthInfos["gs-user-"+existingcontext] = &clientcmdapi.AuthInfo{
+		Token: token,
+	}
 	return config
 }
 
