@@ -102,7 +102,7 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
 	contextFlag := r.tryToGetContextFlag(ctx)
-	if err == nil && contextFlag != "" && len(*args) < 1 {
+	if contextFlag != "" && len(*args) < 1 {
 		*args = append(*args, contextFlag)
 	}
 	r.loginOptions = LoginOptions{
