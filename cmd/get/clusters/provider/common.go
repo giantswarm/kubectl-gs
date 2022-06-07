@@ -44,3 +44,13 @@ func getClusterOrganization(res *capi.Cluster) string {
 
 	return organization
 }
+
+func getClusterServicePriority(res *capi.Cluster) string {
+	servicePriority := naValue
+
+	if servicePriorityLabel := res.Labels[label.ServicePriority]; servicePriorityLabel != "" {
+		servicePriority = strings.ToUpper(servicePriorityLabel)
+	}
+
+	return servicePriority
+}
