@@ -206,7 +206,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Logging in without argument using context flag but context does not exist
 		{
-			name:        "case 17",
+			name:        "case 18",
 			startConfig: createValidTestConfig("", false),
 			flags: &flag{
 				WCCertTTL: "8h",
@@ -215,6 +215,18 @@ func TestLogin(t *testing.T) {
 				},
 			},
 			expectError: contextDoesNotExistError,
+		},
+		// Logging in with argument using context flag
+		{
+			name:        "case 18",
+			startConfig: createValidTestConfig("", false),
+			mcArg:       []string{"codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+				config: &genericclioptions.ConfigFlags{
+					Context: to.StringPtr("gs-anothercodename"),
+				},
+			},
 		},
 	}
 
