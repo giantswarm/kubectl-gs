@@ -88,12 +88,12 @@ func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
 	return config.CurrentContext, nil
 }
 
-func (r *runner) tryToGetContextFlag(ctx context.Context) (string, error) {
+func (r *runner) tryToGetContextFlag(ctx context.Context) string {
 	config, ok := r.flag.config.(*genericclioptions.ConfigFlags)
 	if !ok {
-		return "", nil
+		return ""
 	}
-	return *config.Context, nil
+	return *config.Context
 }
 
 func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
@@ -101,7 +101,7 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	if err != nil {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
-	contextFlag, err := r.tryToGetContextFlag(ctx)
+	contextFlag := r.tryToGetContextFlag(ctx)
 	if err == nil && contextFlag != "" && len(*args) < 1 {
 		*args = append(*args, contextFlag)
 	}
