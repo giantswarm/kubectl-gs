@@ -3,6 +3,7 @@ package catalog
 import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/label"
+	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -15,12 +16,16 @@ type Config struct {
 	Name                 string
 	Namespace            string
 	LogoURL              string
-	URL                  string
+	Repositories         map[string]string
 	Visibility           string
 }
 
 func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
 	var catalogConfig *applicationv1alpha1.CatalogSpecConfig
+
+	if len(config.Repositories) == 0 {
+		return nil, microerror.Maskf(executionFailedError, "config.Repositories cannot be empty")
+	}
 
 	if config.CatalogConfigMapName != "" || config.CatalogSecretName != "" {
 		catalogConfig = &applicationv1alpha1.CatalogSpecConfig{}
@@ -45,6 +50,14 @@ func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
 		labelValues[label.CatalogVisibility] = config.Visibility
 	}
 
+	repositories := []applicationv1alpha1.CatalogSpecRepository{}
+	for url, urlType := range config.Repositories {
+		repositories = append(repositories, applicationv1alpha1.CatalogSpecRepository{
+			URL:  url,
+			Type: urlType,
+		})
+	}
+
 	catalogCR := &applicationv1alpha1.Catalog{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Catalog",
@@ -60,10 +73,11 @@ func NewCatalogCR(config Config) (*applicationv1alpha1.Catalog, error) {
 			Description: config.Description,
 			LogoURL:     config.LogoURL,
 			Storage: applicationv1alpha1.CatalogSpecStorage{
-				URL:  config.URL,
-				Type: "helm",
+				URL:  repositories[0].URL,
+				Type: repositories[0].Type,
 			},
-			Title: config.Name,
+			Repositories: repositories,
+			Title:        config.Name,
 		},
 	}
 
