@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Updated `kubectl gs template catalog` to support multiple repository mirrors.
+
 ## [2.12.0] - 2022-06-02
 
 ### Changed
