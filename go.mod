@@ -3,6 +3,7 @@ module github.com/giantswarm/kubectl-gs
 go 1.17
 
 require (
+	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.2.0
@@ -45,7 +46,6 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.23 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
-	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
@@ -110,7 +110,7 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
@@ -130,7 +130,7 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.4 // [CVE-2022-23648]
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.6 // [CVE-2022-31030]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.2
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/docker/docker => github.com/moby/moby v20.10.12+incompatible // Use moby v20.10.x to fix build issue on darwin.
