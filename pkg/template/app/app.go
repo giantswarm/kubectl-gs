@@ -60,6 +60,10 @@ func NewAppCR(config Config) ([]byte, error) {
 		crNamespace = config.Namespace
 		appLabels[label.AppOperatorVersion] = "0.0.0"
 		appLabels[label.ManagedBy] = "flux"
+
+		if config.Cluster != "" {
+			appLabels[label.Cluster] = config.Cluster
+		}
 	} else if config.Organization != "" {
 		crNamespace = fmt.Sprintf("org-%s", config.Organization)
 		appLabels[label.Cluster] = config.Cluster
