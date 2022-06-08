@@ -39,7 +39,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the catalog will be created.")
 	cmd.Flags().StringVar(&f.Secret, flagSecret, "", "Path to a secret file.")
 	cmd.Flags().StringArrayVar(&f.URLs, flagURL, []string{}, "Catalog storage URL.")
-	cmd.Flags().StringArrayVar(&f.URLTypes, flagURLType, []string{}, "Type of catalog storage.")
+	cmd.Flags().StringArrayVar(&f.URLTypes, flagURLType, []string{"helm"}, "Type of catalog storage.")
 	cmd.Flags().StringVar(&f.Visibility, flagVisibility, "public", "Visibility label for whether catalog appears in the web UI.")
 
 	// TODO(kuba): add long desc. with usage example, especially --url --type --url etc.
