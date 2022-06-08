@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+- Add `SERVICE PRIORITY` column to `get clusters` command table output.
+
 ### Fixed
 
 - Take `--context` flag into account when building config for `login`.
