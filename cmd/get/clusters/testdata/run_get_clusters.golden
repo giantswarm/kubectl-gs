@@ -1,3 +1,3 @@
 NAME    AGE   CONDITION   RELEASE   SERVICE PRIORITY   ORGANIZATION   DESCRIPTION
-1sad2   0s    n/a         10.5.0    HIGHEST            some-org       test cluster 3
-f930q   0s    n/a         11.0.0    MEDIUM             some-other     test cluster 4
+1sad2   0s    n/a         10.5.0    highest            some-org       test cluster 3
+f930q   0s    n/a         11.0.0    medium             some-other     test cluster 4

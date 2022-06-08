@@ -49,7 +49,7 @@ func getClusterServicePriority(res *capi.Cluster) string {
 	servicePriority := naValue
 
 	if servicePriorityLabel := res.Labels[label.ServicePriority]; servicePriorityLabel != "" {
-		servicePriority = strings.ToUpper(servicePriorityLabel)
+		servicePriority = servicePriorityLabel
 	}
 
 	return servicePriority
