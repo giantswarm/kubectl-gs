@@ -150,6 +150,10 @@ func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectRefe
 				label.ReleaseVersion:         config.ReleaseVersion,
 				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
 				label.ClusterOperatorVersion: config.ReleaseComponents["cluster-operator"],
+
+				// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
+				// we use "highest" as the default service priority.
+				label.ServicePriority: label.ServicePriorityHighest,
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: config.Description,
@@ -158,6 +162,10 @@ func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectRefe
 		Spec: capi.ClusterSpec{
 			InfrastructureRef: infrastructureRef,
 		},
+	}
+
+	if val, ok := config.Labels[label.ServicePriority]; ok {
+		cluster.ObjectMeta.Labels[label.ServicePriority] = val
 	}
 
 	return cluster

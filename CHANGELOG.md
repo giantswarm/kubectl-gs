@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add `service-priority` label value `highest` by default to `vintage` clusters
 - Add `SERVICE PRIORITY` column to `get clusters` command table output.
 
 ## [2.12.1] - 2022-06-08
