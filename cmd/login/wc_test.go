@@ -237,7 +237,7 @@ func TestWCLogin(t *testing.T) {
 					}
 				}
 			}
-			r.setLoginOptions(ctx, []string{"codename"})
+			r.setLoginOptions(ctx, &[]string{"codename"})
 
 			// this is running in a go routine to simulate cert-operator creating the secret
 			if !tc.capi {
