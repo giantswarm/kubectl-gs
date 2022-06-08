@@ -9,6 +9,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: 1sad2
       giantswarm.io/organization: test
+      giantswarm.io/service-priority: highest
       release.giantswarm.io/version: 12.0.0
     name: 1sad2
     namespace: default
@@ -28,6 +29,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: 2a03f
       giantswarm.io/organization: test
+      giantswarm.io/service-priority: medium
       release.giantswarm.io/version: 11.0.0
     name: 2a03f
     namespace: default
@@ -51,6 +53,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: asd29
       giantswarm.io/organization: test
+      giantswarm.io/service-priority: lowest
       release.giantswarm.io/version: 10.5.0
     name: asd29
     namespace: default
@@ -77,6 +80,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: f930q
       giantswarm.io/organization: some-other
+      giantswarm.io/service-priority: ""
       release.giantswarm.io/version: 11.0.0
     name: f930q
     namespace: default
@@ -96,6 +100,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: 9f012
       giantswarm.io/organization: test
+      giantswarm.io/service-priority: ""
       release.giantswarm.io/version: 9.0.0
     name: 9f012
     namespace: default
@@ -119,6 +124,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: 2f0as
       giantswarm.io/organization: random
+      giantswarm.io/service-priority: ""
       release.giantswarm.io/version: 10.5.0
     name: 2f0as
     namespace: default

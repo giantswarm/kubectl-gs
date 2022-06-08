@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `SERVICE PRIORITY` column to `get clusters` command table output.
+
 ## [2.12.1] - 2022-06-08
 
 ### Fixed
