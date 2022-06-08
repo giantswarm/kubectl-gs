@@ -7,6 +7,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `SERVICE PRIORITY` column to `get clusters` command table output.
+
+## [2.12.1] - 2022-06-08
+
+### Fixed
+
+- Take `--context` flag into account when building config for `login`.
+
 ## [2.12.0] - 2022-06-02
 
 ### Changed
@@ -896,7 +906,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...HEAD
+[2.12.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...v2.12.1
 [2.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...v2.12.0
 [2.11.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.1...v2.11.2
 [2.11.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.0...v2.11.1

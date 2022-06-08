@@ -7,6 +7,7 @@ metadata:
   labels:
     cluster.x-k8s.io/cluster-name: f930q
     giantswarm.io/organization: some-other
+    giantswarm.io/service-priority: highest
     release.giantswarm.io/version: 11.0.0
   name: f930q
   namespace: default
