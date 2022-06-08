@@ -10,7 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add `SERVICE PRIORITY` column to `get clusters` command table output.
-- Add `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
+- In the `template app` command, add the `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
 
 ## [2.12.1] - 2022-06-08
 
