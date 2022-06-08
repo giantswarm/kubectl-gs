@@ -178,7 +178,7 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 		return microerror.Mask(err)
 	}
 
-	tarbalURL, err := appcatalog.NewTarballURL(catalog.Spec.Storage.URL, appName, appVersion)
+	tarbalURL, err := appcatalog.NewTarballURL(catalog.Spec.Repositories[0].URL, appName, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}

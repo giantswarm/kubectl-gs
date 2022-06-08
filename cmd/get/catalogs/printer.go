@@ -2,6 +2,7 @@ package catalogs
 
 import (
 	"fmt"
+	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -107,11 +108,23 @@ func getCatalogRow(a catalogdata.Catalog) metav1.TableRow {
 		return metav1.TableRow{}
 	}
 
+	var urlString string
+	{
+		urls := []string{}
+		for _, repo := range a.CR.Spec.Repositories {
+			urls = append(urls, repo.URL)
+		}
+		urlString = strings.Join(urls, ", ")
+		if len(urlString) > 80 {
+			urlString = fmt.Sprintf("%s...", urlString[:77])
+		}
+	}
+
 	return metav1.TableRow{
 		Cells: []interface{}{
 			a.CR.Name,
 			a.CR.Namespace,
-			a.CR.Spec.Storage.URL,
+			urlString,
 			output.TranslateTimestampSince(a.CR.CreationTimestamp),
 		},
 		Object: runtime.RawExtension{
