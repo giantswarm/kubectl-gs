@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.13.0] - 2022-06-09
+
 ### Added
 
 - Add `service-priority` label value `highest` by default to `vintage` clusters
@@ -907,7 +909,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...HEAD
+[2.13.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...v2.13.0
 [2.12.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...v2.12.1
 [2.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...v2.12.0
 [2.11.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.1...v2.11.2
