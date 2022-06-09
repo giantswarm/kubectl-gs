@@ -7,13 +7,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- In the `template app` command, add the `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
+
 ## [2.13.0] - 2022-06-09
 
 ### Added
 
 - Add `service-priority` label value `highest` by default to `vintage` clusters
 - Add `SERVICE PRIORITY` column to `get clusters` command table output.
-- In the `template app` command, add the `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
 
 ## [2.12.1] - 2022-06-08
 
