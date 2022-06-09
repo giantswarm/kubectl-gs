@@ -37,6 +37,7 @@ type ClusterCRsConfig struct {
 	ReleaseVersion    string
 	Labels            map[string]string
 	NetworkPool       string
+	ServicePriority   string
 }
 
 // +k8s:deepcopy-gen=false
@@ -186,7 +187,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 
 			// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
 			// we use "highest" as the default service priority.
-			label.ServicePriority: label.ServicePriorityHighest,
+			label.ServicePriority: c.ServicePriority,
 		}
 
 		for key, value := range gsLabels {

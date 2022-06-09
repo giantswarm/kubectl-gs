@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Added flag `--service-priority` to `template cluster` command that allows setting the service priority label.
+
 ## [2.13.1] - 2022-06-09
 
 ### Added

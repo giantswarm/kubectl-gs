@@ -93,6 +93,7 @@ const (
 	flagPodsCIDR                 = "pods-cidr"
 	flagRelease                  = "release"
 	flagLabel                    = "label"
+	flagServicePriority          = "service-priority"
 )
 
 type flag struct {
@@ -113,6 +114,7 @@ type flag struct {
 	BastionInstanceType      string
 	BastionReplicas          int
 	ControlPlaneInstanceType string
+	ServicePriority          string
 
 	// Provider-specific
 	AWS       provider.AWSConfig
@@ -252,6 +254,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
+	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, "highest", fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS region where cluster will be created")
 	// bastion
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
@@ -439,6 +442,10 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
 	}
 
+	if !isValidServicePriority(f.ServicePriority) {
+		return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
+	}
+
 	return nil
 }
 
@@ -446,4 +453,18 @@ func validateCIDR(cidr string) bool {
 	_, _, err := net.ParseCIDR(cidr)
 
 	return err == nil
+}
+
+func isValidServicePriority(servicePriority string) bool {
+	validServicePriorities := getServicePriorities()
+	for _, p := range validServicePriorities {
+		if servicePriority == p {
+			return true
+		}
+	}
+	return false
+}
+
+func getServicePriorities() []string {
+	return []string{"highest", "medium", "lowest"}
 }
