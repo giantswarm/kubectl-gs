@@ -133,6 +133,7 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.6 // [CVE-2022-31030]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.2
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.2.0
+	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.12+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
