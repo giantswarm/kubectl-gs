@@ -59,7 +59,6 @@ func NewAppCR(config Config) ([]byte, error) {
 	if config.InCluster {
 		crNamespace = config.Namespace
 		appLabels[label.AppOperatorVersion] = "0.0.0"
-		appLabels[label.ManagedBy] = "flux"
 
 		// Feels like the best place to add this label to the in-cluster
 		// App CR, since it is not technically required, because unique
