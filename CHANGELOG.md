@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.13.1] - 2022-06-09
+
 ### Added
 
 - In the `template app` command, add the `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
@@ -913,7 +915,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...HEAD
+[2.13.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...v2.13.1
 [2.13.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...v2.13.0
 [2.12.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...v2.12.1
 [2.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...v2.12.0
