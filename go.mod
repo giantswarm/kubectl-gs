@@ -26,7 +26,7 @@ require (
 	github.com/spf13/afero v1.8.2
 	github.com/spf13/cobra v1.4.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.23.0
 	k8s.io/apiextensions-apiserver v0.23.0
