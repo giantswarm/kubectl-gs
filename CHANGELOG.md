@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove `giantswarm.io/managed-by: flux` for App CRs labeled for unique App Operator.
+
 ## [2.13.1] - 2022-06-09
 
 ### Added
