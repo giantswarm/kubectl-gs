@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -254,7 +255,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
-	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, "highest", fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
+	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, label.ServicePriorityHighest, fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS region where cluster will be created")
 	// bastion
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
@@ -466,5 +467,5 @@ func isValidServicePriority(servicePriority string) bool {
 }
 
 func getServicePriorities() []string {
-	return []string{"highest", "medium", "lowest"}
+	return []string{label.ServicePriorityHighest, label.ServicePriorityMedium, label.ServicePriorityLowest}
 }
