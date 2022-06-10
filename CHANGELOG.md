@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Added flag `--service-priority` to `template cluster` command that allows setting the service priority label.
 
+## [2.13.2] - 2022-06-09
+
+### Removed
+
+- Remove `giantswarm.io/managed-by: flux` for App CRs labeled for unique App Operator.
+
 ## [2.13.1] - 2022-06-09
 
 ### Added
@@ -919,7 +925,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.2...HEAD
+[2.13.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...v2.13.2
 [2.13.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...v2.13.1
 [2.13.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...v2.13.0
 [2.12.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...v2.12.1
