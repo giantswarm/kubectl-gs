@@ -178,7 +178,16 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 		return microerror.Mask(err)
 	}
 
-	tarbalURL, err := appcatalog.NewTarballURL(catalog.Spec.Repositories[0].URL, appName, appVersion)
+	var storageURL string
+	if len(catalog.Spec.Repositories) > 0 {
+		// The new way - Catalogs support more than one chart repository.
+		storageURL = catalog.Spec.Repositories[0].URL
+	} else {
+		// DEPRECATED: The legacy way - failsafe in case somebody forgets to
+		// set repositories.
+		storageURL = catalog.Spec.Storage.URL
+	}
+	tarbalURL, err := appcatalog.NewTarballURL(storageURL, appName, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
