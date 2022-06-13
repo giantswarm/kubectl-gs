@@ -118,6 +118,10 @@ func getCatalogRow(a catalogdata.Catalog) metav1.TableRow {
 		if len(urlString) > 80 {
 			urlString = fmt.Sprintf("%s...", urlString[:77])
 		}
+		if len(urlString) == 0 {
+			// No .spec.repositories
+			urlString = a.CR.Spec.Storage.URL
+		}
 	}
 
 	return metav1.TableRow{
