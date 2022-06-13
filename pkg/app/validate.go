@@ -314,6 +314,11 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 			break
 		}
 	}
+	// Legacy: use deprecated .spec.storage in case .spec.repositories is empty.
+	if catalogURL == "" && !foundHelmRepository && catalog.Spec.Storage.Type == "helm" {
+		catalogURL = catalog.Spec.Storage.URL
+		foundHelmRepository = true
+	}
 	// Error for catalogs where we for sure can't fetch the index because we don't
 	// know about the storage type yet.
 	if !foundHelmRepository {
