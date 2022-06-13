@@ -11,6 +11,27 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Updated `kubectl gs template catalog` to support multiple repository mirrors.
 
+## [2.13.2] - 2022-06-09
+
+### Removed
+
+- Remove `giantswarm.io/managed-by: flux` for App CRs labeled for unique App Operator.
+
+## [2.13.1] - 2022-06-09
+
+### Added
+
+- In the `template app` command, add the `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
+
+## [2.13.0] - 2022-06-09
+
+### Added
+
+- Add `service-priority` label value `highest` by default to `vintage` clusters
+- Add `SERVICE PRIORITY` column to `get clusters` command table output.
+
+## [2.12.1] - 2022-06-08
+
 ### Fixed
 
 - Take `--context` flag into account when building config for `login`.
@@ -904,7 +925,11 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.2...HEAD
+[2.13.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...v2.13.2
+[2.13.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...v2.13.1
+[2.13.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...v2.13.0
+[2.12.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...v2.12.1
 [2.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...v2.12.0
 [2.11.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.1...v2.11.2
 [2.11.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.0...v2.11.1

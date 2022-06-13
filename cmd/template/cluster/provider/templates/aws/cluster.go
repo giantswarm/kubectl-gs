@@ -183,6 +183,10 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 			capi.ClusterLabelName:        c.ClusterName,
 			label.Organization:           c.Owner,
 			label.ReleaseVersion:         c.ReleaseVersion,
+
+			// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
+			// we use "highest" as the default service priority.
+			label.ServicePriority: label.ServicePriorityHighest,
 		}
 
 		for key, value := range gsLabels {
@@ -211,6 +215,10 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 				Namespace:  obj.GetNamespace(),
 			},
 		},
+	}
+
+	if val, ok := c.Labels[label.ServicePriority]; ok {
+		clusterCR.ObjectMeta.Labels[label.ServicePriority] = val
 	}
 
 	return clusterCR
