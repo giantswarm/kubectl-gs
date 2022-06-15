@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Added flag `--service-priority` to `template cluster` command that allows setting the service priority label.
+- Updated `kubectl gs template catalog` to support multiple repository mirrors.
 
 ## [2.13.2] - 2022-06-09
 

@@ -217,6 +217,12 @@ func newCatalog(catalogName string) *applicationv1alpha1.Catalog {
 				Type: "helm",
 				URL:  fmt.Sprintf("http://%s/", address),
 			},
+			Repositories: []applicationv1alpha1.CatalogSpecRepository{
+				{
+					Type: "helm",
+					URL:  fmt.Sprintf("http://%s/", address),
+				},
+			},
 		},
 	}
 
