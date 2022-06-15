@@ -40,7 +40,7 @@ func NewMcDir(config McConfig) (*Dir, error) {
 			"spec": map[string]interface{}{
 				"interval":           config.RefreshInterval,
 				"path":               fmt.Sprintf("./%s/%s", topLevelGitOpsDirectory, config.Name),
-				"prune":              "false",
+				"prune":              false,
 				"serviceAccountName": config.ServiceAccount,
 				"sourceRef": map[string]string{
 					"kind": config.RepositoryKind,
