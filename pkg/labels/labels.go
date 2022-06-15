@@ -3,10 +3,10 @@ package labels
 import (
 	"strings"
 
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/util/validation"
 
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/kubectl-gs/internal/label"
 )
 
