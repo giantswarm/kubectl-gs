@@ -43,12 +43,19 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		RepositoryName:  r.flag.RepositoryName,
 		ServiceAccount:  r.flag.ServiceAccount,
 	}
-	mcDir := structure.NewMcDir(mcConfig)
+	mcDir, err := structure.NewMcDir(mcConfig)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	if r.flag.DryRun {
 		mcDir.Print(r.flag.LocalPath)
-	} else {
-		mcDir.Write(r.flag.LocalPath)
+		return nil
+	}
+
+	err = mcDir.Write(r.flag.LocalPath)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil

@@ -27,9 +27,9 @@ func (d *Dir) AddFile(name string, manifest unstructured.Unstructured) error {
 	return nil
 }
 
-func NewMcDir(config McConfig) *Dir {
+func NewMcDir(config McConfig) (*Dir, error) {
 	mcDir := newDir(config.Name)
-	mcDir.AddFile(config.Name+".yaml", unstructured.Unstructured{
+	err := mcDir.AddFile(config.Name+".yaml", unstructured.Unstructured{
 		Object: map[string]interface{}{
 			"apiVersion": fluxKustomizationAPIVersion,
 			"kind":       fluxKustomizationKind,
@@ -50,11 +50,14 @@ func NewMcDir(config McConfig) *Dir {
 			},
 		},
 	})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	mcDir.AddDirectory(newDir(secretsDirectory))
 	mcDir.AddDirectory(newDir(sopsPublicKeysDirectory))
 	mcDir.AddDirectory(newDir(organizationsDirectory))
 
-	return mcDir
+	return mcDir, nil
 }
 
 func (d *Dir) Print(path string) {
@@ -82,14 +85,17 @@ func (d *Dir) Write(path string) error {
 	}
 
 	for _, file := range d.files {
-		err := os.WriteFile(fmt.Sprintf("%s/%s", path, file.name), file.data, 0644)
+		err := os.WriteFile(fmt.Sprintf("%s/%s", path, file.name), file.data, 0600)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	for _, dir := range d.dirs {
-		dir.Write(path)
+		err = dir.Write(path)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
