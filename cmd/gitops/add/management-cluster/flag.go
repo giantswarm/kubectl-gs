@@ -1,9 +1,10 @@
 package mcluster
 
 import (
+	"time"
+
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 const (

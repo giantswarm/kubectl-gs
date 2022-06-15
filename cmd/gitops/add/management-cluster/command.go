@@ -4,13 +4,11 @@ import (
 	"io"
 	"os"
 
-	//fluxkustomizev1 "github.com/fluxcd/kustomize-controller/api/v1beta2"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
-	//k8skustomizev1 "sigs.k8s.io/kustomize/api/types"
 )
 
 const (
