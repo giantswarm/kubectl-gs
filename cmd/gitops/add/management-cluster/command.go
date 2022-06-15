@@ -21,7 +21,7 @@ const (
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 
-Corresponding steps:
+Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_mc.md`
 
 	examples = `  # Add dummy Management Cluster
