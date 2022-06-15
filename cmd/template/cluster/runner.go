@@ -61,6 +61,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			ReleaseVersion:    r.flag.Release,
 			Namespace:         metav1.NamespaceDefault,
 			Region:            r.flag.Region,
+			ServicePriority:   r.flag.ServicePriority,
 
 			App:       r.flag.App,
 			AWS:       r.flag.AWS,

@@ -3,6 +3,7 @@ package labels
 import (
 	"strings"
 
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/util/validation"
 
@@ -18,7 +19,7 @@ func Parse(rawLabels []string) (map[string]string, error) {
 		if len(parts) != 2 {
 			return nil, microerror.Maskf(invalidLabelSpecError, labelSpec)
 		}
-		if strings.Contains(parts[0], label.ForbiddenLabelKeyPart) {
+		if strings.Contains(parts[0], label.ForbiddenLabelKeyPart) && parts[0] != k8smetadata.ServicePriority {
 			return nil, microerror.Maskf(invalidLabelKeyError, "%q: containing forbidden substring '%s'", labelSpec, label.ForbiddenLabelKeyPart)
 		}
 		if errs := validation.IsQualifiedName(parts[0]); len(errs) != 0 {

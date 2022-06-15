@@ -109,6 +109,7 @@ type ClusterConfig struct {
 	Namespace         string
 	PodsCIDR          string
 	OIDC              OIDC
+	ServicePriority   string
 
 	Region                   string
 	BastionInstanceType      string
@@ -153,7 +154,7 @@ func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectRefe
 
 				// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
 				// we use "highest" as the default service priority.
-				label.ServicePriority: label.ServicePriorityHighest,
+				label.ServicePriority: config.ServicePriority,
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: config.Description,
