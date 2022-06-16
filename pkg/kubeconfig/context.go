@@ -65,6 +65,19 @@ func IsCodeName(s string) bool {
 	return codeNameRegExp.MatchString(s)
 }
 
+// IsWCCodeName checks whether a provided name is
+// a WC id with installation code name prefix.
+func IsWCCodeName(s string) bool {
+	parts := strings.Split(s, "-")
+	if len(parts) != 2 {
+		return false
+	}
+	if !IsCodeName(parts[0]) {
+		return false
+	}
+	return true
+}
+
 func GetKubeContextType(s string) ContextType {
 	contextParts := getKubeContextParts(s)
 

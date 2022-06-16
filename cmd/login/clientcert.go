@@ -248,8 +248,8 @@ func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
-// storeWCCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
+// storeWCClientCertCredentials saves the created client certificate credentials into the kubectl config.
+func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -305,7 +305,7 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c c
 		config.Contexts[contextName] = context
 
 		// Select newly created context as current or revert to origin context if that is desired
-		if c.loginOptions.switchToWCcontext {
+		if c.loginOptions.switchToClientCertContext {
 			config.CurrentContext = contextName
 		} else if c.loginOptions.originContext != "" {
 			config.CurrentContext = c.loginOptions.originContext
@@ -320,8 +320,8 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c c
 	return contextName, contextExists, nil
 }
 
-// printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
+// printWCClientCertCredentials saves the created client certificate credentials into a separate kubectl config file.
+func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)

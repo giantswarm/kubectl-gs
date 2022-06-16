@@ -6,26 +6,20 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
-func (r *runner) handleMCLogin(ctx context.Context, installationIdentifier string) error {
-	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC {
-		return r.loginWithKubeContextName(ctx, installationIdentifier)
+func (r *runner) findContext(ctx context.Context, installationIdentifier string) (bool, error) {
+	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType != kubeconfig.ContextTypeNone {
+		return true, r.loginWithKubeContextName(ctx, installationIdentifier)
 
-	} else if kubeconfig.IsCodeName(installationIdentifier) {
-		return r.loginWithCodeName(ctx, installationIdentifier)
+	} else if kubeconfig.IsCodeName(installationIdentifier) || kubeconfig.IsWCCodeName(installationIdentifier) {
+		return true, r.loginWithCodeName(ctx, installationIdentifier)
 
-	} else {
-		var tokenOverride string
-		if c, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
-			tokenOverride = *c.BearerToken
-		}
-		return r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
 	}
+	return false, nil
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
@@ -34,7 +28,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 	var contextAlreadySelected bool
 	var newLoginRequired bool
 
-	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToMCcontext)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToContext)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) || IsTokenRenewalFailed(err) {
@@ -43,7 +37,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		return microerror.Mask(err)
 	}
 
-	if newLoginRequired || r.loginOptions.selfContainedMC {
+	if newLoginRequired || r.loginOptions.selfContained {
 		config, err := r.k8sConfigAccess.GetStartingConfig()
 		if err != nil {
 			return microerror.Mask(err)
@@ -66,7 +60,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else if !r.loginOptions.isWCLogin && r.loginOptions.switchToMCcontext {
+	} else if !r.loginOptions.isWCClientCert && r.loginOptions.switchToContext {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
@@ -104,12 +98,12 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-	if r.loginOptions.selfContainedMC {
+	if r.loginOptions.selfContained {
 		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else {
 		if firstLogin {
-			if !r.loginOptions.switchToMCcontext {
+			if !r.loginOptions.switchToContext {
 				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
 				fmt.Fprintf(r.stdout, " ")
 			} else {
@@ -118,7 +112,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 			}
 		}
 
-		if !r.loginOptions.switchToMCcontext {
+		if !r.loginOptions.switchToContext {
 			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
 		} else {
 			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
@@ -149,14 +143,14 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 
 		}
 	}
-	if r.loginOptions.selfContainedMC {
+	if r.loginOptions.selfContained {
 		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
 		// Store kubeconfig and CA certificate.
-		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToMCcontext)
+		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToContext)
 		if err != nil {
 			return microerror.Mask(err)
 		}

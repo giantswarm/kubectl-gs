@@ -218,7 +218,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Logging in with argument using context flag
 		{
-			name:        "case 18",
+			name:        "case 19",
 			startConfig: createValidTestConfig("", false),
 			mcArg:       []string{"codename"},
 			flags: &flag{
@@ -227,6 +227,33 @@ func TestLogin(t *testing.T) {
 					Context: to.StringPtr("gs-anothercodename"),
 				},
 			},
+		},
+		// Existing WC context
+		{
+			name:        "case 20",
+			startConfig: createValidTestConfig("-cluster", false),
+			mcArg:       []string{"codename", "cluster"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 21",
+			startConfig: createValidTestConfig("-cluster", false),
+			mcArg:       []string{"gs-codename-cluster"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		// Too many arguments
+		{
+			name:        "case 22",
+			startConfig: createValidTestConfig("-cluster", false),
+			mcArg:       []string{"codename", "cluster", "somethingelse"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			expectError: invalidConfigError,
 		},
 	}
 

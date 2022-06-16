@@ -41,7 +41,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/scheme"
 )
 
-func TestWCLogin(t *testing.T) {
+func TestWCClientCert(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		flags                *flag
