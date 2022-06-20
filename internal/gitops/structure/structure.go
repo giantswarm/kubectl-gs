@@ -29,27 +29,29 @@ func (d *Dir) AddFile(name string, manifest unstructured.Unstructured) error {
 
 func NewMcDir(config McConfig) (*Dir, error) {
 	mcDir := newDir(config.Name)
-	err := mcDir.AddFile(config.Name+".yaml", unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": fluxKustomizationAPIVersion,
-			"kind":       fluxKustomizationKind,
-			"metadata": map[string]string{
-				"name":      fmt.Sprintf("%s-%s", config.Name, topLevelKustomizationSuffix),
-				"namespace": "default",
-			},
-			"spec": map[string]interface{}{
-				"interval":           config.RefreshInterval,
-				"path":               fmt.Sprintf("./%s/%s", topLevelGitOpsDirectory, config.Name),
-				"prune":              false,
-				"serviceAccountName": config.ServiceAccount,
-				"sourceRef": map[string]string{
-					"kind": config.RepositoryKind,
-					"name": config.RepositoryName,
+	err := mcDir.AddFile(
+		kustomizationFileName(config.Name),
+		unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": fluxKustomizationAPIVersion,
+				"kind":       fluxKustomizationKind,
+				"metadata": map[string]string{
+					"name":      kustomizationName(config.Name, ""),
+					"namespace": kustomizationNamespace,
 				},
-				"timeout": config.RefreshTimeout,
+				"spec": map[string]interface{}{
+					"interval":           config.RefreshInterval,
+					"path":               kustomizationPath(config.Name, "", ""),
+					"prune":              false,
+					"serviceAccountName": config.ServiceAccount,
+					"sourceRef": map[string]string{
+						"kind": fluxSourceKind,
+						"name": config.RepositoryName,
+					},
+					"timeout": config.RefreshTimeout,
+				},
 			},
-		},
-	})
+		})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
