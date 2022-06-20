@@ -42,7 +42,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		RepositoryName:  r.flag.RepositoryName,
 		ServiceAccount:  r.flag.ServiceAccount,
 	}
-	mcDir, err := structure.NewMcDir(mcConfig)
+	mcDir, err := structure.NewManagementCluster(mcConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
