@@ -39,7 +39,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Name:            r.flag.Name,
 		RefreshInterval: r.flag.Interval.String(),
 		RefreshTimeout:  r.flag.Timeout.String(),
-		RepositoryKind:  r.flag.RepositoryKind,
 		RepositoryName:  r.flag.RepositoryName,
 		ServiceAccount:  r.flag.ServiceAccount,
 	}
