@@ -27,7 +27,7 @@ func (d *Dir) AddFile(name string, manifest unstructured.Unstructured) error {
 	return nil
 }
 
-func NewMcDir(config McConfig) (*Dir, error) {
+func NewManagementCluster(config McConfig) (*Dir, error) {
 	mcDir := newDir(config.Name)
 	err := mcDir.AddFile(
 		fileName(config.Name),
@@ -74,7 +74,10 @@ func (d *Dir) Write(path string) error {
 	}
 
 	for _, file := range d.files {
-		file.Write(path)
+		err = file.Write(path)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	for _, dir := range d.dirs {
