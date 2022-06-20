@@ -40,7 +40,6 @@ func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output *o
 
 	err = templateDefaultAppsGCP(ctx, client, output, config)
 	return microerror.Mask(err)
-
 }
 
 func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
@@ -63,6 +62,10 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			ControlPlane: &capg.ControlPlane{
 				InstanceType: config.ControlPlaneInstanceType,
 				Replicas:     3,
+				ServiceAccount: capg.ServiceAccount{
+					Email:  config.GCP.ControlPlane.ServiceAccount.Email,
+					Scopes: config.GCP.ControlPlane.ServiceAccount.Scopes,
+				},
 			},
 			MachineDeployments: &[]capg.MachineDeployment{
 				{

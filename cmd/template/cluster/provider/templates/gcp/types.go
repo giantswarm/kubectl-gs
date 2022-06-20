@@ -29,9 +29,15 @@ type Network struct {
 }
 
 type ControlPlane struct {
-	InstanceType     string `json:"instanceType,omitempty"`
-	Replicas         int    `json:"replicas,omitempty"`
-	RootVolumeSizeGB int    `json:"rootVolumeSizeGB,omitempty"`
+	InstanceType     string         `json:"instanceType,omitempty"`
+	Replicas         int            `json:"replicas,omitempty"`
+	RootVolumeSizeGB int            `json:"rootVolumeSizeGB,omitempty"`
+	ServiceAccount   ServiceAccount `json:"serviceAccount,omitempty"`
+}
+
+type ServiceAccount struct {
+	Email  string   `json:"email,omitempty"`
+	Scopes []string `json:"scopes,omitempty"`
 }
 
 type MachineDeployment struct {

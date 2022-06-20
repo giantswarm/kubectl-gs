@@ -38,13 +38,15 @@ const (
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
 	// GCP only.
-	flagGCPProject                        = "project"
-	flagGCPFailureDomains                 = "gcp-failure-domains"
-	flagGCPMachineDeploymentName          = "gcp-machine-deployment-name"
-	flagGCPMachineDeploymentInstanceType  = "gcp-machine-deployment-instance-type"
-	flagGCPMachineDeploymentFailureDomain = "gcp-machine-deployment-failure-domain"
-	flagGCPMachineDeploymentReplicas      = "gcp-machine-deployment-replicas"
-	flagGCPMachineDeploymentRootDiskSize  = "gcp-machine-deployment-disk-size"
+	flagGCPProject                          = "project"
+	flagGCPFailureDomains                   = "gcp-failure-domains"
+	flagGCPControlPlaneServiceAccountEmail  = "gcp-control-plane-sa-email"
+	flagGCPControlPlaneServiceAccountScopes = "gcp-control-plane-sa-scopes"
+	flagGCPMachineDeploymentName            = "gcp-machine-deployment-name"
+	flagGCPMachineDeploymentInstanceType    = "gcp-machine-deployment-instance-type"
+	flagGCPMachineDeploymentFailureDomain   = "gcp-machine-deployment-failure-domain"
+	flagGCPMachineDeploymentReplicas        = "gcp-machine-deployment-replicas"
+	flagGCPMachineDeploymentRootDiskSize    = "gcp-machine-deployment-disk-size"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -152,6 +154,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// GCP only.
 	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "GCP project name")
 	cmd.Flags().StringSliceVar(&f.GCP.FailureDomains, flagGCPFailureDomains, nil, "GCP cluster failure domains")
+
+	cmd.Flags().StringVar(&f.GCP.ControlPlane.ServiceAccount.Email, flagGCPControlPlaneServiceAccountEmail, "default", "GCP Service Account used by the control plane")
+	cmd.Flags().StringSliceVar(&f.GCP.ControlPlane.ServiceAccount.Scopes, flagGCPControlPlaneServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the control plane's GCP Service Account")
 
 	cmd.Flags().StringVar(&f.GCP.MachineDeployment.Name, flagGCPMachineDeploymentName, "worker0", "GCP project name")
 	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n1-standard-2", "GCP worker instance type")
