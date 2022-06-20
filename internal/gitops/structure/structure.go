@@ -30,34 +30,21 @@ func (d *Dir) AddFile(name string, manifest unstructured.Unstructured) error {
 func NewMcDir(config McConfig) (*Dir, error) {
 	mcDir := newDir(config.Name)
 	err := mcDir.AddFile(
-		kustomizationFileName(config.Name),
-		unstructured.Unstructured{
-			Object: map[string]interface{}{
-				"apiVersion": fluxKustomizationAPIVersion,
-				"kind":       fluxKustomizationKind,
-				"metadata": map[string]string{
-					"name":      kustomizationName(config.Name, ""),
-					"namespace": kustomizationNamespace,
-				},
-				"spec": map[string]interface{}{
-					"interval":           config.RefreshInterval,
-					"path":               kustomizationPath(config.Name, "", ""),
-					"prune":              false,
-					"serviceAccountName": config.ServiceAccount,
-					"sourceRef": map[string]string{
-						"kind": fluxSourceKind,
-						"name": config.RepositoryName,
-					},
-					"timeout": config.RefreshTimeout,
-				},
-			},
-		})
+		fileName(config.Name),
+		kustomizationManifest(
+			kustomizationName(config.Name, ""),
+			kustomizationPath(config.Name, "", ""),
+			config.RepositoryName,
+			config.ServiceAccount,
+			config.RefreshInterval,
+			config.RefreshTimeout),
+	)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	mcDir.AddDirectory(newDir(secretsDirectory))
-	mcDir.AddDirectory(newDir(sopsPublicKeysDirectory))
-	mcDir.AddDirectory(newDir(organizationsDirectory))
+	mcDir.AddDirectory(newDir(directorySecrets))
+	mcDir.AddDirectory(newDir(directorySOPSPublicKeys))
+	mcDir.AddDirectory(newDir(directoryOrganizations))
 
 	return mcDir, nil
 }
