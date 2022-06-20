@@ -74,10 +74,7 @@ func (d *Dir) Write(path string) error {
 	}
 
 	for _, file := range d.files {
-		err := os.WriteFile(fmt.Sprintf("%s/%s", path, file.name), file.data, 0600)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		file.Write(path)
 	}
 
 	for _, dir := range d.dirs {
@@ -85,6 +82,15 @@ func (d *Dir) Write(path string) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+
+	return nil
+}
+
+func (f *File) Write(path string) error {
+	err := os.WriteFile(fmt.Sprintf("%s/%s", path, f.name), f.data, 0600)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
