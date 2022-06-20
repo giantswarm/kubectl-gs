@@ -2,32 +2,34 @@ package structure
 
 import (
 	"fmt"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 const (
 	fluxKustomizationAPIVersion = "kustomize.toolkit.fluxcd.io/v1beta2"
 	fluxKustomizationKind       = "Kustomization"
-	fluxSourceKind              = "GitRepository"
 
-	topLevelGitOpsDirectory     = "management-clusters"
-	topLevelKustomizationSuffix = "gitops"
+	directoryManagementClusters = "management-clusters"
+	directoryOrganizations      = "organizations"
+	directorySecrets            = "secrets"
+	directorySOPSPublicKeys     = ".sops.keys"
+	directoryWorkloadClusters   = "workload-clusters"
+
+	mainKustomizationSuffix     = "gitops"
 	clustersKustomizationPrefix = "clusters"
 
-	kustomizationNamespace = "default"
-
-	secretsDirectory          = "secrets"
-	sopsPublicKeysDirectory   = ".sops.keys"
-	organizationsDirectory    = "organizations"
-	workloadClustersDirectory = "workload-clusters"
+	kustomizationsNamespace  = "default"
+	kustomizationsSourceKind = "GitRepository"
 )
 
-func kustomizationFileName(name string) string {
+func fileName(name string) string {
 	return fmt.Sprintf("%s.yaml", name)
 }
 
 func kustomizationName(mc, wc string) string {
 	if wc == "" {
-		return fmt.Sprintf("%s-%s", mc, topLevelKustomizationSuffix)
+		return fmt.Sprintf("%s-%s", mc, mainKustomizationSuffix)
 	} else {
 		return fmt.Sprintf("%s-%s-%s", mc, clustersKustomizationPrefix, wc)
 	}
@@ -35,8 +37,40 @@ func kustomizationName(mc, wc string) string {
 
 func kustomizationPath(mc, org, wc string) string {
 	if wc == "" || org == "" {
-		return fmt.Sprintf("./%s/%s", topLevelGitOpsDirectory, mc)
+		return fmt.Sprintf("./%s/%s", directoryManagementClusters, mc)
 	} else {
-		return fmt.Sprintf("./%s/%s/%s/%s/%s/%s", topLevelGitOpsDirectory, mc, organizationsDirectory, org, workloadClustersDirectory, wc)
+		return fmt.Sprintf(
+			"./%s/%s/%s/%s/%s/%s",
+			directoryManagementClusters,
+			mc,
+			directoryOrganizations,
+			org,
+			directoryWorkloadClusters,
+			wc,
+		)
+	}
+}
+
+func kustomizationManifest(name, path, repository, serviceAccount, interval, timeout string) unstructured.Unstructured {
+	return unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": fluxKustomizationAPIVersion,
+			"kind":       fluxKustomizationKind,
+			"metadata": map[string]string{
+				"name":      name,
+				"namespace": kustomizationsNamespace,
+			},
+			"spec": map[string]interface{}{
+				"interval":           interval,
+				"path":               path,
+				"prune":              false,
+				"serviceAccountName": serviceAccount,
+				"sourceRef": map[string]string{
+					"kind": kustomizationsSourceKind,
+					"name": repository,
+				},
+				"timeout": timeout,
+			},
+		},
 	}
 }
