@@ -10,6 +10,9 @@ const (
 	fluxKustomizationAPIVersion = "kustomize.toolkit.fluxcd.io/v1beta2"
 	fluxKustomizationKind       = "Kustomization"
 
+	organizationAPIVersion = "security.giantswarm.io/v1alpha1"
+	organizationKind       = "Organization"
+
 	directoryManagementClusters = "management-clusters"
 	directoryOrganizations      = "organizations"
 	directorySecrets            = "secrets"
@@ -71,6 +74,19 @@ func kustomizationManifest(name, path, repository, serviceAccount, interval, tim
 				},
 				"timeout": timeout,
 			},
+		},
+	}
+}
+
+func organizationManifest(name string) unstructured.Unstructured {
+	return unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": organizationAPIVersion,
+			"kind":       organizationKind,
+			"metadata": map[string]string{
+				"name": name,
+			},
+			"spec": map[string]interface{}{},
 		},
 	}
 }

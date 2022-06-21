@@ -9,6 +9,10 @@ type McConfig struct {
 	ServiceAccount  string
 }
 
+type OrgConfig struct {
+	Name string
+}
+
 type Dir struct {
 	dirs  []*Dir
 	files []*File

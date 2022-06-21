@@ -49,6 +49,20 @@ func NewManagementCluster(config McConfig) (*Dir, error) {
 	return mcDir, nil
 }
 
+func NewOrganization(config OrgConfig) (*Dir, error) {
+	orgDir := newDir(config.Name)
+	err := orgDir.AddFile(
+		fileName(config.Name),
+		organizationManifest(config.Name),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	orgDir.AddDirectory(newDir(directoryWorkloadClusters))
+
+	return orgDir, nil
+}
+
 func (d *Dir) Print(path string) {
 	path = fmt.Sprintf("%s/%s", path, d.name)
 
