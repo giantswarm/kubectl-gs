@@ -18,27 +18,19 @@ import (
 	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8scrdclient"
 	"github.com/giantswarm/microerror"
 	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	fakek8s "k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
+	//nolint:staticcheck
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
-	"github.com/giantswarm/kubectl-gs/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/test/kubeclient"
 )
 
 func TestWCLogin(t *testing.T) {
@@ -198,7 +190,7 @@ func TestWCLogin(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			client := FakeK8sClient()
+			client := kubeclient.FakeK8sClient()
 			ctx := context.Background()
 			{
 				err = client.CtrlClient().Create(ctx, getOrganization("org-organization"))
@@ -343,6 +335,7 @@ func getCluster(name string, namespace string) *capi.Cluster {
 
 	return cluster
 }
+
 func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
@@ -364,6 +357,7 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 
 	return cr
 }
+
 func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSCluster {
 	cr := &infrastructurev1alpha3.AWSCluster{
 		TypeMeta: metav1.TypeMeta{
@@ -385,6 +379,7 @@ func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSClu
 
 	return cr
 }
+
 func getRelease(capi bool) *releasev1alpha1.Release {
 	cr := &releasev1alpha1.Release{
 		ObjectMeta: metav1.ObjectMeta{
@@ -402,6 +397,7 @@ func getRelease(capi bool) *releasev1alpha1.Release {
 	}
 	return cr
 }
+
 func getSecret(name string, namespace string, data map[string][]byte) *corev1.Secret {
 	cr := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -413,6 +409,7 @@ func getSecret(name string, namespace string, data map[string][]byte) *corev1.Se
 
 	return cr
 }
+
 func getCAdata() map[string][]byte {
 	key, _ := getKey()
 	cert := &x509.Certificate{
@@ -424,59 +421,4 @@ func getCAdata() map[string][]byte {
 		"tls.key": getPrivKeyPEM(key),
 		"tls.crt": getCertPEM(ca),
 	}
-}
-
-type fakeK8sClient struct {
-	ctrlClient client.Client
-	k8sClient  *fakek8s.Clientset
-}
-
-func FakeK8sClient() k8sclient.Interface {
-	var k8sClient k8sclient.Interface
-	{
-		scheme, err := scheme.NewScheme()
-		if err != nil {
-			panic(err)
-		}
-		client := fakek8s.NewSimpleClientset()
-
-		k8sClient = &fakeK8sClient{
-			ctrlClient: fake.NewClientBuilder().WithScheme(scheme).Build(),
-			k8sClient:  client,
-		}
-	}
-
-	return k8sClient
-}
-
-func (f *fakeK8sClient) CRDClient() k8scrdclient.Interface {
-	return nil
-}
-
-func (f *fakeK8sClient) CtrlClient() client.Client {
-	return f.ctrlClient
-}
-
-func (f *fakeK8sClient) DynClient() dynamic.Interface {
-	return nil
-}
-
-func (f *fakeK8sClient) ExtClient() apiextensionsclient.Interface {
-	return nil
-}
-
-func (f *fakeK8sClient) K8sClient() kubernetes.Interface {
-	return f.k8sClient
-}
-
-func (f *fakeK8sClient) RESTClient() rest.Interface {
-	return nil
-}
-
-func (f *fakeK8sClient) RESTConfig() *rest.Config {
-	return nil
-}
-
-func (f *fakeK8sClient) Scheme() *runtime.Scheme {
-	return nil
 }

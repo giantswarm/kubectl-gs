@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -15,7 +15,7 @@ import (
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
-func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	err := templateClusterOpenstack(ctx, k8sClient, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -25,7 +25,7 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 	return microerror.Mask(err)
 }
 
-func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := config.Name
 	configMapName := fmt.Sprintf("%s-cluster-userconfig", appName)
 
@@ -139,7 +139,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 	return microerror.Mask(err)
 }
 
-func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := fmt.Sprintf("%s-userconfig", appName)
 

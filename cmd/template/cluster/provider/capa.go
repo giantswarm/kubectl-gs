@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -24,7 +23,7 @@ const (
 	ClusterAWSRepoName  = "cluster-aws"
 )
 
-func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	var err error
 
 	var sshSSOPublicKey string
@@ -43,7 +42,6 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output *
 
 	err = templateDefaultAppsAWS(ctx, client, output, config)
 	return microerror.Mask(err)
-
 }
 
 func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
@@ -78,7 +76,7 @@ func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out i
 	return nil
 }
 
-func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := config.Name
 	configMapName := userConfigMapName(appName)
 
@@ -135,8 +133,8 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			return microerror.Mask(err)
 		}
 
-		userConfigMap.ObjectMeta.Labels = map[string]string{}
-		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels = map[string]string{}
+		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -184,7 +182,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 	return microerror.Mask(err)
 }
 
-func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := userConfigMapName(appName)
 
@@ -209,8 +207,8 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			return microerror.Mask(err)
 		}
 
-		userConfigMap.ObjectMeta.Labels = map[string]string{}
-		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels = map[string]string{}
+		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {

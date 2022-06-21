@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -38,7 +39,13 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.run(ctx, cmd, args)
+	commonConfig := commonconfig.New(r.flag.config)
+	client, err := commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.run(ctx, client)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -46,100 +53,95 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	var err error
-
-	var config provider.ClusterConfig
-	{
-		config = provider.ClusterConfig{
-			ControlPlaneAZ:    r.flag.ControlPlaneAZ,
-			Description:       r.flag.Description,
-			KubernetesVersion: r.flag.KubernetesVersion,
-			Name:              r.flag.Name,
-			Organization:      r.flag.Organization,
-			PodsCIDR:          r.flag.PodsCIDR,
-			ReleaseVersion:    r.flag.Release,
-			Namespace:         metav1.NamespaceDefault,
-			Region:            r.flag.Region,
-			ServicePriority:   r.flag.ServicePriority,
-
-			App:       r.flag.App,
-			AWS:       r.flag.AWS,
-			GCP:       r.flag.GCP,
-			OIDC:      r.flag.OIDC,
-			OpenStack: r.flag.OpenStack,
-		}
-
-		if config.Name == "" {
-			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			config.Name = generatedName
-		}
-
-		// Remove leading 'v' from release flag input.
-		config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
-
-		config.Labels, err = labels.Parse(r.flag.Label)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		if r.flag.Provider != key.ProviderAWS {
-			config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
-		}
-	}
-
-	commonConfig := commonconfig.New(r.flag.config)
-	c, err := commonConfig.GetClient(r.logger)
+func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
+	config, err := r.getClusterConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	var output *os.File
-	{
-		if r.flag.Output == "" {
-			output = os.Stdout
-		} else {
-			f, err := os.Create(r.flag.Output)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			defer f.Close()
-
-			output = f
+	output := r.stdout
+	if r.flag.Output != "" {
+		outFile, err := os.Create(r.flag.Output)
+		if err != nil {
+			return microerror.Mask(err)
 		}
+
+		defer outFile.Close()
+		output = outFile
 	}
 
 	switch r.flag.Provider {
 	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, c, output, config)
+		err = provider.WriteAWSTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, c, output, config)
+		err = provider.WriteAzureTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderGCP:
-		err = provider.WriteGCPTemplate(ctx, c, output, config)
+		err = provider.WriteGCPTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, c, output, config)
+		err = provider.WriteOpenStackTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	case key.ProviderVSphere:
-		err = provider.WriteVSphereTemplate(ctx, c, output, config)
+		err = provider.WriteVSphereTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	return nil
+}
+
+func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
+	config := provider.ClusterConfig{
+		ControlPlaneAZ:    r.flag.ControlPlaneAZ,
+		Description:       r.flag.Description,
+		KubernetesVersion: r.flag.KubernetesVersion,
+		Name:              r.flag.Name,
+		Organization:      r.flag.Organization,
+		PodsCIDR:          r.flag.PodsCIDR,
+		ReleaseVersion:    r.flag.Release,
+		Namespace:         metav1.NamespaceDefault,
+		Region:            r.flag.Region,
+		ServicePriority:   r.flag.ServicePriority,
+
+		App:       r.flag.App,
+		AWS:       r.flag.AWS,
+		GCP:       r.flag.GCP,
+		OIDC:      r.flag.OIDC,
+		OpenStack: r.flag.OpenStack,
+	}
+
+	if config.Name == "" {
+		generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+		if err != nil {
+			return provider.ClusterConfig{}, microerror.Mask(err)
+		}
+
+		config.Name = generatedName
+	}
+
+	// Remove leading 'v' from release flag input.
+	config.ReleaseVersion = strings.TrimLeft(config.ReleaseVersion, "v")
+
+	var err error
+	config.Labels, err = labels.Parse(r.flag.Label)
+	if err != nil {
+		return provider.ClusterConfig{}, microerror.Mask(err)
+	}
+
+	if r.flag.Provider != key.ProviderAWS {
+		config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
+	}
+
+	return config, nil
 }
