@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add flags `--gcp-control-plane-sa-email` and `--gcp-control-plane-sa-scopes` to `template cluster` that specify a GCP Service Account and it's scopes to a cluster's control plane nodes
+
 ## [2.14.0] - 2022-06-15
 
 ### Added
