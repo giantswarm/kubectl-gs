@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.15.0] - 2022-06-22
+
 ### Added
 
 - Add flags `--gcp-control-plane-sa-email` and `--gcp-control-plane-sa-scopes` to `template cluster` that specify a Google Cloud Platform service account and its scopes to a cluster's control plane nodes
@@ -936,7 +938,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.14.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...HEAD
+[2.15.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.2...v2.14.0
 [2.13.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...v2.13.2
 [2.13.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...v2.13.1
