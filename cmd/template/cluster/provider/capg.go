@@ -121,9 +121,6 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
-			ExtraLabels: map[string]string{
-				k8smetadata.Cluster: config.Name,
-			},
 		}
 
 		var err error
@@ -196,9 +193,6 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
-			ExtraLabels: map[string]string{
-				k8smetadata.Cluster: config.Name,
-			},
 		})
 		if err != nil {
 			return microerror.Mask(err)

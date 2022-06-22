@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add flags `--gcp-control-plane-sa-email` and `--gcp-control-plane-sa-scopes` to `template cluster` that specify a Google Cloud Platform service account and its scopes to a cluster's control plane nodes
 
+### Removed
+
+- Removed `giantswarm.io/cluster` label from the default apps bundle and the `App` representing a CAPI cluster. 
+
 ## [2.14.0] - 2022-06-15
 
 ### Added
