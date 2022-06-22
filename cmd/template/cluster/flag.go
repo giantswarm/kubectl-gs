@@ -38,7 +38,7 @@ const (
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
 	// GCP only.
-	flagGCPProject                          = "project"
+	flagGCPProject                          = "gcp-project"
 	flagGCPFailureDomains                   = "gcp-failure-domains"
 	flagGCPControlPlaneServiceAccountEmail  = "gcp-control-plane-sa-email"
 	flagGCPControlPlaneServiceAccountScopes = "gcp-control-plane-sa-scopes"
