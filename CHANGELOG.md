@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Allow calling `login` command with a second argument to select WC contexts.
+
 ## [2.15.0] - 2022-06-22
 
 ### Added
