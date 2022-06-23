@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+data:
+  values: |
+    clusterDescription: just a test cluster
+    clusterName: test1
+    controlPlane:
+      replicas: 3
+      serviceAccount:
+        email: service-account@email
+        scopes:
+        - scope1
+        - scope2
+    gcp:
+      failureDomains:
+      - failure-domain1-a
+      - failure-domain1-b
+      project: the-project
+      region: the-region
+    machineDeployments:
+    - failureDomain: failure-domain2-b
+      instanceType: very-large
+      name: worker1
+      replicas: 7
+      rootVolumeSizeGB: 5
+    organization: test
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    giantswarm.io/cluster: test1
+  name: test1-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test1
+  namespace: org-test
+spec:
+  catalog: the-catalog
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: cluster-gcp
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test1-userconfig
+      namespace: org-test
+  version: 1.0.0
+---
+apiVersion: v1
+data:
+  values: |
+    clusterName: test1
+    organization: test
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    giantswarm.io/cluster: test1
+  name: test1-default-apps-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test1-default-apps
+  namespace: org-test
+spec:
+  catalog: the-default-catalog
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: default-apps-gcp
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test1-default-apps-userconfig
+      namespace: org-test
+  version: 2.0.0

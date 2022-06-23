@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"io"
-	"os"
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -15,7 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out *os.File, config ClusterConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)

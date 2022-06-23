@@ -52,7 +52,17 @@ type AWSMachinePoolConfig struct {
 type GCPConfig struct {
 	Project           string
 	FailureDomains    []string
+	ControlPlane      GCPControlPlane
 	MachineDeployment GCPMachineDeployment
+}
+
+type GCPControlPlane struct {
+	ServiceAccount ServiceAccount
+}
+
+type ServiceAccount struct {
+	Email  string
+	Scopes []string
 }
 
 type GCPMachineDeployment struct {

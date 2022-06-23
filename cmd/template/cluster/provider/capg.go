@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -21,7 +21,7 @@ const (
 	ClusterGCPRepoName     = "cluster-gcp"
 )
 
-func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	var err error
 
 	var sshSSOPublicKey string
@@ -40,10 +40,9 @@ func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output *o
 
 	err = templateDefaultAppsGCP(ctx, client, output, config)
 	return microerror.Mask(err)
-
 }
 
-func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := config.Name
 	configMapName := userConfigMapName(appName)
 
@@ -63,6 +62,10 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			ControlPlane: &capg.ControlPlane{
 				InstanceType: config.ControlPlaneInstanceType,
 				Replicas:     3,
+				ServiceAccount: capg.ServiceAccount{
+					Email:  config.GCP.ControlPlane.ServiceAccount.Email,
+					Scopes: config.GCP.ControlPlane.ServiceAccount.Scopes,
+				},
 			},
 			MachineDeployments: &[]capg.MachineDeployment{
 				{
@@ -90,8 +93,8 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			return microerror.Mask(err)
 		}
 
-		userConfigMap.ObjectMeta.Labels = map[string]string{}
-		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels = map[string]string{}
+		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -118,9 +121,6 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
-			ExtraLabels: map[string]string{
-				k8smetadata.Cluster: config.Name,
-			},
 		}
 
 		var err error
@@ -139,7 +139,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 	return microerror.Mask(err)
 }
 
-func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := userConfigMapName(appName)
 
@@ -164,8 +164,8 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 			return microerror.Mask(err)
 		}
 
-		userConfigMap.ObjectMeta.Labels = map[string]string{}
-		userConfigMap.ObjectMeta.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels = map[string]string{}
+		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -193,9 +193,6 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
-			ExtraLabels: map[string]string{
-				k8smetadata.Cluster: config.Name,
-			},
 		})
 		if err != nil {
 			return microerror.Mask(err)
@@ -208,5 +205,6 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 		UserConfigConfigMap: string(configMapYAML),
 		AppCR:               string(appYAML),
 	})
+
 	return microerror.Mask(err)
 }

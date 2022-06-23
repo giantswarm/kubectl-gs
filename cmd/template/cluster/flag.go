@@ -38,13 +38,15 @@ const (
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
 	// GCP only.
-	flagGCPProject                        = "project"
-	flagGCPFailureDomains                 = "gcp-failure-domains"
-	flagGCPMachineDeploymentName          = "gcp-machine-deployment-name"
-	flagGCPMachineDeploymentInstanceType  = "gcp-machine-deployment-instance-type"
-	flagGCPMachineDeploymentFailureDomain = "gcp-machine-deployment-failure-domain"
-	flagGCPMachineDeploymentReplicas      = "gcp-machine-deployment-replicas"
-	flagGCPMachineDeploymentRootDiskSize  = "gcp-machine-deployment-disk-size"
+	flagGCPProject                          = "gcp-project"
+	flagGCPFailureDomains                   = "gcp-failure-domains"
+	flagGCPControlPlaneServiceAccountEmail  = "gcp-control-plane-sa-email"
+	flagGCPControlPlaneServiceAccountScopes = "gcp-control-plane-sa-scopes"
+	flagGCPMachineDeploymentName            = "gcp-machine-deployment-name"
+	flagGCPMachineDeploymentInstanceType    = "gcp-machine-deployment-instance-type"
+	flagGCPMachineDeploymentFailureDomain   = "gcp-machine-deployment-failure-domain"
+	flagGCPMachineDeploymentReplicas        = "gcp-machine-deployment-replicas"
+	flagGCPMachineDeploymentRootDiskSize    = "gcp-machine-deployment-disk-size"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -150,14 +152,17 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
 
 	// GCP only.
-	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "GCP project name")
-	cmd.Flags().StringSliceVar(&f.GCP.FailureDomains, flagGCPFailureDomains, nil, "GCP cluster failure domains")
+	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "Google Cloud Platform project name")
+	cmd.Flags().StringSliceVar(&f.GCP.FailureDomains, flagGCPFailureDomains, nil, "Google Cloud Platform cluster failure domains")
 
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.Name, flagGCPMachineDeploymentName, "worker0", "GCP project name")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n1-standard-2", "GCP worker instance type")
-	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "GCP worker replicas")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "GCP worker failure domain")
-	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "GCP worker root disk size")
+	cmd.Flags().StringVar(&f.GCP.ControlPlane.ServiceAccount.Email, flagGCPControlPlaneServiceAccountEmail, "default", "Google Cloud Platform Service Account used by the control plane")
+	cmd.Flags().StringSliceVar(&f.GCP.ControlPlane.ServiceAccount.Scopes, flagGCPControlPlaneServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the control plane's Google Cloud Platform Service Account")
+
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.Name, flagGCPMachineDeploymentName, "worker0", "Google Cloud Platform project name")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n1-standard-2", "Google Cloud Platform worker instance type")
+	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "Google Cloud Platform worker replicas")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "Google Cloud Platform worker failure domain")
+	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "Google Cloud Platform worker root disk size")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
