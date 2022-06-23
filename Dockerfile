@@ -1,6 +1,6 @@
 FROM quay.io/giantswarm/alpine:3.15.0 AS binaries
 
-ARG KUBECTL_VERSION=1.19.13
+ARG KUBECTL_VERSION=1.24.2
 
 RUN apk add --no-cache ca-certificates curl \
     && mkdir -p /binaries \
