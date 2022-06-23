@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime"
 
+	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
@@ -18,6 +20,11 @@ import (
 )
 
 func main() {
+	// Disable color on Windows, as it doesn't work in CMD.exe.
+	if runtime.GOOS == "windows" {
+		color.NoColor = true
+	}
+
 	err := mainE(context.Background())
 	if err != nil {
 		ep := errorprinter.New(errorprinter.Config{

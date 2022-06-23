@@ -7,6 +7,182 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.15.0] - 2022-06-22
+
+### Added
+
+- Add flags `--gcp-control-plane-sa-email` and `--gcp-control-plane-sa-scopes` to `template cluster` that specify a Google Cloud Platform service account and its scopes to a cluster's control plane nodes
+
+### Removed
+
+- Removed `giantswarm.io/cluster` label from the default apps bundle and the `App` representing a CAPI cluster. 
+
+## [2.14.0] - 2022-06-15
+
+### Added
+
+- Added flag `--service-priority` to `template cluster` command that allows setting the service priority label.
+- Updated `kubectl gs template catalog` to support multiple repository mirrors.
+
+## [2.13.2] - 2022-06-09
+
+### Removed
+
+- Remove `giantswarm.io/managed-by: flux` for App CRs labeled for unique App Operator.
+
+## [2.13.1] - 2022-06-09
+
+### Added
+
+- In the `template app` command, add the `giantswarm.io/cluster` label to in-cluster App CR when requested by the user.
+
+## [2.13.0] - 2022-06-09
+
+### Added
+
+- Add `service-priority` label value `highest` by default to `vintage` clusters
+- Add `SERVICE PRIORITY` column to `get clusters` command table output.
+
+## [2.12.1] - 2022-06-08
+
+### Fixed
+
+- Take `--context` flag into account when building config for `login`.
+
+## [2.12.0] - 2022-06-02
+
+### Changed
+
+- When loging in, take the k8s API endpoint from the `Cluster` CR rather than calculating it.
+- Make `kubectl gs login` to work on GCP clusters.
+
+## [2.11.2] - 2022-05-26
+
+### Fixed
+
+- Pass region flag to template config
+
+## [2.11.1] - 2022-05-25
+
+### Fixed
+
+- Use provided name as cluster name when using `kubectl-gs template cluster --provider gcp`
+
+## [2.11.0] - 2022-05-19
+
+### Added
+
+- Add a NOTES column to the output of the `get apps` command. The column contains information why the last Helm release attempt failed if so, empty otherwise.
+
+## [2.10.0] - 2022-05-13
+
+### Added
+
+- Allow to reuse any current context in `login` command by omitting the argument. This allows creating clientCerts for WCs in an arbitrary MC context. (not following `gs-codename` format)
+
+## [2.9.1] - 2022-05-06
+
+### Changed
+
+- Fix retry fetching clientcert secret in the `default` namespace for legacy azure clusters.
+
+## [2.9.0] - 2022-05-05
+
+### Changed
+
+- base64 encode ssh key for CAPZ clusters.
+- Fix bastion systemd unit on CAPZ clusters.
+- Make CAPZ clusters compatible with cluster-apps-operator new version.
+
+## [2.8.1] - 2022-05-03
+
+### Fixed
+
+- Fixed missing `Kind` in `template` command.
+
+## [2.8.0] - 2022-05-03
+
+### Changed
+
+- Bump CAPI (cluster-api) dependencies to v1beta1
+
+## [2.7.11] - 2022-04-20
+
+### Fixed
+
+- Disable colored output on Windows to avoid printing of ANSII escape codes.
+
+## [2.7.10] - 2022-04-20
+
+- Build signed Windows binaries
+- Extend CI config to include the Windows package in the Krew index when a new release is published
+
+## [2.7.1] - 2022-04-14
+
+### Changed
+
+- Improved description of the `--control-plane-az` parameter when templating a cluster.
+
+## [2.7.0] - 2022-04-01
+
+- In `kubectl gs login`, add support for workload clusters on OpenStack.
+
+## [2.6.0] - 2022-03-31
+
+### Added
+
+- Add templating for clusters using Cluster API provider Google Cloud (CAPG).
+
+### Changed
+
+- Make the region and availability zones flags optional for CAPA clusters.
+
+## [2.5.0] - 2022-03-23
+
+### Added
+
+- Add cluster name label to Cluster API provider AWS (CAPA) Apps and ConfigMaps created with `kubectl-gs template`
+
+## [2.4.0] - 2022-03-21
+
+### Added
+
+- Add tests for `kubectl gs login`.
+- Add `--visibility` flag to `template catalog` to add label to control display in web UI.
+
+### Fixed
+
+- Look up cluster-related AppCatalogEntries in the `giantswarm` namespace instead of the `default` namespace.
+
+## [2.3.1] - 2022-03-11
+
+### Fixed
+
+- Set correct labels of GiantSwarm components on cluster templates.
+
+### Changed
+
+- `login`: simplify description for the `--certificate-ttl` flag.
+
+## [2.3.0] - 2022-03-09
+
+### Added
+
+- Add description column to the `get catalog` limited to 80 characters.
+- Add `--enable-long-names` feature flag to `template cluster/networkpool/nodepool` to allow resource names longer than 5 characters. Only for internal testing.
+- Implement `get clusters` command for OpenStack.
+
+### Changed
+
+- Add missing availability zones to cluster configuration for OpenStack.
+- Change default catalog for `cluster-*` and `default-apps-*` apps from `giantswarm` to `cluster`.
+
+## [2.2.0] - 2022-03-04
+
+### Added
+
+- Add OIDC flags to the `template cluster` command (OpenStack only).
+
 ### Changed
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
@@ -763,7 +939,32 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...HEAD
+[2.15.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.14.0...v2.15.0
+[2.14.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.2...v2.14.0
+[2.13.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...v2.13.2
+[2.13.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.0...v2.13.1
+[2.13.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.1...v2.13.0
+[2.12.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.12.0...v2.12.1
+[2.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.2...v2.12.0
+[2.11.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.1...v2.11.2
+[2.11.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.11.0...v2.11.1
+[2.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.10.0...v2.11.0
+[2.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.1...v2.10.0
+[2.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.9.0...v2.9.1
+[2.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.1...v2.9.0
+[2.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.8.0...v2.8.1
+[2.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.11...v2.8.0
+[2.7.11]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.10...v2.7.11
+[2.7.10]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.1...v2.7.10
+[2.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.7.0...v2.7.1
+[2.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.6.0...v2.7.0
+[2.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.5.0...v2.6.0
+[2.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.4.0...v2.5.0
+[2.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.1...v2.4.0
+[2.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.3.0...v2.3.1
+[2.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.2.0...v2.3.0
+[2.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/giantswarm/giantswarm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/giantswarm/giantswarm/compare/v1.60.0...v2.0.0

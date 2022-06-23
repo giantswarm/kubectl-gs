@@ -71,6 +71,7 @@ func getTable(appResource app.Resource) *metav1.Table {
 		{Name: "Version", Type: "string"},
 		{Name: "Last Deployed", Type: "string", Format: "date-time"},
 		{Name: "Status", Type: "string"},
+		{Name: "Notes", Type: "string"},
 	}
 
 	switch c := appResource.(type) {
@@ -96,6 +97,7 @@ func getAppRow(a app.App) metav1.TableRow {
 			a.CR.Status.Version,
 			output.TranslateTimestampSince(a.CR.Status.Release.LastDeployed),
 			a.CR.Status.Release.Status,
+			a.CR.Status.Release.Reason,
 		},
 		Object: runtime.RawExtension{
 			Object: a.CR,

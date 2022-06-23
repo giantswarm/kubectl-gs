@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/aws"
@@ -33,7 +33,7 @@ func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Description:       config.Description,
 		MaxSize:           config.NodesMax,
 		MinSize:           config.NodesMin,
-		Name:              config.NodePoolID,
+		Name:              config.NodePoolName,
 		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
 		Organization:      config.Organization,
 		Replicas:          config.NodesMin,
@@ -89,7 +89,7 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, out io.W
 		KubernetesVersion:                   "v1.19.9",
 		MaxSize:                             config.NodesMax,
 		MinSize:                             config.NodesMin,
-		Name:                                config.NodePoolID,
+		Name:                                config.NodePoolName,
 		Namespace:                           key.OrganizationNamespaceFromName(config.Organization),
 		OnDemandBaseCapacity:                config.OnDemandBaseCapacity,
 		OnDemandPercentageAboveBaseCapacity: config.OnDemandPercentageAboveBaseCapacity,

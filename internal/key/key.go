@@ -8,12 +8,12 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/blang/semver/v4"
 	"github.com/giantswarm/microerror"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,42 +23,28 @@ import (
 )
 
 const (
-	// IDChars represents the character set used to generate cluster IDs.
+	// NameChars represents the character set used to generate resource names.
 	// (does not contain 1 and l, to avoid confusion)
-	IDChars = "023456789abcdefghijkmnopqrstuvwxyz"
-	// IDLength represents the number of characters used to create a cluster ID.
-	IDLength = 5
+	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
+	// NameLengthLong represents the number of characters used to create a resource name when --enable-long-names feature flag is used.
+	NameLengthLong = 10
+	// NameLengthShort represents the number of characters used to create a resource name.
+	NameLengthShort = 5
 
 	organizationNamespaceFormat = "org-%s"
 )
 
 const (
-	AWSBastionInstanceType = "t3.small"
-
-	CAPIRoleLabel = "cluster.x-k8s.io/role"
-	CAPARoleTag   = "tag:sigs.k8s.io/cluster-api-provider-aws/role"
-
-	FlatcarAMIOwner      = "075585003325"
-	FlatcarChinaAMIOwner = "306934455918"
-
-	RoleBastion = "bastion"
-
 	RoleLabel           = "role"
 	SSHSSOPubKeyLabel   = "ssh-sso-public-key"
 	GiantswarmNamespace = "giantswarm"
-
-	ControllerRuntimeBurstValue = 200
 )
 
 const (
-	// FirstOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
+	// FirstAWSOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
 	FirstAWSOrgNamespaceRelease = "16.0.0"
 	FirstCAPIRelease            = "20.0.0-alpha1"
 )
-
-func BastionResourceName(clusterName string) string {
-	return fmt.Sprintf("%s-bastion", clusterName)
-}
 
 func BastionSSHDConfigEncoded() string {
 	return base64.StdEncoding.EncodeToString([]byte(bastionSSHDConfig))
@@ -68,61 +54,44 @@ func NodeSSHDConfigEncoded() string {
 	return base64.StdEncoding.EncodeToString([]byte(nodeSSHDConfig))
 }
 
-func CAPAClusterOwnedTag(clusterName string) string {
-	return fmt.Sprintf("tag:sigs.k8s.io/cluster-api-provider-aws/cluster/%s", clusterName)
-}
-
-func FlatcarAWSAccountID(awsRegion string) string {
-	if strings.Contains(awsRegion, "cn-") {
-		return FlatcarChinaAMIOwner
-	} else {
-		return FlatcarAMIOwner
+func ValidateName(name string, enableLongNames bool) (bool, error) {
+	maxLength := NameLengthShort
+	if enableLongNames {
+		maxLength = NameLengthLong
 	}
+
+	pattern := fmt.Sprintf("^[a-z][a-z0-9]{0,%d}$", maxLength-1)
+	matched, err := regexp.MatchString(pattern, name)
+	return matched, microerror.Mask(err)
 }
 
-func GenerateID() string {
-	compiledRegexp, _ := regexp.Compile("^[a-z]+$")
-
-	/* #nosec G404 */
+func GenerateName(enableLongNames bool) (string, error) {
 	for {
-		letterRunes := []rune(IDChars)
-		b := make([]rune, IDLength)
+		letterRunes := []rune(NameChars)
+		length := NameLengthShort
+		if enableLongNames {
+			length = NameLengthLong
+		}
+		characters := make([]rune, length)
 		rand.Seed(time.Now().UnixNano())
-		for i := range b {
-			b[i] = letterRunes[rand.Intn(len(letterRunes))]
+		for i := range characters {
+			characters[i] = letterRunes[rand.Intn(len(letterRunes))] //nolint:gosec
 		}
 
-		id := string(b)
+		generatedName := string(characters)
 
-		if _, err := strconv.Atoi(id); err == nil {
-			// ID is made up of numbers only, which we want to avoid.
+		if valid, err := ValidateName(generatedName, enableLongNames); err != nil {
+			return "", microerror.Mask(err)
+		} else if !valid {
 			continue
 		}
 
-		matched := compiledRegexp.MatchString(id)
-		if matched {
-			// ID is made up of letters only, which we also avoid.
-			continue
-		}
-
-		return id
+		return generatedName, nil
 	}
 }
 
 func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
-}
-
-func GetCAPAEnvVars() []string {
-	return []string{"AWS_SUBNET", "AWS_CONTROL_PLANE_MACHINE_TYPE", "AWS_REGION", "AWS_SSH_KEY_NAME"}
-}
-
-func GetControlPlaneInstanceProfile(clusterID string) string {
-	return fmt.Sprintf("control-plane-%s", clusterID)
-}
-
-func GetNodeInstanceProfile(machinePoolID string, clusterID string) string {
-	return fmt.Sprintf("nodes-%s-%s", machinePoolID, clusterID)
 }
 
 // IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
@@ -140,6 +109,21 @@ func IsCAPIVersion(version string) (bool, error) {
 	return releaseVersion.GE(*capiVersion), nil
 }
 
+// IsPureCAPIProvider returns whether a given provider is purely based on or fully migrated to CAPI
+func IsPureCAPIProvider(provider string) bool {
+	return contains(PureCAPIProviders(), provider)
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
 // IsOrgNamespaceVersion returns whether a given AWS GS Release Version is based on clusters in Org Namespace
 func IsOrgNamespaceVersion(version string) bool {
 	// TODO: this has to return true as soon as v16.0.0 is the newest version
@@ -154,7 +138,7 @@ func IsOrgNamespaceVersion(version string) bool {
 	return releaseVersion.GE(*OrgNamespaceVersion)
 }
 
-// readConfigMapFromFile reads a configmap from a YAML file.
+// ReadConfigMapYamlFromFile reads a configmap from a YAML file.
 func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {
@@ -170,7 +154,7 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	return string(data), nil
 }
 
-// readSecretFromFile reads a configmap from a YAML file.
+// ReadSecretYamlFromFile reads a configmap from a YAML file.
 func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 	data, err := afero.ReadFile(fs, path)
 	if err != nil {
@@ -201,9 +185,24 @@ func SSHSSOPublicKey(ctx context.Context, client runtimeclient.Client) (string, 
 		return "", microerror.Mask(fmt.Errorf("failed to find secret with ssh sso public key in MC"))
 	}
 
-	sshSSOPublicKey := base64.StdEncoding.EncodeToString(secretList.Items[0].Data["value"])
+	sshSSOPublicKey := string(secretList.Items[0].Data["value"])
 
 	return sshSSOPublicKey, nil
+}
+
+func GetReleaseComponents(ctx context.Context, client runtimeclient.Client, releaseName string) (map[string]string, error) {
+	releaseComponents := make(map[string]string)
+	release := &releasev1alpha1.Release{}
+	err := client.Get(ctx, runtimeclient.ObjectKey{Namespace: "", Name: fmt.Sprintf("v%s", releaseName)}, release)
+	if err != nil {
+		return releaseComponents, microerror.Mask(err)
+	}
+
+	for _, component := range release.Spec.Components {
+		releaseComponents[component.Name] = component.Version
+	}
+
+	return releaseComponents, nil
 }
 
 func UbuntuSudoersConfigEncoded() string {

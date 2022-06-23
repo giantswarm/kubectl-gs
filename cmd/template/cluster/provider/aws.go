@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -35,7 +35,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 			}
 		}
 	} else {
-		err = WriteGSAWSTemplate(out, config)
+		err = WriteGSAWSTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -44,19 +44,25 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	return nil
 }
 
-func WriteGSAWSTemplate(out io.Writer, config ClusterConfig) error {
+func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	crsConfig := aws.ClusterCRsConfig{
-		ClusterID: config.Name,
+		ClusterName: config.Name,
 
-		ExternalSNAT:   config.AWS.ExternalSNAT,
-		ControlPlaneAZ: config.ControlPlaneAZ,
-		Description:    config.Description,
-		PodsCIDR:       config.PodsCIDR,
-		Owner:          config.Organization,
-		ReleaseVersion: config.ReleaseVersion,
-		Labels:         config.Labels,
+		ExternalSNAT:    config.AWS.ExternalSNAT,
+		ControlPlaneAZ:  config.ControlPlaneAZ,
+		Description:     config.Description,
+		PodsCIDR:        config.PodsCIDR,
+		Owner:           config.Organization,
+		ReleaseVersion:  config.ReleaseVersion,
+		Labels:          config.Labels,
+		ServicePriority: config.ServicePriority,
+	}
+
+	crsConfig.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	crs, err := aws.NewClusterCRs(crsConfig)

@@ -1,7 +1,7 @@
 package provider
 
 import (
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -19,6 +19,7 @@ func GetAWSTable(clusterResource cluster.Resource) *metav1.Table {
 		{Name: "Age", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},
+		{Name: "Service Priority", Type: "string"},
 		{Name: "Organization", Type: "string"},
 		{Name: "Description", Type: "string"},
 	}
@@ -46,6 +47,7 @@ func getAWSClusterRow(c cluster.Cluster) metav1.TableRow {
 			output.TranslateTimestampSince(c.AWSCluster.CreationTimestamp),
 			getLatestAWSCondition(c.AWSCluster.Status.Cluster.Conditions),
 			c.AWSCluster.Labels[label.ReleaseVersion],
+			getClusterServicePriority(c.Cluster),
 			c.AWSCluster.Labels[label.Organization],
 			c.AWSCluster.Spec.Cluster.Description,
 		},

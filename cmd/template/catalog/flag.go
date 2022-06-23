@@ -15,6 +15,8 @@ const (
 	flagNamespace   = "namespace"
 	flagSecret      = "secret"
 	flagURL         = "url"
+	flagURLType     = "type"
+	flagVisibility  = "visibility"
 )
 
 type flag struct {
@@ -24,7 +26,9 @@ type flag struct {
 	Name        string
 	Namespace   string
 	Secret      string
-	URL         string
+	URLs        []string
+	URLTypes    []string
+	Visibility  string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -34,7 +38,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Catalog name.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the catalog will be created.")
 	cmd.Flags().StringVar(&f.Secret, flagSecret, "", "Path to a secret file.")
-	cmd.Flags().StringVar(&f.URL, flagURL, "", "Catalog storage URL.")
+	cmd.Flags().StringArrayVar(&f.URLs, flagURL, []string{}, "Catalog storage URL.")
+	cmd.Flags().StringArrayVar(&f.URLTypes, flagURLType, []string{"helm"}, "Type of catalog storage.")
+	cmd.Flags().StringVar(&f.Visibility, flagVisibility, "public", "Visibility label for whether catalog appears in the web UI.")
 }
 
 func (f *flag) Validate() error {
@@ -54,11 +60,22 @@ func (f *flag) Validate() error {
 	if f.Namespace == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagNamespace)
 	}
-	if f.URL == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagURL)
+	if len(f.URLs) == 0 {
+		return microerror.Maskf(invalidFlagError, "at least one --%s must be defined", flagURL)
 	}
-	if _, err := url.ParseRequestURI(f.URL); err != nil {
-		return microerror.Maskf(invalidFlagError, "--%s must be a valid URL", flagURL)
+	for _, u := range f.URLs {
+		if _, err := url.ParseRequestURI(u); err != nil {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid URL: %#q", flagURL, u)
+		}
+	}
+	if len(f.URLTypes) == 0 {
+		return microerror.Maskf(invalidFlagError, "at least one --%s must be defined", flagURLType)
+	}
+	if len(f.URLs) != len(f.URLTypes) {
+		return microerror.Maskf(invalidFlagError,
+			"number of --%s (%d) and --%s (%d) has to match",
+			flagURL, len(f.URLs), flagURLType, len(f.URLTypes),
+		)
 	}
 
 	return nil

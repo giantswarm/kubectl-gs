@@ -3,11 +3,11 @@ package nodepool
 import (
 	"context"
 
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -37,7 +37,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (R
 		}
 	}
 
-	machineDeployments := &capiv1alpha3.MachineDeploymentList{}
+	machineDeployments := &capi.MachineDeploymentList{}
 	{
 		err = s.client.List(ctx, machineDeployments, labelSelector, inNamespace)
 		if err != nil {
@@ -54,7 +54,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (R
 
 			if awsMD, exists := awsMDs[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1alpha3",
+					APIVersion: "cluster.x-k8s.io/v1beta1",
 					Kind:       "MachineDeployment",
 				}
 				awsMD.TypeMeta = infrastructurev1alpha3.NewAWSMachineDeploymentTypeMeta()
@@ -85,7 +85,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID strin
 	np := &Nodepool{}
 
 	{
-		crs := &capiv1alpha3.MachineDeploymentList{}
+		crs := &capi.MachineDeploymentList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -97,7 +97,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID strin
 		np.MachineDeployment = &crs.Items[0]
 
 		np.MachineDeployment.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "MachineDeployment",
 		}
 	}

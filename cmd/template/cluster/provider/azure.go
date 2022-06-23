@@ -6,15 +6,16 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"k8s.io/utils/pointer"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -39,7 +40,7 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 			return microerror.Mask(err)
 		}
 	} else {
-		err = WriteGSAzureTemplate(out, config)
+		err = WriteGSAzureTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -48,8 +49,13 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	return nil
 }
 
-func WriteGSAzureTemplate(out io.Writer, config ClusterConfig) error {
+func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
+
+	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	var azureClusterCRYaml, clusterCRYaml, azureMasterMachineCRYaml []byte
 	{
@@ -61,7 +67,7 @@ func WriteGSAzureTemplate(out io.Writer, config ClusterConfig) error {
 
 		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
 
-		clusterCR := newCAPIV1Alpha3ClusterCR(config, infrastructureRef)
+		clusterCR := newcapiClusterCR(config, infrastructureRef)
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -93,30 +99,33 @@ func WriteGSAzureTemplate(out io.Writer, config ClusterConfig) error {
 	return nil
 }
 
-func newAzureClusterCR(config ClusterConfig) *capzv1alpha3.AzureCluster {
-	cr := &capzv1alpha3.AzureCluster{
+func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
+	cr := &capz.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.Name,
-				capiv1alpha3.ClusterLabelName: config.Name,
-				label.Organization:            config.Organization,
-				label.ReleaseVersion:          config.ReleaseVersion,
+				label.Cluster:              config.Name,
+				capi.ClusterLabelName:      config.Name,
+				label.Organization:         config.Organization,
+				label.ReleaseVersion:       config.ReleaseVersion,
+				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
 			},
 		},
-		Spec: capzv1alpha3.AzureClusterSpec{
+		Spec: capz.AzureClusterSpec{
 			ResourceGroup: config.Name,
-			NetworkSpec: capzv1alpha3.NetworkSpec{
-				APIServerLB: capzv1alpha3.LoadBalancerSpec{
+			NetworkSpec: capz.NetworkSpec{
+				APIServerLB: capz.LoadBalancerSpec{
 					Name: fmt.Sprintf("%s-%s-%s", config.Name, "API", "PublicLoadBalancer"),
-					SKU:  "Standard",
-					Type: "Public",
-					FrontendIPs: []capzv1alpha3.FrontendIP{
+					LoadBalancerClassSpec: capz.LoadBalancerClassSpec{
+						SKU:  "Standard",
+						Type: "Public",
+					},
+					FrontendIPs: []capz.FrontendIP{
 						{
 							Name: fmt.Sprintf("%s-%s-%s-%s", config.Name, "API", "PublicLoadBalancer", "Frontend"),
 						},
@@ -129,44 +138,45 @@ func newAzureClusterCR(config ClusterConfig) *capzv1alpha3.AzureCluster {
 	return cr
 }
 
-func newAzureMasterMachineCR(config ClusterConfig) *capzv1alpha3.AzureMachine {
+func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 	var failureDomain *string
 	if len(config.ControlPlaneAZ) > 0 {
 		failureDomain = &config.ControlPlaneAZ[0]
 	}
 
-	machine := &capzv1alpha3.AzureMachine{
+	machine := &capz.AzureMachine{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachine",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-master-%d", config.Name, 0),
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                             config.Name,
-				capiv1alpha3.ClusterLabelName:             config.Name,
-				capiv1alpha3.MachineControlPlaneLabelName: "true",
-				label.Organization:                        config.Organization,
-				label.ReleaseVersion:                      config.ReleaseVersion,
+				label.Cluster:                     config.Name,
+				capi.ClusterLabelName:             config.Name,
+				capi.MachineControlPlaneLabelName: "true",
+				label.Organization:                config.Organization,
+				label.ReleaseVersion:              config.ReleaseVersion,
+				label.AzureOperatorVersion:        config.ReleaseComponents["azure-operator"],
 			},
 		},
-		Spec: capzv1alpha3.AzureMachineSpec{
+		Spec: capz.AzureMachineSpec{
 			VMSize:        defaultMasterVMSize,
 			FailureDomain: failureDomain,
-			Image: &capzv1alpha3.Image{
-				Marketplace: &capzv1alpha3.AzureMarketplaceImage{
+			Image: &capz.Image{
+				Marketplace: &capz.AzureMarketplaceImage{
 					Publisher: "kinvolk",
 					Offer:     "flatcar-container-linux-free",
 					SKU:       "stable",
 					Version:   "2345.3.1",
 				},
 			},
-			OSDisk: capzv1alpha3.OSDisk{
+			OSDisk: capz.OSDisk{
 				OSType:      "Linux",
 				CachingType: "ReadWrite",
-				DiskSizeGB:  int32(50),
-				ManagedDisk: capzv1alpha3.ManagedDisk{
+				DiskSizeGB:  pointer.Int32(50),
+				ManagedDisk: &capz.ManagedDiskParameters{
 					StorageAccountType: "Premium_LRS",
 				},
 			},
@@ -177,7 +187,7 @@ func newAzureMasterMachineCR(config ClusterConfig) *capzv1alpha3.AzureMachine {
 	return machine
 }
 
-func newCAPZClusterInfraRef(obj runtime.Object) *corev1.ObjectReference {
+func newCAPZClusterInfraRef(obj client.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
 		s, err := scheme.NewScheme()

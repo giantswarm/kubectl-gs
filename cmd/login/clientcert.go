@@ -2,13 +2,20 @@ package login
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
+	"math"
+	"math/big"
 	"strings"
 	"sync"
 	"time"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -18,7 +25,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/internal/feature"
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	kgslabel "github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
@@ -30,7 +36,7 @@ import (
 
 const (
 	credentialRetryTimeout    = 1 * time.Second
-	credentialMaxRetryTimeout = 5 * time.Minute
+	credentialMaxRetryTimeout = 10 * time.Second
 
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
@@ -46,6 +52,23 @@ type clientCertConfig struct {
 	groups              []string
 	clusterBasePath     string
 	certOperatorVersion string
+}
+
+type serviceSet struct {
+	clientCertService   clientcert.Interface
+	organizationService organization.Interface
+	clusterService      cluster.Interface
+	releaseService      release.Interface
+}
+
+type credentialConfig struct {
+	clusterID     string
+	certCRT       []byte
+	certKey       []byte
+	certCA        []byte
+	clusterServer string
+	loginOptions  LoginOptions
+	filePath      string
 }
 
 func generateClientCertUID() string {
@@ -101,12 +124,6 @@ func createCert(ctx context.Context, clientCertService clientcert.Interface, con
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
-	err = clientCertService.Create(ctx, clientCert)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	return clientCert, nil
 }
 
@@ -131,7 +148,13 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 
 	err = backoff.Retry(o, b)
 	if clientcert.IsNotFound(err) {
-		return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
+		if provider == key.ProviderAzure {
+			// Try in default namespace for legacy azure clusters.
+			secret, err = clientCertService.GetCredential(ctx, metav1.NamespaceDefault, clientCert.CertConfig.Name)
+		}
+		if clientcert.IsNotFound(err) {
+			return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
+		}
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -139,22 +162,103 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 	return secret, nil
 }
 
+func generateCredential(ctx context.Context, ca *corev1.Secret, config clientCertConfig) (*corev1.Secret, error) {
+	var caPEM, certPEM, keyPEM []byte
+	{
+		// Get the WCs CA data
+		caPEM = ca.Data["tls.crt"]
+		caCert, err := getCert(caPEM)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		caPrivKeyPEM := ca.Data["tls.key"]
+		caPrivKey, err := getPrivKey(caPrivKeyPEM)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		// Create the Certificate
+		exp, err := time.ParseDuration(config.ttl)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		serial, err := rand.Int(rand.Reader, new(big.Int).SetInt64(math.MaxInt64))
+		if err != nil {
+			return nil, microerror.Maskf(invalidConfigError, "Failed to generate client certificate serial number.")
+		}
+		certificate := &x509.Certificate{
+			SerialNumber:       serial,
+			SignatureAlgorithm: x509.SHA256WithRSA,
+			Subject: pkix.Name{
+				Organization: config.groups,
+				CommonName:   fmt.Sprintf("%s.%s.%s", serial.String(), config.clusterName, config.clusterBasePath),
+			},
+			NotBefore:   time.Now(),
+			NotAfter:    time.Now().Add(exp),
+			KeyUsage:    x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageKeyAgreement,
+			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		}
+
+		// Create the key
+		certPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		keyPEM = getPrivKeyPEM(certPrivKey)
+
+		// Sign the certificate
+		certBytes, err := x509.CreateCertificate(rand.Reader, certificate, caCert, &certPrivKey.PublicKey, caPrivKey)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		certPEM = getCertPEM(certBytes)
+	}
+	secret := &corev1.Secret{
+		Data: map[string][]byte{
+			credentialKeyCertCA:  caPEM,
+			credentialKeyCertCRT: certPEM,
+			credentialKeyCertKey: keyPEM,
+		},
+		Type: corev1.SecretTypeTLS,
+	}
+	return secret, nil
+}
+
+func getCertPEM(cert []byte) []byte {
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: cert,
+	})
+}
+
+func getCert(certPEM []byte) (*x509.Certificate, error) {
+	block, _ := pem.Decode(certPEM)
+	return x509.ParseCertificate(block.Bytes)
+}
+
+func getPrivKeyPEM(key *rsa.PrivateKey) []byte {
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	})
+}
+
+func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(keyPEM)
+	return x509.ParsePKCS1PrivateKey(block.Bytes)
+}
+
 // storeWCCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
+func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, c.clusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
-	clusterServer := fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath)
-
-	certCRT := credential.Data[credentialKeyCertCRT]
-	certKey := credential.Data[credentialKeyCertKey]
-	certCA := credential.Data[credentialKeyCertCA]
 
 	contextExists := false
 
@@ -165,8 +269,8 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 			user = clientcmdapi.NewAuthInfo()
 		}
 
-		user.ClientCertificateData = certCRT
-		user.ClientKeyData = certKey
+		user.ClientCertificateData = c.certCRT
+		user.ClientKeyData = c.certKey
 
 		// Add user information to config.
 		config.AuthInfos[userName] = user
@@ -179,8 +283,8 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 			cluster = clientcmdapi.NewCluster()
 		}
 
-		cluster.Server = clusterServer
-		cluster.CertificateAuthorityData = certCA
+		cluster.Server = c.clusterServer
+		cluster.CertificateAuthorityData = c.certCA
 
 		// Add cluster configuration to config.
 		config.Clusters[clusterName] = cluster
@@ -201,10 +305,10 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 		config.Contexts[contextName] = context
 
 		// Select newly created context as current or revert to origin context if that is desired
-		if loginOptions.switchToWCcontext {
+		if c.loginOptions.switchToWCcontext {
 			config.CurrentContext = contextName
-		} else if loginOptions.originContext != "" {
-			config.CurrentContext = loginOptions.originContext
+		} else if c.loginOptions.originContext != "" {
+			config.CurrentContext = c.loginOptions.originContext
 		}
 	}
 
@@ -217,22 +321,22 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, cli
 }
 
 // printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, filePath string, clientCert *clientcert.ClientCert, credential *corev1.Secret, clusterBasePath string, loginOptions LoginOptions) (string, bool, error) {
+func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, clientCert.CertConfig.Spec.Cert.ClusterID)
+	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, c.clusterID)
 
 	kubeconfig := clientcmdapi.Config{
 		APIVersion: "v1",
 		Kind:       "Config",
 		Clusters: map[string]*clientcmdapi.Cluster{
 			contextName: {
-				Server:                   fmt.Sprintf("https://api.%s.k8s.%s", clientCert.CertConfig.Spec.Cert.ClusterID, clusterBasePath),
-				CertificateAuthorityData: credential.Data[credentialKeyCertCA],
+				Server:                   c.clusterServer,
+				CertificateAuthorityData: c.certCA,
 			},
 		},
 		Contexts: map[string]*clientcmdapi.Context{
@@ -243,24 +347,24 @@ func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, fil
 		},
 		AuthInfos: map[string]*clientcmdapi.AuthInfo{
 			fmt.Sprintf("%s-user", contextName): {
-				ClientCertificateData: credential.Data[credentialKeyCertCRT],
-				ClientKeyData:         credential.Data[credentialKeyCertKey],
+				ClientCertificateData: c.certCRT,
+				ClientKeyData:         c.certKey,
 			},
 		},
 		CurrentContext: contextName,
 	}
-	if exists, err := afero.Exists(fs, filePath); exists {
-		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", filePath)
+	if exists, err := afero.Exists(fs, c.filePath); exists {
+		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", c.filePath)
 	} else if err != nil {
 		return "", false, microerror.Mask(err)
 	}
-	err = clientcmd.WriteToFile(kubeconfig, filePath)
+	err = clientcmd.WriteToFile(kubeconfig, c.filePath)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 	// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
-	if loginOptions.originContext != "" {
-		config.CurrentContext = loginOptions.originContext
+	if c.loginOptions.originContext != "" {
+		config.CurrentContext = c.loginOptions.originContext
 		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
 		if err != nil {
 			return "", false, microerror.Mask(err)
@@ -406,7 +510,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	}
 }
 
-func getClusterReleaseVersion(c *cluster.Cluster, provider string, unsafe bool) (string, error) {
+func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
 	if c.Cluster.Labels == nil {
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s does not have a release version label.", name)
 	}
@@ -414,14 +518,6 @@ func getClusterReleaseVersion(c *cluster.Cluster, provider string, unsafe bool) 
 	releaseVersion := c.Cluster.Labels[label.ReleaseVersion]
 	if len(releaseVersion) < 1 {
 		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s has an invalid release version.", name)
-	}
-
-	// We skip the validation if unsafe namespaces feature is active since this allows us to log into clusters in all versions
-	if !unsafe {
-		err := validateReleaseVersion(releaseVersion, provider)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
 	}
 
 	return releaseVersion, nil
@@ -446,22 +542,9 @@ func getCertOperatorVersion(ctx context.Context, releaseService release.Interfac
 }
 
 func validateProvider(provider string) error {
-	if provider == key.ProviderAWS || provider == key.ProviderAzure {
-		return nil
+	if provider == key.ProviderKVM {
+		return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is not supported on provider %s.", provider)
 	}
 
-	return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is only supported on AWS and Azure.")
-}
-
-func validateReleaseVersion(version, provider string) error {
-	featureService := feature.New(provider)
-	if featureService.Supports(feature.ClientCert, version) {
-		return nil
-	}
-
-	if provider == key.ProviderAWS {
-		return microerror.Maskf(unsupportedReleaseVersionError, "On AWS, the workload cluster must use release v16.0.1 or newer in order to allow client certificate creation. You can try the --%s flag to skip validation and try logging into older clusters. This might fail for non-admin users.", flagWCInsecureNamespace)
-	}
-
-	return microerror.Maskf(unsupportedReleaseVersionError, "The workload cluster release does not allow client certificate creation.")
+	return nil
 }

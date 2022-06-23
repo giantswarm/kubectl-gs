@@ -3,14 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"text/template"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/labels"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
@@ -18,7 +15,7 @@ import (
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
-func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	err := templateClusterOpenstack(ctx, k8sClient, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -28,7 +25,7 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 	return microerror.Mask(err)
 }
 
-func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := config.Name
 	configMapName := fmt.Sprintf("%s-cluster-userconfig", appName)
 
@@ -61,8 +58,9 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 				},
 			},
 			ControlPlane: &openstack.ControlPlane{
-				MachineConfig: openstack.MachineConfig(config.OpenStack.ControlPlane),
-				Replicas:      controlPlaneReplicas,
+				MachineConfig:     openstack.MachineConfig(config.OpenStack.ControlPlane),
+				Replicas:          controlPlaneReplicas,
+				AvailabilityZones: config.ControlPlaneAZ,
 			},
 			NodePools: []openstack.NodePool{
 				{
@@ -72,9 +70,16 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 					Replicas:      config.OpenStack.WorkerReplicas,
 				},
 			},
-			OIDC: &openstack.OIDC{
-				Enabled: config.OpenStack.EnableOIDC,
-			},
+		}
+
+		if config.OIDC.IssuerURL != "" {
+			flagValues.OIDC = &openstack.OIDC{
+				IssuerURL:     config.OIDC.IssuerURL,
+				CAFile:        config.OIDC.CAFile,
+				ClientID:      config.OIDC.ClientID,
+				UsernameClaim: config.OIDC.UsernameClaim,
+				GroupsClaim:   config.OIDC.GroupsClaim,
+			}
 		}
 
 		configData, err := openstack.GenerateClusterValues(flagValues)
@@ -134,7 +139,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 	return microerror.Mask(err)
 }
 
-func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output *os.File, config ClusterConfig) error {
+func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := fmt.Sprintf("%s-userconfig", appName)
 
@@ -143,9 +148,6 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 		flagValues := openstack.DefaultAppsConfig{
 			ClusterName:  config.Name,
 			Organization: config.Organization,
-			OIDC: &openstack.OIDC{
-				Enabled: config.OpenStack.EnableOIDC,
-			},
 		}
 
 		configData, err := openstack.GenerateDefaultAppsValues(flagValues)
@@ -201,25 +203,4 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 		AppCR:               string(appYAML),
 	})
 	return microerror.Mask(err)
-}
-
-func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
-	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
-	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(map[string]string{
-			"app.kubernetes.io/name":            app,
-			"application.giantswarm.io/catalog": catalog,
-			"latest":                            "true",
-		}),
-		Namespace: "default",
-	})
-
-	if err != nil {
-		return "", microerror.Mask(err)
-	} else if len(catalogEntryList.Items) != 1 {
-		message := fmt.Sprintf("version not specified for %s and latest release couldn't be determined in %s catalog", app, catalog)
-		return "", microerror.Maskf(invalidFlagError, message)
-	}
-
-	return catalogEntryList.Items[0].Spec.Version, nil
 }

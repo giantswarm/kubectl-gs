@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
 )
 

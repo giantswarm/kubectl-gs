@@ -1,10 +1,8 @@
 package provider
 
 import (
-	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
@@ -20,6 +18,7 @@ func GetAzureTable(clusterResource cluster.Resource) *metav1.Table {
 		{Name: "Age", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},
+		{Name: "Service Priority", Type: "string"},
 		{Name: "Organization", Type: "string"},
 		{Name: "Description", Type: "string"},
 	}
@@ -45,32 +44,14 @@ func getAzureClusterRow(c cluster.Cluster) metav1.TableRow {
 		Cells: []interface{}{
 			c.Cluster.GetName(),
 			output.TranslateTimestampSince(c.Cluster.CreationTimestamp),
-			getLatestAzureCondition(c.Cluster.GetConditions()),
+			getLatestCondition(c.Cluster.GetConditions()),
 			c.Cluster.Labels[label.ReleaseVersion],
+			getClusterServicePriority(c.Cluster),
 			c.Cluster.Labels[label.Organization],
-			getAzureClusterDescription(c.Cluster),
+			getClusterDescription(c.Cluster),
 		},
 		Object: runtime.RawExtension{
 			Object: c.Cluster,
 		},
 	}
-}
-
-func getAzureClusterDescription(res *capiv1alpha3.Cluster) string {
-	description := naValue
-
-	annotations := res.GetAnnotations()
-	if annotations != nil && annotations[annotation.ClusterDescription] != "" {
-		description = annotations[annotation.ClusterDescription]
-	}
-
-	return description
-}
-
-func getLatestAzureCondition(conditions []capiv1alpha3.Condition) string {
-	if len(conditions) < 1 {
-		return naValue
-	}
-
-	return formatCondition(string(conditions[0].Type))
 }

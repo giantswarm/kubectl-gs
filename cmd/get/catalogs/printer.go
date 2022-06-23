@@ -2,8 +2,9 @@ package catalogs
 
 import (
 	"fmt"
+	"strings"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -13,7 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
-func (r *runner) printOutput(catalogResource catalogdata.Resource) error {
+func (r *runner) printOutput(catalogResource catalogdata.Resource, maxColWidth uint) error {
 	var (
 		err      error
 		printer  printers.ResourcePrinter
@@ -22,7 +23,7 @@ func (r *runner) printOutput(catalogResource catalogdata.Resource) error {
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
-		resource = getTable(catalogResource)
+		resource = getTable(catalogResource, maxColWidth)
 		printOptions := printers.PrintOptions{}
 		printer = printers.NewTablePrinter(printOptions)
 	case output.IsOutputName(r.flag.print.OutputFormat):
@@ -61,7 +62,15 @@ func (r *runner) printNoResourcesOutput() {
 	fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
 }
 
-func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.TableRow {
+func getAppCatalogEntryDescription(description string, maxColWidth uint) string {
+	if uint(len(description)) > maxColWidth {
+		return fmt.Sprintf("%s...", description[:maxColWidth])
+	}
+
+	return description
+}
+
+func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry, maxColWidth uint) metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []interface{}{
 			ace.Spec.Catalog.Name,
@@ -69,11 +78,12 @@ func getAppCatalogEntryRow(ace applicationv1alpha1.AppCatalogEntry) metav1.Table
 			ace.Spec.Version,
 			ace.Spec.AppVersion,
 			output.TranslateTimestampSince(ace.CreationTimestamp),
+			getAppCatalogEntryDescription(ace.Spec.Chart.Description, maxColWidth),
 		},
 	}
 }
 
-func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
+func getCatalogEntryTable(catalogResource *catalogdata.Catalog, maxColWidth uint) *metav1.Table {
 	// Creating a custom table resource.
 	table := &metav1.Table{}
 
@@ -83,10 +93,11 @@ func getCatalogEntryTable(catalogResource *catalogdata.Catalog) *metav1.Table {
 		{Name: "Version", Type: "string"},
 		{Name: "Upstream Version", Type: "string"},
 		{Name: "Age", Type: "string", Format: "date-time"},
+		{Name: "Description", Type: "string", Format: "string"},
 	}
 
 	for _, ace := range catalogResource.Entries.Items {
-		table.Rows = append(table.Rows, getAppCatalogEntryRow(ace))
+		table.Rows = append(table.Rows, getAppCatalogEntryRow(ace, maxColWidth))
 	}
 
 	return table
@@ -97,11 +108,27 @@ func getCatalogRow(a catalogdata.Catalog) metav1.TableRow {
 		return metav1.TableRow{}
 	}
 
+	var urlString string
+	{
+		urls := []string{}
+		for _, repo := range a.CR.Spec.Repositories {
+			urls = append(urls, repo.URL)
+		}
+		urlString = strings.Join(urls, ", ")
+		if len(urlString) > 80 {
+			urlString = fmt.Sprintf("%s...", urlString[:77])
+		}
+		if len(urlString) == 0 {
+			// No .spec.repositories
+			urlString = a.CR.Spec.Storage.URL
+		}
+	}
+
 	return metav1.TableRow{
 		Cells: []interface{}{
 			a.CR.Name,
 			a.CR.Namespace,
-			a.CR.Spec.Storage.URL,
+			urlString,
 			output.TranslateTimestampSince(a.CR.CreationTimestamp),
 		},
 		Object: runtime.RawExtension{
@@ -133,10 +160,10 @@ func getCatalogTable(catalogResource catalogdata.Resource) *metav1.Table {
 	return table
 }
 
-func getTable(catalogResource catalogdata.Resource) *metav1.Table {
+func getTable(catalogResource catalogdata.Resource, maxColWidth uint) *metav1.Table {
 	switch c := catalogResource.(type) {
 	case *catalogdata.Catalog:
-		return getCatalogEntryTable(c)
+		return getCatalogEntryTable(c, maxColWidth)
 	case *catalogdata.Collection:
 		return getCatalogTable(c)
 	}

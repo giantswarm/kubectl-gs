@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@4.19.0
+#    devctl@5.2.0
 #
 name: Create Release
 on:
@@ -53,7 +53,7 @@ jobs:
           echo "::set-output name=version::${version}"
       - name: Checkout code
         if: ${{ steps.get_version.outputs.version != '' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get project.go path
         id: get_project_go_path
         if: ${{ steps.get_version.outputs.version != '' }}
@@ -103,7 +103,7 @@ jobs:
           tarball_binary_path: "*/src/${binary}"
           smoke_test: "${binary} --version"
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Update project.go
         id: update_project_go
         env:
@@ -152,7 +152,7 @@ jobs:
       upload_url: ${{ steps.create_gh_release.outputs.upload_url }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.sha }}
       - name: Ensure correct version in project.go
@@ -203,7 +203,7 @@ jobs:
           tarball_binary_path: "*/src/${binary}"
           smoke_test: "${binary} --version"
       - name: Check out the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Clone the whole history, not just the most recent commit.
       - name: Fetch all tags and branches
@@ -257,11 +257,14 @@ jobs:
           - linux-amd64
           - darwin-arm64
           - linux-arm64
+          - windows-amd64
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GO_VERSION: 1.17.7
+      GO_VERSION: 1.17.8
       ARTIFACT_DIR: bin-dist
       TAG: v${{ needs.gather_facts.outputs.version }}
+      CODE_SIGNING_CERT_BUNDLE_BASE64: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_BASE64 }}
+      CODE_SIGNING_CERT_BUNDLE_PASSWORD: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_PASSWORD }}
     needs:
       - create_release
       - gather_facts
@@ -270,21 +273,26 @@ jobs:
         uses: giantswarm/install-binary-action@v1.0.0
         with:
           binary: "architect"
-          version: "6.2.0"
+          version: "6.3.0"
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v2.2.0
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.TAG }}
       - name: Create ${{ matrix.platform }} package
         run: make package-${{ matrix.platform }}
+      - name: Specify package file name based on platform
+        run: |
+          if [[ "${{ matrix.platform }}" == "windows-amd64" ]]; then
+            echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.zip" >> $GITHUB_ENV
+          else
+            echo "FILE_NAME=${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz" >> $GITHUB_ENV
+          fi
       - name: Add ${{ matrix.platform }} package to release
         uses: actions/upload-release-asset@v1
-        env:
-          FILE_NAME: ${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ${{ env.ARTIFACT_DIR }}/${{ env.FILE_NAME }}

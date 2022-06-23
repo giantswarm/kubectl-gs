@@ -42,15 +42,28 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var configMapYaml []byte
 	var secretYaml []byte
-	var err error
+
+	catalogID, err := key.GenerateName(false)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Conversion of URLs and URLTypes to a map helps us remove duplicate
+	// values. URLs and URLTypes have the same number of items, as guaranteed
+	// by flag validation.
+	repositories := map[string]string{}
+	for i, url := range r.flag.URLs {
+		repositories[url] = r.flag.URLTypes[i]
+	}
 
 	config := templatecatalog.Config{
-		Description: r.flag.Description,
-		LogoURL:     r.flag.LogoURL,
-		ID:          key.GenerateID(),
-		Name:        r.flag.Name,
-		Namespace:   r.flag.Namespace,
-		URL:         r.flag.URL,
+		Description:  r.flag.Description,
+		LogoURL:      r.flag.LogoURL,
+		ID:           catalogID,
+		Name:         r.flag.Name,
+		Namespace:    r.flag.Namespace,
+		Repositories: repositories,
+		Visibility:   r.flag.Visibility,
 	}
 
 	if r.flag.ConfigMap != "" {

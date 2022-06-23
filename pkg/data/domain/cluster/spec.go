@@ -3,11 +3,13 @@ package cluster
 import (
 	"context"
 
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type GetOptions struct {
@@ -31,23 +33,35 @@ type PatchSpec struct {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
-	Patch(context.Context, runtime.Object, PatchOptions) error
+	Patch(context.Context, client.Object, PatchOptions) error
 }
 
 type Resource interface {
 	Object() runtime.Object
 }
 
-// Cluster abstracts away provider-specific
-// node pool resources.
+// Cluster contains the resources needed to represent a cluster on any supported provider.
 type Cluster struct {
-	Cluster *capiv1alpha3.Cluster
+	Cluster *capi.Cluster
 
-	AWSCluster   *infrastructurev1alpha3.AWSCluster
-	AzureCluster *capzv1alpha3.AzureCluster
+	// helm-based clusters
+	ClusterApp     *application.App
+	DefaultAppsApp *application.App
+
+	// infrastructure provider cluster
+	AWSCluster   *infrastructure.AWSCluster
+	AzureCluster *capz.AzureCluster
 }
 
 func (n *Cluster) Object() runtime.Object {
+	if n.Cluster != nil {
+		return n.Cluster
+	}
+
+	return nil
+}
+
+func (n *Cluster) ClientObject() client.Object {
 	if n.Cluster != nil {
 		return n.Cluster
 	}
@@ -61,12 +75,12 @@ type Collection struct {
 }
 
 func (cc *Collection) Object() runtime.Object {
-	list := &metav1.List{
-		TypeMeta: metav1.TypeMeta{
+	list := &meta.List{
+		TypeMeta: meta.TypeMeta{
 			Kind:       "List",
 			APIVersion: "v1",
 		},
-		ListMeta: metav1.ListMeta{},
+		ListMeta: meta.ListMeta{},
 	}
 
 	for _, item := range cc.Items {

@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,7 +36,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 			}
 		}
 	} else {
-		err = WriteGSAWSTemplate(out, config)
+		err = WriteGSAWSTemplate(ctx, client, out, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -45,15 +45,19 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	return nil
 }
 
-func WriteGSAWSTemplate(out io.Writer, config NodePoolCRsConfig) error {
+func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
 	var err error
+	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	crsConfig := aws.NodePoolCRsConfig{
 		AvailabilityZones:                   config.AvailabilityZones,
 		AWSInstanceType:                     config.AWSInstanceType,
-		ClusterID:                           config.ClusterName,
+		ClusterName:                         config.ClusterName,
 		Description:                         config.Description,
-		MachineDeploymentID:                 config.NodePoolID,
+		MachineDeploymentName:               config.NodePoolName,
 		NodesMax:                            config.NodesMax,
 		NodesMin:                            config.NodesMin,
 		OnDemandBaseCapacity:                config.OnDemandBaseCapacity,

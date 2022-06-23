@@ -6,8 +6,8 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -16,9 +16,9 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 
 	inNamespace := runtimeClient.InNamespace(namespace)
 
-	var azureClusters map[string]*capzv1alpha3.AzureCluster
+	var azureClusters map[string]*capz.AzureCluster
 	{
-		clusterCollection := &capzv1alpha3.AzureClusterList{}
+		clusterCollection := &capz.AzureClusterList{}
 		err = s.client.List(ctx, clusterCollection, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
@@ -28,14 +28,14 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 			return nil, microerror.Mask(noResourcesError)
 		}
 
-		azureClusters = make(map[string]*capzv1alpha3.AzureCluster, len(clusterCollection.Items))
+		azureClusters = make(map[string]*capz.AzureCluster, len(clusterCollection.Items))
 		for _, cluster := range clusterCollection.Items {
 			c := cluster
 			azureClusters[cluster.GetName()] = &c
 		}
 	}
 
-	clusters := &capiv1alpha3.ClusterList{}
+	clusters := &capi.ClusterList{}
 	{
 		err = s.client.List(ctx, clusters, inNamespace)
 		if apierrors.IsForbidden(err) {
@@ -54,11 +54,11 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 
 			if azureCluster, exists := azureClusters[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1alpha3",
+					APIVersion: "cluster.x-k8s.io/v1beta1",
 					Kind:       "Cluster",
 				}
 				azureCluster.TypeMeta = metav1.TypeMeta{
-					APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+					APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 					Kind:       "AzureCluster",
 				}
 
@@ -78,14 +78,14 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 	var err error
 
 	labelSelector := runtimeClient.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: name,
+		capi.ClusterLabelName: name,
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 
 	cluster := &Cluster{}
 
 	{
-		crs := &capiv1alpha3.ClusterList{}
+		crs := &capi.ClusterList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
@@ -99,13 +99,13 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 		cluster.Cluster = &crs.Items[0]
 
 		cluster.Cluster.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
 		}
 	}
 
 	{
-		crs := &capzv1alpha3.AzureClusterList{}
+		crs := &capz.AzureClusterList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)
 		if apierrors.IsForbidden(err) {
 			return nil, microerror.Mask(insufficientPermissionsError)
@@ -119,7 +119,7 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 		cluster.AzureCluster = &crs.Items[0]
 
 		cluster.AzureCluster.TypeMeta = metav1.TypeMeta{
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 			Kind:       "AzureCluster",
 		}
 	}

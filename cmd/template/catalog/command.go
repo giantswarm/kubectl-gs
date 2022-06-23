@@ -12,6 +12,15 @@ import (
 const (
 	name        = "catalog"
 	description = "Template Catalog CR."
+	example     = `
+    Basic catalog with a single repository:
+
+    kubectl-gs template catalog --name my-catalog --namespace default --logo https://example.com/img.jpg --description 'Custom catalog' --type helm --url https://example.com/helm-catalog/
+
+    Catalog with a multiple repository mirrors:
+
+    kubectl-gs template catalog --name my-catalog --namespace default --logo https://example.com/img.jpg --description 'Custom catalog' --type helm --url https://example.com/helm-catalog/ --type helm --url https://example.com/helm-mirror/ --type oci --url oci://example.com/oci-registry/
+`
 )
 
 type Config struct {
@@ -41,10 +50,11 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  description,
-		RunE:  r.Run,
+		Use:     name,
+		Short:   description,
+		Long:    description,
+		Example: example,
+		RunE:    r.Run,
 	}
 
 	f.Init(c)

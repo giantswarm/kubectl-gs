@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"testing"
 
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/internal/label"
@@ -67,18 +67,18 @@ func Test_run(t *testing.T) {
 	}
 }
 
-func newCluster(name, namespace, targetRelease string) *capiv1alpha3.Cluster {
-	c := &capiv1alpha3.Cluster{
+func newCluster(name, namespace, targetRelease string) *capi.Cluster {
+	c := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 			Kind:       "Cluster",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				capiv1alpha3.ClusterLabelName: name,
-				label.ReleaseVersion:          "16.0.1",
+				capi.ClusterLabelName: name,
+				label.ReleaseVersion:  "16.0.1",
 			},
 			Annotations: map[string]string{
 				"cluster.giantswarm.io/description": "fake-cluster",
@@ -117,7 +117,7 @@ func newClusterService(t *testing.T, object ...runtime.Object) *cluster.Service 
 	}
 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
