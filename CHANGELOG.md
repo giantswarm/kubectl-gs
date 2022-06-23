@@ -11,6 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
 - Add new flags for `template cluster --provider-openstack` to be able to use existing networks and subnets.
+- Update the kubectl version in Dockerfile
 
 ## [2.1.1] - 2022-02-25
 
