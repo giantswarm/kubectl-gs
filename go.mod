@@ -24,9 +24,9 @@ require (
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/afero v1.8.2
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
+	golang.org/x/oauth2 v0.0.0-20220628200809-02e64fa58f26
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.23.0
 	k8s.io/apiextensions-apiserver v0.23.0
