@@ -22,18 +22,7 @@ const (
 )
 
 func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	var err error
-
-	var sshSSOPublicKey string
-	{
-		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-	config.AWS.SSHSSOPublicKey = sshSSOPublicKey
-
-	err = templateClusterGCP(ctx, client, output, config)
+	err := templateClusterGCP(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}

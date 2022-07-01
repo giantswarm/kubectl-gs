@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Command `template cluster --provider gcp` no longer tries to get SSH SSO public key secret in the `giantswarm` namespace
+
 ## [2.15.0] - 2022-06-22
 
 ### Added
