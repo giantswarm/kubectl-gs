@@ -9,13 +9,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	//nolint:staticcheck
 	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/test/kubeclient"
@@ -91,20 +88,7 @@ func Test_run(t *testing.T) {
 				stdout: out,
 			}
 
-			ssoSecret := &corev1.Secret{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      "sso-secret",
-					Namespace: key.GiantswarmNamespace,
-					Labels: map[string]string{
-						key.RoleLabel: key.SSHSSOPubKeyLabel,
-					},
-				},
-				Data: map[string][]byte{
-					"value": []byte("the-sso-secret"),
-				},
-			}
-
-			k8sClient := kubeclient.FakeK8sClient(ssoSecret)
+			k8sClient := kubeclient.FakeK8sClient()
 			err = runner.run(ctx, k8sClient)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
