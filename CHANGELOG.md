@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Allow calling `login` command with a second argument to select WC contexts.
 
+## [2.16.0] - 2022-07-01
+
+### Changed
+
+- Command `template cluster --provider gcp` no longer tries to get SSH SSO public key secret in the `giantswarm` namespace
+
 ## [2.15.0] - 2022-06-22
 
 ### Added
@@ -191,6 +197,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Improve flag handling and naming for `template cluster` command (no user facing changes).
 - Add new flags for `template cluster --provider-openstack` to be able to use existing networks and subnets.
+- Update the kubectl version in Dockerfile
 
 ## [2.1.1] - 2022-02-25
 
@@ -942,7 +949,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.16.0...HEAD
+[2.16.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.2...v2.14.0
 [2.13.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.1...v2.13.2
