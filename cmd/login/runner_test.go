@@ -255,6 +255,24 @@ func TestLogin(t *testing.T) {
 			},
 			expectError: invalidConfigError,
 		},
+		// Existing WC clientcert context
+		{
+			name:        "case 23",
+			startConfig: createValidTestConfig("-cluster-clientcert", false),
+			mcArg:       []string{"gs-codename-cluster-clientcert"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 24",
+			startConfig: createValidTestConfig("-cluster-clientcert", false),
+			mcArg:       []string{"codename", "cluster"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			expectError: contextDoesNotExistError,
+		},
 	}
 
 	for i, tc := range testCases {
