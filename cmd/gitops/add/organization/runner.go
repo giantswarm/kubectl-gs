@@ -2,12 +2,16 @@ package mcluster
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 )
 
@@ -35,35 +39,29 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	orgConfig := structure.OrgConfig{
+	config := structure.OrgConfig{
 		Name: r.flag.Name,
 	}
-	orgDir, err := structure.NewOrganization(orgConfig)
+	dir, err := structure.NewOrganization(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	var dryRun string
+	creatorConfig := filesystem.CreatorConfig{}
+
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
-		dryRun = dryRunFlag.Value.String()
+		creatorConfig.DryRun, _ = strconv.ParseBool(dryRunFlag.Value.String())
 	}
 
-	var localPath string
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		localPath = localPathFlag.Value.String()
+		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
 	}
+	creatorConfig.Path += key.OrganizationsDirectory(r.flag.MCName)
 
-	if dryRun == "true" {
-		orgDir.Print(localPath)
-		return nil
-	}
-
-	err = orgDir.Write(localPath)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	creator := filesystem.NewCreator(creatorConfig)
+	creator.Write(dir)
 
 	return nil
 }

@@ -1,6 +1,7 @@
 package mcluster
 
 import (
+	//"fmt"
 	"io"
 	"os"
 
@@ -9,10 +10,11 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
+	//"sigs.k8s.io/yaml"
 )
 
 const (
-	name  = "organization --name <org_name>"
+	name  = "organization --name <org_name> --management-cluster <mc_name>"
 	alias = "org"
 
 	shortDescription = "Adds a new Organization to your GitOps directory structure"
@@ -24,9 +26,10 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_org.md`
 
-	examples = `  # Add dummy Organization
+	examples = `  # Add dummy Organization to dummy Management Cluster
   kubectl gs gitops add org \
-  --name dummy`
+  --name dummy \
+  --management-cluster dummy`
 )
 
 type Config struct {

@@ -1,114 +1,61 @@
 package structure
 
 import (
-	"fmt"
-	"os"
+	"bytes"
+	"text/template"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
+	mctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/management-cluster"
+	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/organization"
 )
 
-func (d *Dir) AddDirectory(dir *Dir) {
-	d.dirs = append(d.dirs, dir)
-}
+func NewManagementCluster(config McConfig) (*filesystem.Dir, error) {
+	var err error
 
-func (d *Dir) AddFile(name string, manifest unstructured.Unstructured) error {
-	manifestRaw, err := yaml.Marshal(manifest.Object)
-	if err != nil {
-		return microerror.Mask(err)
+	mcDir := filesystem.NewDir(config.Name)
+	for _, t := range mctmpl.GetManagementClusterTemplate() {
+		te := template.Must(template.New("files").Parse(t))
+
+		var buf bytes.Buffer
+		err = te.Execute(&buf, config)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		mcDir.AddFile(
+			key.FileName(config.Name),
+			buf.Bytes(),
+		)
 	}
-
-	d.files = append(d.files, &File{
-		name: name,
-		data: manifestRaw,
-	})
-
-	return nil
-}
-
-func NewManagementCluster(config McConfig) (*Dir, error) {
-	mcDir := newDir(config.Name)
-	err := mcDir.AddFile(
-		fileName(config.Name),
-		kustomizationManifest(
-			kustomizationName(config.Name, ""),
-			kustomizationPath(config.Name, "", ""),
-			config.RepositoryName,
-			config.ServiceAccount,
-			config.RefreshInterval,
-			config.RefreshTimeout),
-	)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	mcDir.AddDirectory(newDir(directorySecrets))
-	mcDir.AddDirectory(newDir(directorySOPSPublicKeys))
-	mcDir.AddDirectory(newDir(directoryOrganizations))
+	mcDir.AddDirectory(filesystem.NewDir(key.DirectorySecrets))
+	mcDir.AddDirectory(filesystem.NewDir(key.DirectorySOPSPublicKeys))
+	mcDir.AddDirectory(filesystem.NewDir(key.DirectoryOrganizations))
 
 	return mcDir, nil
 }
 
-func NewOrganization(config OrgConfig) (*Dir, error) {
-	orgDir := newDir(config.Name)
-	err := orgDir.AddFile(
-		fileName(config.Name),
-		organizationManifest(config.Name),
-	)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	orgDir.AddDirectory(newDir(directoryWorkloadClusters))
-
-	return orgDir, nil
-}
-
-func (d *Dir) Print(path string) {
-	path = fmt.Sprintf("%s/%s", path, d.name)
-
-	fmt.Println(path)
-	for _, file := range d.files {
-		fmt.Printf("%s/%s\n", path, file.name)
-		fmt.Println(string(file.data))
-	}
-
-	for _, dir := range d.dirs {
-		dir.Print(path)
-	}
-}
-
-func (d *Dir) Write(path string) error {
+func NewOrganization(config OrgConfig) (*filesystem.Dir, error) {
 	var err error
 
-	path = fmt.Sprintf("%s/%s", path, d.name)
+	orgDir := filesystem.NewDir(config.Name)
+	for _, t := range orgtmpl.OrganizationDirectoryTemplate() {
+		te := template.Must(template.New("files").Parse(t))
 
-	err = os.Mkdir(path, 0755)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	for _, file := range d.files {
-		err = file.Write(path)
+		var buf bytes.Buffer
+		err = te.Execute(&buf, config)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
+
+		orgDir.AddFile(
+			key.FileName(config.Name),
+			buf.Bytes(),
+		)
 	}
+	orgDir.AddDirectory(filesystem.NewDir(key.DirectoryWorkloadClusters))
 
-	for _, dir := range d.dirs {
-		err = dir.Write(path)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	return nil
-}
-
-func (f *File) Write(path string) error {
-	err := os.WriteFile(fmt.Sprintf("%s/%s", path, f.name), f.data, 0600)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
+	return orgDir, nil
 }
