@@ -41,7 +41,7 @@ func NewOrganization(config OrgConfig) (*filesystem.Dir, error) {
 	var err error
 
 	orgDir := filesystem.NewDir(config.Name)
-	for _, t := range orgtmpl.OrganizationDirectoryTemplates() {
+	for _, t := range orgtmpl.GetOrganizationDirectoryTemplates() {
 		te := template.Must(template.New("files").Parse(t))
 
 		var buf bytes.Buffer

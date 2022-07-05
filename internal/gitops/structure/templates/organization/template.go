@@ -7,8 +7,8 @@ import (
 //go:embed organization.yaml.tmpl
 var organization string
 
-// OrganizationDirectoryTemplate returns organization directory layout.
-func OrganizationDirectoryTemplates() []string {
+// GetOrganizationDirectoryTemplates returns organization directory layout.
+func GetOrganizationDirectoryTemplates() []string {
 	return []string{
 		organization,
 	}
