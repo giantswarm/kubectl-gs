@@ -2,7 +2,10 @@ package filesystem
 
 import (
 	"fmt"
+	"io"
 	"os"
+
+	"github.com/spf13/afero"
 
 	"github.com/giantswarm/microerror"
 )
@@ -20,8 +23,11 @@ func (d *Dir) AddFile(name string, content []byte) {
 
 func NewCreator(config CreatorConfig) *Creator {
 	return &Creator{
-		path:   config.Path,
-		dryRun: config.DryRun,
+		directory: config.Directory,
+		dryRun:    config.DryRun,
+		fs:        afero.NewOsFs(),
+		path:      config.Path,
+		stdout:    config.Stdout,
 	}
 }
 
@@ -33,13 +39,13 @@ func NewDir(name string) *Dir {
 	}
 }
 
-func (c *Creator) Write(d *Dir) error {
+func (c *Creator) Create() error {
 	if c.dryRun == true {
-		d.print(c.path)
+		c.directory.print(c.path, c.stdout)
 		return nil
 	}
 
-	err := d.write(c.path)
+	err := c.directory.write(c.path, c.fs)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -47,26 +53,26 @@ func (c *Creator) Write(d *Dir) error {
 	return nil
 }
 
-func (d *Dir) print(path string) {
+func (d *Dir) print(path string, stdout io.Writer) {
 	path = fmt.Sprintf("%s/%s", path, d.name)
 
-	fmt.Println(path)
+	fmt.Fprintln(stdout, path)
 	for _, file := range d.files {
-		fmt.Printf("%s/%s\n", path, file.name)
+		fmt.Fprintf(stdout, "%s/%s\n", path, file.name)
 		fmt.Println(string(file.data))
 	}
 
 	for _, dir := range d.dirs {
-		dir.print(path)
+		dir.print(path, stdout)
 	}
 }
 
-func (d *Dir) write(path string) error {
+func (d *Dir) write(path string, fs afero.Fs) error {
 	var err error
 
 	path = fmt.Sprintf("%s/%s", path, d.name)
 
-	err = os.Mkdir(path, 0755)
+	err = fs.Mkdir(path, 0755)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -79,7 +85,7 @@ func (d *Dir) write(path string) error {
 	}
 
 	for _, dir := range d.dirs {
-		err = dir.write(path)
+		err = dir.write(path, fs)
 		if err != nil {
 			return microerror.Mask(err)
 		}

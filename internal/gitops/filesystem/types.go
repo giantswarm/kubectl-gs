@@ -1,5 +1,11 @@
 package filesystem
 
+import (
+	"io"
+
+	"github.com/spf13/afero"
+)
+
 type Dir struct {
 	dirs  []*Dir
 	files []*File
@@ -12,11 +18,16 @@ type File struct {
 }
 
 type CreatorConfig struct {
-	Path   string
-	DryRun bool
+	Directory *Dir
+	Path      string
+	DryRun    bool
+	Stdout    io.Writer
 }
 
 type Creator struct {
-	path   string
-	dryRun bool
+	directory *Dir
+	dryRun    bool
+	fs        afero.Fs
+	path      string
+	stdout    io.Writer
 }

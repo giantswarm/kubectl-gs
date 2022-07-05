@@ -47,7 +47,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := filesystem.CreatorConfig{}
+	creatorConfig := filesystem.CreatorConfig{
+		Directory: dir,
+		Stdout:    r.stdout,
+	}
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
@@ -61,7 +64,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	creatorConfig.Path += key.OrganizationsDirectory(r.flag.MCName)
 
 	creator := filesystem.NewCreator(creatorConfig)
-	creator.Write(dir)
+	creator.Create()
 
 	return nil
 }
