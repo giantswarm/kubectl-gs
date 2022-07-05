@@ -40,7 +40,7 @@ func NewDir(name string) *Dir {
 }
 
 func (c *Creator) Create() error {
-	if c.dryRun == true {
+	if c.dryRun {
 		c.directory.print(c.path, c.stdout)
 		return nil
 	}

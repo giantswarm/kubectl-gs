@@ -64,7 +64,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	creatorConfig.Path += key.OrganizationsDirectory(r.flag.MCName)
 
 	creator := filesystem.NewCreator(creatorConfig)
-	creator.Create()
+	err = creator.Create()
+	if err != nil {
+		microerror.Mask(err)
+	}
 
 	return nil
 }
