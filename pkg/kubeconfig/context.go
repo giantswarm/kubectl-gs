@@ -30,6 +30,10 @@ func GenerateWCKubeContextName(mcKubeContextName string, wcName string) string {
 	return fmt.Sprintf("%s-%s", mcKubeContextName, wcName)
 }
 
+func GenerateWCClientCertKubeContextName(mcKubeContextName string, wcName string) string {
+	return fmt.Sprintf("%s-%s-clientcert", mcKubeContextName, wcName)
+}
+
 // IsKubeContext checks whether the name provided,
 // matches our pattern for naming kubernetes contexts.
 func IsKubeContext(s string) (bool, ContextType) {

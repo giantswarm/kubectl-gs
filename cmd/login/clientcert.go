@@ -256,7 +256,7 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, c.clusterID)
+	contextName := kubeconfig.GenerateWCClientCertKubeContextName(mcContextName, c.clusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
 
@@ -284,6 +284,7 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		}
 
 		cluster.Server = c.clusterServer
+		cluster.CertificateAuthority = ""
 		cluster.CertificateAuthorityData = c.certCA
 
 		// Add cluster configuration to config.
@@ -328,7 +329,7 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, c.clusterID)
+	contextName := kubeconfig.GenerateWCClientCertKubeContextName(mcContextName, c.clusterID)
 
 	kubeconfig := clientcmdapi.Config{
 		APIVersion: "v1",

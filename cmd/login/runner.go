@@ -144,6 +144,6 @@ func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
 	if currentContext != "" {
 		return r.loginWithKubeContextName(ctx, currentContext)
 	} else {
-		return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm management cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular management cluster.")
+		return microerror.Maskf(selectedContextNonCompatibleError, "The current context does not seem to belong to a Giant Swarm cluster.\nPlease run 'kubectl gs login --help' to find out how to log in to a particular cluster.")
 	}
 }

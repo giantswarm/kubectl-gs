@@ -26,7 +26,7 @@ type authInfo struct {
 
 // storeMCCredentials stores the installation's CA certificate, and
 // updates the kubeconfig with the configuration for the k8s api access.
-func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, switchContext bool) error {
+func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, internalAPI bool, switchContext bool) error {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
@@ -35,13 +35,6 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	kUsername := fmt.Sprintf("gs-%s-%s", authResult.username, i.Codename)
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	clusterName := fmt.Sprintf("gs-%s", i.Codename)
-
-	// Store CA certificate.
-	err = kubeconfig.WriteCertificate(i.CACert, clusterName, fs)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	{
 		// Create authenticated user.
 		initialUser, exists := config.AuthInfos[kUsername]
@@ -79,13 +72,8 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 		} else {
 			initialCluster.Server = i.K8sApiURL
 		}
-
-		var certPath string
-		certPath, err = kubeconfig.GetKubeCertFilePath(clusterName)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		initialCluster.CertificateAuthority = certPath
+		initialCluster.CertificateAuthority = ""
+		initialCluster.CertificateAuthorityData = []byte(i.CACert)
 
 		// Add cluster configuration to config.
 		config.Clusters[clusterName] = initialCluster
@@ -126,26 +114,12 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	clusterName := fmt.Sprintf("gs-%s", i.Codename)
 
-	// Store CA certificate.
-	err := kubeconfig.WriteCertificate(i.CACert, clusterName, fs)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	var server string
 	{
 		if internalAPI {
 			server = i.K8sInternalApiURL
 		} else {
 			server = i.K8sApiURL
-		}
-	}
-
-	var certPath string
-	{
-		certPath, err = kubeconfig.GetKubeCertFilePath(clusterName)
-		if err != nil {
-			return microerror.Mask(err)
 		}
 	}
 
@@ -171,8 +145,8 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 		Kind:       "Config",
 		Clusters: map[string]*clientcmdapi.Cluster{
 			contextName: {
-				Server:               server,
-				CertificateAuthority: certPath,
+				Server:                   server,
+				CertificateAuthorityData: []byte(i.CACert),
 			},
 		},
 		Contexts: map[string]*clientcmdapi.Context{
@@ -191,7 +165,7 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
-	err = clientcmd.WriteToFile(kubeconfig, filePath)
+	err := clientcmd.WriteToFile(kubeconfig, filePath)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -208,7 +182,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 
 	// Check if the context exists.
 	if _, exists := config.Contexts[newContextName]; !exists {
-		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Management API URL or the web UI URL of the installation as an argument.", newContextName)
+		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Management API URL or the web UI URL of the cluster as an argument.", newContextName)
 	}
 
 	authType := kubeconfig.GetAuthType(config, newContextName)

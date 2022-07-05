@@ -75,7 +75,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
+	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the cluster '%s'.\n", codeName))
 	return nil
 }
 
@@ -150,16 +150,16 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 		}
 	} else {
 		// Store kubeconfig and CA certificate.
-		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToContext)
+		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.flag.InternalAPI, r.loginOptions.switchToContext)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	if len(authResult.email) > 0 {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.email, i.Codename))
 	} else {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
 	}
 	return nil
 }
