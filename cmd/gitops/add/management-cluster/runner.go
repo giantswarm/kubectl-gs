@@ -71,7 +71,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	err = creator.Create()
 	if err != nil {
-		microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
 	return nil

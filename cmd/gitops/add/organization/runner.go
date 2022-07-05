@@ -66,7 +66,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	creator := filesystem.NewCreator(creatorConfig)
 	err = creator.Create()
 	if err != nil {
-		microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
 	return nil
