@@ -16,7 +16,7 @@ func NewManagementCluster(config McConfig) (*filesystem.Dir, error) {
 	var err error
 
 	mcDir := filesystem.NewDir(config.Name)
-	for _, t := range mctmpl.GetManagementClusterTemplate() {
+	for _, t := range mctmpl.GetManagementClusterTemplates() {
 		te := template.Must(template.New("files").Parse(t))
 
 		var buf bytes.Buffer
@@ -41,7 +41,7 @@ func NewOrganization(config OrgConfig) (*filesystem.Dir, error) {
 	var err error
 
 	orgDir := filesystem.NewDir(config.Name)
-	for _, t := range orgtmpl.OrganizationDirectoryTemplate() {
+	for _, t := range orgtmpl.OrganizationDirectoryTemplates() {
 		te := template.Must(template.New("files").Parse(t))
 
 		var buf bytes.Buffer

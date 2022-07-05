@@ -8,7 +8,7 @@ import (
 var managementCluster string
 
 // GetManagementClusterTemplate merges .tmpl files for organization layer.
-func GetManagementClusterTemplate() []string {
+func GetManagementClusterTemplates() []string {
 	return []string{
 		managementCluster,
 	}

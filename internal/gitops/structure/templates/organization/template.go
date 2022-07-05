@@ -8,7 +8,7 @@ import (
 var organization string
 
 // OrganizationDirectoryTemplate returns organization directory layout.
-func OrganizationDirectoryTemplate() []string {
+func OrganizationDirectoryTemplates() []string {
 	return []string{
 		organization,
 	}
