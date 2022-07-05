@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	flagInterval        = "refresh-interval"
-	flagName            = "name"
-	flagRepositoryeName = "repository-name"
-	flagServiceAccount  = "service-account"
-	flagTimeout         = "refresh-timeout"
+	flagInterval       = "refresh-interval"
+	flagName           = "name"
+	flagRepositoryName = "repository-name"
+	flagServiceAccount = "service-account"
+	flagTimeout        = "refresh-timeout"
 )
 
 type flag struct {
@@ -26,7 +26,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().DurationVar(&f.Interval, flagInterval, time.Minute, "Source synchronization interval")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Codename of the Management Cluster")
-	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryeName, "", "Name of the GitOps repository")
+	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "", "Name of the GitOps repository")
 	cmd.Flags().StringVar(&f.ServiceAccount, flagServiceAccount, "automation", "Service Account for Flux to impersonate")
 	cmd.Flags().DurationVar(&f.Timeout, flagTimeout, 2*time.Minute, "Synchronization timeout")
 }
