@@ -9,7 +9,6 @@ import (
 const (
 	fluxKustomizationAPIVersion = "kustomize.toolkit.fluxcd.io/v1beta2"
 	fluxKustomizationKind       = "Kustomization"
-	fluxSourceKind              = "GitRepository"
 
 	directoryManagementClusters = "management-clusters"
 	directoryOrganizations      = "organizations"
