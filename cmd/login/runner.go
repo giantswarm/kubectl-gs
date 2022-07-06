@@ -7,13 +7,14 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
 type runner struct {
