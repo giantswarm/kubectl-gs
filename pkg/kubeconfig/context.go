@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	ContextPrefix = "gs-"
+	ContextPrefix    = "gs-"
+	ClientCertSuffix = "-clientcert"
 )
 
 type ContextType int
@@ -31,7 +32,7 @@ func GenerateWCKubeContextName(mcKubeContextName string, wcName string) string {
 }
 
 func GenerateWCClientCertKubeContextName(mcKubeContextName string, wcName string) string {
-	return fmt.Sprintf("%s-%s-clientcert", mcKubeContextName, wcName)
+	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, ClientCertSuffix)
 }
 
 // IsKubeContext checks whether the name provided,
@@ -40,6 +41,17 @@ func IsKubeContext(s string) (bool, ContextType) {
 	contextType := GetKubeContextType(s)
 
 	return contextType != ContextTypeNone, contextType
+}
+
+// GetClientCertContextName returns the name of the client cert context name for an identifier
+func GetClientCertContextName(identifier string) string {
+	if !strings.HasPrefix(identifier, ContextPrefix) {
+		identifier = ContextPrefix + identifier
+	}
+	if !strings.HasSuffix(identifier, ClientCertSuffix) {
+		identifier = identifier + ClientCertSuffix
+	}
+	return identifier
 }
 
 // GetCodeNameFromKubeContext gets an installation's

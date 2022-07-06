@@ -271,7 +271,31 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			expectError: contextDoesNotExistError,
+		},
+		// Existing MC clientcert context
+		{
+			name:        "case 25",
+			startConfig: createValidTestConfig("-clientcert", false),
+			mcArg:       []string{"gs-codename-clientcert"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 26",
+			startConfig: createValidTestConfig("-clientcert", false),
+			mcArg:       []string{"codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 27",
+			startConfig: createValidTestConfig("-clientcert", false),
+			mcArg:       []string{"gs-codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
 		},
 	}
 

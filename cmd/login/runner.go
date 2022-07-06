@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
@@ -65,6 +66,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	case 1:
 		installationIdentifier := strings.ToLower(args[0])
 		foundContext, err := r.findContext(ctx, installationIdentifier)
+		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
+			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
+			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+			foundContext, err = r.findContext(ctx, clientCertContext)
+		}
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -82,6 +88,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	case 2:
 		installationIdentifier := strings.ToLower(strings.Join(args, "-"))
 		foundContext, err := r.findContext(ctx, installationIdentifier)
+		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
+			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
+			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+			foundContext, err = r.findContext(ctx, clientCertContext)
+		}
 		if err != nil {
 			return microerror.Mask(err)
 		}

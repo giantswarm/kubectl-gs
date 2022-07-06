@@ -10,7 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Allow calling `login` command with a second argument to select WC contexts.
-- Add `-clientcert` suffix to WC client certificate contexts created by the `login` command.
+- Add `-clientcert` suffix to WC client certificate contexts created by the `login` command. Fall back to `-clientcert` context selection if no other context exists for a cluster.
 - Use `CertificateAuthorityData` to store CA data and ensure that `CertificateAuthority` is not set when manipulating the kubeconfig in the `login` command.
 
 ## [2.16.0] - 2022-07-01
