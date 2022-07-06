@@ -1,6 +1,7 @@
-package add
+package mcluster
 
 import (
+	//"fmt"
 	"io"
 	"os"
 
@@ -9,14 +10,26 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
-
-	mc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/management-cluster"
-	org "github.com/giantswarm/kubectl-gs/cmd/gitops/add/organization"
+	//"sigs.k8s.io/yaml"
 )
 
 const (
-	name        = "add"
-	description = "Add various resources into your GitOps repository"
+	name  = "organization --name <org_name> --management-cluster <mc_name>"
+	alias = "org"
+
+	shortDescription = "Adds a new Organization to your GitOps directory structure"
+	longDescription  = `Adds a new Organization to your GitOps directory structure.
+
+It respects the Giantswarm's GitOps repository structure recommendation:
+https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
+
+Steps it implements:
+https://github.com/giantswarm/gitops-template/blob/main/docs/add_org.md`
+
+	examples = `  # Add dummy Organization to dummy Management Cluster
+  kubectl gs gitops add org \
+  --name dummy \
+  --management-cluster dummy`
 )
 
 type Config struct {
@@ -46,44 +59,6 @@ func New(config Config) (*cobra.Command, error) {
 		config.Stdout = os.Stdout
 	}
 
-	var err error
-
-	var mcCmd *cobra.Command
-	{
-		c := mc.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		mcCmd, err = mc.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var orgCmd *cobra.Command
-	{
-		c := org.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		orgCmd, err = org.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	f := &flag{}
 
 	r := &runner{
@@ -94,16 +69,15 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  description,
-		RunE:  r.Run,
+		Use:     name,
+		Short:   shortDescription,
+		Long:    longDescription,
+		Example: examples,
+		Aliases: []string{alias},
+		RunE:    r.Run,
 	}
 
 	f.Init(c)
-
-	c.AddCommand(mcCmd)
-	c.AddCommand(orgCmd)
 
 	return c, nil
 }
