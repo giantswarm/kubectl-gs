@@ -39,14 +39,10 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.McConfig{
-		Name:            r.flag.Name,
-		RefreshInterval: r.flag.Interval.String(),
-		RefreshTimeout:  r.flag.Timeout.String(),
-		RepositoryName:  r.flag.RepositoryName,
-		ServiceAccount:  r.flag.ServiceAccount,
+	config := structure.OrgConfig{
+		Name: r.flag.Name,
 	}
-	dir, err := structure.NewManagementCluster(config)
+	dir, err := structure.NewOrganization(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -65,10 +61,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if localPathFlag != nil {
 		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
 	}
-	creatorConfig.Path += key.DirectoryManagementClusters
+	creatorConfig.Path += key.OrganizationsDirectory(r.flag.MCName)
 
 	creator := filesystem.NewCreator(creatorConfig)
-
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)
