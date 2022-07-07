@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.17.0] - 2022-07-07
+
 ### Added
 
 - Allow calling `login` command with a second argument to select WC contexts.
@@ -951,7 +953,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.16.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.17.0...HEAD
+[2.17.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.13.2...v2.14.0
