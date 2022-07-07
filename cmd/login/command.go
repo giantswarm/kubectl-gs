@@ -68,7 +68,7 @@ Workload cluster:
 
   kubectl gs login mymc mywc
 
-Workload cluster client ce:
+Workload cluster client certificate:
 
   kubectl gs login mymc \
     --` + flagWCName + ` gir0y \
