@@ -1,7 +1,6 @@
-package mcluster
+package org
 
 import (
-	//"fmt"
 	"io"
 	"os"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
-	//"sigs.k8s.io/yaml"
 )
 
 const (
