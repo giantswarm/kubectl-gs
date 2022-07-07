@@ -46,11 +46,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.SelfContained, flagSelfContained, "", "Create a self-contained kubectl config with embedded credentials and write it to this path.")
 	cmd.Flags().BoolVar(&f.KeepContext, flagKeepContext, false, "Keep the current kubectl context. If not set/false, will set the current-context to the one representing the cluster to log in to.")
 
-	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
-	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("Organization that owns the workload cluster. Requires --%s.", flagWCName))
-	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
-	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`How long the client certificate should live for. Valid time units are "ms", "s", "m", "h". Requires --%s.`, flagWCName))
-	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
+	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "For client certificate creation. Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
+	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("For client certificate creation. Organization that owns the workload cluster. Requires --%s.", flagWCName))
+	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("For client certificate creation. RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
+	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`For client certificate creation. How long the client certificate should live for. Valid time units are "ms", "s", "m", "h". Requires --%s.`, flagWCName))
+	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
 	f.config = genericclioptions.NewConfigFlags(true)
 	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())

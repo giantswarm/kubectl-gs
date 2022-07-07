@@ -218,7 +218,7 @@ func TestLogin(t *testing.T) {
 		},
 		// Logging in with argument using context flag
 		{
-			name:        "case 18",
+			name:        "case 19",
 			startConfig: createValidTestConfig("", false),
 			mcArg:       []string{"codename"},
 			flags: &flag{
@@ -226,6 +226,75 @@ func TestLogin(t *testing.T) {
 				config: &genericclioptions.ConfigFlags{
 					Context: to.StringPtr("gs-anothercodename"),
 				},
+			},
+		},
+		// Existing WC context
+		{
+			name:        "case 20",
+			startConfig: createValidTestConfig("-cluster", false),
+			mcArg:       []string{"codename", "cluster"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 21",
+			startConfig: createValidTestConfig("-cluster", false),
+			mcArg:       []string{"gs-codename-cluster"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		// Too many arguments
+		{
+			name:        "case 22",
+			startConfig: createValidTestConfig("-cluster", false),
+			mcArg:       []string{"codename", "cluster", "somethingelse"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			expectError: invalidConfigError,
+		},
+		// Existing WC clientcert context
+		{
+			name:        "case 23",
+			startConfig: createValidTestConfig("-cluster-clientcert", false),
+			mcArg:       []string{"gs-codename-cluster-clientcert"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 24",
+			startConfig: createValidTestConfig("-cluster-clientcert", false),
+			mcArg:       []string{"codename", "cluster"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		// Existing MC clientcert context
+		{
+			name:        "case 25",
+			startConfig: createValidTestConfig("-clientcert", false),
+			mcArg:       []string{"gs-codename-clientcert"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 26",
+			startConfig: createValidTestConfig("-clientcert", false),
+			mcArg:       []string{"codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+		},
+		{
+			name:        "case 27",
+			startConfig: createValidTestConfig("-clientcert", false),
+			mcArg:       []string{"gs-codename"},
+			flags: &flag{
+				WCCertTTL: "8h",
 			},
 		},
 	}

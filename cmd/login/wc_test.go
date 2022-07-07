@@ -33,7 +33,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/test/kubeclient"
 )
 
-func TestWCLogin(t *testing.T) {
+func TestWCClientCert(t *testing.T) {
 	testCases := []struct {
 		name                 string
 		flags                *flag

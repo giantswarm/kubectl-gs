@@ -15,21 +15,31 @@ import (
 )
 
 const (
-	name = `login <management-cluster> [flags]
+	name = `login <arg1> <arg2> [flags]
 
-The <management-cluster> argument can take several forms:
+Arguments <arg1> and <arg2> are optional and can take several forms.
+No arguments means that the currently selected context will be used.
 
-  - the URL of the management cluster Kubernetes endpoint
+Use <arg1> alone for:
+
+  - the URL of the cluster Kubernetes endpoint
   - the URL of the Giant Swarm web UI
-  - a previously generated context name, with or without the prefix "gs-"`
+  - A Giant Swarm management cluster with an existing context
+  - a previously generated context name
+  
+Use <arg1> <arg2> for
+
+  -  A Giant Swarm management cluster and a Giant Swarm workload cluster with an existing context
+  `
 	shortDescription = "Ensures an authenticated context for a Giant Swarm management or workload cluster"
 	longDescription  = `Ensure an authenticated context for a Giant Swarm management or workload cluster
 
 Use this command to set up a kubectl context to work with:
   (1) a management cluster, using OIDC authentication
-  (2) a workload cluster on AWS or Azure, using client certificate auth
+  (2) a workload cluster, using OIDC authentication
+  (3) a workload cluster, using client certificate auth. Not supported on kvm.
 
-Note that (2) implies (1). When setting up workload cluster access,
+Note that (3) implies (1). When creating a workload cluster client certificate,
 management cluster access will be set up as well, if that is not yet done.
 
 Security notes:
@@ -51,6 +61,14 @@ Management cluster:
   kubectl gs login mymc
 
 Workload cluster:
+
+  kubectl gs login https://example.g8s.test.eu-west-1.aws.gigantic.io
+
+  kubectl gs login gs-mymc-mywc
+
+  kubectl gs login mymc mywc
+
+Workload cluster client certificate:
 
   kubectl gs login mymc \
     --` + flagWCName + ` gir0y \
