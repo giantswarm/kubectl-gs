@@ -24,12 +24,12 @@ Use <arg1> alone for:
 
   - the URL of the cluster Kubernetes endpoint
   - the URL of the Giant Swarm web UI
-  - A Giant Swarm management cluster with an existing context (SSO only)
+  - A Giant Swarm management cluster with an existing context
   - a previously generated context name
   
 Use <arg1> <arg2> for
 
-  -  A Giant Swarm management cluster and a Giant Swarm workload cluster with an existing context (SSO only)
+  -  A Giant Swarm management cluster and a Giant Swarm workload cluster with an existing context
   `
 	shortDescription = "Ensures an authenticated context for a Giant Swarm management or workload cluster"
 	longDescription  = `Ensure an authenticated context for a Giant Swarm management or workload cluster
