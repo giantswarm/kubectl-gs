@@ -54,7 +54,7 @@ expiration periods (--` + flagWCCertTTL + `) and specific group names
 	examples = `
 Management cluster:
 
-  kubectl gs login https://g8s.test.eu-west-1.aws.gigantic.io
+  kubectl gs login https://api.g8s.test.eu-west-1.aws.gigantic.io
 
   kubectl gs login gs-mymc
 
@@ -62,7 +62,7 @@ Management cluster:
 
 Workload cluster:
 
-  kubectl gs login https://example.g8s.test.eu-west-1.aws.gigantic.io
+  kubectl gs login https://api.example.g8s.test.eu-west-1.aws.gigantic.io
 
   kubectl gs login gs-mymc-mywc
 
