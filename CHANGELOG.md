@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.18.0] - 2022-07-08
+
 ### Added
 
 - In the `login` command, allow concatenation of contexts in destination file when creating WC client certificates with `--self-contained` flag.
@@ -957,7 +959,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.17.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.18.0...HEAD
+[2.18.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.14.0...v2.15.0
