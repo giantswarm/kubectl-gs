@@ -19,6 +19,7 @@ import (
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
+	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -354,10 +355,21 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		},
 		CurrentContext: contextName,
 	}
-	if exists, err := afero.Exists(fs, c.filePath); exists {
-		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", c.filePath)
-	} else if err != nil {
+	// If the destination file exists, we merge the contexts contained in it with the newly created one
+	exists, err := afero.Exists(fs, c.filePath)
+	if err != nil {
 		return "", false, microerror.Mask(err)
+	}
+	if exists {
+		existingKubeConfig, err := clientcmd.LoadFromFile(c.filePath)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+		err = mergo.Merge(&kubeconfig, existingKubeConfig, mergo.WithOverride)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+		kubeconfig.CurrentContext = contextName
 	}
 	err = clientcmd.WriteToFile(kubeconfig, c.filePath)
 	if err != nil {

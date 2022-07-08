@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- In the `login` command, allow concatenation of contexts in destination file when creating WC client certificates with `--self-contained` flag.
+
 ## [2.17.0] - 2022-07-07
 
 ### Added
