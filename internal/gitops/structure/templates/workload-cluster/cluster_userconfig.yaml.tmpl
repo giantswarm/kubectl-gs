@@ -1,0 +1,10 @@
+{{- if .ClusterUserConfig -}}
+apiVersion: v1
+data:
+  values: |
+{{ .ClusterUserConfig | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: {{ .Name }}-userconfig
+  namespace: org-{{ .Organization }}
+{{- end }}

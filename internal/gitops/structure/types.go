@@ -8,6 +8,19 @@ type McConfig struct {
 	ServiceAccount  string
 }
 
+type WcConfig struct {
+	Base                  string
+	ClusterRelease        string
+	ClusterUserConfig     string
+	DefaultAppsRelease    string
+	DefaultAppsUserConfig string
+	ManagementCluster     string
+	Name                  string
+	Organization          string
+	RepositoryName        string
+	WorkloadClusters      []string
+}
+
 type OrgConfig struct {
 	Name string
 }

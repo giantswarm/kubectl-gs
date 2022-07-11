@@ -1,0 +1,12 @@
+{{- if .ClusterUserConfig -}}
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: ${cluster_name}
+  namespace: org-${organization}
+spec:
+  userConfig:
+    configMap:
+      name: {{ .Name }}-userconfig
+      namespace: org-{{ .Organization }}
+{{- end }}

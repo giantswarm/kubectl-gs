@@ -12,6 +12,7 @@ import (
 
 	mc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/management-cluster"
 	org "github.com/giantswarm/kubectl-gs/cmd/gitops/add/organization"
+	wc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/workload-cluster"
 )
 
 const (
@@ -84,6 +85,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var wcCmd *cobra.Command
+	{
+		c := wc.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		wcCmd, err = wc.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -104,6 +123,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	c.AddCommand(mcCmd)
 	c.AddCommand(orgCmd)
+	c.AddCommand(wcCmd)
 
 	return c, nil
 }

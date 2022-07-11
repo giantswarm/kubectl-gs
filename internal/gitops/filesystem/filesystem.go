@@ -58,8 +58,12 @@ func (d *Dir) print(path string, stdout io.Writer) {
 
 	fmt.Fprintln(stdout, path)
 	for _, file := range d.files {
+		if file.isEmpty() {
+			continue
+		}
+
 		fmt.Fprintf(stdout, "%s/%s\n", path, file.name)
-		fmt.Println(string(file.data))
+		fmt.Fprintln(stdout, string(file.data))
 	}
 
 	for _, dir := range d.dirs {
@@ -73,7 +77,9 @@ func (d *Dir) write(path string, fs afero.Fs) error {
 	path = fmt.Sprintf("%s/%s", path, d.name)
 
 	err = fs.Mkdir(path, 0755)
-	if err != nil {
+	if err != afero.ErrFileExists {
+		//noop
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -95,10 +101,25 @@ func (d *Dir) write(path string, fs afero.Fs) error {
 }
 
 func (f *File) Write(path string) error {
+	if f.isEmpty() {
+		return nil
+	}
+
 	err := os.WriteFile(fmt.Sprintf("%s/%s", path, f.name), f.data, 0600)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	return nil
+}
+
+func (f *File) isEmpty() bool {
+	// Due to POSIX there is an empty line on the generated
+	// template files, so empty file is of length `1` instead
+	// of `0`.
+	if len(f.data) == 0 || len(f.data) == 1 {
+		return true
+	}
+
+	return false
 }
