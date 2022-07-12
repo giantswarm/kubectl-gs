@@ -17,21 +17,14 @@ import (
 func NewManagementCluster(config McConfig) (*filesystem.Dir, error) {
 	var err error
 
+	// Create `MC_NAME` directory and add bunch of other
+	// directories there for SOPS keys, organizations, and secrets.
 	mcDir := filesystem.NewDir(config.Name)
-	for _, t := range mctmpl.GetManagementClusterTemplates() {
-		te := template.Must(template.New("files").Parse(t))
-
-		var buf bytes.Buffer
-		err = te.Execute(&buf, config)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		mcDir.AddFile(
-			key.FileName(config.Name),
-			buf.Bytes(),
-		)
+	err = addFilesFromTemplate(mcDir, mctmpl.GetManagementClusterTemplates, config)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
+
 	mcDir.AddDirectory(filesystem.NewDir(key.DirectorySecrets))
 	mcDir.AddDirectory(filesystem.NewDir(key.DirectorySOPSPublicKeys))
 	mcDir.AddDirectory(filesystem.NewDir(key.DirectoryOrganizations))
@@ -42,37 +35,22 @@ func NewManagementCluster(config McConfig) (*filesystem.Dir, error) {
 func NewOrganization(config OrgConfig) (*filesystem.Dir, error) {
 	var err error
 
+	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
+	// containing Organization CR
 	orgDir := filesystem.NewDir(config.Name)
-	for _, t := range orgtmpl.GetOrganizationDirectoryTemplates() {
-		te := template.Must(template.New("files").Parse(t))
-
-		var buf bytes.Buffer
-		err = te.Execute(&buf, config)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		orgDir.AddFile(
-			key.FileName(config.Name),
-			buf.Bytes(),
-		)
+	err = addFilesFromTemplate(orgDir, orgtmpl.GetOrganizationDirectoryTemplates, config)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
+	// Create `workload-cluster` directory and populate it with
+	// empty `kustomization.yaml`.
 	wcDir := filesystem.NewDir(key.DirectoryWorkloadClusters)
-	for n, t := range orgtmpl.GetWorkloadClustersDirectoryTemplates() {
-		te := template.Must(template.New("files").Parse(t))
-
-		var buf bytes.Buffer
-		err = te.Execute(&buf, config)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		wcDir.AddFile(
-			key.FileName(n),
-			buf.Bytes(),
-		)
+	err = addFilesFromTemplate(wcDir, orgtmpl.GetWorkloadClustersDirectoryTemplates, config)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
+
 	orgDir.AddDirectory(wcDir)
 
 	return orgDir, nil
