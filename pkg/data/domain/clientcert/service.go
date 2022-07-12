@@ -5,7 +5,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -59,14 +58,8 @@ func (s *Service) GetCredential(ctx context.Context, namespace, name string) (*c
 	secret := &corev1.Secret{}
 	err := s.client.Get(ctx, client.ObjectKey{Name: name, Namespace: namespace}, secret)
 	if apierrors.IsNotFound(err) {
-		// Try in default namespace for legacy azure clusters.
-		err = s.client.Get(ctx, client.ObjectKey{Name: name, Namespace: metav1.NamespaceDefault}, secret)
-		if apierrors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
-		}
-	}
-
-	if err != nil {
+		return nil, microerror.Mask(notFoundError)
+	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
 

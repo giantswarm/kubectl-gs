@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"path"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
@@ -120,7 +120,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 		return results, microerror.Mask(noResourcesError)
 	}
 
-	// Iterate over all apps and fetch the AppCatalog CR, index.yaml, and
+	// Iterate over all apps and fetch the Catalog CR, index.yaml, and
 	// corresponding values.schema.json if it is defined for that app's version.
 	for _, app := range apps {
 		valuesSchema, schemaValidationResult, err := s.validateApp(ctx, app, customValuesSchema)
@@ -303,10 +303,26 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 		return nil, nil, microerror.Maskf(invalidTypeError, "unexpected type %T found", c)
 	}
 
+	// Pick a repository with type="helm", since we don't know how to fetch
+	// indexes from other storage types yet.
+	var catalogURL string
+	var foundHelmRepository bool
+	for _, repo := range catalog.Spec.Repositories {
+		if repo.Type == "helm" {
+			foundHelmRepository = true
+			catalogURL = repo.URL
+			break
+		}
+	}
+	// Legacy: use deprecated .spec.storage in case .spec.repositories is empty.
+	if catalogURL == "" && !foundHelmRepository && catalog.Spec.Storage.Type == "helm" {
+		catalogURL = catalog.Spec.Storage.URL
+		foundHelmRepository = true
+	}
 	// Error for catalogs where we for sure can't fetch the index because we don't
 	// know about the storage type yet.
-	if catalog.Spec.Storage.Type != "helm" {
-		err = microerror.Maskf(fetchError, "unable to fetch index, storage type %q is not supported", catalog.Spec.Storage.Type)
+	if !foundHelmRepository {
+		err = microerror.Maskf(fetchError, "unable to fetch index, only \"helm\" storage type is supported")
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
@@ -315,9 +331,9 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	}
 
 	// Error for catalogs where we for sure can't fetch the index because the
-	// URL is missing in the AppCatalog CR.
-	if catalog.Spec.Storage.URL == "" {
-		err = microerror.Maskf(fetchError, "unable to fetch index, the URL for the helm repo's index.yaml is missing from 'Spec.Storage.URL' in the AppCatalog CR")
+	// URL is missing in the Catalog CR.
+	if catalogURL == "" {
+		err = microerror.Maskf(fetchError, "unable to fetch index, the URL for the helm repo's index.yaml is missing from 'Spec.Repositories[].URL' in the Catalog CR")
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
@@ -326,7 +342,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	}
 
 	// Fetch the index.
-	resp, err := http.Get(catalog.Spec.Storage.URL + "/index.yaml")
+	resp, err := http.Get(catalogURL + "/index.yaml")
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch index, http request failed: %s", err.Error())
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
@@ -365,7 +381,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 		err:     nil,
 	}
 
-	// Return the AppCatalog CR and the unmarshalled index.yaml.
+	// Return the Catalog CR and the unmarshalled index.yaml.
 	return index, catalog, nil
 }
 

@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	ContextPrefix = "gs-"
+	ContextPrefix    = "gs-"
+	ClientCertSuffix = "-clientcert"
 )
 
 type ContextType int
@@ -30,12 +31,27 @@ func GenerateWCKubeContextName(mcKubeContextName string, wcName string) string {
 	return fmt.Sprintf("%s-%s", mcKubeContextName, wcName)
 }
 
+func GenerateWCClientCertKubeContextName(mcKubeContextName string, wcName string) string {
+	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, ClientCertSuffix)
+}
+
 // IsKubeContext checks whether the name provided,
 // matches our pattern for naming kubernetes contexts.
 func IsKubeContext(s string) (bool, ContextType) {
 	contextType := GetKubeContextType(s)
 
 	return contextType != ContextTypeNone, contextType
+}
+
+// GetClientCertContextName returns the name of the client cert context name for an identifier
+func GetClientCertContextName(identifier string) string {
+	if !strings.HasPrefix(identifier, ContextPrefix) {
+		identifier = ContextPrefix + identifier
+	}
+	if !strings.HasSuffix(identifier, ClientCertSuffix) {
+		identifier = identifier + ClientCertSuffix
+	}
+	return identifier
 }
 
 // GetCodeNameFromKubeContext gets an installation's
@@ -63,6 +79,19 @@ func GetClusterNameFromKubeContext(c string) string {
 func IsCodeName(s string) bool {
 	codeNameRegExp, _ := regexp.Compile("^[a-z]+$")
 	return codeNameRegExp.MatchString(s)
+}
+
+// IsWCCodeName checks whether a provided name is
+// a WC id with installation code name prefix.
+func IsWCCodeName(s string) bool {
+	parts := strings.Split(s, "-")
+	if len(parts) != 2 {
+		return false
+	}
+	if !IsCodeName(parts[0]) {
+		return false
+	}
+	return true
 }
 
 func GetKubeContextType(s string) ContextType {

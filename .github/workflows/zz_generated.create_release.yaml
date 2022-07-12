@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@5.1.2
+#    devctl@5.2.0
 #
 name: Create Release
 on:
@@ -254,8 +254,8 @@ jobs:
       matrix:
         platform:
           - darwin-amd64
-          - darwin-arm64
           - linux-amd64
+          - darwin-arm64
           - linux-arm64
           - windows-amd64
     env:

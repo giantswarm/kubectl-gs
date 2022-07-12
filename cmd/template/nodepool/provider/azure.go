@@ -7,19 +7,19 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
@@ -126,7 +126,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 		infrastructureRef := newCAPZMachinePoolInfraRef(azureMachinePoolCR)
 		bootstrapConfigRef := newSparkCRRef(sparkCR)
 
-		machinePoolCR := newCAPIV1Alpha3MachinePoolCR(config, infrastructureRef, bootstrapConfigRef)
+		machinePoolCR := newcapiMachinePoolCR(config, infrastructureRef, bootstrapConfigRef)
 		{
 			machinePoolCR.GetAnnotations()[annotation.NodePoolMinSize] = strconv.Itoa(config.NodesMin)
 			machinePoolCR.GetAnnotations()[annotation.NodePoolMaxSize] = strconv.Itoa(config.NodesMax)
@@ -156,8 +156,8 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 	return nil
 }
 
-func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachinePool {
-	var spot *v1alpha3.SpotVMOptions
+func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
+	var spot *infrav1.SpotVMOptions
 	if config.AzureUseSpotVms {
 		var maxPrice resource.Quantity
 		if config.AzureSpotMaxPrice > 0 {
@@ -166,12 +166,12 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 		} else {
 			maxPrice = resource.MustParse("-1")
 		}
-		spot = &v1alpha3.SpotVMOptions{
+		spot = &infrav1.SpotVMOptions{
 			MaxPrice: &maxPrice,
 		}
 	}
 
-	azureMp := &expcapzv1alpha3.AzureMachinePool{
+	azureMp := &capzexp.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachinePool",
 			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
@@ -180,16 +180,16 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterName,
-				capiv1alpha3.ClusterLabelName: config.ClusterName,
-				label.MachinePool:             config.NodePoolName,
-				label.Organization:            config.Organization,
-				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
-				label.ReleaseVersion:          config.ReleaseVersion,
+				label.Cluster:              config.ClusterName,
+				capi.ClusterLabelName:      config.ClusterName,
+				label.MachinePool:          config.NodePoolName,
+				label.Organization:         config.Organization,
+				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
+				label.ReleaseVersion:       config.ReleaseVersion,
 			},
 		},
-		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
-			Template: expcapzv1alpha3.AzureMachineTemplate{
+		Spec: capzexp.AzureMachinePoolSpec{
+			Template: capzexp.AzureMachineTemplate{
 				VMSize:        config.VMSize,
 				SSHPublicKey:  "",
 				SpotVMOptions: spot,
@@ -200,7 +200,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *expcapzv1alpha3.AzureMachi
 	return azureMp
 }
 
-func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
+func newCAPZMachinePoolInfraRef(obj client.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
 		s, err := scheme.NewScheme()
@@ -217,7 +217,7 @@ func newCAPZMachinePoolInfraRef(obj runtime.Object) *corev1.ObjectReference {
 	return infrastructureCRRef
 }
 
-func newSparkCRRef(obj runtime.Object) *corev1.ObjectReference {
+func newSparkCRRef(obj client.Object) *corev1.ObjectReference {
 	var infrastructureCRRef *corev1.ObjectReference
 	{
 		s, err := scheme.NewScheme()

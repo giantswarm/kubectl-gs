@@ -1,13 +1,13 @@
 package aws
 
 import (
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	"github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -37,12 +37,13 @@ type ClusterCRsConfig struct {
 	ReleaseVersion    string
 	Labels            map[string]string
 	NetworkPool       string
+	ServicePriority   string
 }
 
 // +k8s:deepcopy-gen=false
 
 type ClusterCRs struct {
-	Cluster         *apiv1alpha3.Cluster
+	Cluster         *capi.Cluster
 	AWSCluster      *v1alpha3.AWSCluster
 	G8sControlPlane *v1alpha3.G8sControlPlane
 	AWSControlPlane *v1alpha3.AWSControlPlane
@@ -99,11 +100,11 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awsclusters.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
-				label.AWSOperatorVersion:     c.ReleaseComponents["aws-operator"],
-				label.Cluster:                c.ClusterName,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            c.ClusterName,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
+				capi.ClusterLabelName:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSClusterSpec{
@@ -155,12 +156,12 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awscontrolplanes.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
-				label.AWSOperatorVersion:     c.ReleaseComponents["aws-operator"],
-				label.Cluster:                c.ClusterName,
-				label.ControlPlane:           c.ControlPlaneName,
-				label.Organization:           c.Owner,
-				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
+				label.Cluster:            c.ClusterName,
+				label.ControlPlane:       c.ControlPlaneName,
+				label.Organization:       c.Owner,
+				label.ReleaseVersion:     c.ReleaseVersion,
+				capi.ClusterLabelName:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
@@ -170,7 +171,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 	}
 }
 
-func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Cluster {
+func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	clusterLabels := map[string]string{}
 	{
 		for key, value := range c.Labels {
@@ -180,9 +181,13 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 		gsLabels := map[string]string{
 			label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
 			label.Cluster:                c.ClusterName,
-			apiv1alpha3.ClusterLabelName: c.ClusterName,
+			capi.ClusterLabelName:        c.ClusterName,
 			label.Organization:           c.Owner,
 			label.ReleaseVersion:         c.ReleaseVersion,
+
+			// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
+			// we use "highest" as the default service priority.
+			label.ServicePriority: c.ServicePriority,
 		}
 
 		for key, value := range gsLabels {
@@ -190,10 +195,10 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 		}
 	}
 
-	clusterCR := &apiv1alpha3.Cluster{
+	clusterCR := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.ClusterName,
@@ -203,7 +208,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 			},
 			Labels: clusterLabels,
 		},
-		Spec: apiv1alpha3.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: &corev1.ObjectReference{
 				APIVersion: obj.TypeMeta.APIVersion,
 				Kind:       obj.TypeMeta.Kind,
@@ -211,6 +216,10 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *apiv1alpha3.Clu
 				Namespace:  obj.GetNamespace(),
 			},
 		},
+	}
+
+	if val, ok := c.Labels[label.ServicePriority]; ok {
+		clusterCR.ObjectMeta.Labels[label.ServicePriority] = val
 	}
 
 	return clusterCR
@@ -234,7 +243,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 				label.ControlPlane:           c.ControlPlaneName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				apiv1alpha3.ClusterLabelName: c.ClusterName,
+				capi.ClusterLabelName:        c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{

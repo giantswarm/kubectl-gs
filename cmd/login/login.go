@@ -6,48 +6,29 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
-func (r *runner) handleMCLogin(ctx context.Context, installationIdentifier string) error {
-	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType == kubeconfig.ContextTypeMC {
-		return r.loginWithKubeContextName(ctx, installationIdentifier)
+func (r *runner) findContext(ctx context.Context, installationIdentifier string) (bool, error) {
+	if _, contextType := kubeconfig.IsKubeContext(installationIdentifier); contextType != kubeconfig.ContextTypeNone {
+		return true, r.loginWithKubeContextName(ctx, installationIdentifier)
 
-	} else if kubeconfig.IsCodeName(installationIdentifier) {
-		return r.loginWithCodeName(ctx, installationIdentifier)
+	} else if kubeconfig.IsCodeName(installationIdentifier) || kubeconfig.IsWCCodeName(installationIdentifier) {
+		return true, r.loginWithCodeName(ctx, installationIdentifier)
 
-	} else {
-		var tokenOverride string
-		if c, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
-			tokenOverride = *c.BearerToken
-		}
-		return r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
 	}
+	return false, nil
 }
 
 // loginWithKubeContextName switches the active kubernetes context to
 // the one specified.
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
-	codeName := kubeconfig.GetCodeNameFromKubeContext(contextName)
-	err := r.loginWithCodeName(ctx, codeName)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	fmt.Fprint(r.stdout, color.YellowString("Note: No need to pass the '%s' prefix. 'kubectl gs login %s' works fine.\n", kubeconfig.ContextPrefix, codeName))
-	return nil
-}
-
-// loginWithCodeName switches the active kubernetes context to
-// one with the name derived from the installation code name.
-func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	var contextAlreadySelected bool
 	var newLoginRequired bool
 
-	contextName := kubeconfig.GenerateKubeContextName(codeName)
-	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToMCcontext)
+	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToContext)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) || IsTokenRenewalFailed(err) {
@@ -56,7 +37,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 		return microerror.Mask(err)
 	}
 
-	if newLoginRequired || r.loginOptions.selfContainedMC {
+	if newLoginRequired || r.loginOptions.selfContained {
 		config, err := r.k8sConfigAccess.GetStartingConfig()
 		if err != nil {
 			return microerror.Mask(err)
@@ -79,12 +60,22 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else if !r.loginOptions.isWCLogin && r.loginOptions.switchToMCcontext {
+	} else if !r.loginOptions.isWCClientCert && r.loginOptions.switchToContext {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the management cluster of installation '%s'.\n", codeName))
+	return nil
+}
 
+// loginWithCodeName switches the active kubernetes context to
+// one with the name derived from the installation code name.
+func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
+	contextName := kubeconfig.GenerateKubeContextName(codeName)
+	err := r.loginWithKubeContextName(ctx, contextName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the cluster '%s'.\n", codeName))
 	return nil
 }
 
@@ -107,12 +98,12 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-	if r.loginOptions.selfContainedMC {
+	if r.loginOptions.selfContained {
 		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else {
 		if firstLogin {
-			if !r.loginOptions.switchToMCcontext {
+			if !r.loginOptions.switchToContext {
 				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
 				fmt.Fprintf(r.stdout, " ")
 			} else {
@@ -121,7 +112,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 			}
 		}
 
-		if !r.loginOptions.switchToMCcontext {
+		if !r.loginOptions.switchToContext {
 			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
 		} else {
 			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
@@ -152,23 +143,23 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 
 		}
 	}
-	if r.loginOptions.selfContainedMC {
+	if r.loginOptions.selfContained {
 		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
 		// Store kubeconfig and CA certificate.
-		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.loginOptions.switchToMCcontext)
+		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.flag.InternalAPI, r.loginOptions.switchToContext)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	if len(authResult.email) > 0 {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.email, i.Codename))
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.email, i.Codename))
 	} else {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on installation '%s'.\n\n", authResult.username, i.Codename))
+		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
 	}
 	return nil
 }

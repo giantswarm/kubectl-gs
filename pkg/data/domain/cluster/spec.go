@@ -3,12 +3,13 @@ package cluster
 import (
 	"context"
 
-	application "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	infrastructure "github.com/giantswarm/apiextensions/v3/pkg/apis/infrastructure/v1alpha3"
+	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type GetOptions struct {
@@ -32,7 +33,7 @@ type PatchSpec struct {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
-	Patch(context.Context, runtime.Object, PatchOptions) error
+	Patch(context.Context, client.Object, PatchOptions) error
 }
 
 type Resource interface {
@@ -53,6 +54,14 @@ type Cluster struct {
 }
 
 func (n *Cluster) Object() runtime.Object {
+	if n.Cluster != nil {
+		return n.Cluster
+	}
+
+	return nil
+}
+
+func (n *Cluster) ClientObject() client.Object {
 	if n.Cluster != nil {
 		return n.Cluster
 	}

@@ -5,7 +5,7 @@
     "items": [
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
@@ -13,6 +13,7 @@
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "1sad2",
                     "giantswarm.io/organization": "test",
+                    "giantswarm.io/service-priority": "highest",
                     "release.giantswarm.io/version": "12.0.0"
                 },
                 "annotations": {
@@ -27,12 +28,12 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneReady": false
             }
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
@@ -40,6 +41,7 @@
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "2a03f",
                     "giantswarm.io/organization": "test",
+                    "giantswarm.io/service-priority": "medium",
                     "release.giantswarm.io/version": "11.0.0"
                 },
                 "annotations": {
@@ -54,7 +56,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Created",
@@ -66,7 +68,7 @@
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
@@ -74,6 +76,7 @@
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "asd29",
                     "giantswarm.io/organization": "test",
+                    "giantswarm.io/service-priority": "lowest",
                     "release.giantswarm.io/version": "10.5.0"
                 },
                 "annotations": {
@@ -88,7 +91,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Created",
@@ -105,7 +108,7 @@
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
@@ -113,6 +116,7 @@
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "f930q",
                     "giantswarm.io/organization": "some-other",
+                    "giantswarm.io/service-priority": "",
                     "release.giantswarm.io/version": "11.0.0"
                 },
                 "annotations": {
@@ -127,12 +131,12 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false
+                "controlPlaneReady": false
             }
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
@@ -140,6 +144,7 @@
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "9f012",
                     "giantswarm.io/organization": "test",
+                    "giantswarm.io/service-priority": "",
                     "release.giantswarm.io/version": "9.0.0"
                 },
                 "annotations": {
@@ -154,7 +159,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Deleting",
@@ -166,7 +171,7 @@
         },
         {
             "kind": "Cluster",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",
@@ -174,6 +179,7 @@
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "2f0as",
                     "giantswarm.io/organization": "random",
+                    "giantswarm.io/service-priority": "",
                     "release.giantswarm.io/version": "10.5.0"
                 },
                 "annotations": {
@@ -188,7 +194,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneInitialized": false,
+                "controlPlaneReady": false,
                 "conditions": [
                     {
                         "type": "Deleting",

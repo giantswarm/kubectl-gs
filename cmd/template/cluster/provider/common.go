@@ -7,8 +7,8 @@ import (
 	"io"
 	"text/template"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -21,7 +21,7 @@ import (
 	memory "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
@@ -52,7 +52,17 @@ type AWSMachinePoolConfig struct {
 type GCPConfig struct {
 	Project           string
 	FailureDomains    []string
+	ControlPlane      GCPControlPlane
 	MachineDeployment GCPMachineDeployment
+}
+
+type GCPControlPlane struct {
+	ServiceAccount ServiceAccount
+}
+
+type ServiceAccount struct {
+	Email  string
+	Scopes []string
 }
 
 type GCPMachineDeployment struct {
@@ -109,6 +119,7 @@ type ClusterConfig struct {
 	Namespace         string
 	PodsCIDR          string
 	OIDC              OIDC
+	ServicePriority   string
 
 	Region                   string
 	BastionInstanceType      string
@@ -134,30 +145,38 @@ type templateConfig struct {
 	Data string
 }
 
-func newCAPIV1Alpha3ClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capiv1alpha3.Cluster {
-	cluster := &capiv1alpha3.Cluster{
+func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capi.Cluster {
+	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.Name,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.Name,
-				capiv1alpha3.ClusterLabelName: config.Name,
-				label.Organization:            config.Organization,
-				label.ReleaseVersion:          config.ReleaseVersion,
-				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
-				label.ClusterOperatorVersion:  config.ReleaseComponents["cluster-operator"],
+				label.Cluster:                config.Name,
+				capi.ClusterLabelName:        config.Name,
+				label.Organization:           config.Organization,
+				label.ReleaseVersion:         config.ReleaseVersion,
+				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
+				label.ClusterOperatorVersion: config.ReleaseComponents["cluster-operator"],
+
+				// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
+				// we use "highest" as the default service priority.
+				label.ServicePriority: config.ServicePriority,
 			},
 			Annotations: map[string]string{
 				annotation.ClusterDescription: config.Description,
 			},
 		},
-		Spec: capiv1alpha3.ClusterSpec{
+		Spec: capi.ClusterSpec{
 			InfrastructureRef: infrastructureRef,
 		},
+	}
+
+	if val, ok := config.Labels[label.ServicePriority]; ok {
+		cluster.ObjectMeta.Labels[label.ServicePriority] = val
 	}
 
 	return cluster

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -125,11 +125,6 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 	return certOperatorVersion, nil
 }
 
-func (r *runner) handleWCLogin(ctx context.Context) error {
-	// At the moment, the only available login option for WC is client cert
-	return r.handleWCClientCert(ctx)
-}
-
 func (r *runner) handleWCClientCert(ctx context.Context) error {
 	config := commonconfig.New(r.flag.config)
 
@@ -151,10 +146,10 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	if r.loginOptions.selfContainedWC {
+	if r.loginOptions.selfContainedClientCert {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
-	} else if !r.loginOptions.switchToWCcontext {
+	} else if !r.loginOptions.switchToClientCertContext {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
@@ -190,7 +185,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
-	clusterBasePath, err := getClusterBasePath(r.k8sConfigAccess, provider)
+	clusterBasePath, err := getWCBasePath(r.k8sConfigAccess, provider)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -216,12 +211,12 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		certCRT:       secret.Data[credentialKeyCertCRT],
 		certKey:       secret.Data[credentialKeyCertKey],
 		certCA:        secret.Data[credentialKeyCertCA],
-		clusterServer: getServerAddress(certConfig),
+		clusterServer: fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port),
 		filePath:      r.flag.SelfContained,
 		loginOptions:  r.loginOptions,
 	}
 
-	contextName, contextExists, err = r.storeWCCredentials(credentialConfig)
+	contextName, contextExists, err = r.storeWCClientCertCredentials(credentialConfig)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -275,16 +270,16 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 	return clientCert, clientCertsecret, nil
 }
 
-func (r *runner) storeWCCredentials(c credentialConfig) (string, bool, error) {
+func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool, error) {
 
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
-	if r.loginOptions.selfContainedWC && c.filePath != "" {
-		return printWCCredentials(r.k8sConfigAccess, r.fs, c)
+	if r.loginOptions.selfContainedClientCert && c.filePath != "" {
+		return printWCClientCertCredentials(r.k8sConfigAccess, r.fs, c)
 	}
-	return storeWCCredentials(r.k8sConfigAccess, r.fs, c)
+	return storeWCClientCertCredentials(r.k8sConfigAccess, r.fs, c)
 }
 
-func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (string, error) {
+func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (string, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -299,8 +294,8 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
 	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
 
-	// openstack clusters have an api.$INSTALLATION prefix
-	if provider == key.ProviderOpenStack {
+	// pure CAPI clusters have an api.$INSTALLATION prefix
+	if key.IsPureCAPIProvider(provider) {
 		if _, contextType := kubeconfig.IsKubeContext(config.CurrentContext); contextType == kubeconfig.ContextTypeMC {
 			clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
 			clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
@@ -310,13 +305,4 @@ func getClusterBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string)
 	}
 
 	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
-}
-
-func getServerAddress(certconfig clientCertConfig) string {
-	switch certconfig.provider {
-	case key.ProviderOpenStack:
-		return fmt.Sprintf("https://api.%s.%s:6443", certconfig.clusterName, certconfig.clusterBasePath)
-	default:
-		return fmt.Sprintf("https://api.%s.k8s.%s", certconfig.clusterName, certconfig.clusterBasePath)
-	}
 }

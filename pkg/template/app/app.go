@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
@@ -59,7 +59,13 @@ func NewAppCR(config Config) ([]byte, error) {
 	if config.InCluster {
 		crNamespace = config.Namespace
 		appLabels[label.AppOperatorVersion] = "0.0.0"
-		appLabels[label.ManagedBy] = "flux"
+
+		// Feels like the best place to add this label to the in-cluster
+		// App CR, since it is not technically required, because unique
+		// App CRs are not technically tied to any workload cluster.
+		if config.Cluster != "" {
+			appLabels[label.Cluster] = config.Cluster
+		}
 	} else if config.Organization != "" {
 		crNamespace = fmt.Sprintf("org-%s", config.Organization)
 		appLabels[label.Cluster] = config.Cluster

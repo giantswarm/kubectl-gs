@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -55,6 +54,12 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace strin
 				return nil, microerror.Mask(err)
 			}
 
+		case key.ProviderGCP:
+			cluster, err = s.getByNameGCP(ctx, name, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 		default:
 			return nil, microerror.Mask(invalidProviderError)
 		}
@@ -87,6 +92,12 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resou
 				return nil, microerror.Mask(err)
 			}
 
+		case key.ProviderGCP:
+			clusterCollection, err = s.getAllGCP(ctx, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 		default:
 			return nil, microerror.Mask(invalidProviderError)
 		}
@@ -95,7 +106,7 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resou
 	return clusterCollection, nil
 }
 
-func (s *Service) Patch(ctx context.Context, object runtime.Object, options PatchOptions) error {
+func (s *Service) Patch(ctx context.Context, object client.Object, options PatchOptions) error {
 	var err error
 
 	bytes, err := json.Marshal(options.PatchSpecs)

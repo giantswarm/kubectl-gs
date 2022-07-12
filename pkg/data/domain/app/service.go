@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -178,7 +178,16 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 		return microerror.Mask(err)
 	}
 
-	tarbalURL, err := appcatalog.NewTarballURL(catalog.Spec.Storage.URL, appName, appVersion)
+	var storageURL string
+	if len(catalog.Spec.Repositories) > 0 {
+		// The new way - Catalogs support more than one chart repository.
+		storageURL = catalog.Spec.Repositories[0].URL
+	} else {
+		// DEPRECATED: The legacy way - failsafe in case somebody forgets to
+		// set repositories.
+		storageURL = catalog.Spec.Storage.URL
+	}
+	tarbalURL, err := appcatalog.NewTarballURL(storageURL, appName, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}

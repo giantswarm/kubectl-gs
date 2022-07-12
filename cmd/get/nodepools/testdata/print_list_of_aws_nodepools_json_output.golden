@@ -5,7 +5,7 @@
     "items": [
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
@@ -31,12 +31,15 @@
             },
             "status": {
                 "replicas": 2,
-                "readyReplicas": 2
+                "updatedReplicas": 0,
+                "readyReplicas": 2,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
@@ -62,12 +65,15 @@
             },
             "status": {
                 "replicas": 5,
-                "readyReplicas": 2
+                "updatedReplicas": 0,
+                "readyReplicas": 2,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
@@ -93,12 +99,15 @@
             },
             "status": {
                 "replicas": 10,
-                "readyReplicas": 10
+                "updatedReplicas": 0,
+                "readyReplicas": 10,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
@@ -124,12 +133,15 @@
             },
             "status": {
                 "replicas": 3,
-                "readyReplicas": 1
+                "updatedReplicas": 0,
+                "readyReplicas": 1,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
@@ -155,12 +167,15 @@
             },
             "status": {
                 "replicas": 1,
-                "readyReplicas": 1
+                "updatedReplicas": 0,
+                "readyReplicas": 1,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         },
         {
             "kind": "MachineDeployment",
-            "apiVersion": "cluster.x-k8s.io/v1alpha3",
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",
@@ -186,7 +201,10 @@
             },
             "status": {
                 "replicas": 5,
-                "readyReplicas": 5
+                "updatedReplicas": 0,
+                "readyReplicas": 5,
+                "availableReplicas": 0,
+                "unavailableReplicas": 0
             }
         }
     ]

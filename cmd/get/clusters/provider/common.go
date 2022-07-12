@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
-	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
 const (
@@ -43,4 +43,14 @@ func getClusterOrganization(res *capi.Cluster) string {
 	}
 
 	return organization
+}
+
+func getClusterServicePriority(res *capi.Cluster) string {
+	servicePriority := naValue
+
+	if servicePriorityLabel := res.Labels[label.ServicePriority]; servicePriorityLabel != "" {
+		servicePriority = servicePriorityLabel
+	}
+
+	return servicePriority
 }

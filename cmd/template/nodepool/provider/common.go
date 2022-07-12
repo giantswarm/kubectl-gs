@@ -6,8 +6,9 @@ import (
 	"io"
 	"text/template"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -19,8 +20,8 @@ import (
 	memory "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -52,8 +53,8 @@ type NodePoolCRsConfig struct {
 	Namespace         string
 }
 
-func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *expcapiv1alpha3.MachinePool {
-	mp := &expcapiv1alpha3.MachinePool{
+func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *capiexp.MachinePool {
+	mp := &capiexp.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
 			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
@@ -62,26 +63,26 @@ func newCAPIV1Alpha3MachinePoolCR(config NodePoolCRsConfig, infrastructureRef *c
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterName,
-				capiv1alpha3.ClusterLabelName: config.ClusterName,
-				label.MachinePool:             config.NodePoolName,
-				label.Organization:            config.Organization,
-				label.ReleaseVersion:          config.ReleaseVersion,
-				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
+				label.Cluster:              config.ClusterName,
+				capi.ClusterLabelName:      config.ClusterName,
+				label.MachinePool:          config.NodePoolName,
+				label.Organization:         config.Organization,
+				label.ReleaseVersion:       config.ReleaseVersion,
+				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
 			},
 			Annotations: map[string]string{
 				annotation.MachinePoolName: config.Description,
 			},
 		},
-		Spec: expcapiv1alpha3.MachinePoolSpec{
+		Spec: capiexp.MachinePoolSpec{
 			ClusterName:    config.ClusterName,
 			Replicas:       toInt32Ptr(int32(config.NodesMin)),
 			FailureDomains: config.AvailabilityZones,
-			Template: capiv1alpha3.MachineTemplateSpec{
-				Spec: capiv1alpha3.MachineSpec{
+			Template: clusterv1.MachineTemplateSpec{
+				Spec: clusterv1.MachineSpec{
 					ClusterName:       config.ClusterName,
 					InfrastructureRef: *infrastructureRef,
-					Bootstrap: capiv1alpha3.Bootstrap{
+					Bootstrap: clusterv1.Bootstrap{
 						ConfigRef: bootstrapConfigRef,
 					},
 				},
@@ -102,9 +103,9 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			Name:      config.NodePoolName,
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                 config.ClusterName,
-				capiv1alpha3.ClusterLabelName: config.ClusterName,
-				label.ReleaseVersion:          config.ReleaseVersion,
+				label.Cluster:         config.ClusterName,
+				capi.ClusterLabelName: config.ClusterName,
+				label.ReleaseVersion:  config.ReleaseVersion,
 			},
 		},
 		Spec: corev1alpha1.SparkSpec{},

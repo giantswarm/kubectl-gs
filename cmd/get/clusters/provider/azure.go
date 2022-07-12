@@ -18,6 +18,7 @@ func GetAzureTable(clusterResource cluster.Resource) *metav1.Table {
 		{Name: "Age", Type: "string", Format: "date-time"},
 		{Name: "Condition", Type: "string"},
 		{Name: "Release", Type: "string"},
+		{Name: "Service Priority", Type: "string"},
 		{Name: "Organization", Type: "string"},
 		{Name: "Description", Type: "string"},
 	}
@@ -45,6 +46,7 @@ func getAzureClusterRow(c cluster.Cluster) metav1.TableRow {
 			output.TranslateTimestampSince(c.Cluster.CreationTimestamp),
 			getLatestCondition(c.Cluster.GetConditions()),
 			c.Cluster.Labels[label.ReleaseVersion],
+			getClusterServicePriority(c.Cluster),
 			c.Cluster.Labels[label.Organization],
 			getClusterDescription(c.Cluster),
 		},

@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1alpha3
+apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
   creationTimestamp: "2021-01-02T15:04:32Z"
@@ -19,5 +19,8 @@ spec:
       clusterName: ""
       infrastructureRef: {}
 status:
+  availableReplicas: 0
   readyReplicas: 1
   replicas: 3
+  unavailableReplicas: 0
+  updatedReplicas: 0

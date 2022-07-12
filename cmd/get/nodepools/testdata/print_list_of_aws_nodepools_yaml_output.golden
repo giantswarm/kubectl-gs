@@ -1,6 +1,6 @@
 apiVersion: v1
 items:
-- apiVersion: cluster.x-k8s.io/v1alpha3
+- apiVersion: cluster.x-k8s.io/v1beta1
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -21,9 +21,12 @@ items:
         clusterName: ""
         infrastructureRef: {}
   status:
+    availableReplicas: 0
     readyReplicas: 2
     replicas: 2
-- apiVersion: cluster.x-k8s.io/v1alpha3
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: cluster.x-k8s.io/v1beta1
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -44,9 +47,12 @@ items:
         clusterName: ""
         infrastructureRef: {}
   status:
+    availableReplicas: 0
     readyReplicas: 2
     replicas: 5
-- apiVersion: cluster.x-k8s.io/v1alpha3
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: cluster.x-k8s.io/v1beta1
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -67,9 +73,12 @@ items:
         clusterName: ""
         infrastructureRef: {}
   status:
+    availableReplicas: 0
     readyReplicas: 10
     replicas: 10
-- apiVersion: cluster.x-k8s.io/v1alpha3
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: cluster.x-k8s.io/v1beta1
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -90,9 +99,12 @@ items:
         clusterName: ""
         infrastructureRef: {}
   status:
+    availableReplicas: 0
     readyReplicas: 1
     replicas: 3
-- apiVersion: cluster.x-k8s.io/v1alpha3
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: cluster.x-k8s.io/v1beta1
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -113,9 +125,12 @@ items:
         clusterName: ""
         infrastructureRef: {}
   status:
+    availableReplicas: 0
     readyReplicas: 1
     replicas: 1
-- apiVersion: cluster.x-k8s.io/v1alpha3
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: cluster.x-k8s.io/v1beta1
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -136,7 +151,10 @@ items:
         clusterName: ""
         infrastructureRef: {}
   status:
+    availableReplicas: 0
     readyReplicas: 5
     replicas: 5
+    unavailableReplicas: 0
+    updatedReplicas: 0
 kind: List
 metadata: {}

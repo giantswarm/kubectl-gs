@@ -84,11 +84,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Provider:  provider,
 	}
 
-	resource, err := r.service.Get(ctx, getOptions)
+	c, err := r.service.Get(ctx, getOptions)
 	if cluster.IsNotFound(err) {
 		return microerror.Maskf(notFoundError, "Cluster with name '%s' cannot be found in the '%s' namespace.\n", getOptions.Name, getOptions.Namespace)
 	} else if err != nil {
 		return microerror.Mask(err)
+	}
+	resource, ok := c.(*cluster.Cluster)
+	if !ok {
+		return microerror.Maskf(notFoundError, "Cluster with name '%s' cannot be found in the '%s' namespace.\n", getOptions.Name, getOptions.Namespace)
 	}
 
 	var patches cluster.PatchOptions
@@ -123,7 +127,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		msg = fmt.Sprintf("Cluster '%s' is updated to release version '%s'\n", name, targetRelease)
 	}
 
-	err = r.service.Patch(ctx, resource.Object(), patches)
+	err = r.service.Patch(ctx, resource.ClientObject(), patches)
 	if err != nil {
 		return microerror.Mask(err)
 	}

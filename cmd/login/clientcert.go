@@ -15,10 +15,11 @@ import (
 	"sync"
 	"time"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
+	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,7 +37,7 @@ import (
 
 const (
 	credentialRetryTimeout    = 1 * time.Second
-	credentialMaxRetryTimeout = 5 * time.Minute
+	credentialMaxRetryTimeout = 10 * time.Second
 
 	credentialKeyCertCRT = "crt"
 	credentialKeyCertKey = "key"
@@ -148,7 +149,13 @@ func fetchCredential(ctx context.Context, provider string, clientCertService cli
 
 	err = backoff.Retry(o, b)
 	if clientcert.IsNotFound(err) {
-		return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
+		if provider == key.ProviderAzure {
+			// Try in default namespace for legacy azure clusters.
+			secret, err = clientCertService.GetCredential(ctx, metav1.NamespaceDefault, clientCert.CertConfig.Name)
+		}
+		if clientcert.IsNotFound(err) {
+			return nil, microerror.Maskf(credentialRetrievalTimedOut, "failed to get the client certificate credential on time")
+		}
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -242,15 +249,15 @@ func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
-// storeWCCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
+// storeWCClientCertCredentials saves the created client certificate credentials into the kubectl config.
+func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, c.clusterID)
+	contextName := kubeconfig.GenerateWCClientCertKubeContextName(mcContextName, c.clusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
 
@@ -278,6 +285,7 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c c
 		}
 
 		cluster.Server = c.clusterServer
+		cluster.CertificateAuthority = ""
 		cluster.CertificateAuthorityData = c.certCA
 
 		// Add cluster configuration to config.
@@ -299,7 +307,7 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c c
 		config.Contexts[contextName] = context
 
 		// Select newly created context as current or revert to origin context if that is desired
-		if c.loginOptions.switchToWCcontext {
+		if c.loginOptions.switchToClientCertContext {
 			config.CurrentContext = contextName
 		} else if c.loginOptions.originContext != "" {
 			config.CurrentContext = c.loginOptions.originContext
@@ -314,15 +322,15 @@ func storeWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c c
 	return contextName, contextExists, nil
 }
 
-// printWCCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
+// printWCClientCertCredentials saves the created client certificate credentials into a separate kubectl config file.
+func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
 	mcContextName := config.CurrentContext
-	contextName := kubeconfig.GenerateWCKubeContextName(mcContextName, c.clusterID)
+	contextName := kubeconfig.GenerateWCClientCertKubeContextName(mcContextName, c.clusterID)
 
 	kubeconfig := clientcmdapi.Config{
 		APIVersion: "v1",
@@ -347,10 +355,21 @@ func printWCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c c
 		},
 		CurrentContext: contextName,
 	}
-	if exists, err := afero.Exists(fs, c.filePath); exists {
-		return "", false, microerror.Maskf(fileExistsError, "The destination file %s already exists. Please specify a different destination.", c.filePath)
-	} else if err != nil {
+	// If the destination file exists, we merge the contexts contained in it with the newly created one
+	exists, err := afero.Exists(fs, c.filePath)
+	if err != nil {
 		return "", false, microerror.Mask(err)
+	}
+	if exists {
+		existingKubeConfig, err := clientcmd.LoadFromFile(c.filePath)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+		err = mergo.Merge(&kubeconfig, existingKubeConfig, mergo.WithOverride)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+		kubeconfig.CurrentContext = contextName
 	}
 	err = clientcmd.WriteToFile(kubeconfig, c.filePath)
 	if err != nil {

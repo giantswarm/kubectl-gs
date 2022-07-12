@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclienttest"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
@@ -217,6 +217,12 @@ func newCatalog(catalogName string) *applicationv1alpha1.Catalog {
 				Type: "helm",
 				URL:  fmt.Sprintf("http://%s/", address),
 			},
+			Repositories: []applicationv1alpha1.CatalogSpecRepository{
+				{
+					Type: "helm",
+					URL:  fmt.Sprintf("http://%s/", address),
+				},
+			},
 		},
 	}
 
@@ -230,7 +236,7 @@ func newAppService(t *testing.T, object ...runtime.Object) *app.Service {
 	}
 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
-		CtrlClient: fake.NewFakeClientWithScheme(clientScheme, object...),
+		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))

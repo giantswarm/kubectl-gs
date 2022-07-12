@@ -18,6 +18,7 @@ func GetOpenStackTable(clusterResource cluster.Resource) *metav1.Table {
 		{Name: "Condition", Type: "string"},
 		{Name: "Cluster Version", Type: "string"},
 		{Name: "Preinstalled Apps Version", Type: "string"},
+		{Name: "Service Priority", Type: "string"},
 		{Name: "Organization", Type: "string"},
 		{Name: "Description", Type: "string"},
 	}
@@ -56,6 +57,7 @@ func getOpenStackClusterRow(c cluster.Cluster) metav1.TableRow {
 			getLatestCondition(c.Cluster.GetConditions()),
 			clusterAppVersion,
 			defaultAppsAppVersion,
+			getClusterServicePriority(c.Cluster),
 			getClusterOrganization(c.Cluster),
 			getClusterDescription(c.Cluster),
 		},

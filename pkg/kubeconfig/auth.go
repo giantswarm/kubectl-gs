@@ -34,8 +34,11 @@ func GetAuthType(config *clientcmdapi.Config, contextName string) AuthType {
 	case authInfo.AuthProvider != nil:
 		return AuthTypeAuthProvider
 	case len(authInfo.ClientCertificate) > 0:
+		return AuthTypeClientCertificate
 	case len(authInfo.ClientCertificateData) > 0:
+		return AuthTypeClientCertificate
 	case len(authInfo.ClientKey) > 0:
+		return AuthTypeClientCertificate
 	case len(authInfo.ClientKeyData) > 0:
 		return AuthTypeClientCertificate
 	}

@@ -3,10 +3,9 @@ package provider
 import (
 	"context"
 	"io"
-	"os"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -15,7 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/key"
 )
 
-func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out *os.File, config ClusterConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
 	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
@@ -51,13 +50,14 @@ func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	crsConfig := aws.ClusterCRsConfig{
 		ClusterName: config.Name,
 
-		ExternalSNAT:   config.AWS.ExternalSNAT,
-		ControlPlaneAZ: config.ControlPlaneAZ,
-		Description:    config.Description,
-		PodsCIDR:       config.PodsCIDR,
-		Owner:          config.Organization,
-		ReleaseVersion: config.ReleaseVersion,
-		Labels:         config.Labels,
+		ExternalSNAT:    config.AWS.ExternalSNAT,
+		ControlPlaneAZ:  config.ControlPlaneAZ,
+		Description:     config.Description,
+		PodsCIDR:        config.PodsCIDR,
+		Owner:           config.Organization,
+		ReleaseVersion:  config.ReleaseVersion,
+		Labels:          config.Labels,
+		ServicePriority: config.ServicePriority,
 	}
 
 	crsConfig.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
