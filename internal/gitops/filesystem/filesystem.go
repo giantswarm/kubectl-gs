@@ -5,9 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
-	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/microerror"
 )
@@ -87,37 +85,7 @@ func (c *Creator) createDirectory(path string) error {
 }
 
 func (c *Creator) createFile(path string, data []byte) error {
-	rawData, err := c.fs.ReadFile(path)
-	if os.IsNotExist(err) {
-		//noop
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	var src map[string]interface{}
-	var dst map[string]interface{}
-
-	err = yaml.Unmarshal(rawData, &src)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = yaml.Unmarshal(data, &dst)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = mergo.Merge(&dst, src, mergo.WithAppendSlice)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	bytes, err := yaml.Marshal(dst)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = c.fs.WriteFile(path, bytes, 0600)
+	err := c.fs.WriteFile(path, data, 0600)
 	if err != nil {
 		return microerror.Mask(err)
 	}
