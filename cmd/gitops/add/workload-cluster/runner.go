@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
@@ -82,7 +82,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := filesystem.CreatorConfig{
+	creatorConfig := creator.CreatorConfig{
 		Stdout:    r.stdout,
 		FsObjects: fsObjects,
 	}
@@ -98,7 +98,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 	creatorConfig.Path += key.WorkloadClustersDirectory(r.flag.ManagementCluster, r.flag.Organization)
 
-	creator := filesystem.NewCreator(creatorConfig)
+	creator := creator.NewCreator(creatorConfig)
 
 	err = creator.Create()
 	if err != nil {

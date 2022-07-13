@@ -8,18 +8,18 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	mctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/management-cluster"
 	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/organization"
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
 
-func NewManagementCluster(config McConfig) ([]*filesystem.FsObject, error) {
+func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
 	var err error
 
-	fsObjects := []*filesystem.FsObject{
-		&filesystem.FsObject{
+	fsObjects := []*creator.FsObject{
+		&creator.FsObject{
 			RelativePath: config.Name,
 		},
 	}
@@ -32,14 +32,14 @@ func NewManagementCluster(config McConfig) ([]*filesystem.FsObject, error) {
 
 	fsObjects = append(
 		fsObjects,
-		[]*filesystem.FsObject{
-			&filesystem.FsObject{
+		[]*creator.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectorySecrets),
 			},
-			&filesystem.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectorySOPSPublicKeys),
 			},
-			&filesystem.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectoryOrganizations),
 			},
 		}...,
@@ -48,13 +48,13 @@ func NewManagementCluster(config McConfig) ([]*filesystem.FsObject, error) {
 	return fsObjects, nil
 }
 
-func NewOrganization(config OrgConfig) ([]*filesystem.FsObject, error) {
+func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
 	var err error
 
 	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
 	// containing Organization CR
-	fsObjects := []*filesystem.FsObject{
-		&filesystem.FsObject{
+	fsObjects := []*creator.FsObject{
+		&creator.FsObject{
 			RelativePath: config.Name,
 		},
 	}
@@ -69,7 +69,7 @@ func NewOrganization(config OrgConfig) ([]*filesystem.FsObject, error) {
 	// empty `kustomization.yaml`.
 	fsObjects = append(
 		fsObjects,
-		&filesystem.FsObject{
+		&creator.FsObject{
 			RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectoryWorkloadClusters),
 		},
 	)
@@ -87,15 +87,15 @@ func NewOrganization(config OrgConfig) ([]*filesystem.FsObject, error) {
 	return fsObjects, nil
 }
 
-func NewWorkloadCluster(config WcConfig) ([]*filesystem.FsObject, error) {
+func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, error) {
 	var err error
 
 	// Create Dir pointing to the `workload-clusters` directory. This should
 	// already exist at this point, as a result of Organization creation, but
 	// we need to point to this directory anyway in order to drop Kustomization
 	// there.
-	fsObjects := []*filesystem.FsObject{
-		&filesystem.FsObject{
+	fsObjects := []*creator.FsObject{
+		&creator.FsObject{
 			RelativePath: key.DirectoryWorkloadClusters,
 		},
 	}
@@ -117,14 +117,14 @@ func NewWorkloadCluster(config WcConfig) ([]*filesystem.FsObject, error) {
 	// user configuration when specified as well.
 	fsObjects = append(
 		fsObjects,
-		[]*filesystem.FsObject{
-			&filesystem.FsObject{
+		[]*creator.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s", key.DirectoryWorkloadClusters, config.Name),
 			},
-			&filesystem.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s/%s", key.DirectoryWorkloadClusters, config.Name, key.DirectoryClusterApps),
 			},
-			&filesystem.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s/%s", key.DirectoryWorkloadClusters, config.Name, key.DirectoryClusterDefinition),
 			},
 		}...,
@@ -144,10 +144,10 @@ func NewWorkloadCluster(config WcConfig) ([]*filesystem.FsObject, error) {
 	return fsObjects, nil
 }
 
-func addFilesFromTemplate(path string, templates func() map[string]string, config interface{}) ([]*filesystem.FsObject, error) {
+func addFilesFromTemplate(path string, templates func() map[string]string, config interface{}) ([]*creator.FsObject, error) {
 	var err error
 
-	fsObjects := make([]*filesystem.FsObject, 0)
+	fsObjects := make([]*creator.FsObject, 0)
 	for n, t := range templates() {
 		nameTemplate := template.Must(template.New("name").Parse(n))
 		var name bytes.Buffer
@@ -165,7 +165,7 @@ func addFilesFromTemplate(path string, templates func() map[string]string, confi
 
 		fsObjects = append(
 			fsObjects,
-			&filesystem.FsObject{
+			&creator.FsObject{
 				RelativePath: fmt.Sprintf("%s/%s.yaml", path, name.String()),
 				Data:         content.Bytes(),
 			},
