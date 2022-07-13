@@ -42,13 +42,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	config := structure.OrgConfig{
 		Name: r.flag.Name,
 	}
-	dir, err := structure.NewOrganization(config)
+
+	fsObjects, err := structure.NewOrganization(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	creatorConfig := filesystem.CreatorConfig{
-		Directory: dir,
+		FsObjects: fsObjects,
 		Stdout:    r.stdout,
 	}
 

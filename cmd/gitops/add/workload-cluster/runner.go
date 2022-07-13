@@ -77,14 +77,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
 	}
 
-	dir, err := structure.NewWorkloadCluster(config)
+	fsObjects, err := structure.NewWorkloadCluster(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	creatorConfig := filesystem.CreatorConfig{
-		Directory: dir,
 		Stdout:    r.stdout,
+		FsObjects: fsObjects,
 	}
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")

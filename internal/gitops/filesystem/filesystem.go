@@ -2,50 +2,30 @@ package filesystem
 
 import (
 	"fmt"
-	"io"
-	"os"
+	"strings"
 
 	"github.com/spf13/afero"
 
 	"github.com/giantswarm/microerror"
 )
 
-func (d *Dir) AddDirectory(dir *Dir) {
-	d.dirs = append(d.dirs, dir)
-}
-
-func (d *Dir) AddFile(name string, content []byte) {
-	d.files = append(d.files, &File{
-		name: name,
-		data: content,
-	})
-}
-
 func NewCreator(config CreatorConfig) *Creator {
 	return &Creator{
-		directory: config.Directory,
 		dryRun:    config.DryRun,
 		fs:        afero.NewOsFs(),
+		fsObjects: config.FsObjects,
 		path:      config.Path,
 		stdout:    config.Stdout,
 	}
 }
 
-func NewDir(name string) *Dir {
-	return &Dir{
-		dirs:  make([]*Dir, 0),
-		files: make([]*File, 0),
-		name:  name,
-	}
-}
-
 func (c *Creator) Create() error {
 	if c.dryRun {
-		c.directory.print(c.path, c.stdout)
+		c.print()
 		return nil
 	}
 
-	err := c.directory.write(c.path, c.fs)
+	err := c.write()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -53,73 +33,46 @@ func (c *Creator) Create() error {
 	return nil
 }
 
-func (d *Dir) print(path string, stdout io.Writer) {
-	path = fmt.Sprintf("%s/%s", path, d.name)
-
-	fmt.Fprintln(stdout, path)
-	for _, file := range d.files {
-		if file.isEmpty() {
+func (c *Creator) print() {
+	for _, o := range c.fsObjects {
+		if !strings.HasSuffix(o.RelativePath, yamlExt) {
+			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 			continue
 		}
 
-		fmt.Fprintf(stdout, "%s/%s\n", path, file.name)
-		fmt.Fprintln(stdout, string(file.data))
-	}
+		if len(o.Data) <= 1 {
+			continue
+		}
 
-	for _, dir := range d.dirs {
-		dir.print(path, stdout)
+		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
+		fmt.Fprintln(c.stdout, string(o.Data))
 	}
 }
 
-func (d *Dir) write(path string, fs afero.Fs) error {
+func (c *Creator) write() error {
 	var err error
 
-	path = fmt.Sprintf("%s/%s", path, d.name)
-
-	err = fs.Mkdir(path, 0755)
-	if err != afero.ErrFileExists {
-		//noop
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	for _, file := range d.files {
-		err = file.Write(path)
-		if err != nil {
-			return microerror.Mask(err)
+	for _, o := range c.fsObjects {
+		if !strings.HasSuffix(o.RelativePath, yamlExt) {
+			err = c.fs.Mkdir(fmt.Sprintf("%s/%s", c.path, o.RelativePath), 0755)
+			if err != afero.ErrFileExists {
+				//noop
+			} else if err != nil {
+				return microerror.Mask(err)
+			}
+			continue
 		}
-	}
 
-	for _, dir := range d.dirs {
-		err = dir.write(path, fs)
+		if len(o.Data) <= 1 {
+			continue
+		}
+
+		err := afero.WriteFile(c.fs, fmt.Sprintf("%s/%s", c.path, o.RelativePath), o.Data, 0600)
 		if err != nil {
+			fmt.Println(err)
 			return microerror.Mask(err)
 		}
 	}
 
 	return nil
-}
-
-func (f *File) Write(path string) error {
-	if f.isEmpty() {
-		return nil
-	}
-
-	err := os.WriteFile(fmt.Sprintf("%s/%s", path, f.name), f.data, 0600)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (f *File) isEmpty() bool {
-	// Due to POSIX there is an empty line on the generated
-	// template files, so empty file is of length `1` instead
-	// of `0`.
-	if len(f.data) == 0 || len(f.data) == 1 {
-		return true
-	}
-
-	return false
 }

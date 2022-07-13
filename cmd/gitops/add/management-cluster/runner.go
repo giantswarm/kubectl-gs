@@ -46,14 +46,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		RepositoryName:  r.flag.RepositoryName,
 		ServiceAccount:  r.flag.ServiceAccount,
 	}
-	dir, err := structure.NewManagementCluster(config)
+
+	fsObjects, err := structure.NewManagementCluster(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	creatorConfig := filesystem.CreatorConfig{
-		Directory: dir,
 		Stdout:    r.stdout,
+		FsObjects: fsObjects,
 	}
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")

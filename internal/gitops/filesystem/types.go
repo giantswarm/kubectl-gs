@@ -6,28 +6,26 @@ import (
 	"github.com/spf13/afero"
 )
 
-type Dir struct {
-	dirs  []*Dir
-	files []*File
-	name  string
-}
+const (
+	yamlExt = ".yaml"
+)
 
-type File struct {
-	data []byte
-	name string
+type FsObject struct {
+	RelativePath string
+	Data         []byte
 }
 
 type CreatorConfig struct {
-	Directory *Dir
-	Path      string
 	DryRun    bool
+	FsObjects []*FsObject
+	Path      string
 	Stdout    io.Writer
 }
 
 type Creator struct {
-	directory *Dir
 	dryRun    bool
 	fs        afero.Fs
+	fsObjects []*FsObject
 	path      string
 	stdout    io.Writer
 }

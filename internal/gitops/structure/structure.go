@@ -2,6 +2,7 @@ package structure
 
 import (
 	"bytes"
+	"fmt"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -14,109 +15,162 @@ import (
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
 
-func NewManagementCluster(config McConfig) (*filesystem.Dir, error) {
+func NewManagementCluster(config McConfig) ([]*filesystem.FsObject, error) {
 	var err error
 
-	// Create `MC_NAME` directory and add bunch of other
-	// directories there for SOPS keys, organizations, and secrets.
-	mcDir := filesystem.NewDir(config.Name)
-	err = addFilesFromTemplate(mcDir, mctmpl.GetManagementClusterTemplates, config)
+	fsObjects := []*filesystem.FsObject{
+		&filesystem.FsObject{
+			RelativePath: config.Name,
+		},
+	}
+
+	fileObjects, err := addFilesFromTemplate(config.Name, mctmpl.GetManagementClusterTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	fsObjects = append(fsObjects, fileObjects...)
 
-	mcDir.AddDirectory(filesystem.NewDir(key.DirectorySecrets))
-	mcDir.AddDirectory(filesystem.NewDir(key.DirectorySOPSPublicKeys))
-	mcDir.AddDirectory(filesystem.NewDir(key.DirectoryOrganizations))
+	fsObjects = append(
+		fsObjects,
+		[]*filesystem.FsObject{
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectorySecrets),
+			},
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectorySOPSPublicKeys),
+			},
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectoryOrganizations),
+			},
+		}...,
+	)
 
-	return mcDir, nil
+	return fsObjects, nil
 }
 
-func NewOrganization(config OrgConfig) (*filesystem.Dir, error) {
+func NewOrganization(config OrgConfig) ([]*filesystem.FsObject, error) {
 	var err error
 
 	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
 	// containing Organization CR
-	orgDir := filesystem.NewDir(config.Name)
-	err = addFilesFromTemplate(orgDir, orgtmpl.GetOrganizationDirectoryTemplates, config)
+	fsObjects := []*filesystem.FsObject{
+		&filesystem.FsObject{
+			RelativePath: config.Name,
+		},
+	}
+
+	fileObjects, err := addFilesFromTemplate(config.Name, orgtmpl.GetOrganizationDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	fsObjects = append(fsObjects, fileObjects...)
 
 	// Create `workload-cluster` directory and populate it with
 	// empty `kustomization.yaml`.
-	wcDir := filesystem.NewDir(key.DirectoryWorkloadClusters)
-	err = addFilesFromTemplate(wcDir, orgtmpl.GetWorkloadClustersDirectoryTemplates, config)
+	fsObjects = append(
+		fsObjects,
+		&filesystem.FsObject{
+			RelativePath: fmt.Sprintf("%s/%s", config.Name, key.DirectoryWorkloadClusters),
+		},
+	)
+
+	fileObjects, err = addFilesFromTemplate(
+		fmt.Sprintf("%s/%s", config.Name, key.DirectoryWorkloadClusters),
+		orgtmpl.GetWorkloadClustersDirectoryTemplates,
+		config,
+	)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	fsObjects = append(fsObjects, fileObjects...)
 
-	orgDir.AddDirectory(wcDir)
-
-	return orgDir, nil
+	return fsObjects, nil
 }
 
-func NewWorkloadCluster(config WcConfig) (*filesystem.Dir, error) {
+func NewWorkloadCluster(config WcConfig) ([]*filesystem.FsObject, error) {
 	var err error
 
 	// Create Dir pointing to the `workload-clusters` directory. This should
 	// already exist at this point, as a result of Organization creation, but
 	// we need to point to this directory anyway in order to drop Kustomization
 	// there.
-	wcsDir := filesystem.NewDir(key.DirectoryWorkloadClusters)
-	err = addFilesFromTemplate(wcsDir, wctmpl.GetWorkloadClusterDirectoryTemplates, config)
+	fsObjects := []*filesystem.FsObject{
+		&filesystem.FsObject{
+			RelativePath: key.DirectoryWorkloadClusters,
+		},
+	}
+
+	fileObjects, err := addFilesFromTemplate(
+		key.DirectoryWorkloadClusters,
+		wctmpl.GetWorkloadClusterDirectoryTemplates,
+		config,
+	)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	fsObjects = append(fsObjects, fileObjects...)
 
 	// Create `WC_NAME` specific directory and then add `apps` and `cluster`
 	// directories there.
 	// If base has been specified by the user, then in addition to the above, populate
 	// the `cluster` directory with cluster definition, possibly enriching it with
 	// user configuration when specified as well.
-	wcDir := filesystem.NewDir(config.Name)
-	wcsDir.AddDirectory(wcDir)
-
-	// The `apps` directory
-	wcDir.AddDirectory(filesystem.NewDir(key.DirectoryClusterApps))
-
-	// The `cluster` directory
-	wcDefDir := filesystem.NewDir(key.DirectoryClusterDefinition)
+	fsObjects = append(
+		fsObjects,
+		[]*filesystem.FsObject{
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s", key.DirectoryWorkloadClusters, config.Name),
+			},
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s/%s", key.DirectoryWorkloadClusters, config.Name, key.DirectoryClusterApps),
+			},
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s/%s", key.DirectoryWorkloadClusters, config.Name, key.DirectoryClusterDefinition),
+			},
+		}...,
+	)
 
 	// The `cluster/*` files, aka cluster definition
-	err = addFilesFromTemplate(wcDefDir, wctmpl.GetClusterDirectoryTemplates, config)
+	fileObjects, err = addFilesFromTemplate(
+		fmt.Sprintf("%s/%s/%s", key.DirectoryWorkloadClusters, config.Name, key.DirectoryClusterDefinition),
+		wctmpl.GetClusterDirectoryTemplates,
+		config,
+	)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	fsObjects = append(fsObjects, fileObjects...)
 
-	wcDir.AddDirectory(wcDefDir)
-
-	return wcsDir, nil
+	return fsObjects, nil
 }
 
-func addFilesFromTemplate(dir *filesystem.Dir, templates func() map[string]string, config interface{}) error {
+func addFilesFromTemplate(path string, templates func() map[string]string, config interface{}) ([]*filesystem.FsObject, error) {
 	var err error
 
+	fsObjects := make([]*filesystem.FsObject, 0)
 	for n, t := range templates() {
 		nameTemplate := template.Must(template.New("name").Parse(n))
 		var name bytes.Buffer
 		err = nameTemplate.Execute(&name, config)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 		contentTemplate := template.Must(template.New("files").Funcs(sprig.TxtFuncMap()).Parse(t))
 
 		var content bytes.Buffer
 		err = contentTemplate.Execute(&content, config)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 
-		dir.AddFile(
-			key.FileName(name.String()),
-			content.Bytes(),
+		fsObjects = append(
+			fsObjects,
+			&filesystem.FsObject{
+				RelativePath: fmt.Sprintf("%s/%s.yaml", path, name.String()),
+				Data:         content.Bytes(),
+			},
 		)
 	}
 
-	return nil
+	return fsObjects, nil
 }
