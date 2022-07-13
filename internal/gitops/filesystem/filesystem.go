@@ -2,9 +2,12 @@ package filesystem
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/microerror"
 )
@@ -12,7 +15,7 @@ import (
 func NewCreator(config CreatorConfig) *Creator {
 	return &Creator{
 		dryRun:    config.DryRun,
-		fs:        afero.NewOsFs(),
+		fs:        &afero.Afero{Fs: afero.NewOsFs()},
 		fsObjects: config.FsObjects,
 		path:      config.Path,
 		stdout:    config.Stdout,
@@ -50,14 +53,10 @@ func (c *Creator) print() {
 }
 
 func (c *Creator) write() error {
-	var err error
-
 	for _, o := range c.fsObjects {
 		if !strings.HasSuffix(o.RelativePath, yamlExt) {
-			err = c.fs.Mkdir(fmt.Sprintf("%s/%s", c.path, o.RelativePath), 0755)
-			if err != afero.ErrFileExists {
-				//noop
-			} else if err != nil {
+			err := c.createDirectory(fmt.Sprintf("%s/%s", c.path, o.RelativePath))
+			if err != nil {
 				return microerror.Mask(err)
 			}
 			continue
@@ -67,11 +66,60 @@ func (c *Creator) write() error {
 			continue
 		}
 
-		err := afero.WriteFile(c.fs, fmt.Sprintf("%s/%s", c.path, o.RelativePath), o.Data, 0600)
+		err := c.createFile(fmt.Sprintf("%s/%s", c.path, o.RelativePath), o.Data)
 		if err != nil {
-			fmt.Println(err)
 			return microerror.Mask(err)
 		}
+	}
+
+	return nil
+}
+
+func (c *Creator) createDirectory(path string) error {
+	err := c.fs.Mkdir(path, 0755)
+	if os.IsExist(err) {
+		//noop
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (c *Creator) createFile(path string, data []byte) error {
+	rawData, err := c.fs.ReadFile(path)
+	if os.IsNotExist(err) {
+		//noop
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	var src map[string]interface{}
+	var dst map[string]interface{}
+
+	err = yaml.Unmarshal(rawData, &src)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = yaml.Unmarshal(data, &dst)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = mergo.Merge(&dst, src, mergo.WithAppendSlice)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	bytes, err := yaml.Marshal(dst)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = c.fs.WriteFile(path, bytes, 0600)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil

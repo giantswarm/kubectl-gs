@@ -24,7 +24,7 @@ type CreatorConfig struct {
 
 type Creator struct {
 	dryRun    bool
-	fs        afero.Fs
+	fs        *afero.Afero
 	fsObjects []*FsObject
 	path      string
 	stdout    io.Writer
