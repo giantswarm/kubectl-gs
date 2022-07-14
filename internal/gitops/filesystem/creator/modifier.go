@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	jmespath "github.com/jmespath/go-jmespath"
@@ -119,14 +118,4 @@ func getUnmarshalled(src []byte, dest *interface{}) error {
 	}
 
 	return nil
-}
-
-func removeKustomizationResources(resources []string) string {
-	conditions := make([]string, 0)
-
-	for _, r := range resources {
-		conditions = append(conditions, fmt.Sprintf("?@ != '%s'", r))
-	}
-
-	return strings.Join(conditions, " && ")
 }
