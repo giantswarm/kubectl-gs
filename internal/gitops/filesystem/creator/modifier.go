@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	jmespath "github.com/jmespath/go-jmespath"
@@ -13,7 +14,6 @@ import (
 )
 
 const (
-	kustomizeResourceRemove = "resources[?@ != '%s'"
 	kustomizeResourceSearch = "resources[] | !contains(@, '%s')"
 )
 
@@ -26,7 +26,8 @@ type Modifier interface {
 }
 
 type KustomizationModifier struct {
-	ResourcesToAdd []string
+	ResourcesToAdd    []string
+	ResourcesToRemove []string
 }
 
 func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
@@ -118,4 +119,14 @@ func getUnmarshalled(src []byte, dest *interface{}) error {
 	}
 
 	return nil
+}
+
+func removeKustomizationResources(resources []string) string {
+	conditions := make([]string, 0)
+
+	for _, r := range resources {
+		conditions = append(conditions, fmt.Sprintf("?@ != '%s'", r))
+	}
+
+	return strings.Join(conditions, " && ")
 }
