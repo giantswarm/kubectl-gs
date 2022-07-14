@@ -9,6 +9,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/fatih/color v1.13.0
 	github.com/giantswarm/apiextensions-application v0.4.0
 	github.com/giantswarm/apiextensions/v6 v6.0.0
@@ -21,6 +22,7 @@ require (
 	github.com/giantswarm/micrologger v0.6.0
 	github.com/giantswarm/release-operator/v3 v3.2.0
 	github.com/google/go-cmp v0.5.8
+	github.com/jmespath/go-jmespath v0.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
@@ -59,7 +61,6 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-kit/log v0.2.0 // indirect

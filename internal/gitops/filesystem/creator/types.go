@@ -16,18 +16,18 @@ type FsObject struct {
 }
 
 type CreatorConfig struct {
-	DryRun    bool
-	FsObjects []*FsObject
-	Path      string
-	//PostModifiers []string
-	Stdout io.Writer
+	DryRun        bool
+	FsObjects     []*FsObject
+	Path          string
+	PostModifiers map[string]Modifier
+	Stdout        io.Writer
 }
 
 type Creator struct {
-	dryRun    bool
-	fs        *afero.Afero
-	fsObjects []*FsObject
-	path      string
-	//postModifiers []string
-	stdout io.Writer
+	dryRun        bool
+	fs            *afero.Afero
+	fsObjects     []*FsObject
+	path          string
+	postModifiers map[string]Modifier
+	stdout        io.Writer
 }

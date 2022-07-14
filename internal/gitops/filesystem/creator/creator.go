@@ -12,11 +12,12 @@ import (
 
 func NewCreator(config CreatorConfig) *Creator {
 	return &Creator{
-		dryRun:    config.DryRun,
-		fs:        &afero.Afero{Fs: afero.NewOsFs()},
-		fsObjects: config.FsObjects,
-		path:      config.Path,
-		stdout:    config.Stdout,
+		dryRun:        config.DryRun,
+		fs:            &afero.Afero{Fs: afero.NewOsFs()},
+		fsObjects:     config.FsObjects,
+		path:          config.Path,
+		postModifiers: config.PostModifiers,
+		stdout:        config.Stdout,
 	}
 }
 
@@ -65,6 +66,23 @@ func (c *Creator) write() error {
 		}
 
 		err := c.createFile(fmt.Sprintf("%s/%s", c.path, o.RelativePath), o.Data)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	for n, m := range c.postModifiers {
+		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		edited, err := m.Execute(rawYaml)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = c.createFile(fmt.Sprintf("%s/%s", c.path, n), edited)
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -87,7 +87,7 @@ func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
 	return fsObjects, nil
 }
 
-func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, error) {
+func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
 	var err error
 
 	// Create Dir pointing to the `workload-clusters` directory. This should
@@ -106,7 +106,7 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, error) {
 		config,
 	)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
@@ -137,11 +137,19 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, error) {
 		config,
 	)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
-	return fsObjects, nil
+	mods := map[string]creator.Modifier{
+		fmt.Sprintf("%s/%s", key.DirectoryWorkloadClusters, "kustomization.yaml"): creator.KustomizationModifier{
+			ResourcesToAdd: []string{
+				fmt.Sprintf("%s.yaml", config.Name),
+			},
+		},
+	}
+
+	return fsObjects, mods, nil
 }
 
 func addFilesFromTemplate(path string, templates func() map[string]string, config interface{}) ([]*creator.FsObject, error) {
