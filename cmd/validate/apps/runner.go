@@ -19,11 +19,12 @@ const (
 )
 
 type runner struct {
-	flag    *flag
-	logger  micrologger.Logger
-	service app.Interface
-	stdout  io.Writer
-	stderr  io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	service      app.Interface
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -45,7 +46,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	namespace, _, err := r.flag.config.ToRawKubeConfigLoader().Namespace()
+	namespace, _, err := r.commonConfig.ToRawKubeConfigLoader().Namespace()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -75,9 +76,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		valuesSchema = string(valuesSchemaFile)
 	}
 
-	config := commonconfig.New(r.flag.config)
 	{
-		err = r.getService(config)
+		err = r.getService(r.commonConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}

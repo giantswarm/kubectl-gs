@@ -73,8 +73,7 @@ type flag struct {
 	Organization      string
 	Release           string
 
-	config genericclioptions.RESTClientGetter
-	print  *genericclioptions.PrintFlags
+	print *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -110,13 +109,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagEKS)
 
-	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
 	f.print.OutputFormat = nil
 
 	// Merging current command flags and config flags,
 	// to be able to override kubectl-specific ones.
-	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
 	f.print.AddFlags(cmd)
 }
 

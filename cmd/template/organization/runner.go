@@ -10,13 +10,15 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	template "github.com/giantswarm/kubectl-gs/pkg/template/organization"
 )
 
 type runner struct {
-	flag   *flag
-	stdout io.Writer
-	stderr io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {

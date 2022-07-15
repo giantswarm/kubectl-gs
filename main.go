@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd"
-	"github.com/giantswarm/kubectl-gs/pkg/clientconfig"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/errorprinter"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -66,11 +66,10 @@ func mainE(ctx context.Context) error {
 
 	fs := afero.NewOsFs()
 
-	k8sClientConfig, err := clientconfig.GetClientConfig(fs)
+	commonConfig, err := commonconfig.GetClientConfig(fs)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	k8sConfigAccess := k8sClientConfig.ConfigAccess()
 
 	var rootCommand *cobra.Command
 	{
@@ -78,7 +77,7 @@ func mainE(ctx context.Context) error {
 			Logger:     activationLogger,
 			FileSystem: fs,
 
-			K8sConfigAccess: k8sConfigAccess,
+			CommonConfig: commonConfig,
 		}
 
 		rootCommand, err = cmd.New(c)

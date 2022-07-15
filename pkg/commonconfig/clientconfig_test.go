@@ -1,4 +1,4 @@
-package clientconfig
+package commonconfig
 
 import (
 	"fmt"
@@ -14,12 +14,17 @@ import (
 )
 
 const (
+	flagKubeconfig = "kubeconfig"
+	flagContext    = "context"
+)
+
+const (
 	existingConfigA   = "config_a.yaml"
 	existingConfigB   = "config_b.yaml"
 	nonExistingConfig = "config_c.yaml"
-	SelectedContextA  = "clean"
-	SelectedContextB  = "arbitraryname"
-	UnselectedContext = "gs-anothercodename"
+	selectedContextA  = "clean"
+	selectedContextB  = "arbitraryname"
+	unselectedContext = "gs-anothercodename"
 )
 
 func TestGetClientConfig(t *testing.T) {
@@ -35,18 +40,18 @@ func TestGetClientConfig(t *testing.T) {
 		{
 			kubeconfig:       existingConfigA,
 			expectKubeconfig: existingConfigA,
-			expectContext:    SelectedContextA,
+			expectContext:    selectedContextA,
 		},
 		{
 			kubeconfig:       existingConfigB,
 			expectKubeconfig: existingConfigB,
-			expectContext:    SelectedContextB,
+			expectContext:    selectedContextB,
 		},
 		{
 			kubeconfig:         existingConfigB,
 			kubeconfigOverride: existingConfigA,
 			expectKubeconfig:   existingConfigA,
-			expectContext:      SelectedContextA,
+			expectContext:      selectedContextA,
 		},
 		{
 			kubeconfig:         existingConfigB,
@@ -55,16 +60,16 @@ func TestGetClientConfig(t *testing.T) {
 		},
 		{
 			kubeconfig:       existingConfigA,
-			contextOverride:  UnselectedContext,
+			contextOverride:  unselectedContext,
 			expectKubeconfig: existingConfigA,
-			expectContext:    SelectedContextA,
+			expectContext:    unselectedContext,
 		},
 		{
 			kubeconfig:         existingConfigA,
 			kubeconfigOverride: existingConfigB,
-			contextOverride:    UnselectedContext,
+			contextOverride:    unselectedContext,
 			expectKubeconfig:   existingConfigB,
-			expectContext:      SelectedContextB,
+			expectContext:      unselectedContext,
 		},
 	}
 
@@ -81,17 +86,17 @@ func TestGetClientConfig(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			clientConfig, err := GetClientConfig(afero.NewOsFs())
+			commonconfig, err := GetClientConfig(afero.NewOsFs())
 			if tc.expectError && err == nil {
 				t.Fatalf("unexpected success")
 			} else if !tc.expectError && err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 
-			if clientConfig != nil {
-				k8sConfigAccess := clientConfig.ConfigAccess()
-				f := k8sConfigAccess.GetExplicitFile()
-				p := k8sConfigAccess.GetLoadingPrecedence()
+			if commonconfig != nil {
+				k8sConfigAccess := commonconfig.ToRawKubeConfigLoader()
+				f := k8sConfigAccess.ConfigAccess().GetExplicitFile()
+				p := k8sConfigAccess.ConfigAccess().GetLoadingPrecedence()
 				assert.Assert(t, p[0] == fmt.Sprintf("%s/%s", configDir, tc.expectKubeconfig))
 				if tc.kubeconfigOverride != "" {
 					assert.Assert(t, f == p[0])
@@ -99,11 +104,11 @@ func TestGetClientConfig(t *testing.T) {
 					assert.Assert(t, f == "")
 				}
 				if tc.contextOverride != "" {
-					config, err := clientConfig.RawConfig()
+					configflag, _ := commonconfig.GetConfigFlags()
 					if err != nil {
 						t.Fatal(err)
 					}
-					assert.Assert(t, config.CurrentContext == tc.expectContext)
+					assert.Assert(t, *configflag.Context == tc.expectContext)
 				}
 			}
 		})

@@ -12,19 +12,16 @@ const (
 type flag struct {
 	AllNamespaces bool
 
-	config genericclioptions.RESTClientGetter
-	print  *genericclioptions.PrintFlags
+	print *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.AllNamespaces, flagAllNamespaces, "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
 
-	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
 
 	// Merging current command flags and config flags,
 	// to be able to override kubectl-specific ones.
-	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
 	f.print.AddFlags(cmd)
 }
 

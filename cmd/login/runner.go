@@ -11,9 +11,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
 )
 
@@ -22,8 +21,8 @@ type runner struct {
 	logger micrologger.Logger
 	fs     afero.Fs
 
-	k8sConfigAccess clientcmd.ConfigAccess
-	loginOptions    LoginOptions
+	commonConfig *commonconfig.CommonConfig
+	loginOptions LoginOptions
 
 	stdout io.Writer
 	stderr io.Writer
@@ -77,7 +76,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		if !foundContext {
 			var tokenOverride string
-			if c, ok := r.flag.config.(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
+			if c, ok := r.commonConfig.GetConfigFlags(); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
 				tokenOverride = *c.BearerToken
 			}
 			err = r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
@@ -113,7 +112,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
-	config, err := r.k8sConfigAccess.GetStartingConfig()
+	config, err := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -121,7 +120,7 @@ func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
 }
 
 func (r *runner) tryToGetContextFlag(ctx context.Context) string {
-	config, ok := r.flag.config.(*genericclioptions.ConfigFlags)
+	config, ok := r.commonConfig.GetConfigFlags()
 	if !ok {
 		return ""
 	}
@@ -148,7 +147,7 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 }
 
 func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
-	config, err := r.k8sConfigAccess.GetStartingConfig()
+	config, err := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}

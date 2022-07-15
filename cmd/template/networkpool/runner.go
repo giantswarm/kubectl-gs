@@ -11,6 +11,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool/provider"
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
@@ -18,10 +19,11 @@ const (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	stdout io.Writer
-	stderr io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {

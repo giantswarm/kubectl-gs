@@ -14,8 +14,9 @@ import (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
 
 	service app.Interface
 
@@ -43,15 +44,14 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := commonconfig.New(r.flag.config)
 	{
-		err = r.getService(config)
+		err = r.getService(r.commonConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	namespace, _, err := r.flag.config.ToRawKubeConfigLoader().Namespace()
+	namespace, _, err := r.commonConfig.ToRawKubeConfigLoader().Namespace()
 	if err != nil {
 		return microerror.Mask(err)
 	}

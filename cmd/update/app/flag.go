@@ -28,12 +28,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app to update")
 	_ = cmd.Flags().MarkHidden(flagName)
 
-	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
 
 	// Merging current command flags and config flags,
 	// to be able to override kubectl-specific ones.
-	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
 	f.print.AddFlags(cmd)
 }
 

@@ -18,9 +18,10 @@ import (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	fs     afero.Fs
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	fs           afero.Fs
 
 	service app.Interface
 
@@ -47,9 +48,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := commonconfig.New(r.flag.config)
 	{
-		err = r.getService(config)
+		err = r.getService(r.commonConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -60,7 +60,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.AllNamespaces {
 			namespace = metav1.NamespaceAll
 		} else {
-			namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
+			namespace, _, err = r.commonConfig.ToRawKubeConfigLoader().Namespace()
 			if err != nil {
 				return microerror.Mask(err)
 			}

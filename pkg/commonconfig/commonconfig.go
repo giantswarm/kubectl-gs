@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/scheme"
@@ -51,6 +52,17 @@ func (cc *CommonConfig) GetProvider() (string, error) {
 	}
 
 	return provider, nil
+}
+
+func (cc *CommonConfig) ToRawKubeConfigLoader() clientcmd.ClientConfig {
+	return cc.configFlags.ToRawKubeConfigLoader()
+}
+
+func (cc *CommonConfig) GetConfigFlags() (*genericclioptions.ConfigFlags, bool) {
+	if c, ok := cc.configFlags.(*genericclioptions.ConfigFlags); ok {
+		return c, true
+	}
+	return nil, false
 }
 
 func (cc *CommonConfig) GetClient(logger micrologger.Logger) (k8sclient.Interface, error) {

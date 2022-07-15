@@ -1,4 +1,4 @@
-package clientconfig
+package commonconfig
 
 import (
 	"github.com/giantswarm/microerror"

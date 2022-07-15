@@ -13,14 +13,16 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	templatecatalog "github.com/giantswarm/kubectl-gs/pkg/template/catalog"
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	stdout io.Writer
-	stderr io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {

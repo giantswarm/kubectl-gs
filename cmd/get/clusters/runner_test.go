@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/pkg/scheme"
@@ -87,16 +88,16 @@ func Test_run(t *testing.T) {
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
 			flag := &flag{
-				print:  genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault),
-				config: genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig),
+				print: genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault),
 			}
 			out := new(bytes.Buffer)
 
 			runner := &runner{
-				service:  newClusterService(t, tc.storage...),
-				flag:     flag,
-				stdout:   out,
-				provider: key.ProviderAWS,
+				commonConfig: commonconfig.New(genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig)),
+				service:      newClusterService(t, tc.storage...),
+				flag:         flag,
+				stdout:       out,
+				provider:     key.ProviderAWS,
 			}
 
 			err := runner.run(ctx, nil, tc.args)

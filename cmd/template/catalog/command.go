@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -24,9 +25,10 @@ const (
 )
 
 type Config struct {
-	Logger micrologger.Logger
-	Stderr io.Writer
-	Stdout io.Writer
+	CommonConfig *commonconfig.CommonConfig
+	Logger       micrologger.Logger
+	Stderr       io.Writer
+	Stdout       io.Writer
 }
 
 func New(config Config) (*cobra.Command, error) {
@@ -43,10 +45,11 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		flag:   f,
-		logger: config.Logger,
-		stderr: config.Stderr,
-		stdout: config.Stdout,
+		commonConfig: config.CommonConfig,
+		flag:         f,
+		logger:       config.Logger,
+		stderr:       config.Stderr,
+		stdout:       config.Stdout,
 	}
 
 	c := &cobra.Command{

@@ -7,9 +7,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd/validate/apps"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
@@ -18,8 +18,8 @@ const (
 )
 
 type Config struct {
-	Logger          micrologger.Logger
-	K8sConfigAccess clientcmd.ConfigAccess
+	Logger       micrologger.Logger
+	CommonConfig *commonconfig.CommonConfig
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -29,8 +29,8 @@ func New(config Config) (*cobra.Command, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.K8sConfigAccess == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
+	if config.CommonConfig == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CommonConfig must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
@@ -44,10 +44,10 @@ func New(config Config) (*cobra.Command, error) {
 	var appsCmd *cobra.Command
 	{
 		c := apps.Config{
-			Logger:          config.Logger,
-			K8sConfigAccess: config.K8sConfigAccess,
-			Stderr:          config.Stderr,
-			Stdout:          config.Stdout,
+			Logger:       config.Logger,
+			CommonConfig: config.CommonConfig,
+			Stderr:       config.Stderr,
+			Stdout:       config.Stdout,
 		}
 
 		appsCmd, err = apps.New(c)
@@ -59,10 +59,11 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		flag:   f,
-		logger: config.Logger,
-		stderr: config.Stderr,
-		stdout: config.Stdout,
+		commonConfig: config.CommonConfig,
+		flag:         f,
+		logger:       config.Logger,
+		stderr:       config.Stderr,
+		stdout:       config.Stdout,
 	}
 
 	c := &cobra.Command{

@@ -12,6 +12,12 @@ func CreateFakeKubeConfig() clientcmd.ClientConfig {
 	return clientBuilder
 }
 
+func CreateFakeKubeConfigFromConfig(config *clientcmdapi.Config) clientcmd.ClientConfig {
+	clientBuilder := clientcmd.NewNonInteractiveClientConfig(*config, "clean", &clientcmd.ConfigOverrides{}, nil)
+
+	return clientBuilder
+}
+
 func CreateValidTestConfig() *clientcmdapi.Config {
 	const (
 		server = "https://anything.com:8080"

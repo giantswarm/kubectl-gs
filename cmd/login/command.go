@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/middleware"
 	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 )
@@ -82,7 +82,7 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	K8sConfigAccess clientcmd.ConfigAccess
+	CommonConfig *commonconfig.CommonConfig
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -95,7 +95,7 @@ func New(config Config) (*cobra.Command, error) {
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
 	}
-	if config.K8sConfigAccess == nil {
+	if config.CommonConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigAccess must not be empty", config)
 	}
 	if config.Stderr == nil {
@@ -112,7 +112,7 @@ func New(config Config) (*cobra.Command, error) {
 		logger: config.Logger,
 		fs:     config.FileSystem,
 
-		k8sConfigAccess: config.K8sConfigAccess,
+		commonConfig: config.CommonConfig,
 
 		stderr: config.Stderr,
 		stdout: config.Stdout,
@@ -125,7 +125,7 @@ func New(config Config) (*cobra.Command, error) {
 		Example: examples,
 		RunE:    r.Run,
 		PreRunE: middleware.Compose(
-			renewtoken.Middleware(config.K8sConfigAccess),
+			renewtoken.Middleware(config.CommonConfig.ToRawKubeConfigLoader().ConfigAccess()),
 		),
 	}
 

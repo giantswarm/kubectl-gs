@@ -6,17 +6,14 @@ import (
 )
 
 type flag struct {
-	config genericclioptions.RESTClientGetter
-	print  *genericclioptions.PrintFlags
+	print *genericclioptions.PrintFlags
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	f.config = genericclioptions.NewConfigFlags(true)
 	f.print = genericclioptions.NewPrintFlags("")
 
 	// Merging current command flags and config flags,
 	// to be able to override kubectl-specific ones.
-	f.config.(*genericclioptions.ConfigFlags).AddFlags(cmd.Flags())
 	f.print.AddFlags(cmd)
 }
 
