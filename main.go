@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd"
+	"github.com/giantswarm/kubectl-gs/pkg/clientconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/errorprinter"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -66,7 +66,11 @@ func mainE(ctx context.Context) error {
 
 	fs := afero.NewOsFs()
 
-	k8sConfigAccess := clientcmd.NewDefaultPathOptions()
+	k8sClientConfig, err := clientconfig.GetClientConfig(fs)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	k8sConfigAccess := k8sClientConfig.ConfigAccess()
 
 	var rootCommand *cobra.Command
 	{

@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get"
@@ -38,6 +39,7 @@ type Config struct {
 	FileSystem afero.Fs
 
 	K8sConfigAccess clientcmd.ConfigAccess
+	ConfigFlags     pflag.FlagSet
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -185,7 +187,7 @@ func New(config Config) (*cobra.Command, error) {
 			return nil
 		},
 	}
-
+	c.PersistentFlags().AddFlagSet(&config.ConfigFlags)
 	f.Init(c)
 
 	c.AddCommand(getCmd)

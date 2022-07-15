@@ -28,6 +28,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
 func TestLogin(t *testing.T) {
@@ -170,7 +171,7 @@ func TestLogin(t *testing.T) {
 		// Logging into non default context with argument
 		{
 			name:        "case 14",
-			startConfig: createNonDefaultTestConfig(),
+			startConfig: kubeconfig.CreateNonDefaultTestConfig(),
 			mcArg:       []string{"arbitraryname"},
 			flags: &flag{
 				WCCertTTL: "8h",
@@ -180,7 +181,7 @@ func TestLogin(t *testing.T) {
 		// Logging into non default context without argument
 		{
 			name:        "case 15",
-			startConfig: createNonDefaultTestConfig(),
+			startConfig: kubeconfig.CreateNonDefaultTestConfig(),
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
@@ -196,7 +197,7 @@ func TestLogin(t *testing.T) {
 		// Logging in without argument using context flag
 		{
 			name:        "case 17",
-			startConfig: addExtraContext(createValidTestConfig("", false)),
+			startConfig: kubeconfig.AddExtraContext(createValidTestConfig("", false)),
 			flags: &flag{
 				WCCertTTL: "8h",
 				config: &genericclioptions.ConfigFlags{
@@ -541,51 +542,6 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 		}
 	}
 
-	return config
-}
-
-func addExtraContext(config *clientcmdapi.Config) *clientcmdapi.Config {
-	const (
-		server          = "https://something.com:8080"
-		token           = "the-other-token"
-		clientid        = "id"
-		refreshToken    = "the-fresh-other-token"
-		existingcontext = "anothercodename"
-	)
-	// adding another context to the kubeconfig
-	config.Clusters["gs-"+existingcontext] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.Contexts["gs-"+existingcontext] = &clientcmdapi.Context{
-		Cluster:  "gs-" + existingcontext,
-		AuthInfo: "gs-user-" + existingcontext,
-	}
-	config.AuthInfos["gs-user-"+existingcontext] = &clientcmdapi.AuthInfo{
-		Token: token,
-	}
-	return config
-}
-
-func createNonDefaultTestConfig() *clientcmdapi.Config {
-	const (
-		server      = "https://anything.com:8080"
-		clientkey   = "the-key"
-		clientcert  = "the-cert"
-		clustername = "arbitraryname"
-	)
-
-	config := clientcmdapi.NewConfig()
-	config.Clusters[clustername] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.Contexts[clustername] = &clientcmdapi.Context{
-		Cluster:  clustername,
-		AuthInfo: "user-" + clustername,
-	}
-	config.CurrentContext = clustername
-	config.AuthInfos["user-"+clustername] = &clientcmdapi.AuthInfo{
-		ClientCertificateData: []byte(clientcert),
-		ClientKeyData:         []byte(clientkey)}
 	return config
 }
 
