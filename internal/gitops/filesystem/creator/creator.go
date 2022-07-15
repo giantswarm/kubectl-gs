@@ -10,6 +10,20 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+func (c *Creator) Create() error {
+	if c.dryRun {
+		c.print()
+		return nil
+	}
+
+	err := c.write()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
 func NewCreator(config CreatorConfig) *Creator {
 	return &Creator{
 		dryRun:        config.DryRun,
@@ -21,13 +35,26 @@ func NewCreator(config CreatorConfig) *Creator {
 	}
 }
 
-func (c *Creator) Create() error {
-	if c.dryRun {
-		c.print()
-		return nil
+func NewFsObject(path string, data []byte) *FsObject {
+	return &FsObject{
+		RelativePath: path,
+		Data:         data,
+	}
+}
+
+func (c *Creator) createDirectory(path string) error {
+	err := c.fs.Mkdir(path, 0755)
+	if os.IsExist(err) {
+		//noop
+	} else if err != nil {
+		return microerror.Mask(err)
 	}
 
-	err := c.write()
+	return nil
+}
+
+func (c *Creator) createFile(path string, data []byte) error {
+	err := c.fs.WriteFile(path, data, 0600)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -86,26 +113,6 @@ func (c *Creator) write() error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-
-	return nil
-}
-
-func (c *Creator) createDirectory(path string) error {
-	err := c.fs.Mkdir(path, 0755)
-	if os.IsExist(err) {
-		//noop
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (c *Creator) createFile(path string, data []byte) error {
-	err := c.fs.WriteFile(path, data, 0600)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	return nil

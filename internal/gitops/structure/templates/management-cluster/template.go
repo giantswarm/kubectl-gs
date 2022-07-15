@@ -10,6 +10,6 @@ var managementCluster string
 // GetManagementClusterTemplates merges .tmpl files for management cluster layer.
 func GetManagementClusterTemplates() map[string]string {
 	return map[string]string{
-		"{{ .Name }}": managementCluster,
+		"{{ .Name }}.yaml": managementCluster,
 	}
 }

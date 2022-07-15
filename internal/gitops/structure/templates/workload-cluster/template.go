@@ -25,16 +25,16 @@ var workloadCluster string
 // GetOrganizationDirectoryTemplates returns organization directory layout.
 func GetWorkloadClusterDirectoryTemplates() map[string]string {
 	return map[string]string{
-		"{{ .Name }}": workloadCluster,
+		"{{ .Name }}.yaml": workloadCluster,
 	}
 }
 
 func GetClusterDirectoryTemplates() map[string]string {
 	return map[string]string{
-		"cluster_userconfig":            clusterUserConfig,
-		"default_apps_userconfig":       defaultAppsUserConfig,
-		"kustomization":                 kustomization,
-		"patch_cluster_userconfig":      patchClusterUserconfig,
-		"patch_default_apps_userconfig": patchDefaultAppsUserconfig,
+		"cluster_userconfig.yaml":            clusterUserConfig,
+		"default_apps_userconfig.yaml":       defaultAppsUserConfig,
+		"kustomization.yaml":                 kustomization,
+		"patch_cluster_userconfig.yaml":      patchClusterUserconfig,
+		"patch_default_apps_userconfig.yaml": patchDefaultAppsUserconfig,
 	}
 }
