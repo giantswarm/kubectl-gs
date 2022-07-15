@@ -1,6 +1,6 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@5.2.0
+#    devctl@5.8.0
 #
 name: Create Release
 on:
@@ -120,11 +120,13 @@ jobs:
             echo "error: no changes in \"$file\"" >&2
             exit 1
           fi
+      - name: Set up git identity
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
       - name: Commit changes
         run: |
           file="${{ needs.gather_facts.outputs.project_go_path }}"
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
           git add $file
           git commit -m "Bump version to ${{ steps.update_project_go.outputs.new_version }}"
       - name: Push changes
@@ -167,10 +169,13 @@ jobs:
         with:
           version: ${{ needs.gather_facts.outputs.version }}
           path: ./CHANGELOG.md
+      - name: Set up git identity
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
       - name: Create tag
         run: |
           version="${{ needs.gather_facts.outputs.version }}"
-          git config --local user.name "github-actions"
           git tag "v$version" ${{ github.sha }}
       - name: Push tag
         env:
@@ -251,6 +256,7 @@ jobs:
     name: Create and upload build artifacts
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - darwin-amd64
@@ -260,7 +266,7 @@ jobs:
           - windows-amd64
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GO_VERSION: 1.17.8
+      GO_VERSION: 1.18.1
       ARTIFACT_DIR: bin-dist
       TAG: v${{ needs.gather_facts.outputs.version }}
       CODE_SIGNING_CERT_BUNDLE_BASE64: ${{ secrets.CODE_SIGNING_CERT_BUNDLE_BASE64 }}
@@ -273,7 +279,7 @@ jobs:
         uses: giantswarm/install-binary-action@v1.0.0
         with:
           binary: "architect"
-          version: "6.3.0"
+          version: "6.4.0"
       - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v2.2.0
         with:
