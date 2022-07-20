@@ -291,7 +291,7 @@ resources:
 				}
 
 				if !bytes.Equal(out.Bytes(), expected) {
-					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(out.Bytes())))
+					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), out.String()))
 				}
 			}
 

@@ -46,7 +46,7 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	}
 
 	for _, r := range km.ResourcesToAdd {
-		if ok, err := isPresent(r, "resources", structJson); ok == true && err == nil {
+		if ok, err := isPresent(r, "resources", structJson); ok && err == nil {
 			continue
 		} else if err != nil {
 			return nil, microerror.Mask(err)
