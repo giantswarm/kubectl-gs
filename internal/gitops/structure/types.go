@@ -18,7 +18,6 @@ type WcConfig struct {
 	Name                  string
 	Organization          string
 	RepositoryName        string
-	WorkloadClusters      []string
 }
 
 type OrgConfig struct {

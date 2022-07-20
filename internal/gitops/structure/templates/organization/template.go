@@ -2,6 +2,8 @@ package organization
 
 import (
 	_ "embed"
+
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
 )
 
 //go:embed organization.yaml.tmpl
@@ -11,14 +13,14 @@ var organization string
 var kustomization string
 
 // GetOrganizationDirectoryTemplates returns organization directory layout.
-func GetOrganizationDirectoryTemplates() map[string]string {
-	return map[string]string{
-		"{{ .Name }}.yaml": organization,
+func GetOrganizationDirectoryTemplates() []common.Template {
+	return []common.Template{
+		common.Template{Name: "{{ .Name }}.yaml", Data: organization},
 	}
 }
 
-func GetWorkloadClustersDirectoryTemplates() map[string]string {
-	return map[string]string{
-		"kustomization.yaml": kustomization,
+func GetWorkloadClustersDirectoryTemplates() []common.Template {
+	return []common.Template{
+		common.Template{Name: "kustomization.yaml", Data: kustomization},
 	}
 }

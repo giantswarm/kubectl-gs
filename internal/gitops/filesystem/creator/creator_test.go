@@ -66,7 +66,8 @@ spec:
 kind: Organization
 metadata:
   name: demoorg
-spec: {}`),
+spec: {}
+`),
 					),
 					NewFsObject("demoorg/workload-clusters", nil),
 					NewFsObject(
@@ -98,7 +99,7 @@ spec:
   path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
   postBuild:
     substitute:
-      cluster_name: "demomc"
+      cluster_name: "demowc"
       organization: "demoorg"
       cluster_release: "0.13.0"
       default_apps_release: "0.6.0"
@@ -107,7 +108,8 @@ spec:
   sourceRef:
     kind: GitRepository
     name: gitops-demo
-  timeout: 2m`),
+  timeout: 2m
+`),
 					),
 					NewFsObject("workload-clusters/demowc", nil),
 					NewFsObject("workload-clusters/demowc/apps", nil),

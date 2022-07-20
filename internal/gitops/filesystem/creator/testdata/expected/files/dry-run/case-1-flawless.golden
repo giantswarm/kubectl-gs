@@ -5,6 +5,7 @@ kind: Organization
 metadata:
   name: demoorg
 spec: {}
+
 /tmp/testpath/demoorg/workload-clusters
 /tmp/testpath/demoorg/workload-clusters/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1

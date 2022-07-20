@@ -10,6 +10,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
 	mctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/management-cluster"
 	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/organization"
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
@@ -142,25 +143,29 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 	return fsObjects, mods, nil
 }
 
-func addFilesFromTemplate(path string, templates func() map[string]string, config interface{}) ([]*creator.FsObject, error) {
+func addFilesFromTemplate(path string, templates func() []common.Template, config interface{}) ([]*creator.FsObject, error) {
 	var err error
 
 	fsObjects := make([]*creator.FsObject, 0)
-	for n, t := range templates() {
+	for _, t := range templates() {
 		// First, we template the name of the file
-		nameTemplate := template.Must(template.New("name").Parse(n))
+		nameTemplate := template.Must(template.New("name").Parse(t.Name))
 		var name bytes.Buffer
 		err = nameTemplate.Execute(&name, config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		contentTemplate := template.Must(template.New("files").Funcs(sprig.TxtFuncMap()).Parse(t))
+		contentTemplate := template.Must(template.New("files").Funcs(sprig.TxtFuncMap()).Parse(t.Data))
 
 		// Next, we template the file content
 		var content bytes.Buffer
 		err = contentTemplate.Execute(&content, config)
 		if err != nil {
 			return nil, microerror.Mask(err)
+		}
+
+		if len(content.Bytes()) <= 1 {
+			continue
 		}
 
 		fsObjects = append(

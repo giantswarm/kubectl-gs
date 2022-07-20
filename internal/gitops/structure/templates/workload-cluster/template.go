@@ -2,6 +2,8 @@ package organization
 
 import (
 	_ "embed"
+
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
 )
 
 //go:embed cluster_userconfig.yaml.tmpl
@@ -23,18 +25,18 @@ var patchDefaultAppsUserconfig string
 var workloadCluster string
 
 // GetOrganizationDirectoryTemplates returns organization directory layout.
-func GetWorkloadClusterDirectoryTemplates() map[string]string {
-	return map[string]string{
-		"{{ .Name }}.yaml": workloadCluster,
+func GetWorkloadClusterDirectoryTemplates() []common.Template {
+	return []common.Template{
+		common.Template{Name: "{{ .Name }}.yaml", Data: workloadCluster},
 	}
 }
 
-func GetClusterDirectoryTemplates() map[string]string {
-	return map[string]string{
-		"cluster_userconfig.yaml":            clusterUserConfig,
-		"default_apps_userconfig.yaml":       defaultAppsUserConfig,
-		"kustomization.yaml":                 kustomization,
-		"patch_cluster_userconfig.yaml":      patchClusterUserconfig,
-		"patch_default_apps_userconfig.yaml": patchDefaultAppsUserconfig,
+func GetClusterDirectoryTemplates() []common.Template {
+	return []common.Template{
+		common.Template{Name: "kustomization.yaml", Data: kustomization},
+		common.Template{Name: "cluster_userconfig.yaml", Data: clusterUserConfig},
+		common.Template{Name: "default_apps_userconfig.yaml", Data: defaultAppsUserConfig},
+		common.Template{Name: "patch_cluster_userconfig.yaml", Data: patchClusterUserconfig},
+		common.Template{Name: "patch_default_apps_userconfig.yaml", Data: patchDefaultAppsUserconfig},
 	}
 }
