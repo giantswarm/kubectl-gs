@@ -1,7 +1,7 @@
 package creator
 
 import (
-	"bytes"
+	//"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	kustomizeResourceSearch = "resources[] | !contains(@, '%s')"
+	arrayContains = "%s[] | contains(@, '%s')"
 )
 
 // My idea for now was to create some sort of modifiers
@@ -40,21 +40,25 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	}
 
 	// This is needed to use JmesPath
-	err = getUnmarshalled(rawJson, &structJson)
+	err = getUnmarshalledJson(rawJson, &structJson)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	// getResourcesListMods get list of JSONPatch operations
-	// to perform on a given file
-	resMods, err := km.getResourcesListMods(structJson)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	for _, r := range km.ResourcesToAdd {
+		if ok, err := isPresent(r, "resources", structJson); ok == true && err == nil {
+			continue
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		err = addResource(r, &rawJson)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
-	// applyResourcesListMods applies the list of JSONPatch
-	// operations from the previous step
-	rawYaml, err = km.applyResourcesListMods(rawJson, resMods)
+	rawYaml, err = yaml.JSONToYAML(rawJson)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -62,56 +66,34 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	return rawYaml, nil
 }
 
-func (km KustomizationModifier) applyResourcesListMods(input, ops []byte) ([]byte, error) {
-	patch, err := jsonpatch.DecodePatch(ops)
+func addResource(resource string, file *[]byte) error {
+	patch, err := jsonpatch.DecodePatch(addToArray("/resources", resource))
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
-	modJson, err := patch.Apply(input)
+	*file, err = patch.Apply(*file)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
-	input, err = yaml.JSONToYAML(modJson)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return input, nil
+	return nil
 }
 
-// The idea for getResourcesListMods method is to go through certain
-// KustomizationModifier lists for adding, deleting, replacing resources,
-// and based on the JmesPath search outcome produce list of JsonPatch
-// operations.
-func (km KustomizationModifier) getResourcesListMods(structJson interface{}) ([]byte, error) {
-	operations := make([][]byte, 0)
-
-	for _, r := range km.ResourcesToAdd {
-		ok, err := jmespath.Search(fmt.Sprintf(kustomizeResourceSearch, r), structJson)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		if ok.(bool) {
-			operations = append(operations, addKustomizationResources(r))
-		}
+func isPresent(resource, path string, file interface{}) (bool, error) {
+	ok, err := jmespath.Search(fmt.Sprintf(arrayContains, path, resource), file)
+	if err != nil {
+		return false, microerror.Mask(err)
 	}
 
-	operations = [][]byte{
-		[]byte(`[`),
-		bytes.Join(operations, []byte(`,`)),
-		[]byte(`]`),
-	}
-
-	return bytes.Join(operations, []byte(``)), nil
+	return ok.(bool), nil
 }
 
-func addKustomizationResources(resource string) []byte {
-	return []byte(`{ "op": "add", "path": "/resources/-", "value": "` + resource + `"}`)
+func addToArray(path, resource string) []byte {
+	return []byte(`[{ "op": "add", "path": "` + path + `/-", "value": "` + resource + `"}]`)
 }
 
-func getUnmarshalled(src []byte, dest *interface{}) error {
+func getUnmarshalledJson(src []byte, dest *interface{}) error {
 	err := json.Unmarshal(src, dest)
 	if err != nil {
 		return microerror.Mask(err)
