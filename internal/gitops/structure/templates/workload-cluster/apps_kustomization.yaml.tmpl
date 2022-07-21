@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+commonLabels:
+  giantswarm.io/cluster: ${cluster_name}
+  giantswarm.io/managed-by: flux
+kind: Kustomization
+namespace: org-${organization}
+patches:
+  - path: patch_cluster_config.yaml
+    target:
+      kind: App
+resources: []

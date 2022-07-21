@@ -117,6 +117,17 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 		}...,
 	)
 
+	// The `apps/*` pre-configuration
+	fileObjects, err = addFilesFromTemplate(
+		key.GetWCAppsDir(config.Name),
+		wctmpl.GetAppsDirectoryTemplates,
+		config,
+	)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+	fsObjects = append(fsObjects, fileObjects...)
+
 	// The `cluster/*` files, aka cluster definition, including `kustomization.yaml`,
 	// patches, etc.
 	fileObjects, err = addFilesFromTemplate(

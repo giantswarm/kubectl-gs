@@ -1,0 +1,12 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: ignored
+spec:
+  kubeConfig:
+    context:
+      name: ${cluster_name}-admin@${cluster_name}
+    inCluster: false
+    secret:
+      name: ${cluster_name}-kubeconfig
+      namespace: org-${organization}

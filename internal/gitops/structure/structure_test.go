@@ -177,6 +177,14 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				{
 					RelativePath: "workload-clusters/demowc/cluster",
 				},
+				{
+					RelativePath: "workload-clusters/demowc/apps/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+				},
+				{
+					RelativePath: "workload-clusters/demowc/apps/patch_cluster_config.yaml",
+					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
+				},
 			},
 		},
 		{
@@ -206,6 +214,14 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "workload-clusters/demowc/cluster",
+				},
+				{
+					RelativePath: "workload-clusters/demowc/apps/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+				},
+				{
+					RelativePath: "workload-clusters/demowc/apps/patch_cluster_config.yaml",
+					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
 				},
 				{
 					RelativePath: "workload-clusters/demowc/cluster/kustomization.yaml",
@@ -243,6 +259,14 @@ topKey:
 				},
 				{
 					RelativePath: "workload-clusters/demowc/cluster",
+				},
+				{
+					RelativePath: "workload-clusters/demowc/apps/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+				},
+				{
+					RelativePath: "workload-clusters/demowc/apps/patch_cluster_config.yaml",
+					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
 				},
 				{
 					RelativePath: "workload-clusters/demowc/cluster/kustomization.yaml",
