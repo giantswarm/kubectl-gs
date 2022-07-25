@@ -41,26 +41,35 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/apps/add_appcr.md`
   kubectl gs gitops add app \
   --app hello-world-app \
   --catalog giantswarm \
-  --name dummy-hello-world \
+  --name hello-world \
   --namespace default \
-  --management-cluster mymc \
-  --organization myorg \
+  --management-cluster demowc \
+  --organization demoorg \
   --repository gitops-demo \
   --version 0.3.0 \
-  --workload-cluster dummy
+  --workload-cluster demowc
 
   # Add hello-world App to dummy Workload Cluster, include user configuration
   kubectl gs gitops add app \
   --app hello-world-app \
   --catalog giantswarm \
-  --name dummy-hello-world \
+  --name hello-world \
   --namespace default \
-  --management-cluster mymc \
-  --organization myorg \
+  --management-cluster demomc \
+  --organization demoorg \
   --repository gitops-demo \
   --user-configmap /tmp/hello-world-app-values.yaml \
   --version 0.3.0 \
-  --workload-cluster dummy`
+  --workload-cluster demowc
+
+  # Add hello-world App from the base
+  kubectl gs gitops add app \
+  --base base/apps/hello-world \
+  --management-cluster demomc \
+  --organization demoorg \
+  --repository gitops-demo \
+  --user-configmap /tmp/hello-world-app-values.yaml \
+  --workload-cluster demowc`
 )
 
 type Config struct {
