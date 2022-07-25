@@ -16,6 +16,9 @@ const (
 	FileKustomization = "kustomization.yaml"
 )
 
+// TBD: Better naming of the functions and explanations, right now it may be confusing,
+// because names are sometimes very similar, also paths themselves are relative what may
+// be extra confusing.
 func GetAppsKustomization() string {
 	return fmt.Sprintf("%s/%s", DirectoryClusterApps, FileKustomization)
 }

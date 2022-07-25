@@ -29,6 +29,8 @@ type KustomizationModifier struct {
 	ResourcesToRemove []string
 }
 
+// Execute is the interface used by the creator to execute post modifier.
+// It accepts and returns raw bytes.
 func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	var err error
 
@@ -66,6 +68,8 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	return rawYaml, nil
 }
 
+// addResource uses JSONPatch to add an element to an resources
+// array of kustomization.yaml.
 func addResource(resource string, file *[]byte) error {
 	patch, err := jsonpatch.DecodePatch(addToArray("/resources", resource))
 	if err != nil {
@@ -80,6 +84,8 @@ func addResource(resource string, file *[]byte) error {
 	return nil
 }
 
+// isPresent uses JmesPath to check for element existance in
+// within the array.
 func isPresent(resource, path string, file interface{}) (bool, error) {
 	ok, err := jmespath.Search(fmt.Sprintf(arrayContains, path, resource), file)
 	if err != nil {
@@ -89,10 +95,12 @@ func isPresent(resource, path string, file interface{}) (bool, error) {
 	return ok.(bool), nil
 }
 
+// addToArray returns JSONpatch for adding an element to an array.
 func addToArray(path, resource string) []byte {
 	return []byte(`[{ "op": "add", "path": "` + path + `/-", "value": "` + resource + `"}]`)
 }
 
+// getUnmarshalledJson returns unmarshalled JSON.
 func getUnmarshalledJson(src []byte, dest *interface{}) error {
 	err := json.Unmarshal(src, dest)
 	if err != nil {

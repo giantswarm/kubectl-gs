@@ -17,9 +17,13 @@ import (
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
 
+// NewManagementCluster creates a new App directory structure.
 func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
 	var err error
 
+	// We start from the `apps` directory despite the fact this directory
+	// should already exist at this point. We then create the app directory
+	// and add bunch of files there, depending on the configuration provided.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(key.DirectoryClusterApps, nil),
 		creator.NewFsObject(key.GetWCAppDir(config.Name), nil),
@@ -36,6 +40,9 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 
 	fsObjects = append(fsObjects, fileObjects...)
 
+	// Once files are added, we then need to add resources to the
+	// `apps/kustomization.yaml`, either one by one, or the whole
+	// directory.
 	resources := make([]string, 0)
 	if config.Base == "" {
 		resources = append(resources, fmt.Sprintf("%s/appcr.yaml", config.Name))
@@ -51,8 +58,7 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 		resources = append(resources, fmt.Sprintf("%s/secret.yaml", config.Name))
 	}
 
-	// After creating all the files and directories, we need creator to run
-	// post modifiers, so apps is included in the `apps/kustomization.yaml`
+	// Create Kustomization post modifiers
 	mods := map[string]creator.Modifier{
 		key.GetAppsKustomization(): creator.KustomizationModifier{
 			ResourcesToAdd: resources,
@@ -62,6 +68,8 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 	return fsObjects, mods, nil
 }
 
+// NewManagementCluster creates a new Management Cluster directory
+// structure.
 func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
 	var err error
 
@@ -87,6 +95,8 @@ func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
 	return fsObjects, nil
 }
 
+// NewOrganization creates a new Organization directory
+// structure.
 func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
 	var err error
 
@@ -126,6 +136,8 @@ func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
 	return fsObjects, nil
 }
 
+// NewWorkloadCluster creates a new Workload Cluster directory
+// structure.
 func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
 	var err error
 
@@ -200,6 +212,8 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 	return fsObjects, mods, nil
 }
 
+// addFilesFromTemplate add files from the given template to the
+// given directory.
 func addFilesFromTemplate(path string, templates func() []common.Template, config interface{}) ([]*creator.FsObject, error) {
 	var err error
 
