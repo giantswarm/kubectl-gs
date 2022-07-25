@@ -1,0 +1,9 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: demowc-hello-world
+spec:
+  catalog: giantswarm
+  name: hello-world
+  namespace: default
+  version: 0.3.0 # {"$imagepolicy": "default:hello-world:tag"}

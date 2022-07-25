@@ -16,6 +16,10 @@ const (
 	FileKustomization = "kustomization.yaml"
 )
 
+func GetAppsKustomization() string {
+	return fmt.Sprintf("%s/%s", DirectoryClusterApps, FileKustomization)
+}
+
 func GetOrgDir(path string) string {
 	return fmt.Sprintf("%s/%s", path, DirectoryOrganizations)
 }
@@ -30,6 +34,10 @@ func GetSopsDir(path string) string {
 
 func GetWCDir(name string) string {
 	return fmt.Sprintf("%s/%s", DirectoryWorkloadClusters, name)
+}
+
+func GetWCAppDir(name string) string {
+	return fmt.Sprintf("%s/%s", DirectoryClusterApps, name)
 }
 
 func GetWCAppsDir(name string) string {
@@ -54,6 +62,18 @@ func FileName(name string) string {
 
 func OrganizationsDirectory(mc string) string {
 	return fmt.Sprintf("%s/%s/%s", DirectoryManagementClusters, mc, DirectoryOrganizations)
+}
+
+func WorkloadClusterAppDirectory(mc, org, wc string) string {
+	return fmt.Sprintf(
+		"%s/%s/%s/%s/%s/%s",
+		DirectoryManagementClusters,
+		mc,
+		DirectoryOrganizations,
+		org,
+		DirectoryWorkloadClusters,
+		wc,
+	)
 }
 
 func WorkloadClustersDirectory(mc, org string) string {

@@ -14,6 +14,219 @@ type FsObjectExpected struct {
 	GoldenFile   string
 }
 
+func Test_NewApp(t *testing.T) {
+	testCases := []struct {
+		name            string
+		config          AppConfig
+		expectedObjects []FsObjectExpected
+	}{
+		{
+			name: "flawless",
+			config: AppConfig{
+				App:             "hello-world",
+				Catalog:         "giantswarm",
+				Name:            "hello-world",
+				Namespace:       "default",
+				Organization:    "demoorg",
+				Version:         "0.3.0",
+				WorkloadCluster: "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "apps",
+				},
+				{
+					RelativePath: "apps/hello-world",
+				},
+				{
+					RelativePath: "apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/0-appcr.golden",
+				},
+			},
+		},
+		{
+			name: "flawless from base",
+			config: AppConfig{
+				Base:            "base/apps/hello-world",
+				Name:            "hello-world",
+				Organization:    "demoorg",
+				Version:         "0.3.0",
+				WorkloadCluster: "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "apps",
+				},
+				{
+					RelativePath: "apps/hello-world",
+				},
+				{
+					RelativePath: "apps/hello-world/kustomization.yaml",
+					GoldenFile:   "testdata/expected/1-hello_world_kustomization.golden",
+				},
+			},
+		},
+		{
+			name: "flawless with cm configuration",
+			config: AppConfig{
+				App:          "hello-world",
+				Catalog:      "giantswarm",
+				Name:         "hello-world",
+				Namespace:    "default",
+				Organization: "demoorg",
+				UserValuesConfigMap: string([]byte(`testKey: testValue
+topKey:
+  netedKey: nestedValue`)),
+				Version:         "0.3.0",
+				WorkloadCluster: "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "apps",
+				},
+				{
+					RelativePath: "apps/hello-world",
+				},
+				{
+					RelativePath: "apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/2-appcr.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/configmap.yaml",
+					GoldenFile:   "testdata/expected/2-configmap.golden",
+				},
+			},
+		},
+		{
+			name: "flawless with secret configuration",
+			config: AppConfig{
+				App:          "hello-world",
+				Catalog:      "giantswarm",
+				Name:         "hello-world",
+				Namespace:    "default",
+				Organization: "demoorg",
+				UserValuesSecret: string([]byte(`testKey: testValue
+topKey:
+  netedKey: nestedValue`)),
+				Version:         "0.3.0",
+				WorkloadCluster: "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "apps",
+				},
+				{
+					RelativePath: "apps/hello-world",
+				},
+				{
+					RelativePath: "apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/3-appcr.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/secret.yaml",
+					GoldenFile:   "testdata/expected/3-secret.golden",
+				},
+			},
+		},
+		{
+			name: "flawless from base with cm configuration",
+			config: AppConfig{
+				Base:         "base/apps/hello-world",
+				Name:         "hello-world",
+				Organization: "demoorg",
+				UserValuesConfigMap: string([]byte(`testKey: testValue
+topKey:
+  netedKey: nestedValue`)),
+				WorkloadCluster: "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "apps",
+				},
+				{
+					RelativePath: "apps/hello-world",
+				},
+				{
+					RelativePath: "apps/hello-world/configmap.yaml",
+					GoldenFile:   "testdata/expected/2-configmap.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/kustomization.yaml",
+					GoldenFile:   "testdata/expected/4-hello_world_kustomization.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/patch_app_userconfig.yaml",
+					GoldenFile:   "testdata/expected/4-patch_app_userconfig.golden",
+				},
+			},
+		},
+		{
+			name: "flawless from base with secret configuration",
+			config: AppConfig{
+				Base:         "base/apps/hello-world",
+				Name:         "hello-world",
+				Organization: "demoorg",
+				UserValuesSecret: string([]byte(`testKey: testValue
+topKey:
+  netedKey: nestedValue`)),
+				WorkloadCluster: "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "apps",
+				},
+				{
+					RelativePath: "apps/hello-world",
+				},
+				{
+					RelativePath: "apps/hello-world/secret.yaml",
+					GoldenFile:   "testdata/expected/3-secret.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/kustomization.yaml",
+					GoldenFile:   "testdata/expected/5-hello_world_kustomization.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/patch_app_userconfig.yaml",
+					GoldenFile:   "testdata/expected/5-patch_app_userconfig.golden",
+				},
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
+			fsObjects, _, err := NewApp(tc.config)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			if len(fsObjects) != len(tc.expectedObjects) {
+				t.Fatalf("expected %d objects, got: %d", len(tc.expectedObjects), len(fsObjects))
+			}
+
+			for i, e := range tc.expectedObjects {
+				if e.RelativePath != fsObjects[i].RelativePath {
+					t.Fatalf("expected path %s, got %s", e.RelativePath, fsObjects[i].RelativePath)
+				}
+
+				if e.GoldenFile == "" {
+					continue
+				}
+
+				expected, err := ioutil.ReadFile(e.GoldenFile)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err.Error())
+				}
+
+				if !bytes.Equal(fsObjects[i].Data, expected) {
+					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(fsObjects[i].Data)))
+				}
+			}
+		})
+	}
+}
+
 func Test_NewManagementCluster(t *testing.T) {
 	testCases := []struct {
 		name            string

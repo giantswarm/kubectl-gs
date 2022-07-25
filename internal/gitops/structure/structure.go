@@ -10,11 +10,57 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
+	apptmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/app"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
 	mctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/management-cluster"
 	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/organization"
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
+
+func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
+	var err error
+
+	fsObjects := []*creator.FsObject{
+		creator.NewFsObject(key.DirectoryClusterApps, nil),
+		creator.NewFsObject(key.GetWCAppDir(config.Name), nil),
+	}
+
+	fileObjects, err := addFilesFromTemplate(
+		key.GetWCAppDir(config.Name),
+		apptmpl.GetAppDirectoryTemplates,
+		config,
+	)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	fsObjects = append(fsObjects, fileObjects...)
+
+	resources := make([]string, 0)
+	if config.Base == "" {
+		resources = append(resources, fmt.Sprintf("%s/appcr.yaml", config.Name))
+	} else {
+		resources = append(resources, config.Name)
+	}
+
+	if config.Base == "" && config.UserValuesConfigMap != "" {
+		resources = append(resources, fmt.Sprintf("%s/configmap.yaml", config.Name))
+	}
+
+	if config.Base == "" && config.UserValuesSecret != "" {
+		resources = append(resources, fmt.Sprintf("%s/secret.yaml", config.Name))
+	}
+
+	// After creating all the files and directories, we need creator to run
+	// post modifiers, so apps is included in the `apps/kustomization.yaml`
+	mods := map[string]creator.Modifier{
+		key.GetAppsKustomization(): creator.KustomizationModifier{
+			ResourcesToAdd: resources,
+		},
+	}
+
+	return fsObjects, mods, nil
+}
 
 func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
 	var err error

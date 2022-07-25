@@ -1,0 +1,24 @@
+{{- if not .Base -}}
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: {{ .WorkloadCluster}}-{{ .Name }}
+spec:
+  catalog: {{ .Catalog }}
+  name: {{ .App }}
+  namespace: {{ .Namespace }}
+  version: {{ .Version }} # {"$imagepolicy": "default:{{ .Name }}:tag"}
+{{- if or .UserValuesConfigMap .UserValuesSecret }}
+  userConfig:
+{{- if .UserValuesConfigMap }}
+    configMap:
+      name: {{ .WorkloadCluster}}-{{ .Name }}-user-values
+      namespace: org-{{ .Organization }}
+{{- end }}
+{{- if .UserValuesSecret }}
+    secret:
+      name: {{ .WorkloadCluster}}-{{ .Name }}-user-values
+      namespace: org-{{ .Organization }}
+{{- end }}
+{{- end }}
+{{- end }}

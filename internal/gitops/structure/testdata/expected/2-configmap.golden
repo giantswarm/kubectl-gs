@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  values: |
+    testKey: testValue
+    topKey:
+      netedKey: nestedValue
+kind: ConfigMap
+metadata:
+  name: demowc-hello-world-user-values
+  namespace: org-demoorg
