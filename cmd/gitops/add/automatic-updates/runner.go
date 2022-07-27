@@ -1,4 +1,4 @@
-package org
+package autoupdate
 
 import (
 	"context"
@@ -39,18 +39,26 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.OrgConfig{
-		Name: r.flag.Name,
+	var err error
+
+	config := structure.AutomaticUpdateConfig{
+		App:               r.flag.App,
+		ManagementCluster: r.flag.ManagementCluster,
+		Organization:      r.flag.Organization,
+		Repository:        r.flag.Repository,
+		WorkloadCluster:   r.flag.WorkloadCluster,
+		VersionRepository: r.flag.VersionRepository,
 	}
 
-	fsObjects, err := structure.NewOrganization(config)
+	fsObjects, fsModifiers, err := structure.NewAutomaticUpdate(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	creatorConfig := creator.CreatorConfig{
-		FsObjects: fsObjects,
-		Stdout:    r.stdout,
+		Stdout:        r.stdout,
+		FsObjects:     fsObjects,
+		PostModifiers: fsModifiers,
 	}
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
@@ -62,9 +70,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if localPathFlag != nil {
 		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
 	}
-	creatorConfig.Path += key.GetRootOrganizationsDirectory(r.flag.MCName)
+	creatorConfig.Path += key.GetRootWorkloadClusterDirectory(
+		r.flag.ManagementCluster,
+		r.flag.Organization,
+		r.flag.WorkloadCluster,
+	)
 
 	creator := creator.NewCreator(creatorConfig)
+
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)

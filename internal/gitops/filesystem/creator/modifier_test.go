@@ -49,6 +49,58 @@ resources:
 				},
 			},
 		},
+		{
+			name: "add comment for automatic updates",
+			expected: []byte(`apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: demowc-hello-world
+spec:
+  version: 0.3.0 # {"$imagepolicy": "default:demowc-hello-world:tag"}
+  catalog: giantswarm
+  name: hello-world
+  namespace: default
+`),
+			input: []byte(`apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: demowc-hello-world
+spec:
+  version: 0.3.0
+  catalog: giantswarm
+  name: hello-world
+  namespace: default
+`),
+			modifier: AppModifier{
+				ImagePolicy: "demowc-hello-world",
+			},
+		},
+		{
+			name: "do not change already existing automatic updates",
+			expected: []byte(`apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: demowc-hello-world
+spec:
+  version: 0.3.0 # {"$imagepolicy": "default:demowc-hello-world:tag"}
+  catalog: giantswarm
+  name: hello-world
+  namespace: default
+`),
+			input: []byte(`apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: demowc-hello-world
+spec:
+  version: 0.3.0 # {"$imagepolicy": "default:demowc-hello-world:tag"}
+  catalog: giantswarm
+  name: hello-world
+  namespace: default
+`),
+			modifier: AppModifier{
+				ImagePolicy: "demowc-hello-world",
+			},
+		},
 	}
 
 	for i, tc := range testCases {

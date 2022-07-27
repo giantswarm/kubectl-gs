@@ -16,8 +16,8 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&f.MCName, flagMCName, "", "Management Cluster the Organization belongs to")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "Organization name")
+	cmd.Flags().StringVar(&f.MCName, flagMCName, "", "Management Cluster the Organization belongs to.")
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Organization name.")
 }
 
 func (f *flag) Validate() error {

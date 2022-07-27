@@ -18,6 +18,15 @@ type AppConfig struct {
 	Version             string
 }
 
+type AutomaticUpdateConfig struct {
+	App               string
+	ManagementCluster string
+	Organization      string
+	Repository        string
+	WorkloadCluster   string
+	VersionRepository string
+}
+
 type McConfig struct {
 	Name            string
 	RefreshInterval string

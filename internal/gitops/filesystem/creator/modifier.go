@@ -4,6 +4,7 @@ import (
 	//"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	jmespath "github.com/jmespath/go-jmespath"
@@ -13,7 +14,9 @@ import (
 )
 
 const (
-	arrayContains = "%s[] | contains(@, '%s')"
+	appVersionLocator = `version:\s([v0-9.]*).*\n`
+	appVersionUpdater = "version: $1 # {\"$$imagepolicy\": \"default:%s:tag\"}\n"
+	arrayContains     = "%s[] | contains(@, '%s')"
 )
 
 // My idea for now was to create some sort of modifiers
@@ -24,9 +27,23 @@ type Modifier interface {
 	Execute([]byte) ([]byte, error)
 }
 
+type AppModifier struct {
+	ImagePolicy string
+}
+
 type KustomizationModifier struct {
 	ResourcesToAdd    []string
 	ResourcesToRemove []string
+}
+
+func (am AppModifier) Execute(rawYaml []byte) ([]byte, error) {
+
+	if am.ImagePolicy != "" {
+		re := regexp.MustCompile(appVersionLocator)
+		rawYaml = re.ReplaceAll(rawYaml, []byte(fmt.Sprintf(appVersionUpdater, am.ImagePolicy)))
+	}
+
+	return rawYaml, nil
 }
 
 // Execute is the interface used by the creator to execute post modifier.

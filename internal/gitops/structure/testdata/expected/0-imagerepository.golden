@@ -1,0 +1,7 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageRepository
+metadata:
+  name: demowc-hello-world
+spec:
+  image: quay.io/giantswarm/hello-world
+  interval: 10m0s

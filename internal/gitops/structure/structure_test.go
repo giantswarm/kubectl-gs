@@ -227,6 +227,75 @@ topKey:
 	}
 }
 
+func Test_NewAutomaticUpdate(t *testing.T) {
+	testCases := []struct {
+		name            string
+		config          AutomaticUpdateConfig
+		expectedObjects []FsObjectExpected
+	}{
+		{
+			name: "flawless",
+			config: AutomaticUpdateConfig{
+				App:               "hello-world",
+				ManagementCluster: "demomc",
+				Organization:      "demoorg",
+				Repository:        "gitops-demo",
+				VersionRepository: "quay.io/giantswarm/hello-world",
+				WorkloadCluster:   "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "automatic-updates",
+				},
+				{
+					RelativePath: "automatic-updates/imageupdate.yaml",
+					GoldenFile:   "testdata/expected/0-imageupdate.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/imagepolicy.yaml",
+					GoldenFile:   "testdata/expected/0-imagepolicy.golden",
+				},
+				{
+					RelativePath: "apps/hello-world/imagerepository.yaml",
+					GoldenFile:   "testdata/expected/0-imagerepository.golden",
+				},
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
+			fsObjects, _, err := NewAutomaticUpdate(tc.config)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			if len(fsObjects) != len(tc.expectedObjects) {
+				t.Fatalf("expected %d objects, got: %d", len(tc.expectedObjects), len(fsObjects))
+			}
+
+			for i, e := range tc.expectedObjects {
+				if e.RelativePath != fsObjects[i].RelativePath {
+					t.Fatalf("expected path %s, got %s", e.RelativePath, fsObjects[i].RelativePath)
+				}
+
+				if e.GoldenFile == "" {
+					continue
+				}
+
+				expected, err := ioutil.ReadFile(e.GoldenFile)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err.Error())
+				}
+
+				if !bytes.Equal(fsObjects[i].Data, expected) {
+					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(fsObjects[i].Data)))
+				}
+			}
+		})
+	}
+}
+
 func Test_NewManagementCluster(t *testing.T) {
 	testCases := []struct {
 		name            string

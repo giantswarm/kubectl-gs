@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	apptmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/app"
+	updatetmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/automatic-updates"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
 	mctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/management-cluster"
 	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/organization"
@@ -26,11 +27,11 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 	// and add bunch of files there, depending on the configuration provided.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(key.DirectoryClusterApps, nil),
-		creator.NewFsObject(key.GetWCAppDir(config.Name), nil),
+		creator.NewFsObject(key.GetWcAppDir(config.Name), nil),
 	}
 
 	fileObjects, err := addFilesFromTemplate(
-		key.GetWCAppDir(config.Name),
+		key.GetWcAppDir(config.Name),
 		apptmpl.GetAppDirectoryTemplates,
 		config,
 	)
@@ -45,7 +46,7 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 	// directory.
 	resources := make([]string, 0)
 	if config.Base == "" {
-		resources = append(resources, fmt.Sprintf("%s/appcr.yaml", config.Name))
+		resources = append(resources, fmt.Sprintf("%s/appcr.yaml # aaa", config.Name))
 	} else {
 		resources = append(resources, config.Name)
 	}
@@ -60,8 +61,61 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 
 	// Create Kustomization post modifiers
 	mods := map[string]creator.Modifier{
-		key.GetAppsKustomization(): creator.KustomizationModifier{
+		key.GetWcAppsKustomizationFile(): creator.KustomizationModifier{
 			ResourcesToAdd: resources,
+		},
+	}
+
+	return fsObjects, mods, nil
+}
+
+// NewImageUpdate configures app for automated updates
+func NewAutomaticUpdate(config AutomaticUpdateConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
+	var err error
+
+	// We start from the `WC_NAME` directory, because we must create the
+	// `automatic-updates` directory.
+	fsObjects := []*creator.FsObject{
+		creator.NewFsObject(key.DirectoryAutomaticUpdates, nil),
+	}
+
+	fileObjects, err := addFilesFromTemplate(
+		key.DirectoryAutomaticUpdates,
+		updatetmpl.GetAutomaticUpdatesTemplates,
+		config,
+	)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	fsObjects = append(fsObjects, fileObjects...)
+
+	// Next we add `Image*` resources to the `APP_NAME` directory
+	fileObjects, err = addFilesFromTemplate(
+		key.GetWcAppDir(config.App),
+		updatetmpl.GetAppImageUpdatesTemplates,
+		config,
+	)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+	fsObjects = append(fsObjects, fileObjects...)
+
+	// Once files are added, we then need to add resources to the
+	// `apps/kustomization.yaml`, and also update App CR with the
+	// automatic updates comments
+	resources := []string{
+		fmt.Sprintf("%s/imagepolicy.yaml", config.App),
+		fmt.Sprintf("%s/imagerepository.yaml", config.App),
+	}
+
+	// Create Kustomization and App post modifiers
+	mods := map[string]creator.Modifier{
+		key.GetWcAppsKustomizationFile(): creator.KustomizationModifier{
+			ResourcesToAdd: resources,
+		},
+		fmt.Sprintf("%s/%s/%s", key.DirectoryClusterApps, config.App, "appcr.yaml"): creator.AppModifier{
+			ImagePolicy: fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
 		},
 	}
 
@@ -86,9 +140,9 @@ func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
 	fsObjects = append(
 		fsObjects,
 		[]*creator.FsObject{
-			creator.NewFsObject(key.GetSecretsDir(config.Name), nil),
-			creator.NewFsObject(key.GetSopsDir(config.Name), nil),
-			creator.NewFsObject(key.GetOrgDir(config.Name), nil),
+			creator.NewFsObject(key.GetAnySecretsDir(config.Name), nil),
+			creator.NewFsObject(key.GetMCsSopsDir(config.Name), nil),
+			creator.NewFsObject(key.GetMCsOrgsDir(config.Name), nil),
 		}...,
 	)
 
@@ -120,11 +174,11 @@ func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
 	// empty `kustomization.yaml`.
 	fsObjects = append(
 		fsObjects,
-		creator.NewFsObject(key.GetWCsDir(config.Name), nil),
+		creator.NewFsObject(key.GetOrgWCsDir(config.Name), nil),
 	)
 
 	fileObjects, err = addFilesFromTemplate(
-		key.GetWCsDir(config.Name),
+		key.GetOrgWCsDir(config.Name),
 		orgtmpl.GetWorkloadClustersDirectoryTemplates,
 		config,
 	)
@@ -169,15 +223,15 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 	fsObjects = append(
 		fsObjects,
 		[]*creator.FsObject{
-			creator.NewFsObject(key.GetWCDir(config.Name), nil),
-			creator.NewFsObject(key.GetWCAppsDir(config.Name), nil),
-			creator.NewFsObject(key.GetWCClusterDir(config.Name), nil),
+			creator.NewFsObject(key.GetOrgWcDir(config.Name), nil),
+			creator.NewFsObject(key.GetOrgWcAppsDir(config.Name), nil),
+			creator.NewFsObject(key.GetOrgWcClusterDir(config.Name), nil),
 		}...,
 	)
 
 	// The `apps/*` pre-configuration
 	fileObjects, err = addFilesFromTemplate(
-		key.GetWCAppsDir(config.Name),
+		key.GetOrgWcAppsDir(config.Name),
 		wctmpl.GetAppsDirectoryTemplates,
 		config,
 	)
@@ -189,7 +243,7 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 	// The `cluster/*` files, aka cluster definition, including `kustomization.yaml`,
 	// patches, etc.
 	fileObjects, err = addFilesFromTemplate(
-		key.GetWCClusterDir(config.Name),
+		key.GetOrgWcClusterDir(config.Name),
 		wctmpl.GetClusterDirectoryTemplates,
 		config,
 	)
@@ -202,7 +256,7 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 	// post modifiers, so that cluster is included into `workload-clusters/kustomization.yaml`
 	// for example.
 	mods := map[string]creator.Modifier{
-		key.GetWCsKustomization(): creator.KustomizationModifier{
+		key.GetOrgWCsKustomizationFile(): creator.KustomizationModifier{
 			ResourcesToAdd: []string{
 				fmt.Sprintf("%s.yaml", config.Name),
 			},

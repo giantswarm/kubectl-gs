@@ -102,7 +102,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if localPathFlag != nil {
 		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
 	}
-	creatorConfig.Path += key.WorkloadClusterAppDirectory(
+	creatorConfig.Path += key.GetRootWorkloadClusterDirectory(
 		r.flag.ManagementCluster,
 		r.flag.Organization,
 		r.flag.WorkloadCluster,
