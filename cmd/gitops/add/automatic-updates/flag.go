@@ -7,7 +7,6 @@ import (
 
 const (
 	flagManagementCluster = "management-cluster"
-	flagName              = "name"
 	flagOrganization      = "organization"
 	flagWorkloadCluster   = "workload-cluster"
 
