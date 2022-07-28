@@ -37,6 +37,7 @@ func NewCreator(config CreatorConfig) *Creator {
 		fsObjects:     config.FsObjects,
 		path:          config.Path,
 		postModifiers: config.PostModifiers,
+		preValidators: config.PreValidators,
 		stdout:        config.Stdout,
 	}
 }
@@ -90,6 +91,22 @@ func (c *Creator) print() {
 
 // write writes the creator's file system objects into the disk.
 func (c *Creator) write() error {
+	for n, v := range c.preValidators {
+		fmt.Println(fmt.Sprintf("%s/%s", c.path, n))
+		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
+		if os.IsNotExist(err) {
+			fmt.Println("Here")
+			continue
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = v.Execute(rawYaml)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	for _, o := range c.fsObjects {
 		if !strings.HasSuffix(o.RelativePath, yamlExt) {
 			err := c.createDirectory(fmt.Sprintf("%s/%s", c.path, o.RelativePath))

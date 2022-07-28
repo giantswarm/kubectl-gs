@@ -5,143 +5,101 @@ import (
 )
 
 const (
-	DirectoryClusterApps        = "apps"
-	DirectoryClusterDefinition  = "cluster"
-	DirectoryAutomaticUpdates   = "automatic-updates"
-	DirectoryManagementClusters = "management-clusters"
-	DirectoryOrganizations      = "organizations"
-	DirectorySecrets            = "secrets"
-	DirectorySOPSPublicKeys     = ".sops.keys"
-	DirectoryWorkloadClusters   = "workload-clusters"
+	appCRFile                 = "appcr.yaml"
+	appsDirectory             = "apps"
+	appUserConfigPatchFile    = "patch_app_userconfig.yaml"
+	automaticUpdatesDirectory = "automatic-updates"
+	clusterDirectory          = "cluster"
+	configMapFile             = "configmap.yaml"
+	imagePolicyFile           = "imagepolicy.yaml"
+	imageRepositoryFile       = "imagerepository.yaml"
+	kustomizationFile         = "kustomization.yaml"
+	organizationsDirectory    = "organizations"
+	secretFile                = "secret.yaml"
+	secretsDirectory          = "secrets"
+	sopsKeysDirectory         = ".sops.keys"
+	workloadClusterDirectory  = "workload-clusters"
 
-	FileKustomization = "kustomization.yaml"
+	mcDirectoryTemplate  = "management-clusters/%s"
+	orgDirectoryTemplate = "management-clusters/%s/organizations/%s"
+	wcDirectoryTemplate  = "management-clusters/%s/organizations/%s/workload-clusters/%s"
 )
 
-// Naming convention and explanation
-//
-// Since the `gitops/structure` package does not operate on absolute paths,
-// the functions here must return paths relative to the layer currently
-// being configure by the structure, e.g. Management Cluster. This however
-// may be a bit confusing from the naming perspective because different
-// commands must sometimes operate on the same directory, e.g. `add app` and
-// `add image-update` both operate on the `apps` directory, but relatively seen
-// slightly different, what is hard to capture in the function name. Hence the
-// proposed naming convention is:
-//
-// Get + BASE + TARGET, where
-// BASE - directory where we relatively starts building the path, not being part of the path.
-// TARGET - directory or file we are targeting with the path.
-//
-// Examples:
-// GetWcAppsKustomization - we start at `WC_NAME` and targets `apps/kustomization.yaml`
-// GetMCsOrgDir - we start at `management-clusters` and targets `MC_NAME/organizations`
-// GetAnySecretsDir - we start at any place and targets `ANY/secrets`
-
-// GetWcAppsKustomization
-// Base: WC_NAME
-// Target: apps/kustomization.yaml
-func GetWcAppsKustomizationFile() string {
-	return fmt.Sprintf("%s/%s", DirectoryClusterApps, FileKustomization)
+func AppCRFileName() string {
+	return appCRFile
 }
 
-// GetAnySecretsDir
-// Base: management-clusters
-// Target: MC_NAME/organizations
-func GetMCsOrgsDir(mc string) string {
-	return fmt.Sprintf("%s/%s", mc, DirectoryOrganizations)
+func AppsDirName() string {
+	return appsDirectory
 }
 
-// GetAnySecretsDir
-// Base: any
-// Target: any/secrets
-func GetAnySecretsDir(path string) string {
-	return fmt.Sprintf("%s/%s", path, DirectorySecrets)
+func AutoUpdatesDirName() string {
+	return automaticUpdatesDirectory
 }
 
-// GetMCsSopsDir
-// Base: management-clusters
-// Target: MC_NAME/.sops.keys
-func GetMCsSopsDir(mc string) string {
-	return fmt.Sprintf("%s/%s", mc, DirectorySOPSPublicKeys)
+func ClusterDirName() string {
+	return clusterDirectory
 }
 
-// GetOrgWcDir
-// Base: ORG_NAME
-// Target: workload-clusters/WC_NAME
-func GetOrgWcDir(wc string) string {
-	return fmt.Sprintf("%s/%s", DirectoryWorkloadClusters, wc)
+func ConfigMapFileName() string {
+	return configMapFile
 }
 
-// GetWcAppDir
-// Base: WC_NAME
-// Target: apps/APP_NAME
-func GetWcAppDir(name string) string {
-	return fmt.Sprintf("%s/%s", DirectoryClusterApps, name)
+func ImagePolicyFileName() string {
+	return imagePolicyFile
 }
 
-// GetOrgWcAppsDir
-// Base: ORG_NAME
-// Target: workload-clusters/WC_NAME/apps
-func GetOrgWcAppsDir(name string) string {
-	return fmt.Sprintf("%s/%s/%s", DirectoryWorkloadClusters, name, DirectoryClusterApps)
+func ImageRepositoryFileName() string {
+	return imagePolicyFile
 }
 
-// GetOrgWcClusterDir
-// Base: ORG_NAME
-// Target: workload-clusters/WC_NAME/cluster
-func GetOrgWcClusterDir(wc string) string {
-	return fmt.Sprintf("%s/%s/%s", DirectoryWorkloadClusters, wc, DirectoryClusterDefinition)
+func KustomizationFileName() string {
+	return kustomizationFile
 }
 
-// GetOrgWCsDir
-// Base: organizations
-// Target: ORG_NAME/workload-clusters
-func GetOrgWCsDir(org string) string {
-	return fmt.Sprintf("%s/%s", org, DirectoryWorkloadClusters)
+func OrganizationsDirName() string {
+	return organizationsDirectory
 }
 
-// GetOrgWCsKustomizationFile
-// Base: ORG_NAME
-// Target: workload-clusters/kustomization.yaml
-func GetOrgWCsKustomizationFile() string {
-	return fmt.Sprintf("%s/%s", DirectoryWorkloadClusters, FileKustomization)
+func SecretFileName() string {
+	return secretFile
 }
 
-// GetRootOrganizationsDirectory
-// Base: repository root
-// Target: management-clusters/MC_NAME/organizations
-func GetRootOrganizationsDirectory(mc string) string {
-	return fmt.Sprintf("%s/%s/%s",
-		DirectoryManagementClusters,
-		mc,
-		DirectoryOrganizations,
-	)
+func SecretsDirName() string {
+	return secretsDirectory
 }
 
-// GetRootWorkloadClusterDirectory
-// Base: repository root
-// Target: management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
-func GetRootWorkloadClusterDirectory(mc, org, wc string) string {
-	return fmt.Sprintf(
-		"%s/%s/%s/%s/%s/%s",
-		DirectoryManagementClusters,
-		mc,
-		DirectoryOrganizations,
-		org,
-		DirectoryWorkloadClusters,
-		wc,
-	)
+func SopsKeysDirName() string {
+	return sopsKeysDirectory
 }
 
-// GetRootOrganizationDirectory
-// Base: repository root
-// Target: management-clusters/MC_NAME/organizations/ORG_NAME
-func GetRootOrganizationDirectory(mc, org string) string {
-	return fmt.Sprintf(
-		"%s/%s/%s/%s",
-		DirectoryManagementClusters,
-		mc,
-		DirectoryOrganizations,
-		org,
-	)
+func WorkloadClustersDirName() string {
+	return workloadClusterDirectory
+}
+
+// GetMcDir points to `MC_NAME` directory, first of
+// the three main repository layers.
+func McDirPath(mc string) string {
+	return fmt.Sprintf(mcDirectoryTemplate, mc)
+}
+
+// GetOrgDir points to `MC_NAME` directory, second of
+// the three main repository layers.
+func OrgDirPath(mc, org string) string {
+	return fmt.Sprintf(orgDirectoryTemplate, mc, org)
+}
+
+// GetResource is general function returning path to
+// a given resource. The rationale behind it is there are
+// many resources that appear in multiple places like `appcr.yaml`,
+// or `secret`, so having a general function is better than
+// having N of them, each for a dedicated layers.
+func ResourcePath(path, name string) string {
+	return fmt.Sprintf("%s/%s", path, name)
+}
+
+// GetWcDir points to `MC_NAME` directory, third of
+// the three main repository layers.
+func WcDirPath(mc, org, wc string) string {
+	return fmt.Sprintf(wcDirectoryTemplate, mc, org, wc)
 }

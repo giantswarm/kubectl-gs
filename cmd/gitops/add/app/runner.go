@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -13,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -45,14 +43,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	config := structure.AppConfig{
-		App:             r.flag.App,
-		Base:            r.flag.Base,
-		Catalog:         r.flag.Catalog,
-		Name:            r.flag.Name,
-		Namespace:       r.flag.Namespace,
-		Organization:    r.flag.Organization,
-		WorkloadCluster: r.flag.WorkloadCluster,
-		Version:         r.flag.Version,
+		App:               r.flag.App,
+		Base:              r.flag.Base,
+		Catalog:           r.flag.Catalog,
+		ManagementCluster: r.flag.ManagementCluster,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
+		Organization:      r.flag.Organization,
+		WorkloadCluster:   r.flag.WorkloadCluster,
+		Version:           r.flag.Version,
 	}
 
 	if config.Name == "" {
@@ -82,16 +81,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config.UserValuesSecret = strings.TrimSpace(string(byteData))
 	}
 
-	fsObjects, fsModifiers, err := structure.NewApp(config)
+	creatorConfig, err := structure.NewApp(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := creator.CreatorConfig{
-		Stdout:        r.stdout,
-		FsObjects:     fsObjects,
-		PostModifiers: fsModifiers,
-	}
+	creatorConfig.Stdout = r.stdout
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
@@ -100,15 +95,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
-	creatorConfig.Path += key.GetRootWorkloadClusterDirectory(
-		r.flag.ManagementCluster,
-		r.flag.Organization,
-		r.flag.WorkloadCluster,
-	)
 
-	creator := creator.NewCreator(creatorConfig)
+	creator := creator.NewCreator(*creatorConfig)
 
 	err = creator.Create()
 	if err != nil {

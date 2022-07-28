@@ -9,6 +9,7 @@ type AppConfig struct {
 	App                 string
 	Base                string
 	Catalog             string
+	ManagementCluster   string
 	Name                string
 	Namespace           string
 	Organization        string
@@ -36,7 +37,8 @@ type McConfig struct {
 }
 
 type OrgConfig struct {
-	Name string
+	ManagementCluster string
+	Name              string
 }
 
 type WcConfig struct {

@@ -7,7 +7,7 @@ spec:
   catalog: {{ .Catalog }}
   name: {{ .App }}
   namespace: {{ .Namespace }}
-  version: {{ .Version }} # {"$imagepolicy": "default:{{ .Name }}:tag"}
+  version: {{ .Version }}
 {{- if or .UserValuesConfigMap .UserValuesSecret }}
   userConfig:
 {{- if .UserValuesConfigMap }}

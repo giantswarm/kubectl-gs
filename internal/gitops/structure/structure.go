@@ -19,26 +19,26 @@ import (
 )
 
 // NewManagementCluster creates a new App directory structure.
-func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
+func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 	var err error
+
+	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
+	appDir := key.ResourcePath(appsDir, config.Name)
+	appsKusFile := key.ResourcePath(appsDir, key.KustomizationFileName())
 
 	// We start from the `apps` directory despite the fact this directory
 	// should already exist at this point. We then create the app directory
 	// and add bunch of files there, depending on the configuration provided.
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(key.DirectoryClusterApps, nil),
-		creator.NewFsObject(key.GetWcAppDir(config.Name), nil),
+		creator.NewFsObject(appsDir, nil),
+		creator.NewFsObject(appDir, nil),
 	}
 
-	fileObjects, err := addFilesFromTemplate(
-		key.GetWcAppDir(config.Name),
-		apptmpl.GetAppDirectoryTemplates,
-		config,
-	)
+	fileObjects, err := addFilesFromTemplate(appDir, apptmpl.GetAppDirectoryTemplates, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
-
 	fsObjects = append(fsObjects, fileObjects...)
 
 	// Once files are added, we then need to add resources to the
@@ -46,58 +46,62 @@ func NewApp(config AppConfig) ([]*creator.FsObject, map[string]creator.Modifier,
 	// directory.
 	resources := make([]string, 0)
 	if config.Base == "" {
-		resources = append(resources, fmt.Sprintf("%s/appcr.yaml # aaa", config.Name))
+		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.AppCRFileName()))
 	} else {
 		resources = append(resources, config.Name)
 	}
 
 	if config.Base == "" && config.UserValuesConfigMap != "" {
-		resources = append(resources, fmt.Sprintf("%s/configmap.yaml", config.Name))
+		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.ConfigMapFileName()))
 	}
 
 	if config.Base == "" && config.UserValuesSecret != "" {
-		resources = append(resources, fmt.Sprintf("%s/secret.yaml", config.Name))
+		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.SecretFileName()))
 	}
 
 	// Create Kustomization post modifiers
-	mods := map[string]creator.Modifier{
-		key.GetWcAppsKustomizationFile(): creator.KustomizationModifier{
+	fsModifiers := map[string]creator.Modifier{
+		appsKusFile: creator.KustomizationModifier{
 			ResourcesToAdd: resources,
 		},
 	}
 
-	return fsObjects, mods, nil
+	creatorConfig := creator.CreatorConfig{
+		FsObjects:     fsObjects,
+		PostModifiers: fsModifiers,
+	}
+
+	return &creatorConfig, nil
 }
 
 // NewImageUpdate configures app for automated updates
-func NewAutomaticUpdate(config AutomaticUpdateConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
+//func NewAutomaticUpdate(config AutomaticUpdateConfig) ([]*creator.FsObject, map[string]creator.Validator, map[string]creator.Modifier, error) {
+func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, error) {
 	var err error
+
+	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	autoUpdatesDir := key.ResourcePath(wcDir, key.AutoUpdatesDirName())
+	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
+	appDir := key.ResourcePath(appsDir, config.App)
+	appCrFile := key.ResourcePath(appDir, key.AppCRFileName())
+	appKusFile := key.ResourcePath(appsDir, key.KustomizationFileName())
 
 	// We start from the `WC_NAME` directory, because we must create the
 	// `automatic-updates` directory.
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(key.DirectoryAutomaticUpdates, nil),
+		creator.NewFsObject(autoUpdatesDir, nil),
 	}
 
-	fileObjects, err := addFilesFromTemplate(
-		key.DirectoryAutomaticUpdates,
-		updatetmpl.GetAutomaticUpdatesTemplates,
-		config,
-	)
+	fileObjects, err := addFilesFromTemplate(autoUpdatesDir, updatetmpl.GetAutomaticUpdatesTemplates, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
-
 	fsObjects = append(fsObjects, fileObjects...)
 
 	// Next we add `Image*` resources to the `APP_NAME` directory
-	fileObjects, err = addFilesFromTemplate(
-		key.GetWcAppDir(config.App),
-		updatetmpl.GetAppImageUpdatesTemplates,
-		config,
-	)
+	fileObjects, err = addFilesFromTemplate(appDir, updatetmpl.GetAppImageUpdatesTemplates, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
@@ -105,33 +109,47 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) ([]*creator.FsObject, map[
 	// `apps/kustomization.yaml`, and also update App CR with the
 	// automatic updates comments
 	resources := []string{
-		fmt.Sprintf("%s/imagepolicy.yaml", config.App),
-		fmt.Sprintf("%s/imagerepository.yaml", config.App),
+		fmt.Sprintf("%s/%s", config.App, key.ImagePolicyFileName()),
+		fmt.Sprintf("%s/%s", config.App, key.ImageRepositoryFileName()),
 	}
 
 	// Create Kustomization and App post modifiers
-	mods := map[string]creator.Modifier{
-		key.GetWcAppsKustomizationFile(): creator.KustomizationModifier{
+	fsModifiers := map[string]creator.Modifier{
+		appKusFile: creator.KustomizationModifier{
 			ResourcesToAdd: resources,
 		},
-		fmt.Sprintf("%s/%s/%s", key.DirectoryClusterApps, config.App, "appcr.yaml"): creator.AppModifier{
+		appCrFile: creator.AppModifier{
 			ImagePolicy: fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
 		},
 	}
 
-	return fsObjects, mods, nil
+	/*fsValidators := map[string]creator.Validator{
+		key.GetAppsAppKustomizationFile(config.App): creator.KustomizationValidator{
+			ReferencesBase: true,
+		},
+	}*/
+
+	creatorConfig := creator.CreatorConfig{
+		FsObjects:     fsObjects,
+		PostModifiers: fsModifiers,
+		//PreValidators: fsValidators,
+	}
+
+	return &creatorConfig, nil
 }
 
 // NewManagementCluster creates a new Management Cluster directory
 // structure.
-func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
+func NewManagementCluster(config McConfig) (*creator.CreatorConfig, error) {
 	var err error
 
+	mcDirectory := key.McDirPath(config.Name)
+
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(config.Name, nil),
+		creator.NewFsObject(mcDirectory, nil),
 	}
 
-	fileObjects, err := addFilesFromTemplate(config.Name, mctmpl.GetManagementClusterTemplates, config)
+	fileObjects, err := addFilesFromTemplate(mcDirectory, mctmpl.GetManagementClusterTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -140,31 +158,34 @@ func NewManagementCluster(config McConfig) ([]*creator.FsObject, error) {
 	fsObjects = append(
 		fsObjects,
 		[]*creator.FsObject{
-			creator.NewFsObject(key.GetAnySecretsDir(config.Name), nil),
-			creator.NewFsObject(key.GetMCsSopsDir(config.Name), nil),
-			creator.NewFsObject(key.GetMCsOrgsDir(config.Name), nil),
+			creator.NewFsObject(key.ResourcePath(mcDirectory, key.SecretsDirName()), nil),
+			creator.NewFsObject(key.ResourcePath(mcDirectory, key.SopsKeysDirName()), nil),
+			creator.NewFsObject(key.ResourcePath(mcDirectory, key.OrganizationsDirName()), nil),
 		}...,
 	)
 
-	return fsObjects, nil
+	creatorConfig := creator.CreatorConfig{
+		FsObjects: fsObjects,
+	}
+
+	return &creatorConfig, nil
 }
 
 // NewOrganization creates a new Organization directory
 // structure.
-func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
+func NewOrganization(config OrgConfig) (*creator.CreatorConfig, error) {
 	var err error
+
+	orgDir := key.OrgDirPath(config.ManagementCluster, config.Name)
+	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 
 	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
 	// containing Organization CR
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(config.Name, nil),
+		creator.NewFsObject(orgDir, nil),
 	}
 
-	fileObjects, err := addFilesFromTemplate(
-		config.Name,
-		orgtmpl.GetOrganizationDirectoryTemplates,
-		config,
-	)
+	fileObjects, err := addFilesFromTemplate(orgDir, orgtmpl.GetOrganizationDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -172,46 +193,43 @@ func NewOrganization(config OrgConfig) ([]*creator.FsObject, error) {
 
 	// Create `workload-cluster` directory and populate it with
 	// empty `kustomization.yaml`.
-	fsObjects = append(
-		fsObjects,
-		creator.NewFsObject(key.GetOrgWCsDir(config.Name), nil),
-	)
+	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil))
 
-	fileObjects, err = addFilesFromTemplate(
-		key.GetOrgWCsDir(config.Name),
-		orgtmpl.GetWorkloadClustersDirectoryTemplates,
-		config,
-	)
+	fileObjects, err = addFilesFromTemplate(wcsDir, orgtmpl.GetWorkloadClustersDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
-	return fsObjects, nil
+	creatorConfig := creator.CreatorConfig{
+		FsObjects: fsObjects,
+	}
+
+	return &creatorConfig, nil
 }
 
 // NewWorkloadCluster creates a new Workload Cluster directory
 // structure.
-func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creator.Modifier, error) {
+func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 	var err error
+
+	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
+	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
+	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.Name)
 
 	// Create Dir pointing to the `workload-clusters` directory. This should
 	// already exist at this point, as a result of Organization creation, but
 	// we need to point to this directory anyway in order to drop Kustomization
 	// there.
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(key.DirectoryWorkloadClusters, nil),
+		creator.NewFsObject(wcsDir, nil),
 	}
 
 	// Add Kustomization CR to the `workload-clusters` directory and other
 	// files if needed. Currently only Kustomization CR is considered.
-	fileObjects, err := addFilesFromTemplate(
-		key.DirectoryWorkloadClusters,
-		wctmpl.GetWorkloadClusterDirectoryTemplates,
-		config,
-	)
+	fileObjects, err := addFilesFromTemplate(wcsDir, wctmpl.GetWorkloadClusterDirectoryTemplates, config)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
@@ -223,47 +241,52 @@ func NewWorkloadCluster(config WcConfig) ([]*creator.FsObject, map[string]creato
 	fsObjects = append(
 		fsObjects,
 		[]*creator.FsObject{
-			creator.NewFsObject(key.GetOrgWcDir(config.Name), nil),
-			creator.NewFsObject(key.GetOrgWcAppsDir(config.Name), nil),
-			creator.NewFsObject(key.GetOrgWcClusterDir(config.Name), nil),
+			creator.NewFsObject(wcDir, nil),
+			creator.NewFsObject(key.ResourcePath(wcDir, key.AppsDirName()), nil),
+			creator.NewFsObject(key.ResourcePath(wcDir, key.ClusterDirName()), nil),
 		}...,
 	)
 
 	// The `apps/*` pre-configuration
 	fileObjects, err = addFilesFromTemplate(
-		key.GetOrgWcAppsDir(config.Name),
+		key.ResourcePath(wcDir, key.AppsDirName()),
 		wctmpl.GetAppsDirectoryTemplates,
 		config,
 	)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
 	// The `cluster/*` files, aka cluster definition, including `kustomization.yaml`,
 	// patches, etc.
 	fileObjects, err = addFilesFromTemplate(
-		key.GetOrgWcClusterDir(config.Name),
+		key.ResourcePath(wcDir, key.ClusterDirName()),
 		wctmpl.GetClusterDirectoryTemplates,
 		config,
 	)
 	if err != nil {
-		return nil, nil, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
 	// After creating all the files and directories, we need creator to run
 	// post modifiers, so that cluster is included into `workload-clusters/kustomization.yaml`
 	// for example.
-	mods := map[string]creator.Modifier{
-		key.GetOrgWCsKustomizationFile(): creator.KustomizationModifier{
+	fsModifiers := map[string]creator.Modifier{
+		key.ResourcePath(wcsDir, key.KustomizationFileName()): creator.KustomizationModifier{
 			ResourcesToAdd: []string{
 				fmt.Sprintf("%s.yaml", config.Name),
 			},
 		},
 	}
 
-	return fsObjects, mods, nil
+	creatorConfig := creator.CreatorConfig{
+		FsObjects:     fsObjects,
+		PostModifiers: fsModifiers,
+	}
+
+	return &creatorConfig, nil
 }
 
 // addFilesFromTemplate add files from the given template to the

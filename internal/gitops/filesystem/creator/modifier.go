@@ -16,7 +16,8 @@ import (
 const (
 	appVersionLocator = `version:\s([v0-9.]*).*\n`
 	appVersionUpdater = "version: $1 # {\"$$imagepolicy\": \"default:%s:tag\"}\n"
-	arrayContains     = "%s[] | contains(@, '%s')"
+
+	arrayContains = "%s[] | contains(@, '%s')"
 )
 
 // My idea for now was to create some sort of modifiers
@@ -33,9 +34,12 @@ type AppModifier struct {
 
 type KustomizationModifier struct {
 	ResourcesToAdd    []string
+	ResourcesToCheck  []string
 	ResourcesToRemove []string
 }
 
+// PostExecute modifies App CRs after creating the necessary
+// resources first.
 func (am AppModifier) Execute(rawYaml []byte) ([]byte, error) {
 
 	if am.ImagePolicy != "" {
@@ -101,17 +105,6 @@ func addResource(resource string, file *[]byte) error {
 	return nil
 }
 
-// isPresent uses JmesPath to check for element existance in
-// within the array.
-func isPresent(resource, path string, file interface{}) (bool, error) {
-	ok, err := jmespath.Search(fmt.Sprintf(arrayContains, path, resource), file)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return ok.(bool), nil
-}
-
 // addToArray returns JSONpatch for adding an element to an array.
 func addToArray(path, resource string) []byte {
 	return []byte(`[{ "op": "add", "path": "` + path + `/-", "value": "` + resource + `"}]`)
@@ -125,4 +118,15 @@ func getUnmarshalledJson(src []byte, dest *interface{}) error {
 	}
 
 	return nil
+}
+
+// isPresent uses JmesPath to check for element existance in
+// within the array.
+func isPresent(resource, path string, file interface{}) (bool, error) {
+	ok, err := jmespath.Search(fmt.Sprintf(arrayContains, path, resource), file)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return ok.(bool), nil
 }
