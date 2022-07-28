@@ -92,10 +92,8 @@ func (c *Creator) print() {
 // write writes the creator's file system objects into the disk.
 func (c *Creator) write() error {
 	for n, v := range c.preValidators {
-		fmt.Println(fmt.Sprintf("%s/%s", c.path, n))
 		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
 		if os.IsNotExist(err) {
-			fmt.Println("Here")
 			continue
 		} else if err != nil {
 			return microerror.Mask(err)

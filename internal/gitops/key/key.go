@@ -7,7 +7,6 @@ import (
 const (
 	appCRFile                 = "appcr.yaml"
 	appsDirectory             = "apps"
-	appUserConfigPatchFile    = "patch_app_userconfig.yaml"
 	automaticUpdatesDirectory = "automatic-updates"
 	clusterDirectory          = "cluster"
 	configMapFile             = "configmap.yaml"
@@ -50,7 +49,7 @@ func ImagePolicyFileName() string {
 }
 
 func ImageRepositoryFileName() string {
-	return imagePolicyFile
+	return imageRepositoryFile
 }
 
 func KustomizationFileName() string {

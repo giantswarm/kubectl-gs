@@ -18,17 +18,18 @@ import (
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
 
-// NewManagementCluster creates a new App directory structure.
+// NewApp creates a new App directory structure.
 func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 	var err error
 
+	// Helpers
 	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
 	appDir := key.ResourcePath(appsDir, config.Name)
 	appsKusFile := key.ResourcePath(appsDir, key.KustomizationFileName())
 
 	// We start from the `apps` directory despite the fact this directory
-	// should already exist at this point. We then create the app directory
+	// should already exist at this point. We then create the `APP_NAME` directory
 	// and add bunch of files there, depending on the configuration provided.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(appsDir, nil),
@@ -42,8 +43,8 @@ func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 	fsObjects = append(fsObjects, fileObjects...)
 
 	// Once files are added, we then need to add resources to the
-	// `apps/kustomization.yaml`, either one by one, or the whole
-	// directory.
+	// `apps/kustomization.yaml`, either one by one when no base is
+	// used, or as a whole directory when it is used.
 	resources := make([]string, 0)
 	if config.Base == "" {
 		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.AppCRFileName()))
@@ -75,10 +76,10 @@ func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 }
 
 // NewImageUpdate configures app for automated updates
-//func NewAutomaticUpdate(config AutomaticUpdateConfig) ([]*creator.FsObject, map[string]creator.Validator, map[string]creator.Modifier, error) {
 func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, error) {
 	var err error
 
+	// bunch of helpers
 	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 	autoUpdatesDir := key.ResourcePath(wcDir, key.AutoUpdatesDirName())
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
@@ -87,7 +88,7 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 	appKusFile := key.ResourcePath(appsDir, key.KustomizationFileName())
 
 	// We start from the `WC_NAME` directory, because we must create the
-	// `automatic-updates` directory.
+	// `automatic-updates` directory there if it does not exist.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(autoUpdatesDir, nil),
 	}
@@ -113,7 +114,7 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 		fmt.Sprintf("%s/%s", config.App, key.ImageRepositoryFileName()),
 	}
 
-	// Create Kustomization and App post modifiers
+	// Create Kustomization and App CR post modifiers
 	fsModifiers := map[string]creator.Modifier{
 		appKusFile: creator.KustomizationModifier{
 			ResourcesToAdd: resources,
@@ -145,6 +146,9 @@ func NewManagementCluster(config McConfig) (*creator.CreatorConfig, error) {
 
 	mcDirectory := key.McDirPath(config.Name)
 
+	// Adding a new Management Cluster is simple. We start at the
+	// `management-clusters/MC_NAME` and then add definition and few
+	// of the basic directories.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(mcDirectory, nil),
 	}
@@ -180,7 +184,7 @@ func NewOrganization(config OrgConfig) (*creator.CreatorConfig, error) {
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 
 	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
-	// containing Organization CR
+	// containing Organization CR definition.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(orgDir, nil),
 	}
@@ -191,7 +195,7 @@ func NewOrganization(config OrgConfig) (*creator.CreatorConfig, error) {
 	}
 	fsObjects = append(fsObjects, fileObjects...)
 
-	// Create `workload-cluster` directory and populate it with
+	// Create `workload-cluster` directory and populate it with an
 	// empty `kustomization.yaml`.
 	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil))
 
@@ -213,13 +217,14 @@ func NewOrganization(config OrgConfig) (*creator.CreatorConfig, error) {
 func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 	var err error
 
+	// Helpers
 	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.Name)
 
-	// Create Dir pointing to the `workload-clusters` directory. This should
-	// already exist at this point, as a result of Organization creation, but
-	// we need to point to this directory anyway in order to drop Kustomization
+	// We start at the `workload-clusters` directory. This should already
+	// exist at this point, as a result of Organization creation, but we
+	// need to point to this directory anyway in order to drop Kustomization
 	// there.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(wcsDir, nil),
@@ -247,7 +252,8 @@ func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 		}...,
 	)
 
-	// The `apps/*` pre-configuration
+	// The `apps/*` directory pre-configuration including kustomization.yaml and
+	// kubeconfig patch.
 	fileObjects, err = addFilesFromTemplate(
 		key.ResourcePath(wcDir, key.AppsDirName()),
 		wctmpl.GetAppsDirectoryTemplates,
