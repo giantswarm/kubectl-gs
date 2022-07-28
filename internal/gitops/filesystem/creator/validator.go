@@ -14,7 +14,7 @@ const (
 	baseResource         = "../base"
 
 	// Validation errors templates
-	objectFromBaseTemplate = "Operation cannot be fulfilled on objects coming from a base."
+	objectFromBaseTemplate = "Operation cannot be fulfilled on the object coming from a base. Operation should be conducted on the base instead."
 )
 
 // Same idea as for the Modifier

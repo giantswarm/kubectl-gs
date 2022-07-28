@@ -124,16 +124,16 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 		},
 	}
 
-	/*fsValidators := map[string]creator.Validator{
-		key.GetAppsAppKustomizationFile(config.App): creator.KustomizationValidator{
+	fsValidators := map[string]creator.Validator{
+		key.ResourcePath(appDir, key.KustomizationFileName()): creator.KustomizationValidator{
 			ReferencesBase: true,
 		},
-	}*/
+	}
 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
-		//PreValidators: fsValidators,
+		PreValidators: fsValidators,
 	}
 
 	return &creatorConfig, nil

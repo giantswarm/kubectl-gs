@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_Execute(t *testing.T) {
+func Test_Modifiers(t *testing.T) {
 	testCases := []struct {
 		name     string
 		expected []byte
