@@ -76,19 +76,19 @@ func WorkloadClustersDirName() string {
 	return workloadClusterDirectory
 }
 
-// GetMcDir points to `MC_NAME` directory, first of
+// McDirPath points to `MC_NAME` directory, first of
 // the three main repository layers.
 func McDirPath(mc string) string {
 	return fmt.Sprintf(mcDirectoryTemplate, mc)
 }
 
-// GetOrgDir points to `MC_NAME` directory, second of
+// OrgDirPath points to `MC_NAME` directory, second of
 // the three main repository layers.
 func OrgDirPath(mc, org string) string {
 	return fmt.Sprintf(orgDirectoryTemplate, mc, org)
 }
 
-// GetResource is general function returning path to
+// ResourcePath is general function returning path to
 // a given resource. The rationale behind it is there are
 // many resources that appear in multiple places like `appcr.yaml`,
 // or `secret`, so having a general function is better than
@@ -97,7 +97,7 @@ func ResourcePath(path, name string) string {
 	return fmt.Sprintf("%s/%s", path, name)
 }
 
-// GetWcDir points to `MC_NAME` directory, third of
+// WcDirPath points to `MC_NAME` directory, third of
 // the three main repository layers.
 func WcDirPath(mc, org, wc string) string {
 	return fmt.Sprintf(wcDirectoryTemplate, mc, org, wc)
