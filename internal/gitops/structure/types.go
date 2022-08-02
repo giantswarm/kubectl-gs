@@ -9,6 +9,7 @@ type AppConfig struct {
 	App                 string
 	Base                string
 	Catalog             string
+	ManagementCluster   string
 	Name                string
 	Namespace           string
 	Organization        string
@@ -16,6 +17,15 @@ type AppConfig struct {
 	UserValuesSecret    string
 	WorkloadCluster     string
 	Version             string
+}
+
+type AutomaticUpdateConfig struct {
+	App               string
+	ManagementCluster string
+	Organization      string
+	Repository        string
+	WorkloadCluster   string
+	VersionRepository string
 }
 
 type McConfig struct {
@@ -27,7 +37,8 @@ type McConfig struct {
 }
 
 type OrgConfig struct {
-	Name string
+	ManagementCluster string
+	Name              string
 }
 
 type WcConfig struct {

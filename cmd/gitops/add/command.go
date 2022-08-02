@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	app "github.com/giantswarm/kubectl-gs/cmd/gitops/add/app"
+	autoup "github.com/giantswarm/kubectl-gs/cmd/gitops/add/automatic-updates"
 	mc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/management-cluster"
 	org "github.com/giantswarm/kubectl-gs/cmd/gitops/add/organization"
 	wc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/workload-cluster"
@@ -63,6 +64,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 
 		appCmd, err = app.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var autoUpdateCmd *cobra.Command
+	{
+		c := autoup.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		autoUpdateCmd, err = autoup.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -141,6 +160,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(appCmd)
+	c.AddCommand(autoUpdateCmd)
 	c.AddCommand(mcCmd)
 	c.AddCommand(orgCmd)
 	c.AddCommand(wcCmd)

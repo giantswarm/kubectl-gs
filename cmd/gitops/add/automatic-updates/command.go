@@ -1,4 +1,4 @@
-package app
+package autoupdate
 
 import (
 	"io"
@@ -12,60 +12,32 @@ import (
 )
 
 const (
-	name  = "app"
-	alias = "app"
+	name  = "automatic-update"
+	alias = "update"
 
-	shortDescription = "Adds a new Application to your GitOps directory structure"
-	longDescription  = `Adds a new Application to your GitOps directory structure.
+	shortDescription = "Enable automatic updates for an app."
+	longDescription  = `Enable automatic updates for an app.
 
 app \
---app <app_to_install> \
---catalog <app_catalog> \
---name <app_cr_name> \
---namespace <app_namespace> \
+--app <app_to_configure_updates_for> \
+--version-repository <repository_to_track_version_in> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
---user-configmap <path_to_values_yaml> \
---user-secret <path_to_values_yaml> \
---version <app_version> \
 --workload-cluster <wc_name>
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/apps/add_appcr.md`
+https://github.com/giantswarm/gitops-template/blob/main/docs/apps/automatic_updates_appcr.md`
 
-	examples = `  # Add hello-world App to dummy Workload Cluster
-  kubectl gs gitops add app \
-  --app hello-world-app \
-  --catalog giantswarm \
-  --name hello-world \
-  --namespace default \
-  --management-cluster demowc \
-  --organization demoorg \
-  --version 0.3.0 \
-  --workload-cluster demowc
-
-  # Add hello-world App to dummy Workload Cluster, include user configuration
-  kubectl gs gitops add app \
-  --app hello-world-app \
-  --catalog giantswarm \
-  --name hello-world \
-  --namespace default \
-  --management-cluster demomc \
-  --organization demoorg \
-  --user-configmap /tmp/hello-world-app-values.yaml \
-  --version 0.3.0 \
-  --workload-cluster demowc
-
-  # Add hello-world App from the base
-  kubectl gs gitops add app \
-  --base base/apps/hello-world \
-  --management-cluster demomc \
-  --organization demoorg \
-  --user-configmap /tmp/hello-world-app-values.yaml \
-  --workload-cluster demowc`
+	examples = `  # Enable automatic updates for hello-world app
+    kubectl gs gitops add app \
+    --app hello-world \
+	--version-repository giantswarmpublic.azurecr.io/giantswarm-catalog/hello-world-app \
+    --management-cluster demomc \
+    --organization demoorg \
+    --workload-cluster demowc`
 )
 
 type Config struct {

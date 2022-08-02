@@ -2,7 +2,6 @@ package org
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 )
 
@@ -40,18 +38,16 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	config := structure.OrgConfig{
-		Name: r.flag.Name,
+		ManagementCluster: r.flag.ManagementCluster,
+		Name:              r.flag.Name,
 	}
 
-	fsObjects, err := structure.NewOrganization(config)
+	creatorConfig, err := structure.NewOrganization(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := creator.CreatorConfig{
-		FsObjects: fsObjects,
-		Stdout:    r.stdout,
-	}
+	creatorConfig.Stdout = r.stdout
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
@@ -60,11 +56,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
-	creatorConfig.Path += key.OrganizationsDirectory(r.flag.MCName)
 
-	creator := creator.NewCreator(creatorConfig)
+	creator := creator.NewCreator(*creatorConfig)
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)

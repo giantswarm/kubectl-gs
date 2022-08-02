@@ -1,19 +1,17 @@
-package app
+package autoupdate
 
 import (
 	"context"
+	//"fmt"
 	"io"
 	"strconv"
-	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
-	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 type runner struct {
@@ -42,46 +40,16 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.AppConfig{
+	config := structure.AutomaticUpdateConfig{
 		App:               r.flag.App,
-		Base:              r.flag.Base,
-		Catalog:           r.flag.Catalog,
 		ManagementCluster: r.flag.ManagementCluster,
-		Name:              r.flag.Name,
-		Namespace:         r.flag.Namespace,
 		Organization:      r.flag.Organization,
+		Repository:        r.flag.Repository,
 		WorkloadCluster:   r.flag.WorkloadCluster,
-		Version:           r.flag.Version,
+		VersionRepository: r.flag.VersionRepository,
 	}
 
-	if config.Name == "" {
-		config.Name = config.App
-	}
-
-	if r.flag.UserValuesConfigMap != "" {
-		config.UserValuesConfigMap, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.UserValuesConfigMap,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.UserValuesConfigMap = strings.TrimSpace(config.UserValuesConfigMap)
-	}
-	if r.flag.UserValuesSecret != "" {
-		byteData, err := commonkey.ReadSecretYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.UserValuesSecret,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.UserValuesSecret = strings.TrimSpace(string(byteData))
-	}
-
-	creatorConfig, err := structure.NewApp(config)
+	creatorConfig, err := structure.NewAutomaticUpdate(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}

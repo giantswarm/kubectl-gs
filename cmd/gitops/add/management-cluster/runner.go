@@ -2,7 +2,6 @@ package mcluster
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 )
 
@@ -47,15 +45,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ServiceAccount:  r.flag.ServiceAccount,
 	}
 
-	fsObjects, err := structure.NewManagementCluster(config)
+	creatorConfig, err := structure.NewManagementCluster(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := creator.CreatorConfig{
-		Stdout:    r.stdout,
-		FsObjects: fsObjects,
-	}
+	creatorConfig.Stdout = r.stdout
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
@@ -64,11 +59,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
-	creatorConfig.Path += key.DirectoryManagementClusters
 
-	creator := creator.NewCreator(creatorConfig)
+	creator := creator.NewCreator(*creatorConfig)
 
 	err = creator.Create()
 	if err != nil {

@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
 )
@@ -77,16 +76,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
 	}
 
-	fsObjects, fsModifiers, err := structure.NewWorkloadCluster(config)
+	creatorConfig, err := structure.NewWorkloadCluster(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := creator.CreatorConfig{
-		Stdout:        r.stdout,
-		FsObjects:     fsObjects,
-		PostModifiers: fsModifiers,
-	}
+	creatorConfig.Stdout = r.stdout
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
@@ -97,9 +92,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if localPathFlag != nil {
 		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
 	}
-	creatorConfig.Path += key.WorkloadClustersDirectory(r.flag.ManagementCluster, r.flag.Organization)
 
-	creator := creator.NewCreator(creatorConfig)
+	creator := creator.NewCreator(*creatorConfig)
 
 	err = creator.Create()
 	if err != nil {

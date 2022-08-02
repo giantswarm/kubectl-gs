@@ -6,7 +6,7 @@ spec:
   catalog: giantswarm
   name: hello-world
   namespace: default
-  version: 0.3.0 # {"$imagepolicy": "default:hello-world:tag"}
+  version: 0.3.0
   userConfig:
     secret:
       name: demowc-hello-world-user-values
