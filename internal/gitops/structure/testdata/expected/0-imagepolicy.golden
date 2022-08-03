@@ -1,0 +1,10 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImagePolicy
+metadata:
+  name: demowc-hello-world
+spec:
+  imageRepositoryRef:
+    name: demowc-hello-world
+  policy:
+    semver:
+      range: '>=0.0.0'

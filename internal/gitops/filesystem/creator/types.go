@@ -20,6 +20,7 @@ type CreatorConfig struct {
 	FsObjects     []*FsObject
 	Path          string
 	PostModifiers map[string]Modifier
+	PreValidators map[string]Validator
 	Stdout        io.Writer
 }
 
@@ -29,5 +30,6 @@ type Creator struct {
 	fsObjects     []*FsObject
 	path          string
 	postModifiers map[string]Modifier
+	preValidators map[string]Validator
 	stdout        io.Writer
 }

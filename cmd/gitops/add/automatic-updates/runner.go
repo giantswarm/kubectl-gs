@@ -1,20 +1,17 @@
-package wcluster
+package autoupdate
 
 import (
 	"context"
-	"fmt"
+	//"fmt"
 	"io"
 	"strconv"
-	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
-	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
 )
 
 type runner struct {
@@ -43,40 +40,16 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.WcConfig{
-		Base:               r.flag.Base,
-		ClusterRelease:     r.flag.ClusterRelease,
-		DefaultAppsRelease: r.flag.DefaultAppsRelease,
-		ManagementCluster:  r.flag.ManagementCluster,
-		Name:               r.flag.Name,
-		Organization:       r.flag.Organization,
-		RepositoryName:     r.flag.RepositoryName,
+	config := structure.AutomaticUpdateConfig{
+		App:               r.flag.App,
+		ManagementCluster: r.flag.ManagementCluster,
+		Organization:      r.flag.Organization,
+		Repository:        r.flag.Repository,
+		WorkloadCluster:   r.flag.WorkloadCluster,
+		VersionRepository: r.flag.VersionRepository,
 	}
 
-	if r.flag.ClusterUserConfig != "" {
-		config.ClusterUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.ClusterUserConfig,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.ClusterUserConfig = strings.TrimSpace(config.ClusterUserConfig)
-	}
-	if r.flag.DefaultAppsUserConfig != "" {
-		config.DefaultAppsUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.DefaultAppsUserConfig,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
-	}
-
-	creatorConfig, err := structure.NewWorkloadCluster(config)
+	creatorConfig, err := structure.NewAutomaticUpdate(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -90,7 +63,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
 
 	creator := creator.NewCreator(*creatorConfig)

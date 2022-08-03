@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+buildMetadata: [originAnnotations]
+patchesStrategicMerge:
+  - patch_app_userconfig.yaml
+kind: Kustomization
+resources:
+  - ../../../../../../../../base/apps/hello-world
+  - secret.yaml

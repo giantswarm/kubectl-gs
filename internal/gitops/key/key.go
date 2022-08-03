@@ -5,63 +5,100 @@ import (
 )
 
 const (
-	DirectoryClusterApps        = "apps"
-	DirectoryClusterDefinition  = "cluster"
-	DirectoryManagementClusters = "management-clusters"
-	DirectoryOrganizations      = "organizations"
-	DirectorySecrets            = "secrets"
-	DirectorySOPSPublicKeys     = ".sops.keys"
-	DirectoryWorkloadClusters   = "workload-clusters"
+	appCRFile                 = "appcr.yaml"
+	appsDirectory             = "apps"
+	automaticUpdatesDirectory = "automatic-updates"
+	clusterDirectory          = "cluster"
+	configMapFile             = "configmap.yaml"
+	imagePolicyFile           = "imagepolicy.yaml"
+	imageRepositoryFile       = "imagerepository.yaml"
+	kustomizationFile         = "kustomization.yaml"
+	organizationsDirectory    = "organizations"
+	secretFile                = "secret.yaml"
+	secretsDirectory          = "secrets"
+	sopsKeysDirectory         = ".sops.keys"
+	workloadClusterDirectory  = "workload-clusters"
 
-	FileKustomization = "kustomization.yaml"
+	mcDirectoryTemplate  = "management-clusters/%s"
+	orgDirectoryTemplate = "management-clusters/%s/organizations/%s"
+	wcDirectoryTemplate  = "management-clusters/%s/organizations/%s/workload-clusters/%s"
 )
 
-func GetOrgDir(path string) string {
-	return fmt.Sprintf("%s/%s", path, DirectoryOrganizations)
+func AppCRFileName() string {
+	return appCRFile
 }
 
-func GetSecretsDir(path string) string {
-	return fmt.Sprintf("%s/%s", path, DirectorySecrets)
+func AppsDirName() string {
+	return appsDirectory
 }
 
-func GetSopsDir(path string) string {
-	return fmt.Sprintf("%s/%s", path, DirectorySOPSPublicKeys)
+func AutoUpdatesDirName() string {
+	return automaticUpdatesDirectory
 }
 
-func GetWCDir(name string) string {
-	return fmt.Sprintf("%s/%s", DirectoryWorkloadClusters, name)
+func ClusterDirName() string {
+	return clusterDirectory
 }
 
-func GetWCAppsDir(name string) string {
-	return fmt.Sprintf("%s/%s/%s", DirectoryWorkloadClusters, name, DirectoryClusterApps)
+func ConfigMapFileName() string {
+	return configMapFile
 }
 
-func GetWCClusterDir(name string) string {
-	return fmt.Sprintf("%s/%s/%s", DirectoryWorkloadClusters, name, DirectoryClusterDefinition)
+func ImagePolicyFileName() string {
+	return imagePolicyFile
 }
 
-func GetWCsDir(path string) string {
-	return fmt.Sprintf("%s/%s", path, DirectoryWorkloadClusters)
+func ImageRepositoryFileName() string {
+	return imageRepositoryFile
 }
 
-func GetWCsKustomization() string {
-	return fmt.Sprintf("%s/%s", DirectoryWorkloadClusters, FileKustomization)
+func KustomizationFileName() string {
+	return kustomizationFile
 }
 
-func FileName(name string) string {
-	return fmt.Sprintf("%s.yaml", name)
+func OrganizationsDirName() string {
+	return organizationsDirectory
 }
 
-func OrganizationsDirectory(mc string) string {
-	return fmt.Sprintf("%s/%s/%s", DirectoryManagementClusters, mc, DirectoryOrganizations)
+func SecretFileName() string {
+	return secretFile
 }
 
-func WorkloadClustersDirectory(mc, org string) string {
-	return fmt.Sprintf(
-		"%s/%s/%s/%s",
-		DirectoryManagementClusters,
-		mc,
-		DirectoryOrganizations,
-		org,
-	)
+func SecretsDirName() string {
+	return secretsDirectory
+}
+
+func SopsKeysDirName() string {
+	return sopsKeysDirectory
+}
+
+func WorkloadClustersDirName() string {
+	return workloadClusterDirectory
+}
+
+// McDirPath points to `MC_NAME` directory, first of
+// the three main repository layers.
+func McDirPath(mc string) string {
+	return fmt.Sprintf(mcDirectoryTemplate, mc)
+}
+
+// OrgDirPath points to `MC_NAME` directory, second of
+// the three main repository layers.
+func OrgDirPath(mc, org string) string {
+	return fmt.Sprintf(orgDirectoryTemplate, mc, org)
+}
+
+// ResourcePath is general function returning path to
+// a given resource. The rationale behind it is there are
+// many resources that appear in multiple places like `appcr.yaml`,
+// or `secret`, so having a general function is better than
+// having N of them, each for a dedicated layers.
+func ResourcePath(path, name string) string {
+	return fmt.Sprintf("%s/%s", path, name)
+}
+
+// WcDirPath points to `MC_NAME` directory, third of
+// the three main repository layers.
+func WcDirPath(mc, org, wc string) string {
+	return fmt.Sprintf(wcDirectoryTemplate, mc, org, wc)
 }

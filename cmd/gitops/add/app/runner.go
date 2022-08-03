@@ -1,8 +1,7 @@
-package wcluster
+package app
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -43,40 +42,46 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.WcConfig{
-		Base:               r.flag.Base,
-		ClusterRelease:     r.flag.ClusterRelease,
-		DefaultAppsRelease: r.flag.DefaultAppsRelease,
-		ManagementCluster:  r.flag.ManagementCluster,
-		Name:               r.flag.Name,
-		Organization:       r.flag.Organization,
-		RepositoryName:     r.flag.RepositoryName,
+	config := structure.AppConfig{
+		App:               r.flag.App,
+		Base:              r.flag.Base,
+		Catalog:           r.flag.Catalog,
+		ManagementCluster: r.flag.ManagementCluster,
+		Name:              r.flag.Name,
+		Namespace:         r.flag.Namespace,
+		Organization:      r.flag.Organization,
+		WorkloadCluster:   r.flag.WorkloadCluster,
+		Version:           r.flag.Version,
 	}
 
-	if r.flag.ClusterUserConfig != "" {
-		config.ClusterUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
+	if config.Name == "" {
+		config.Name = config.App
+	}
+
+	if r.flag.UserValuesConfigMap != "" {
+		config.UserValuesConfigMap, err = commonkey.ReadConfigMapYamlFromFile(
 			afero.NewOsFs(),
-			r.flag.ClusterUserConfig,
+			r.flag.UserValuesConfigMap,
 		)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.ClusterUserConfig = strings.TrimSpace(config.ClusterUserConfig)
+		config.UserValuesConfigMap = strings.TrimSpace(config.UserValuesConfigMap)
 	}
-	if r.flag.DefaultAppsUserConfig != "" {
-		config.DefaultAppsUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
+	if r.flag.UserValuesSecret != "" {
+		byteData, err := commonkey.ReadSecretYamlFromFile(
 			afero.NewOsFs(),
-			r.flag.DefaultAppsUserConfig,
+			r.flag.UserValuesSecret,
 		)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
+		config.UserValuesSecret = strings.TrimSpace(string(byteData))
 	}
 
-	creatorConfig, err := structure.NewWorkloadCluster(config)
+	creatorConfig, err := structure.NewApp(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -90,7 +95,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
 
 	creator := creator.NewCreator(*creatorConfig)

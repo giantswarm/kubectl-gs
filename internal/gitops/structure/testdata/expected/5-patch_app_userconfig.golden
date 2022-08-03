@@ -1,0 +1,9 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: demowc-hello-world
+spec:
+  userConfig:
+    secret:
+      name: demowc-hello-world-user-values
+      namespace: org-demoorg

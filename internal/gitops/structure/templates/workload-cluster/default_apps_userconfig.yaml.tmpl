@@ -5,6 +5,5 @@ data:
 {{ .DefaultAppsUserConfig | indent 4 }}
 kind: ConfigMap
 metadata:
-  name: {{ .Name }}-default-apps-userconfig
-  namespace: org-{{ .Organization }}
+  name: {{ .Name }}-useconfig
 {{- end }}
