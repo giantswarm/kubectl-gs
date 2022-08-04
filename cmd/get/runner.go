@@ -4,10 +4,11 @@ import (
 	"context"
 	"io"
 
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 type runner struct {

@@ -6,11 +6,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	"gotest.tools/v3/assert"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
 const (
