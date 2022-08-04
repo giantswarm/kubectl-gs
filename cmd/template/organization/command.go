@@ -4,8 +4,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
