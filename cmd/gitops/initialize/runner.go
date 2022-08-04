@@ -1,19 +1,28 @@
-package wcluster
+package initialize
 
 import (
 	"context"
+	"fmt"
 	"io"
+	//"os"
 	"strconv"
-	"strings"
 
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	//"github.com/ProtonMail/gopenpgp/v2/helper"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/afero"
+	//"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
-	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
+	//commonkey "github.com/giantswarm/kubectl-gs/internal/key"
+)
+
+const (
+	keyName = "Max Mustermann"
+	email   = "max.mustermann@example.com"
+	rsaBits = 2048
 )
 
 type runner struct {
@@ -42,40 +51,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.WcConfig{
-		Base:               r.flag.Base,
-		ClusterRelease:     r.flag.ClusterRelease,
-		DefaultAppsRelease: r.flag.DefaultAppsRelease,
-		ManagementCluster:  r.flag.ManagementCluster,
-		Name:               r.flag.Name,
-		Organization:       r.flag.Organization,
-		RepositoryName:     r.flag.RepositoryName,
-	}
-
-	if r.flag.ClusterUserConfig != "" {
-		config.ClusterUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.ClusterUserConfig,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.ClusterUserConfig = strings.TrimSpace(config.ClusterUserConfig)
-	}
-	if r.flag.DefaultAppsUserConfig != "" {
-		config.DefaultAppsUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.DefaultAppsUserConfig,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
-	}
-
-	creatorConfig, err := structure.NewWorkloadCluster(config)
+	creatorConfig, err := structure.Initialize()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -98,6 +74,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	ecKey, err := crypto.GenerateKey(name, email, "x25519", 0)
+	fmt.Println(ecKey.GetArmoredPublicKey())
 
 	return nil
 }

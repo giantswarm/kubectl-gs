@@ -1,4 +1,4 @@
-package organization
+package app
 
 import (
 	_ "embed"

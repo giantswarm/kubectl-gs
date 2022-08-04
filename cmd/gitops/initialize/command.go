@@ -1,4 +1,4 @@
-package gitops
+package initialize
 
 import (
 	"io"
@@ -9,14 +9,25 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/giantswarm/kubectl-gs/cmd/gitops/add"
-	"github.com/giantswarm/kubectl-gs/cmd/gitops/initialize"
 )
 
 const (
-	name        = "gitops"
-	description = "GitOps swissknife"
+	name = "init"
+
+	shortDescription = "Initialize GitOps repository with basic directory structure."
+	longDescription  = `Initialize GitOps repository with basic directory structure.
+
+It respects the Giantswarm's GitOps repository structure recommendation:
+https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+
+	examples = `  # Initialize repository at the current directory
+  kubectl gs gitops init
+
+  # Initialize repository at given location
+  kubectl gs gitops init --local-path /tmp/gitops-demo
+
+  # Initialize dry-run
+  kubectl gs gitops init --local-path /tmp/gitops-demo --dry-run`
 )
 
 type Config struct {
@@ -46,44 +57,6 @@ func New(config Config) (*cobra.Command, error) {
 		config.Stdout = os.Stdout
 	}
 
-	var err error
-
-	var addCmd *cobra.Command
-	{
-		c := add.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		addCmd, err = add.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var initCmd *cobra.Command
-	{
-		c := initialize.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		initCmd, err = initialize.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	f := &flag{}
 
 	r := &runner{
@@ -94,16 +67,14 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  description,
-		RunE:  r.Run,
+		Use:     name,
+		Short:   shortDescription,
+		Long:    longDescription,
+		Example: examples,
+		RunE:    r.Run,
 	}
 
 	f.Init(c)
-
-	c.AddCommand(addCmd)
-	c.AddCommand(initCmd)
 
 	return c, nil
 }

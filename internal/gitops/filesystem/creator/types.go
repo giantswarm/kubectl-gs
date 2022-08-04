@@ -6,8 +6,11 @@ import (
 	"github.com/spf13/afero"
 )
 
-const (
-	yamlExt = ".yaml"
+var (
+	filesExt = []string{
+		".yaml",
+		".asc",
+	}
 )
 
 type FsObject struct {

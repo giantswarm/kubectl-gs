@@ -72,10 +72,21 @@ func (c *Creator) createFile(path string, data []byte) error {
 	return nil
 }
 
+// isDir checks path against pre-configured suffixes
+func isDir(path string) bool {
+	for _, s := range filesExt {
+		if strings.HasSuffix(path, s) {
+			return false
+		}
+	}
+	return true
+}
+
 // print prints the creator's file system objects.
 func (c *Creator) print() {
 	for _, o := range c.fsObjects {
-		if !strings.HasSuffix(o.RelativePath, yamlExt) {
+
+		if isDir(o.RelativePath) {
 			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 			continue
 		}
@@ -106,7 +117,7 @@ func (c *Creator) write() error {
 	}
 
 	for _, o := range c.fsObjects {
-		if !strings.HasSuffix(o.RelativePath, yamlExt) {
+		if isDir(o.RelativePath) {
 			err := c.createDirectory(fmt.Sprintf("%s/%s", c.path, o.RelativePath))
 			if err != nil {
 				return microerror.Mask(err)

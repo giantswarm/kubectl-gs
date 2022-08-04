@@ -1,5 +1,9 @@
 package structure
 
+import (
+	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
+)
+
 // TBD: as you can see some of the fields are the same accorss
 // different structs, so instead of keeping N types with duplicates
 // it could be considered to add one big struct, and simply neglecting
@@ -29,11 +33,9 @@ type AutomaticUpdateConfig struct {
 }
 
 type McConfig struct {
-	Name            string
-	RefreshInterval string
-	RefreshTimeout  string
-	RepositoryName  string
-	ServiceAccount  string
+	Name           string
+	KeyPair        encryption.KeyPair
+	RepositoryName string
 }
 
 type OrgConfig struct {

@@ -1,4 +1,4 @@
-package organization
+package autoupdate
 
 import (
 	_ "embed"

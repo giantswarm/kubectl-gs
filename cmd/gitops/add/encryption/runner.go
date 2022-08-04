@@ -1,18 +1,22 @@
-package mcluster
+package encryption
 
 import (
 	"context"
 	"fmt"
 	"io"
-	"strconv"
+	//"strconv"
 
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	//"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
+	//"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+)
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+const (
+	keyName = "Max Mustermann"
+	email   = ""
 )
 
 type runner struct {
@@ -39,20 +43,9 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.McConfig{
+	/*config := structure.McConfig{
 		Name:           r.flag.Name,
 		RepositoryName: r.flag.RepositoryName,
-	}
-
-	if r.flag.GenerateMasterKey {
-		keyName := fmt.Sprintf("%s Flux master", config.Name)
-
-		keyPair, err := encryption.GenerateKeyPair(keyName)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.KeyPair = keyPair
 	}
 
 	creatorConfig, err := structure.NewManagementCluster(config)
@@ -77,7 +70,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)
+	}*/
+
+	ecKey, err := crypto.GenerateKey(keyName, email, "x25519", 0)
+	if err != nil {
+		return err
 	}
+	fmt.Println(ecKey.GetArmoredPublicKey())
+	fmt.Println(ecKey.GetFingerprint())
 
 	return nil
 }

@@ -1,4 +1,4 @@
-package organization
+package workcluster
 
 import (
 	_ "embed"

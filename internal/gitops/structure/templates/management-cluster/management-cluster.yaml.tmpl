@@ -4,11 +4,17 @@ metadata:
   name: {{ .Name }}-gitops
   namespace: default
 spec:
-  interval: {{ .RefreshInterval }}
+  {{- if .KeyPair.PrivateData }}
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-gpg-master
+  {{- end }}
+  interval: 1m
   path: ./management-clusters/{{ .Name }}
   prune: false
-  serviceAccountName: {{ .ServiceAccount}}
+  serviceAccountName: automation
   sourceRef:
     kind: GitRepository
     name: {{ .RepositoryName }}
-  timeout: {{ .RefreshTimeout }}
+  timeout: 2m

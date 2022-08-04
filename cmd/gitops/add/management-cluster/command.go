@@ -29,18 +29,11 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_mc.md`
   --name dummy \
   --repository-name gitops-demo
 
-  # Add dummy Management Cluster with custom interval
+  # Add dummy Management Cluster with master GPG key
   kubectl gs gitops add mc \
   --name dummy \
-  --repository-name gitops-demo \
-  --refresh-interval 5m \
-  --refresh-timeout 10m
-
-  # Add dummy Management Cluster with Bucket source
-  kubectl gs gitops add mc \
-  --name dummy \
-  --repository-name gitops-demo \
-  --repository-kind bucket`
+  --repository-name gitops-demo
+  --gen-master-key`
 )
 
 type Config struct {

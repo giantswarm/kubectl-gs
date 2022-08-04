@@ -5,19 +5,20 @@ import (
 )
 
 const (
-	appCRFile                 = "appcr.yaml"
-	appsDirectory             = "apps"
-	automaticUpdatesDirectory = "automatic-updates"
-	clusterDirectory          = "cluster"
-	configMapFile             = "configmap.yaml"
-	imagePolicyFile           = "imagepolicy.yaml"
-	imageRepositoryFile       = "imagerepository.yaml"
-	kustomizationFile         = "kustomization.yaml"
-	organizationsDirectory    = "organizations"
-	secretFile                = "secret.yaml"
-	secretsDirectory          = "secrets"
-	sopsKeysDirectory         = ".sops.keys"
-	workloadClusterDirectory  = "workload-clusters"
+	appCRFile                  = "appcr.yaml"
+	appsDirectory              = "apps"
+	automaticUpdatesDirectory  = "automatic-updates"
+	clusterDirectory           = "cluster"
+	configMapFile              = "configmap.yaml"
+	imagePolicyFile            = "imagepolicy.yaml"
+	imageRepositoryFile        = "imagerepository.yaml"
+	kustomizationFile          = "kustomization.yaml"
+	managementClusterDirectory = "management-clusters"
+	organizationsDirectory     = "organizations"
+	secretFile                 = "secret.yaml"
+	secretsDirectory           = "secrets"
+	sopsKeysDirectory          = ".sops.keys"
+	workloadClusterDirectory   = "workload-clusters"
 
 	mcDirectoryTemplate  = "management-clusters/%s"
 	orgDirectoryTemplate = "management-clusters/%s/organizations/%s"
@@ -54,6 +55,10 @@ func ImageRepositoryFileName() string {
 
 func KustomizationFileName() string {
 	return kustomizationFile
+}
+
+func ManagementClustersDirName() string {
+	return managementClusterDirectory
 }
 
 func OrganizationsDirName() string {

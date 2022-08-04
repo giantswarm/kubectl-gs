@@ -17,7 +17,8 @@ const (
 	appVersionLocator = `version:\s([v0-9.]*).*\n`
 	appVersionUpdater = "version: $1 # {\"$$imagepolicy\": \"default:%s:tag\"}\n"
 
-	arrayContains = "%s[] | contains(@, '%s')"
+	arrayContains    = "%s[] | contains(@, '%s')"
+	mapContainsValue = "%s[].%s | contains(@, '%s')"
 )
 
 // My idea for now was to create some sort of modifiers

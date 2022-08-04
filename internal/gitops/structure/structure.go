@@ -15,8 +15,34 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
 	mctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/management-cluster"
 	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/organization"
+	roottmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/root"
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
+
+// Initialize create a basic directory structure for the repository
+func Initialize() (*creator.CreatorConfig, error) {
+	//var err error
+
+	mcsDir := key.ManagementClustersDirName()
+
+	// We initialize repository with the `management-clusters` directory
+	// and SOPS configuration file.
+	fsObjects := []*creator.FsObject{
+		creator.NewFsObject(mcsDir, nil),
+	}
+
+	fileObjects, err := addFilesFromTemplate("", roottmpl.GetRepositoryRootTemplates, nil)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	fsObjects = append(fsObjects, fileObjects...)
+
+	creatorConfig := creator.CreatorConfig{
+		FsObjects: fsObjects,
+	}
+
+	return &creatorConfig, nil
+}
 
 // NewApp creates a new App directory structure.
 func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
@@ -144,16 +170,18 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 func NewManagementCluster(config McConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	mcDirectory := key.McDirPath(config.Name)
+	mcDir := key.McDirPath(config.Name)
+	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
+	sopsDir := key.ResourcePath(mcDir, key.SopsKeysDirName())
+	orgsDir := key.ResourcePath(mcDir, key.OrganizationsDirName())
 
 	// Adding a new Management Cluster is simple. We start at the
 	// `management-clusters/MC_NAME` and then add definition and few
 	// of the basic directories.
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(mcDirectory, nil),
+		creator.NewFsObject(mcDir, nil),
 	}
-
-	fileObjects, err := addFilesFromTemplate(mcDirectory, mctmpl.GetManagementClusterTemplates, config)
+	fileObjects, err := addFilesFromTemplate(mcDir, mctmpl.GetManagementClusterTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -161,11 +189,27 @@ func NewManagementCluster(config McConfig) (*creator.CreatorConfig, error) {
 
 	fsObjects = append(
 		fsObjects,
-		[]*creator.FsObject{
-			creator.NewFsObject(key.ResourcePath(mcDirectory, key.SecretsDirName()), nil),
-			creator.NewFsObject(key.ResourcePath(mcDirectory, key.SopsKeysDirName()), nil),
-			creator.NewFsObject(key.ResourcePath(mcDirectory, key.OrganizationsDirName()), nil),
-		}...,
+		creator.NewFsObject(secretsDir, nil),
+	)
+	fileObjects, err = addFilesFromTemplate(secretsDir, mctmpl.GetManagementClusterSecretsTemplates, config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	fsObjects = append(fsObjects, fileObjects...)
+
+	fsObjects = append(
+		fsObjects,
+		creator.NewFsObject(sopsDir, nil),
+	)
+	fileObjects, err = addFilesFromTemplate(sopsDir, mctmpl.GetManagementClusterSOPSTemplates, config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	fsObjects = append(fsObjects, fileObjects...)
+
+	fsObjects = append(
+		fsObjects,
+		creator.NewFsObject(orgsDir, nil),
 	)
 
 	creatorConfig := creator.CreatorConfig{
@@ -299,6 +343,7 @@ func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 // given directory.
 func addFilesFromTemplate(path string, templates func() []common.Template, config interface{}) ([]*creator.FsObject, error) {
 	var err error
+	//fmt.Println(config["KeyPair"])
 
 	fsObjects := make([]*creator.FsObject, 0)
 	for _, t := range templates() {
@@ -322,10 +367,15 @@ func addFilesFromTemplate(path string, templates func() []common.Template, confi
 			continue
 		}
 
+		file := name.String()
+		if path != "" {
+			file = fmt.Sprintf("%s/%s", path, file)
+		}
+
 		fsObjects = append(
 			fsObjects,
 			creator.NewFsObject(
-				fmt.Sprintf("%s/%s", path, name.String()),
+				file,
 				content.Bytes(),
 			),
 		)

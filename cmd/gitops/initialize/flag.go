@@ -1,6 +1,8 @@
-package add
+package initialize
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 type flag struct{}
 

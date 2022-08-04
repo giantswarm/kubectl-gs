@@ -12,6 +12,7 @@ import (
 
 	app "github.com/giantswarm/kubectl-gs/cmd/gitops/add/app"
 	autoup "github.com/giantswarm/kubectl-gs/cmd/gitops/add/automatic-updates"
+	enc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/encryption"
 	mc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/management-cluster"
 	org "github.com/giantswarm/kubectl-gs/cmd/gitops/add/organization"
 	wc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/workload-cluster"
@@ -82,6 +83,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 
 		autoUpdateCmd, err = autoup.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var encryptionCmd *cobra.Command
+	{
+		c := enc.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		encryptionCmd, err = enc.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -161,6 +180,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	c.AddCommand(appCmd)
 	c.AddCommand(autoUpdateCmd)
+	c.AddCommand(encryptionCmd)
 	c.AddCommand(mcCmd)
 	c.AddCommand(orgCmd)
 	c.AddCommand(wcCmd)

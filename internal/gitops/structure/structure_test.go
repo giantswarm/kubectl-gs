@@ -311,11 +311,8 @@ func Test_NewManagementCluster(t *testing.T) {
 		{
 			name: "flawless",
 			config: McConfig{
-				Name:            "demomc",
-				RefreshInterval: "1m",
-				RefreshTimeout:  "2m",
-				RepositoryName:  "gitops-demo",
-				ServiceAccount:  "automation",
+				Name:           "demomc",
+				RepositoryName: "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -329,7 +326,13 @@ func Test_NewManagementCluster(t *testing.T) {
 					RelativePath: "management-clusters/demomc/secrets",
 				},
 				{
+					RelativePath: "management-clusters/demomc/secrets/demomc.gpgkey.enc.yaml",
+				},
+				{
 					RelativePath: "management-clusters/demomc/.sops.keys",
+				},
+				{
+					RelativePath: "management-clusters/demomc/.sops.keys/.sops.master.asc",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations",
@@ -343,6 +346,10 @@ func Test_NewManagementCluster(t *testing.T) {
 			config, err := NewManagementCluster(tc.config)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			for _, i := range config.FsObjects {
+				fmt.Println(i.RelativePath)
 			}
 
 			if len(config.FsObjects) != len(tc.expectedObjects) {
