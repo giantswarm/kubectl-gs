@@ -5,8 +5,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
@@ -15,9 +13,8 @@ const (
 )
 
 type Config struct {
-	CommonConfig *commonconfig.CommonConfig
-	Stderr       io.Writer
-	Stdout       io.Writer
+	Stderr io.Writer
+	Stdout io.Writer
 }
 
 func New(config Config) (*cobra.Command, error) {
@@ -31,10 +28,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		commonConfig: config.CommonConfig,
-		flag:         f,
-		stderr:       config.Stderr,
-		stdout:       config.Stdout,
+		flag:   f,
+		stderr: config.Stderr,
+		stdout: config.Stdout,
 	}
 
 	c := &cobra.Command{

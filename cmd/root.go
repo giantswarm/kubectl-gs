@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
@@ -17,7 +16,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template"
 	"github.com/giantswarm/kubectl-gs/cmd/update"
 	"github.com/giantswarm/kubectl-gs/cmd/validate"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/project"
 )
 
@@ -38,9 +36,6 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	CommonConfig *commonconfig.CommonConfig
-	ConfigFlags  pflag.FlagSet
-
 	Stderr io.Writer
 	Stdout io.Writer
 }
@@ -52,9 +47,6 @@ func New(config Config) (*cobra.Command, error) {
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
 	}
-	if config.CommonConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CommonConfig must not be empty", config)
-	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
 	}
@@ -64,13 +56,40 @@ func New(config Config) (*cobra.Command, error) {
 
 	var err error
 
+	f := &flag{}
+
+	r := &runner{
+		flag:   f,
+		logger: config.Logger,
+		stderr: config.Stderr,
+		stdout: config.Stdout,
+	}
+
+	c := &cobra.Command{
+		Use:                name,
+		Short:              description,
+		Long:               description,
+		RunE:               r.Run,
+		PersistentPostRunE: r.PersistentPostRun,
+		SilenceUsage:       true,
+		SilenceErrors:      true,
+		Version:            project.Version(),
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
+			}
+			return nil
+		},
+	}
+	f.Init(c)
+
 	var loginCmd *cobra.Command
 	{
 		c := login.Config{
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: &f.config,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -87,7 +106,7 @@ func New(config Config) (*cobra.Command, error) {
 		c := template.Config{
 			Logger: config.Logger,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: &f.config,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -105,7 +124,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: &f.config,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -120,10 +139,10 @@ func New(config Config) (*cobra.Command, error) {
 	var validateCmd *cobra.Command
 	{
 		c := validate.Config{
-			Logger:       config.Logger,
-			CommonConfig: config.CommonConfig,
-			Stderr:       config.Stderr,
-			Stdout:       config.Stdout,
+			Logger:      config.Logger,
+			ConfigFlags: &f.config,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
 		}
 
 		validateCmd, err = validate.New(c)
@@ -135,10 +154,10 @@ func New(config Config) (*cobra.Command, error) {
 	var updateCmd *cobra.Command
 	{
 		c := update.Config{
-			Logger:       config.Logger,
-			CommonConfig: config.CommonConfig,
-			Stderr:       config.Stderr,
-			Stdout:       config.Stdout,
+			Logger:      config.Logger,
+			ConfigFlags: &f.config,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
 		}
 
 		updateCmd, err = update.New(c)
@@ -161,36 +180,6 @@ func New(config Config) (*cobra.Command, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
-
-	f := &flag{}
-
-	r := &runner{
-		commonConfig: config.CommonConfig,
-		flag:         f,
-		logger:       config.Logger,
-		stderr:       config.Stderr,
-		stdout:       config.Stdout,
-	}
-
-	c := &cobra.Command{
-		Use:                name,
-		Short:              description,
-		Long:               description,
-		RunE:               r.Run,
-		PersistentPostRunE: r.PersistentPostRun,
-		SilenceUsage:       true,
-		SilenceErrors:      true,
-		Version:            project.Version(),
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 0 {
-				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
-			}
-			return nil
-		},
-	}
-	c.PersistentFlags().AddFlagSet(&config.ConfigFlags)
-	f.Init(c)
-
 	c.AddCommand(getCmd)
 	c.AddCommand(loginCmd)
 	c.AddCommand(templateCmd)

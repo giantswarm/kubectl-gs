@@ -323,8 +323,9 @@ func TestLogin(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			err = r.Run(&cobra.Command{}, tc.mcArg)
+			ctx := context.Background()
+			r.setLoginOptions(ctx, &tc.mcArg)
+			err = r.run(ctx, &cobra.Command{}, tc.mcArg)
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
 					t.Fatalf("unexpected error: %s", err.Error())

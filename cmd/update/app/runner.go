@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/app"
@@ -15,6 +16,7 @@ import (
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
+	configFlags  *genericclioptions.RESTClientGetter
 	flag         *flag
 	logger       micrologger.Logger
 
@@ -33,6 +35,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Mask(err)
 	}
 
+	r.commonConfig = commonconfig.New(*r.configFlags)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)

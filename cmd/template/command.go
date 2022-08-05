@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/app"
 	"github.com/giantswarm/kubectl-gs/cmd/template/catalog"
@@ -26,6 +27,7 @@ type Config struct {
 	Logger micrologger.Logger
 
 	CommonConfig *commonconfig.CommonConfig
+	ConfigFlags  *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -77,7 +79,7 @@ func New(config Config) (*cobra.Command, error) {
 		c := cluster.Config{
 			Logger: config.Logger,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -133,11 +135,11 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		commonConfig: config.CommonConfig,
-		flag:         f,
-		logger:       config.Logger,
-		stderr:       config.Stderr,
-		stdout:       config.Stdout,
+		configFlags: config.ConfigFlags,
+		flag:        f,
+		logger:      config.Logger,
+		stderr:      config.Stderr,
+		stdout:      config.Stdout,
 	}
 
 	c := &cobra.Command{

@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
@@ -22,6 +23,7 @@ type runner struct {
 	fs     afero.Fs
 
 	commonConfig *commonconfig.CommonConfig
+	configFlags  *genericclioptions.RESTClientGetter
 	loginOptions LoginOptions
 
 	stdout io.Writer
@@ -46,6 +48,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	r.setLoginOptions(ctx, &args)
+	r.commonConfig = commonconfig.New(*r.configFlags)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)

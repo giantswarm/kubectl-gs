@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get/apps"
 	"github.com/giantswarm/kubectl-gs/cmd/get/capi"
@@ -28,6 +29,7 @@ type Config struct {
 	FileSystem afero.Fs
 
 	CommonConfig *commonconfig.CommonConfig
+	ConfigFlags  *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -40,8 +42,8 @@ func New(config Config) (*cobra.Command, error) {
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
 	}
-	if config.CommonConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CommonConfig must not be empty", config)
+	if config.ConfigFlags == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
@@ -58,7 +60,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -76,7 +78,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -91,9 +93,9 @@ func New(config Config) (*cobra.Command, error) {
 	var clusterApiCmd *cobra.Command
 	{
 		c := capi.Config{
-			Logger:       config.Logger,
-			CommonConfig: config.CommonConfig,
-			Stdout:       config.Stdout,
+			Logger:      config.Logger,
+			ConfigFlags: config.ConfigFlags,
+			Stdout:      config.Stdout,
 		}
 
 		clusterApiCmd, err = capi.New(c)
@@ -108,7 +110,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -126,7 +128,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -144,7 +146,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			CommonConfig: config.CommonConfig,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -159,11 +161,11 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		commonConfig: config.CommonConfig,
-		flag:         f,
-		logger:       config.Logger,
-		stderr:       config.Stderr,
-		stdout:       config.Stdout,
+		configFlags: config.ConfigFlags,
+		flag:        f,
+		logger:      config.Logger,
+		stderr:      config.Stderr,
+		stdout:      config.Stdout,
 	}
 
 	c := &cobra.Command{

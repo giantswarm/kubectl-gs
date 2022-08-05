@@ -13,6 +13,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/printers"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -29,6 +30,7 @@ const (
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
+	configFlags  *genericclioptions.RESTClientGetter
 	flag         *flag
 	logger       micrologger.Logger
 
@@ -246,6 +248,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Mask(err)
 	}
 
+	r.commonConfig = commonconfig.New(*r.configFlags)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)

@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
@@ -19,6 +20,7 @@ import (
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
+	configFlags  *genericclioptions.RESTClientGetter
 	flag         *flag
 	logger       micrologger.Logger
 	fs           afero.Fs
@@ -38,6 +40,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Mask(err)
 	}
 
+	r.commonConfig = commonconfig.New(*r.configFlags)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)

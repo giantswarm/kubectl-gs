@@ -15,17 +15,15 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/annotations"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/labels"
 	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
 )
 
 type runner struct {
-	commonConfig *commonconfig.CommonConfig
-	flag         *flag
-	logger       micrologger.Logger
-	stderr       io.Writer
-	stdout       io.Writer
+	flag   *flag
+	logger micrologger.Logger
+	stderr io.Writer
+	stdout io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {

@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/middleware"
@@ -83,6 +84,7 @@ type Config struct {
 	FileSystem afero.Fs
 
 	CommonConfig *commonconfig.CommonConfig
+	ConfigFlags  *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -112,7 +114,7 @@ func New(config Config) (*cobra.Command, error) {
 		logger: config.Logger,
 		fs:     config.FileSystem,
 
-		commonConfig: config.CommonConfig,
+		configFlags: config.ConfigFlags,
 
 		stderr: config.Stderr,
 		stdout: config.Stdout,
