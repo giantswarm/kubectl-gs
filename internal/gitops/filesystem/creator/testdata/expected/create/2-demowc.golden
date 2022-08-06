@@ -1,5 +1,3 @@
-/tmp/testpath/workload-clusters
-/tmp/testpath/workload-clusters/demowc.yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
@@ -20,14 +18,3 @@ spec:
     kind: GitRepository
     name: gitops-demo
   timeout: 2m
-
-/tmp/testpath/workload-clusters/demowc
-/tmp/testpath/workload-clusters/demowc/apps
-/tmp/testpath/workload-clusters/demowc/cluster
-/tmp/testpath/workload-clusters/demowc/cluster/kustomization.yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-commonLabels:
-  giantswarm.io/managed-by: flux
-kind: Kustomization
-resources:
-  - ../../../../../../../bases/cluster/capo

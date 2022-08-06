@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -15,243 +16,125 @@ const (
 	dryRunRepoPath = "/tmp/testpath"
 )
 
+type testFsObjects struct {
+	RelativePath string
+	InputData    string
+}
+
 func Test_Create(t *testing.T) {
 	testCases := []struct {
 		name           string
 		creator        Creator
 		expectedCreate map[string]string
 		expectedDryRun string
+		testFsObjects  []testFsObjects
 	}{
 		{
 			name: "flawless management cluster (dry-run)",
 			creator: Creator{
 				dryRun: true,
-				fsObjects: []*FsObject{
-					NewFsObject("demomc", nil),
-					NewFsObject(
-						"demomc/demomc.yaml",
-						[]byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: demomc-gitops
-  namespace: default
-spec:
-  interval: 1m
-  path: ./management-clusters/demomc
-  prune: false
-  serviceAccountName: automation
-  sourceRef:
-    kind: GitRepository
-    name: gitops-demo
-  timeout: 1m
-`),
-					),
-					NewFsObject("demomc/.sops.keys", nil),
-					NewFsObject("demomc/secrets", nil),
-					NewFsObject("demomc/organizations", nil),
-				},
-				path: dryRunRepoPath,
+				path:   dryRunRepoPath,
 			},
-			expectedDryRun: "testdata/expected/files/dry-run/case-0-flawless.golden",
+			expectedDryRun: "testdata/expected/dry-run/case-0-flawless.golden",
+			testFsObjects: []testFsObjects{
+				testFsObjects{RelativePath: "demomc", InputData: ""},
+				testFsObjects{RelativePath: "demomc/demomc.yaml", InputData: "testdata/input/demomc.yaml"},
+				testFsObjects{RelativePath: "demomc/.sops.keys", InputData: ""},
+				testFsObjects{RelativePath: "demomc/secrets", InputData: ""},
+				testFsObjects{RelativePath: "demomc/organizations", InputData: ""},
+			},
 		},
 		{
 			name: "flawless organization (dry-run)",
 			creator: Creator{
 				dryRun: true,
-				fsObjects: []*FsObject{
-					NewFsObject("demoorg", nil),
-					NewFsObject(
-						"demoorg/demoorg.yaml",
-						[]byte(`apiVersion: security.giantswarm.io/v1alpha1
-kind: Organization
-metadata:
-  name: demoorg
-spec: {}
-`),
-					),
-					NewFsObject("demoorg/workload-clusters", nil),
-					NewFsObject(
-						"demoorg/workload-clusters/kustomization.yaml",
-						[]byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources: []`),
-					),
-				},
-				path: dryRunRepoPath,
+				path:   dryRunRepoPath,
 			},
-			expectedDryRun: "testdata/expected/files/dry-run/case-1-flawless.golden",
+			expectedDryRun: "testdata/expected/dry-run/case-1-flawless.golden",
+			testFsObjects: []testFsObjects{
+				testFsObjects{RelativePath: "demoorg", InputData: ""},
+				testFsObjects{RelativePath: "demoorg/demoorg.yaml", InputData: "testdata/input/demoorg.yaml"},
+				testFsObjects{RelativePath: "demoorg/workload-clusters", InputData: ""},
+				testFsObjects{RelativePath: "demoorg/workload-clusters/kustomization.yaml", InputData: "testdata/input/0-kustomization.yaml"},
+			},
 		},
 		{
 			name: "flawless workload cluster (dry-run)",
 			creator: Creator{
 				dryRun: true,
-				fsObjects: []*FsObject{
-					NewFsObject("workload-clusters", nil),
-					NewFsObject(
-						"workload-clusters/demowc.yaml",
-						[]byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: demomc-clusters-demowc
-  namespace: default
-spec:
-  interval: 1m
-  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
-  postBuild:
-    substitute:
-      cluster_name: "demowc"
-      organization: "demoorg"
-      cluster_release: "0.13.0"
-      default_apps_release: "0.6.0"
-  prune: false
-  serviceAccountName: automation
-  sourceRef:
-    kind: GitRepository
-    name: gitops-demo
-  timeout: 2m
-`),
-					),
-					NewFsObject("workload-clusters/demowc", nil),
-					NewFsObject("workload-clusters/demowc/apps", nil),
-					NewFsObject("workload-clusters/demowc/cluster", nil),
-					NewFsObject(
-						"workload-clusters/demowc/cluster/kustomization.yaml",
-						[]byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-commonLabels:
-  giantswarm.io/managed-by: flux
-kind: Kustomization
-resources:
-  - ../../../../../../../bases/cluster/capo`),
-					),
-				},
-				path: dryRunRepoPath,
+				path:   dryRunRepoPath,
 			},
-			expectedDryRun: "testdata/expected/files/dry-run/case-2-flawless.golden",
+			expectedDryRun: "testdata/expected/dry-run/case-2-flawless.golden",
+			testFsObjects: []testFsObjects{
+				testFsObjects{RelativePath: "workload-clusters", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc.yaml", InputData: "testdata/input/demowc.yaml"},
+				testFsObjects{RelativePath: "workload-clusters/demowc", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc/apps", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc/cluster", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc/cluster/kustomization.yaml", InputData: "testdata/input/1-kustomization.yaml"},
+			},
 		},
 		{
 			name: "flawless management cluster (create)",
 			creator: Creator{
 				dryRun: false,
-				fsObjects: []*FsObject{
-					NewFsObject("demomc", nil),
-					NewFsObject(
-						"demomc/demomc.yaml",
-						[]byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: demomc-gitops
-  namespace: default
-spec:
-  interval: 1m
-  path: ./management-clusters/demomc
-  prune: false
-  serviceAccountName: automation
-  sourceRef:
-    kind: GitRepository
-    name: gitops-demo
-  timeout: 1m
-`),
-					),
-					NewFsObject("demomc/.sops.keys", nil),
-					NewFsObject("demomc/secrets", nil),
-					NewFsObject("demomc/organizations", nil),
-				},
-				fs: &afero.Afero{Fs: afero.NewOsFs()},
+				fs:     &afero.Afero{Fs: afero.NewOsFs()},
 			},
 			expectedCreate: map[string]string{
 				"demomc":               "",
-				"demomc/demomc.yaml":   "testdata/expected/files/create/0-demomc.golden",
+				"demomc/demomc.yaml":   "testdata/expected/create/0-demomc.golden",
 				"demomc/.sops.keys":    "",
 				"demomc/secrets":       "",
 				"demomc/organizations": "",
+			},
+			testFsObjects: []testFsObjects{
+				testFsObjects{RelativePath: "demomc", InputData: ""},
+				testFsObjects{RelativePath: "demomc/demomc.yaml", InputData: "testdata/input/demomc.yaml"},
+				testFsObjects{RelativePath: "demomc/.sops.keys", InputData: ""},
+				testFsObjects{RelativePath: "demomc/secrets", InputData: ""},
+				testFsObjects{RelativePath: "demomc/organizations", InputData: ""},
 			},
 		},
 		{
 			name: "flawless organization (create)",
 			creator: Creator{
 				dryRun: false,
-				fsObjects: []*FsObject{
-					NewFsObject("demoorg", nil),
-					NewFsObject(
-						"demoorg/demoorg.yaml",
-						[]byte(`apiVersion: security.giantswarm.io/v1alpha1
-kind: Organization
-metadata:
-  name: demoorg
-spec: {}
-`),
-					),
-					NewFsObject("demoorg/workload-clusters", nil),
-					NewFsObject(
-						"demoorg/workload-clusters/kustomization.yaml",
-						[]byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources: []
-`),
-					),
-				},
-				fs: &afero.Afero{Fs: afero.NewOsFs()},
+				fs:     &afero.Afero{Fs: afero.NewOsFs()},
 			},
 			expectedCreate: map[string]string{
 				"demoorg":                   "",
-				"demoorg/demoorg.yaml":      "testdata/expected/files/create/1-demoorg.golden",
+				"demoorg/demoorg.yaml":      "testdata/expected/create/1-demoorg.golden",
 				"demoorg/workload-clusters": "",
-				"demoorg/workload-clusters/kustomization.yaml": "testdata/expected/files/create/1-kustomization.golden",
+				"demoorg/workload-clusters/kustomization.yaml": "testdata/expected/create/1-kustomization.golden",
+			},
+			testFsObjects: []testFsObjects{
+				testFsObjects{RelativePath: "demoorg", InputData: ""},
+				testFsObjects{RelativePath: "demoorg/demoorg.yaml", InputData: "testdata/input/demoorg.yaml"},
+				testFsObjects{RelativePath: "demoorg/workload-clusters", InputData: ""},
+				testFsObjects{RelativePath: "demoorg/workload-clusters/kustomization.yaml", InputData: "testdata/input/0-kustomization.yaml"},
 			},
 		},
 		{
 			name: "flawless workload cluster (create)",
 			creator: Creator{
 				dryRun: false,
-				fsObjects: []*FsObject{
-					NewFsObject("workload-clusters", nil),
-					NewFsObject(
-						"workload-clusters/demowc.yaml",
-						[]byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: demomc-clusters-demowc
-  namespace: default
-spec:
-  interval: 1m
-  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
-  postBuild:
-    substitute:
-      cluster_name: "demomc"
-      organization: "demoorg"
-      cluster_release: "0.13.0"
-      default_apps_release: "0.6.0"
-  prune: false
-  serviceAccountName: automation
-  sourceRef:
-    kind: GitRepository
-    name: gitops-demo
-  timeout: 2m
-`),
-					),
-					NewFsObject("workload-clusters/demowc", nil),
-					NewFsObject("workload-clusters/demowc/apps", nil),
-					NewFsObject("workload-clusters/demowc/cluster", nil),
-					NewFsObject(
-						"workload-clusters/demowc/cluster/kustomization.yaml",
-						[]byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-commonLabels:
-  giantswarm.io/managed-by: flux
-kind: Kustomization
-resources:
-  - ../../../../../../../bases/cluster/capo
-`),
-					),
-				},
-				fs: &afero.Afero{Fs: afero.NewOsFs()},
+				fs:     &afero.Afero{Fs: afero.NewOsFs()},
 			},
 			expectedCreate: map[string]string{
 				"workload-clusters":                                   "",
-				"workload-clusters/demowc.yaml":                       "testdata/expected/files/create/2-demowc.golden",
+				"workload-clusters/demowc.yaml":                       "testdata/expected/create/2-demowc.golden",
 				"workload-clusters/demowc":                            "",
 				"workload-clusters/demowc/apps":                       "",
 				"workload-clusters/demowc/cluster":                    "",
-				"workload-clusters/demowc/cluster/kustomization.yaml": "testdata/expected/files/create/2-kustomization.golden",
+				"workload-clusters/demowc/cluster/kustomization.yaml": "testdata/expected/create/2-kustomization.golden",
+			},
+			testFsObjects: []testFsObjects{
+				testFsObjects{RelativePath: "workload-clusters", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc.yaml", InputData: "testdata/input/demowc.yaml"},
+				testFsObjects{RelativePath: "workload-clusters/demowc", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc/apps", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc/cluster", InputData: ""},
+				testFsObjects{RelativePath: "workload-clusters/demowc/cluster/kustomization.yaml", InputData: "testdata/input/1-kustomization.yaml"},
 			},
 		},
 	}
@@ -261,6 +144,26 @@ resources:
 			var err error
 
 			var tmpDir string
+
+			fsObjects := make([]*FsObject, 0)
+			for _, tfo := range tc.testFsObjects {
+				if tfo.InputData == "" {
+					fsObjects = append(fsObjects, NewFsObject(tfo.RelativePath, nil))
+					continue
+				}
+
+				data, err := ioutil.ReadFile(tfo.InputData)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err.Error())
+				}
+
+				fsObjects = append(
+					fsObjects,
+					NewFsObject(tfo.RelativePath, data),
+				)
+			}
+
+			tc.creator.fsObjects = fsObjects
 
 			if !tc.creator.dryRun {
 				tmpDir, err = ioutil.TempDir("", "creator-test")
@@ -292,8 +195,11 @@ resources:
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
-				if !bytes.Equal(out.Bytes(), expected) {
-					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), out.String()))
+				e := strings.TrimRight(string(expected), "\n")
+				g := strings.TrimRight(out.String(), "\n")
+
+				if !bytes.Equal([]byte(g), []byte(e)) {
+					t.Fatalf("want matching files \n%s\n", cmp.Diff(e, g))
 				}
 			}
 

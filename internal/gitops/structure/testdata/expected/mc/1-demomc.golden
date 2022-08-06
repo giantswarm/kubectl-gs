@@ -1,0 +1,18 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: demomc-gitops
+  namespace: default
+spec:
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-gpg-master
+  interval: 1m
+  path: ./management-clusters/demomc
+  prune: false
+  serviceAccountName: automation
+  sourceRef:
+    kind: GitRepository
+    name: gitops-demo
+  timeout: 2m

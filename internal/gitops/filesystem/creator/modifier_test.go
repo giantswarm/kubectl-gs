@@ -101,6 +101,28 @@ spec:
 				ImagePolicy: "demowc-hello-world",
 			},
 		},
+		{
+			name: "add key to the secret",
+			expected: []byte(`apiVersion: v1
+data:
+  master.123456789ABCDEF.asc: RkFLRSBQVUJMSUMgS0VZIE1BVEVSSUFM
+kind: Secret
+metadata:
+  name: sops-gpg-master
+  namespace: default
+`),
+			input: []byte(`apiVersion: v1
+kind: Secret
+metadata:
+  name: sops-gpg-master
+  namespace: default
+`),
+			modifier: SecretModifier{
+				KeysToAdd: map[string]string{
+					"master.123456789ABCDEF.asc": "FAKE PUBLIC KEY MATERIAL",
+				},
+			},
+		},
 	}
 
 	for i, tc := range testCases {

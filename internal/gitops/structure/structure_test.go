@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 )
 
 type FsObjectExpected struct {
@@ -41,7 +43,7 @@ func Test_NewApp(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/0-appcr.golden",
+					GoldenFile:   "testdata/expected/app/0-appcr.golden",
 				},
 			},
 		},
@@ -64,7 +66,7 @@ func Test_NewApp(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/kustomization.yaml",
-					GoldenFile:   "testdata/expected/1-hello_world_kustomization.golden",
+					GoldenFile:   "testdata/expected/app/0-hello_world_kustomization.golden",
 				},
 			},
 		},
@@ -92,11 +94,11 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/2-appcr.golden",
+					GoldenFile:   "testdata/expected/app/1-appcr.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/configmap.yaml",
-					GoldenFile:   "testdata/expected/2-configmap.golden",
+					GoldenFile:   "testdata/expected/app/0-configmap.golden",
 				},
 			},
 		},
@@ -124,11 +126,11 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/3-appcr.golden",
+					GoldenFile:   "testdata/expected/app/2-appcr.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.yaml",
-					GoldenFile:   "testdata/expected/3-secret.golden",
+					GoldenFile:   "testdata/expected/app/0-secret.golden",
 				},
 			},
 		},
@@ -153,15 +155,15 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/configmap.yaml",
-					GoldenFile:   "testdata/expected/2-configmap.golden",
+					GoldenFile:   "testdata/expected/app/0-configmap.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/kustomization.yaml",
-					GoldenFile:   "testdata/expected/4-hello_world_kustomization.golden",
+					GoldenFile:   "testdata/expected/app/1-hello_world_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/patch_app_userconfig.yaml",
-					GoldenFile:   "testdata/expected/4-patch_app_userconfig.golden",
+					GoldenFile:   "testdata/expected/app/0-patch_app_userconfig.golden",
 				},
 			},
 		},
@@ -186,15 +188,15 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.yaml",
-					GoldenFile:   "testdata/expected/3-secret.golden",
+					GoldenFile:   "testdata/expected/app/0-secret.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/kustomization.yaml",
-					GoldenFile:   "testdata/expected/5-hello_world_kustomization.golden",
+					GoldenFile:   "testdata/expected/app/2-hello_world_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/patch_app_userconfig.yaml",
-					GoldenFile:   "testdata/expected/5-patch_app_userconfig.golden",
+					GoldenFile:   "testdata/expected/app/1-patch_app_userconfig.golden",
 				},
 			},
 		},
@@ -255,15 +257,15 @@ func Test_NewAutomaticUpdate(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/automatic-updates/imageupdate.yaml",
-					GoldenFile:   "testdata/expected/0-imageupdate.golden",
+					GoldenFile:   "testdata/expected/img/0-imageupdate.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/imagepolicy.yaml",
-					GoldenFile:   "testdata/expected/0-imagepolicy.golden",
+					GoldenFile:   "testdata/expected/img/0-imagepolicy.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/imagerepository.yaml",
-					GoldenFile:   "testdata/expected/0-imagerepository.golden",
+					GoldenFile:   "testdata/expected/img/0-imagerepository.golden",
 				},
 			},
 		},
@@ -320,13 +322,48 @@ func Test_NewManagementCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/demomc.yaml",
-					GoldenFile:   "testdata/expected/0-demomc.golden",
+					GoldenFile:   "testdata/expected/mc/0-demomc.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/secrets",
 				},
 				{
 					RelativePath: "management-clusters/demomc/secrets/demomc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/mc/0-demomc.gpgkey.enc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/.sops.keys",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations",
+				},
+			},
+		},
+		{
+			name: "flawless",
+			config: McConfig{
+				KeyPair: encryption.KeyPair{
+					Fingerprint: "12345689ABCDEF",
+					PrivateData: "private key material",
+					PublicData:  "public key material",
+				},
+				Name:           "demomc",
+				RepositoryName: "gitops-demo",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc",
+				},
+				{
+					RelativePath: "management-clusters/demomc/demomc.yaml",
+					GoldenFile:   "testdata/expected/mc/1-demomc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/secrets",
+				},
+				{
+					RelativePath: "management-clusters/demomc/secrets/demomc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/mc/1-demomc.gpgkey.enc.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/.sops.keys",
@@ -346,10 +383,6 @@ func Test_NewManagementCluster(t *testing.T) {
 			config, err := NewManagementCluster(tc.config)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
-			}
-
-			for _, i := range config.FsObjects {
-				fmt.Println(i.RelativePath)
 			}
 
 			if len(config.FsObjects) != len(tc.expectedObjects) {
@@ -396,14 +429,14 @@ func Test_NewOrganization(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/demoorg.yaml",
-					GoldenFile:   "testdata/expected/0-demoorg.golden",
+					GoldenFile:   "testdata/expected/org/0-demoorg.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-kustomization.golden",
+					GoldenFile:   "testdata/expected/org/0-kustomization.golden",
 				},
 			},
 		},
@@ -462,7 +495,7 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/0-demowc.golden",
+					GoldenFile:   "testdata/expected/wc/0-demowc.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
@@ -475,11 +508,11 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					GoldenFile:   "testdata/expected/wc/0-apps_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/patch_cluster_config.yaml",
-					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
+					GoldenFile:   "testdata/expected/wc/0-patch_cluster_config.golden",
 				},
 			},
 		},
@@ -500,7 +533,7 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/1-demowc.golden",
+					GoldenFile:   "testdata/expected/wc/1-demowc.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
@@ -513,15 +546,15 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					GoldenFile:   "testdata/expected/wc/0-apps_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/patch_cluster_config.yaml",
-					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
+					GoldenFile:   "testdata/expected/wc/0-patch_cluster_config.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/kustomization.yaml",
-					GoldenFile:   "testdata/expected/1-kustomization.golden",
+					GoldenFile:   "testdata/expected/wc/0-kustomization.golden",
 				},
 			},
 		},
@@ -545,7 +578,7 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/1-demowc.golden",
+					GoldenFile:   "testdata/expected/wc/1-demowc.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
@@ -558,23 +591,23 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					GoldenFile:   "testdata/expected/wc/0-apps_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/patch_cluster_config.yaml",
-					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
+					GoldenFile:   "testdata/expected/wc/0-patch_cluster_config.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/kustomization.yaml",
-					GoldenFile:   "testdata/expected/2-kustomization.golden",
+					GoldenFile:   "testdata/expected/wc/1-kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/2-cluster_userconfig.golden",
+					GoldenFile:   "testdata/expected/wc/0-cluster_userconfig.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/2-patch_cluster_userconfig.golden",
+					GoldenFile:   "testdata/expected/wc/0-patch_cluster_userconfig.golden",
 				},
 			},
 		},

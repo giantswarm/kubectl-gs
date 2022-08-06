@@ -2,6 +2,7 @@ package creator
 
 import (
 	//"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -35,8 +36,11 @@ type AppModifier struct {
 
 type KustomizationModifier struct {
 	ResourcesToAdd    []string
-	ResourcesToCheck  []string
 	ResourcesToRemove []string
+}
+
+type SecretModifier struct {
+	KeysToAdd map[string]string
 }
 
 // PostExecute modifies App CRs after creating the necessary
@@ -83,6 +87,35 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	}
 
 	rawYaml, err = yaml.JSONToYAML(rawJson)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return rawYaml, nil
+}
+
+func (sec SecretModifier) Execute(rawYaml []byte) ([]byte, error) {
+	var rawMapYaml map[string]interface{}
+
+	err := yaml.Unmarshal(rawYaml, &rawMapYaml)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	if rawMapYaml["data"] == nil {
+		rawMapYaml["data"] = map[string]interface{}{}
+	}
+
+	for k, v := range sec.KeysToAdd {
+		if _, ok := rawMapYaml["data"].(map[string]interface{})[k]; ok {
+			fmt.Println("Has it!")
+			continue
+		}
+
+		rawMapYaml["data"].(map[string]interface{})[k] = base64.StdEncoding.EncodeToString([]byte(v))
+	}
+
+	rawYaml, err = yaml.Marshal(rawMapYaml)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
