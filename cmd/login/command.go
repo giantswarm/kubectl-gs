@@ -97,8 +97,8 @@ func New(config Config) (*cobra.Command, error) {
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
 	}
-	if config.CommonConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigAccess must not be empty", config)
+	if config.ConfigFlags == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr

@@ -14,7 +14,6 @@ const (
 )
 
 type flag struct {
-	config         genericclioptions.RESTClientGetter
 	print          *genericclioptions.PrintFlags
 	Name           string
 	ReleaseVersion string

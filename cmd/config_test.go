@@ -1,4 +1,4 @@
-package commonconfig
+package cmd
 
 import (
 	"fmt"
@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/giantswarm/microerror"
-	"github.com/spf13/afero"
+	"github.com/spf13/cobra"
 	"gotest.tools/v3/assert"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
@@ -28,7 +30,12 @@ const (
 	unselectedContext = "gs-anothercodename"
 )
 
-func TestGetClientConfig(t *testing.T) {
+type testCommand struct {
+	commonConfig *commonconfig.CommonConfig
+	configFlags  *genericclioptions.RESTClientGetter
+}
+
+func TestGetCommonConfig(t *testing.T) {
 	testCases := []struct {
 		kubeconfig         string
 		kubeconfigOverride string
@@ -36,7 +43,6 @@ func TestGetClientConfig(t *testing.T) {
 
 		expectKubeconfig string
 		expectContext    string
-		expectError      bool
 	}{
 		{
 			kubeconfig:       existingConfigA,
@@ -53,11 +59,6 @@ func TestGetClientConfig(t *testing.T) {
 			kubeconfigOverride: existingConfigA,
 			expectKubeconfig:   existingConfigA,
 			expectContext:      selectedContextA,
-		},
-		{
-			kubeconfig:         existingConfigB,
-			kubeconfigOverride: nonExistingConfig,
-			expectError:        true,
 		},
 		{
 			kubeconfig:       existingConfigA,
@@ -87,15 +88,20 @@ func TestGetClientConfig(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			commonconfig, err := GetClientConfig(afero.NewOsFs())
-			if tc.expectError && err == nil {
-				t.Fatalf("unexpected success")
-			} else if !tc.expectError && err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
+			f := &flag{}
+			c := &cobra.Command{}
+			f.Init(c)
+			testCommand := testCommand{
+				configFlags: &f.config,
 			}
+			err = c.PersistentFlags().Parse(os.Args)
+			if err != nil {
+				t.Fatal(err)
+			}
+			testCommand.getCommonConfig(c)
 
-			if commonconfig != nil {
-				k8sConfigAccess := commonconfig.ToRawKubeConfigLoader()
+			if testCommand.commonConfig != nil {
+				k8sConfigAccess := testCommand.commonConfig.ToRawKubeConfigLoader()
 				f := k8sConfigAccess.ConfigAccess().GetExplicitFile()
 				p := k8sConfigAccess.ConfigAccess().GetLoadingPrecedence()
 				assert.Assert(t, p[0] == fmt.Sprintf("%s/%s", configDir, tc.expectKubeconfig))
@@ -105,7 +111,7 @@ func TestGetClientConfig(t *testing.T) {
 					assert.Assert(t, f == "")
 				}
 				if tc.contextOverride != "" {
-					configflag, _ := commonconfig.GetConfigFlags()
+					configflag, _ := testCommand.commonConfig.GetConfigFlags()
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -143,4 +149,8 @@ func passArguments(configDir string, kubeconfig string, context string) {
 		}...)
 	}
 	os.Args = args
+}
+
+func (t *testCommand) getCommonConfig(cmd *cobra.Command) {
+	t.commonConfig = commonconfig.New(*t.configFlags)
 }
