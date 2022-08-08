@@ -23,7 +23,6 @@ type runner struct {
 	fs     afero.Fs
 
 	commonConfig *commonconfig.CommonConfig
-	configFlags  *genericclioptions.RESTClientGetter
 	loginOptions LoginOptions
 
 	stdout io.Writer
@@ -48,7 +47,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	r.setLoginOptions(ctx, &args)
-	r.commonConfig = commonconfig.New(*r.configFlags)
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)
@@ -79,7 +77,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		if !foundContext {
 			var tokenOverride string
-			if c, ok := r.commonConfig.GetConfigFlags(); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
+			if c, ok := r.commonConfig.GetConfigFlags().(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
 				tokenOverride = *c.BearerToken
 			}
 			err = r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
@@ -115,7 +113,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
-	config, err := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
+	config, err := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -123,7 +121,7 @@ func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
 }
 
 func (r *runner) tryToGetContextFlag(ctx context.Context) string {
-	config, ok := r.commonConfig.GetConfigFlags()
+	config, ok := r.commonConfig.GetConfigFlags().(*genericclioptions.ConfigFlags)
 	if !ok {
 		return ""
 	}
@@ -150,7 +148,7 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 }
 
 func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
-	config, err := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
+	config, err := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
 	if err != nil {
 		return microerror.Mask(err)
 	}

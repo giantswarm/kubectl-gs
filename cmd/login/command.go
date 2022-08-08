@@ -83,8 +83,7 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	CommonConfig *commonconfig.CommonConfig
-	ConfigFlags  *genericclioptions.RESTClientGetter
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -114,8 +113,9 @@ func New(config Config) (*cobra.Command, error) {
 		logger: config.Logger,
 		fs:     config.FileSystem,
 
-		configFlags: config.ConfigFlags,
-
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
 		stderr: config.Stderr,
 		stdout: config.Stdout,
 	}
@@ -127,7 +127,7 @@ func New(config Config) (*cobra.Command, error) {
 		Example: examples,
 		RunE:    r.Run,
 		PreRunE: middleware.Compose(
-			renewtoken.Middleware(config.CommonConfig.ToRawKubeConfigLoader().ConfigAccess()),
+			renewtoken.Middleware(*config.ConfigFlags),
 		),
 	}
 

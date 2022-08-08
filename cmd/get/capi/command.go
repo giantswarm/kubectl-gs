@@ -38,10 +38,12 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		configFlags: config.ConfigFlags,
-		flag:        f,
-		logger:      config.Logger,
-		stdout:      config.Stdout,
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
+		flag:   f,
+		logger: config.Logger,
+		stdout: config.Stdout,
 	}
 
 	c := &cobra.Command{

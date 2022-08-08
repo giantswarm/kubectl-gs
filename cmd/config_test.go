@@ -60,6 +60,7 @@ func TestGetCommonConfig(t *testing.T) {
 			expectKubeconfig:   existingConfigA,
 			expectContext:      selectedContextA,
 		},
+
 		{
 			kubeconfig:       existingConfigA,
 			contextOverride:  unselectedContext,
@@ -98,10 +99,10 @@ func TestGetCommonConfig(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			testCommand.getCommonConfig(c)
+			testCommand.getCommonConfig()
 
 			if testCommand.commonConfig != nil {
-				k8sConfigAccess := testCommand.commonConfig.ToRawKubeConfigLoader()
+				k8sConfigAccess := testCommand.commonConfig.GetConfigFlags().ToRawKubeConfigLoader()
 				f := k8sConfigAccess.ConfigAccess().GetExplicitFile()
 				p := k8sConfigAccess.ConfigAccess().GetLoadingPrecedence()
 				assert.Assert(t, p[0] == fmt.Sprintf("%s/%s", configDir, tc.expectKubeconfig))
@@ -111,10 +112,7 @@ func TestGetCommonConfig(t *testing.T) {
 					assert.Assert(t, f == "")
 				}
 				if tc.contextOverride != "" {
-					configflag, _ := testCommand.commonConfig.GetConfigFlags()
-					if err != nil {
-						t.Fatal(err)
-					}
+					configflag := testCommand.commonConfig.GetConfigFlags().(*genericclioptions.ConfigFlags)
 					assert.Assert(t, *configflag.Context == tc.expectContext)
 				}
 			}
@@ -151,6 +149,6 @@ func passArguments(configDir string, kubeconfig string, context string) {
 	os.Args = args
 }
 
-func (t *testCommand) getCommonConfig(cmd *cobra.Command) {
+func (t *testCommand) getCommonConfig() {
 	t.commonConfig = commonconfig.New(*t.configFlags)
 }

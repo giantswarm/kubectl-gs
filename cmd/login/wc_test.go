@@ -183,7 +183,7 @@ func TestWCClientCert(t *testing.T) {
 				flag:         tc.flags,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			k8sConfigAccess := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess()
+			k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *createValidTestConfig("", false), false)
 			if err != nil {
 				t.Fatal(err)

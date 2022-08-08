@@ -183,7 +183,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
-	clusterBasePath, err := getWCBasePath(r.commonConfig.ToRawKubeConfigLoader().ConfigAccess(), provider)
+	clusterBasePath, err := getWCBasePath(r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess(), provider)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -269,7 +269,7 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 }
 
 func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool, error) {
-	k8sConfigAccess := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess()
+	k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	if r.loginOptions.selfContainedClientCert && c.filePath != "" {
 		return printWCClientCertCredentials(k8sConfigAccess, r.fs, c)

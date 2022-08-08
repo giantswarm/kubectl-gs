@@ -46,11 +46,13 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		configFlags: config.ConfigFlags,
-		flag:        f,
-		logger:      config.Logger,
-		stderr:      config.Stderr,
-		stdout:      config.Stdout,
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
+		flag:   f,
+		logger: config.Logger,
+		stderr: config.Stderr,
+		stdout: config.Stdout,
 	}
 
 	c := &cobra.Command{
@@ -59,7 +61,7 @@ func New(config Config) (*cobra.Command, error) {
 		Long:  description,
 		RunE:  r.Run,
 		PreRunE: middleware.Compose(
-			renewtoken.Middleware(config.CommonConfig.ToRawKubeConfigLoader().ConfigAccess()),
+			renewtoken.Middleware(*config.ConfigFlags),
 		),
 	}
 

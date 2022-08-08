@@ -2,6 +2,7 @@ package renewtoken
 
 import (
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
@@ -11,8 +12,9 @@ import (
 
 // Middleware will attempt to renew the current context's auth info token.
 // If the renewal fails, this middleware will not fail.
-func Middleware(k8sConfigAccess clientcmd.ConfigAccess) middleware.Middleware {
+func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware {
 	return func(cmd *cobra.Command, args []string) error {
+		k8sConfigAccess := config.ToRawKubeConfigLoader().ConfigAccess()
 		ctx := cmd.Context()
 
 		config, err := k8sConfigAccess.GetStartingConfig()

@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/scheme"
@@ -19,19 +18,23 @@ const (
 )
 
 type CommonConfig struct {
-	configFlags genericclioptions.RESTClientGetter
+	ConfigFlags *genericclioptions.RESTClientGetter
 }
 
 func New(cf genericclioptions.RESTClientGetter) *CommonConfig {
 	cc := &CommonConfig{
-		configFlags: cf,
+		ConfigFlags: &cf,
 	}
 
 	return cc
 }
 
+func (cc *CommonConfig) GetConfigFlags() genericclioptions.RESTClientGetter {
+	return *cc.ConfigFlags
+}
+
 func (cc *CommonConfig) GetProvider() (string, error) {
-	config, err := cc.configFlags.ToRESTConfig()
+	config, err := cc.GetConfigFlags().ToRESTConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -54,19 +57,8 @@ func (cc *CommonConfig) GetProvider() (string, error) {
 	return provider, nil
 }
 
-func (cc *CommonConfig) ToRawKubeConfigLoader() clientcmd.ClientConfig {
-	return cc.configFlags.ToRawKubeConfigLoader()
-}
-
-func (cc *CommonConfig) GetConfigFlags() (*genericclioptions.ConfigFlags, bool) {
-	if c, ok := cc.configFlags.(*genericclioptions.ConfigFlags); ok {
-		return c, true
-	}
-	return nil, false
-}
-
 func (cc *CommonConfig) GetClient(logger micrologger.Logger) (k8sclient.Interface, error) {
-	restConfig, err := cc.configFlags.ToRESTConfig()
+	restConfig, err := cc.GetConfigFlags().ToRESTConfig()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

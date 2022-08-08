@@ -318,7 +318,7 @@ func TestLogin(t *testing.T) {
 				flag:         tc.flags,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			k8sConfigAccess := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess()
+			k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)
@@ -420,7 +420,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				stderr:       new(bytes.Buffer),
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			k8sConfigAccess := r.commonConfig.ToRawKubeConfigLoader().ConfigAccess()
+			k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)

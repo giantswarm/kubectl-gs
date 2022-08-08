@@ -28,8 +28,7 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	CommonConfig *commonconfig.CommonConfig
-	ConfigFlags  *genericclioptions.RESTClientGetter
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -161,11 +160,13 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		configFlags: config.ConfigFlags,
-		flag:        f,
-		logger:      config.Logger,
-		stderr:      config.Stderr,
-		stdout:      config.Stdout,
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
+		flag:   f,
+		logger: config.Logger,
+		stderr: config.Stderr,
+		stdout: config.Stdout,
 	}
 
 	c := &cobra.Command{
