@@ -9,6 +9,9 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
+	appmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/app"
+	kusmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/kustomization"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	apptmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/app"
 	updatetmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/automatic-updates"
@@ -83,8 +86,8 @@ func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 	}
 
 	// Create Kustomization post modifiers
-	fsModifiers := map[string]creator.Modifier{
-		appsKusFile: creator.KustomizationModifier{
+	fsModifiers := map[string]modifier.Modifier{
+		appsKusFile: kusmod.KustomizationModifier{
 			ResourcesToAdd: resources,
 		},
 	}
@@ -135,12 +138,12 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 	}
 
 	// Create Kustomization and App CR post modifiers
-	fsModifiers := map[string]creator.Modifier{
-		appsKusFile: creator.KustomizationModifier{
+	fsModifiers := map[string]modifier.Modifier{
+		appsKusFile: kusmod.KustomizationModifier{
 			ResourcesToAdd: resources,
 		},
-		appCrFile: creator.AppModifier{
-			ImagePolicy: fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
+		appCrFile: appmod.AppModifier{
+			ImagePolicyToAdd: fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
 		},
 	}
 
@@ -239,8 +242,12 @@ func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 
 	// Helpers
 	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
-	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.Name)
+	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
+
+	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
+	clusterDir := key.ResourcePath(wcDir, key.ClusterDirName())
+	wcsKusFile := key.ResourcePath(wcsDir, key.KustomizationFileName())
 
 	// We start at the `workload-clusters` directory. This should already
 	// exist at this point, as a result of Organization creation, but we
@@ -264,31 +271,21 @@ func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 		fsObjects,
 		[]*creator.FsObject{
 			creator.NewFsObject(wcDir, nil),
-			creator.NewFsObject(key.ResourcePath(wcDir, key.AppsDirName()), nil),
-			creator.NewFsObject(key.ResourcePath(wcDir, key.ClusterDirName()), nil),
+			creator.NewFsObject(appsDir, nil),
+			creator.NewFsObject(clusterDir, nil),
 		}...,
 	)
 
 	// The `apps/*` directory pre-configuration including kustomization.yaml and
 	// kubeconfig patch.
-	err = appendFromTemplate(
-		&fsObjects,
-		key.ResourcePath(wcDir, key.AppsDirName()),
-		wctmpl.GetAppsDirectoryTemplates,
-		config,
-	)
+	err = appendFromTemplate(&fsObjects, appsDir, wctmpl.GetAppsDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	// The `cluster/*` files, aka cluster definition, including `kustomization.yaml`,
 	// patches, etc.
-	err = appendFromTemplate(
-		&fsObjects,
-		key.ResourcePath(wcDir, key.ClusterDirName()),
-		wctmpl.GetClusterDirectoryTemplates,
-		config,
-	)
+	err = appendFromTemplate(&fsObjects, clusterDir, wctmpl.GetClusterDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -296,8 +293,8 @@ func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 	// After creating all the files and directories, we need creator to run
 	// post modifiers, so that cluster is included into `workload-clusters/kustomization.yaml`
 	// for example.
-	fsModifiers := map[string]creator.Modifier{
-		key.ResourcePath(wcsDir, key.KustomizationFileName()): creator.KustomizationModifier{
+	fsModifiers := map[string]modifier.Modifier{
+		wcsKusFile: kusmod.KustomizationModifier{
 			ResourcesToAdd: []string{
 				fmt.Sprintf("%s.yaml", config.Name),
 			},

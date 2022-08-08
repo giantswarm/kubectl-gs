@@ -1,6 +1,7 @@
 package creator
 
 import (
+	"encoding/json"
 	"fmt"
 
 	jmespath "github.com/jmespath/go-jmespath"
@@ -66,4 +67,13 @@ func hasMatchingElement(path, expression string, file interface{}) (bool, error)
 	}
 
 	return ok.(bool), nil
+}
+
+func getUnmarshalledJson(src []byte, dest *interface{}) error {
+	err := json.Unmarshal(src, dest)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }

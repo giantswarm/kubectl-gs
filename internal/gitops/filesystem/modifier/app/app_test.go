@@ -1,4 +1,4 @@
-package creator
+package app
 
 import (
 	"bytes"
@@ -8,47 +8,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_Modifiers(t *testing.T) {
+func Test_AppModifier(t *testing.T) {
 	testCases := []struct {
 		name     string
 		expected []byte
 		input    []byte
-		modifier Modifier
+		modifier AppModifier
 	}{
-		{
-			name: "add resource",
-			expected: []byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-- demowc.yaml
-`),
-			input: []byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources: []`),
-			modifier: KustomizationModifier{
-				ResourcesToAdd: []string{
-					"demowc.yaml",
-				},
-			},
-		},
-		{
-			name: "do not add if present",
-			expected: []byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-- demowc.yaml
-`),
-			input: []byte(`apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-- demowc.yaml
-`),
-			modifier: KustomizationModifier{
-				ResourcesToAdd: []string{
-					"demowc.yaml",
-				},
-			},
-		},
 		{
 			name: "add comment for automatic updates",
 			expected: []byte(`apiVersion: application.giantswarm.io/v1alpha1
@@ -72,7 +38,7 @@ spec:
   namespace: default
 `),
 			modifier: AppModifier{
-				ImagePolicy: "demowc-hello-world",
+				ImagePolicyToAdd: "demowc-hello-world",
 			},
 		},
 		{
@@ -98,29 +64,7 @@ spec:
   namespace: default
 `),
 			modifier: AppModifier{
-				ImagePolicy: "demowc-hello-world",
-			},
-		},
-		{
-			name: "add key to the secret",
-			expected: []byte(`apiVersion: v1
-data:
-  master.123456789ABCDEF.asc: RkFLRSBQVUJMSUMgS0VZIE1BVEVSSUFM
-kind: Secret
-metadata:
-  name: sops-gpg-master
-  namespace: default
-`),
-			input: []byte(`apiVersion: v1
-kind: Secret
-metadata:
-  name: sops-gpg-master
-  namespace: default
-`),
-			modifier: SecretModifier{
-				KeysToAdd: map[string]string{
-					"master.123456789ABCDEF.asc": "FAKE PUBLIC KEY MATERIAL",
-				},
+				ImagePolicyToAdd: "demowc-hello-world",
 			},
 		},
 	}

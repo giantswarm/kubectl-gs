@@ -4,6 +4,8 @@ import (
 	"io"
 
 	"github.com/spf13/afero"
+
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
 )
 
 var (
@@ -22,7 +24,7 @@ type CreatorConfig struct {
 	DryRun        bool
 	FsObjects     []*FsObject
 	Path          string
-	PostModifiers map[string]Modifier
+	PostModifiers map[string]modifier.Modifier
 	PreValidators map[string]Validator
 	Stdout        io.Writer
 }
@@ -32,7 +34,7 @@ type Creator struct {
 	fs            *afero.Afero
 	fsObjects     []*FsObject
 	path          string
-	postModifiers map[string]Modifier
+	postModifiers map[string]modifier.Modifier
 	preValidators map[string]Validator
 	stdout        io.Writer
 }
