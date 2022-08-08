@@ -24,7 +24,6 @@ const (
 const (
 	existingConfigA   = "config_a.yaml"
 	existingConfigB   = "config_b.yaml"
-	nonExistingConfig = "config_c.yaml"
 	selectedContextA  = "clean"
 	selectedContextB  = "arbitraryname"
 	unselectedContext = "gs-anothercodename"

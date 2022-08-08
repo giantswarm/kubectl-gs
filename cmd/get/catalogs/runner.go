@@ -50,7 +50,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	{
-		err = r.getService(r.commonConfig)
+		err = r.getService()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -115,12 +115,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) getService(config *commonconfig.CommonConfig) error {
+func (r *runner) getService() error {
 	if r.service != nil {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}

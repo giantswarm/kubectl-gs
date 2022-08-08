@@ -67,7 +67,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	{
-		err = r.getService(r.commonConfig)
+		err = r.getService()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -140,12 +140,12 @@ func replaceToEscape(from string) string {
 	return strings.Replace(from, "/", "~1", -1)
 }
 
-func (r *runner) getService(config *commonconfig.CommonConfig) error {
+func (r *runner) getService() error {
 	if r.service != nil {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}
