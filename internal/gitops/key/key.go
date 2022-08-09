@@ -21,8 +21,8 @@ const (
 	sopsConfigFile             = ".sops.yaml"
 	sopsKeysDirectory          = ".sops.keys"
 	sopsKeyName                = "%s.%s.asc"
-	sopsSecret                 = "sops-gpg-%s"
-	sopsSecretFile             = "%s.gpgkey.enc.yaml"
+	sopsSecret                 = "sops-gpg-%s"        //#nosec G101 -- false positive
+	sopsSecretFile             = "%s.gpgkey.enc.yaml" //#nosec G101 -- false positive
 	workloadClusterDirectory   = "workload-clusters"
 
 	mcDirectoryTemplate  = "management-clusters/%s"

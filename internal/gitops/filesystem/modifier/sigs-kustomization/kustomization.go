@@ -40,7 +40,7 @@ func (km *KustomizationModifier) addResource() {
 }
 
 func getResourceMap(resArr []interface{}) map[string]empty {
-	resMap := make(map[string]empty, 0)
+	resMap := make(map[string]empty)
 
 	for _, r := range resArr {
 		resMap[r.(string)] = empty{}
