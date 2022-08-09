@@ -19,19 +19,19 @@ type FsObjectExpected struct {
 func Test_NewApp(t *testing.T) {
 	testCases := []struct {
 		name            string
-		config          AppConfig
+		config          StructureConfig
 		expectedObjects []FsObjectExpected
 	}{
 		{
 			name: "flawless",
-			config: AppConfig{
+			config: StructureConfig{
 				App:               "hello-world",
-				Catalog:           "giantswarm",
+				AppCatalog:        "giantswarm",
 				ManagementCluster: "demomc",
-				Name:              "hello-world",
-				Namespace:         "default",
+				AppName:           "hello-world",
+				AppNamespace:      "default",
 				Organization:      "demoorg",
-				Version:           "0.3.0",
+				AppVersion:        "0.3.0",
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -49,12 +49,12 @@ func Test_NewApp(t *testing.T) {
 		},
 		{
 			name: "flawless from base",
-			config: AppConfig{
-				Base:              "base/apps/hello-world",
+			config: StructureConfig{
+				AppBase:           "base/apps/hello-world",
 				ManagementCluster: "demomc",
-				Name:              "hello-world",
+				AppName:           "hello-world",
 				Organization:      "demoorg",
-				Version:           "0.3.0",
+				AppVersion:        "0.3.0",
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -72,17 +72,17 @@ func Test_NewApp(t *testing.T) {
 		},
 		{
 			name: "flawless with cm configuration",
-			config: AppConfig{
+			config: StructureConfig{
 				App:               "hello-world",
-				Catalog:           "giantswarm",
+				AppCatalog:        "giantswarm",
 				ManagementCluster: "demomc",
-				Name:              "hello-world",
-				Namespace:         "default",
+				AppName:           "hello-world",
+				AppNamespace:      "default",
 				Organization:      "demoorg",
-				UserValuesConfigMap: string([]byte(`testKey: testValue
+				AppUserValuesConfigMap: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
-				Version:         "0.3.0",
+				AppVersion:      "0.3.0",
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -104,17 +104,17 @@ topKey:
 		},
 		{
 			name: "flawless with secret configuration",
-			config: AppConfig{
+			config: StructureConfig{
 				App:               "hello-world",
-				Catalog:           "giantswarm",
+				AppCatalog:        "giantswarm",
 				ManagementCluster: "demomc",
-				Name:              "hello-world",
-				Namespace:         "default",
+				AppName:           "hello-world",
+				AppNamespace:      "default",
 				Organization:      "demoorg",
-				UserValuesSecret: string([]byte(`testKey: testValue
+				AppUserValuesSecret: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
-				Version:         "0.3.0",
+				AppVersion:      "0.3.0",
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -136,12 +136,12 @@ topKey:
 		},
 		{
 			name: "flawless from base with cm configuration",
-			config: AppConfig{
-				Base:              "base/apps/hello-world",
+			config: StructureConfig{
+				AppBase:           "base/apps/hello-world",
 				ManagementCluster: "demomc",
-				Name:              "hello-world",
+				AppName:           "hello-world",
 				Organization:      "demoorg",
-				UserValuesConfigMap: string([]byte(`testKey: testValue
+				AppUserValuesConfigMap: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
 				WorkloadCluster: "demowc",
@@ -169,12 +169,12 @@ topKey:
 		},
 		{
 			name: "flawless from base with secret configuration",
-			config: AppConfig{
-				Base:              "base/apps/hello-world",
+			config: StructureConfig{
+				AppBase:           "base/apps/hello-world",
 				ManagementCluster: "demomc",
-				Name:              "hello-world",
+				AppName:           "hello-world",
 				Organization:      "demoorg",
-				UserValuesSecret: string([]byte(`testKey: testValue
+				AppUserValuesSecret: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
 				WorkloadCluster: "demowc",
@@ -238,18 +238,18 @@ topKey:
 func Test_NewAutomaticUpdate(t *testing.T) {
 	testCases := []struct {
 		name            string
-		config          AutomaticUpdateConfig
+		config          StructureConfig
 		expectedObjects []FsObjectExpected
 	}{
 		{
 			name: "flawless",
-			config: AutomaticUpdateConfig{
-				App:               "hello-world",
-				ManagementCluster: "demomc",
-				Organization:      "demoorg",
-				Repository:        "gitops-demo",
-				VersionRepository: "quay.io/giantswarm/hello-world",
-				WorkloadCluster:   "demowc",
+			config: StructureConfig{
+				AppName:              "hello-world",
+				ManagementCluster:    "demomc",
+				Organization:         "demoorg",
+				RepositoryName:       "gitops-demo",
+				AppVersionRepository: "quay.io/giantswarm/hello-world",
+				WorkloadCluster:      "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -307,14 +307,14 @@ func Test_NewAutomaticUpdate(t *testing.T) {
 func Test_NewManagementCluster(t *testing.T) {
 	testCases := []struct {
 		name            string
-		config          McConfig
+		config          StructureConfig
 		expectedObjects []FsObjectExpected
 	}{
 		{
 			name: "flawless",
-			config: McConfig{
-				Name:           "demomc",
-				RepositoryName: "gitops-demo",
+			config: StructureConfig{
+				ManagementCluster: "demomc",
+				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -341,14 +341,14 @@ func Test_NewManagementCluster(t *testing.T) {
 		},
 		{
 			name: "flawless",
-			config: McConfig{
-				KeyPair: encryption.KeyPair{
+			config: StructureConfig{
+				EncryptionKeyPair: encryption.KeyPair{
 					Fingerprint: "12345689ABCDEF",
 					PrivateData: "private key material",
 					PublicData:  "public key material",
 				},
-				Name:           "demomc",
-				RepositoryName: "gitops-demo",
+				ManagementCluster: "demomc",
+				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -369,7 +369,7 @@ func Test_NewManagementCluster(t *testing.T) {
 					RelativePath: "management-clusters/demomc/.sops.keys",
 				},
 				{
-					RelativePath: "management-clusters/demomc/.sops.keys/.sops.master.asc",
+					RelativePath: "management-clusters/demomc/.sops.keys/.sops.master.12345689ABCDEF.asc",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations",
@@ -414,14 +414,14 @@ func Test_NewManagementCluster(t *testing.T) {
 func Test_NewOrganization(t *testing.T) {
 	testCases := []struct {
 		name            string
-		config          OrgConfig
+		config          StructureConfig
 		expectedObjects []FsObjectExpected
 	}{
 		{
 			name: "flawless",
-			config: OrgConfig{
+			config: StructureConfig{
 				ManagementCluster: "demomc",
-				Name:              "demoorg",
+				Organization:      "demoorg",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -478,18 +478,22 @@ func Test_NewOrganization(t *testing.T) {
 func Test_NewWorkloadCluster(t *testing.T) {
 	testCases := []struct {
 		name            string
-		config          WcConfig
+		config          StructureConfig
 		expectedObjects []FsObjectExpected
 	}{
 		{
 			name: "flawless",
-			config: WcConfig{
+			config: StructureConfig{
 				ManagementCluster: "demomc",
-				Name:              "demowc",
+				WorkloadCluster:   "demowc",
 				Organization:      "demoorg",
 				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/wc/0-secret.golden",
+				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
@@ -518,16 +522,20 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		},
 		{
 			name: "flawless with definition",
-			config: WcConfig{
-				Base:               "bases/cluster/capo",
+			config: StructureConfig{
+				ClusterBase:        "bases/cluster/capo",
 				ClusterRelease:     "0.13.0",
 				DefaultAppsRelease: "0.6.0",
 				ManagementCluster:  "demomc",
-				Name:               "demowc",
+				WorkloadCluster:    "demowc",
 				Organization:       "demoorg",
 				RepositoryName:     "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/wc/0-secret.golden",
+				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
@@ -560,19 +568,23 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		},
 		{
 			name: "flawless with definition and configuration",
-			config: WcConfig{
-				Base:           "bases/cluster/capo",
+			config: StructureConfig{
+				ClusterBase:    "bases/cluster/capo",
 				ClusterRelease: "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
-  netedKey: nestedValue`)),
+  nestedKey: nestedValue`)),
 				DefaultAppsRelease: "0.6.0",
 				ManagementCluster:  "demomc",
-				Name:               "demowc",
+				WorkloadCluster:    "demowc",
 				Organization:       "demoorg",
 				RepositoryName:     "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/wc/0-secret.golden",
+				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
@@ -611,6 +623,74 @@ topKey:
 				},
 			},
 		},
+		{
+			name: "flawless with definition and full configuration",
+			config: StructureConfig{
+				ClusterBase:    "bases/cluster/capo",
+				ClusterRelease: "0.13.0",
+				ClusterUserConfig: string([]byte(`testKey: testValue
+topKey:
+  nestedKey: nestedValue`)),
+				DefaultAppsRelease: "0.6.0",
+				DefaultAppsUserConfig: string([]byte(`testKey: testValue
+otherTopKey:
+  nestedOtherKey: nestedOtherValue`)),
+				ManagementCluster: "demomc",
+				WorkloadCluster:   "demowc",
+				Organization:      "demoorg",
+				RepositoryName:    "gitops-demo",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/wc/0-secret.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
+					GoldenFile:   "testdata/expected/wc/1-demowc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
+					GoldenFile:   "testdata/expected/wc/0-apps_kustomization.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/patch_cluster_config.yaml",
+					GoldenFile:   "testdata/expected/wc/0-patch_cluster_config.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/kustomization.yaml",
+					GoldenFile:   "testdata/expected/wc/2-kustomization.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/cluster_userconfig.yaml",
+					GoldenFile:   "testdata/expected/wc/0-cluster_userconfig.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/default_apps_userconfig.yaml",
+					GoldenFile:   "testdata/expected/wc/0-default_apps_userconfig.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_cluster_userconfig.yaml",
+					GoldenFile:   "testdata/expected/wc/0-patch_cluster_userconfig.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_default_apps_userconfig.yaml",
+					GoldenFile:   "testdata/expected/wc/0-patch_default_apps_userconfig.golden",
+				},
+			},
+		},
 	}
 
 	for i, tc := range testCases {
@@ -639,7 +719,7 @@ topKey:
 				}
 
 				if !bytes.Equal(config.FsObjects[i].Data, expected) {
-					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
+					t.Fatalf("want matching files for '%s', got \n\n%s\n", e.RelativePath, cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
 				}
 			}
 		})

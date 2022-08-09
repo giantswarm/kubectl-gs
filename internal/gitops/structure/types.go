@@ -9,48 +9,28 @@ import (
 // it could be considered to add one big struct, and simply neglecting
 // fields that are not neccessary for the structure being added.
 
-type AppConfig struct {
-	App                 string
-	Base                string
-	Catalog             string
-	ManagementCluster   string
-	Name                string
-	Namespace           string
-	Organization        string
-	UserValuesConfigMap string
-	UserValuesSecret    string
-	WorkloadCluster     string
-	Version             string
-}
+type StructureConfig struct {
+	App                    string
+	AppBase                string
+	AppCatalog             string
+	AppName                string
+	AppNamespace           string
+	AppUserValuesConfigMap string
+	AppUserValuesSecret    string
+	AppVersion             string
+	AppVersionRepository   string
 
-type AutomaticUpdateConfig struct {
-	App               string
-	ManagementCluster string
-	Organization      string
-	Repository        string
-	WorkloadCluster   string
-	VersionRepository string
-}
-
-type McConfig struct {
-	Name           string
-	KeyPair        encryption.KeyPair
-	RepositoryName string
-}
-
-type OrgConfig struct {
-	ManagementCluster string
-	Name              string
-}
-
-type WcConfig struct {
-	Base                  string
+	ClusterBase           string
 	ClusterRelease        string
 	ClusterUserConfig     string
 	DefaultAppsRelease    string
 	DefaultAppsUserConfig string
-	ManagementCluster     string
-	Name                  string
-	Organization          string
-	RepositoryName        string
+
+	EncryptionKeyPair encryption.KeyPair
+	EncryptionTarget  string
+
+	ManagementCluster string
+	Organization      string
+	RepositoryName    string
+	WorkloadCluster   string
 }

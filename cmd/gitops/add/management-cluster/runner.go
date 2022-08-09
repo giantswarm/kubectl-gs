@@ -15,6 +15,10 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 )
 
+const (
+	masterKeyName = "%s Flux master"
+)
+
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
@@ -39,20 +43,20 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.McConfig{
-		Name:           r.flag.Name,
-		RepositoryName: r.flag.RepositoryName,
+	config := structure.StructureConfig{
+		ManagementCluster: r.flag.Name,
+		RepositoryName:    r.flag.RepositoryName,
 	}
 
 	if r.flag.GenerateMasterKey {
-		keyName := fmt.Sprintf("%s Flux master", config.Name)
+		keyName := fmt.Sprintf(masterKeyName, config.ManagementCluster)
 
 		keyPair, err := encryption.GenerateKeyPair(keyName)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.KeyPair = keyPair
+		config.EncryptionKeyPair = keyPair
 	}
 
 	creatorConfig, err := structure.NewManagementCluster(config)

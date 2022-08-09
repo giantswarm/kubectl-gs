@@ -1,4 +1,4 @@
-package kustomization
+package sigskus
 
 import (
 	"github.com/giantswarm/microerror"
@@ -29,7 +29,7 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 
 // addResource goes through resources and adds them to the
 // kustomization.yaml
-func (km *KustomizationModifier) addResource() error {
+func (km *KustomizationModifier) addResource() {
 	resMap := getResourceMap(km.kustomization["resources"].([]interface{}))
 
 	for _, r := range km.ResourcesToAdd {
@@ -37,8 +37,6 @@ func (km *KustomizationModifier) addResource() error {
 			km.kustomization["resources"] = append(km.kustomization["resources"].([]interface{}), r)
 		}
 	}
-
-	return nil
 }
 
 func getResourceMap(resArr []interface{}) map[string]empty {

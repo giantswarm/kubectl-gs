@@ -18,18 +18,18 @@ var publicKey string
 // GetManagementClusterTemplates merges .tmpl files for management cluster layer.
 func GetManagementClusterTemplates() []common.Template {
 	return []common.Template{
-		common.Template{Name: "{{ .Name }}.yaml", Data: managementCluster},
+		common.Template{Name: "{{ .ManagementCluster }}.yaml", Data: managementCluster},
 	}
 }
 
 func GetManagementClusterSecretsTemplates() []common.Template {
 	return []common.Template{
-		common.Template{Name: "{{ .Name }}.gpgkey.enc.yaml", Data: privateKey},
+		common.Template{Name: "{{ .ManagementCluster }}.gpgkey.enc.yaml", Data: privateKey},
 	}
 }
 
 func GetManagementClusterSOPSTemplates() []common.Template {
 	return []common.Template{
-		common.Template{Name: ".sops.master.asc", Data: publicKey},
+		common.Template{Name: ".sops.master.{{ .EncryptionKeyPair.Fingerprint }}.asc", Data: publicKey},
 	}
 }

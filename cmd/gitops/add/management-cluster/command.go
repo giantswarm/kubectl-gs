@@ -18,6 +18,11 @@ const (
 	shortDescription = "Adds a new Management Cluster to your GitOps directory structure"
 	longDescription  = `Adds a new Management Cluster to your GitOps directory structure.
 
+mc \
+--name <mc_code_name> \
+--repository-name <gitops_repo_name> \
+[--gen-master-key]
+
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 

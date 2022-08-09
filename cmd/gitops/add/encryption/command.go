@@ -12,11 +12,18 @@ import (
 )
 
 const (
-	name  = "encryption [--fingerprint <fingerprint> | --generate]"
+	name  = "encryption"
 	alias = "enc"
 
 	shortDescription = "Adds a new GPG key pair to the SOPS repository configuration."
 	longDescription  = `Adds a new GPG key pair to the SOPS repository configuration.
+
+enc \
+--fingerprint <fingerprint> | --generate
+--management-cluster <mc_code_name>
+[--organization <org_name>]
+[--workload-cluster <wc_name>]
+[--target <sub_path>]
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
@@ -24,13 +31,49 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc_structure.md#create-flux-gpg-regular-key-pair-optional-step`
 
-	examples = `  # Configure repository with the existing key pair
+	examples = `  # Configure Management Cluster encryption with an existing key pair.
+  # Configures SOPS for handling the "management-clusters/demomc/secrets/*.enc.yaml" files. # master key
   kubectl gs gitops add encryption \
-  --fingerprint 123456789ABCDEF123456789ABCDEF123456789A
+  --fingerprint 123456789ABCDEF123456789ABCDEF123456789A \
+  --management-cluster demomc
 
-  # Configure repository with the new key pair
+  # Configure Management Cluster encryption with a new key pair.
+  # Configures SOPS for handling the "management-clusters/demomc/secrets/*.enc.yaml" files. # master key
   kubectl gs gitops add encryption \
-  --generate`
+  --generate \
+  --management-cluster demomc
+
+  # Configure Management Cluster encryption with a new key pair.
+  # Configures SOPS for handling the "management-clusters/demomc/mydir/*.enc.yaml" files.
+  kubectl gs gitops add encryption \
+  --generate \
+  --management-cluster demomc \
+  --target mydir/
+
+  # Configure Organization encryption with a new key pair.
+  # Configures SOPS for handling the "management-clusters/demomc/organizations/demoorg/secrets/*.enc.yaml" files.
+  kubectl gs gitops add encryption \
+  --generate \
+  --management-cluster demomc \
+  --organization demoorg
+
+  # Configure Workload Cluster encryption with a new key pair.
+  # Configures SOPS for the "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/*.enc.yaml" files. # entire Workload Cluster
+  kubectl gs gitops add encryption \
+  --generate \
+  --management-cluster demomc \
+  --organization demoorg \
+  --workload-cluster demowc \
+  --target /
+
+  # Configure Workload Cluster encryption with a new key pair.
+  # Configures SOPS for handling the "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/myapp/*.enc.yaml" files. # encryption for a single app
+  kubectl gs gitops add encryption \
+  --generate \
+  --management-cluster demomc \
+  --organization demoorg \
+  --workload-cluster demowc \
+  --target apps/myapp/`
 )
 
 type Config struct {

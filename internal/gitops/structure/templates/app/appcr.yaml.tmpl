@@ -1,23 +1,23 @@
-{{- if not .Base -}}
+{{- if not .AppBase -}}
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
-  name: {{ .WorkloadCluster}}-{{ .Name }}
+  name: {{ .WorkloadCluster}}-{{ .AppName }}
 spec:
-  catalog: {{ .Catalog }}
+  catalog: {{ .AppCatalog }}
   name: {{ .App }}
-  namespace: {{ .Namespace }}
-  version: {{ .Version }}
-{{- if or .UserValuesConfigMap .UserValuesSecret }}
+  namespace: {{ .AppNamespace }}
+  version: {{ .AppVersion }}
+{{- if or .AppUserValuesConfigMap .AppUserValuesSecret }}
   userConfig:
-{{- if .UserValuesConfigMap }}
+{{- if .AppUserValuesConfigMap }}
     configMap:
-      name: {{ .WorkloadCluster}}-{{ .Name }}-user-values
+      name: {{ .WorkloadCluster}}-{{ .AppName }}-user-values
       namespace: org-{{ .Organization }}
 {{- end }}
-{{- if .UserValuesSecret }}
+{{- if .AppUserValuesSecret }}
     secret:
-      name: {{ .WorkloadCluster}}-{{ .Name }}-user-values
+      name: {{ .WorkloadCluster}}-{{ .AppName }}-user-values
       namespace: org-{{ .Organization }}
 {{- end }}
 {{- end }}

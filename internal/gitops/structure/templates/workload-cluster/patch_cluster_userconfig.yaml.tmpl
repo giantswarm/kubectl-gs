@@ -7,6 +7,6 @@ metadata:
 spec:
   userConfig:
     configMap:
-      name: {{ .Name }}-userconfig
+      name: {{ .WorkloadCluster }}-cluster-userconfig
       namespace: org-{{ .Organization }}
 {{- end }}

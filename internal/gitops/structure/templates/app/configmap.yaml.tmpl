@@ -1,10 +1,10 @@
-{{- if .UserValuesConfigMap -}}
+{{- if .AppUserValuesConfigMap -}}
 apiVersion: v1
 data:
   values: |
-{{ .UserValuesConfigMap | indent 4 }}
+{{ .AppUserValuesConfigMap | indent 4 }}
 kind: ConfigMap
 metadata:
-  name: {{ .WorkloadCluster}}-{{ .Name }}-user-values
+  name: {{ .WorkloadCluster}}-{{ .AppName }}-user-values
   namespace: org-{{ .Organization }}
 {{- end }}

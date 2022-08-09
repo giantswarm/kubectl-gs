@@ -1,4 +1,4 @@
-{{- if .Base -}}
+{{- if .ClusterBase -}}
 apiVersion: kustomize.config.k8s.io/v1beta1
 commonLabels:
   giantswarm.io/managed-by: flux
@@ -13,7 +13,7 @@ patchesStrategicMerge:
 {{- end }}
 {{- end }}
 resources:
-  - ../../../../../../../{{ .Base }}
+  - ../../../../../../../{{ .ClusterBase }}
 {{- if .ClusterUserConfig }}
   - cluster_userconfig.yaml
 {{- end }}

@@ -4,19 +4,15 @@ import (
 	"context"
 	"fmt"
 	"io"
-	//"strconv"
+	"strconv"
 
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	//"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	//"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
-)
 
-const (
-	keyName = "Max Mustermann"
-	email   = ""
+	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 )
 
 type runner struct {
@@ -42,13 +38,36 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	/*config := structure.McConfig{
-		Name:           r.flag.Name,
-		RepositoryName: r.flag.RepositoryName,
+func getKeyName(c structure.StructureConfig) string {
+	if c.WorkloadCluster != "" {
+		return fmt.Sprintf("'%s' Workload Cluster encryption", c.WorkloadCluster)
+	} else if c.Organization != "" {
+		return fmt.Sprintf("'%s' Organization encryption", c.Organization)
 	}
 
-	creatorConfig, err := structure.NewManagementCluster(config)
+	return fmt.Sprintf("'%s' Flux master", c.ManagementCluster)
+}
+
+func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	config := structure.StructureConfig{
+		ManagementCluster: r.flag.ManagementCluster,
+		Organization:      r.flag.Organization,
+		EncryptionTarget:  r.flag.Target,
+		WorkloadCluster:   r.flag.WorkloadCluster,
+	}
+
+	if r.flag.Generate {
+		keyName := getKeyName(config)
+
+		keyPair, err := encryption.GenerateKeyPair(keyName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.EncryptionKeyPair = keyPair
+	}
+
+	creatorConfig, err := structure.NewEncryption(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -70,14 +89,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)
-	}*/
-
-	ecKey, err := crypto.GenerateKey(keyName, email, "x25519", 0)
-	if err != nil {
-		return err
 	}
-	fmt.Println(ecKey.GetArmoredPublicKey())
-	fmt.Println(ecKey.GetFingerprint())
 
 	return nil
 }

@@ -10,14 +10,19 @@ const (
 	automaticUpdatesDirectory  = "automatic-updates"
 	clusterDirectory           = "cluster"
 	configMapFile              = "configmap.yaml"
+	fluxKustomizationFile      = "%s.yaml"
 	imagePolicyFile            = "imagepolicy.yaml"
 	imageRepositoryFile        = "imagerepository.yaml"
-	kustomizationFile          = "kustomization.yaml"
 	managementClusterDirectory = "management-clusters"
 	organizationsDirectory     = "organizations"
 	secretFile                 = "secret.yaml"
 	secretsDirectory           = "secrets"
+	sigsKustomizationFile      = "kustomization.yaml"
+	sopsConfigFile             = ".sops.yaml"
 	sopsKeysDirectory          = ".sops.keys"
+	sopsKeyName                = "%s.%s.asc"
+	sopsSecret                 = "sops-gpg-%s"
+	sopsSecretFile             = "%s.gpgkey.enc.yaml"
 	workloadClusterDirectory   = "workload-clusters"
 
 	mcDirectoryTemplate  = "management-clusters/%s"
@@ -45,16 +50,16 @@ func ConfigMapFileName() string {
 	return configMapFile
 }
 
+func FluxKustomizationFileName(name string) string {
+	return fmt.Sprintf(fluxKustomizationFile, name)
+}
+
 func ImagePolicyFileName() string {
 	return imagePolicyFile
 }
 
 func ImageRepositoryFileName() string {
 	return imageRepositoryFile
-}
-
-func KustomizationFileName() string {
-	return kustomizationFile
 }
 
 func ManagementClustersDirName() string {
@@ -73,8 +78,28 @@ func SecretsDirName() string {
 	return secretsDirectory
 }
 
+func SigsKustomizationFileName() string {
+	return sigsKustomizationFile
+}
+
+func SopsConfigFileName() string {
+	return sopsConfigFile
+}
+
 func SopsKeysDirName() string {
 	return sopsKeysDirectory
+}
+
+func SopsKeyName(name, fingerprint string) string {
+	return fmt.Sprintf(sopsKeyName, name, fingerprint)
+}
+
+func SopsSecretFileName(name string) string {
+	return fmt.Sprintf(sopsSecretFile, name)
+}
+
+func SopsSecretName(name string) string {
+	return fmt.Sprintf(sopsSecret, name)
 }
 
 func WorkloadClustersDirName() string {

@@ -1,7 +1,7 @@
 apiVersion: v1
-{{- if .KeyPair.PrivateData }}
+{{- if .EncryptionKeyPair.PrivateData }}
 data:
-  master.{{ .KeyPair.Fingerprint }}.asc: {{ .KeyPair.PrivateData | b64enc }}
+  master.{{ .EncryptionKeyPair.Fingerprint }}.asc: {{ .EncryptionKeyPair.PrivateData | b64enc }}
 {{- end }}
 kind: Secret
 metadata:

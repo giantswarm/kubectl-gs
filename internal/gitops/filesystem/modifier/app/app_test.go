@@ -38,7 +38,9 @@ spec:
   namespace: default
 `),
 			modifier: AppModifier{
-				ImagePolicyToAdd: "demowc-hello-world",
+				ImagePolicyToAdd: map[string]string{
+					"default": "demowc-hello-world",
+				},
 			},
 		},
 		{
@@ -64,7 +66,9 @@ spec:
   namespace: default
 `),
 			modifier: AppModifier{
-				ImagePolicyToAdd: "demowc-hello-world",
+				ImagePolicyToAdd: map[string]string{
+					"default": "demowc-hello-world",
+				},
 			},
 		},
 	}

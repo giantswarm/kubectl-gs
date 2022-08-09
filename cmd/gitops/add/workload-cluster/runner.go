@@ -42,12 +42,12 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.WcConfig{
-		Base:               r.flag.Base,
+	config := structure.StructureConfig{
+		ClusterBase:        r.flag.Base,
 		ClusterRelease:     r.flag.ClusterRelease,
 		DefaultAppsRelease: r.flag.DefaultAppsRelease,
 		ManagementCluster:  r.flag.ManagementCluster,
-		Name:               r.flag.Name,
+		WorkloadCluster:    r.flag.Name,
 		Organization:       r.flag.Organization,
 		RepositoryName:     r.flag.RepositoryName,
 	}

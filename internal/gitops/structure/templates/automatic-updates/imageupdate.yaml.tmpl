@@ -22,7 +22,7 @@ spec:
   interval: 1m0s
   sourceRef:
     kind: GitRepository
-    name: {{ .Repository }}
+    name: {{ .RepositoryName }}
   update:
     path: ./management-clusters/{{ .ManagementCluster }}
     strategy: Setters

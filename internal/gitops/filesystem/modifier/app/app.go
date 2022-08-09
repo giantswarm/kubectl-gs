@@ -7,20 +7,20 @@ import (
 
 const (
 	appVersionLocator = `version:\s([v0-9.]*).*\n`
-	appVersionUpdater = "version: $1 # {\"$$imagepolicy\": \"default:%s:tag\"}\n"
+	appVersionUpdater = "version: $1 # {\"$$imagepolicy\": \"%s:%s:tag\"}\n"
 )
 
 type AppModifier struct {
-	ImagePolicyToAdd string
+	ImagePolicyToAdd map[string]string
 }
 
 // PostExecute modifies App CRs after creating the necessary
 // resources first.
 func (app AppModifier) Execute(rawYaml []byte) ([]byte, error) {
 
-	if app.ImagePolicyToAdd != "" {
+	for n, p := range app.ImagePolicyToAdd {
 		re := regexp.MustCompile(appVersionLocator)
-		rawYaml = re.ReplaceAll(rawYaml, []byte(fmt.Sprintf(appVersionUpdater, app.ImagePolicyToAdd)))
+		rawYaml = re.ReplaceAll(rawYaml, []byte(fmt.Sprintf(appVersionUpdater, n, p)))
 	}
 
 	return rawYaml, nil

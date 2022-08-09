@@ -15,7 +15,7 @@ var kustomization string
 // GetOrganizationDirectoryTemplates returns organization directory layout.
 func GetOrganizationDirectoryTemplates() []common.Template {
 	return []common.Template{
-		common.Template{Name: "{{ .Name }}.yaml", Data: organization},
+		common.Template{Name: "{{ .Organization }}.yaml", Data: organization},
 	}
 }
 

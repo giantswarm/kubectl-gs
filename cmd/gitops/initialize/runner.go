@@ -2,27 +2,15 @@ package initialize
 
 import (
 	"context"
-	"fmt"
 	"io"
-	//"os"
 	"strconv"
 
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
-	//"github.com/ProtonMail/gopenpgp/v2/helper"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	//"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
-	//commonkey "github.com/giantswarm/kubectl-gs/internal/key"
-)
-
-const (
-	keyName = "Max Mustermann"
-	email   = "max.mustermann@example.com"
-	rsaBits = 2048
 )
 
 type runner struct {
@@ -74,9 +62,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	ecKey, err := crypto.GenerateKey(name, email, "x25519", 0)
-	fmt.Println(ecKey.GetArmoredPublicKey())
 
 	return nil
 }

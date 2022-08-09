@@ -42,24 +42,24 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.AppConfig{
+	config := structure.StructureConfig{
 		App:               r.flag.App,
-		Base:              r.flag.Base,
-		Catalog:           r.flag.Catalog,
+		AppBase:           r.flag.Base,
+		AppCatalog:        r.flag.Catalog,
 		ManagementCluster: r.flag.ManagementCluster,
-		Name:              r.flag.Name,
-		Namespace:         r.flag.Namespace,
+		AppName:           r.flag.Name,
+		AppNamespace:      r.flag.Namespace,
 		Organization:      r.flag.Organization,
 		WorkloadCluster:   r.flag.WorkloadCluster,
-		Version:           r.flag.Version,
+		AppVersion:        r.flag.Version,
 	}
 
-	if config.Name == "" {
-		config.Name = config.App
+	if config.AppName == "" {
+		config.AppName = config.App
 	}
 
 	if r.flag.UserValuesConfigMap != "" {
-		config.UserValuesConfigMap, err = commonkey.ReadConfigMapYamlFromFile(
+		config.AppUserValuesConfigMap, err = commonkey.ReadConfigMapYamlFromFile(
 			afero.NewOsFs(),
 			r.flag.UserValuesConfigMap,
 		)
@@ -67,7 +67,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		config.UserValuesConfigMap = strings.TrimSpace(config.UserValuesConfigMap)
+		config.AppUserValuesConfigMap = strings.TrimSpace(config.AppUserValuesConfigMap)
 	}
 	if r.flag.UserValuesSecret != "" {
 		byteData, err := commonkey.ReadSecretYamlFromFile(
@@ -78,7 +78,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
-		config.UserValuesSecret = strings.TrimSpace(string(byteData))
+		config.AppUserValuesSecret = strings.TrimSpace(string(byteData))
 	}
 
 	creatorConfig, err := structure.NewApp(config)

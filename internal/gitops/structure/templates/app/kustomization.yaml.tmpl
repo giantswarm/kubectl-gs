@@ -1,17 +1,17 @@
-{{- if .Base -}}
+{{- if .AppBase -}}
 apiVersion: kustomize.config.k8s.io/v1beta1
 buildMetadata: [originAnnotations]
-{{- if or .UserValuesConfigMap .UserValuesSecret }}
+{{- if or .AppUserValuesConfigMap .AppUserValuesSecret }}
 patchesStrategicMerge:
   - patch_app_userconfig.yaml
 {{- end }}
 kind: Kustomization
 resources:
-  - ../../../../../../../../{{ .Base }}
-{{- if .UserValuesConfigMap }}
+  - ../../../../../../../../{{ .AppBase }}
+{{- if .AppUserValuesConfigMap }}
   - configmap.yaml
 {{- end }}
-{{- if .UserValuesSecret }}
+{{- if .AppUserValuesSecret }}
   - secret.yaml
 {{- end }}
 {{- end }}

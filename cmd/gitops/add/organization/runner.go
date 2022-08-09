@@ -37,9 +37,9 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.OrgConfig{
+	config := structure.StructureConfig{
 		ManagementCluster: r.flag.ManagementCluster,
-		Name:              r.flag.Name,
+		Organization:      r.flag.Name,
 	}
 
 	creatorConfig, err := structure.NewOrganization(config)

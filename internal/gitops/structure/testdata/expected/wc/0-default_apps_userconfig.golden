@@ -2,9 +2,9 @@ apiVersion: v1
 data:
   values: |
     testKey: testValue
-    topKey:
-      nestedKey: nestedValue
+    otherTopKey:
+      nestedOtherKey: nestedOtherValue
 kind: ConfigMap
 metadata:
-  name: demowc-cluster-userconfig
+  name: demowc-default-apps-userconfig
   namespace: org-demoorg

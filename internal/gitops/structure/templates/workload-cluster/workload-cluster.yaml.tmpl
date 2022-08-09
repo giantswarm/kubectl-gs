@@ -1,14 +1,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: {{ .ManagementCluster }}-clusters-{{ .Name }}
+  name: {{ .ManagementCluster }}-clusters-{{ .WorkloadCluster }}
   namespace: default
 spec:
   interval: 1m
-  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .Name }}"
+  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}"
   postBuild:
     substitute:
-      cluster_name: "{{ .Name }}"
+      cluster_name: "{{ .WorkloadCluster }}"
       organization: "{{ .Organization }}"
       {{- if .ClusterRelease }}
       cluster_release: "{{ .ClusterRelease }}"

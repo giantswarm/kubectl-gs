@@ -11,7 +11,10 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
 	appmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/app"
-	kusmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/kustomization"
+	fluxkusmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/flux-kustomization"
+	secmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/secret"
+	sigskusmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/sigs-kustomization"
+	sopsmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/sops"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	apptmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/app"
 	updatetmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/automatic-updates"
@@ -24,12 +27,11 @@ import (
 
 // Initialize create a basic directory structure for the repository
 func Initialize() (*creator.CreatorConfig, error) {
-	//var err error
-
+	// Holds management-clusters
 	mcsDir := key.ManagementClustersDirName()
 
 	// We initialize repository with the `management-clusters` directory
-	// and SOPS configuration file.
+	// and SOPS configuration file only.
 	fsObjects := []*creator.FsObject{creator.NewFsObject(mcsDir, nil)}
 
 	err := appendFromTemplate(&fsObjects, "", roottmpl.GetRepositoryRootTemplates, nil)
@@ -45,14 +47,20 @@ func Initialize() (*creator.CreatorConfig, error) {
 }
 
 // NewApp creates a new App directory structure.
-func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
+func NewApp(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	// Helpers
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
-	appDir := key.ResourcePath(appsDir, config.Name)
-	appsKusFile := key.ResourcePath(appsDir, key.KustomizationFileName())
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME
+	appDir := key.ResourcePath(appsDir, config.AppName)
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/kustomization.yaml
+	appsKusFile := key.ResourcePath(appsDir, key.SigsKustomizationFileName())
 
 	// We start from the `apps` directory despite the fact this directory
 	// should already exist at this point. We then create the `APP_NAME` directory
@@ -67,27 +75,27 @@ func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	// Once files are added, we then need to add resources to the
-	// `apps/kustomization.yaml`, either one by one when no base is
-	// used, or as a whole directory when it is used.
+	// Once files are added, we then need to add resources to the `apps/kustomization.yaml`,
+	// either one by one when no base is used, or as a whole directory when it is used.
 	resources := make([]string, 0)
-	if config.Base == "" {
-		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.AppCRFileName()))
+	if config.AppBase == "" {
+		resources = append(resources, fmt.Sprintf("%s/%s", config.AppName, key.AppCRFileName()))
 	} else {
-		resources = append(resources, config.Name)
+		resources = append(resources, config.AppName)
 	}
 
-	if config.Base == "" && config.UserValuesConfigMap != "" {
-		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.ConfigMapFileName()))
+	if config.AppBase == "" && config.AppUserValuesConfigMap != "" {
+		resources = append(resources, fmt.Sprintf("%s/%s", config.AppName, key.ConfigMapFileName()))
 	}
 
-	if config.Base == "" && config.UserValuesSecret != "" {
-		resources = append(resources, fmt.Sprintf("%s/%s", config.Name, key.SecretFileName()))
+	if config.AppBase == "" && config.AppUserValuesSecret != "" {
+		resources = append(resources, fmt.Sprintf("%s/%s", config.AppName, key.SecretFileName()))
 	}
 
-	// Create Kustomization post modifiers
+	// Create Kustomization post modifiers that actually drops the needed changes
+	// to the Kustomization CR
 	fsModifiers := map[string]modifier.Modifier{
-		appsKusFile: kusmod.KustomizationModifier{
+		appsKusFile: sigskusmod.KustomizationModifier{
 			ResourcesToAdd: resources,
 		},
 	}
@@ -101,16 +109,26 @@ func NewApp(config AppConfig) (*creator.CreatorConfig, error) {
 }
 
 // NewImageUpdate configures app for automated updates
-func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, error) {
+func NewAutomaticUpdate(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	// bunch of helpers
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/automatic-updates
 	autoUpdatesDir := key.ResourcePath(wcDir, key.AutoUpdatesDirName())
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
-	appDir := key.ResourcePath(appsDir, config.App)
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME
+	appDir := key.ResourcePath(appsDir, config.AppName)
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/appcr.yaml
 	appCrFile := key.ResourcePath(appDir, key.AppCRFileName())
-	appsKusFile := key.ResourcePath(appsDir, key.KustomizationFileName())
+
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/kustomization.yaml
+	appsKusFile := key.ResourcePath(appsDir, key.SigsKustomizationFileName())
 
 	// We start from the `WC_NAME` directory, because we must create the
 	// `automatic-updates` directory there if it does not exist.
@@ -123,7 +141,7 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 		return nil, microerror.Mask(err)
 	}
 
-	// Next we add `Image*` resources to the `APP_NAME` directory
+	// Next we add `Image*` resources to the `APP_NAME` directory.
 	err = appendFromTemplate(&fsObjects, appDir, updatetmpl.GetAppImageUpdatesTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -131,24 +149,27 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 
 	// Once files are added, we then need to add resources to the
 	// `apps/kustomization.yaml`, and also update App CR with the
-	// automatic updates comments
+	// automatic updates comments.
 	resources := []string{
 		fmt.Sprintf("%s/%s", config.App, key.ImagePolicyFileName()),
 		fmt.Sprintf("%s/%s", config.App, key.ImageRepositoryFileName()),
 	}
 
-	// Create Kustomization and App CR post modifiers
+	// Create Kustomization and App CR post modifiers to drop the needed
+	// changes to the respective resources.
 	fsModifiers := map[string]modifier.Modifier{
-		appsKusFile: kusmod.KustomizationModifier{
+		appsKusFile: sigskusmod.KustomizationModifier{
 			ResourcesToAdd: resources,
 		},
 		appCrFile: appmod.AppModifier{
-			ImagePolicyToAdd: fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
+			ImagePolicyToAdd: map[string]string{
+				fmt.Sprintf("org-%s", config.Organization): fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
+			},
 		},
 	}
 
 	fsValidators := map[string]creator.Validator{
-		key.ResourcePath(appDir, key.KustomizationFileName()): creator.KustomizationValidator{
+		key.ResourcePath(appDir, key.SigsKustomizationFileName()): creator.KustomizationValidator{
 			ReferencesBase: true,
 		},
 	}
@@ -162,19 +183,118 @@ func NewAutomaticUpdate(config AutomaticUpdateConfig) (*creator.CreatorConfig, e
 	return &creatorConfig, nil
 }
 
+// NewEncryption configures repository for the new SOPS key pair
+func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
+	// Holds management-clusters/MC_NAME
+	mcDir := key.McDirPath(config.ManagementCluster)
+
+	// Holds management-clusters/MC_NAME/secrets
+	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
+
+	// Holds management-clusters/MC_NAME/.sops.keys
+	sopsDir := key.ResourcePath(mcDir, key.SopsKeysDirName())
+
+	// Either MC_NAME or WC_NAME
+	keyPrefix := sopsKeyPrefix(config)
+
+	// Holds management-clusters/MC_NAME/.sops.keys/PREFIX.FINGERPRINT.asc
+	sopsPubKeyFile := key.ResourcePath(
+		sopsDir,
+		key.SopsKeyName(keyPrefix, config.EncryptionKeyPair.Fingerprint),
+	)
+
+	// Holds management-clusters/MC_NAME/secrets/PREFIX.gpgkey.enc.yaml
+	sopsPrvKeyFile := key.ResourcePath(
+		secretsDir,
+		key.SopsSecretFileName(keyPrefix),
+	)
+
+	// Makes sure the management-clusters/MC_NAME/.sops.keys/PREFIX.FINGERPRINT.asc
+	// gets created
+	fsObjects := []*creator.FsObject{
+		creator.NewFsObject(sopsPubKeyFile, []byte(config.EncryptionKeyPair.PublicData)),
+	}
+
+	// Post modifiers make sure other files get the right values necessary
+	// to enable encryption for the given path.
+	fsModifiers := map[string]modifier.Modifier{
+		// Add private SOPS key to the `sopsPrvKeyFile` Secret
+		sopsPrvKeyFile: secmod.SecretModifier{
+			KeysToAdd: map[string]string{
+				key.SopsKeyName(keyPrefix, config.EncryptionKeyPair.Fingerprint): config.EncryptionKeyPair.PrivateData,
+			},
+		},
+	}
+
+	if config.WorkloadCluster != "" {
+		// Construct path to the WC_NAME.yaml file.
+		orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
+		wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
+		wcKusFile := key.ResourcePath(wcsDir, key.FluxKustomizationFileName(config.WorkloadCluster))
+
+		// Add decryption field to the Flux Kustomization CR for the
+		// Workload Cluster
+		fsModifiers[wcKusFile] = fluxkusmod.KustomizationModifier{
+			DecryptionToAdd: key.SopsSecretName(keyPrefix),
+		}
+	} else {
+		// Construct path to the MC_NAME.yaml file
+		mcKusFile := key.ResourcePath(mcDir, key.FluxKustomizationFileName(config.ManagementCluster))
+
+		// Add decryption field to the Flux Kustomization CR for the
+		// Management Cluster
+		fsModifiers[mcKusFile] = fluxkusmod.KustomizationModifier{
+			DecryptionToAdd: key.SopsSecretName(keyPrefix),
+		}
+	}
+
+	encPath := mcDir
+	if config.Organization != "" {
+		encPath = key.OrgDirPath(config.ManagementCluster, config.Organization)
+	} else if config.WorkloadCluster != "" {
+		encPath = key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	}
+
+	encPath = fmt.Sprintf("%s/%s.*\\.enc\\.yaml", encPath, config.EncryptionTarget)
+
+	fsModifiers[key.SopsConfigFileName()] = sopsmod.SopsModifier{
+		RulesToAdd: []map[string]interface{}{
+			map[string]interface{}{
+				"encrypted_regex": "^(data|stringData)$",
+				"path_regex":      encPath,
+				"pgp":             config.EncryptionKeyPair.Fingerprint,
+			},
+		},
+	}
+
+	creatorConfig := creator.CreatorConfig{
+		FsObjects:     fsObjects,
+		PostModifiers: fsModifiers,
+	}
+
+	return &creatorConfig, nil
+}
+
 // NewManagementCluster creates a new Management Cluster directory
 // structure.
-func NewManagementCluster(config McConfig) (*creator.CreatorConfig, error) {
+func NewManagementCluster(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	mcDir := key.McDirPath(config.Name)
-	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
-	sopsDir := key.ResourcePath(mcDir, key.SopsKeysDirName())
+	// Holds management-cluster/MC_NAME
+	mcDir := key.McDirPath(config.ManagementCluster)
+
+	// Holds management-cluster/MC_NAME/organizations
 	orgsDir := key.ResourcePath(mcDir, key.OrganizationsDirName())
+
+	// Holds management-cluster/MC_NAME/secrets
+	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
+
+	// Holds management-cluster/MC_NAME/.sops.keys
+	sopsDir := key.ResourcePath(mcDir, key.SopsKeysDirName())
 
 	// Adding a new Management Cluster is simple. We start at the
 	// `management-clusters/MC_NAME` and then add definition and few
-	// of the basic directories.
+	// out of the basic directories.
 	fsObjects := []*creator.FsObject{creator.NewFsObject(mcDir, nil)}
 
 	err = appendFromTemplate(&fsObjects, mcDir, mctmpl.GetManagementClusterTemplates, config)
@@ -205,10 +325,13 @@ func NewManagementCluster(config McConfig) (*creator.CreatorConfig, error) {
 
 // NewOrganization creates a new Organization directory
 // structure.
-func NewOrganization(config OrgConfig) (*creator.CreatorConfig, error) {
+func NewOrganization(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	orgDir := key.OrgDirPath(config.ManagementCluster, config.Name)
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME
+	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
+
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 
 	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
@@ -237,23 +360,56 @@ func NewOrganization(config OrgConfig) (*creator.CreatorConfig, error) {
 
 // NewWorkloadCluster creates a new Workload Cluster directory
 // structure.
-func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
+func NewWorkloadCluster(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	// Helpers
+	// Holds management-cluster/MC_NAME
+	mcDir := key.McDirPath(config.ManagementCluster)
+
+	// Holds management-cluster/MC_NAME/secrets
+	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
+
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME
 	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
-	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.Name)
+
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
+	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
-	clusterDir := key.ResourcePath(wcDir, key.ClusterDirName())
-	wcsKusFile := key.ResourcePath(wcsDir, key.KustomizationFileName())
 
-	// We start at the `workload-clusters` directory. This should already
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/cluster
+	clusterDir := key.ResourcePath(wcDir, key.ClusterDirName())
+
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/kustomization.yaml
+	wcsKusFile := key.ResourcePath(wcsDir, key.SigsKustomizationFileName())
+
+	fsObjects := []*creator.FsObject{}
+
+	// Adding the `MC_NAME/secrets/WC_NAME.gpgkey.enc.yaml. We start here since it's the
+	// highest layer in the structure. We add an empty secret there, that serves
+	// as the SOPS private keys storage. It is empty by default and can be populated by the
+	// `add encryption` command.
+	// The need for this here may be questioned, but the rationale is: it is much easier and
+	// structured this way. If it is not added here, empty, then it would have to be created
+	// when encryption is requested later on. But when that happens, we do not have a way to
+	// tell whether something exist or not here in the `structure` package. We can only tell
+	// creator to create something or modify it, assuming it exists. So instead of tweaking
+	// the creator's logic, I decided to drop an empty Secret and edit it with creator's
+	// post modifiers.
+	err = appendFromTemplate(&fsObjects, secretsDir, wctmpl.GetSecretsDirectoryTemplates, config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	// We then continue at the `workload-clusters` directory. This should already
 	// exist at this point, as a result of Organization creation, but we
 	// need to point to this directory anyway in order to drop Kustomization
 	// there.
-	fsObjects := []*creator.FsObject{creator.NewFsObject(wcsDir, nil)}
+	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil))
 
 	// Add Kustomization CR to the `workload-clusters` directory and other
 	// files if needed. Currently only Kustomization CR is considered.
@@ -292,11 +448,11 @@ func NewWorkloadCluster(config WcConfig) (*creator.CreatorConfig, error) {
 
 	// After creating all the files and directories, we need creator to run
 	// post modifiers, so that cluster is included into `workload-clusters/kustomization.yaml`
-	// for example.
+	// file.
 	fsModifiers := map[string]modifier.Modifier{
-		wcsKusFile: kusmod.KustomizationModifier{
+		wcsKusFile: sigskusmod.KustomizationModifier{
 			ResourcesToAdd: []string{
-				fmt.Sprintf("%s.yaml", config.Name),
+				fmt.Sprintf("%s.yaml", config.WorkloadCluster),
 			},
 		},
 	}
@@ -365,4 +521,17 @@ func appendFromTemplate(dst *[]*creator.FsObject, path string, templates func() 
 	*dst = append(*dst, fileObjects...)
 
 	return nil
+}
+
+// sopsKeysPrefixes determines the right prefixes for the keys
+// stored in the `.sops.keys` directory and in the
+// `(MC_NAME|WC_NAME).gpgkey.enc.yaml` Secret.
+func sopsKeyPrefix(config StructureConfig) string {
+	prefix := config.ManagementCluster
+
+	if config.WorkloadCluster != "" {
+		prefix = config.WorkloadCluster
+	}
+
+	return prefix
 }
