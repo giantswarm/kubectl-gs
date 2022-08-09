@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -49,10 +50,18 @@ func getKeyName(c structure.StructureConfig) string {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	// Simple pre-processing the target to standardize the path
+	// for the structure package.
+	target := strings.TrimPrefix(r.flag.Target, "/")
+
+	if !strings.HasSuffix(target, "/") {
+		target += "/"
+	}
+
 	config := structure.StructureConfig{
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
-		EncryptionTarget:  r.flag.Target,
+		EncryptionTarget:  target,
 		WorkloadCluster:   r.flag.WorkloadCluster,
 	}
 

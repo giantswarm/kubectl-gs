@@ -8,6 +8,15 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/helper"
 )
 
+const (
+	encryptedRegex = "^(data|stringData)$"
+	/*map[string]interface{}{
+		"encrypted_regex": "^(data|stringData)$",
+		"path_regex":      encPath,
+		"pgp":             config.EncryptionKeyPair.Fingerprint,
+	},*/
+)
+
 type SopsModifier struct {
 	RulesToAdd []map[string]interface{}
 
@@ -25,6 +34,20 @@ func (sops SopsModifier) Execute(rawYaml []byte) ([]byte, error) {
 	sops.addRules()
 
 	return helper.Marshal(sops.config)
+}
+
+func NewRule(encrypt, path, fingerprint string) map[string]interface{} {
+	rule := map[string]interface{}{
+		"encrypted_regex": encrypt,
+		"path_regex":      path,
+		"pgp":             fingerprint,
+	}
+
+	if encrypt == "" {
+		rule["encrypted_regex"] = encryptedRegex
+	}
+
+	return rule
 }
 
 func (sops *SopsModifier) addRules() {

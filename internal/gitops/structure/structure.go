@@ -51,7 +51,7 @@ func NewApp(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
-	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
@@ -113,7 +113,7 @@ func NewAutomaticUpdate(config StructureConfig) (*creator.CreatorConfig, error) 
 	var err error
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
-	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/automatic-updates
 	autoUpdatesDir := key.ResourcePath(wcDir, key.AutoUpdatesDirName())
@@ -186,7 +186,7 @@ func NewAutomaticUpdate(config StructureConfig) (*creator.CreatorConfig, error) 
 // NewEncryption configures repository for the new SOPS key pair
 func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 	// Holds management-clusters/MC_NAME
-	mcDir := key.McDirPath(config.ManagementCluster)
+	mcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
 	// Holds management-clusters/MC_NAME/secrets
 	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
@@ -195,7 +195,7 @@ func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 	sopsDir := key.ResourcePath(mcDir, key.SopsKeysDirName())
 
 	// Either MC_NAME or WC_NAME
-	keyPrefix := sopsKeyPrefix(config)
+	keyPrefix := key.SopsKeyPrefix(config.ManagementCluster, config.WorkloadCluster)
 
 	// Holds management-clusters/MC_NAME/.sops.keys/PREFIX.FINGERPRINT.asc
 	sopsPubKeyFile := key.ResourcePath(
@@ -228,7 +228,7 @@ func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 
 	if config.WorkloadCluster != "" {
 		// Construct path to the WC_NAME.yaml file.
-		orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
+		orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 		wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 		wcKusFile := key.ResourcePath(wcsDir, key.FluxKustomizationFileName(config.WorkloadCluster))
 
@@ -248,22 +248,12 @@ func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 		}
 	}
 
-	encPath := mcDir
-	if config.Organization != "" {
-		encPath = key.OrgDirPath(config.ManagementCluster, config.Organization)
-	} else if config.WorkloadCluster != "" {
-		encPath = key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
-	}
-
-	encPath = fmt.Sprintf("%s/%s.*\\.enc\\.yaml", encPath, config.EncryptionTarget)
+	encPath := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	encPath = key.EncryptionRegex(encPath, config.EncryptionTarget)
 
 	fsModifiers[key.SopsConfigFileName()] = sopsmod.SopsModifier{
 		RulesToAdd: []map[string]interface{}{
-			map[string]interface{}{
-				"encrypted_regex": "^(data|stringData)$",
-				"path_regex":      encPath,
-				"pgp":             config.EncryptionKeyPair.Fingerprint,
-			},
+			sopsmod.NewRule("", encPath, config.EncryptionKeyPair.Fingerprint),
 		},
 	}
 
@@ -281,7 +271,7 @@ func NewManagementCluster(config StructureConfig) (*creator.CreatorConfig, error
 	var err error
 
 	// Holds management-cluster/MC_NAME
-	mcDir := key.McDirPath(config.ManagementCluster)
+	mcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
 	// Holds management-cluster/MC_NAME/organizations
 	orgsDir := key.ResourcePath(mcDir, key.OrganizationsDirName())
@@ -329,7 +319,7 @@ func NewOrganization(config StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME
-	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
+	orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
@@ -364,16 +354,16 @@ func NewWorkloadCluster(config StructureConfig) (*creator.CreatorConfig, error) 
 	var err error
 
 	// Holds management-cluster/MC_NAME
-	mcDir := key.McDirPath(config.ManagementCluster)
+	mcDir := key.BaseDirPath(config.ManagementCluster, "", "")
 
 	// Holds management-cluster/MC_NAME/secrets
 	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME
-	orgDir := key.OrgDirPath(config.ManagementCluster, config.Organization)
+	orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, "")
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
-	wcDir := key.WcDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
@@ -521,17 +511,4 @@ func appendFromTemplate(dst *[]*creator.FsObject, path string, templates func() 
 	*dst = append(*dst, fileObjects...)
 
 	return nil
-}
-
-// sopsKeysPrefixes determines the right prefixes for the keys
-// stored in the `.sops.keys` directory and in the
-// `(MC_NAME|WC_NAME).gpgkey.enc.yaml` Secret.
-func sopsKeyPrefix(config StructureConfig) string {
-	prefix := config.ManagementCluster
-
-	if config.WorkloadCluster != "" {
-		prefix = config.WorkloadCluster
-	}
-
-	return prefix
 }
