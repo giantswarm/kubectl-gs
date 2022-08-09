@@ -186,7 +186,7 @@ func NewAutomaticUpdate(config StructureConfig) (*creator.CreatorConfig, error) 
 // NewEncryption configures repository for the new SOPS key pair
 func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 	// Holds management-clusters/MC_NAME
-	mcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	mcDir := key.BaseDirPath(config.ManagementCluster, "", "")
 
 	// Holds management-clusters/MC_NAME/secrets
 	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
@@ -228,7 +228,7 @@ func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 
 	if config.WorkloadCluster != "" {
 		// Construct path to the WC_NAME.yaml file.
-		orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+		orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, "")
 		wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 		wcKusFile := key.ResourcePath(wcsDir, key.FluxKustomizationFileName(config.WorkloadCluster))
 

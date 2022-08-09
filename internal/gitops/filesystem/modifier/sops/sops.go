@@ -10,11 +10,6 @@ import (
 
 const (
 	encryptedRegex = "^(data|stringData)$"
-	/*map[string]interface{}{
-		"encrypted_regex": "^(data|stringData)$",
-		"path_regex":      encPath,
-		"pgp":             config.EncryptionKeyPair.Fingerprint,
-	},*/
 )
 
 type SopsModifier struct {

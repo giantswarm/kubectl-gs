@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
@@ -10,7 +11,7 @@ const (
 	automaticUpdatesDirectory  = "automatic-updates"
 	clusterDirectory           = "cluster"
 	configMapFile              = "configmap.yaml"
-	encryptionRegex            = "%s/%s.*\\.enc\\.yaml"
+	encryptionRegex            = "%s/.*\\.enc\\.yaml"
 	fluxKustomizationFile      = "%s.yaml"
 	imagePolicyFile            = "imagepolicy.yaml"
 	imageRepositoryFile        = "imagerepository.yaml"
@@ -69,7 +70,14 @@ func ConfigMapFileName() string {
 }
 
 func EncryptionRegex(base, target string) string {
-	return fmt.Sprintf(encryptionRegex, base, target)
+	target = strings.TrimPrefix(target, "/")
+	target = strings.TrimSuffix(target, "/")
+
+	if target != "" {
+		base = fmt.Sprintf("%s/%s", base, target)
+	}
+
+	return fmt.Sprintf(encryptionRegex, base)
 }
 
 func FluxKustomizationFileName(name string) string {
