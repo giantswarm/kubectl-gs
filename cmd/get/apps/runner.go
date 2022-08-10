@@ -60,7 +60,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if r.flag.AllNamespaces {
 			namespace = metav1.NamespaceAll
 		} else {
-			namespace, _, err = r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().Namespace()
+			namespace, _, err = r.commonConfig.GetNamespace()
 			if err != nil {
 				return microerror.Mask(err)
 			}

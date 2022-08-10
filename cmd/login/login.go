@@ -27,7 +27,7 @@ func (r *runner) findContext(ctx context.Context, installationIdentifier string)
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	var contextAlreadySelected bool
 	var newLoginRequired bool
-	k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 
 	err := switchContext(ctx, k8sConfigAccess, contextName, r.loginOptions.switchToContext)
 	if IsContextAlreadySelected(err) {
@@ -127,7 +127,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 }
 
 func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string, i *installation.Installation) error {
-	k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 
 	var err error
 	var authResult authInfo

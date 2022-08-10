@@ -77,7 +77,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if r.flag.AllNamespaces {
 				options.Namespace = metav1.NamespaceAll
 			} else {
-				options.Namespace, _, err = r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().Namespace()
+				options.Namespace, _, err = r.commonConfig.GetNamespace()
 				if err != nil {
 					return microerror.Mask(err)
 				}

@@ -11,7 +11,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
@@ -76,11 +75,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 		if !foundContext {
-			var tokenOverride string
-			if c, ok := r.commonConfig.GetConfigFlags().(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
-				tokenOverride = *c.BearerToken
-			}
-			err = r.loginWithURL(ctx, installationIdentifier, true, tokenOverride)
+			err = r.loginWithURL(ctx, installationIdentifier, true, r.commonConfig.GetTokenOverride())
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -113,29 +108,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 }
 
 func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
-	config, err := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
+	config, err := r.commonConfig.GetConfigAccess().GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 	return config.CurrentContext, nil
 }
 
-func (r *runner) tryToGetContextFlag(ctx context.Context) string {
-	config, ok := r.commonConfig.GetConfigFlags().(*genericclioptions.ConfigFlags)
-	if !ok {
-		return ""
-	}
-	return *config.Context
-}
-
 func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	originContext, err := r.tryToGetCurrentContext(ctx)
 	if err != nil {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
-	}
-	contextFlag := r.tryToGetContextFlag(ctx)
-	if contextFlag != "" && len(*args) < 1 {
-		*args = append(*args, contextFlag)
 	}
 	r.loginOptions = LoginOptions{
 		originContext:           originContext,
@@ -148,11 +131,14 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 }
 
 func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
-	config, err := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess().GetStartingConfig()
-	if err != nil {
-		return microerror.Mask(err)
+	currentContext := r.commonConfig.GetContextOverride()
+	if currentContext == "" {
+		config, err := r.commonConfig.GetConfigAccess().GetStartingConfig()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		currentContext = config.CurrentContext
 	}
-	currentContext := config.CurrentContext
 	if currentContext != "" {
 		return r.loginWithKubeContextName(ctx, currentContext)
 	} else {

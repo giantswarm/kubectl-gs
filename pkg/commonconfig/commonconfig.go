@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/scheme"
@@ -75,4 +76,26 @@ func (cc *CommonConfig) GetClient(logger micrologger.Logger) (k8sclient.Interfac
 	}
 
 	return k8sClients, nil
+}
+
+func (cc *CommonConfig) GetContextOverride() string {
+	if c, ok := cc.GetConfigFlags().(*genericclioptions.ConfigFlags); ok && c.Context != nil && len(*c.Context) > 0 {
+		return *c.Context
+	}
+	return ""
+}
+
+func (cc *CommonConfig) GetTokenOverride() string {
+	if c, ok := cc.GetConfigFlags().(*genericclioptions.ConfigFlags); ok && c.BearerToken != nil && len(*c.BearerToken) > 0 {
+		return *c.BearerToken
+	}
+	return ""
+}
+
+func (cc *CommonConfig) GetNamespace() (string, bool, error) {
+	return cc.GetConfigFlags().ToRawKubeConfigLoader().Namespace()
+}
+
+func (cc *CommonConfig) GetConfigAccess() clientcmd.ConfigAccess {
+	return cc.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
 }

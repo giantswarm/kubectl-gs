@@ -295,6 +295,15 @@ func TestLogin(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 		},
+		// Logging in without argument using context flag without gs- prefix
+		{
+			name:        "case 28",
+			startConfig: kubeconfig.CreateNonDefaultTestConfig(),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			contextOverride: *pointer.String("arbitraryname"),
+		},
 	}
 
 	for i, tc := range testCases {
@@ -318,7 +327,7 @@ func TestLogin(t *testing.T) {
 				flag:         tc.flags,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
+			k8sConfigAccess := r.commonConfig.GetConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)
@@ -420,7 +429,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				stderr:       new(bytes.Buffer),
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			k8sConfigAccess := r.commonConfig.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
+			k8sConfigAccess := r.commonConfig.GetConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)

@@ -111,8 +111,7 @@ func TestGetCommonConfig(t *testing.T) {
 					assert.Assert(t, f == "")
 				}
 				if tc.contextOverride != "" {
-					configflag := testCommand.commonConfig.GetConfigFlags().(*genericclioptions.ConfigFlags)
-					assert.Assert(t, *configflag.Context == tc.expectContext)
+					assert.Assert(t, testCommand.commonConfig.GetContextOverride() == tc.expectContext)
 				}
 			}
 		})
