@@ -18,10 +18,9 @@ const (
 )
 
 type Config struct {
-	Logger       micrologger.Logger
-	CommonConfig *commonconfig.CommonConfig
-	ConfigFlags  *genericclioptions.RESTClientGetter
-	Stdout       io.Writer
+	Logger      micrologger.Logger
+	ConfigFlags *genericclioptions.RESTClientGetter
+	Stdout      io.Writer
 }
 
 func New(config Config) (*cobra.Command, error) {

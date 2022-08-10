@@ -77,10 +77,8 @@ Output columns:
 
 // Config are the configuration that New takes to create an instance of this command.
 type Config struct {
-	Logger micrologger.Logger
-
-	CommonConfig *commonconfig.CommonConfig
-	ConfigFlags  *genericclioptions.RESTClientGetter
+	Logger      micrologger.Logger
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer

@@ -19,9 +19,8 @@ const (
 )
 
 type Config struct {
-	Logger       micrologger.Logger
-	CommonConfig *commonconfig.CommonConfig
-	ConfigFlags  *genericclioptions.RESTClientGetter
+	Logger      micrologger.Logger
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
