@@ -1,6 +1,7 @@
 package creator
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -86,17 +87,40 @@ func isDir(path string) bool {
 func (c *Creator) print() {
 	for _, o := range c.fsObjects {
 
+		// Print path to the directory to be created
 		if isDir(o.RelativePath) {
 			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 			continue
 		}
 
-		if len(o.Data) <= 1 {
+		data := bytes.TrimSpace(o.Data)
+		if len(data) == 0 {
 			continue
 		}
 
+		// Print path to the file, and then the file content
 		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
-		fmt.Fprintln(c.stdout, string(o.Data))
+		fmt.Fprintf(c.stdout, "%s\n\n", string(data))
+	}
+
+	for n, m := range c.postModifiers {
+		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			// Very simple way to inform user what is going to happen when
+			// command is executed without the `dry-run` flag. May not be
+			// the best way in the future, but it is something to start with,
+			// and serves the purpose of giving user a hint.
+			fmt.Fprintln(c.stdout, err)
+			continue
+		}
+
+		edited, err := m.Execute(rawYaml)
+		if err != nil {
+			return
+		}
+
+		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, n)
+		fmt.Fprintln(c.stdout, string(edited))
 	}
 }
 

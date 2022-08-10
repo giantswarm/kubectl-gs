@@ -468,7 +468,7 @@ func Test_NewOrganization(t *testing.T) {
 				}
 
 				if !bytes.Equal(config.FsObjects[i].Data, expected) {
-					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
+					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(config.FsObjects[i].Data), string(expected)))
 				}
 			}
 		})

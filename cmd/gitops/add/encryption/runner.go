@@ -40,12 +40,12 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 
 func getKeyName(c structure.StructureConfig) string {
 	if c.WorkloadCluster != "" {
-		return fmt.Sprintf("'%s' Workload Cluster encryption", c.WorkloadCluster)
+		return fmt.Sprintf("%s Workload Cluster encryption", c.WorkloadCluster)
 	} else if c.Organization != "" {
-		return fmt.Sprintf("'%s' Organization encryption", c.Organization)
+		return fmt.Sprintf("%s Organization encryption", c.Organization)
 	}
 
-	return fmt.Sprintf("'%s' Flux master", c.ManagementCluster)
+	return fmt.Sprintf("%s Flux master", c.ManagementCluster)
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
@@ -57,6 +57,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.Generate {
+		// This could as well be part of the structure package I think,
+		// especially if we thread it as kind of templating. On the other
+		// hand I used to pass a ready-to-use config to the `structure` package,
+		// so from that perspective generating it here and than passing makes
+		// sense.
 		keyName := getKeyName(config)
 
 		keyPair, err := encryption.GenerateKeyPair(keyName)

@@ -155,8 +155,8 @@ func NewAutomaticUpdate(config StructureConfig) (*creator.CreatorConfig, error) 
 	// `apps/kustomization.yaml`, and also update App CR with the
 	// automatic updates comments.
 	resources := []string{
-		fmt.Sprintf("%s/%s", config.App, key.ImagePolicyFileName()),
-		fmt.Sprintf("%s/%s", config.App, key.ImageRepositoryFileName()),
+		fmt.Sprintf("%s/%s", config.AppName, key.ImagePolicyFileName()),
+		fmt.Sprintf("%s/%s", config.AppName, key.ImageRepositoryFileName()),
 	}
 
 	// Create Kustomization and App CR post modifiers to drop the needed
@@ -167,7 +167,7 @@ func NewAutomaticUpdate(config StructureConfig) (*creator.CreatorConfig, error) 
 		},
 		appCrFile: appmod.AppModifier{
 			ImagePolicyToAdd: map[string]string{
-				fmt.Sprintf("org-%s", config.Organization): fmt.Sprintf("%s-%s", config.WorkloadCluster, config.App),
+				fmt.Sprintf("org-%s", config.Organization): fmt.Sprintf("%s-%s", config.WorkloadCluster, config.AppName),
 			},
 		},
 	}
@@ -482,7 +482,7 @@ func addFilesFromTemplate(path string, templates func() []common.Template, confi
 			return nil, microerror.Mask(err)
 		}
 
-		// Instead of conditioning in the template package and not returning an
+		// Instead of conditioning in the `template` package and not returning an
 		// empty file, we return empty files and condition here, effectively
 		// removing them from the structure set.
 		if len(content.Bytes()) <= 1 {
