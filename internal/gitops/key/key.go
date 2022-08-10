@@ -73,6 +73,25 @@ func EncryptionRegex(base, target string) string {
 	target = strings.TrimPrefix(target, "/")
 	target = strings.TrimSuffix(target, "/")
 
+	// These conditions are here to prohibit misconfiguration of the
+	// .sops.yaml, Kustomization CR and *.gpgkey.enc.yaml Secrets.
+	// Context: user should be given some freedom towards directory
+	// to encrypt / decrypt, meaning it shouldn't always be `secrets/`
+	// dir. This however introduced a risk to "escaping" the desired layer
+	// and misconfiguring Flux. For example, user can tell `kgs` that
+	// he wants to encrypt Management Cluster layer only, but then pass
+	// the path to the Workload Cluster's App secres to the `target` flag,
+	// making `kgs` to drop configuration in the wrong places.
+	// To block this we check for `organizations` and `workload-clusters`
+	// directories being specified, which we know are essential to the structure,
+	// and we restore the default value in that case.
+	if strings.HasPrefix(target, organizationsDirectory) {
+		target = secretsDirectory
+	}
+	if strings.HasPrefix(target, workloadClusterDirectory) {
+		target = secretsDirectory
+	}
+
 	if target != "" {
 		base = fmt.Sprintf("%s/%s", base, target)
 	}

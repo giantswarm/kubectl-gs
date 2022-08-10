@@ -45,5 +45,9 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagsError, "--%s must be specified when --%s is used", flagOrganization, flagWorkloadCluster)
 	}
 
+	if f.Target == "/" && f.WorkloadCluster == "" {
+		return microerror.Maskf(invalidFlagsError, "--%s must not be set to '/' when used with Management Cluster or Organization only", flagTarget)
+	}
+
 	return nil
 }
