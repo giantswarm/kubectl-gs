@@ -25,6 +25,10 @@ import (
 	wctmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/workload-cluster"
 )
 
+const (
+	masterPrefix = "master"
+)
+
 // Initialize create a basic directory structure for the repository
 func Initialize() (*creator.CreatorConfig, error) {
 	// Holds management-clusters
@@ -244,7 +248,7 @@ func NewEncryption(config StructureConfig) (*creator.CreatorConfig, error) {
 		// Add decryption field to the Flux Kustomization CR for the
 		// Management Cluster
 		fsModifiers[mcKusFile] = fluxkusmod.KustomizationModifier{
-			DecryptionToAdd: key.SopsSecretName(keyPrefix),
+			DecryptionToAdd: key.SopsSecretName(masterPrefix),
 		}
 	}
 
