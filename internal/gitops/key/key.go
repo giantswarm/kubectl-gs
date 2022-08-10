@@ -70,6 +70,7 @@ func ConfigMapFileName() string {
 }
 
 func EncryptionRegex(base, target string) string {
+	// Sanitize target to make it easier to work with
 	target = strings.TrimPrefix(target, "/")
 	target = strings.TrimSuffix(target, "/")
 
