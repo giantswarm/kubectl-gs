@@ -28,7 +28,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.Generate, flagGenerate, false, "Generate new key pair.")
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Management cluster to configure the encryption for.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Organization in the Management Cluster to configure the encryption for.")
-	cmd.Flags().StringVar(&f.Target, flagTarget, "secrets/", "Directory to configure the encryption for.")
+	cmd.Flags().StringVar(&f.Target, flagTarget, "secrets/", "Relative directory to configure the encryption for.")
 	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Workload Cluster in the Organization to configure the encryption for.")
 }
 
