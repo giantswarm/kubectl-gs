@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Make all `kubectl` config flags (e.g `--context` and `--kubeconfig` global and unify kubeconfig management throughout commands.
+
 ## [2.18.0] - 2022-07-08
 
 ### Added
