@@ -68,6 +68,37 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_gcp.golden",
 		},
+		{
+			name: "case 0: template cluster capa",
+			flags: &flag{
+				Name:         "test1",
+				Provider:     "capa",
+				Description:  "just a test cluster",
+				Region:       "the-region",
+				Organization: "test",
+				App: provider.AppConfig{
+					ClusterVersion:     "1.0.0",
+					ClusterCatalog:     "the-catalog",
+					DefaultAppsCatalog: "the-default-catalog",
+					DefaultAppsVersion: "2.0.0",
+				},
+				AWS: provider.AWSConfig{
+					MachinePool: provider.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					Role:           "default",
+					NetworkVPCCIDR: "10.123.0.0/16",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa.golden",
+		},
 	}
 
 	for _, tc := range testCases {
