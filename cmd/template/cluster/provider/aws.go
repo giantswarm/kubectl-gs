@@ -15,9 +15,7 @@ import (
 )
 
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
-
-	err = WriteGSAWSTemplate(ctx, client, out, config)
+	err := WriteGSAWSTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
