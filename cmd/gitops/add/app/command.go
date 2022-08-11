@@ -20,6 +20,7 @@ const (
 
 app \
 --app <app_to_install> \
+[--base <path_to_base>] \
 --catalog <app_catalog> \
 [--name <app_cr_name>] \
 --namespace <app_namespace> \

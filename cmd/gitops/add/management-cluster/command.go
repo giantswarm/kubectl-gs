@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	name  = "management-cluster --name <mc_code_name> --repository-name <gitops_repo_name>"
+	name  = "management-cluster"
 	alias = "mc"
 
 	shortDescription = "Adds a new Management Cluster to your GitOps directory structure"

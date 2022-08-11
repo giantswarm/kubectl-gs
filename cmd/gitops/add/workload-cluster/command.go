@@ -19,10 +19,15 @@ const (
 	longDescription  = `Adds a new Workload Cluster to your GitOps directory structure.
 
 workload-cluster \
+[--base <path_to_base] \
+[--cluster-release <cluster_version>] \
+[--cluster-user-config <path_to_values.yaml>] \
+[--default-apps-release <default_apps_version>] \
+[--default-apps-user-config <path_to_values.yaml>] \
 --name <wc_id> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
---repository <gitops_repo_name>
+--repository <gitops_repo_name> \
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
