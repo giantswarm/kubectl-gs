@@ -286,6 +286,7 @@ func (f *flag) Validate() error {
 	validProviders := []string{
 		key.ProviderAWS,
 		key.ProviderAzure,
+		key.ProviderCAPA,
 		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,
@@ -437,6 +438,8 @@ func (f *flag) Validate() error {
 		if f.Provider == "openstack" {
 			// skip release validation
 		} else if f.Provider == "gcp" {
+			// skip release validation
+		} else if f.Provider == "capa" {
 			// skip release validation
 		} else {
 			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
