@@ -81,6 +81,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	case key.ProviderCAPA:
+		err = provider.WriteCAPATemplate(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	case key.ProviderGCP:
 		err = provider.WriteGCPTemplate(ctx, client, output, config)
 		if err != nil {
