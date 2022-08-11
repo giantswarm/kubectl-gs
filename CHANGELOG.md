@@ -10,6 +10,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Make all `kubectl` config flags (e.g `--context` and `--kubeconfig` global and unify kubeconfig management throughout commands.
+- Remove CAPA templating from `aws` provider.
+- Add new provider `capa` for templating a cluster.
+- Remove fetching ssh sso ca pub key for capa from management cluster.
 
 ## [2.18.0] - 2022-07-08
 

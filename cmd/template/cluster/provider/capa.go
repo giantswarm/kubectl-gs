@@ -26,22 +26,22 @@ const (
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	var err error
 
-	var sshSSOPublicKey string
-	{
-		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
+	if config.AWS.EKS {
+		err = WriteCAPAEKSTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-	config.AWS.SSHSSOPublicKey = sshSSOPublicKey
+	} else {
+		err = templateClusterAWS(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	err = templateClusterAWS(ctx, client, output, config)
-	if err != nil {
+		err = templateDefaultAppsAWS(ctx, client, output, config)
 		return microerror.Mask(err)
 	}
 
-	err = templateDefaultAppsAWS(ctx, client, output, config)
-	return microerror.Mask(err)
+	return nil
 }
 
 func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {

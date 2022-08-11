@@ -8,7 +8,6 @@ type ClusterConfig struct {
 	Bastion            *Bastion       `json:"bastion,omitempty"`
 	ControlPlane       *ControlPlane  `json:"controlPlane,omitempty"`
 	MachinePools       *[]MachinePool `json:"machinePools,omitempty"`
-	SSHSSOPublicKey    string         `json:"sshSSOPublicKey,omitempty"`
 	FlatcarAWSAccount  string         `json:"flatcarAWSAccount,omitempty"`
 }
 
