@@ -17,28 +17,9 @@ import (
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
 	var err error
 
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+	err = WriteGSAWSTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		if config.AWS.EKS {
-			err = WriteCAPAEKSTemplate(ctx, client, out, config)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else {
-			err = WriteCAPATemplate(ctx, client, out, config)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-	} else {
-		err = WriteGSAWSTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil
