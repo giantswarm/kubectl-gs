@@ -129,7 +129,7 @@ topKey:
 					GoldenFile:   "testdata/expected/app/2-appcr.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.yaml",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.enc.yaml",
 					GoldenFile:   "testdata/expected/app/0-secret.golden",
 				},
 			},
@@ -187,7 +187,7 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.yaml",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.enc.yaml",
 					GoldenFile:   "testdata/expected/app/0-secret.golden",
 				},
 				{
