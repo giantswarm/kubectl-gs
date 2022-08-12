@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+data:
+  values: |
+    aws:
+      awsClusterRole: default
+      region: the-region
+    bastion: {}
+    clusterDescription: just a test cluster
+    clusterName: test1
+    controlPlane:
+      replicas: 3
+    machinePools:
+    - availabilityZones:
+      - eu-west-1a
+      - eu-west-1b
+      customNodeLabels:
+      - label=value
+      instanceType: big-one
+      maxSize: 5
+      minSize: 2
+      name: worker1
+      rootVolumeSizeGB: 200
+    network:
+      vpcCIDR: 10.123.0.0/16
+    organization: test
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    giantswarm.io/cluster: test1
+  name: test1-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test1
+  namespace: org-test
+spec:
+  catalog: the-catalog
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: cluster-aws
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test1-userconfig
+      namespace: org-test
+  version: 1.0.0
+---
+apiVersion: v1
+data:
+  values: |
+    clusterName: test1
+    organization: test
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    giantswarm.io/cluster: test1
+  name: test1-default-apps-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test1-default-apps
+  namespace: org-test
+spec:
+  catalog: the-default-catalog
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: default-apps-aws
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test1-default-apps-userconfig
+      namespace: org-test
+  version: 2.0.0

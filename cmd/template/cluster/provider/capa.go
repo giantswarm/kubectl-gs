@@ -87,6 +87,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 	var configMapYAML []byte
 	{
 		flagValues := capa.ClusterConfig{
+			ClusterName:        config.Name,
 			ClusterDescription: config.Description,
 			Organization:       config.Organization,
 
