@@ -12,6 +12,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
 )
 
@@ -95,6 +96,19 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	pubKeyPath := key.BaseDirPath(r.flag.ManagementCluster, "", "")
+	pubKeyPath = key.ResourcePath(pubKeyPath, key.SopsKeysDirName())
+
+	pubKeyPrefix := r.flag.ManagementCluster
+	if r.flag.WorkloadCluster != "" {
+		pubKeyPrefix = r.flag.WorkloadCluster
+	}
+
+	pubKeyName := key.SopsKeyName(pubKeyPrefix, config.EncryptionKeyPair.Fingerprint)
+	pubKeyPath = key.ResourcePath(pubKeyPath, pubKeyName)
+
+	fmt.Fprintf(creatorConfig.Stdout, "\nPlease run \n\ngpg --import %s\n\nto load the public key into the keychain for SOPS to work.\n", pubKeyPath)
 
 	return nil
 }

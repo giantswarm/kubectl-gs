@@ -310,8 +310,18 @@ func NewManagementCluster(config StructureConfig) (*creator.CreatorConfig, error
 
 	fsObjects = append(fsObjects, creator.NewFsObject(orgsDir, nil))
 
+	encPath := key.EncryptionRegex(mcDir, "secrets")
+	fsModifiers := map[string]modifier.Modifier{
+		key.SopsConfigFileName(): sopsmod.SopsModifier{
+			RulesToAdd: []map[string]interface{}{
+				sopsmod.NewRule("", encPath, config.EncryptionKeyPair.Fingerprint),
+			},
+		},
+	}
+
 	creatorConfig := creator.CreatorConfig{
-		FsObjects: fsObjects,
+		PostModifiers: fsModifiers,
+		FsObjects:     fsObjects,
 	}
 
 	return &creatorConfig, nil
