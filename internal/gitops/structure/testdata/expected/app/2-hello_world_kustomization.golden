@@ -5,4 +5,4 @@ patchesStrategicMerge:
 kind: Kustomization
 resources:
   - ../../../../../../../../base/apps/hello-world
-  - secret.yaml
+  - secret.enc.yaml

@@ -12,6 +12,6 @@ resources:
   - configmap.yaml
 {{- end }}
 {{- if .AppUserValuesSecret }}
-  - secret.yaml
+  - secret.enc.yaml
 {{- end }}
 {{- end }}
