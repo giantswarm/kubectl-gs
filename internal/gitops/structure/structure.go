@@ -3,11 +3,13 @@ package structure
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
 	appmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/app"
@@ -310,18 +312,21 @@ func NewManagementCluster(config StructureConfig) (*creator.CreatorConfig, error
 
 	fsObjects = append(fsObjects, creator.NewFsObject(orgsDir, nil))
 
-	encPath := key.EncryptionRegex(mcDir, "secrets")
-	fsModifiers := map[string]modifier.Modifier{
-		key.SopsConfigFileName(): sopsmod.SopsModifier{
-			RulesToAdd: []map[string]interface{}{
-				sopsmod.NewRule("", encPath, config.EncryptionKeyPair.Fingerprint),
-			},
-		},
+	creatorConfig := creator.CreatorConfig{
+		FsObjects: fsObjects,
 	}
 
-	creatorConfig := creator.CreatorConfig{
-		PostModifiers: fsModifiers,
-		FsObjects:     fsObjects,
+	if !reflect.DeepEqual(config.EncryptionKeyPair, encryption.KeyPair{}) {
+		encPath := key.EncryptionRegex(mcDir, "secrets")
+		fsModifiers := map[string]modifier.Modifier{
+			key.SopsConfigFileName(): sopsmod.SopsModifier{
+				RulesToAdd: []map[string]interface{}{
+					sopsmod.NewRule("", encPath, config.EncryptionKeyPair.Fingerprint),
+				},
+			},
+		}
+
+		creatorConfig.PostModifiers = fsModifiers
 	}
 
 	return &creatorConfig, nil
