@@ -69,7 +69,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_gcp.golden",
 		},
 		{
-			name: "case 0: template cluster capa",
+			name: "case 1: template cluster capa",
 			flags: &flag{
 				Name:         "test1",
 				Provider:     "capa",
