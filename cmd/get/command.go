@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get/apps"
 	"github.com/giantswarm/kubectl-gs/cmd/get/capi"
@@ -16,6 +16,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/get/clusters"
 	"github.com/giantswarm/kubectl-gs/cmd/get/nodepools"
 	"github.com/giantswarm/kubectl-gs/cmd/get/releases"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
@@ -27,7 +28,7 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	K8sConfigAccess clientcmd.ConfigAccess
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -40,8 +41,8 @@ func New(config Config) (*cobra.Command, error) {
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
 	}
-	if config.K8sConfigAccess == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
+	if config.ConfigFlags == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
@@ -58,7 +59,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			K8sConfigAccess: config.K8sConfigAccess,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -76,7 +77,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			K8sConfigAccess: config.K8sConfigAccess,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -91,9 +92,9 @@ func New(config Config) (*cobra.Command, error) {
 	var clusterApiCmd *cobra.Command
 	{
 		c := capi.Config{
-			Logger:          config.Logger,
-			K8sConfigAccess: config.K8sConfigAccess,
-			Stdout:          config.Stdout,
+			Logger:      config.Logger,
+			ConfigFlags: config.ConfigFlags,
+			Stdout:      config.Stdout,
 		}
 
 		clusterApiCmd, err = capi.New(c)
@@ -108,7 +109,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			K8sConfigAccess: config.K8sConfigAccess,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -126,7 +127,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			K8sConfigAccess: config.K8sConfigAccess,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -144,7 +145,7 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			K8sConfigAccess: config.K8sConfigAccess,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -159,6 +160,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
 		flag:   f,
 		logger: config.Logger,
 		stderr: config.Stderr,

@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +18,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest/to"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
@@ -26,17 +26,21 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"k8s.io/utils/pointer"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
 func TestLogin(t *testing.T) {
 	testCases := []struct {
-		name        string
-		startConfig *clientcmdapi.Config
-		mcArg       []string
-		flags       *flag
-		expectError *microerror.Error
+		name            string
+		startConfig     *clientcmdapi.Config
+		mcArg           []string
+		flags           *flag
+		contextOverride string
+		expectError     *microerror.Error
 	}{
 		// Empty starting config, logging into MC using codename
 		{
@@ -170,7 +174,7 @@ func TestLogin(t *testing.T) {
 		// Logging into non default context with argument
 		{
 			name:        "case 14",
-			startConfig: createNonDefaultTestConfig(),
+			startConfig: kubeconfig.CreateNonDefaultTestConfig(),
 			mcArg:       []string{"arbitraryname"},
 			flags: &flag{
 				WCCertTTL: "8h",
@@ -180,7 +184,7 @@ func TestLogin(t *testing.T) {
 		// Logging into non default context without argument
 		{
 			name:        "case 15",
-			startConfig: createNonDefaultTestConfig(),
+			startConfig: kubeconfig.CreateNonDefaultTestConfig(),
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
@@ -196,13 +200,11 @@ func TestLogin(t *testing.T) {
 		// Logging in without argument using context flag
 		{
 			name:        "case 17",
-			startConfig: addExtraContext(createValidTestConfig("", false)),
+			startConfig: kubeconfig.AddExtraContext(createValidTestConfig("", false)),
 			flags: &flag{
 				WCCertTTL: "8h",
-				config: &genericclioptions.ConfigFlags{
-					Context: to.StringPtr("gs-anothercodename"),
-				},
 			},
+			contextOverride: *pointer.String("gs-anothercodename"),
 		},
 		// Logging in without argument using context flag but context does not exist
 		{
@@ -210,11 +212,9 @@ func TestLogin(t *testing.T) {
 			startConfig: createValidTestConfig("", false),
 			flags: &flag{
 				WCCertTTL: "8h",
-				config: &genericclioptions.ConfigFlags{
-					Context: to.StringPtr("gs-anothercodename"),
-				},
 			},
-			expectError: contextDoesNotExistError,
+			contextOverride: *pointer.String("gs-anothercodename"),
+			expectError:     contextDoesNotExistError,
 		},
 		// Logging in with argument using context flag
 		{
@@ -223,10 +223,8 @@ func TestLogin(t *testing.T) {
 			mcArg:       []string{"codename"},
 			flags: &flag{
 				WCCertTTL: "8h",
-				config: &genericclioptions.ConfigFlags{
-					Context: to.StringPtr("gs-anothercodename"),
-				},
 			},
+			contextOverride: *pointer.String("gs-anothercodename"),
 		},
 		// Existing WC context
 		{
@@ -297,6 +295,15 @@ func TestLogin(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 		},
+		// Logging in without argument using context flag without gs- prefix
+		{
+			name:        "case 28",
+			startConfig: kubeconfig.CreateNonDefaultTestConfig(),
+			flags: &flag{
+				WCCertTTL: "8h",
+			},
+			contextOverride: *pointer.String("arbitraryname"),
+		},
 	}
 
 	for i, tc := range testCases {
@@ -305,25 +312,29 @@ func TestLogin(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			cf := genericclioptions.NewConfigFlags(true)
+			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			if tc.contextOverride != "" {
+				cf.Context = &tc.contextOverride
+			}
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
-
 			r := runner{
-				k8sConfigAccess: &clientcmd.ClientConfigLoadingRules{
-					ExplicitPath: configDir + "/config.yaml",
-				},
-				stdout: new(bytes.Buffer),
-				flag:   tc.flags,
-				fs:     afero.NewBasePathFs(fs, configDir),
+				commonConfig: commonconfig.New(cf),
+				stdout:       new(bytes.Buffer),
+				flag:         tc.flags,
+				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)
+			k8sConfigAccess := r.commonConfig.GetConfigAccess()
+			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			err = r.Run(&cobra.Command{}, tc.mcArg)
+			ctx := context.Background()
+			r.setLoginOptions(ctx, &tc.mcArg)
+			err = r.run(ctx, &cobra.Command{}, tc.mcArg)
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
 					t.Fatalf("unexpected error: %s", err.Error())
@@ -405,25 +416,25 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			cf := genericclioptions.NewConfigFlags(true)
+			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
-
 			r := runner{
-				k8sConfigAccess: &clientcmd.ClientConfigLoadingRules{
-					ExplicitPath: configDir + "/config.yaml",
-				},
-				flag:   tc.flags,
-				stdout: new(bytes.Buffer),
-				stderr: new(bytes.Buffer),
-				fs:     afero.NewBasePathFs(fs, configDir),
+				commonConfig: commonconfig.New(cf),
+				flag:         tc.flags,
+				stdout:       new(bytes.Buffer),
+				stderr:       new(bytes.Buffer),
+				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *tc.startConfig, false)
+			k8sConfigAccess := r.commonConfig.GetConfigAccess()
+			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
 			if err != nil {
 				t.Fatal(err)
 			}
-			originConfig, err := r.k8sConfigAccess.GetStartingConfig()
+			originConfig, err := k8sConfigAccess.GetStartingConfig()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -487,7 +498,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				t.Fatalf("unexpected success")
 			}
 
-			targetConfig, err := r.k8sConfigAccess.GetStartingConfig()
+			targetConfig, err := k8sConfigAccess.GetStartingConfig()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -541,51 +552,6 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 		}
 	}
 
-	return config
-}
-
-func addExtraContext(config *clientcmdapi.Config) *clientcmdapi.Config {
-	const (
-		server          = "https://something.com:8080"
-		token           = "the-other-token"
-		clientid        = "id"
-		refreshToken    = "the-fresh-other-token"
-		existingcontext = "anothercodename"
-	)
-	// adding another context to the kubeconfig
-	config.Clusters["gs-"+existingcontext] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.Contexts["gs-"+existingcontext] = &clientcmdapi.Context{
-		Cluster:  "gs-" + existingcontext,
-		AuthInfo: "gs-user-" + existingcontext,
-	}
-	config.AuthInfos["gs-user-"+existingcontext] = &clientcmdapi.AuthInfo{
-		Token: token,
-	}
-	return config
-}
-
-func createNonDefaultTestConfig() *clientcmdapi.Config {
-	const (
-		server      = "https://anything.com:8080"
-		clientkey   = "the-key"
-		clientcert  = "the-cert"
-		clustername = "arbitraryname"
-	)
-
-	config := clientcmdapi.NewConfig()
-	config.Clusters[clustername] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.Contexts[clustername] = &clientcmdapi.Context{
-		Cluster:  clustername,
-		AuthInfo: "user-" + clustername,
-	}
-	config.CurrentContext = clustername
-	config.AuthInfos["user-"+clustername] = &clientcmdapi.AuthInfo{
-		ClientCertificateData: []byte(clientcert),
-		ClientKeyData:         []byte(clientkey)}
 	return config
 }
 

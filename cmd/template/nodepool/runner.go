@@ -20,10 +20,11 @@ const (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	stdout io.Writer
-	stderr io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -90,8 +91,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	commonConfig := commonconfig.New(r.flag.config)
-	c, err := commonConfig.GetClient(r.logger)
+	c, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}

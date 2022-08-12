@@ -27,8 +27,9 @@ func (r *runner) findContext(ctx context.Context, installationIdentifier string)
 func (r *runner) loginWithKubeContextName(ctx context.Context, contextName string) error {
 	var contextAlreadySelected bool
 	var newLoginRequired bool
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 
-	err := switchContext(ctx, r.k8sConfigAccess, contextName, r.loginOptions.switchToContext)
+	err := switchContext(ctx, k8sConfigAccess, contextName, r.loginOptions.switchToContext)
 	if IsContextAlreadySelected(err) {
 		contextAlreadySelected = true
 	} else if IsNewLoginRequired(err) || IsTokenRenewalFailed(err) {
@@ -38,7 +39,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 	}
 
 	if newLoginRequired || r.loginOptions.selfContained {
-		config, err := r.k8sConfigAccess.GetStartingConfig()
+		config, err := k8sConfigAccess.GetStartingConfig()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -126,8 +127,9 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 }
 
 func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string, i *installation.Installation) error {
-	var err error
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 
+	var err error
 	var authResult authInfo
 	{
 		if len(tokenOverride) > 0 {
@@ -144,13 +146,13 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 		}
 	}
 	if r.loginOptions.selfContained {
-		err = printMCCredentials(r.k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
+		err = printMCCredentials(k8sConfigAccess, i, authResult, r.fs, r.flag.InternalAPI, r.flag.SelfContained)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	} else {
 		// Store kubeconfig and CA certificate.
-		err = storeMCCredentials(r.k8sConfigAccess, i, authResult, r.flag.InternalAPI, r.loginOptions.switchToContext)
+		err = storeMCCredentials(k8sConfigAccess, i, authResult, r.flag.InternalAPI, r.loginOptions.switchToContext)
 		if err != nil {
 			return microerror.Mask(err)
 		}

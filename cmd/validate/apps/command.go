@@ -7,8 +7,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/middleware"
 	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 )
@@ -76,9 +77,8 @@ Output columns:
 
 // Config are the configuration that New takes to create an instance of this command.
 type Config struct {
-	Logger micrologger.Logger
-
-	K8sConfigAccess clientcmd.ConfigAccess
+	Logger      micrologger.Logger
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -89,8 +89,8 @@ func New(config Config) (*cobra.Command, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.K8sConfigAccess == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
+	if config.ConfigFlags == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
@@ -102,6 +102,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
 		flag:   f,
 		logger: config.Logger,
 		stderr: config.Stderr,
@@ -116,7 +119,7 @@ func New(config Config) (*cobra.Command, error) {
 		Example: examples,
 		RunE:    r.Run,
 		PreRunE: middleware.Compose(
-			renewtoken.Middleware(config.K8sConfigAccess),
+			renewtoken.Middleware(*config.ConfigFlags),
 		),
 	}
 

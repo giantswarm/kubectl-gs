@@ -23,13 +23,16 @@ import (
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/utils/pointer"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	//nolint:staticcheck
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/test/kubeclient"
 )
 
@@ -168,24 +171,24 @@ func TestWCClientCert(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			cf := genericclioptions.NewConfigFlags(true)
+			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
-
 			r := runner{
-				k8sConfigAccess: &clientcmd.ClientConfigLoadingRules{
-					ExplicitPath: configDir + "/config.yaml",
-				},
-				stdout: new(bytes.Buffer),
-				flag:   tc.flags,
-				fs:     afero.NewBasePathFs(fs, configDir),
+				commonConfig: commonconfig.New(cf),
+				stdout:       new(bytes.Buffer),
+				flag:         tc.flags,
+				fs:           afero.NewBasePathFs(fs, configDir),
 			}
-			err = clientcmd.ModifyConfig(r.k8sConfigAccess, *createValidTestConfig("", false), false)
+			k8sConfigAccess := r.commonConfig.GetConfigAccess()
+			err = clientcmd.ModifyConfig(k8sConfigAccess, *createValidTestConfig("", false), false)
 			if err != nil {
 				t.Fatal(err)
 			}
-			originConfig, err := r.k8sConfigAccess.GetStartingConfig()
+			originConfig, err := k8sConfigAccess.GetStartingConfig()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -244,8 +247,7 @@ func TestWCClientCert(t *testing.T) {
 			} else if tc.expectError != nil {
 				t.Fatalf("unexpected success")
 			}
-
-			targetConfig, err := r.k8sConfigAccess.GetStartingConfig()
+			targetConfig, err := k8sConfigAccess.GetStartingConfig()
 			if err != nil {
 				t.Fatal(err)
 			}

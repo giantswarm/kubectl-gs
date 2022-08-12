@@ -19,11 +19,12 @@ const (
 )
 
 type runner struct {
-	flag    *flag
-	logger  micrologger.Logger
-	service app.Interface
-	stdout  io.Writer
-	stderr  io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	service      app.Interface
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -45,7 +46,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	namespace, _, err := r.flag.config.ToRawKubeConfigLoader().Namespace()
+	namespace, _, err := r.commonConfig.GetNamespace()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -75,9 +76,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		valuesSchema = string(valuesSchemaFile)
 	}
 
-	config := commonconfig.New(r.flag.config)
 	{
-		err = r.getService(config)
+		err = r.getService()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -110,12 +110,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) getService(config *commonconfig.CommonConfig) error {
+func (r *runner) getService() error {
 	if r.service != nil {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -28,8 +28,9 @@ const (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
 
 	stdout io.Writer
 }
@@ -256,9 +257,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var k8sClients k8sclient.Interface
 	{
-		config := commonconfig.New(r.flag.config)
 		var err error
-		k8sClients, err = config.GetClient(r.logger)
+		k8sClients, err = r.commonConfig.GetClient(r.logger)
 
 		if err != nil {
 			return microerror.Mask(err)

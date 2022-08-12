@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/cmd/template/app"
 	"github.com/giantswarm/kubectl-gs/cmd/template/catalog"
@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool"
 	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool"
 	"github.com/giantswarm/kubectl-gs/cmd/template/organization"
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 const (
@@ -23,9 +24,8 @@ const (
 )
 
 type Config struct {
-	Logger micrologger.Logger
-
-	K8sConfigAccess clientcmd.ConfigAccess
+	Logger      micrologger.Logger
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -77,7 +77,7 @@ func New(config Config) (*cobra.Command, error) {
 		c := cluster.Config{
 			Logger: config.Logger,
 
-			K8sConfigAccess: config.K8sConfigAccess,
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
@@ -133,6 +133,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
 		flag:   f,
 		logger: config.Logger,
 		stderr: config.Stderr,

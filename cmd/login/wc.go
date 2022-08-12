@@ -13,7 +13,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
@@ -126,16 +125,15 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 }
 
 func (r *runner) handleWCClientCert(ctx context.Context) error {
-	config := commonconfig.New(r.flag.config)
 
-	provider, err := config.GetProvider()
+	provider, err := r.commonConfig.GetProvider()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	var client k8sclient.Interface
 	{
-		client, err = config.GetClient(r.logger)
+		client, err = r.commonConfig.GetClient(r.logger)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -185,7 +183,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
-	clusterBasePath, err := getWCBasePath(r.k8sConfigAccess, provider)
+	clusterBasePath, err := getWCBasePath(r.commonConfig.GetConfigAccess(), provider)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -271,12 +269,12 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 }
 
 func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool, error) {
-
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	if r.loginOptions.selfContainedClientCert && c.filePath != "" {
-		return printWCClientCertCredentials(r.k8sConfigAccess, r.fs, c)
+		return printWCClientCertCredentials(k8sConfigAccess, r.fs, c)
 	}
-	return storeWCClientCertCredentials(r.k8sConfigAccess, r.fs, c)
+	return storeWCClientCertCredentials(k8sConfigAccess, r.fs, c)
 }
 
 func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (string, error) {

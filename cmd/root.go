@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
@@ -37,8 +36,6 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	K8sConfigAccess clientcmd.ConfigAccess
-
 	Stderr io.Writer
 	Stdout io.Writer
 }
@@ -50,9 +47,6 @@ func New(config Config) (*cobra.Command, error) {
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
 	}
-	if config.K8sConfigAccess == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
-	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
 	}
@@ -61,104 +55,6 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	var err error
-
-	var loginCmd *cobra.Command
-	{
-		c := login.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		loginCmd, err = login.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var templateCmd *cobra.Command
-	{
-		c := template.Config{
-			Logger: config.Logger,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		templateCmd, err = template.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var getCmd *cobra.Command
-	{
-		c := get.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-
-			K8sConfigAccess: config.K8sConfigAccess,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		getCmd, err = get.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var validateCmd *cobra.Command
-	{
-		c := validate.Config{
-			Logger:          config.Logger,
-			K8sConfigAccess: config.K8sConfigAccess,
-			Stderr:          config.Stderr,
-			Stdout:          config.Stdout,
-		}
-
-		validateCmd, err = validate.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var updateCmd *cobra.Command
-	{
-		c := update.Config{
-			Logger:          config.Logger,
-			K8sConfigAccess: config.K8sConfigAccess,
-			Stderr:          config.Stderr,
-			Stdout:          config.Stdout,
-		}
-
-		updateCmd, err = update.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var selfUpdateCmd *cobra.Command
-	{
-		c := selfupdate.Config{
-			Logger:     config.Logger,
-			FileSystem: config.FileSystem,
-			Stderr:     config.Stderr,
-			Stdout:     config.Stdout,
-		}
-
-		selfUpdateCmd, err = selfupdate.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
 
 	f := &flag{}
 
@@ -185,9 +81,105 @@ func New(config Config) (*cobra.Command, error) {
 			return nil
 		},
 	}
-
 	f.Init(c)
 
+	var loginCmd *cobra.Command
+	{
+		c := login.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			ConfigFlags: &f.config,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		loginCmd, err = login.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var templateCmd *cobra.Command
+	{
+		c := template.Config{
+			Logger: config.Logger,
+
+			ConfigFlags: &f.config,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		templateCmd, err = template.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var getCmd *cobra.Command
+	{
+		c := get.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			ConfigFlags: &f.config,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		getCmd, err = get.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var validateCmd *cobra.Command
+	{
+		c := validate.Config{
+			Logger:      config.Logger,
+			ConfigFlags: &f.config,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
+		}
+
+		validateCmd, err = validate.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var updateCmd *cobra.Command
+	{
+		c := update.Config{
+			Logger:      config.Logger,
+			ConfigFlags: &f.config,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
+		}
+
+		updateCmd, err = update.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var selfUpdateCmd *cobra.Command
+	{
+		c := selfupdate.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+			Stderr:     config.Stderr,
+			Stdout:     config.Stdout,
+		}
+
+		selfUpdateCmd, err = selfupdate.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 	c.AddCommand(getCmd)
 	c.AddCommand(loginCmd)
 	c.AddCommand(templateCmd)

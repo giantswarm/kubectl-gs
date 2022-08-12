@@ -18,8 +18,9 @@ import (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
 
 	service cluster.Interface
 
@@ -65,15 +66,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	config := commonconfig.New(r.flag.config)
 	{
-		err = r.getService(config)
+		err = r.getService()
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	namespace, _, err := r.flag.config.ToRawKubeConfigLoader().Namespace()
+	namespace, _, err := r.commonConfig.GetNamespace()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -140,12 +140,12 @@ func replaceToEscape(from string) string {
 	return strings.Replace(from, "/", "~1", -1)
 }
 
-func (r *runner) getService(config *commonconfig.CommonConfig) error {
+func (r *runner) getService() error {
 	if r.service != nil {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}

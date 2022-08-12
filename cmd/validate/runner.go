@@ -7,13 +7,16 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	stdout io.Writer
-	stderr io.Writer
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	stdout       io.Writer
+	stderr       io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -23,7 +26,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
 	err = r.run(ctx, cmd, args)
 	if err != nil {
 		return microerror.Mask(err)

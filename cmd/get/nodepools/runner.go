@@ -18,9 +18,10 @@ import (
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	fs     afero.Fs
+	commonConfig *commonconfig.CommonConfig
+	flag         *flag
+	logger       micrologger.Logger
+	fs           afero.Fs
 
 	provider string
 	service  nodepool.Interface
@@ -48,16 +49,15 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := commonconfig.New(r.flag.config)
 	{
 		if r.provider == "" {
-			r.provider, err = config.GetProvider()
+			r.provider, err = r.commonConfig.GetProvider()
 			if err != nil {
 				return microerror.Mask(err)
 			}
 		}
 
-		err = r.getService(config)
+		err = r.getService()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -77,7 +77,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if r.flag.AllNamespaces {
 				options.Namespace = metav1.NamespaceAll
 			} else {
-				options.Namespace, _, err = r.flag.config.ToRawKubeConfigLoader().Namespace()
+				options.Namespace, _, err = r.commonConfig.GetNamespace()
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -104,12 +104,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) getService(config *commonconfig.CommonConfig) error {
+func (r *runner) getService() error {
 	if r.service != nil {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}
