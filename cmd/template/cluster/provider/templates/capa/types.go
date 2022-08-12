@@ -2,6 +2,7 @@ package capa
 
 type ClusterConfig struct {
 	ClusterDescription string         `json:"clusterDescription,omitempty"`
+	ClusterName        string         `json:"clusterName,omitempty"`
 	Organization       string         `json:"organization,omitempty"`
 	AWS                *AWS           `json:"aws,omitempty"`
 	Network            *Network       `json:"network,omitempty"`

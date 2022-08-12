@@ -36,7 +36,6 @@ type AWSConfig struct {
 	MachinePool         AWSMachinePoolConfig
 	NetworkAZUsageLimit int
 	NetworkVPCCIDR      string
-	SSHSSOPublicKey     string
 }
 
 type AWSMachinePoolConfig struct {
