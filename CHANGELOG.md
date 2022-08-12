@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.19.0] - 2022-08-12
+
 ### Changed
 
 - Make all `kubectl` config flags (e.g `--context` and `--kubeconfig` global and unify kubeconfig management throughout commands.
@@ -967,7 +969,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.18.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.0...HEAD
+[2.19.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.17.0...v2.18.0
 [2.17.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.15.0...v2.16.0
