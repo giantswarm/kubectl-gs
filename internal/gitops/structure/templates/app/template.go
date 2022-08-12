@@ -26,7 +26,7 @@ func GetAppDirectoryTemplates() []common.Template {
 	return []common.Template{
 		common.Template{Name: "appcr.yaml", Data: appcr},
 		common.Template{Name: "configmap.yaml", Data: userValuesCm},
-		common.Template{Name: "secret.yaml", Data: userValuesSecret},
+		common.Template{Name: "secret.enc.yaml", Data: userValuesSecret},
 		common.Template{Name: "kustomization.yaml", Data: kustomization},
 		common.Template{Name: "patch_app_userconfig.yaml", Data: patchUserConfig},
 	}
