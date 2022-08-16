@@ -148,7 +148,7 @@ func Test_Create(t *testing.T) {
 			fsObjects := make([]*FsObject, 0)
 			for _, tfo := range tc.testFsObjects {
 				if tfo.InputData == "" {
-					fsObjects = append(fsObjects, NewFsObject(tfo.RelativePath, nil))
+					fsObjects = append(fsObjects, NewFsObject(tfo.RelativePath, nil, 0))
 					continue
 				}
 
@@ -159,7 +159,7 @@ func Test_Create(t *testing.T) {
 
 				fsObjects = append(
 					fsObjects,
-					NewFsObject(tfo.RelativePath, data),
+					NewFsObject(tfo.RelativePath, data, 0),
 				)
 			}
 

@@ -62,7 +62,6 @@ func (ks KustomizationValidator) Execute(rawYaml []byte) error {
 func hasMatchingElement(path, expression string, file interface{}) (bool, error) {
 	ok, err := jmespath.Search(fmt.Sprintf(arrayElementContains, path, expression), file)
 	if err != nil {
-		fmt.Println("heh")
 		return false, microerror.Mask(err)
 	}
 

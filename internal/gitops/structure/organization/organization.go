@@ -22,7 +22,7 @@ func NewOrganization(config common.StructureConfig) (*creator.CreatorConfig, err
 
 	// Create `ORG_NAME` directory and add `ORG_NAME.yaml`manifest
 	// containing Organization CR definition.
-	fsObjects := []*creator.FsObject{creator.NewFsObject(orgDir, nil)}
+	fsObjects := []*creator.FsObject{creator.NewFsObject(orgDir, nil, 0)}
 
 	err = common.AppendFromTemplate(&fsObjects, orgDir, orgtmpl.GetOrganizationDirectoryTemplates, config)
 	if err != nil {
@@ -31,7 +31,7 @@ func NewOrganization(config common.StructureConfig) (*creator.CreatorConfig, err
 
 	// Create `workload-cluster` directory and populate it with an
 	// empty `kustomization.yaml`.
-	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil))
+	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil, 0))
 	err = common.AppendFromTemplate(&fsObjects, wcsDir, orgtmpl.GetWorkloadClustersDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)

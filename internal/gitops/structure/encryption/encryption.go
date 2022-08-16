@@ -43,7 +43,7 @@ func NewEncryption(config common.StructureConfig) (*creator.CreatorConfig, error
 	// Makes sure the management-clusters/MC_NAME/.sops.keys/PREFIX.FINGERPRINT.asc
 	// gets created
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(sopsPubKeyFile, []byte(config.EncryptionKeyPair.PublicData)),
+		creator.NewFsObject(sopsPubKeyFile, []byte(config.EncryptionKeyPair.PublicData), 0),
 	}
 
 	// Post modifiers make sure other files get the right values necessary

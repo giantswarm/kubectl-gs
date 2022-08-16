@@ -2,22 +2,34 @@ package creator
 
 import (
 	"io"
+	"os"
 
 	"github.com/spf13/afero"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
 )
 
+const (
+	defaultDirPerm  = 0755
+	defaultFilePerm = 0600
+)
+
 var (
 	filesExt = []string{
 		".yaml",
 		".asc",
+		"pre-commit",
 	}
 )
 
-type FsObject struct {
-	RelativePath string
-	Data         []byte
+type Creator struct {
+	dryRun        bool
+	fs            *afero.Afero
+	fsObjects     []*FsObject
+	path          string
+	postModifiers map[string]modifier.Modifier
+	preValidators map[string]Validator
+	stdout        io.Writer
 }
 
 type CreatorConfig struct {
@@ -29,12 +41,8 @@ type CreatorConfig struct {
 	Stdout        io.Writer
 }
 
-type Creator struct {
-	dryRun        bool
-	fs            *afero.Afero
-	fsObjects     []*FsObject
-	path          string
-	postModifiers map[string]modifier.Modifier
-	preValidators map[string]Validator
-	stdout        io.Writer
+type FsObject struct {
+	Data         []byte
+	Permission   os.FileMode
+	RelativePath string
 }

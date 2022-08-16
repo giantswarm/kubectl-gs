@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# The script looks for the *.enc.yaml files that suppose to be encrypted,
+# and verifies the encryption has happened.
+
+files=""
+
+while read line
+do
+	if [ ! -n "$line" ]
+	then
+		continue
+	fi
+
+	grep -q "^sops:$" $line
+	if [ $? -ne 0 ]
+	then
+		files="${files}\n${line}"
+	fi
+done <<< "$(find . -type f -name '*.enc.yaml')"
+
+if [ -n "$files" ]
+then
+	cat <<\EOF
+!! WARNING !!
+
+Detected files missing the `sops` metadata key on them.
+
+Please run the `sops --encrypt --in-place <path>` command against them to secure the repository.
+
+Find the list of affected files below.
+EOF
+	echo "\"$files\""
+	exit 1
+fi

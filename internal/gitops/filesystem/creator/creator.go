@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/afero"
 
@@ -44,16 +43,21 @@ func NewCreator(config CreatorConfig) *Creator {
 }
 
 // NewFsObject returns new file system object
-func NewFsObject(path string, data []byte) *FsObject {
-	return &FsObject{
+func NewFsObject(path string, data []byte, perm os.FileMode) *FsObject {
+	fo := &FsObject{
 		RelativePath: path,
 		Data:         data,
+		Permission:   perm,
 	}
+
+	fo.ensurePermissions()
+
+	return fo
 }
 
 // createDirectory creates a new directory, if not already exists.
-func (c *Creator) createDirectory(path string) error {
-	err := c.fs.Mkdir(path, 0755)
+func (c *Creator) createDirectory(path string, perm os.FileMode) error {
+	err := c.fs.Mkdir(path, perm)
 	if os.IsExist(err) {
 		//noop
 	} else if err != nil {
@@ -64,8 +68,8 @@ func (c *Creator) createDirectory(path string) error {
 }
 
 // createFile creates a new file.
-func (c *Creator) createFile(path string, data []byte) error {
-	err := c.fs.WriteFile(path, data, 0600)
+func (c *Creator) createFile(path string, data []byte, perm os.FileMode) error {
+	err := c.fs.WriteFile(path, data, perm)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -73,14 +77,27 @@ func (c *Creator) createFile(path string, data []byte) error {
 	return nil
 }
 
-// isDir checks path against pre-configured suffixes
-func isDir(path string) bool {
-	for _, s := range filesExt {
-		if strings.HasSuffix(path, s) {
-			return false
-		}
+// ensurePermissions sets default permissions if the one provided
+// are empty.
+func (fo *FsObject) ensurePermissions() {
+	if fo.Permission != 0 {
+		return
 	}
-	return true
+
+	if len(fo.Data) <= 1 {
+		fo.Permission = defaultDirPerm
+	} else {
+		fo.Permission = defaultFilePerm
+	}
+}
+
+// isDir checks path against pre-configured suffixes
+func (fo *FsObject) isDir() bool {
+	if len(fo.Data) <= 1 {
+		return true
+	}
+
+	return false
 }
 
 // print prints the creator's file system objects.
@@ -88,7 +105,7 @@ func (c *Creator) print() {
 	for _, o := range c.fsObjects {
 
 		// Print path to the directory to be created
-		if isDir(o.RelativePath) {
+		if o.isDir() {
 			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 			continue
 		}
@@ -141,8 +158,10 @@ func (c *Creator) write() error {
 	}
 
 	for _, o := range c.fsObjects {
-		if isDir(o.RelativePath) {
-			err := c.createDirectory(fmt.Sprintf("%s/%s", c.path, o.RelativePath))
+		path := fmt.Sprintf("%s/%s", c.path, o.RelativePath)
+
+		if o.isDir() {
+			err := c.createDirectory(path, o.Permission)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -153,14 +172,21 @@ func (c *Creator) write() error {
 			continue
 		}
 
-		err := c.createFile(fmt.Sprintf("%s/%s", c.path, o.RelativePath), o.Data)
+		err := c.createFile(path, o.Data, o.Permission)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	for n, m := range c.postModifiers {
-		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
+		file := fmt.Sprintf("%s/%s", c.path, n)
+
+		rawYaml, err := c.fs.ReadFile(file)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		stat, err := c.fs.Stat(file)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -170,7 +196,7 @@ func (c *Creator) write() error {
 			return microerror.Mask(err)
 		}
 
-		err = c.createFile(fmt.Sprintf("%s/%s", c.path, n), edited)
+		err = c.createFile(file, edited, stat.Mode())
 		if err != nil {
 			return microerror.Mask(err)
 		}

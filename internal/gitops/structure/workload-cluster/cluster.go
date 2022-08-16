@@ -64,7 +64,7 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	// exist at this point, as a result of Organization creation, but we
 	// need to point to this directory anyway in order to drop Kustomization
 	// there.
-	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil))
+	fsObjects = append(fsObjects, creator.NewFsObject(wcsDir, nil, 0))
 
 	// Add Kustomization CR to the `workload-clusters` directory and other
 	// files if needed. Currently only Kustomization CR is considered.
@@ -81,9 +81,9 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	fsObjects = append(
 		fsObjects,
 		[]*creator.FsObject{
-			creator.NewFsObject(wcDir, nil),
-			creator.NewFsObject(appsDir, nil),
-			creator.NewFsObject(clusterDir, nil),
+			creator.NewFsObject(wcDir, nil, 0),
+			creator.NewFsObject(appsDir, nil, 0),
+			creator.NewFsObject(clusterDir, nil, 0),
 		}...,
 	)
 

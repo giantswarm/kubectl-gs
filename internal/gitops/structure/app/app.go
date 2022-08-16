@@ -33,8 +33,8 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	// should already exist at this point. We then create the `APP_NAME` directory
 	// and add bunch of files there, depending on the configuration provided.
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(appsDir, nil),
-		creator.NewFsObject(appDir, nil),
+		creator.NewFsObject(appsDir, nil, 0),
+		creator.NewFsObject(appDir, nil, 0),
 	}
 
 	err = common.AppendFromTemplate(&fsObjects, appDir, apptmpl.GetAppDirectoryTemplates, config)

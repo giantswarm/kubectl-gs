@@ -1,6 +1,8 @@
 package common
 
 import (
+	"os"
+
 	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 )
 
@@ -31,6 +33,7 @@ type StructureConfig struct {
 }
 
 type Template struct {
-	Name string
-	Data string
+	Data       string
+	Name       string
+	Permission os.FileMode
 }

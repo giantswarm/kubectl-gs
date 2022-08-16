@@ -34,26 +34,26 @@ func NewManagementCluster(config common.StructureConfig) (*creator.CreatorConfig
 	// Adding a new Management Cluster is simple. We start at the
 	// `management-clusters/MC_NAME` and then add definition and few
 	// out of the basic directories.
-	fsObjects := []*creator.FsObject{creator.NewFsObject(mcDir, nil)}
+	fsObjects := []*creator.FsObject{creator.NewFsObject(mcDir, nil, 0)}
 
 	err = common.AppendFromTemplate(&fsObjects, mcDir, mctmpl.GetManagementClusterTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	fsObjects = append(fsObjects, creator.NewFsObject(secretsDir, nil))
+	fsObjects = append(fsObjects, creator.NewFsObject(secretsDir, nil, 0))
 	err = common.AppendFromTemplate(&fsObjects, secretsDir, mctmpl.GetManagementClusterSecretsTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	fsObjects = append(fsObjects, creator.NewFsObject(sopsDir, nil))
+	fsObjects = append(fsObjects, creator.NewFsObject(sopsDir, nil, 0))
 	err = common.AppendFromTemplate(&fsObjects, sopsDir, mctmpl.GetManagementClusterSOPSTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	fsObjects = append(fsObjects, creator.NewFsObject(orgsDir, nil))
+	fsObjects = append(fsObjects, creator.NewFsObject(orgsDir, nil, 0))
 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects: fsObjects,

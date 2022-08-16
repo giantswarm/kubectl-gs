@@ -64,6 +64,7 @@ func addFilesFromTemplate(path string, templates func() []Template, config inter
 			creator.NewFsObject(
 				file,
 				content.Bytes(),
+				t.Permission,
 			),
 		)
 	}

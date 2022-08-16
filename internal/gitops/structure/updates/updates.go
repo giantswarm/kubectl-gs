@@ -39,7 +39,7 @@ func NewAutomaticUpdate(config common.StructureConfig) (*creator.CreatorConfig, 
 	// We start from the `WC_NAME` directory, because we must create the
 	// `automatic-updates` directory there if it does not exist.
 	fsObjects := []*creator.FsObject{
-		creator.NewFsObject(autoUpdatesDir, nil),
+		creator.NewFsObject(autoUpdatesDir, nil, 0),
 	}
 
 	err = common.AppendFromTemplate(&fsObjects, autoUpdatesDir, updatetmpl.GetAutomaticUpdatesTemplates, config)
