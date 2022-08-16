@@ -10,7 +10,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/organization"
 )
 
 type runner struct {
@@ -37,7 +38,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.StructureConfig{
+	config := common.StructureConfig{
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Name,
 	}

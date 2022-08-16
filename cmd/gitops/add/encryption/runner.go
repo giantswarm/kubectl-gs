@@ -13,7 +13,8 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/encryption"
 )
 
 type runner struct {
@@ -39,7 +40,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func getKeyName(c structure.StructureConfig) string {
+func getKeyName(c common.StructureConfig) string {
 	if c.WorkloadCluster != "" {
 		return fmt.Sprintf("%s Workload Cluster encryption", c.WorkloadCluster)
 	} else if c.Organization != "" {
@@ -50,7 +51,7 @@ func getKeyName(c structure.StructureConfig) string {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.StructureConfig{
+	config := common.StructureConfig{
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
 		EncryptionTarget:  r.flag.Target,

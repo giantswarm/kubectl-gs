@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/root"
 )
 
 type runner struct {

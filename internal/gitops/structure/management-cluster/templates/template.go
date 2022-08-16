@@ -3,7 +3,7 @@ package mgmtcluster
 import (
 	_ "embed"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
 )
 
 //go:embed management-cluster.yaml.tmpl
@@ -30,6 +30,6 @@ func GetManagementClusterSecretsTemplates() []common.Template {
 
 func GetManagementClusterSOPSTemplates() []common.Template {
 	return []common.Template{
-		common.Template{Name: ".sops.master.{{ .EncryptionKeyPair.Fingerprint }}.asc", Data: publicKey},
+		common.Template{Name: "master.{{ .EncryptionKeyPair.Fingerprint }}.asc", Data: publicKey},
 	}
 }

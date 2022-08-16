@@ -1,4 +1,4 @@
-package structure
+package common
 
 import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
@@ -28,4 +28,9 @@ type StructureConfig struct {
 	Organization      string
 	RepositoryName    string
 	WorkloadCluster   string
+}
+
+type Template struct {
+	Name string
+	Data string
 }

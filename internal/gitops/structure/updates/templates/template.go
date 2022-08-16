@@ -3,7 +3,7 @@ package autoupdate
 import (
 	_ "embed"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/templates/common"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
 )
 
 //go:embed imagepolicy.yaml.tmpl

@@ -12,7 +12,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/app"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
 	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -42,7 +43,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.StructureConfig{
+	config := common.StructureConfig{
 		App:               r.flag.App,
 		AppBase:           r.flag.Base,
 		AppCatalog:        r.flag.Catalog,

@@ -12,7 +12,8 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/management-cluster"
 )
 
 const (
@@ -43,7 +44,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.StructureConfig{
+	config := common.StructureConfig{
 		ManagementCluster: r.flag.Name,
 		RepositoryName:    r.flag.RepositoryName,
 	}
