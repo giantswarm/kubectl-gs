@@ -93,6 +93,9 @@ func New(config Config) (*cobra.Command, error) {
 	{
 		c := nodepool.Config{
 			Logger: config.Logger,
+
+			ConfigFlags: config.ConfigFlags,
+
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}
