@@ -2,6 +2,7 @@
 package orgs
 
 import (
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"io"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"os"
@@ -36,7 +37,7 @@ Output columns:
 )
 
 var (
-	aliases = []string{"organizations", "org"}
+	aliases = []string{"organizations", "organization", "org"}
 )
 
 type Config struct {
@@ -69,6 +70,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
+		commonConfig: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
 		flag:   f,
 		logger: config.Logger,
 		fs:     config.FileSystem,

@@ -38,7 +38,7 @@ func (r *runner) getServiceSet(client k8sclient.Interface) (serviceSet, error) {
 	var organizationService organization.Interface
 	{
 		serviceConfig := organization.Config{
-			Client: client.CtrlClient(),
+			Client: client,
 		}
 		organizationService, err = organization.New(serviceConfig)
 		if err != nil {

@@ -17,6 +17,7 @@ import (
 )
 
 type runner struct {
+	commonConfig *commonconfig.CommonConfig
 	flag   *flag
 	logger micrologger.Logger
 	fs     afero.Fs
@@ -46,9 +47,8 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := commonconfig.New(r.flag.config)
 	{
-		err = r.getService(config)
+		err = r.getService()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -83,12 +83,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) getService(config *commonconfig.CommonConfig) error {
+func (r *runner) getService() error {
 	if r.service != nil {
 		return nil
 	}
 
-	client, err := config.GetClient(r.logger)
+	client, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}
