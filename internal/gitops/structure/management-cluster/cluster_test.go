@@ -82,7 +82,7 @@ func Test_NewManagementCluster(t *testing.T) {
 					RelativePath: "management-clusters/demomc/.sops.keys",
 				},
 				{
-					RelativePath: "management-clusters/demomc/.sops.keys/.sops.master.12345689ABCDEF.asc",
+					RelativePath: "management-clusters/demomc/.sops.keys/master.12345689ABCDEF.asc",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations",
