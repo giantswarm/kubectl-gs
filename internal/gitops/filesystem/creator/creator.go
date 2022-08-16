@@ -93,11 +93,7 @@ func (fo *FsObject) ensurePermissions() {
 
 // isDir checks path against pre-configured suffixes
 func (fo *FsObject) isDir() bool {
-	if len(fo.Data) <= 1 {
-		return true
-	}
-
-	return false
+	return len(fo.Data) <= 1
 }
 
 // print prints the creator's file system objects.

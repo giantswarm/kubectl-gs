@@ -14,14 +14,6 @@ const (
 	defaultFilePerm = 0600
 )
 
-var (
-	filesExt = []string{
-		".yaml",
-		".asc",
-		"pre-commit",
-	}
-)
-
 type Creator struct {
 	dryRun        bool
 	fs            *afero.Afero
