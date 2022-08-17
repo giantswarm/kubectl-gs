@@ -11,11 +11,14 @@ import (
 	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/stretchr/testify/require"
+	v12 "k8s.io/api/authorization/v1"
 	v1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
 	"time"
@@ -43,16 +46,24 @@ func Test_run(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
-			flag := &flag{
+
+			config := kubeconfig.CreateValidTestConfig()
+
+			authInfo, _ := config.AuthInfos["clean"]
+			authInfo.Impersonate = "user:default:test"
+			authInfo.ImpersonateGroups = []string{"admins"}
+
+			fakeKubeConfig := kubeconfig.CreateFakeKubeConfigFromConfig(config)
+
+			flg := &flag{
 				print: genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault),
 			}
 
 			out := new(bytes.Buffer)
 			runner := &runner{
 				commonConfig: commonconfig.New(genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig)),
-				flag: flag,
-				service: newOrgService(t),
+				flag: flg,
+				service: newOrgService(t, fakeKubeConfig),
 				stdout: out,
 			}
 
@@ -79,11 +90,25 @@ func newOrg(name, namespace string) *v1alpha1.Organization {
 	}
 }
 
-func newOrgService(t *testing.T, object ...runtime.Object) *organization.Service {
+func newOrgService(t *testing.T, config clientcmd.ClientConfig, object ...runtime.Object) *organization.Service {
 	clientScheme, err := scheme.NewScheme()
 	if err != nil {
 		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
 	}
+
+	//ctx := context.TODO()
+
+	clientConfig, err := config.ClientConfig()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	impersonationConfig := rest.ImpersonationConfig{
+		UserName: "user:default:test",
+		Groups: []string{"admins"},
+	}
+
+	clientConfig.Impersonate = impersonationConfig
 
 	/*
 	apiVersion: rbac.authorization.k8s.io/v1
@@ -107,6 +132,13 @@ func newOrgService(t *testing.T, object ...runtime.Object) *organization.Service
 	*/
 
 	listOrgsClusterRole := &v1.ClusterRole{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "rbac.authorization.k8s.io/v1",
+			Kind: "ClusterRole",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "list-orgs-clusterrole",
+		},
 		Rules: []v1.PolicyRule{
 			{
 				APIGroups: []string{"security.giantswarm.io"},
@@ -117,23 +149,105 @@ func newOrgService(t *testing.T, object ...runtime.Object) *organization.Service
 	}
 
 	listOrgsClusterRoleBinding := &v1.ClusterRoleBinding{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "rbac.authorization.k8s.io/v1",
+			Kind: "ClusterRoleBinding",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "list-orgs-clusterrolebinding",
+		},
+		RoleRef: v1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind: "ClusterRole",
+			Name: "list-orgs-clusterrole",
+		},
 		Subjects: []v1.Subject{
 			{
-				Kind: "User",
-				Name: "clean",
-				Namespace: "default",
+				Kind: "Group",
+				Name: "admins",
 			},
 		},
 	}
 
-	/*simpleClientSet := k8sfake.NewSimpleClientset(listOrgsClusterRole, listOrgsClusterRoleBinding)
 
-	fakeRbac := fake2.FakeRbacV1{&simpleClientSet.Fake}
+
+	/*selfSubjectAccessReview := &v12.SelfSubjectAccessReview{
+		TypeMeta: metav1.TypeMeta{
+
+		},
+		ObjectMeta: metav1.ObjectMeta{
+
+		},
+		Spec: v12.SelfSubjectAccessReviewSpec{
+
+		},
+		Status: v12.SubjectAccessReviewStatus{
+			Allowed: true,
+		},
+	}
+
+	selfSubjectRulesReview := &v12.SelfSubjectRulesReview{
+		TypeMeta: metav1.TypeMeta{
+
+		},
+		ObjectMeta: metav1.ObjectMeta{
+
+		},
+		Spec: v12.SelfSubjectRulesReviewSpec{
+			Namespace: "default",
+		},
+		Status: v12.SubjectRulesReviewStatus{
+
+		},
+	}*/
+
+	selfSubjectAccessReview := v12.SelfSubjectAccessReview{
+		Spec: {
+			ResourceAttributes: v12.ResourceAttributes{
+
+			},
+		},
+		Status: {
+
+		},
+	}
+
+	err = k8sfake.AddToScheme(clientScheme)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	simpleClientSet := k8sfake.NewSimpleClientset(listOrgsClusterRole, listOrgsClusterRoleBinding)
+
+
+	/*_, err = simpleClientSet.RbacV1().ClusterRoles().Create(ctx, listOrgsClusterRole, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}
+
+	_, err = simpleClientSet.RbacV1().ClusterRoleBindings().Create(ctx, listOrgsClusterRoleBinding, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
+	}*/
+
+
+
+
+
+
+	/*simpleClientSet.PrependReactor("create", "selfsubjectaccessreviews", func(action testing2.Action) (handled bool, ret runtime.Object, err error) {
+		return true, selfSubjectAccessReview, nil
+	})
+	simpleClientSet.PrependReactor("create", "selfsubjectrulesreviews", func(action testing2.Action) (handled bool, ret runtime.Object, err error) {
+		return true, selfSubjectRulesReview, nil
+	})*/
+
+	/*fakeRbac := fake2.FakeRbacV1{&simpleClientSet.Fake}
 	fakeRbac.ClusterRoles().Create()*/
 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
 		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
-		K8sClient: k8sfake.NewSimpleClientset(listOrgsClusterRole, listOrgsClusterRoleBinding),
+		K8sClient: simpleClientSet,
 	})
 
 	if err != nil {
