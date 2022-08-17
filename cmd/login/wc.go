@@ -302,5 +302,9 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (str
 		}
 	}
 
-	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
+	// Clusters most commonly have 'g8s' as prefix
+	clusterServer = strings.TrimPrefix(clusterServer, "https://g8s.")
+
+	// Sometimes the only prefix that needs to be removed is 'https' (e.g. in case the --internal-api flag is used)
+	return strings.TrimPrefix(clusterServer, "https://"), nil
 }
