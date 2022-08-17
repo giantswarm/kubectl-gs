@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+
+### Fixed
+
+- Fixed common name in certificates generated for workload clusters by stripping https:// prefix from cluster base path
+
 ## [2.19.1] - 2022-08-17
 
 ### Fixed
