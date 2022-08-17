@@ -7,7 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-## [2.19.0] - 2022-08-12
+### Fixed
+
+- Fix nil pointer panic in `template nodepool` command.
+
+# [2.19.0] - 2022-08-12
 
 ### Changed
 
