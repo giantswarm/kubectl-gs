@@ -147,8 +147,8 @@ func New(config Config) (*cobra.Command, error) {
 			FileSystem: config.FileSystem,
 
 			ConfigFlags: config.ConfigFlags,
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
 		}
 
 		releasesCmd, err = releases.New(c)
@@ -165,8 +165,8 @@ func New(config Config) (*cobra.Command, error) {
 			FileSystem: config.FileSystem,
 
 			ConfigFlags: config.ConfigFlags,
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
 		}
 
 		orgsCmd, err = orgs.New(c)
