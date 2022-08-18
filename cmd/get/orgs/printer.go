@@ -43,19 +43,19 @@ func (r *runner) printOutput(orgResource organization.Resource) error {
 			for _, org := range o.Items {
 				table.Rows = append(table.Rows, getTableRow(org))
 			}
-
-			resource = table
-			printOptions := printers.PrintOptions{
-				NoHeaders:        false,
-				WithNamespace:    false,
-				WithKind:         true,
-				Wide:             true,
-				ShowLabels:       false,
-				AllowMissingKeys: true,
-			}
-
-			printer = printers.NewTablePrinter(printOptions)
 		}
+
+		resource = table
+		printOptions := printers.PrintOptions{
+			NoHeaders:        false,
+			WithNamespace:    false,
+			WithKind:         true,
+			Wide:             true,
+			ShowLabels:       false,
+			AllowMissingKeys: true,
+		}
+
+		printer = printers.NewTablePrinter(printOptions)
 	case output.IsOutputName(r.flag.print.OutputFormat):
 		switch res := orgResource.(type) {
 		case *organization.Organization:
