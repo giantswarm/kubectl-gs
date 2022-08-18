@@ -1,0 +1,8 @@
+apiVersion: security.giantswarm.io/v1alpha1
+kind: Organization
+metadata:
+  creationTimestamp: "2022-08-18T08:07:48Z"
+  name: test-1
+spec: {}
+status:
+  namespace: org-test-1
