@@ -2,17 +2,20 @@
 package orgs
 
 import (
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 	"io"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"os"
 
-	"github.com/giantswarm/kubectl-gs/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
 )
 
 const (

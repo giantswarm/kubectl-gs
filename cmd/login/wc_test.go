@@ -6,13 +6,14 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"fmt"
-	v1 "k8s.io/api/authorization/v1"
 	"math/big"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
+
+	v1 "k8s.io/api/authorization/v1"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"

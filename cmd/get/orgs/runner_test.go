@@ -2,20 +2,22 @@ package orgs
 
 import (
 	"bytes"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/test/kubeclient"
-	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
+	"testing"
+	"time"
+
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"testing"
-	"time"
+
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/test/kubeclient"
+	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
 )
 
 func Test_run(t *testing.T) {

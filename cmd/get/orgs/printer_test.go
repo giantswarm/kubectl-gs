@@ -2,15 +2,17 @@ package orgs
 
 import (
 	"bytes"
+	"testing"
+	"time"
+
 	"github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"testing"
-	"time"
+
+	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
 
 func Test_printOutput(t *testing.T) {

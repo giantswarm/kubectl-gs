@@ -2,6 +2,7 @@ package organization
 
 import (
 	"context"
+
 	v1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -10,8 +11,8 @@ func (s *Service) getSelfSubjectAccessReview(ctx context.Context) (*v1.SelfSubje
 	request := &v1.SelfSubjectAccessReview{
 		Spec: v1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &v1.ResourceAttributes{
-				Verb: "list",
-				Group: "security.giantswarm.io",
+				Verb:     "list",
+				Group:    "security.giantswarm.io",
 				Resource: "organizations",
 			},
 		},

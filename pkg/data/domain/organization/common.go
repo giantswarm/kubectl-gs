@@ -2,13 +2,14 @@ package organization
 
 import (
 	"context"
+	"sort"
+
 	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sort"
 )
 
 func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
@@ -49,9 +50,9 @@ func (s *Service) getByName(ctx context.Context, name string) (Resource, error) 
 
 		o.Organization = omitManagedFields(org)
 		o.Organization.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
-			Group: securityv1alpha1.SchemeGroupVersion.Group,
+			Group:   securityv1alpha1.SchemeGroupVersion.Group,
 			Version: securityv1alpha1.SchemeGroupVersion.Version,
-			Kind: "Organization",
+			Kind:    "Organization",
 		})
 	}
 
@@ -132,8 +133,6 @@ func (s *Service) getAllPermittedOrgResources(ctx context.Context) (Resource, er
 func (s *Service) getByNames(ctx context.Context, names []string) (*Collection, error) {
 
 	orgCollection := &Collection{}
-
-
 
 	for _, name := range names {
 		resource, err := s.getByName(ctx, name)

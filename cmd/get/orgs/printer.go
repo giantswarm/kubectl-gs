@@ -2,10 +2,12 @@ package orgs
 
 import (
 	"fmt"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
 	"strings"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/runtime"

@@ -18,9 +18,9 @@ import (
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
-	flag   *flag
-	logger micrologger.Logger
-	fs     afero.Fs
+	flag         *flag
+	logger       micrologger.Logger
+	fs           afero.Fs
 
 	service organization.Interface
 
