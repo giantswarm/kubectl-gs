@@ -19,6 +19,9 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
+	if !config.SkipMAPI {
+		wcDir = key.ResourcePath(wcDir, key.MapiDirName())
+	}
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())

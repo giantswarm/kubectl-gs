@@ -47,12 +47,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		App:               r.flag.App,
 		AppBase:           r.flag.Base,
 		AppCatalog:        r.flag.Catalog,
-		ManagementCluster: r.flag.ManagementCluster,
 		AppName:           r.flag.Name,
 		AppNamespace:      r.flag.Namespace,
-		Organization:      r.flag.Organization,
-		WorkloadCluster:   r.flag.WorkloadCluster,
 		AppVersion:        r.flag.Version,
+		ManagementCluster: r.flag.ManagementCluster,
+		Organization:      r.flag.Organization,
+		SkipMAPI:          r.flag.SkipMAPI,
+		WorkloadCluster:   r.flag.WorkloadCluster,
 	}
 
 	if config.AppName == "" {

@@ -29,6 +29,7 @@ type StructureConfig struct {
 	ManagementCluster string
 	Organization      string
 	RepositoryName    string
+	SkipMAPI          bool
 	WorkloadCluster   string
 }
 

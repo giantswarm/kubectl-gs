@@ -30,6 +30,10 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
+	if !config.SkipMAPI {
+		wcDir = key.ResourcePath(wcDir, key.MapiDirName())
+	}
+
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 

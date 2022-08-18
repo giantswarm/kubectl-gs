@@ -16,6 +16,7 @@ const (
 	imagePolicyFile            = "imagepolicy.yaml"
 	imageRepositoryFile        = "imagerepository.yaml"
 	managementClusterDirectory = "management-clusters"
+	mapiDirectory              = "mapi"
 	organizationsDirectory     = "organizations"
 	secretFile                 = "secret.yaml"
 	secretsDirectory           = "secrets"
@@ -114,6 +115,10 @@ func ImageRepositoryFileName() string {
 
 func ManagementClustersDirName() string {
 	return managementClusterDirectory
+}
+
+func MapiDirName() string {
+	return mapiDirectory
 }
 
 func OrganizationsDirName() string {

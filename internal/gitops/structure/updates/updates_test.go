@@ -30,6 +30,7 @@ func Test_NewAutomaticUpdate(t *testing.T) {
 				Organization:         "demoorg",
 				RepositoryName:       "gitops-demo",
 				AppVersionRepository: "quay.io/giantswarm/hello-world",
+				SkipMAPI:             true,
 				WorkloadCluster:      "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -46,6 +47,34 @@ func Test_NewAutomaticUpdate(t *testing.T) {
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/imagerepository.yaml",
+					GoldenFile:   "testdata/expected/0-imagerepository.golden",
+				},
+			},
+		},
+		{
+			name: "flawless MAPI",
+			config: common.StructureConfig{
+				AppName:              "hello-world",
+				ManagementCluster:    "demomc",
+				Organization:         "demoorg",
+				RepositoryName:       "gitops-demo",
+				AppVersionRepository: "quay.io/giantswarm/hello-world",
+				WorkloadCluster:      "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/automatic-updates",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/automatic-updates/imageupdate.yaml",
+					GoldenFile:   "testdata/expected/0-imageupdate.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/imagepolicy.yaml",
+					GoldenFile:   "testdata/expected/0-imagepolicy.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/imagerepository.yaml",
 					GoldenFile:   "testdata/expected/0-imagerepository.golden",
 				},
 			},

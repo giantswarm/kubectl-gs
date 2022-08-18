@@ -28,6 +28,7 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				ManagementCluster: "demomc",
 				WorkloadCluster:   "demowc",
 				Organization:      "demoorg",
+				SkipMAPI:          true,
 				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -70,6 +71,7 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				ManagementCluster:  "demomc",
 				WorkloadCluster:    "demowc",
 				Organization:       "demoorg",
+				SkipMAPI:           true,
 				RepositoryName:     "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -119,6 +121,7 @@ topKey:
 				ManagementCluster:  "demomc",
 				WorkloadCluster:    "demowc",
 				Organization:       "demoorg",
+				SkipMAPI:           true,
 				RepositoryName:     "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -179,6 +182,7 @@ otherTopKey:
 				ManagementCluster: "demomc",
 				WorkloadCluster:   "demowc",
 				Organization:      "demoorg",
+				SkipMAPI:          true,
 				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -228,6 +232,74 @@ otherTopKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_default_apps_userconfig.yaml",
+					GoldenFile:   "testdata/expected/0-patch_default_apps_userconfig.golden",
+				},
+			},
+		},
+		{
+			name: "flawless MAPI with definition and full configuration",
+			config: common.StructureConfig{
+				ClusterBase:    "bases/cluster/capo",
+				ClusterRelease: "0.13.0",
+				ClusterUserConfig: string([]byte(`testKey: testValue
+topKey:
+  nestedKey: nestedValue`)),
+				DefaultAppsRelease: "0.6.0",
+				DefaultAppsUserConfig: string([]byte(`testKey: testValue
+otherTopKey:
+  nestedOtherKey: nestedOtherValue`)),
+				ManagementCluster: "demomc",
+				WorkloadCluster:   "demowc",
+				Organization:      "demoorg",
+				RepositoryName:    "gitops-demo",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
+					GoldenFile:   "testdata/expected/0-secret.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
+					GoldenFile:   "testdata/expected/1-demowc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/patch_cluster_config.yaml",
+					GoldenFile:   "testdata/expected/0-patch_cluster_config.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/kustomization.yaml",
+					GoldenFile:   "testdata/expected/2-kustomization.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/cluster_userconfig.yaml",
+					GoldenFile:   "testdata/expected/0-cluster_userconfig.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/default_apps_userconfig.yaml",
+					GoldenFile:   "testdata/expected/0-default_apps_userconfig.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/patch_cluster_userconfig.yaml",
+					GoldenFile:   "testdata/expected/0-patch_cluster_userconfig.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/patch_default_apps_userconfig.yaml",
 					GoldenFile:   "testdata/expected/0-patch_default_apps_userconfig.golden",
 				},
 			},

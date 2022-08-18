@@ -32,6 +32,7 @@ func Test_NewApp(t *testing.T) {
 				AppNamespace:      "default",
 				Organization:      "demoorg",
 				AppVersion:        "0.3.0",
+				SkipMAPI:          true,
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -55,6 +56,7 @@ func Test_NewApp(t *testing.T) {
 				AppName:           "hello-world",
 				Organization:      "demoorg",
 				AppVersion:        "0.3.0",
+				SkipMAPI:          true,
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -83,6 +85,7 @@ func Test_NewApp(t *testing.T) {
 topKey:
   netedKey: nestedValue`)),
 				AppVersion:      "0.3.0",
+				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -115,6 +118,7 @@ topKey:
 topKey:
   netedKey: nestedValue`)),
 				AppVersion:      "0.3.0",
+				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -144,6 +148,7 @@ topKey:
 				AppUserValuesConfigMap: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
+				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -177,6 +182,7 @@ topKey:
 				AppUserValuesSecret: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
+				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -197,6 +203,54 @@ topKey:
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/patch_app_userconfig.yaml",
 					GoldenFile:   "testdata/expected/1-patch_app_userconfig.golden",
+				},
+			},
+		},
+		{
+			name: "flawless MAPI",
+			config: common.StructureConfig{
+				App:               "hello-world",
+				AppCatalog:        "giantswarm",
+				ManagementCluster: "demomc",
+				AppName:           "hello-world",
+				AppNamespace:      "default",
+				Organization:      "demoorg",
+				AppVersion:        "0.3.0",
+				WorkloadCluster:   "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/0-appcr.golden",
+				},
+			},
+		},
+		{
+			name: "flawless MAPI from base",
+			config: common.StructureConfig{
+				AppBase:           "base/apps/hello-world",
+				ManagementCluster: "demomc",
+				AppName:           "hello-world",
+				Organization:      "demoorg",
+				AppVersion:        "0.3.0",
+				WorkloadCluster:   "demowc",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-hello_world_kustomization.golden",
 				},
 			},
 		},
