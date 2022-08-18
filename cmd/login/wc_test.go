@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"fmt"
+	v1 "k8s.io/api/authorization/v1"
 	"math/big"
 	"os"
 	"reflect"
@@ -43,6 +44,8 @@ func TestWCClientCert(t *testing.T) {
 		provider             string
 		capi                 bool
 		clustersInNamespaces map[string]string
+		isAdmin              bool
+		permittedResources   []v1.ResourceRule
 		expectError          *microerror.Error
 	}{
 		// Logging into WC
@@ -54,6 +57,7 @@ func TestWCClientCert(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 			provider: "aws",
+			isAdmin:  true,
 		},
 		// Logging into WC that does not exist
 		{
@@ -64,6 +68,7 @@ func TestWCClientCert(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 			provider:    "aws",
+			isAdmin:     true,
 			expectError: clusterNotFoundError,
 		},
 		// self contained file
@@ -76,6 +81,14 @@ func TestWCClientCert(t *testing.T) {
 				SelfContained: "/cluster.yaml",
 			},
 			provider: "aws",
+			permittedResources: []v1.ResourceRule{
+				{
+					Verbs:         []string{"get"},
+					Resources:     []string{"organizations"},
+					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
+					ResourceNames: []string{"organization"},
+				},
+			},
 		},
 		// keeping MC context
 		{
@@ -87,6 +100,14 @@ func TestWCClientCert(t *testing.T) {
 				KeepContext: true,
 			},
 			provider: "aws",
+			permittedResources: []v1.ResourceRule{
+				{
+					Verbs:         []string{"get"},
+					Resources:     []string{"organizations"},
+					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
+					ResourceNames: []string{"organization"},
+				},
+			},
 		},
 		// Explicit organization
 		{
@@ -98,6 +119,7 @@ func TestWCClientCert(t *testing.T) {
 				WCOrganization: "organization",
 			},
 			provider: "aws",
+			isAdmin:  true,
 		},
 		// Several clusters in several namespaces exist
 		{
@@ -108,6 +130,7 @@ func TestWCClientCert(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 			provider: "aws",
+			isAdmin:  true,
 		},
 		// Trying to log into a cluster in default namespace without insecure namespace
 		{
@@ -117,7 +140,15 @@ func TestWCClientCert(t *testing.T) {
 				WCName:    "cluster",
 				WCCertTTL: "8h",
 			},
-			provider:    "aws",
+			provider: "aws",
+			permittedResources: []v1.ResourceRule{
+				{
+					Verbs:         []string{"get"},
+					Resources:     []string{"organizations"},
+					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
+					ResourceNames: []string{"organization"},
+				},
+			},
 			expectError: clusterNotFoundError,
 		},
 		// Trying to log into a cluster in default namespace with insecure namespace
@@ -130,6 +161,14 @@ func TestWCClientCert(t *testing.T) {
 				WCInsecureNamespace: true,
 			},
 			provider: "aws",
+			permittedResources: []v1.ResourceRule{
+				{
+					Verbs:         []string{"get"},
+					Resources:     []string{"organizations"},
+					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
+					ResourceNames: []string{"organization"},
+				},
+			},
 		},
 		// Trying to log into a cluster on kvm
 		{
@@ -140,6 +179,7 @@ func TestWCClientCert(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 			provider:    "kvm",
+			isAdmin:     true,
 			expectError: unsupportedProviderError,
 		},
 		// Trying to log into a cluster on azure
@@ -151,6 +191,7 @@ func TestWCClientCert(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 			provider: "azure",
+			isAdmin:  true,
 		},
 		// Trying to log into a cluster on openstack
 		{
@@ -162,6 +203,14 @@ func TestWCClientCert(t *testing.T) {
 			},
 			provider: "openstack",
 			capi:     true,
+			permittedResources: []v1.ResourceRule{
+				{
+					Verbs:         []string{"get"},
+					Resources:     []string{"organizations"},
+					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
+					ResourceNames: []string{"organization"},
+				},
+			},
 		},
 	}
 
@@ -194,6 +243,9 @@ func TestWCClientCert(t *testing.T) {
 			}
 
 			client := kubeclient.FakeK8sClient()
+			client.AddSubjectAccess(tc.isAdmin)
+			client.AddSubjectResourceRules("default", tc.permittedResources)
+
 			ctx := context.Background()
 			{
 				err = client.CtrlClient().Create(ctx, getOrganization("org-organization"))
