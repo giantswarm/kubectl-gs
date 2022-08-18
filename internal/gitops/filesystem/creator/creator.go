@@ -1,9 +1,9 @@
 package creator
 
 import (
+	"bytes"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/afero"
 
@@ -43,16 +43,21 @@ func NewCreator(config CreatorConfig) *Creator {
 }
 
 // NewFsObject returns new file system object
-func NewFsObject(path string, data []byte) *FsObject {
-	return &FsObject{
+func NewFsObject(path string, data []byte, perm os.FileMode) *FsObject {
+	fo := &FsObject{
 		RelativePath: path,
 		Data:         data,
+		Permission:   perm,
 	}
+
+	fo.ensurePermissions()
+
+	return fo
 }
 
 // createDirectory creates a new directory, if not already exists.
-func (c *Creator) createDirectory(path string) error {
-	err := c.fs.Mkdir(path, 0755)
+func (c *Creator) createDirectory(path string, perm os.FileMode) error {
+	err := c.fs.Mkdir(path, perm)
 	if os.IsExist(err) {
 		//noop
 	} else if err != nil {
@@ -63,8 +68,23 @@ func (c *Creator) createDirectory(path string) error {
 }
 
 // createFile creates a new file.
-func (c *Creator) createFile(path string, data []byte) error {
-	err := c.fs.WriteFile(path, data, 0600)
+func (c *Creator) createFile(path string, data []byte, perm os.FileMode) error {
+	var err error
+
+	// user may try to re-run some command against already existing
+	// layer of the structure, but the file there may contain changes
+	// made by other commands, or made by other users, this could result
+	// in losing them, so it's better to skip if file exist already.
+	exist, err := c.fs.Exists(path)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if exist {
+		return nil
+	}
+
+	err = c.fs.WriteFile(path, data, perm)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -72,20 +92,63 @@ func (c *Creator) createFile(path string, data []byte) error {
 	return nil
 }
 
+// ensurePermissions sets default permissions if the one provided
+// are empty.
+func (fo *FsObject) ensurePermissions() {
+	if fo.Permission != 0 {
+		return
+	}
+
+	if len(fo.Data) <= 1 {
+		fo.Permission = defaultDirPerm
+	} else {
+		fo.Permission = defaultFilePerm
+	}
+}
+
+// isDir checks path against pre-configured suffixes
+func (fo *FsObject) isDir() bool {
+	return len(fo.Data) <= 1
+}
+
 // print prints the creator's file system objects.
 func (c *Creator) print() {
 	for _, o := range c.fsObjects {
-		if !strings.HasSuffix(o.RelativePath, yamlExt) {
+
+		// Print path to the directory to be created
+		if o.isDir() {
 			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 			continue
 		}
 
-		if len(o.Data) <= 1 {
+		data := bytes.TrimSpace(o.Data)
+		if len(data) == 0 {
 			continue
 		}
 
+		// Print path to the file, and then the file content
 		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
-		fmt.Fprintln(c.stdout, string(o.Data))
+		fmt.Fprintf(c.stdout, "%s\n\n", string(data))
+	}
+
+	for n, m := range c.postModifiers {
+		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			// Very simple way to inform user what is going to happen when
+			// command is executed without the `dry-run` flag. May not be
+			// the best way in the future, but it is something to start with,
+			// and serves the purpose of giving user a hint.
+			fmt.Fprintln(c.stdout, err)
+			continue
+		}
+
+		edited, err := m.Execute(rawYaml)
+		if err != nil {
+			return
+		}
+
+		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, n)
+		fmt.Fprintln(c.stdout, string(edited))
 	}
 }
 
@@ -106,8 +169,10 @@ func (c *Creator) write() error {
 	}
 
 	for _, o := range c.fsObjects {
-		if !strings.HasSuffix(o.RelativePath, yamlExt) {
-			err := c.createDirectory(fmt.Sprintf("%s/%s", c.path, o.RelativePath))
+		path := fmt.Sprintf("%s/%s", c.path, o.RelativePath)
+
+		if o.isDir() {
+			err := c.createDirectory(path, o.Permission)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -118,14 +183,21 @@ func (c *Creator) write() error {
 			continue
 		}
 
-		err := c.createFile(fmt.Sprintf("%s/%s", c.path, o.RelativePath), o.Data)
+		err := c.createFile(path, o.Data, o.Permission)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	for n, m := range c.postModifiers {
-		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
+		file := fmt.Sprintf("%s/%s", c.path, n)
+
+		rawYaml, err := c.fs.ReadFile(file)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		stat, err := c.fs.Stat(file)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -135,7 +207,7 @@ func (c *Creator) write() error {
 			return microerror.Mask(err)
 		}
 
-		err = c.createFile(fmt.Sprintf("%s/%s", c.path, n), edited)
+		err = c.createFile(file, edited, stat.Mode())
 		if err != nil {
 			return microerror.Mask(err)
 		}

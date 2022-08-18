@@ -2,7 +2,6 @@ package wcluster
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -13,7 +12,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/workload-cluster"
 	commonkey "github.com/giantswarm/kubectl-gs/internal/key"
 )
 
@@ -43,12 +43,12 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.WcConfig{
-		Base:               r.flag.Base,
+	config := common.StructureConfig{
+		ClusterBase:        r.flag.Base,
 		ClusterRelease:     r.flag.ClusterRelease,
 		DefaultAppsRelease: r.flag.DefaultAppsRelease,
 		ManagementCluster:  r.flag.ManagementCluster,
-		Name:               r.flag.Name,
+		WorkloadCluster:    r.flag.Name,
 		Organization:       r.flag.Organization,
 		RepositoryName:     r.flag.RepositoryName,
 	}
@@ -90,7 +90,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
 
 	creator := creator.NewCreator(*creatorConfig)

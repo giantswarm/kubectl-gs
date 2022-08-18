@@ -1,0 +1,18 @@
+{{- if and .AppBase (or .AppUserValuesConfigMap .AppUserValuesSecret) -}}
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: {{ .WorkloadCluster}}-{{ .AppName }}
+spec:
+  userConfig:
+{{- if .AppUserValuesConfigMap }}
+    configMap:
+      name: {{ .WorkloadCluster}}-{{ .AppName }}-user-values
+      namespace: org-{{ .Organization }}
+{{- end }}
+{{- if .AppUserValuesSecret }}
+    secret:
+      name: {{ .WorkloadCluster}}-{{ .AppName }}-user-values
+      namespace: org-{{ .Organization }}
+{{- end }}
+{{- end }}

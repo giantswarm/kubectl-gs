@@ -1,9 +1,0 @@
-{{- if .DefaultAppsUserConfig -}}
-apiVersion: v1
-data:
-  values: |
-{{ .DefaultAppsUserConfig | indent 4 }}
-kind: ConfigMap
-metadata:
-  name: {{ .Name }}-useconfig
-{{- end }}

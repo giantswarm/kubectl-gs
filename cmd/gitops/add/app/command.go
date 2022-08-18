@@ -20,13 +20,14 @@ const (
 
 app \
 --app <app_to_install> \
+[--base <path_to_base>] \
 --catalog <app_catalog> \
---name <app_cr_name> \
+[--name <app_cr_name>] \
 --namespace <app_namespace> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
---user-configmap <path_to_values_yaml> \
---user-secret <path_to_values_yaml> \
+[--user-configmap <path_to_values_yaml>] \
+[--user-secret <path_to_values_yaml>] \
 --version <app_version> \
 --workload-cluster <wc_name>
 

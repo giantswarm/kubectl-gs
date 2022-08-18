@@ -12,11 +12,15 @@ import (
 )
 
 const (
-	name  = "organization --name <org_name> --management-cluster <mc_name>"
+	name  = "organization"
 	alias = "org"
 
 	shortDescription = "Adds a new Organization to your GitOps directory structure"
 	longDescription  = `Adds a new Organization to your GitOps directory structure.
+
+org \
+--name <org_name> \
+--management-cluster <mc_name>
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.

@@ -12,11 +12,16 @@ import (
 )
 
 const (
-	name  = "management-cluster --name <mc_code_name> --repository-name <gitops_repo_name>"
+	name  = "management-cluster"
 	alias = "mc"
 
 	shortDescription = "Adds a new Management Cluster to your GitOps directory structure"
 	longDescription  = `Adds a new Management Cluster to your GitOps directory structure.
+
+mc \
+--name <mc_code_name> \
+--repository-name <gitops_repo_name> \
+[--gen-master-key]
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
@@ -29,18 +34,11 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_mc.md`
   --name dummy \
   --repository-name gitops-demo
 
-  # Add dummy Management Cluster with custom interval
+  # Add dummy Management Cluster with master GPG key
   kubectl gs gitops add mc \
   --name dummy \
-  --repository-name gitops-demo \
-  --refresh-interval 5m \
-  --refresh-timeout 10m
-
-  # Add dummy Management Cluster with Bucket source
-  kubectl gs gitops add mc \
-  --name dummy \
-  --repository-name gitops-demo \
-  --repository-kind bucket`
+  --repository-name gitops-demo
+  --gen-master-key`
 )
 
 type Config struct {

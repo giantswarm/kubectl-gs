@@ -41,10 +41,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Codename of the Management Cluster the Workload Cluster belongs to.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app to use for creating the repository directory structure.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Name of the Organization the Workload Cluster belongs to.")
-	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Name of the Workload Cluster to configure tbe app for.")
+	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Name of the Workload Cluster to configure the app for.")
 
 	//CAPx only
-	cmd.Flags().StringVar(&f.App, flagApp, "", "App name taken from the catalog.")
+	cmd.Flags().StringVar(&f.App, flagApp, "", "App name in the catalog.")
 	cmd.Flags().StringVar(&f.Base, flagBase, "", "Path to the base directory. It must be relative to the repository root.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog to install the app from.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace to install app into.")

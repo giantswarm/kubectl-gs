@@ -11,7 +11,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/updates"
 )
 
 type runner struct {
@@ -40,13 +41,13 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	config := structure.AutomaticUpdateConfig{
-		App:               r.flag.App,
-		ManagementCluster: r.flag.ManagementCluster,
-		Organization:      r.flag.Organization,
-		Repository:        r.flag.Repository,
-		WorkloadCluster:   r.flag.WorkloadCluster,
-		VersionRepository: r.flag.VersionRepository,
+	config := common.StructureConfig{
+		AppName:              r.flag.App,
+		ManagementCluster:    r.flag.ManagementCluster,
+		Organization:         r.flag.Organization,
+		RepositoryName:       r.flag.Repository,
+		WorkloadCluster:      r.flag.WorkloadCluster,
+		AppVersionRepository: r.flag.VersionRepository,
 	}
 
 	creatorConfig, err := structure.NewAutomaticUpdate(config)

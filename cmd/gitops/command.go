@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/cmd/gitops/add"
+	"github.com/giantswarm/kubectl-gs/cmd/gitops/initialize"
 )
 
 const (
@@ -65,6 +66,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var initCmd *cobra.Command
+	{
+		c := initialize.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		initCmd, err = initialize.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -84,6 +103,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(addCmd)
+	c.AddCommand(initCmd)
 
 	return c, nil
 }

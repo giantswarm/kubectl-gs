@@ -36,7 +36,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	//App stuff
 	cmd.Flags().StringVar(&f.App, flagApp, "", "App in the repository to configure automatic updates for.")
 	cmd.Flags().StringVar(&f.Repository, flagRepository, "", "The gitops repository to update application in.")
-	cmd.Flags().StringVar(&f.VersionRepository, flagVersionRepository, "", "Tbe OCR repository to update the version from.")
+	cmd.Flags().StringVar(&f.VersionRepository, flagVersionRepository, "", "The OCR repository to update the version from.")
 }
 
 func (f *flag) Validate() error {

@@ -1,6 +1,7 @@
 package creator
 
 import (
+	"encoding/json"
 	"fmt"
 
 	jmespath "github.com/jmespath/go-jmespath"
@@ -61,9 +62,17 @@ func (ks KustomizationValidator) Execute(rawYaml []byte) error {
 func hasMatchingElement(path, expression string, file interface{}) (bool, error) {
 	ok, err := jmespath.Search(fmt.Sprintf(arrayElementContains, path, expression), file)
 	if err != nil {
-		fmt.Println("heh")
 		return false, microerror.Mask(err)
 	}
 
 	return ok.(bool), nil
+}
+
+func getUnmarshalledJson(src []byte, dest *interface{}) error {
+	err := json.Unmarshal(src, dest)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }

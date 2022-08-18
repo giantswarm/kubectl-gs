@@ -2,6 +2,7 @@ package mcluster
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -9,8 +10,14 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/management-cluster"
+)
+
+const (
+	masterKeyName = "%s Flux master"
 )
 
 type runner struct {
@@ -37,12 +44,20 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.McConfig{
-		Name:            r.flag.Name,
-		RefreshInterval: r.flag.Interval.String(),
-		RefreshTimeout:  r.flag.Timeout.String(),
-		RepositoryName:  r.flag.RepositoryName,
-		ServiceAccount:  r.flag.ServiceAccount,
+	config := common.StructureConfig{
+		ManagementCluster: r.flag.Name,
+		RepositoryName:    r.flag.RepositoryName,
+	}
+
+	if r.flag.GenerateMasterKey {
+		keyName := fmt.Sprintf(masterKeyName, config.ManagementCluster)
+
+		keyPair, err := encryption.GenerateKeyPair(keyName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.EncryptionKeyPair = keyPair
 	}
 
 	creatorConfig, err := structure.NewManagementCluster(config)
