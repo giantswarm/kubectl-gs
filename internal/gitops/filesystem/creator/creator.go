@@ -69,7 +69,22 @@ func (c *Creator) createDirectory(path string, perm os.FileMode) error {
 
 // createFile creates a new file.
 func (c *Creator) createFile(path string, data []byte, perm os.FileMode) error {
-	err := c.fs.WriteFile(path, data, perm)
+	var err error
+
+	// user may try to re-run some command against already existing
+	// layer of the structure, but the file there may contain changes
+	// made by other commands, or made by other users, this could result
+	// in losing them, so it's better to skip if file exist already.
+	exist, err := c.fs.Exists(path)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if exist {
+		return nil
+	}
+
+	err = c.fs.WriteFile(path, data, perm)
 	if err != nil {
 		return microerror.Mask(err)
 	}
