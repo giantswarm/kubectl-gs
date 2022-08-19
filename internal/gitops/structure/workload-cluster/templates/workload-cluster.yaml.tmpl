@@ -5,7 +5,11 @@ metadata:
   namespace: default
 spec:
   interval: 1m
+  {{- if .SkipMAPI }}
   path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}"
+  {{- else }}
+  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}/mapi"
+  {{- end }}
   postBuild:
     substitute:
       cluster_name: "{{ .WorkloadCluster }}"

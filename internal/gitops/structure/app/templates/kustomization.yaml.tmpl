@@ -7,7 +7,11 @@ patchesStrategicMerge:
 {{- end }}
 kind: Kustomization
 resources:
+{{- if .SkipMAPI }}
   - ../../../../../../../../{{ .AppBase }}
+{{- else }}
+  - ../../../../../../../../../{{ .AppBase }}
+{{- end }}
 {{- if .AppUserValuesConfigMap }}
   - configmap.yaml
 {{- end }}

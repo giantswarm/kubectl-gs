@@ -30,18 +30,22 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
 
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
+	// or
+	// management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/mapi
+	mapiDir := wcDir
 	if !config.SkipMAPI {
-		wcDir = key.ResourcePath(wcDir, key.MapiDirName())
+		mapiDir = key.ResourcePath(wcDir, key.MapiDirName())
 	}
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
 
-	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
-	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps
+	appsDir := key.ResourcePath(mapiDir, key.AppsDirName())
 
-	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/cluster
-	clusterDir := key.ResourcePath(wcDir, key.ClusterDirName())
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/cluster
+	clusterDir := key.ResourcePath(mapiDir, key.ClusterDirName())
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/kustomization.yaml
 	wcsKusFile := key.ResourcePath(wcsDir, key.SigsKustomizationFileName())
@@ -82,10 +86,13 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	// If base has been specified by the user, then in addition to the above, populate
 	// the `cluster` directory with cluster definition, possibly enriching it with
 	// user configuration when specified as well.
+	fsObjects = append(fsObjects, creator.NewFsObject(wcDir, nil, 0))
+	if !config.SkipMAPI {
+		fsObjects = append(fsObjects, creator.NewFsObject(mapiDir, nil, 0))
+	}
 	fsObjects = append(
 		fsObjects,
 		[]*creator.FsObject{
-			creator.NewFsObject(wcDir, nil, 0),
 			creator.NewFsObject(appsDir, nil, 0),
 			creator.NewFsObject(clusterDir, nil, 0),
 		}...,

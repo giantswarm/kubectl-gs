@@ -109,7 +109,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	pubKeyName := key.SopsKeyName(pubKeyPrefix, config.EncryptionKeyPair.Fingerprint)
 	pubKeyPath = key.ResourcePath(pubKeyPath, pubKeyName)
 
-	fmt.Fprintf(creatorConfig.Stdout, "\nPlease run \n\ngpg --import %s\n\nto load the public key into the keychain for SOPS to work.\n", pubKeyPath)
+	fmt.Fprintf(
+		creatorConfig.Stdout,
+		"\nPlease run \n\ngpg --import %s/%s\n\nto load the public key into the keychain for SOPS to work.\n",
+		creatorConfig.Path,
+		pubKeyPath,
+	)
 
 	return nil
 }

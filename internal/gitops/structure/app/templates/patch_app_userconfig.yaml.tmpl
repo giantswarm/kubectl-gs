@@ -2,7 +2,8 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
-  name: {{ .WorkloadCluster}}-{{ .AppName }}
+  name: ${cluster_name}-{{ .AppName }}
+  namespace: org-${organization}
 spec:
   userConfig:
 {{- if .AppUserValuesConfigMap }}

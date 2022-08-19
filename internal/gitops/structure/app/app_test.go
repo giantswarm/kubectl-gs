@@ -250,7 +250,7 @@ topKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-hello_world_kustomization.golden",
+					GoldenFile:   "testdata/expected/3-hello_world_kustomization.golden",
 				},
 			},
 		},

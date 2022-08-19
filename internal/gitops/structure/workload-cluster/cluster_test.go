@@ -263,7 +263,10 @@ otherTopKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/1-demowc.golden",
+					GoldenFile:   "testdata/expected/2-demowc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi",
@@ -284,7 +287,7 @@ otherTopKey:
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/kustomization.yaml",
-					GoldenFile:   "testdata/expected/2-kustomization.golden",
+					GoldenFile:   "testdata/expected/3-kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/cluster_userconfig.yaml",

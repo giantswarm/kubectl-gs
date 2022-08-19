@@ -68,7 +68,7 @@ func (c *Creator) createDirectory(path string, perm os.FileMode) error {
 }
 
 // createFile creates a new file.
-func (c *Creator) createFile(path string, data []byte, perm os.FileMode) error {
+func (c *Creator) createFile(path string, data []byte, perm os.FileMode, force bool) error {
 	var err error
 
 	// user may try to re-run some command against already existing
@@ -80,7 +80,7 @@ func (c *Creator) createFile(path string, data []byte, perm os.FileMode) error {
 		return microerror.Mask(err)
 	}
 
-	if exist {
+	if exist && !force {
 		return nil
 	}
 
@@ -90,6 +90,14 @@ func (c *Creator) createFile(path string, data []byte, perm os.FileMode) error {
 	}
 
 	return nil
+}
+
+func (c *Creator) createFileWithOverride(path string, data []byte, perm os.FileMode) error {
+	return c.createFile(path, data, perm, true)
+}
+
+func (c *Creator) createFileWithoutOverride(path string, data []byte, perm os.FileMode) error {
+	return c.createFile(path, data, perm, false)
 }
 
 // ensurePermissions sets default permissions if the one provided
@@ -183,7 +191,7 @@ func (c *Creator) write() error {
 			continue
 		}
 
-		err := c.createFile(path, o.Data, o.Permission)
+		err := c.createFileWithoutOverride(path, o.Data, o.Permission)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -207,7 +215,7 @@ func (c *Creator) write() error {
 			return microerror.Mask(err)
 		}
 
-		err = c.createFile(file, edited, stat.Mode())
+		err = c.createFileWithOverride(file, edited, stat.Mode())
 		if err != nil {
 			return microerror.Mask(err)
 		}
