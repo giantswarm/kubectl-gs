@@ -1,7 +1,8 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
-  name: demowc-hello-world
+  name: ${cluster_name}-hello-world
+  namespace: org-${organization}
 spec:
   userConfig:
     configMap:
