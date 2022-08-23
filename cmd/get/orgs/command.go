@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	name = "orgs"
+	name = "orgs [org-name]"
 
 	shortDescription = "Display one or many organizations"
 	longDescription  = `Display one or many organizations.
@@ -27,16 +27,14 @@ const (
 Output columns:
 
 - NAME: The organization's name, or: name of the Organization (organizations.security.giantswarm.io) resource.
-- NAMESPACE: The namespace belonging to this organization.
+- ORG NAMESPACE: The namespace belonging to this organization.
 `
 
 	examples = `  # List all organizations you have access to
-  kgs get orgs
+  kubectl gs get orgs
 
   # Get one specific organization
-  kgs get organization acme
-
-  Note: 'kgs' is an alias for 'kubectl gs'.`
+  kubectl gs organization acme`
 )
 
 var (
