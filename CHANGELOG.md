@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Set domain name for the Kubernetes APIs server address when logging in to a GCP workload cluster.
+
+
 ## [2.19.2] - 2022-08-17
 
 
