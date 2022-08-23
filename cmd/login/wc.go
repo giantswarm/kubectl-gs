@@ -207,7 +207,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 
 	clusterServer := fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 
-	// If the control plane host is an IP address then it is a GCP cluster and
+	// If the control plane host is an IP address then it is a CAPI cluster and
 	// we need to manually set the cluster server to the correct domain
 	if net.ParseIP(c.Cluster.Spec.ControlPlaneEndpoint.Host) != nil {
 		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
