@@ -7,6 +7,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.19.3] - 2022-08-23
+
+### Fixed
+
+- Set domain name for the Kubernetes APIs server address when logging in to CAPI provider workload clusters.
+
+
 ## [2.19.2] - 2022-08-17
 
 
@@ -982,7 +989,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.3...HEAD
+[2.19.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.2...v2.19.3
 [2.19.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.1...v2.19.2
 [2.19.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.0...v2.19.1
 [2.19.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.18.0...v2.19.0

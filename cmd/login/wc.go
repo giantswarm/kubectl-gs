@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"fmt"
+	"net"
 	"regexp"
 	"strings"
 
@@ -204,12 +205,20 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
+	clusterServer := fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port)
+
+	// If the control plane host is an IP address then it is a CAPI cluster and
+	// we need to manually set the cluster server to the correct domain
+	if net.ParseIP(c.Cluster.Spec.ControlPlaneEndpoint.Host) != nil {
+		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
+	}
+
 	credentialConfig := credentialConfig{
 		clusterID:     r.flag.WCName,
 		certCRT:       secret.Data[credentialKeyCertCRT],
 		certKey:       secret.Data[credentialKeyCertKey],
 		certCA:        secret.Data[credentialKeyCertCA],
-		clusterServer: fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port),
+		clusterServer: clusterServer,
 		filePath:      r.flag.SelfContained,
 		loginOptions:  r.loginOptions,
 	}
