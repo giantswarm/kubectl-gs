@@ -1,3 +1,5 @@
+
+## CREATE ##
 /tmp/testpath/workload-clusters
 /tmp/testpath/workload-clusters/demowc.yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2

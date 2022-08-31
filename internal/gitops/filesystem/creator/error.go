@@ -4,11 +4,11 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var validationError = &microerror.Error{
+var ValidationError = &microerror.Error{
 	Kind: "validationError",
 }
 
 // IsValidationError asserts validationError.
 func IsValidationError(err error) bool {
-	return microerror.Cause(err) == validationError
+	return microerror.Cause(err) == ValidationError
 }

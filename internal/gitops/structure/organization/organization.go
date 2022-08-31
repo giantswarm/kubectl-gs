@@ -1,4 +1,4 @@
-package structure
+package organization
 
 import (
 	"github.com/giantswarm/microerror"

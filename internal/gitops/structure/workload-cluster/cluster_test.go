@@ -1,4 +1,4 @@
-package structure
+package wcluster
 
 import (
 	"bytes"

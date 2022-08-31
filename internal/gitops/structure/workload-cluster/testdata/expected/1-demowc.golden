@@ -8,10 +8,10 @@ spec:
   path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
   postBuild:
     substitute:
-      cluster_name: "demowc"
-      organization: "demoorg"
-      cluster_release: "0.13.0"
-      default_apps_release: "0.6.0"
+      cluster_name: demowc
+      cluster_release: 0.13.0
+      default_apps_release: 0.6.0
+      organization: demoorg
   prune: false
   serviceAccountName: automation
   sourceRef:

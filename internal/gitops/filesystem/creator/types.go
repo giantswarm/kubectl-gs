@@ -20,7 +20,7 @@ type Creator struct {
 	fsObjects     []*FsObject
 	path          string
 	postModifiers map[string]modifier.Modifier
-	preValidators map[string]Validator
+	preValidators map[string]func(*afero.Afero, string) error
 	stdout        io.Writer
 }
 
@@ -29,7 +29,7 @@ type CreatorConfig struct {
 	FsObjects     []*FsObject
 	Path          string
 	PostModifiers map[string]modifier.Modifier
-	PreValidators map[string]Validator
+	PreValidators map[string]func(*afero.Afero, string) error
 	Stdout        io.Writer
 }
 

@@ -1,4 +1,4 @@
-package structure
+package encryption
 
 import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"

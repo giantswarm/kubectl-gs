@@ -114,6 +114,17 @@ func (fo *FsObject) ensurePermissions() {
 	}
 }
 
+// findObject returns object bytes
+func (c *Creator) findObject(path string) []byte {
+	for _, o := range c.fsObjects {
+		if path == o.RelativePath {
+			return o.Data
+		}
+	}
+
+	return nil
+}
+
 // isDir checks path against pre-configured suffixes
 func (fo *FsObject) isDir() bool {
 	return len(fo.Data) <= 1
@@ -121,11 +132,23 @@ func (fo *FsObject) isDir() bool {
 
 // print prints the creator's file system objects.
 func (c *Creator) print() {
+	for n, v := range c.preValidators {
+		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			fmt.Fprintf(c.stdout, "\n%s", err)
+			return
+		}
+	}
+
+	fmt.Fprintf(c.stdout, "\n## CREATE ##\n")
+
+	lines := ""
 	for _, o := range c.fsObjects {
 
 		// Print path to the directory to be created
 		if o.isDir() {
 			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
+			lines = "\n\n"
 			continue
 		}
 
@@ -137,6 +160,11 @@ func (c *Creator) print() {
 		// Print path to the file, and then the file content
 		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 		fmt.Fprintf(c.stdout, "%s\n\n", string(data))
+		lines = "\n"
+	}
+
+	if len(c.postModifiers) != 0 {
+		fmt.Fprintf(c.stdout, "%s## MODIFY ##\n", lines)
 	}
 
 	for n, m := range c.postModifiers {
@@ -145,9 +173,14 @@ func (c *Creator) print() {
 			// Very simple way to inform user what is going to happen when
 			// command is executed without the `dry-run` flag. May not be
 			// the best way in the future, but it is something to start with,
-			// and serves the purpose of giving user a hint.
-			fmt.Fprintln(c.stdout, err)
-			continue
+			// and serves the purpose of giving user a hint. If there is an
+			// error getting the live object, let's try to find in in the objects
+			// array. If not found there, return the original error.
+			rawYaml = c.findObject(n)
+			if rawYaml == nil {
+				fmt.Fprintln(c.stdout, err)
+				continue
+			}
 		}
 
 		edited, err := m.Execute(rawYaml)
@@ -163,15 +196,9 @@ func (c *Creator) print() {
 // write writes the creator's file system objects into the disk.
 func (c *Creator) write() error {
 	for n, v := range c.preValidators {
-		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
-		if os.IsNotExist(err) {
-			continue
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = v.Execute(rawYaml)
+		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
 		if err != nil {
+			fmt.Fprintf(c.stdout, "\n%s", err)
 			return microerror.Mask(err)
 		}
 	}

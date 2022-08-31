@@ -8,8 +8,8 @@ spec:
   path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
   postBuild:
     substitute:
-      cluster_name: "demowc"
-      organization: "demoorg"
+      cluster_name: demowc
+      organization: demoorg
   prune: false
   serviceAccountName: automation
   sourceRef:

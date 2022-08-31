@@ -1,9 +1,10 @@
-package structure
+package app
 
 import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
@@ -11,6 +12,10 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	apptmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/app/templates"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+)
+
+const (
+	appExists = "`%s` app is already configured for the cluster."
 )
 
 // NewApp creates a new App directory structure.
@@ -73,6 +78,20 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
+		PreValidators: map[string]func(fs *afero.Afero, path string) error{
+			appDir: func(fs *afero.Afero, path string) error {
+				ok, err := fs.Exists(path)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				if !ok {
+					return nil
+				}
+
+				return microerror.Maskf(creator.ValidationError, appExists, config.AppName)
+			},
+		},
 	}
 
 	return &creatorConfig, nil

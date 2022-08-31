@@ -1,4 +1,4 @@
-package structure
+package wcluster
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
+	fluxkusmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/flux-kustomization"
 	sigskusmod "github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/sigs-kustomization"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
@@ -40,6 +41,9 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters
 	wcsDir := key.ResourcePath(orgDir, key.WorkloadClustersDirName())
+
+	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME.yaml
+	wcFile := key.ResourcePath(wcsDir, key.FluxKustomizationFileName(config.WorkloadCluster))
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps
 	appsDir := key.ResourcePath(mapiDir, key.AppsDirName())
@@ -121,6 +125,18 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 				fmt.Sprintf("%s.yaml", config.WorkloadCluster),
 			},
 		},
+	}
+
+	// Workload Cluster can be added without a cluster definition at first, if all user wants is
+	// to manage apps for example. Later on, when `kgs` is re-run to add a Workload Cluster from
+	// a base the WC_NAME.yaml file must be updated with the right environment variables.
+	if config.ClusterBase != "" {
+		fsModifiers[wcFile] = fluxkusmod.KustomizationModifier{
+			PostBuildEnvs: map[string]string{
+				"cluster_release":      config.ClusterRelease,
+				"default_apps_release": config.DefaultAppsRelease,
+			},
+		}
 	}
 
 	creatorConfig := creator.CreatorConfig{

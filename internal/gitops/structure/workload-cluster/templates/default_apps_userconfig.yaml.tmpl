@@ -1,4 +1,4 @@
-{{- if .DefaultAppsUserConfig -}}
+{{- if and .ClusterBase .DefaultAppsUserConfig -}}
 apiVersion: v1
 data:
   values: |

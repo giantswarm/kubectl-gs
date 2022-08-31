@@ -143,6 +143,49 @@ spec:
 				DecryptionToAdd: "sops-gpg-master",
 			},
 		},
+		{
+			name: "adding postBuild variables",
+			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: demomc-gitops
+  namespace: default
+spec:
+  interval: 1m0s
+  path: ./management-clusters/demomc
+  postBuild:
+    substitute:
+      cluster_release: 1.0.0
+      default_apps_release: 1.0.0
+  prune: true
+  serviceAccountName: automation
+  sourceRef:
+    kind: GitRepository
+    name: gitops-demo
+  timeout: 2m0s
+`),
+			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: demomc-gitops
+  namespace: default
+spec:
+  interval: 1m0s
+  path: ./management-clusters/demomc
+  prune: true
+  serviceAccountName: automation
+  sourceRef:
+    kind: GitRepository
+    name: gitops-demo
+  timeout: 2m0s
+`),
+			modifier: KustomizationModifier{
+				PostBuildEnvs: map[string]string{
+					"cluster_release":      "1.0.0",
+					"default_apps_release": "1.0.0",
+				},
+			},
+		},
 	}
 
 	for i, tc := range testCases {

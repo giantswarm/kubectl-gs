@@ -1,9 +1,10 @@
-package structure
+package updates
 
 import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier"
@@ -12,6 +13,10 @@ import (
 	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
 	updatetmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/updates/templates"
+)
+
+const (
+	missingAppCR = "Operation cannot be fulfilled on directory missing the `appcr.yaml` file."
 )
 
 // NewImageUpdate configures app for automated updates
@@ -33,7 +38,7 @@ func NewAutomaticUpdate(config common.StructureConfig) (*creator.CreatorConfig, 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME
 	appDir := key.ResourcePath(appsDir, config.AppName)
 
-	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/appcr.yaml
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME/appcr.yaml
 	appCrFile := key.ResourcePath(appDir, key.AppCRFileName())
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/kustomization.yaml
@@ -77,16 +82,23 @@ func NewAutomaticUpdate(config common.StructureConfig) (*creator.CreatorConfig, 
 		},
 	}
 
-	fsValidators := map[string]creator.Validator{
-		key.ResourcePath(appDir, key.SigsKustomizationFileName()): creator.KustomizationValidator{
-			ReferencesBase: true,
-		},
-	}
-
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
-		PreValidators: fsValidators,
+		PreValidators: map[string]func(fs *afero.Afero, path string) error{
+			appCrFile: func(fs *afero.Afero, path string) error {
+				ok, err := fs.Exists(path)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				if ok {
+					return nil
+				}
+
+				return microerror.Maskf(creator.ValidationError, missingAppCR)
+			},
+		},
 	}
 
 	return &creatorConfig, nil

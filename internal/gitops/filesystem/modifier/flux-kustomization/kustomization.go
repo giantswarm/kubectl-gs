@@ -10,6 +10,7 @@ import (
 
 type KustomizationModifier struct {
 	DecryptionToAdd string
+	PostBuildEnvs   map[string]string
 
 	kustomization map[string]interface{}
 }
@@ -23,6 +24,7 @@ func (km KustomizationModifier) Execute(rawYaml []byte) ([]byte, error) {
 	}
 
 	km.addDecryption()
+	km.addPostBuild()
 
 	return helper.Marshal(km.kustomization)
 }
@@ -51,4 +53,25 @@ func (km *KustomizationModifier) addDecryption() {
 	}
 
 	km.kustomization["spec"].(map[string]interface{})["decryption"] = decryption
+}
+
+func (km *KustomizationModifier) addPostBuild() {
+	if len(km.PostBuildEnvs) == 0 {
+		return
+	}
+
+	if _, ok := km.kustomization["spec"].(map[string]interface{})["postBuild"]; !ok {
+		km.kustomization["spec"].(map[string]interface{})["postBuild"] = map[string]interface{}{
+			"substitute": map[string]interface{}{},
+		}
+	}
+
+	substitute := km.kustomization["spec"].(map[string]interface{})["postBuild"].(map[string]interface{})["substitute"].(map[string]interface{})
+	for k, v := range km.PostBuildEnvs {
+		if _, ok := substitute[k]; !ok {
+			substitute[k] = v
+		}
+	}
+
+	km.kustomization["spec"].(map[string]interface{})["postBuild"].(map[string]interface{})["substitute"] = substitute
 }

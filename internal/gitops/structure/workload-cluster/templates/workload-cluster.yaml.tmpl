@@ -12,14 +12,14 @@ spec:
   {{- end }}
   postBuild:
     substitute:
-      cluster_name: "{{ .WorkloadCluster }}"
-      organization: "{{ .Organization }}"
+      cluster_name: {{ .WorkloadCluster }}
       {{- if .ClusterRelease }}
-      cluster_release: "{{ .ClusterRelease }}"
+      cluster_release: {{ .ClusterRelease }}
       {{- end }}
       {{- if .DefaultAppsRelease }}
-      default_apps_release: "{{ .DefaultAppsRelease }}"
+      default_apps_release: {{ .DefaultAppsRelease }}
       {{- end }}
+      organization: {{ .Organization }}
   prune: false
   serviceAccountName: automation
   sourceRef:

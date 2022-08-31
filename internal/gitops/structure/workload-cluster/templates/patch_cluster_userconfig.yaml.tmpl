@@ -1,4 +1,4 @@
-{{- if .ClusterUserConfig -}}
+{{- if and .ClusterBase .ClusterUserConfig -}}
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:

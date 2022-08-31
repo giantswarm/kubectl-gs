@@ -1,3 +1,5 @@
+
+## CREATE ##
 /tmp/testpath/demomc
 /tmp/testpath/demomc/demomc.yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
