@@ -143,8 +143,6 @@ func New(config Config) (*cobra.Command, error) {
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
 
-			K8sConfigAccess: config.K8sConfigAccess,
-
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
 		}

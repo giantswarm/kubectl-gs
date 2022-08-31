@@ -2,7 +2,6 @@ package org
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strconv"
 
@@ -10,9 +9,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/organization"
 )
 
 type runner struct {
@@ -39,18 +38,17 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	config := structure.OrgConfig{
-		Name: r.flag.Name,
+	config := common.StructureConfig{
+		ManagementCluster: r.flag.ManagementCluster,
+		Organization:      r.flag.Name,
 	}
-	dir, err := structure.NewOrganization(config)
+
+	creatorConfig, err := structure.NewOrganization(config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	creatorConfig := filesystem.CreatorConfig{
-		Directory: dir,
-		Stdout:    r.stdout,
-	}
+	creatorConfig.Stdout = r.stdout
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
@@ -59,11 +57,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = fmt.Sprintf("%s/", localPathFlag.Value.String())
+		creatorConfig.Path = localPathFlag.Value.String()
 	}
-	creatorConfig.Path += key.OrganizationsDirectory(r.flag.MCName)
 
-	creator := filesystem.NewCreator(creatorConfig)
+	creator := creator.NewCreator(*creatorConfig)
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)

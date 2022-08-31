@@ -1,0 +1,10 @@
+{{- if and .ClusterBase .ClusterUserConfig -}}
+apiVersion: v1
+data:
+  values: |
+{{ .ClusterUserConfig | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: {{ .WorkloadCluster }}-cluster-userconfig
+  namespace: org-{{ .Organization }}
+{{- end }}

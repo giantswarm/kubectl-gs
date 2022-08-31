@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  values: |
+    testKey: testValue
+    otherTopKey:
+      nestedOtherKey: nestedOtherValue
+kind: ConfigMap
+metadata:
+  name: demowc-default-apps-userconfig
+  namespace: org-demoorg

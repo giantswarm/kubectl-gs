@@ -1,0 +1,7 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageRepository
+metadata:
+  name: {{ .WorkloadCluster }}-{{ .AppName }}
+spec:
+  image: {{ .AppVersionRepository }}
+  interval: 10m0s

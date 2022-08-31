@@ -1,0 +1,12 @@
+{{- if and .ClusterBase .DefaultAppsUserConfig -}}
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  name: ${cluster_name}-default-apps
+  namespace: org-${organization}
+spec:
+  userConfig:
+    configMap:
+      name: {{ .WorkloadCluster }}-default-apps-userconfig
+      namespace: org-{{ .Organization }}
+{{- end }}

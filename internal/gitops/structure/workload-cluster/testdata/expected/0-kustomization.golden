@@ -1,0 +1,6 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+commonLabels:
+  giantswarm.io/managed-by: flux
+kind: Kustomization
+resources:
+  - ../../../../../../../bases/cluster/capo

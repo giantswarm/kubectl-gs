@@ -10,8 +10,12 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 
+	app "github.com/giantswarm/kubectl-gs/cmd/gitops/add/app"
+	autoup "github.com/giantswarm/kubectl-gs/cmd/gitops/add/automatic-updates"
+	enc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/encryption"
 	mc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/management-cluster"
 	org "github.com/giantswarm/kubectl-gs/cmd/gitops/add/organization"
+	wc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/workload-cluster"
 )
 
 const (
@@ -47,6 +51,60 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	var err error
+
+	var appCmd *cobra.Command
+	{
+		c := app.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		appCmd, err = app.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var autoUpdateCmd *cobra.Command
+	{
+		c := autoup.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		autoUpdateCmd, err = autoup.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var encryptionCmd *cobra.Command
+	{
+		c := enc.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		encryptionCmd, err = enc.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var mcCmd *cobra.Command
 	{
@@ -84,6 +142,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var wcCmd *cobra.Command
+	{
+		c := wc.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			K8sConfigAccess: config.K8sConfigAccess,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		wcCmd, err = wc.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -102,8 +178,12 @@ func New(config Config) (*cobra.Command, error) {
 
 	f.Init(c)
 
+	c.AddCommand(appCmd)
+	c.AddCommand(autoUpdateCmd)
+	c.AddCommand(encryptionCmd)
 	c.AddCommand(mcCmd)
 	c.AddCommand(orgCmd)
+	c.AddCommand(wcCmd)
 
 	return c, nil
 }
