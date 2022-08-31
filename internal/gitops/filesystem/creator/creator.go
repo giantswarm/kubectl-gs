@@ -131,6 +131,10 @@ func (fo *FsObject) isDir() bool {
 }
 
 // print prints the creator's file system objects.
+// It runs the same steps the `write()` does, so:
+// 1. pre-validations
+// 2. objects creation
+// 3. objects post-modifications
 func (c *Creator) print() {
 	for n, v := range c.preValidators {
 		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
@@ -194,6 +198,10 @@ func (c *Creator) print() {
 }
 
 // write writes the creator's file system objects into the disk.
+// Order of execution:
+// 1. pre-validations
+// 2. objects creation
+// 3. objects post-modifications
 func (c *Creator) write() error {
 	for n, v := range c.preValidators {
 		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
