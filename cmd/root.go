@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/cmd/get"
+	"github.com/giantswarm/kubectl-gs/cmd/gitops"
 	"github.com/giantswarm/kubectl-gs/cmd/login"
 	"github.com/giantswarm/kubectl-gs/cmd/selfupdate"
 	"github.com/giantswarm/kubectl-gs/cmd/template"
@@ -136,6 +137,22 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var gitopsCmd *cobra.Command
+	{
+		c := gitops.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		gitopsCmd, err = gitops.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var validateCmd *cobra.Command
 	{
 		c := validate.Config{
@@ -181,6 +198,7 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 	c.AddCommand(getCmd)
+	c.AddCommand(gitopsCmd)
 	c.AddCommand(loginCmd)
 	c.AddCommand(templateCmd)
 	c.AddCommand(updateCmd)

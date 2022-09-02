@@ -1,0 +1,15 @@
+
+## CREATE ##
+/tmp/testpath/demoorg
+/tmp/testpath/demoorg/demoorg.yaml
+apiVersion: security.giantswarm.io/v1alpha1
+kind: Organization
+metadata:
+  name: demoorg
+spec: {}
+
+/tmp/testpath/demoorg/workload-clusters
+/tmp/testpath/demoorg/workload-clusters/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: []

@@ -1,0 +1,10 @@
+{{- if and .ClusterBase .DefaultAppsUserConfig -}}
+apiVersion: v1
+data:
+  values: |
+{{ .DefaultAppsUserConfig | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: {{ .WorkloadCluster }}-default-apps-userconfig
+  namespace: org-{{ .Organization }}
+{{- end }}

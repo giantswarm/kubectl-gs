@@ -1,3 +1,4 @@
 # Consul - no fix yet
 CVE-2022-29153 until=2022-12-01
 CVE-2022-24687 until=2022-12-01
+sonatype-2020-1055 until=2022-12-01

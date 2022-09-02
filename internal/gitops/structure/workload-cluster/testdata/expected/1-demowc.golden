@@ -1,0 +1,20 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: demomc-clusters-demowc
+  namespace: default
+spec:
+  interval: 1m
+  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
+  postBuild:
+    substitute:
+      cluster_name: demowc
+      cluster_release: 0.13.0
+      default_apps_release: 0.6.0
+      organization: demoorg
+  prune: false
+  serviceAccountName: automation
+  sourceRef:
+    kind: GitRepository
+    name: gitops-demo
+  timeout: 2m

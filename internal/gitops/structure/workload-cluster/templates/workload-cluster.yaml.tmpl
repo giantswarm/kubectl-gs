@@ -1,0 +1,28 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: {{ .ManagementCluster }}-clusters-{{ .WorkloadCluster }}
+  namespace: default
+spec:
+  interval: 1m
+  {{- if .SkipMAPI }}
+  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}"
+  {{- else }}
+  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}/mapi"
+  {{- end }}
+  postBuild:
+    substitute:
+      cluster_name: {{ .WorkloadCluster }}
+      {{- if .ClusterRelease }}
+      cluster_release: {{ .ClusterRelease }}
+      {{- end }}
+      {{- if .DefaultAppsRelease }}
+      default_apps_release: {{ .DefaultAppsRelease }}
+      {{- end }}
+      organization: {{ .Organization }}
+  prune: false
+  serviceAccountName: automation
+  sourceRef:
+    kind: GitRepository
+    name: {{ .RepositoryName }}
+  timeout: 2m

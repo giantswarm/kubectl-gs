@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## Added
+
+- Introduced `kubectl gs gitops` family of commands.
+
 ## [2.19.3] - 2022-08-23
 
 ### Fixed
@@ -65,7 +69,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Removed
 
-- Removed `giantswarm.io/cluster` label from the default apps bundle and the `App` representing a CAPI cluster. 
+- Removed `giantswarm.io/cluster` label from the default apps bundle and the `App` representing a CAPI cluster.
 
 ## [2.14.0] - 2022-06-15
 
