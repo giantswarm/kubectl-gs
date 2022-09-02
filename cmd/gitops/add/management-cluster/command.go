@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
@@ -45,8 +44,6 @@ type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
 
-	K8sConfigAccess clientcmd.ConfigAccess
-
 	Stderr io.Writer
 	Stdout io.Writer
 }
@@ -57,9 +54,6 @@ func New(config Config) (*cobra.Command, error) {
 	}
 	if config.FileSystem == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.FileSystem must not be empty", config)
-	}
-	if config.K8sConfigAccess == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sConfigAccess must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
