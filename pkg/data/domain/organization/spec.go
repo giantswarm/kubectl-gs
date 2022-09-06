@@ -1,3 +1,5 @@
+// Package organization provides services to deal with Organizations
+// in the Giant Swarm Management API.
 package organization
 
 import (
@@ -8,24 +10,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type Organization struct {
-	Organization *securityv1alpha1.Organization
-}
-
-type Collection struct {
-	Items []Organization
-}
-
 type GetOptions struct {
 	Name string
+}
+
+type Interface interface {
+	Get(context.Context, GetOptions) (Resource, error)
 }
 
 type Resource interface {
 	Object() runtime.Object
 }
 
-type Interface interface {
-	Get(context.Context, GetOptions) (Resource, error)
+// Organization gives access to the actual Organization resource.
+type Organization struct {
+	Organization *securityv1alpha1.Organization
 }
 
 func (k *Organization) Object() runtime.Object {
@@ -34,6 +33,11 @@ func (k *Organization) Object() runtime.Object {
 	}
 
 	return nil
+}
+
+// Collection wraps a list of organizations.
+type Collection struct {
+	Items []Organization
 }
 
 func (c *Collection) Object() runtime.Object {

@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## Added
+
+- Added `organizations` subcommand to `kubectl gs get` family of commands to list and display details of organizations
+
 ## [2.20.0] - 2022-09-02
 
 ## Added
