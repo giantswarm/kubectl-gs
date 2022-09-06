@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
-	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
@@ -16,7 +14,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
@@ -28,8 +28,7 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 
 // Test_printOutput uses golden files.
 //
-//  go test ./cmd/get/nodepools -run Test_printOutput -update
-//
+//	go test ./cmd/get/nodepools -run Test_printOutput -update
 func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string

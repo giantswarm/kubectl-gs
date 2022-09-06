@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Switched from exp to non-exp apiVersion for `MachinePools` and `AzureMachinePools` CR on `Azure` in `get nodepool` command.
+
 ## [2.20.0] - 2022-09-02
 
 ## Added
