@@ -1,4 +1,4 @@
-// Package org defines the 'kubectl gs get orgs' command.
+// Package org defines the 'kubectl gs get organizations' command.
 package orgs
 
 import (
@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	name = "orgs [org-name]"
+	name = "organizations [org-name]"
 
 	shortDescription = "Display one or many organizations"
 	longDescription  = `Display one or many organizations.
@@ -31,14 +31,14 @@ Output columns:
 `
 
 	examples = `  # List all organizations you have access to
-  kubectl gs get orgs
+  kubectl gs get organizations
 
   # Get one specific organization
   kubectl gs organization acme`
 )
 
 var (
-	aliases = []string{"organizations", "organization", "org"}
+	aliases = []string{"organization", "orgs", "org"}
 )
 
 type Config struct {
