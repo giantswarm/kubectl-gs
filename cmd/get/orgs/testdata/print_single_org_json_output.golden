@@ -1,0 +1,12 @@
+{
+    "kind": "Organization",
+    "apiVersion": "security.giantswarm.io/v1alpha1",
+    "metadata": {
+        "name": "test-1",
+        "creationTimestamp": "2022-08-18T08:07:48Z"
+    },
+    "spec": {},
+    "status": {
+        "namespace": "org-test-1"
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "kind": "Organization",
+            "apiVersion": "security.giantswarm.io/v1alpha1",
+            "metadata": {
+                "name": "test-1",
+                "creationTimestamp": "2022-08-18T08:07:48Z"
+            },
+            "spec": {},
+            "status": {
+                "namespace": "org-test-1"
+            }
+        },
+        {
+            "kind": "Organization",
+            "apiVersion": "security.giantswarm.io/v1alpha1",
+            "metadata": {
+                "name": "test-2",
+                "creationTimestamp": "2022-08-18T08:07:48Z"
+            },
+            "spec": {},
+            "status": {
+                "namespace": "org-test-2"
+            }
+        },
+        {
+            "kind": "Organization",
+            "apiVersion": "security.giantswarm.io/v1alpha1",
+            "metadata": {
+                "name": "test-3",
+                "creationTimestamp": "2022-08-18T08:07:48Z"
+            },
+            "spec": {},
+            "status": {
+                "namespace": "org-test-3"
+            }
+        }
+    ]
+}

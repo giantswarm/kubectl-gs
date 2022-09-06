@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/cmd/get/catalogs"
 	"github.com/giantswarm/kubectl-gs/cmd/get/clusters"
 	"github.com/giantswarm/kubectl-gs/cmd/get/nodepools"
+	"github.com/giantswarm/kubectl-gs/cmd/get/orgs"
 	"github.com/giantswarm/kubectl-gs/cmd/get/releases"
 	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
@@ -146,12 +147,30 @@ func New(config Config) (*cobra.Command, error) {
 			FileSystem: config.FileSystem,
 
 			ConfigFlags: config.ConfigFlags,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
 		}
 
 		releasesCmd, err = releases.New(c)
+
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var orgsCmd *cobra.Command
+	{
+		c := orgs.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			ConfigFlags: config.ConfigFlags,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
+		}
+
+		orgsCmd, err = orgs.New(c)
+
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -184,6 +203,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(clustersCmd)
 	c.AddCommand(nodepoolsCmd)
 	c.AddCommand(releasesCmd)
+	c.AddCommand(orgsCmd)
 
 	return c, nil
 }
