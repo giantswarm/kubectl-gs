@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.21.0] - 2022-09-08
+
 ## Added
 
 - Added `organizations` subcommand to `kubectl gs get` family of commands to list and display details of organizations
@@ -999,7 +1001,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.20.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.21.0...HEAD
+[2.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.20.0...v2.21.0
 [2.20.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.3...v2.20.0
 [2.19.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.2...v2.19.3
 [2.19.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.1...v2.19.2
