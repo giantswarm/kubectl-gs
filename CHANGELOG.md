@@ -7,6 +7,18 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed local flags, whose names conflicted with global flags and deprecated local flags with the old names
+  - `--namespece` in `kubectl gs gitops add app` has been deprecated and replaced with `--target-namespace`
+  - `--namespece` in `kubectl gs template app` has been deprecated and replaced with `--target-namespace`
+  - `--cluster` in `kubectl gs template app` has been deprecated and replaced with `--cluster-name`
+  - `--namespace` in `kubectl gs template catalog` has been deprecated and replaced with `--target-namespace`
+
+### Added
+
+- Added a test to detect local flags with names conflicting with global flag names
+
 ## [2.21.0] - 2022-09-08
 
 ### Changed
