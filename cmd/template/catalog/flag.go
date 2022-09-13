@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/giantswarm/microerror"
@@ -8,27 +9,29 @@ import (
 )
 
 const (
-	flagConfigMap   = "configmap"
-	flagDescription = "description"
-	flagLogoURL     = "logo"
-	flagName        = "name"
-	flagNamespace   = "namespace"
-	flagSecret      = "secret"
-	flagURL         = "url"
-	flagURLType     = "type"
-	flagVisibility  = "visibility"
+	flagConfigMap       = "configmap"
+	flagDescription     = "description"
+	flagLogoURL         = "logo"
+	flagName            = "name"
+	flagNamespace       = "namespace"
+	flagTargetNamespace = "target-namespace"
+	flagSecret          = "secret"
+	flagURL             = "url"
+	flagURLType         = "type"
+	flagVisibility      = "visibility"
 )
 
 type flag struct {
-	ConfigMap   string
-	Description string
-	LogoURL     string
-	Name        string
-	Namespace   string
-	Secret      string
-	URLs        []string
-	URLTypes    []string
-	Visibility  string
+	ConfigMap       string
+	Description     string
+	LogoURL         string
+	Name            string
+	Namespace       string
+	TargetNamespace string
+	Secret          string
+	URLs            []string
+	URLTypes        []string
+	Visibility      string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -36,11 +39,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "Catalog description.")
 	cmd.Flags().StringVar(&f.LogoURL, flagLogoURL, "", "Catalog logo URL.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Catalog name.")
-	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace where the catalog will be created.")
+	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", fmt.Sprintf("Namespace where the catalog will be created. Deprecated, use %s instead", flagTargetNamespace))
+	cmd.Flags().StringVar(&f.TargetNamespace, flagTargetNamespace, "", "Namespace where the catalog will be created.")
 	cmd.Flags().StringVar(&f.Secret, flagSecret, "", "Path to a secret file.")
 	cmd.Flags().StringArrayVar(&f.URLs, flagURL, []string{}, "Catalog storage URL.")
 	cmd.Flags().StringArrayVar(&f.URLTypes, flagURLType, []string{"helm"}, "Type of catalog storage.")
 	cmd.Flags().StringVar(&f.Visibility, flagVisibility, "public", "Visibility label for whether catalog appears in the web UI.")
+
+	_ = cmd.Flags().MarkDeprecated(flagNamespace, fmt.Sprintf("use --%s instead.", flagTargetNamespace))
 }
 
 func (f *flag) Validate() error {
@@ -57,8 +63,8 @@ func (f *flag) Validate() error {
 	if f.Name == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
 	}
-	if f.Namespace == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagNamespace)
+	if f.Namespace == "" && f.TargetNamespace == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNamespace)
 	}
 	if len(f.URLs) == 0 {
 		return microerror.Maskf(invalidFlagError, "at least one --%s must be defined", flagURL)
