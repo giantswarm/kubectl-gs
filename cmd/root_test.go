@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
 )
 
 func TestRootCommand(t *testing.T) {
