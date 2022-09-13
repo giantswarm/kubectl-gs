@@ -51,7 +51,9 @@ func getGlobalFlags(cmd *cobra.Command) []string {
 func getFlagsFromCommands(cmd *cobra.Command, cmdPath []string) map[string][]string {
 	var flags []string
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
-		flags = append(flags, flag.Name)
+		if flag.Deprecated == "" {
+			flags = append(flags, flag.Name)
+		}
 	})
 
 	flagsByCmd := make(map[string][]string)
