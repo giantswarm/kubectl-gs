@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 )
@@ -17,6 +18,7 @@ const (
 	flagBase                = "base"
 	flagCatalog             = "catalog"
 	flagNamespace           = "namespace"
+	flagTargetNamespace     = "target-namespace"
 	flagUserValuesConfigMap = "user-configmap"
 	flagUserValuesSecret    = "user-secret"
 	flagVersion             = "version"
@@ -34,6 +36,7 @@ type flag struct {
 	Base                string
 	Catalog             string
 	Namespace           string
+	TargetNamespace     string
 	UserValuesConfigMap string
 	UserValuesSecret    string
 	Version             string
@@ -51,9 +54,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Base, flagBase, "", "Path to the base directory. It must be relative to the repository root.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog to install the app from.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace to install app into.")
+	cmd.Flags().StringVar(&f.TargetNamespace, flagTargetNamespace, "", "Namespace to install app into.")
 	cmd.Flags().StringVar(&f.UserValuesConfigMap, flagUserValuesConfigMap, "", "Values YAML to customize the app with. Will get turn into a ConfigMap.")
 	cmd.Flags().StringVar(&f.UserValuesSecret, flagUserValuesSecret, "", "Values YAML to customize the app with. Will get turn into a Secret.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to install.")
+
+	_ = cmd.Flags().MarkDeprecated(flagNamespace, fmt.Sprintf("use %s instead", flagTargetNamespace))
 }
 
 func (f *flag) Validate() error {

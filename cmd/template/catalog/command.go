@@ -15,11 +15,11 @@ const (
 	example     = `
     Basic catalog with a single repository:
 
-    kubectl-gs template catalog --name my-catalog --namespace default --logo https://example.com/img.jpg --description 'Custom catalog' --type helm --url https://example.com/helm-catalog/
+    kubectl-gs template catalog --name my-catalog --target-namespace default --logo https://example.com/img.jpg --description 'Custom catalog' --type helm --url https://example.com/helm-catalog/
 
     Catalog with a multiple repository mirrors:
 
-    kubectl-gs template catalog --name my-catalog --namespace default --logo https://example.com/img.jpg --description 'Custom catalog' --type helm --url https://example.com/helm-catalog/ --type helm --url https://example.com/helm-mirror/ --type oci --url oci://example.com/oci-registry/
+    kubectl-gs template catalog --name my-catalog --target-namespace default --logo https://example.com/img.jpg --description 'Custom catalog' --type helm --url https://example.com/helm-catalog/ --type helm --url https://example.com/helm-mirror/ --type oci --url oci://example.com/oci-registry/
 `
 )
 

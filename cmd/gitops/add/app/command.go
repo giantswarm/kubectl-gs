@@ -22,7 +22,7 @@ app \
 [--base <path_to_base>] \
 --catalog <app_catalog> \
 [--name <app_cr_name>] \
---namespace <app_namespace> \
+--target-namespace <app_namespace> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
 [--user-configmap <path_to_values_yaml>] \

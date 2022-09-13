@@ -43,12 +43,17 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
+	targetNamespace := r.flag.TargetNamespace
+	if targetNamespace == "" {
+		targetNamespace = r.flag.Namespace
+	}
+
 	config := common.StructureConfig{
 		App:               r.flag.App,
 		AppBase:           r.flag.Base,
 		AppCatalog:        r.flag.Catalog,
 		AppName:           r.flag.Name,
-		AppNamespace:      r.flag.Namespace,
+		AppNamespace:      targetNamespace,
 		AppVersion:        r.flag.Version,
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
