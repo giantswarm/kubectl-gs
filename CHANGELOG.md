@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.22.0] - 2022-09-14
+
 ### Changed
 
 - Renamed local flags, whose names conflicted with global flags and deprecated local flags with the old names
@@ -1017,7 +1019,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.21.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.22.0...HEAD
+[2.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.21.0...v2.22.0
 [2.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.20.0...v2.21.0
 [2.20.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.3...v2.20.0
 [2.19.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.2...v2.19.3
