@@ -10,8 +10,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Renamed local flags, whose names conflicted with global flags and deprecated local flags with the old names
-  - `--namespece` in `kubectl gs gitops add app` has been deprecated and replaced with `--target-namespace`
-  - `--namespece` in `kubectl gs template app` has been deprecated and replaced with `--target-namespace`
+  - `--namespace` in `kubectl gs gitops add app` has been deprecated and replaced with `--target-namespace`
+  - `--namespace` in `kubectl gs template app` has been deprecated and replaced with `--target-namespace`
   - `--cluster` in `kubectl gs template app` has been deprecated and replaced with `--cluster-name`
   - `--namespace` in `kubectl gs template catalog` has been deprecated and replaced with `--target-namespace`
 
