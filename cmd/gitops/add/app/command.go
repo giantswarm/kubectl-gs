@@ -22,7 +22,7 @@ app \
 [--base <path_to_base>] \
 --catalog <app_catalog> \
 [--name <app_cr_name>] \
---namespace <app_namespace> \
+--target-namespace <app_namespace> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
 [--user-configmap <path_to_values_yaml>] \
@@ -41,7 +41,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/apps/add_appcr.md`
   --app hello-world-app \
   --catalog giantswarm \
   --name hello-world \
-  --namespace default \
+  --target-namespace default \
   --management-cluster demowc \
   --organization demoorg \
   --version 0.3.0 \
@@ -52,7 +52,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/apps/add_appcr.md`
   --app hello-world-app \
   --catalog giantswarm \
   --name hello-world \
-  --namespace default \
+  --target-namespace default \
   --management-cluster demomc \
   --organization demoorg \
   --user-configmap /tmp/hello-world-app-values.yaml \
