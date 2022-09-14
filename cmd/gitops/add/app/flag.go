@@ -84,8 +84,8 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagCatalog)
 	}
 
-	if f.Base == "" && f.Namespace == "" {
-		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagNamespace)
+	if f.Base == "" && f.TargetNamespace == "" && f.Namespace == "" {
+		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagTargetNamespace)
 	}
 
 	if f.Base == "" && f.Version == "" {

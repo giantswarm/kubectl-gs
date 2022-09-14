@@ -82,8 +82,8 @@ func (f *flag) Validate() error {
 	if f.Namespace == "" && f.TargetNamespace == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNamespace)
 	}
-	if !f.InCluster && f.Cluster == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagCluster)
+	if !f.InCluster && f.Cluster == "" && f.ClusterName == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagClusterName)
 	}
 	if f.Version == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
