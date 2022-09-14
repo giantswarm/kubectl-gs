@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	name  = "app"
-	alias = "app"
+	name = "app"
 
 	shortDescription = "Adds a new Application to your GitOps directory structure"
 	longDescription  = `Adds a new Application to your GitOps directory structure.
@@ -104,7 +103,6 @@ func New(config Config) (*cobra.Command, error) {
 		Short:   shortDescription,
 		Long:    longDescription,
 		Example: examples,
-		Aliases: []string{alias},
 		RunE:    r.Run,
 	}
 
