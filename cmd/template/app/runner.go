@@ -56,15 +56,25 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// make sure it is lowercased.
 	organization := strings.ToLower(r.flag.Organization)
 
+	targetNamespace := r.flag.TargetNamespace
+	if targetNamespace == "" {
+		targetNamespace = r.flag.Namespace
+	}
+
+	clusterName := r.flag.ClusterName
+	if clusterName == "" {
+		clusterName = r.flag.Cluster
+	}
+
 	appConfig := templateapp.Config{
 		AppName:           appName,
 		Catalog:           r.flag.Catalog,
 		CatalogNamespace:  r.flag.CatalogNamespace,
-		Cluster:           r.flag.Cluster,
+		Cluster:           clusterName,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
 		InCluster:         r.flag.InCluster,
 		Name:              r.flag.Name,
-		Namespace:         r.flag.Namespace,
+		Namespace:         targetNamespace,
 		Organization:      organization,
 		Version:           r.flag.Version,
 	}
@@ -73,18 +83,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if r.flag.InCluster {
 		assetName = key.GenerateAssetName(appName, "userconfig")
 	} else {
-		assetName = key.GenerateAssetName(appName, "userconfig", r.flag.Cluster)
+		assetName = key.GenerateAssetName(appName, "userconfig", clusterName)
 	}
 
 	// If organization is passed to the command use it as the indicator for
 	// templating App CR in org namespace.
 	var namespace string
 	if r.flag.InCluster {
-		namespace = r.flag.Namespace
+		namespace = targetNamespace
 	} else if appConfig.Organization != "" {
 		namespace = fmt.Sprintf("org-%s", appConfig.Organization)
 	} else {
-		namespace = r.flag.Cluster
+		namespace = clusterName
 	}
 
 	if r.flag.flagUserSecret != "" {

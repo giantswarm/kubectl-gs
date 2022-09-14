@@ -56,12 +56,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		repositories[url] = r.flag.URLTypes[i]
 	}
 
+	targetNamespace := r.flag.TargetNamespace
+	if targetNamespace == "" {
+		targetNamespace = r.flag.Namespace
+	}
+
 	config := templatecatalog.Config{
 		Description:  r.flag.Description,
 		LogoURL:      r.flag.LogoURL,
 		ID:           catalogID,
 		Name:         r.flag.Name,
-		Namespace:    r.flag.Namespace,
+		Namespace:    targetNamespace,
 		Repositories: repositories,
 		Visibility:   r.flag.Visibility,
 	}
