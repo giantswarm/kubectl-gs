@@ -13,14 +13,15 @@ Check the [installation docs](https://docs.giantswarm.io/ui-api/kubectl-gs/insta
 
 ## Features
 
-- **Custom resource templating**: using the `template` command lets you create manifests for
+- **Login via single sign-on**: Using the `login` command, you can quickly set up a `kubectl` context with OIDC authentication for a Giant Swarm management cluster, or a workload cluster with our [dex](https://github.com/giantswarm/dex-app) and [athena](https://github.com/giantswarm/athena) apps installed.
+- **Custom resource templating**: using the `template` commands lets you create manifests for
   creating/updating custom resources for:
   - Clusters
   - Node pools
   - App catalogs
   - Apps
-- **SSO login**: with the `login` command you can quickly set up a `kubectl context` with
-  OIDC authentication for a Giant Swarm management cluster.
+- **Gitops repository management**: The `gitops` command family allows to create and modify resources in your GitOps repo clone.
+- **Resource display**: The `get` commands allow for retrieving a list of resources, or details for a single one.
 
 ## Documentation
 
