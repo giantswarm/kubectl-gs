@@ -16,6 +16,7 @@ const (
 
 	flagWCName              = "workload-cluster"
 	flagWCOrganization      = "organization"
+	flagWCCertCNPrefix      = "cn-prefix"
 	flagWCCertGroups        = "certificate-group"
 	flagWCCertTTL           = "certificate-ttl"
 	flagSelfContained       = "self-contained"
@@ -30,6 +31,7 @@ type flag struct {
 
 	WCName              string
 	WCOrganization      string
+	WCCertCNPrefix      string
 	WCCertGroups        []string
 	WCCertTTL           string
 	SelfContained       string
@@ -47,6 +49,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("For client certificate creation. Organization that owns the workload cluster. Requires --%s.", flagWCName))
 	cmd.Flags().StringSliceVar(&f.WCCertGroups, flagWCCertGroups, nil, fmt.Sprintf("For client certificate creation. RBAC group name to be encoded into the X.509 field \"O\". Requires --%s.", flagWCName))
 	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`For client certificate creation. How long the client certificate should live for. Valid time units are "ms", "s", "m", "h". Requires --%s.`, flagWCName))
+	cmd.Flags().StringVar(&f.WCCertCNPrefix, flagWCCertCNPrefix, "", fmt.Sprintf(`For client certificate creation. Prefix for the name encoded in the X.509 field "CN". Requires --%s.`, flagWCName))
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)

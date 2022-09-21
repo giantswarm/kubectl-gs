@@ -53,6 +53,7 @@ type clientCertConfig struct {
 	groups              []string
 	clusterBasePath     string
 	certOperatorVersion string
+	cnPrefix            string
 }
 
 type serviceSet struct {
@@ -85,7 +86,15 @@ func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error)
 	clientCertUID := generateClientCertUID()
 	clientCertName := fmt.Sprintf("%s-%s", config.clusterName, clientCertUID)
 	sanitizedClusterBasePath := strings.TrimPrefix(config.clusterBasePath, "https://")
-	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertUID, config.clusterName, sanitizedClusterBasePath)
+	var clientCertCNPrefix string
+	{
+		if config.cnPrefix != "" {
+			clientCertCNPrefix = config.cnPrefix
+		} else {
+			clientCertCNPrefix = clientCertUID
+		}
+	}
+	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertCNPrefix, config.clusterName, sanitizedClusterBasePath)
 
 	certConfig := &corev1alpha1.CertConfig{
 		ObjectMeta: metav1.ObjectMeta{
@@ -188,12 +197,20 @@ func generateCredential(ctx context.Context, ca *corev1.Secret, config clientCer
 		if err != nil {
 			return nil, microerror.Maskf(invalidConfigError, "Failed to generate client certificate serial number.")
 		}
+		var clientCertCNPrefix string
+		{
+			if config.cnPrefix != "" {
+				clientCertCNPrefix = config.cnPrefix
+			} else {
+				clientCertCNPrefix = serial.String()
+			}
+		}
 		certificate := &x509.Certificate{
 			SerialNumber:       serial,
 			SignatureAlgorithm: x509.SHA256WithRSA,
 			Subject: pkix.Name{
 				Organization: config.groups,
-				CommonName:   fmt.Sprintf("%s.%s.%s", serial.String(), config.clusterName, config.clusterBasePath),
+				CommonName:   fmt.Sprintf("%s.%s.%s", clientCertCNPrefix, config.clusterName, config.clusterBasePath),
 			},
 			NotBefore:   time.Now(),
 			NotAfter:    time.Now().Add(exp),

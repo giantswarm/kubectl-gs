@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Added `--cn-prefix` flag to `login` command which allows setting a specific CN prefix for workload cluster client certificates.
+
 ## [2.22.0] - 2022-09-14
 
 ### Changed
