@@ -299,18 +299,22 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (str
 	reg := regexp.MustCompile(`:[0-9]+$`)
 	clusterServer = reg.ReplaceAllString(clusterServer, "")
 
-	// Some management clusters might have 'api.g8s' as prefix (example: Viking).
-	clusterServer = strings.TrimPrefix(clusterServer, "https://api.g8s.")
+	// Sanitize the cluster server address and extract base domain name
+	clusterServer = strings.TrimPrefix(clusterServer, "https://")
+
+	clusterServer = strings.TrimPrefix(clusterServer, "internal-")
+
+	clusterServer = strings.TrimPrefix(clusterServer, "api.")
 
 	// pure CAPI clusters have an api.$INSTALLATION prefix
 	if key.IsPureCAPIProvider(provider) {
 		if _, contextType := kubeconfig.IsKubeContext(config.CurrentContext); contextType == kubeconfig.ContextTypeMC {
 			clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
-			clusterServer = strings.TrimPrefix(clusterServer, "https://api."+clusterName+".")
+			clusterServer = strings.TrimPrefix(clusterServer, clusterName+".")
 		} else {
 			return "", microerror.Maskf(selectedContextNonCompatibleError, "Can not parse MC codename from context %v. Valid MC context schema is `gs-$CODENAME`.", config.CurrentContext)
 		}
 	}
 
-	return strings.TrimPrefix(clusterServer, "https://g8s."), nil
+	return strings.TrimPrefix(clusterServer, "g8s."), nil
 }
