@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - `kubectl gs template app` help text: Replace deprecated `--cluster` flag by new `--cluster-name`.
+- Fixed generating common names for workload cluster certificates from internal management cluster API URLs in `kubectl gs login --workload-cluster --internal-api ...`
 
 ## [2.23.0] - 2022-09-22
 
