@@ -213,6 +213,31 @@ func TestWCClientCert(t *testing.T) {
 				},
 			},
 		},
+		// Logging into WC using cn prefix flag
+		{
+			name:                 "case 11",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			flags: &flag{
+				WCName:         "cluster",
+				WCCertTTL:      "8h",
+				WCCertCNPrefix: "some-prefix",
+			},
+			provider: "aws",
+			isAdmin:  true,
+		},
+		// Logging into WC using cn prefix flag in capi
+		{
+			name:                 "case 12",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			flags: &flag{
+				WCName:         "cluster",
+				WCCertTTL:      "8h",
+				WCCertCNPrefix: "some-prefix",
+			},
+			provider: "openstack",
+			capi:     true,
+			isAdmin:  true,
+		},
 	}
 
 	for i, tc := range testCases {

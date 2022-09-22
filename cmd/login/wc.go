@@ -198,6 +198,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		groups:              r.flag.WCCertGroups,
 		clusterBasePath:     clusterBasePath,
 		certOperatorVersion: certOperatorVersion,
+		cnPrefix:            r.flag.WCCertCNPrefix,
 	}
 
 	clientCertResource, secret, err := r.getCredentials(ctx, services.clientCertService, certConfig)
