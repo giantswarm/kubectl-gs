@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.23.0] - 2022-09-22
+
 ### Added
 
 - Added `--cn-prefix` flag to `login` command which allows setting a specific CN prefix for workload cluster client certificates.
@@ -1023,7 +1025,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.22.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.0...HEAD
+[2.23.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.22.0...v2.23.0
 [2.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.21.0...v2.22.0
 [2.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.20.0...v2.21.0
 [2.20.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.19.3...v2.20.0
