@@ -1,14 +1,25 @@
-_Description goes here_
+### What does this PR do?
 
----
+(Please set a descriptive PR title. Use this space for additional explanations.)
 
-As the creator of a pull request, please consider:
+### What is the effect of this change to users?
 
-- [ ] Describe the goal you are trying to accomplish here, above the line.
-- [ ] Add a user-friendly description of your change to `CHANGELOG.md`.
-- [ ] Provide a link to the issue you are solving or working towards, if available.
-- [ ] Request SIG UX for review. They care about almost all user-facing changes.
-- [ ] Update the public [kubectl-gs documentation](https://docs.giantswarm.io/ui-api/kubectl-gs/) to reflect the changes here.
-- [ ] add the `breaking-change` label to the PR if the change you are making changes the existing behaviour. Examples: removal of a flag, removal of a command, change of a default value. (Such changes should be released with a **major version** bump.)
+### What does it look like?
 
-Feel free to remove this checklist when done.
+(Please add anything that represents the change visually. Screenshots, output, logs, ...)
+
+### Any background context you can provide?
+
+(Please link public issues or summarize if not public.)
+
+### What is needed from the reviewers?
+
+### Do the docs need to be updated?
+
+### Should this change be mentioned in the release notes?
+
+- [ ] CHANGELOG.md has been updated (if it exists)
+
+### Is this a breaking change?
+
+(Breaking changes are, for example, removal of commnds/flags or substantial changes in the meaning of a flag. If yes, please add the `breaking-change` label to the PR.)
