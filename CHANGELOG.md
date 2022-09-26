@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `kubectl gs template app` help text: Replace deprecated `--cluster` flag by new `--cluster-name`.
+
 ## [2.23.0] - 2022-09-22
 
 ### Added
