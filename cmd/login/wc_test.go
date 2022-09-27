@@ -344,6 +344,110 @@ func TestWCClientCert(t *testing.T) {
 	}
 }
 
+func Test_getWCBasePath(t *testing.T) {
+	testCases := []struct {
+		name             string
+		provider         string
+		clusterApiUrl    string
+		expectedBasePath string
+	}{
+		{
+			name:             "case 0: simple url",
+			provider:         "aws",
+			clusterApiUrl:    "https://anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 1: prefixed g8s url",
+			provider:         "aws",
+			clusterApiUrl:    "https://g8s.anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 2: prefixed api url",
+			provider:         "aws",
+			clusterApiUrl:    "https://api.anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 3: prefixed api g8s url with port",
+			provider:         "aws",
+			clusterApiUrl:    "https://api.g8s.anything.com:8080",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 4: prefixed internal url",
+			provider:         "aws",
+			clusterApiUrl:    "https://internal-anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 5: prefixed internal url",
+			provider:         "aws",
+			clusterApiUrl:    "https://internal-anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 6: prefixed internal g8s url",
+			provider:         "aws",
+			clusterApiUrl:    "https://internal-g8s.anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 7: prefixed internal api url",
+			provider:         "aws",
+			clusterApiUrl:    "https://internal-api.anything.com",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 8: prefixed internal api g8s url with port",
+			provider:         "aws",
+			clusterApiUrl:    "https://internal-api.g8s.anything.com:8080",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 9: prefixed internal api g8s hostname with port",
+			provider:         "aws",
+			clusterApiUrl:    "internal-api.g8s.anything.com:8080",
+			expectedBasePath: "anything.com",
+		},
+		{
+			name:             "case 10: api url with unknown pattern and port",
+			provider:         "aws",
+			clusterApiUrl:    "https://invalid-internal-api.g8s.anything.com:8080",
+			expectedBasePath: "invalid-internal-api.g8s.anything.com",
+		},
+		{
+			name:             "case 11: pure capi provider url",
+			provider:         "capa",
+			clusterApiUrl:    "https://api.codename.g8s.anything.com:8080",
+			expectedBasePath: "anything.com",
+		},
+	}
+	for _, tc := range testCases {
+		cf := genericclioptions.NewConfigFlags(true)
+		commonConfig := commonconfig.New(cf)
+		k8sConfigAccess := commonConfig.GetConfigAccess()
+		testConfig := *createValidTestConfig("", false)
+		for _, value := range testConfig.Clusters {
+			value.Server = tc.clusterApiUrl
+		}
+		err := clientcmd.ModifyConfig(k8sConfigAccess, testConfig, false)
+		if err != nil {
+			t.Fatalf("unexpected error %s", err)
+		}
+
+		clusterBasePath, err := getWCBasePath(k8sConfigAccess, tc.provider)
+		if err != nil {
+			t.Fatalf("unexpected error %s", err)
+		}
+
+		if clusterBasePath != tc.expectedBasePath {
+			t.Fatalf("Base path mismatch: expected %s, actual %s", tc.expectedBasePath, clusterBasePath)
+		}
+	}
+}
+
 func createSecret(ctx context.Context, client k8sclient.Interface, provider string) {
 	var certConfigs corev1alpha1.CertConfigList
 	var err error

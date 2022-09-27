@@ -85,7 +85,6 @@ func generateClientCertUID() string {
 func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error) {
 	clientCertUID := generateClientCertUID()
 	clientCertName := fmt.Sprintf("%s-%s", config.clusterName, clientCertUID)
-	sanitizedClusterBasePath := strings.TrimPrefix(config.clusterBasePath, "https://")
 	var clientCertCNPrefix string
 	{
 		if config.cnPrefix != "" {
@@ -94,7 +93,7 @@ func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error)
 			clientCertCNPrefix = clientCertUID
 		}
 	}
-	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertCNPrefix, config.clusterName, sanitizedClusterBasePath)
+	commonName := fmt.Sprintf("%s.%s.k8s.%s", clientCertCNPrefix, config.clusterName, config.clusterBasePath)
 
 	certConfig := &corev1alpha1.CertConfig{
 		ObjectMeta: metav1.ObjectMeta{
