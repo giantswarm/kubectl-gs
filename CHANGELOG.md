@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.23.1] - 2022-09-27
+
 ### Fixed
 
 - `kubectl gs template app` help text: Replace deprecated `--cluster` flag by new `--cluster-name`.
@@ -1030,7 +1032,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.1...HEAD
+[2.23.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.0...v2.23.1
 [2.23.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.22.0...v2.23.0
 [2.22.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.21.0...v2.22.0
 [2.21.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.20.0...v2.21.0
