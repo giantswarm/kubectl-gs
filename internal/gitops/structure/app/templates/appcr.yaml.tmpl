@@ -5,9 +5,25 @@ metadata:
   name: {{ .WorkloadCluster}}-{{ .AppName }}
 spec:
   catalog: {{ .AppCatalog }}
+{{- if .AppInstallTimeout }}
+  install:
+    timeout: {{ .AppInstallTimeout.Duration }}
+{{- end }}
   name: {{ .App }}
   namespace: {{ .AppNamespace }}
   version: {{ .AppVersion }}
+{{- if .AppRollbackTimeout }}
+  rollback:
+    timeout: {{ .AppRollbackTimeout.Duration }}
+{{- end }}
+{{- if .AppUninstallTimeout }}
+  uninstall:
+    timeout: {{ .AppUninstallTimeout.Duration }}
+{{- end }}
+{{- if .AppUpgradeTimeout }}
+  upgrade:
+    timeout: {{ .AppUpgradeTimeout.Duration }}
+{{- end }}
 {{- if or .AppUserValuesConfigMap .AppUserValuesSecret }}
   userConfig:
 {{- if .AppUserValuesConfigMap }}

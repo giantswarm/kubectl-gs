@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -18,12 +19,16 @@ const (
 	flagClusterName                = "cluster-name"
 	flagDefaultingEnabled          = "defaulting-enabled"
 	flagInCluster                  = "in-cluster"
+	flagInstallTimeout             = "install-timeout"
 	flagName                       = "name"
 	flagNamespace                  = "namespace"
 	flagTargetNamespace            = "target-namespace"
 	flagNamespaceConfigAnnotations = "namespace-annotations"
 	flagNamespaceConfigLabels      = "namespace-labels"
 	flagOrganization               = "organization"
+	flagRollbackTimeout            = "rollback-timeout"
+	flagUninstallTimeout           = "uninstall-timeout"
+	flagUpgradeTimeout             = "upgrade-timeout"
 	flagUserConfigMap              = "user-configmap"
 	flagUserSecret                 = "user-secret"
 	flagVersion                    = "version"
@@ -37,13 +42,17 @@ type flag struct {
 	ClusterName                    string
 	DefaultingEnabled              bool
 	InCluster                      bool
+	InstallTimeout                 time.Duration
 	Name                           string
 	Namespace                      string
 	TargetNamespace                string
 	Organization                   string
+	RollbackTimeout                time.Duration
 	Version                        string
 	flagNamespaceConfigAnnotations []string
 	flagNamespaceConfigLabels      []string
+	UninstallTimeout               time.Duration
+	UpgradeTimeout                 time.Duration
 	flagUserConfigMap              string
 	flagUserSecret                 string
 }
@@ -60,6 +69,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().BoolVar(&f.DefaultingEnabled, flagDefaultingEnabled, true, "Don't template fields that will be defaulted.")
 	cmd.Flags().BoolVar(&f.InCluster, flagInCluster, false, fmt.Sprintf("Deploy the app in the current management cluster rather than in a workload cluster. If this is set, --%s will be ignored.", flagClusterName))
+	cmd.Flags().DurationVar(&f.InstallTimeout, flagInstallTimeout, 0, "Timeout for the Helm install.")
+	cmd.Flags().DurationVar(&f.RollbackTimeout, flagRollbackTimeout, 0, "Timeout for the Helm rollback.")
+	cmd.Flags().DurationVar(&f.UninstallTimeout, flagUninstallTimeout, 0, "Timeout for the Helm uninstall.")
+	cmd.Flags().DurationVar(&f.UpgradeTimeout, flagUpgradeTimeout, 0, "Timeout for the Helm upgrade.")
 	cmd.Flags().StringVar(&f.flagUserConfigMap, flagUserConfigMap, "", "Path to the user values configmap YAML file.")
 	cmd.Flags().StringVar(&f.flagUserSecret, flagUserSecret, "", "Path to the user secrets YAML file.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to be installed.")

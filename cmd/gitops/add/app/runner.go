@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
 	structure "github.com/giantswarm/kubectl-gs/internal/gitops/structure/app"
@@ -60,6 +61,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		SkipMAPI:          r.flag.SkipMAPI,
 		WorkloadCluster:   r.flag.WorkloadCluster,
 	}
+
+	r.setTimeouts(&config)
 
 	if config.AppName == "" {
 		config.AppName = config.App
@@ -113,4 +116,19 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func (r *runner) setTimeouts(config *common.StructureConfig) {
+	if r.flag.InstallTimeout != 0 {
+		config.AppInstallTimeout = &metav1.Duration{Duration: r.flag.InstallTimeout}
+	}
+	if r.flag.RollbackTimeout != 0 {
+		config.AppRollbackTimeout = &metav1.Duration{Duration: r.flag.RollbackTimeout}
+	}
+	if r.flag.UninstallTimeout != 0 {
+		config.AppUninstallTimeout = &metav1.Duration{Duration: r.flag.UninstallTimeout}
+	}
+	if r.flag.UpgradeTimeout != 0 {
+		config.AppUpgradeTimeout = &metav1.Duration{Duration: r.flag.UpgradeTimeout}
+	}
 }

@@ -22,13 +22,17 @@ type Config struct {
 	Cluster                    string
 	DefaultingEnabled          bool
 	InCluster                  bool
+	InstallTimeout             *metav1.Duration
 	Name                       string
 	Namespace                  string
 	NamespaceConfigAnnotations map[string]string
 	NamespaceConfigLabels      map[string]string
+	UninstallTimeout           *metav1.Duration
+	UpgradeTimeout             *metav1.Duration
 	UserConfigConfigMapName    string
 	UserConfigSecretName       string
 	Organization               string
+	RollbackTimeout            *metav1.Duration
 	Version                    string
 	ExtraLabels                map[string]string
 	ExtraAnnotations           map[string]string
@@ -141,6 +145,8 @@ func NewAppCR(config Config) ([]byte, error) {
 		}
 	}
 
+	config.setTimeouts(appCR)
+
 	return printAppCR(appCR, config.DefaultingEnabled)
 }
 
@@ -196,6 +202,45 @@ func NewSecret(config UserConfig) (*corev1.Secret, error) {
 	return secret, nil
 }
 
+// setTimeouts configures timeouts for Helm operations.
+func (config Config) setTimeouts(appCR *applicationv1alpha1.App) {
+	if config.InstallTimeout != nil {
+		(*appCR).Spec.Install = applicationv1alpha1.AppSpecInstall{
+			Timeout: config.InstallTimeout,
+		}
+	}
+	if config.RollbackTimeout != nil {
+		(*appCR).Spec.Rollback = applicationv1alpha1.AppSpecRollback{
+			Timeout: config.RollbackTimeout,
+		}
+	}
+	if config.UninstallTimeout != nil {
+		(*appCR).Spec.Uninstall = applicationv1alpha1.AppSpecUninstall{
+			Timeout: config.UninstallTimeout,
+		}
+	}
+	if config.UpgradeTimeout != nil {
+		(*appCR).Spec.Upgrade = applicationv1alpha1.AppSpecUpgrade{
+			Timeout: config.UpgradeTimeout,
+		}
+	}
+}
+
+func deleteHelmRelated(cr *v1alpha1.App, spec *map[string]interface{}) {
+	if cr.Spec.Install.Timeout == nil {
+		delete(*spec, "install")
+	}
+	if cr.Spec.Rollback.Timeout == nil {
+		delete(*spec, "rollback")
+	}
+	if cr.Spec.Uninstall.Timeout == nil {
+		delete(*spec, "uninstall")
+	}
+	if cr.Spec.Upgrade.Timeout == nil {
+		delete(*spec, "upgrade")
+	}
+}
+
 // printAppCR removes empty fields from the app CR YAML. This is needed because
 // although the fields are optional we do not use struct pointers. This will
 // be fixed in a future version of the App CRD.
@@ -224,7 +269,8 @@ func printAppCR(appCR *v1alpha1.App, defaultingEnabled bool) ([]byte, error) {
 		return nil, microerror.Maskf(executionFailedError, "failed to get spec for app CR")
 	}
 
-	delete(spec, "install")
+	deleteHelmRelated(appCR, &spec)
+
 	if len(appCR.Spec.NamespaceConfig.Annotations) == 0 && len(appCR.Spec.NamespaceConfig.Labels) == 0 {
 		delete(spec, "namespaceConfig")
 	}
