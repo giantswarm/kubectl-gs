@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add timeouts support to App CR.
+
 ## [2.23.1] - 2022-09-27
 
 ### Fixed
