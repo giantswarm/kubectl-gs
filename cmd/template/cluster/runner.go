@@ -126,7 +126,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	}
 
 	if config.Name == "" {
-		generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+		generatedName, err := key.GenerateName(true)
 		if err != nil {
 			return provider.ClusterConfig{}, microerror.Mask(err)
 		}

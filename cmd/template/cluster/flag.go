@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	flagEnableLongNames = "enable-long-names"
-	flagProvider        = "provider"
+	flagProvider = "provider"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
@@ -130,7 +129,6 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
@@ -265,8 +263,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
 	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
 
-	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
-
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagAWSEKS)
 
@@ -300,7 +296,7 @@ func (f *flag) Validate() error {
 	}
 
 	if f.Name != "" {
-		valid, err := key.ValidateName(f.Name, f.EnableLongNames)
+		valid, err := key.ValidateName(f.Name, true)
 		if err != nil {
 			return microerror.Mask(err)
 		} else if !valid {
