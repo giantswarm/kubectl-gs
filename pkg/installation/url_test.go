@@ -52,13 +52,25 @@ func Test_GetBasePath(t *testing.T) {
 			name:                   "case 5: using giant swarm api url",
 			url:                    "https://api.g8s.test.eu-west-1.aws.coolio.com",
 			expectedResult:         "g8s.test.eu-west-1.aws.coolio.com",
-			expectedInternalResult: "internal-api.g8s.test.eu-west-1.aws.coolio.com",
+			expectedInternalResult: "internal-g8s.test.eu-west-1.aws.coolio.com",
 		},
 		{
 			name:                   "case 5: new style url",
 			url:                    "https://api.installation.customer.gigantic.io:6443",
 			expectedResult:         "installation.customer.gigantic.io",
-			expectedInternalResult: "internal-api.installation.customer.gigantic.io",
+			expectedInternalResult: "internal-installation.customer.gigantic.io",
+		},
+		{
+			name:                   "case 6: wc k8s api url",
+			url:                    "https://api.abc12.k8s.installation.customer.gigantic.io:6443",
+			expectedResult:         "abc12.k8s.installation.customer.gigantic.io",
+			expectedInternalResult: "internal-api.abc12.k8s.installation.customer.gigantic.io",
+		},
+		{
+			name:                   "case 6: wc k8s api long url",
+			url:                    "https://api.abc12def34.k8s.installation.customer.gigantic.io:6443",
+			expectedResult:         "abc12def34.k8s.installation.customer.gigantic.io",
+			expectedInternalResult: "internal-api.abc12def34.k8s.installation.customer.gigantic.io",
 		},
 	}
 
