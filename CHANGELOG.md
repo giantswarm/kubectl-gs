@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed deriving internal API hostname from workload cluster main API URL
+
 ## [2.23.1] - 2022-09-27
 
 ### Fixed
