@@ -8,30 +8,35 @@ import (
 
 func Test_GetBasePath(t *testing.T) {
 	testCases := []struct {
-		name           string
-		url            string
-		expectedResult string
-		errorMatcher   func(error) bool
+		name                   string
+		url                    string
+		expectedResult         string
+		expectedInternalResult string
+		errorMatcher           func(error) bool
 	}{
 		{
-			name:           "case 0: using k8s api url",
-			url:            "https://g8s.test.eu-west-1.aws.coolio.com",
-			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
+			name:                   "case 0: using k8s api url",
+			url:                    "https://g8s.test.eu-west-1.aws.coolio.com",
+			expectedResult:         "g8s.test.eu-west-1.aws.coolio.com",
+			expectedInternalResult: "internal-g8s.test.eu-west-1.aws.coolio.com",
 		},
 		{
-			name:           "case 1: using k8s api url, without scheme",
-			url:            "g8s.test.eu-west-1.aws.coolio.com",
-			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
+			name:                   "case 1: using k8s api url, without scheme",
+			url:                    "g8s.test.eu-west-1.aws.coolio.com",
+			expectedResult:         "g8s.test.eu-west-1.aws.coolio.com",
+			expectedInternalResult: "internal-g8s.test.eu-west-1.aws.coolio.com",
 		},
 		{
-			name:           "case 2: using k8s api url, with trailing slash",
-			url:            "g8s.test.eu-west-1.aws.coolio.com/",
-			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
+			name:                   "case 2: using k8s api url, with trailing slash",
+			url:                    "g8s.test.eu-west-1.aws.coolio.com/",
+			expectedResult:         "g8s.test.eu-west-1.aws.coolio.com",
+			expectedInternalResult: "internal-g8s.test.eu-west-1.aws.coolio.com",
 		},
 		{
-			name:           "case 3: using happa url",
-			url:            "happa.g8s.test.eu-west-1.aws.coolio.com/",
-			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
+			name:                   "case 3: using happa url",
+			url:                    "happa.g8s.test.eu-west-1.aws.coolio.com/",
+			expectedResult:         "g8s.test.eu-west-1.aws.coolio.com",
+			expectedInternalResult: "internal-g8s.test.eu-west-1.aws.coolio.com",
 		},
 		{
 			name:         "case 4: using invalid url",
@@ -44,20 +49,22 @@ func Test_GetBasePath(t *testing.T) {
 			errorMatcher: IsUnknownUrlType,
 		},
 		{
-			name:           "case 5: using giant swarm api url",
-			url:            "https://api.g8s.test.eu-west-1.aws.coolio.com",
-			expectedResult: "g8s.test.eu-west-1.aws.coolio.com",
+			name:                   "case 5: using giant swarm api url",
+			url:                    "https://api.g8s.test.eu-west-1.aws.coolio.com",
+			expectedResult:         "g8s.test.eu-west-1.aws.coolio.com",
+			expectedInternalResult: "internal-api.g8s.test.eu-west-1.aws.coolio.com",
 		},
 		{
-			name:           "case 5: new style url",
-			url:            "https://api.installation.customer.gigantic.io:6443",
-			expectedResult: "installation.customer.gigantic.io",
+			name:                   "case 5: new style url",
+			url:                    "https://api.installation.customer.gigantic.io:6443",
+			expectedResult:         "installation.customer.gigantic.io",
+			expectedInternalResult: "internal-api.installation.customer.gigantic.io",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			basePath, err := GetBasePath(tc.url)
+			basePath, internalPath, err := GetBaseAndInternalPath(tc.url)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
 					t.Fatalf("error not matching expected matcher, got: %s", errors.Cause(err))
@@ -70,6 +77,9 @@ func Test_GetBasePath(t *testing.T) {
 
 			if basePath != tc.expectedResult {
 				t.Fatalf("base path not expected, got: %s, want: %s", basePath, tc.expectedResult)
+			}
+			if internalPath != tc.expectedInternalResult {
+				t.Fatalf("internal path not expected, got: %s, want: %s", internalPath, tc.expectedInternalResult)
 			}
 		})
 	}
