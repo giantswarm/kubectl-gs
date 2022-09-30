@@ -7,9 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- Fixed deriving internal API hostname from workload cluster main API URL
+- Added support for deriving internal API hostname from workload cluster main API URLs
 
 ## [2.23.1] - 2022-09-27
 
