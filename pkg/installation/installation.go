@@ -13,9 +13,6 @@ import (
 
 const (
 	requestTimeout = 15 * time.Second
-
-	// management cluster internal api prefix
-	internalAPIPrefix = "internal"
 )
 
 type Installation struct {
@@ -28,7 +25,7 @@ type Installation struct {
 }
 
 func New(ctx context.Context, fromUrl string) (*Installation, error) {
-	basePath, err := GetBasePath(fromUrl)
+	basePath, internalApiPath, err := GetBaseAndInternalPath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -54,7 +51,7 @@ func New(ctx context.Context, fromUrl string) (*Installation, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	k8sInternalAPI := fmt.Sprintf("https://%s-%s", internalAPIPrefix, basePath)
+	k8sInternalAPI := fmt.Sprintf("https://%s", internalApiPath)
 	i := &Installation{
 		K8sApiURL:         info.Kubernetes.ApiUrl,
 		K8sInternalApiURL: k8sInternalAPI,

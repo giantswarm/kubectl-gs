@@ -10,23 +10,29 @@ import (
 )
 
 const (
-	k8sApiUrlPrefix = "g8s"
-	happaUrlPrefix  = "happa"
-	athenaUrlPrefix = "athena"
+	wcK8sApiUrlPrefix = "k8s"
+	k8sApiUrlPrefix   = "g8s"
+	happaUrlPrefix    = "happa"
+	athenaUrlPrefix   = "athena"
+	internalPrefix    = "internal"
 )
 
 const (
 	UrlTypeInvalid = iota
 	UrlTypeK8sApi
 	UrlTypeHappa
+	UrlTypeWcK8sApi
 )
 
 var k8sApiURLRegexp = regexp.MustCompile(fmt.Sprintf("([^.]*)%s.*$", k8sApiUrlPrefix))
+var wcK8sApiUrlRegexp = regexp.MustCompile(fmt.Sprintf("^api\\.[0-9a-zA-Z]{5,10}\\.%s.*$", wcK8sApiUrlPrefix))
 
 func GetUrlType(u string) int {
 	switch {
 	case isHappaUrl(u):
 		return UrlTypeHappa
+	case isWcK8sApiUrl(u):
+		return UrlTypeWcK8sApi
 	case isK8sApiUrl(u):
 		return UrlTypeK8sApi
 	default:
@@ -39,11 +45,16 @@ func isK8sApiUrl(u string) bool {
 	return k8sApiURLRegexp.MatchString(u) || (strings.HasPrefix(u, "api.") && strings.HasSuffix(u, ".gigantic.io"))
 }
 
+func isWcK8sApiUrl(u string) bool {
+	u = strings.SplitN(u, ":", 2)[0]
+	return wcK8sApiUrlRegexp.MatchString(u)
+}
+
 func isHappaUrl(u string) bool {
 	return strings.Contains(u, fmt.Sprintf("%s.", happaUrlPrefix))
 }
 
-func GetBasePath(u string) (string, error) {
+func GetBaseAndInternalPath(u string) (string, string, error) {
 	// Add https scheme if it doesn't exist.
 	urlRegexp := regexp.MustCompile("^http(s)?://.*$")
 	if matched := urlRegexp.MatchString(u); !matched {
@@ -52,23 +63,35 @@ func GetBasePath(u string) (string, error) {
 
 	path, err := url.ParseRequestURI(u)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", "", microerror.Mask(err)
 	}
 
-	switch GetUrlType(path.Host) {
+	urlType := GetUrlType(path.Host)
+	switch urlType {
+	case UrlTypeWcK8sApi:
+		return getSanitizedApiPath(path.Host), getInternalPath(path.Host), nil
 	case UrlTypeK8sApi:
 		if p := k8sApiURLRegexp.FindString(path.Host); len(p) > 0 {
-			return p, nil
+			return p, getInternalPath(p), nil
 		}
-		p := strings.SplitN(path.Host, ".", 2)[1]
-		p = strings.SplitN(p, ":", 2)[0]
-		return p, nil
+		p := getSanitizedApiPath(path.Host)
+		return p, getInternalPath(p), nil
 	case UrlTypeHappa:
 		basePath := strings.Replace(path.Host, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
-		return basePath, nil
+		return basePath, getInternalPath(basePath), nil
 	default:
-		return "", microerror.Mask(unknownUrlTypeError)
+		return "", "", microerror.Mask(unknownUrlTypeError)
 	}
+}
+
+func getSanitizedApiPath(u string) string {
+	p := strings.SplitN(u, ":", 2)[0]
+	return strings.SplitN(p, ".", 2)[1]
+}
+
+func getInternalPath(u string) string {
+	p := strings.SplitN(u, ":", 2)[0]
+	return fmt.Sprintf("%s-%s", internalPrefix, p)
 }
 
 func getAthenaUrl(basePath string) string {
