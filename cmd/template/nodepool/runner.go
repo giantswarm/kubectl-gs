@@ -68,7 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if config.NodePoolName == "" {
-			generatedName, err := key.GenerateName(r.flag.EnableLongNames)
+			generatedName, err := key.GenerateName(true)
 			if err != nil {
 				return microerror.Mask(err)
 			}
