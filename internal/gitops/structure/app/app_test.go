@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
 )
@@ -251,6 +253,36 @@ topKey:
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/kustomization.yaml",
 					GoldenFile:   "testdata/expected/3-hello_world_kustomization.golden",
+				},
+			},
+		},
+		{
+			name: "flawless with timeouts",
+			config: common.StructureConfig{
+				App:                 "hello-world",
+				AppCatalog:          "giantswarm",
+				ManagementCluster:   "demomc",
+				AppName:             "hello-world",
+				AppNamespace:        "default",
+				Organization:        "demoorg",
+				AppVersion:          "0.3.0",
+				SkipMAPI:            true,
+				WorkloadCluster:     "demowc",
+				AppInstallTimeout:   &metav1.Duration{Duration: 6 * time.Minute},
+				AppRollbackTimeout:  &metav1.Duration{Duration: 7 * time.Minute},
+				AppUninstallTimeout: &metav1.Duration{Duration: 8 * time.Minute},
+				AppUpgradeTimeout:   &metav1.Duration{Duration: 9 * time.Minute},
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/3-appcr.golden",
 				},
 			},
 		},

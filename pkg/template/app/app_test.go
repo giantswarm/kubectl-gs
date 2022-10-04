@@ -3,8 +3,10 @@ package app
 import (
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
 )
@@ -109,6 +111,23 @@ func Test_NewAppCR(t *testing.T) {
 				Version:           "1.17.0",
 			},
 			expectedGoldenFile: "app_defaulting_disabled_organization_yaml_output.golden",
+		},
+		{
+			name: "case 7: flawless with timeouts",
+			config: Config{
+				AppName:           "nginx-ingress-controller-app",
+				Catalog:           "giantswarm",
+				Cluster:           "eggs2",
+				DefaultingEnabled: true,
+				InstallTimeout:    &metav1.Duration{Duration: 6 * time.Minute},
+				Name:              "nginx-ingress-controller-app",
+				Namespace:         "kube-system",
+				RollbackTimeout:   &metav1.Duration{Duration: 7 * time.Minute},
+				UninstallTimeout:  &metav1.Duration{Duration: 8 * time.Minute},
+				UpgradeTimeout:    &metav1.Duration{Duration: 9 * time.Minute},
+				Version:           "1.17.0",
+			},
+			expectedGoldenFile: "app_flawless_flow_timeouts_yaml_output.golden",
 		},
 	}
 

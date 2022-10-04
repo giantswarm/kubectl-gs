@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -18,8 +19,12 @@ const (
 	flagApp                 = "app"
 	flagBase                = "base"
 	flagCatalog             = "catalog"
+	flagInstallTimeout      = "install-timeout"
 	flagNamespace           = "namespace"
+	flagRollbackTimeout     = "rollback-timeout"
 	flagTargetNamespace     = "target-namespace"
+	flagUninstallTimeout    = "uninstall-timeout"
+	flagUpgradeTimeout      = "upgrade-timeout"
 	flagUserValuesConfigMap = "user-configmap"
 	flagUserValuesSecret    = "user-secret"
 	flagVersion             = "version"
@@ -36,8 +41,12 @@ type flag struct {
 	App                 string
 	Base                string
 	Catalog             string
+	InstallTimeout      time.Duration
 	Namespace           string
+	RollbackTimeout     time.Duration
 	TargetNamespace     string
+	UninstallTimeout    time.Duration
+	UpgradeTimeout      time.Duration
 	UserValuesConfigMap string
 	UserValuesSecret    string
 	Version             string
@@ -54,8 +63,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.App, flagApp, "", "App name in the catalog.")
 	cmd.Flags().StringVar(&f.Base, flagBase, "", "Path to the base directory. It must be relative to the repository root.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog to install the app from.")
+	cmd.Flags().DurationVar(&f.InstallTimeout, flagInstallTimeout, 0, "Timeout for the Helm install.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace to install app into.")
+	cmd.Flags().DurationVar(&f.RollbackTimeout, flagRollbackTimeout, 0, "Timeout for the Helm rollback.")
 	cmd.Flags().StringVar(&f.TargetNamespace, flagTargetNamespace, "", "Namespace to install app into.")
+	cmd.Flags().DurationVar(&f.UninstallTimeout, flagUninstallTimeout, 0, "Timeout for the Helm uninstall.")
+	cmd.Flags().DurationVar(&f.UpgradeTimeout, flagUpgradeTimeout, 0, "Timeout for the Helm upgrade.")
 	cmd.Flags().StringVar(&f.UserValuesConfigMap, flagUserValuesConfigMap, "", "Values YAML to customize the app with. Will get turn into a ConfigMap.")
 	cmd.Flags().StringVar(&f.UserValuesSecret, flagUserValuesSecret, "", "Values YAML to customize the app with. Will get turn into a Secret.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to install.")

@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
@@ -146,6 +147,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 	appConfig.NamespaceConfigLabels = namespaceLabels
 
+	r.setTimeouts(&appConfig)
+
 	appCRYaml, err := templateapp.NewAppCR(appConfig)
 	if err != nil {
 		return microerror.Mask(err)
@@ -165,4 +168,19 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func (r *runner) setTimeouts(config *templateapp.Config) {
+	if r.flag.InstallTimeout != 0 {
+		config.InstallTimeout = &metav1.Duration{Duration: r.flag.InstallTimeout}
+	}
+	if r.flag.RollbackTimeout != 0 {
+		config.RollbackTimeout = &metav1.Duration{Duration: r.flag.RollbackTimeout}
+	}
+	if r.flag.UninstallTimeout != 0 {
+		config.UninstallTimeout = &metav1.Duration{Duration: r.flag.UninstallTimeout}
+	}
+	if r.flag.UpgradeTimeout != 0 {
+		config.UpgradeTimeout = &metav1.Duration{Duration: r.flag.UpgradeTimeout}
+	}
 }

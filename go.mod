@@ -10,7 +10,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.13.0
-	github.com/giantswarm/apiextensions-application v0.4.0
+	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.0.0
 	github.com/giantswarm/app/v6 v6.10.0
 	github.com/giantswarm/appcatalog v0.7.0
