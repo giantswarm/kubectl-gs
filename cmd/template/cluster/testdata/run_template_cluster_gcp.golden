@@ -81,6 +81,7 @@ kind: App
 metadata:
   labels:
     app-operator.giantswarm.io/version: 0.0.0
+    giantswarm.io/cluster: test1
   name: test1-default-apps
   namespace: org-test
 spec:

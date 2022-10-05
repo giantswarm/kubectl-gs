@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add `giantswarm.io/cluster` label to the 'default-apps' bundle so that it's deleted when a `Cluster` is deleted.
+
 ## [2.23.2] - 2022-10-04
 
 ### Added
