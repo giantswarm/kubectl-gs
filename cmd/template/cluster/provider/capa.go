@@ -228,6 +228,7 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 		var err error
 		appYAML, err = templateapp.NewAppCR(templateapp.Config{
 			AppName:                 appName,
+			Cluster:                 config.Name,
 			Catalog:                 config.App.DefaultAppsCatalog,
 			InCluster:               true,
 			Name:                    DefaultAppsRepoName,
