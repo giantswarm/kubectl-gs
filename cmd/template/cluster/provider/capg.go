@@ -183,6 +183,11 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			DefaultingEnabled:       false,
+			UseClusterValuesConfig:  true,
+			ExtraLabels: map[string]string{
+				k8smetadata.ManagedBy: "cluster",
+			},
 		})
 		if err != nil {
 			return microerror.Mask(err)

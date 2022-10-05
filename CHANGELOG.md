@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Add `giantswarm.io/cluster` label to the 'default-apps' bundle so that it's deleted when a `Cluster` is deleted.
+- Add option to reference the `cluster-values` configmap in the `App` CR created for CAPI clusters.
 
 ## [2.23.2] - 2022-10-04
 

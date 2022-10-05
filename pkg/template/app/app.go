@@ -36,6 +36,7 @@ type Config struct {
 	Version                    string
 	ExtraLabels                map[string]string
 	ExtraAnnotations           map[string]string
+	UseClusterValuesConfig     bool
 }
 
 type UserConfig struct {
@@ -127,12 +128,8 @@ func NewAppCR(config Config) ([]byte, error) {
 	}
 
 	if !config.DefaultingEnabled && !config.InCluster {
-		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
-			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
-				Name:      config.Cluster + "-cluster-values",
-				Namespace: crNamespace,
-			},
-		}
+		config.UseClusterValuesConfig = true
+
 		appCR.Spec.KubeConfig = applicationv1alpha1.AppSpecKubeConfig{
 			Context: applicationv1alpha1.AppSpecKubeConfigContext{
 				Name: config.Cluster + "-kubeconfig",
@@ -140,6 +137,15 @@ func NewAppCR(config Config) ([]byte, error) {
 			InCluster: false,
 			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
 				Name:      config.Cluster + "-kubeconfig",
+				Namespace: crNamespace,
+			},
+		}
+	}
+
+	if config.UseClusterValuesConfig {
+		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
+			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
+				Name:      config.Cluster + "-cluster-values",
 				Namespace: crNamespace,
 			},
 		}
