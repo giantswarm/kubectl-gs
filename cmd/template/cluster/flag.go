@@ -266,6 +266,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
 
 	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
+	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagAWSEKS)
@@ -300,7 +301,7 @@ func (f *flag) Validate() error {
 	}
 
 	if f.Name != "" {
-		valid, err := key.ValidateName(f.Name, f.EnableLongNames)
+		valid, err := key.ValidateName(f.Name, true)
 		if err != nil {
 			return microerror.Mask(err)
 		} else if !valid {
