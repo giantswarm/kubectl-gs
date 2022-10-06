@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Add `giantswarm.io/cluster` label to the 'default-apps' bundle so that it's deleted when a `Cluster` is deleted.
+- Deprecated `--enable-long-names` flag and added support for generating and validating long resource names (up to 10 characters) by default
 
 ## [2.23.2] - 2022-10-04
 

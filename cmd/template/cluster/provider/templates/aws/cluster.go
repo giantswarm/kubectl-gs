@@ -54,7 +54,7 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 	// the workload cluster name may be provided by the user.
 	{
 		if config.ClusterName == "" {
-			generatedName, err := key.GenerateName(config.EnableLongNames)
+			generatedName, err := key.GenerateName(true)
 			if err != nil {
 				return ClusterCRs{}, microerror.Mask(err)
 			}
@@ -63,7 +63,7 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 		}
 
 		if config.ControlPlaneName == "" {
-			generatedName, err := key.GenerateName(config.EnableLongNames)
+			generatedName, err := key.GenerateName(true)
 			if err != nil {
 				return ClusterCRs{}, microerror.Mask(err)
 			}

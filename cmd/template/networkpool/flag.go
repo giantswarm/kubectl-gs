@@ -33,6 +33,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 
 	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
+	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
 }
 
 func (f *flag) Validate() error {

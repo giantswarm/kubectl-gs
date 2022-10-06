@@ -24,7 +24,6 @@ type NodePoolCRsConfig struct {
 	ClusterName                         string
 	MachineDeploymentName               string
 	Description                         string
-	EnableLongNames                     bool
 	NodesMax                            int
 	NodesMin                            int
 	OnDemandBaseCapacity                int
@@ -47,7 +46,7 @@ func NewNodePoolCRs(config NodePoolCRsConfig) (NodePoolCRs, error) {
 	// the workload cluster name may be provided by the user.
 	{
 		if config.ClusterName == "" {
-			generatedName, err := key.GenerateName(config.EnableLongNames)
+			generatedName, err := key.GenerateName(true)
 			if err != nil {
 				return NodePoolCRs{}, microerror.Mask(err)
 			}
@@ -56,7 +55,7 @@ func NewNodePoolCRs(config NodePoolCRsConfig) (NodePoolCRs, error) {
 		}
 
 		if config.MachineDeploymentName == "" {
-			generatedName, err := key.GenerateName(config.EnableLongNames)
+			generatedName, err := key.GenerateName(true)
 			if err != nil {
 				return NodePoolCRs{}, microerror.Mask(err)
 			}
