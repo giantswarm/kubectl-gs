@@ -1,0 +1,27 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+    giantswarm.io/cluster: eggs2
+  name: eggs2-default-apps
+  namespace: org-giantswarm
+spec:
+  catalog: cluster
+  config:
+    configMap:
+      name: eggs2-cluster-values
+      namespace: org-giantswarm
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: default-apps-gcp
+  namespace: org-giantswarm
+  version: 0.13.0

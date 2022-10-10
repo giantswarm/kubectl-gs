@@ -129,6 +129,21 @@ func Test_NewAppCR(t *testing.T) {
 			},
 			expectedGoldenFile: "app_flawless_flow_timeouts_yaml_output.golden",
 		},
+		{
+			name: "case 8: app config points to cluster-values configmap",
+			config: Config{
+				AppName:                "eggs2-default-apps",
+				Catalog:                "cluster",
+				Cluster:                "eggs2",
+				DefaultingEnabled:      false,
+				InCluster:              true,
+				Name:                   "default-apps-gcp",
+				Namespace:              "org-giantswarm",
+				Version:                "0.13.0",
+				UseClusterValuesConfig: true,
+			},
+			expectedGoldenFile: "app_config_cluster_values_yaml_output.golden",
+		},
 	}
 
 	for i, tc := range testCases {

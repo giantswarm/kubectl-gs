@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
@@ -191,6 +192,11 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 			Namespace:               fmt.Sprintf("org-%s", config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			DefaultingEnabled:       false,
+			UseClusterValuesConfig:  true,
+			ExtraLabels: map[string]string{
+				k8smetadata.ManagedBy: "cluster",
+			},
 		})
 		if err != nil {
 			return microerror.Mask(err)
