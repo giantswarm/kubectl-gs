@@ -15,8 +15,7 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 
 // TestRunner_Run uses golden files.
 //
-//  go test ./cmd/template/organization -run TestRunner_Run -update
-//
+// go test ./cmd/template/organization -run TestRunner_Run -update
 func TestRunner_Run(t *testing.T) {
 	testCases := []struct {
 		name               string

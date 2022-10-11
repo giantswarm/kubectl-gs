@@ -19,8 +19,7 @@ var update = flag.Bool("update", false, "update .golden reference test files")
 
 // TestClientImpl_ExecuteQuery uses golden files.
 //
-//  go test ./pkg/graphql -run TestClientImpl_ExecuteQuery -update
-//
+// go test ./pkg/graphql -run TestClientImpl_ExecuteQuery -update
 func TestClientImpl_ExecuteQuery(t *testing.T) {
 	testCases := []struct {
 		name                string
