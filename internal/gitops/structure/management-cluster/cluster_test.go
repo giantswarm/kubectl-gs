@@ -3,7 +3,7 @@ package mcluster
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -111,7 +111,7 @@ func Test_NewManagementCluster(t *testing.T) {
 					continue
 				}
 
-				expected, err := ioutil.ReadFile(e.GoldenFile)
+				expected, err := os.ReadFile(e.GoldenFile)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
