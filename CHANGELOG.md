@@ -15,6 +15,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Added read header timeout to http server
 
+### Changed
+
+- Adjusted `kubectl gs login` command to ensure that it writes to the main kubeconfig file only in case there are actual changes in the content of the file.
+
 ## [2.24.1] - 2022-10-12
 
 ### Fixed
