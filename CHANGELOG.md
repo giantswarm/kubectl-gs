@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Added read header timeout to http server
+
 ## [2.24.1] - 2022-10-12
 
 ### Fixed

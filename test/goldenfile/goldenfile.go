@@ -1,7 +1,7 @@
 package goldenfile
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/giantswarm/microerror"
@@ -33,7 +33,7 @@ func (gf *GoldenFile) Read() ([]byte, error) {
 }
 
 func (gf *GoldenFile) Update(data []byte) error {
-	err := ioutil.WriteFile(gf.path, data, 0600)
+	err := os.WriteFile(gf.path, data, 0600)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -42,7 +42,7 @@ func (gf *GoldenFile) Update(data []byte) error {
 }
 
 func (gf *GoldenFile) readFile(path string) ([]byte, error) {
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
