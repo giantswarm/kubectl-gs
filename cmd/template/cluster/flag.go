@@ -38,15 +38,17 @@ const (
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
 	// GCP only.
-	flagGCPProject                          = "gcp-project"
-	flagGCPFailureDomains                   = "gcp-failure-domains"
-	flagGCPControlPlaneServiceAccountEmail  = "gcp-control-plane-sa-email"
-	flagGCPControlPlaneServiceAccountScopes = "gcp-control-plane-sa-scopes"
-	flagGCPMachineDeploymentName            = "gcp-machine-deployment-name"
-	flagGCPMachineDeploymentInstanceType    = "gcp-machine-deployment-instance-type"
-	flagGCPMachineDeploymentFailureDomain   = "gcp-machine-deployment-failure-domain"
-	flagGCPMachineDeploymentReplicas        = "gcp-machine-deployment-replicas"
-	flagGCPMachineDeploymentRootDiskSize    = "gcp-machine-deployment-disk-size"
+	flagGCPProject                               = "gcp-project"
+	flagGCPFailureDomains                        = "gcp-failure-domains"
+	flagGCPControlPlaneServiceAccountEmail       = "gcp-control-plane-sa-email"
+	flagGCPControlPlaneServiceAccountScopes      = "gcp-control-plane-sa-scopes"
+	flagGCPMachineDeploymentName                 = "gcp-machine-deployment-name"
+	flagGCPMachineDeploymentInstanceType         = "gcp-machine-deployment-instance-type"
+	flagGCPMachineDeploymentFailureDomain        = "gcp-machine-deployment-failure-domain"
+	flagGCPMachineDeploymentReplicas             = "gcp-machine-deployment-replicas"
+	flagGCPMachineDeploymentRootDiskSize         = "gcp-machine-deployment-disk-size"
+	flagGCPMachineDeploymentServiceAccountEmail  = "gcp-machine-deployment-sa-email"
+	flagGCPMachineDeploymentServiceAccountScopes = "gcp-machine-deployment-sa-scopes"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -162,6 +164,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "Google Cloud Platform worker replicas")
 	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "Google Cloud Platform worker failure domain")
 	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "Google Cloud Platform worker root disk size")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.ServiceAccount.Email, flagGCPMachineDeploymentServiceAccountEmail, "default", "Google Cloud Platform Service Account used by the control plane")
+	cmd.Flags().StringSliceVar(&f.GCP.MachineDeployment.ServiceAccount.Scopes, flagGCPMachineDeploymentServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the control plane's Google Cloud Platform Service Account")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
