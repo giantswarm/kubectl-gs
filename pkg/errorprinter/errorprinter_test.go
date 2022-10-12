@@ -17,7 +17,7 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 // TestFormat uses golden files.
 //
 //	go test ./pkg/errorprinter -run TestFormat -update
-//
+
 func TestFormat(t *testing.T) {
 	testCases := []struct {
 		name               string
