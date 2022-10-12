@@ -3,7 +3,7 @@ package apps
 import (
 	"context"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -68,7 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var valuesSchema string
 	if valuesSchemaFilePath != "" {
-		valuesSchemaFile, err := ioutil.ReadFile(valuesSchemaFilePath)
+		valuesSchemaFile, err := os.ReadFile(valuesSchemaFilePath)
 		if err != nil {
 			return microerror.Mask(err)
 		}

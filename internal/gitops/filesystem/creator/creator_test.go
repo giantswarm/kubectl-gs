@@ -3,7 +3,6 @@ package creator
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -152,7 +151,7 @@ func Test_Create(t *testing.T) {
 					continue
 				}
 
-				data, err := ioutil.ReadFile(tfo.InputData)
+				data, err := os.ReadFile(tfo.InputData)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
@@ -166,7 +165,7 @@ func Test_Create(t *testing.T) {
 			tc.creator.fsObjects = fsObjects
 
 			if !tc.creator.dryRun {
-				tmpDir, err = ioutil.TempDir("", "creator-test")
+				tmpDir, err = os.MkdirTemp("", "creator-test")
 
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
@@ -190,7 +189,7 @@ func Test_Create(t *testing.T) {
 			}
 
 			if tc.expectedDryRun != "" {
-				expected, err := ioutil.ReadFile(tc.expectedDryRun)
+				expected, err := os.ReadFile(tc.expectedDryRun)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
@@ -216,12 +215,12 @@ func Test_Create(t *testing.T) {
 					continue
 				}
 
-				got, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", tc.creator.path, p))
+				got, err := os.ReadFile(fmt.Sprintf("%s/%s", tc.creator.path, p))
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
-				expected, err := ioutil.ReadFile(c)
+				expected, err := os.ReadFile(c)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}

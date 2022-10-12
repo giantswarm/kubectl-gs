@@ -1,7 +1,6 @@
 package selfupdate
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -42,7 +41,7 @@ func (c *cache) Persist(cacheDir string) error {
 
 	out := filepath.Join(cacheDir, cacheFileName)
 
-	err = ioutil.WriteFile(out, serialized, os.FileMode(cacheFileMode))
+	err = os.WriteFile(out, serialized, os.FileMode(cacheFileMode))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -53,7 +52,7 @@ func (c *cache) Persist(cacheDir string) error {
 func (c *cache) Restore(fromPath string) error {
 	in := filepath.Join(fromPath, cacheFileName)
 
-	serialized, err := ioutil.ReadFile(in)
+	serialized, err := os.ReadFile(in)
 	if err != nil {
 		return microerror.Mask(err)
 	}

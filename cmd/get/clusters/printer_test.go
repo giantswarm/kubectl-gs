@@ -27,8 +27,7 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 
 // Test_printOutput uses golden files.
 //
-//  go test ./cmd/get/clusters -run Test_printOutput -update
-//
+// go test ./cmd/get/clusters -run Test_printOutput -update
 func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string
