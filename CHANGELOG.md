@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Fixed a bug in `login` command where the `issuer` URL was used instead of the `server` address in login retry attempt.
 
+## [2.24.1] - 2022-10-12
+
+### Fixed
+
+- Fix login command failing because opening the browser blocks and callback webserver does not start on some operating systems
+
 ## [2.24.0] - 2022-10-10
 
 ### Changed
@@ -1051,7 +1057,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.1...HEAD
+[2.24.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.0...v2.24.1
 [2.24.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.2...v2.24.0
 [2.23.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.1...v2.23.2
 [2.23.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.0...v2.23.1

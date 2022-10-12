@@ -82,7 +82,7 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 
 	// Open the authorization url in the user's browser, which will eventually
 	// redirect the user to the local web server we'll create next.
-	err = open.Run(authURL)
+	err = open.Start(authURL)
 	if err != nil {
 		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
 	}
