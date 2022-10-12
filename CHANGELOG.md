@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix login command failing because opening the browser blocks and callback webserver does not start on some operating systems
+
 ## [2.24.0] - 2022-10-10
 
 ### Changed
