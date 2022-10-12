@@ -2,9 +2,10 @@ package orgs
 
 import (
 	"bytes"
-	"github.com/giantswarm/organization-operator/api/v1alpha1"
 	"testing"
 	"time"
+
+	"github.com/giantswarm/organization-operator/api/v1alpha1"
 
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
