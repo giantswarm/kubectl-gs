@@ -40,7 +40,7 @@ require (
 	k8s.io/apimachinery v0.24.3
 	k8s.io/cli-runtime v0.24.3
 	k8s.io/client-go v0.24.3
-	k8s.io/utils v0.0.0-20220922133306-665eaaec4324
+	k8s.io/utils v0.0.0-20221012122500-cfd413dd9e85
 	sigs.k8s.io/cluster-api v1.1.4
 	sigs.k8s.io/cluster-api-provider-azure v1.3.2
 	sigs.k8s.io/controller-runtime v0.12.1
@@ -208,5 +208,6 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v20.10.18+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
+	golang.org/x/text => golang.org/x/text v0.3.8
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
