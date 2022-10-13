@@ -164,7 +164,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "Google Cloud Platform worker replicas")
 	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "Google Cloud Platform worker failure domain")
 	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "Google Cloud Platform worker root disk size")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.ServiceAccount.Email, flagGCPMachineDeploymentServiceAccountEmail, "default", "Google Cloud Platform Service Account used by the control plane")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.ServiceAccount.Email, flagGCPMachineDeploymentServiceAccountEmail, "default", "Google Cloud Platform Service Account used by the worker nodes")
 	cmd.Flags().StringSliceVar(&f.GCP.MachineDeployment.ServiceAccount.Scopes, flagGCPMachineDeploymentServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the worker nodes' Google Cloud Platform Service Account")
 
 	// OpenStack only.
