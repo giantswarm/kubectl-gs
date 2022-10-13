@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
+	"github.com/giantswarm/organization-operator/api/v1alpha1"
+
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"

@@ -17,10 +17,10 @@ import (
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
-	securityv1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/security/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	securityv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
