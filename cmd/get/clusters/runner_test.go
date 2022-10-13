@@ -26,8 +26,7 @@ import (
 
 // Test_run uses golden files.
 //
-//  go test ./cmd/get/clusters -run Test_run -update
-//
+// go test ./cmd/get/clusters -run Test_run -update
 func Test_run(t *testing.T) {
 	testCases := []struct {
 		name               string

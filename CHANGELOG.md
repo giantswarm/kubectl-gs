@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Fixed a bug in `login` command where the `issuer` URL was used instead of the `server` address in login retry attempt.
 
+### Added
+
+- Added read header timeout to http server
+
 ## [2.24.1] - 2022-10-12
 
 ### Fixed

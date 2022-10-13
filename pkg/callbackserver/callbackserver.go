@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/giantswarm/microerror"
 )
@@ -13,13 +14,15 @@ import (
 type CallbackFunc func(http.ResponseWriter, *http.Request) (interface{}, error)
 
 type Config struct {
-	Port        int
-	RedirectURI string
+	Port              int
+	RedirectURI       string
+	ReadHeaderTimeout time.Duration
 }
 
 type CallbackServer struct {
-	port        int
-	redirectURI string
+	port              int
+	redirectURI       string
+	readHeaderTimeout time.Duration
 }
 
 func New(config Config) (*CallbackServer, error) {
@@ -37,8 +40,9 @@ func New(config Config) (*CallbackServer, error) {
 	}
 
 	cs := &CallbackServer{
-		port:        config.Port,
-		redirectURI: config.RedirectURI,
+		port:              config.Port,
+		redirectURI:       config.RedirectURI,
+		readHeaderTimeout: config.ReadHeaderTimeout,
 	}
 
 	return cs, nil
@@ -68,8 +72,9 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 		})
 
 		server = &http.Server{
-			Addr:    fmt.Sprintf(":%d", cs.port),
-			Handler: mux,
+			Addr:              fmt.Sprintf(":%d", cs.port),
+			Handler:           mux,
+			ReadHeaderTimeout: cs.readHeaderTimeout,
 		}
 	}
 
