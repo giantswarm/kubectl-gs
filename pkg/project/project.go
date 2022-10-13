@@ -5,7 +5,7 @@ var (
 	gitSHA      = "n/a"
 	name        = "kubectl-gs"
 	source      = "https://github.com/giantswarm/kubectl-gs"
-	version     = "2.24.2-dev"
+	version     = "2.24.3-dev"
 )
 
 func Description() string {

@@ -392,8 +392,9 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
-	// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
-	if c.loginOptions.originContext != "" {
+	// Change back to the origin context if needed
+	if c.loginOptions.originContext != "" && config.CurrentContext != "" && c.loginOptions.originContext != config.CurrentContext {
+		// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
 		config.CurrentContext = c.loginOptions.originContext
 		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
 		if err != nil {
