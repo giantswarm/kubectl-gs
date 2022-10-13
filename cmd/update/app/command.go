@@ -77,7 +77,7 @@ func New(config Config) (*cobra.Command, error) {
 		Short:   shortDescription,
 		Long:    longDescription,
 		Example: examples,
-		Args:    cobra.ExactValidArgs(0),
+		Args:    cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
 		RunE:    r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(*config.ConfigFlags),
