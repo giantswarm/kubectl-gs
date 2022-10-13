@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a bug in `login` command where the `issuer` URL was used instead of the `server` address in login retry attempt.
+
 ### Added
 
 - Added read header timeout to http server

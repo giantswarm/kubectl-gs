@@ -47,10 +47,9 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		authType := kubeconfig.GetAuthType(config, contextName)
 		if authType == kubeconfig.AuthTypeAuthProvider {
 			// If we get here, we are sure that the kubeconfig context exists.
-			authProvider, _ := kubeconfig.GetAuthProvider(config, contextName)
-			issuer := authProvider.Config[Issuer]
+			server, _ := kubeconfig.GetClusterServer(config, contextName)
 
-			err = r.loginWithURL(ctx, issuer, false, "")
+			err = r.loginWithURL(ctx, server, false, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
