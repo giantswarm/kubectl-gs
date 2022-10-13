@@ -2,8 +2,8 @@ package helmbinary
 
 import (
 	"context"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"os/exec"
 
 	"github.com/giantswarm/microerror"
@@ -45,7 +45,7 @@ func (s *Service) Pull(ctx context.Context, options PullOptions) (tmpDir string,
 		return "", microerror.Maskf(argumentError, "unable to parse %q. Is it a valid URL?", options.URL)
 	}
 
-	tmpDir, err = ioutil.TempDir("", "kubectl-gs-validate-apps-")
+	tmpDir, err = os.MkdirTemp("", "kubectl-gs-validate-apps-")
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

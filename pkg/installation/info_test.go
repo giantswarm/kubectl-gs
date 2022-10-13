@@ -2,9 +2,9 @@ package installation
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -46,7 +46,7 @@ func Test_getInstallationInfo(t *testing.T) {
 				err error
 			)
 			if tc.responsePath != "" {
-				res, err = ioutil.ReadFile(tc.responsePath)
+				res, err = os.ReadFile(tc.responsePath)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}

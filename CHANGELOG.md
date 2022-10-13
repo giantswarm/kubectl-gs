@@ -7,9 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Added 
+### Fixed
 
-- Add flags `--gcp-machine-deployment-sa-email` and `--gcp-machine-deployment-sa-scopes` to `template cluster` that specify a Google Cloud Platform service account and its scope to a cluster's control plane nodes
+- Fixed a bug in `login` command where the `issuer` URL was used instead of the `server` address in login retry attempt.
+
+### Added
+
+- Add flags `--gcp-machine-deployment-sa-email` and `--gcp-machine-deployment-sa-scopes` to `template cluster` that specify a Google Cloud Platform service account and its scope to a cluster's machine deployments
+- Added read header timeout to http server
 
 ## [2.24.1] - 2022-10-12
 

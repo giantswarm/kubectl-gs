@@ -29,7 +29,8 @@ const (
 	customerConnectorID   = "customer"
 	giantswarmConnectorID = "giantswarm"
 
-	oidcResultTimeout = 1 * time.Minute
+	oidcResultTimeout     = 1 * time.Minute
+	oidcReadHeaderTimeout = 1 * time.Minute
 )
 
 var (
@@ -45,8 +46,9 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	var authProxy *callbackserver.CallbackServer
 	{
 		config := callbackserver.Config{
-			Port:        port,
-			RedirectURI: oidcCallbackPath,
+			Port:              port,
+			RedirectURI:       oidcCallbackPath,
+			ReadHeaderTimeout: oidcReadHeaderTimeout,
 		}
 		authProxy, err = callbackserver.New(config)
 		if err != nil {

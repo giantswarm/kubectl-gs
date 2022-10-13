@@ -3,8 +3,9 @@ package app
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"path"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -185,7 +186,7 @@ func (s *Service) validateApp(ctx context.Context, app *applicationv1alpha1.App,
 	// 1. Chart values (the starting point, what is in the values.yaml file of
 	// the chart itself)
 	valuesFilePath := path.Join(tmpDir, app.Spec.Name, "values.yaml")
-	chartValuesYamlFile, err := ioutil.ReadFile(valuesFilePath)
+	chartValuesYamlFile, err := os.ReadFile(valuesFilePath)
 	if err != nil {
 		return "", nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
 	}
@@ -248,7 +249,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch values.schema.json, error processing http response body: %s", err.Error())
 		s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
@@ -353,7 +354,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch index, error processing http response body: %s", err.Error())
 		s.catalogFetchResults[catalogName] = CatalogFetchResult{
