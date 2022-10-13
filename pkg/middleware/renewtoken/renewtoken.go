@@ -10,6 +10,13 @@ import (
 	"github.com/giantswarm/kubectl-gs/pkg/oidc"
 )
 
+const (
+	refreshTokenKey = "refresh-token"
+	idTokenKey      = "id-token"
+	idpIssuerUrlKey = "idp-issuer-url"
+	clientIdKey     = "client-id"
+)
+
 // Middleware will attempt to renew the current context's auth info token.
 // If the renewal fails, this middleware will not fail.
 func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware {
@@ -30,8 +37,8 @@ func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware
 		var auther *oidc.Authenticator
 		{
 			oidcConfig := oidc.Config{
-				Issuer:   authProvider.Config["idp-issuer-url"],
-				ClientID: authProvider.Config["client-id"],
+				Issuer:   authProvider.Config[idpIssuerUrlKey],
+				ClientID: authProvider.Config[clientIdKey],
 			}
 			auther, err = oidc.New(ctx, oidcConfig)
 			if err != nil {
@@ -39,16 +46,17 @@ func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware
 			}
 		}
 
-		{
-			idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config["refresh-token"])
-			if err != nil {
-				return nil
-			}
-			authProvider.Config["refresh-token"] = rToken
-			authProvider.Config["id-token"] = idToken
+		idToken, rToken, err := auther.RenewToken(ctx, authProvider.Config[refreshTokenKey])
+		if err != nil {
+			return nil
 		}
 
-		_ = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
+		// Update the config only in case there are actual changes
+		if authProvider.Config[refreshTokenKey] != rToken || authProvider.Config[idTokenKey] != idToken {
+			authProvider.Config[refreshTokenKey] = rToken
+			authProvider.Config[idTokenKey] = idToken
+			_ = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
+		}
 
 		return nil
 	}
