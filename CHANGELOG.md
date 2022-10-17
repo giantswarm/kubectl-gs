@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Disable `kubectl gs template nodepool` command for Cluster API (CAPI) based workload Clusters.
+
 ## [2.24.2] - 2022-10-13
 
 ### Fixed
