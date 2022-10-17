@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/micrologger"
 	"github.com/pkg/errors"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+
+	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
 func Test_run(t *testing.T) {
