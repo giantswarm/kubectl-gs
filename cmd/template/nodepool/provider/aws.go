@@ -16,33 +16,7 @@ import (
 )
 
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
-	var err error
-
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		if config.EKS {
-			err = WriteCAPAEKSTemplate(ctx, client, out, config)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else {
-			err = WriteCAPATemplate(ctx, client, out, config)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-	} else {
-		err = WriteGSAWSTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	return nil
+	return WriteGSAWSTemplate(ctx, client, out, config)
 }
 
 func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {

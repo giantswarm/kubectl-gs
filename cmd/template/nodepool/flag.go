@@ -172,6 +172,14 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 	}
 
+	isCapiVersion, err := key.IsCAPIVersion(f.Release)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if isCapiVersion {
+		return microerror.Maskf(invalidFlagError, "--%s must be < %s, because Cluster API (CAPI) based workload clusters are not supported", flagRelease, key.FirstCAPIRelease)
+	}
+
 	{
 		// Validate Availability Zones.
 		var azs []string
