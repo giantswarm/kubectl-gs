@@ -1,16 +1,18 @@
 package login
 
 import (
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"os"
+	"path"
+	"reflect"
+	"testing"
+
 	"github.com/spf13/afero"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/pointer"
-	"os"
-	"path"
-	"reflect"
-	"testing"
+
+	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
 )
 
 func Test_ClientCert_SelfContainedFiles(t *testing.T) {
