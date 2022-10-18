@@ -230,11 +230,16 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			AppName:                 appName,
 			Cluster:                 config.Name,
 			Catalog:                 config.App.DefaultAppsCatalog,
+			DefaultingEnabled:       false,
 			InCluster:               true,
 			Name:                    DefaultAppsRepoName,
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			UseClusterValuesConfig:  true,
+			ExtraLabels: map[string]string{
+				k8smetadata.ManagedBy: "cluster",
+			},
 		})
 		if err != nil {
 			return microerror.Mask(err)

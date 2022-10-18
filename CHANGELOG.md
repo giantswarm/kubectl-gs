@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Use the `cluster-values` configmap when templating the `default-apps-aws` app.
+
 ## [2.24.2] - 2022-10-13
 
 ### Fixed
