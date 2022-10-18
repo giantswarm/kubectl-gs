@@ -384,13 +384,13 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		}
 
 		// First remove entries included in the new config from the existing one
-		for clusterName, _ := range kubeconfig.Clusters {
+		for clusterName := range kubeconfig.Clusters {
 			delete(existingKubeConfig.Clusters, clusterName)
 		}
-		for authInfoName, _ := range kubeconfig.AuthInfos {
+		for authInfoName := range kubeconfig.AuthInfos {
 			delete(existingKubeConfig.AuthInfos, authInfoName)
 		}
-		for ctxName, _ := range kubeconfig.Contexts {
+		for ctxName := range kubeconfig.Contexts {
 			delete(existingKubeConfig.Contexts, ctxName)
 		}
 
