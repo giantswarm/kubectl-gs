@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 )
 
@@ -24,33 +23,6 @@ func Test_run(t *testing.T) {
 				ClusterName:  "test1",
 				Provider:     "unsupported",
 				Organization: "test",
-			},
-			errorMatcher: IsInvalidFlag,
-		}, {
-			name: "CAPA - Unsupported",
-			flags: &flag{
-				ClusterName:     "test1",
-				Provider:        "aws",
-				Organization:    "test",
-				Release:         key.FirstCAPIRelease,
-				AWSInstanceType: "m5.xlarge",
-				Description:     "test",
-				AvailabilityZones: []string{
-					"eu-central-1a",
-				},
-			},
-			errorMatcher: IsInvalidFlag,
-		},
-		{
-			name: "CAPZ - Unsupported",
-			flags: &flag{
-				ClusterName:          "test1",
-				Provider:             "azure",
-				Organization:         "test",
-				Release:              key.FirstCAPIRelease,
-				AzureVMSize:          "Standard_D4s_v3",
-				Description:          "test",
-				OnDemandBaseCapacity: 0,
 			},
 			errorMatcher: IsInvalidFlag,
 		},
