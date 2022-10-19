@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Use the `cluster-values` configmap when templating the `default-apps-aws` app.
 
+### Fixed
+
+- Fixed a bug in modifying existing entries in self-contained config files where new data for the existing entries failed to be written to the file.
+
 ## [2.24.2] - 2022-10-13
 
 ### Fixed

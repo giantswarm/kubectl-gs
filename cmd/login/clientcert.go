@@ -382,6 +382,19 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		if err != nil {
 			return "", false, microerror.Mask(err)
 		}
+
+		// First remove entries included in the new config from the existing one
+		for clusterName := range kubeconfig.Clusters {
+			delete(existingKubeConfig.Clusters, clusterName)
+		}
+		for authInfoName := range kubeconfig.AuthInfos {
+			delete(existingKubeConfig.AuthInfos, authInfoName)
+		}
+		for ctxName := range kubeconfig.Contexts {
+			delete(existingKubeConfig.Contexts, ctxName)
+		}
+
+		// Then merge the 2 configs (entries from the new config will be added to the existing one)
 		err = mergo.Merge(&kubeconfig, existingKubeConfig, mergo.WithOverride)
 		if err != nil {
 			return "", false, microerror.Mask(err)
