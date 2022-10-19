@@ -5,7 +5,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/encryption"
 )
 
 type StructureConfig struct {

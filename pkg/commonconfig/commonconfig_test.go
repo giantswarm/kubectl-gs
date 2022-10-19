@@ -5,7 +5,7 @@ import (
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 )
 
 func TestCommonConfig_GetProvider(t *testing.T) {

@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/networkpool/provider"
-	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/networkpool/provider"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 )
 
 const (

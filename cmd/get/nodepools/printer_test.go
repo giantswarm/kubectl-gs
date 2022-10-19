@@ -18,10 +18,10 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")

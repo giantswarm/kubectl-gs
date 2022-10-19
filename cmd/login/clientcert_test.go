@@ -12,7 +12,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/pointer"
 
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 )
 
 func Test_ClientCert_SelfContainedFiles(t *testing.T) {

@@ -13,12 +13,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/release"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 )
 
 func (r *runner) getServiceSet(client k8sclient.Interface) (serviceSet, error) {

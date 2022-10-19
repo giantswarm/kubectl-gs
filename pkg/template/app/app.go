@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 )
 
 type Config struct {

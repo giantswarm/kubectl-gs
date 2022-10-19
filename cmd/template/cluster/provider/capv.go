@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/vsphere"
-	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/vsphere"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 )
 
 func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {

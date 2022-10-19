@@ -9,10 +9,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/internal/feature"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/internal/feature"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
 )
 
 func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
