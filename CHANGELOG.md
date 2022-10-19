@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a bug in modifying existing entries in self-contained config files where new data for the existing entries failed to be written to the file 
+
 ## [2.24.2] - 2022-10-13
 
 ### Fixed
