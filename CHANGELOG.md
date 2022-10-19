@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.25.0] - 2022-10-19
+
 ### Changed
 
 - Use the `cluster-values` configmap when templating the `default-apps-aws` app.
@@ -1075,7 +1077,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.25.0...HEAD
+[2.25.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.2...v2.25.0
 [2.24.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.1...v2.24.2
 [2.24.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.0...v2.24.1
 [2.24.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.2...v2.24.0
