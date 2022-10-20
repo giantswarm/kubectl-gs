@@ -32,20 +32,24 @@ func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string
 		clusterRes         cluster.Resource
+		createClusterRes   func() cluster.Resource
+		created            string
 		provider           string
 		outputType         string
 		expectedGoldenFile string
 	}{
 		{
 			name: "case 0: print list of AWS clusters, with table output",
-			clusterRes: newClusterCollection(
-				*newAWSCluster("1sad2", time.Now().Format(time.RFC3339), "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAWSCluster("2a03f", time.Now().Format(time.RFC3339), "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAWSCluster("asd29", time.Now().Format(time.RFC3339), "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAWSCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAWSCluster("9f012", time.Now().Format(time.RFC3339), "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAWSCluster("2f0as", time.Now().Format(time.RFC3339), "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
-			),
+			createClusterRes: func() cluster.Resource {
+				return newClusterCollection(
+					*newAWSCluster("1sad2", time.Now().Format(time.RFC3339), "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
+					*newAWSCluster("2a03f", time.Now().Format(time.RFC3339), "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+					*newAWSCluster("asd29", time.Now().Format(time.RFC3339), "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+					*newAWSCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", "", nil),
+					*newAWSCluster("9f012", time.Now().Format(time.RFC3339), "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+					*newAWSCluster("2f0as", time.Now().Format(time.RFC3339), "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				)
+			},
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_aws_clusters_table_output.golden",
@@ -74,6 +78,7 @@ func Test_printOutput(t *testing.T) {
 				*newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
 				*newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
+			created:            "2021-01-02T15:04:32Z",
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_list_of_aws_clusters_yaml_output.golden",
@@ -93,8 +98,10 @@ func Test_printOutput(t *testing.T) {
 			expectedGoldenFile: "print_list_of_aws_clusters_name_output.golden",
 		},
 		{
-			name:               "case 4: print single AWS cluster, with table output",
-			clusterRes:         newAWSCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			name: "case 4: print single AWS cluster, with table output",
+			createClusterRes: func() cluster.Resource {
+				return newAWSCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated})
+			},
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_aws_cluster_table_output.golden",
@@ -122,14 +129,16 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 8: print list of Azure clusters, with table output",
-			clusterRes: newClusterCollection(
-				*newAzureCluster("1sad2", time.Now().Format(time.RFC3339), "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAzureCluster("2a03f", time.Now().Format(time.RFC3339), "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAzureCluster("asd29", time.Now().Format(time.RFC3339), "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAzureCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAzureCluster("9f012", time.Now().Format(time.RFC3339), "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAzureCluster("2f0as", time.Now().Format(time.RFC3339), "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
-			),
+			createClusterRes: func() cluster.Resource {
+				return newClusterCollection(
+					*newAzureCluster("1sad2", time.Now().Format(time.RFC3339), "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
+					*newAzureCluster("2a03f", time.Now().Format(time.RFC3339), "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+					*newAzureCluster("asd29", time.Now().Format(time.RFC3339), "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+					*newAzureCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", "", nil),
+					*newAzureCluster("9f012", time.Now().Format(time.RFC3339), "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+					*newAzureCluster("2f0as", time.Now().Format(time.RFC3339), "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				)
+			},
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_azure_clusters_table_output.golden",
@@ -177,8 +186,10 @@ func Test_printOutput(t *testing.T) {
 			expectedGoldenFile: "print_list_of_azure_clusters_name_output.golden",
 		},
 		{
-			name:               "case 12: print single Azure cluster, with table output",
-			clusterRes:         newAzureCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			name: "case 12: print single Azure cluster, with table output",
+			createClusterRes: func() cluster.Resource {
+				return newAzureCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated})
+			},
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
@@ -218,7 +229,13 @@ func Test_printOutput(t *testing.T) {
 				provider: tc.provider,
 			}
 
-			err := runner.printOutput(tc.clusterRes)
+			clusterRes := tc.clusterRes
+			if tc.createClusterRes != nil {
+				clusterRes = tc.createClusterRes()
+			}
+
+			err := runner.printOutput(clusterRes)
+
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}

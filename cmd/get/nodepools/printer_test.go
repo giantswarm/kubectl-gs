@@ -33,20 +33,23 @@ func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string
 		np                 nodepool.Resource
+		createNp           func() nodepool.Resource
 		provider           string
 		outputType         string
 		expectedGoldenFile string
 	}{
 		{
 			name: "case 0: print list of AWS nodepools, with table output",
-			np: newNodePoolCollection(
-				*newAWSNodePool("1sad2", "s921a", time.Now().Format(time.RFC3339), "12.0.0", "test nodepool 1", 1, 3, 2, 2),
-				*newAWSNodePool("2a03f", "3a0d1", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 2", 3, 10, 5, 2),
-				*newAWSNodePool("asd29", "s0a10", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 10, 10, 10, 10),
-				*newAWSNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 3, 3, 3, 1),
-				*newAWSNodePool("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 0, 3, 1, 1),
-				*newAWSNodePool("2f0as", "s00sn", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 6", 2, 5, 5, 5),
-			),
+			createNp: func() nodepool.Resource {
+				return newNodePoolCollection(
+					*newAWSNodePool("1sad2", "s921a", time.Now().Format(time.RFC3339), "12.0.0", "test nodepool 1", 1, 3, 2, 2),
+					*newAWSNodePool("2a03f", "3a0d1", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 2", 3, 10, 5, 2),
+					*newAWSNodePool("asd29", "s0a10", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 10, 10, 10, 10),
+					*newAWSNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 3, 3, 3, 1),
+					*newAWSNodePool("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 0, 3, 1, 1),
+					*newAWSNodePool("2f0as", "s00sn", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 6", 2, 5, 5, 5),
+				)
+			},
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_aws_nodepools_table_output.golden",
@@ -94,8 +97,10 @@ func Test_printOutput(t *testing.T) {
 			expectedGoldenFile: "print_list_of_aws_nodepools_name_output.golden",
 		},
 		{
-			name:               "case 4: print single AWS nodepool, with table output",
-			np:                 newAWSNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 3, 3, 3, 1),
+			name: "case 4: print single AWS nodepool, with table output",
+			createNp: func() nodepool.Resource {
+				return newAWSNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 3, 3, 3, 1)
+			},
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_aws_nodepool_table_output.golden",
@@ -123,14 +128,16 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name: "case 8: print list of Azure nodepools, with table output",
-			np: newNodePoolCollection(
-				*newAzureNodePool("1sad2", "s921a", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 1", 1, 3, -1, -1),
-				*newAzureNodePool("2a03f", "3a0d1", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 2", 3, 10, -1, -1),
-				*newAzureNodePool("asd29", "s0a10", time.Now().Format(time.RFC3339), "13.2.0", "test nodepool 3", 10, 10, 10, 10),
-				*newAzureNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 4", 3, 3, -1, -1),
-				*newAzureNodePool("9f012", "29sa0", time.Now().Format(time.RFC3339), "13.2.0", "test nodepool 5", 0, 3, 1, 1),
-				*newAzureNodePool("2f0as", "s00sn", time.Now().Format(time.RFC3339), "13.1.0", "test nodepool 6", 2, 5, -1, -1),
-			),
+			createNp: func() nodepool.Resource {
+				return newNodePoolCollection(
+					*newAzureNodePool("1sad2", "s921a", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 1", 1, 3, -1, -1),
+					*newAzureNodePool("2a03f", "3a0d1", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 2", 3, 10, -1, -1),
+					*newAzureNodePool("asd29", "s0a10", time.Now().Format(time.RFC3339), "13.2.0", "test nodepool 3", 10, 10, 10, 10),
+					*newAzureNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+					*newAzureNodePool("9f012", "29sa0", time.Now().Format(time.RFC3339), "13.2.0", "test nodepool 5", 0, 3, 1, 1),
+					*newAzureNodePool("2f0as", "s00sn", time.Now().Format(time.RFC3339), "13.1.0", "test nodepool 6", 2, 5, -1, -1),
+				)
+			},
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_azure_nodepools_table_output.golden",
@@ -178,8 +185,10 @@ func Test_printOutput(t *testing.T) {
 			expectedGoldenFile: "print_list_of_azure_nodepools_name_output.golden",
 		},
 		{
-			name:               "case 12: print single Azure nodepool, with table output",
-			np:                 newAzureNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 4", 3, 3, -1, -1),
+			name: "case 12: print single Azure nodepool, with table output",
+			createNp: func() nodepool.Resource {
+				return newAzureNodePool("f930q", "s921a", time.Now().Format(time.RFC3339), "13.0.0", "test nodepool 4", 3, 3, -1, -1)
+			},
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_azure_nodepool_table_output.golden",
@@ -219,7 +228,12 @@ func Test_printOutput(t *testing.T) {
 				provider: tc.provider,
 			}
 
-			err := runner.printOutput(tc.np)
+			np := tc.np
+			if tc.createNp != nil {
+				np = tc.createNp()
+			}
+
+			err := runner.printOutput(np)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
