@@ -26,9 +26,9 @@ func Test_printOutputOldTemp(t *testing.T) {
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_orgs_table_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)),
-				*newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)),
-				*newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)),
+				*newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)),
+				*newOrgResourceOT("test-2", "org-test-2", time.Now().Format(time.RFC3339)),
+				*newOrgResourceOT("test-3", "org-test-3", time.Now().Format(time.RFC3339)),
 			),
 		},
 		{
@@ -36,9 +36,9 @@ func Test_printOutputOldTemp(t *testing.T) {
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_list_of_orgs_json_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
 			),
 		},
 		{
@@ -46,9 +46,9 @@ func Test_printOutputOldTemp(t *testing.T) {
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_list_of_orgs_yaml_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
 			),
 		},
 		{
@@ -56,34 +56,34 @@ func Test_printOutputOldTemp(t *testing.T) {
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_list_of_orgs_name_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
+				*newOrgResourceOT("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
 			),
 		},
 		{
 			name:               "case 4: print single org, with table output",
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_org_table_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)),
+			orgRes:             newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)),
 		},
 		{
 			name:               "case 4: print single org, with JSON output",
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_single_org_json_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+			orgRes:             newOrgResourceOT("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
 		},
 		{
 			name:               "case 4: print single org, with YAML output",
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_single_org_yaml_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+			orgRes:             newOrgResourceOT("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
 		},
 		{
 			name:               "case 4: print single org, with name output",
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_org_name_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+			orgRes:             newOrgResourceOT("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
 		},
 	}
 
@@ -123,4 +123,8 @@ func Test_printOutputOldTemp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newOrgResourceOT(name, namespace, created string) *organization.Organization {
+	return newOrgResource(name, namespace, parseCreated(created))
 }

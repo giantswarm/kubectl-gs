@@ -22,6 +22,8 @@ import (
 //
 // go test ./cmd/get/nodepools -run Test_run -update
 func Test_runOldTemp(t *testing.T) {
+	suiteStart := time.Now()
+
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -33,10 +35,10 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 0: get nodepools",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				newcapiMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newAWSMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+				newcapiMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newAWSMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools.golden",
@@ -50,10 +52,10 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 2: get nodepool by name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				newcapiMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newAWSMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+				newcapiMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newAWSMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_nodepool_by_id.golden",
@@ -66,9 +68,9 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 4: get nodepool by name, with no infrastructure ref",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newAWSMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+				newcapiMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
@@ -76,12 +78,12 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 5: get nodepools by cluster name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
-				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+				newcapiMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newAWSMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+				newcapiMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newAWSMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				newcapiMachineDeploymentOT("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
+				newAWSMachineDeploymentOT("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
 			},
 			args:               nil,
 			clusterName:        "s921a",
@@ -90,12 +92,12 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 6: get nodepools by name and cluster name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
-				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+				newcapiMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+				newAWSMachineDeploymentOT("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+				newcapiMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newAWSMachineDeploymentOT("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				newcapiMachineDeploymentOT("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
+				newAWSMachineDeploymentOT("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
 			},
 			args:               []string{"f930q"},
 			clusterName:        "s921a",
@@ -117,6 +119,8 @@ func Test_runOldTemp(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			testStart := time.Now()
+
 			ctx := context.TODO()
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
@@ -164,7 +168,7 @@ func Test_runOldTemp(t *testing.T) {
 
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
-				t.Fatalf("value not expected, got:\n %s", diff)
+				t.Fatalf("suite start %s, test start %s, test end: %s, value not expected, got:\n %s", suiteStart, testStart, time.Now(), diff)
 			}
 		})
 	}

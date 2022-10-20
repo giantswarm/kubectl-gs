@@ -32,24 +32,20 @@ func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string
 		clusterRes         cluster.Resource
-		createClusterRes   func() cluster.Resource
-		created            string
 		provider           string
 		outputType         string
 		expectedGoldenFile string
 	}{
 		{
 			name: "case 0: print list of AWS clusters, with table output",
-			createClusterRes: func() cluster.Resource {
-				return newClusterCollection(
-					*newAWSCluster("1sad2", time.Now().Format(time.RFC3339), "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-					*newAWSCluster("2a03f", time.Now().Format(time.RFC3339), "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-					*newAWSCluster("asd29", time.Now().Format(time.RFC3339), "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-					*newAWSCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", "", nil),
-					*newAWSCluster("9f012", time.Now().Format(time.RFC3339), "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-					*newAWSCluster("2f0as", time.Now().Format(time.RFC3339), "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				)
-			},
+			clusterRes: newClusterCollection(
+				*newAWSCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, time.Now(), nil),
+				*newAWSCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", time.Now(), nil),
+				*newAWSCluster("9f012", "9.0.0", "test", "test cluster 5", "", time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAWSCluster("2f0as", "10.5.0", "random", "test cluster 6", "", time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_aws_clusters_table_output.golden",
@@ -57,12 +53,12 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 1: print list of AWS clusters, with JSON output",
 			clusterRes: newClusterCollection(
-				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAWSCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAWSCluster("9f012", "9.0.0", "test", "test cluster 5", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAWSCluster("2f0as", "10.5.0", "random", "test cluster 6", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeJSON,
@@ -71,14 +67,13 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 2: print list of AWS clusters, with YAML output",
 			clusterRes: newClusterCollection(
-				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAWSCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAWSCluster("9f012", "9.0.0", "test", "test cluster 5", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAWSCluster("2f0as", "10.5.0", "random", "test cluster 6", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
-			created:            "2021-01-02T15:04:32Z",
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_list_of_aws_clusters_yaml_output.golden",
@@ -86,59 +81,55 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 3: print list of AWS clusters, with name output",
 			clusterRes: newClusterCollection(
-				*newAWSCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAWSCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAWSCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAWSCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAWSCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAWSCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAWSCluster("9f012", "9.0.0", "test", "test cluster 5", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAWSCluster("2f0as", "10.5.0", "random", "test cluster 6", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_list_of_aws_clusters_name_output.golden",
 		},
 		{
-			name: "case 4: print single AWS cluster, with table output",
-			createClusterRes: func() cluster.Resource {
-				return newAWSCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated})
-			},
+			name:               "case 4: print single AWS cluster, with table output",
+			clusterRes:         newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_aws_cluster_table_output.golden",
 		},
 		{
 			name:               "case 5: print single AWS cluster, with JSON output",
-			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_single_aws_cluster_json_output.golden",
 		},
 		{
 			name:               "case 6: print single AWS cluster, with YAML output",
-			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_single_aws_cluster_yaml_output.golden",
 		},
 		{
 			name:               "case 7: print single AWS cluster, with name output",
-			clusterRes:         newAWSCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_aws_cluster_name_output.golden",
 		},
 		{
 			name: "case 8: print list of Azure clusters, with table output",
-			createClusterRes: func() cluster.Resource {
-				return newClusterCollection(
-					*newAzureCluster("1sad2", time.Now().Format(time.RFC3339), "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-					*newAzureCluster("2a03f", time.Now().Format(time.RFC3339), "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-					*newAzureCluster("asd29", time.Now().Format(time.RFC3339), "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-					*newAzureCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", "", nil),
-					*newAzureCluster("9f012", time.Now().Format(time.RFC3339), "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-					*newAzureCluster("2f0as", time.Now().Format(time.RFC3339), "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				)
-			},
+			clusterRes: newClusterCollection(
+				*newAzureCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, time.Now(), nil),
+				*newAzureCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", time.Now(), nil),
+				*newAzureCluster("9f012", "9.0.0", "test", "test cluster 5", "", time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "10.5.0", "random", "test cluster 6", "", time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_azure_clusters_table_output.golden",
@@ -146,12 +137,12 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 9: print list of Azure clusters, with JSON output",
 			clusterRes: newClusterCollection(
-				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAzureCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAzureCluster("9f012", "9.0.0", "test", "test cluster 5", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "10.5.0", "random", "test cluster 6", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeJSON,
@@ -160,12 +151,12 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 10: print list of Azure clusters, with YAML output",
 			clusterRes: newClusterCollection(
-				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAzureCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAzureCluster("9f012", "9.0.0", "test", "test cluster 5", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "10.5.0", "random", "test cluster 6", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeYAML,
@@ -174,43 +165,41 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 11: print list of Azure clusters, with name output",
 			clusterRes: newClusterCollection(
-				*newAzureCluster("1sad2", "2021-01-02T15:04:32Z", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, nil),
-				*newAzureCluster("2a03f", "2021-01-02T15:04:32Z", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAzureCluster("asd29", "2021-01-02T15:04:32Z", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", "", nil),
-				*newAzureCluster("9f012", "2021-01-02T15:04:32Z", "9.0.0", "test", "test cluster 5", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAzureCluster("2f0as", "2021-01-02T15:04:32Z", "10.5.0", "random", "test cluster 6", "", []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAzureCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAzureCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", parseCreated("2021-01-02T15:04:32Z"), nil),
+				*newAzureCluster("9f012", "9.0.0", "test", "test cluster 5", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAzureCluster("2f0as", "10.5.0", "random", "test cluster 6", "", parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_list_of_azure_clusters_name_output.golden",
 		},
 		{
-			name: "case 12: print single Azure cluster, with table output",
-			createClusterRes: func() cluster.Resource {
-				return newAzureCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated})
-			},
+			name:               "case 12: print single Azure cluster, with table output",
+			clusterRes:         newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_azure_cluster_table_output.golden",
 		},
 		{
 			name:               "case 13: print single Azure cluster, with JSON output",
-			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_single_azure_cluster_json_output.golden",
 		},
 		{
 			name:               "case 14: print single Azure cluster, with YAML output",
-			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_single_azure_cluster_yaml_output.golden",
 		},
 		{
 			name:               "case 15: print single Azure cluster, with name output",
-			clusterRes:         newAzureCluster("f930q", "2021-01-02T15:04:32Z", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAzureCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, parseCreated("2021-01-02T15:04:32Z"), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAzure,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_azure_cluster_name_output.golden",
@@ -229,12 +218,7 @@ func Test_printOutput(t *testing.T) {
 				provider: tc.provider,
 			}
 
-			clusterRes := tc.clusterRes
-			if tc.createClusterRes != nil {
-				clusterRes = tc.createClusterRes()
-			}
-
-			err := runner.printOutput(clusterRes)
+			err := runner.printOutput(tc.clusterRes)
 
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
@@ -265,9 +249,7 @@ func Test_printOutput(t *testing.T) {
 	}
 }
 
-func newcapiCluster(id, created, release, org, description, servicePriority string, conditions []string) *capi.Cluster {
-	location, _ := time.LoadLocation("UTC")
-	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+func newcapiCluster(id, release, org, description, servicePriority string, creationDate time.Time, conditions []string) *capi.Cluster {
 	c := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -276,7 +258,7 @@ func newcapiCluster(id, created, release, org, description, servicePriority stri
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              id,
 			Namespace:         "default",
-			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+			CreationTimestamp: metav1.NewTime(creationDate),
 			Labels: map[string]string{
 				label.ReleaseVersion:  release,
 				label.Organization:    org,
@@ -301,14 +283,12 @@ func newcapiCluster(id, created, release, org, description, servicePriority stri
 	return c
 }
 
-func newAWSClusterResource(id, created, release, org, description string, conditions []string) *infrastructurev1alpha3.AWSCluster {
-	location, _ := time.LoadLocation("UTC")
-	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+func newAWSClusterResource(id, release, org, description string, creationDate time.Time, conditions []string) *infrastructurev1alpha3.AWSCluster {
 	c := &infrastructurev1alpha3.AWSCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              id,
 			Namespace:         "default",
-			CreationTimestamp: metav1.NewTime(parsedCreationDate),
+			CreationTimestamp: metav1.NewTime(creationDate),
 			Labels: map[string]string{
 				label.ReleaseVersion:  release,
 				label.Organization:    org,
@@ -337,9 +317,9 @@ func newAWSClusterResource(id, created, release, org, description string, condit
 	return c
 }
 
-func newAWSCluster(id, created, release, org, description, servicePriority string, conditions []string) *cluster.Cluster {
-	awsCluster := newAWSClusterResource(id, created, release, org, description, conditions)
-	capiCluster := newcapiCluster(id, "default", release, org, description, servicePriority, conditions)
+func newAWSCluster(id, release, org, description, servicePriority string, creationDate time.Time, conditions []string) *cluster.Cluster {
+	awsCluster := newAWSClusterResource(id, release, org, description, creationDate, conditions)
+	capiCluster := newcapiCluster(id, release, org, description, servicePriority, parseCreated("default"), conditions)
 
 	c := &cluster.Cluster{
 		AWSCluster: awsCluster,
@@ -366,9 +346,9 @@ func newAzureClusterResource(id, namespace string) *capz.AzureCluster {
 	return c
 }
 
-func newAzureCluster(id, created, release, org, description, servicePriority string, conditions []string) *cluster.Cluster {
+func newAzureCluster(id, release, org, description, servicePriority string, creationDate time.Time, conditions []string) *cluster.Cluster {
 	azureCluster := newAzureClusterResource(id, "default")
-	capiCluster := newcapiCluster(id, created, release, org, description, servicePriority, conditions)
+	capiCluster := newcapiCluster(id, release, org, description, servicePriority, creationDate, conditions)
 
 	c := &cluster.Cluster{
 		AzureCluster: azureCluster,
@@ -401,4 +381,10 @@ To create a cluster, please check
 	if out.String() != expected {
 		t.Fatalf("value not expected, got:\n %s", out.String())
 	}
+}
+
+func parseCreated(created string) time.Time {
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+	return parsedCreationDate
 }

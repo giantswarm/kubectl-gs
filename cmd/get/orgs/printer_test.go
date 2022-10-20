@@ -19,7 +19,6 @@ import (
 func Test_printOutput(t *testing.T) {
 	testCases := []struct {
 		name               string
-		createOrgRes       func() organization.Resource
 		orgRes             organization.Resource
 		outputType         string
 		expectedGoldenFile string
@@ -28,22 +27,20 @@ func Test_printOutput(t *testing.T) {
 			name:               "case 0: print list of orgs, with table output",
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_orgs_table_output.golden",
-			createOrgRes: func() organization.Resource {
-				return newOrgCollection(
-					*newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)),
-					*newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)),
-					*newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)),
-				)
-			},
+			orgRes: newOrgCollection(
+				*newOrgResource("test-1", "org-test-1", time.Now()),
+				*newOrgResource("test-2", "org-test-2", time.Now()),
+				*newOrgResource("test-3", "org-test-3", time.Now()),
+			),
 		},
 		{
 			name:               "case 1: print list of orgs, with JSON output",
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_list_of_orgs_json_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
+				*newOrgResource("test-1", "org-test-1", parseCreated("2022-08-18T08:07:48Z")),
+				*newOrgResource("test-2", "org-test-2", parseCreated("2022-08-18T08:07:48Z")),
+				*newOrgResource("test-3", "org-test-3", parseCreated("2022-08-18T08:07:48Z")),
 			),
 		},
 		{
@@ -51,9 +48,9 @@ func Test_printOutput(t *testing.T) {
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_list_of_orgs_yaml_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
+				*newOrgResource("test-1", "org-test-1", parseCreated("2022-08-18T08:07:48Z")),
+				*newOrgResource("test-2", "org-test-2", parseCreated("2022-08-18T08:07:48Z")),
+				*newOrgResource("test-3", "org-test-3", parseCreated("2022-08-18T08:07:48Z")),
 			),
 		},
 		{
@@ -61,36 +58,34 @@ func Test_printOutput(t *testing.T) {
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_list_of_orgs_name_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-2", "org-test-2", "2022-08-18T08:07:48Z"),
-				*newOrgResource("test-3", "org-test-3", "2022-08-18T08:07:48Z"),
+				*newOrgResource("test-1", "org-test-1", parseCreated("2022-08-18T08:07:48Z")),
+				*newOrgResource("test-2", "org-test-2", parseCreated("2022-08-18T08:07:48Z")),
+				*newOrgResource("test-3", "org-test-3", parseCreated("2022-08-18T08:07:48Z")),
 			),
 		},
 		{
 			name:               "case 4: print single org, with table output",
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_org_table_output.golden",
-			createOrgRes: func() organization.Resource {
-				return newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339))
-			},
+			orgRes:             newOrgResource("test-1", "org-test-1", time.Now()),
 		},
 		{
 			name:               "case 4: print single org, with JSON output",
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_single_org_json_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+			orgRes:             newOrgResource("test-1", "org-test-1", parseCreated("2022-08-18T08:07:48Z")),
 		},
 		{
 			name:               "case 4: print single org, with YAML output",
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_single_org_yaml_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+			orgRes:             newOrgResource("test-1", "org-test-1", parseCreated("2022-08-18T08:07:48Z")),
 		},
 		{
 			name:               "case 4: print single org, with name output",
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_org_name_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", "2022-08-18T08:07:48Z"),
+			orgRes:             newOrgResource("test-1", "org-test-1", parseCreated("2022-08-18T08:07:48Z")),
 		},
 	}
 
@@ -105,12 +100,7 @@ func Test_printOutput(t *testing.T) {
 				stdout: out,
 			}
 
-			orgRes := tc.orgRes
-			if tc.createOrgRes != nil {
-				orgRes = tc.createOrgRes()
-			}
-
-			err := runner.printOutput(orgRes)
+			err := runner.printOutput(tc.orgRes)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -132,10 +122,8 @@ func Test_printOutput(t *testing.T) {
 	}
 }
 
-func newOrgResource(name, namespace, created string) *organization.Organization {
-	location, _ := time.LoadLocation("UTC")
-	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
-	creationTimestamp := metav1.NewTime(parsedCreationDate)
+func newOrgResource(name, namespace string, creationDate time.Time) *organization.Organization {
+	creationTimestamp := metav1.NewTime(creationDate)
 	return &organization.Organization{
 		Organization: &v1alpha1.Organization{
 			TypeMeta: metav1.TypeMeta{
@@ -158,4 +146,10 @@ func newOrgCollection(orgs ...organization.Organization) *organization.Collectio
 	return &organization.Collection{
 		Items: orgs,
 	}
+}
+
+func parseCreated(created string) time.Time {
+	location, _ := time.LoadLocation("UTC")
+	parsedCreationDate, _ := time.ParseInLocation(time.RFC3339, created, location)
+	return parsedCreationDate
 }

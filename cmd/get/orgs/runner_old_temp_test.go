@@ -18,6 +18,8 @@ import (
 )
 
 func Test_runOldTemp(t *testing.T) {
+	suiteStart := time.Now()
+
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -33,9 +35,9 @@ func Test_runOldTemp(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
 			},
 		},
 		{
@@ -43,9 +45,9 @@ func Test_runOldTemp(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_non_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
 			},
 			permittedResources: []v1.ResourceRule{
 				{
@@ -67,9 +69,9 @@ func Test_runOldTemp(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_empty.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
 			},
 		},
 		{
@@ -77,7 +79,7 @@ func Test_runOldTemp(t *testing.T) {
 			args:               []string{"test-1"},
 			expectedGoldenFile: "run_get_org_by_name.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
 			},
 		},
 		{
@@ -85,13 +87,14 @@ func Test_runOldTemp(t *testing.T) {
 			args:         []string{"test-2"},
 			errorMatcher: IsNotFound,
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResourceOT("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			testStart := time.Now()
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfigFromConfig(kubeconfig.CreateValidTestConfig())
 
@@ -129,7 +132,7 @@ func Test_runOldTemp(t *testing.T) {
 
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
-				t.Fatalf("value not expected, got:\n %s", diff)
+				t.Fatalf("suite start %s, test start %s, test end: %s, value not expected, got:\n %s", suiteStart, testStart, time.Now(), diff)
 			}
 		})
 	}

@@ -25,6 +25,8 @@ import (
 //
 // go test ./cmd/get/clusters -run Test_run -update
 func Test_runOldTemp(t *testing.T) {
+	suiteStart := time.Now()
+
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -35,10 +37,10 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
-				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				newcapiClusterOT("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
+				newAWSClusterResourceOT("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
+				newcapiClusterOT("f930q", "default", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
+				newAWSClusterResourceOT("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_clusters.golden",
@@ -52,10 +54,10 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
-				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				newcapiClusterOT("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
+				newAWSClusterResourceOT("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
+				newcapiClusterOT("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
+				newAWSClusterResourceOT("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_cluster_by_id.golden",
@@ -69,9 +71,9 @@ func Test_runOldTemp(t *testing.T) {
 		{
 			name: "case 4: get cluster by id, with no infrastructure cluster",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 3", label.ServicePriorityMedium, nil),
+				newcapiClusterOT("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
+				newAWSClusterResourceOT("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
+				newcapiClusterOT("f930q", "default", "11.0.0", "some-other", "test cluster 3", label.ServicePriorityMedium, nil),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
@@ -80,6 +82,8 @@ func Test_runOldTemp(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			testStart := time.Now()
+
 			ctx := context.TODO()
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
@@ -126,7 +130,7 @@ func Test_runOldTemp(t *testing.T) {
 
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
-				t.Fatalf("value not expected, got:\n %s", diff)
+				t.Fatalf("suite start %s, test start %s, test end: %s, value not expected, got:\n %s", suiteStart, testStart, time.Now(), diff)
 			}
 		})
 	}
