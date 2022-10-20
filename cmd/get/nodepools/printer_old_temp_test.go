@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
 	"github.com/giantswarm/kubectl-gs/pkg/output"
 	"github.com/giantswarm/kubectl-gs/test/goldenfile"
-	"github.com/google/go-cmp/cmp"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 // Test_printOutput uses golden files.
