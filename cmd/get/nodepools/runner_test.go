@@ -29,7 +29,7 @@ import (
 func Test_run(t *testing.T) {
 	testCases := []struct {
 		name               string
-		storage            []runtime.Object
+		createStorage      func() []runtime.Object
 		args               []string
 		clusterName        string
 		expectedGoldenFile string
@@ -37,57 +37,63 @@ func Test_run(t *testing.T) {
 	}{
 		{
 			name: "case 0: get nodepools",
-			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+					newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+					newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+					newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				}
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools.golden",
 		},
 		{
 			name:               "case 1: get nodepools, with empty storage",
-			storage:            nil,
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools_empty_storage.golden",
 		},
 		{
 			name: "case 2: get nodepool by name",
-			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+					newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+					newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+					newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				}
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_nodepool_by_id.golden",
 		},
 		{
 			name:         "case 3: get nodepool by name, with empty storage",
-			storage:      nil,
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
 		},
 		{
 			name: "case 4: get nodepool by name, with no infrastructure ref",
-			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+					newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+					newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				}
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
 		},
 		{
 			name: "case 5: get nodepools by cluster name",
-			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
-				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+					newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+					newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+					newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+					newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
+					newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+				}
 			},
 			args:               nil,
 			clusterName:        "s921a",
@@ -95,13 +101,15 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 6: get nodepools by name and cluster name",
-			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
-				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
+					newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
+					newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+					newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+					newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
+					newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+				}
 			},
 			args:               []string{"f930q"},
 			clusterName:        "s921a",
@@ -109,14 +117,12 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name:               "case 7: get nodepools by cluster name, with empty storage",
-			storage:            nil,
 			args:               nil,
 			clusterName:        "s921a",
 			expectedGoldenFile: "run_get_nodepool_by_cluster_id_empty_storage.golden",
 		},
 		{
 			name:         "case 8: get nodepools by name and cluster name, with empty storage",
-			storage:      nil,
 			args:         []string{"f930q"},
 			clusterName:  "s921a",
 			errorMatcher: IsNotFound,
@@ -133,10 +139,15 @@ func Test_run(t *testing.T) {
 				ClusterName: tc.clusterName,
 			}
 
+			var storage []runtime.Object
+			if tc.createStorage != nil {
+				storage = tc.createStorage()
+			}
+
 			out := new(bytes.Buffer)
 			runner := &runner{
 				commonConfig: commonconfig.New(genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig)),
-				service:      newClusterService(t, tc.storage...),
+				service:      newClusterService(t, storage...),
 				flag:         flag,
 				stdout:       out,
 				provider:     key.ProviderAWS,

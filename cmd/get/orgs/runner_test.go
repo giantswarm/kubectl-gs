@@ -23,7 +23,7 @@ import (
 func Test_run(t *testing.T) {
 	testCases := []struct {
 		name               string
-		storage            []runtime.Object
+		createStorage      func() []runtime.Object
 		args               []string
 		isAdmin            bool
 		permittedResources []v1.ResourceRule
@@ -35,20 +35,24 @@ func Test_run(t *testing.T) {
 			isAdmin:            true,
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_admin.golden",
-			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+					newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
+					newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				}
 			},
 		},
 		{
 			name:               "case 1: get orgs for non-admin",
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_non_admin.golden",
-			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+					newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
+					newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				}
 			},
 			permittedResources: []v1.ResourceRule{
 				{
@@ -69,26 +73,32 @@ func Test_run(t *testing.T) {
 			name:               "case 3: get orgs for non-admin, with no permitted resources",
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_empty.golden",
-			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+					newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
+					newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				}
 			},
 		},
 		{
 			name:               "case 4: get org by name",
 			args:               []string{"test-1"},
 			expectedGoldenFile: "run_get_org_by_name.golden",
-			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				}
 			},
 		},
 		{
 			name:         "case 5: get org by name, not available in storage",
 			args:         []string{"test-2"},
 			errorMatcher: IsNotFound,
-			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				}
 			},
 		},
 	}
@@ -102,11 +112,16 @@ func Test_run(t *testing.T) {
 				print: genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault),
 			}
 
+			var storage []runtime.Object
+			if tc.createStorage != nil {
+				storage = tc.createStorage()
+			}
+
 			out := new(bytes.Buffer)
 			runner := &runner{
 				commonConfig: commonconfig.New(genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig)),
 				flag:         flg,
-				service:      newOrgService(t, tc.isAdmin, tc.permittedResources, tc.storage...),
+				service:      newOrgService(t, tc.isAdmin, tc.permittedResources, storage...),
 				stdout:       out,
 			}
 

@@ -31,17 +31,20 @@ func Test_run(t *testing.T) {
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
+		createStorage      func() []runtime.Object
 		args               []string
 		expectedGoldenFile string
 		errorMatcher       func(error) bool
 	}{
 		{
 			name: "case 0: get clusters",
-			storage: []runtime.Object{
-				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
-				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
+					newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
+					newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
+					newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				}
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_clusters.golden",
@@ -54,11 +57,13 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 2: get cluster by id",
-			storage: []runtime.Object{
-				newcapiCluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
-				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+			createStorage: func() []runtime.Object {
+				return []runtime.Object{
+					newcapiCluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
+					newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
+					newcapiCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
+					newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				}
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_cluster_by_id.golden",
@@ -91,9 +96,14 @@ func Test_run(t *testing.T) {
 			}
 			out := new(bytes.Buffer)
 
+			storage := tc.storage
+			if tc.createStorage != nil {
+				storage = tc.createStorage()
+			}
+
 			runner := &runner{
 				commonConfig: commonconfig.New(genericclioptions.NewTestConfigFlags().WithClientConfig(fakeKubeConfig)),
-				service:      newClusterService(t, tc.storage...),
+				service:      newClusterService(t, storage...),
 				flag:         flag,
 				stdout:       out,
 				provider:     key.ProviderAWS,
