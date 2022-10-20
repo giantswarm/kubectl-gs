@@ -7,8 +7,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 )
 
 func (r *runner) findContext(ctx context.Context, installationIdentifier string) (bool, error) {

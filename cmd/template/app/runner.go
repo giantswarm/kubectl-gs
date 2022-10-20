@@ -14,10 +14,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/annotations"
-	"github.com/giantswarm/kubectl-gs/pkg/labels"
-	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/annotations"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/labels"
+	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 )
 
 type runner struct {

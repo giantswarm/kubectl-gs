@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/giantswarm/kubectl-gs/pkg/app"
-	"github.com/giantswarm/kubectl-gs/pkg/pluralize"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/app"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/pluralize"
 )
 
 // PrintReport prints app validation

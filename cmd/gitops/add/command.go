@@ -9,12 +9,12 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	app "github.com/giantswarm/kubectl-gs/cmd/gitops/add/app"
-	autoup "github.com/giantswarm/kubectl-gs/cmd/gitops/add/automatic-updates"
-	enc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/encryption"
-	mc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/management-cluster"
-	org "github.com/giantswarm/kubectl-gs/cmd/gitops/add/organization"
-	wc "github.com/giantswarm/kubectl-gs/cmd/gitops/add/workload-cluster"
+	app "github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add/app"
+	autoup "github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add/automatic-updates"
+	enc "github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add/encryption"
+	mc "github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add/management-cluster"
+	org "github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add/organization"
+	wc "github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add/workload-cluster"
 )
 
 const (

@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Change module name to `github.com/giantswarm/kubectl-gs/v2`.
+
 ### Changed
 
 - Upgraded dependencies

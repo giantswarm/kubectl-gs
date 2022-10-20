@@ -4,8 +4,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
 )
 
 func GetOpenStackTable(clusterResource cluster.Resource) *metav1.Table {

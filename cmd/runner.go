@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/project"
-	"github.com/giantswarm/kubectl-gs/pkg/selfupdate"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/project"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/selfupdate"
 )
 
 type runner struct {
