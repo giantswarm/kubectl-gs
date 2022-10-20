@@ -2,10 +2,11 @@ package clusters
 
 import (
 	"bytes"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"testing"
 	"time"
+
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/label"

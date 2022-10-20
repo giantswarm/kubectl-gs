@@ -2,12 +2,13 @@ package nodepools
 
 import (
 	"bytes"
+	"testing"
+	"time"
+
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
-	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
