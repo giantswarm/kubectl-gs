@@ -18,7 +18,7 @@
 
 ### Should this change be mentioned in the release notes?
 
-- [ ] CHANGELOG.md has been updated (if it exists)
+- [ ] CHANGELOG.md has been updated
 
 ### Is this a breaking change?
 
