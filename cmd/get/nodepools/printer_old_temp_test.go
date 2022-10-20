@@ -6,12 +6,9 @@ import (
 	"time"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
-
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/internal/key"
 	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
@@ -252,14 +249,6 @@ func newcapiMachineDeploymentOT(name, clusterName, created, release string, node
 
 func newAWSNodePoolOT(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
 	return newAWSNodePool(name, clusterName, release, description, parseCreated(created), nodesMin, nodesMax, nodesDesired, nodesReady)
-}
-
-func newAzureMachinePoolOT(name, clusterName, created, release string) *capzexp.AzureMachinePool {
-	return newAzureMachinePool(name, clusterName, release, parseCreated(created))
-}
-
-func newCAPIexpMachinePoolOT(name, clusterName, created, release, description string, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexp.MachinePool {
-	return newCAPIexpMachinePool(name, clusterName, release, description, parseCreated(created), nodesDesired, nodesReady, nodesMin, nodesMax)
 }
 
 func newAzureNodePoolOT(name, clusterName, created, release, description string, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {

@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
@@ -255,10 +254,6 @@ func newAWSClusterResourceOT(id, created, release, org, description string, cond
 
 func newAWSClusterOT(id, created, release, org, description, servicePriority string, conditions []string) *cluster.Cluster {
 	return newAWSCluster(id, release, org, description, servicePriority, parseCreated(created), conditions)
-}
-
-func newAzureClusterResourceOT(id, namespace string) *capz.AzureCluster {
-	return newAzureClusterResource(id, namespace)
 }
 
 func newAzureClusterOT(id, created, release, org, description, servicePriority string, conditions []string) *cluster.Cluster {
