@@ -211,7 +211,7 @@ replace (
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.15.3
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.1
-	golang.org/x/text => golang.org/x/text v0.3.8
+	golang.org/x/text => golang.org/x/text v0.4.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
