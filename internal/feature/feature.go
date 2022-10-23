@@ -37,6 +37,10 @@ func (s *Service) Supports(featureName string, releaseVersion string) bool {
 		return false
 	}
 
+	if releaseVersion == "" || capability.MinVersion == "" {
+		return false
+	}
+
 	releaseVersion = strings.TrimPrefix(releaseVersion, "v")
 	inputVersion := semver.MustParse(releaseVersion)
 	featureMinVersion := semver.MustParse(capability.MinVersion)

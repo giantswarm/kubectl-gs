@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoid panic in `get nodepools` when node pool is lacking the release version label.
+
 ## [2.26.0] - 2022-10-20
 
 ### Fixed
