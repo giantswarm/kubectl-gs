@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- When templating Vintage Azure Cluster, use Flatcar version from the Release CR rather than hardcoded one.
+
 ## [2.26.0] - 2022-10-20
 
 ### Fixed
