@@ -162,6 +162,11 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			DefaultingEnabled:       false,
+			UseClusterValuesConfig:  true,
+			ExtraLabels: map[string]string{
+				k8smetadata.ManagedBy: "cluster",
+			},
 		}
 
 		var err error

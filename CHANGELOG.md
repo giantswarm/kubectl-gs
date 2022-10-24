@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Add option to reference the `cluster-values` configmap in the `App` CR created for CAPA clusters.
+
 ## [2.26.1] - 2022-10-24
 
 ### Fixed
