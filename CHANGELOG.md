@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- Avoid panic in `get nodepools` when node pool is lacking the release version label.
 - When templating Vintage Azure Cluster, use Flatcar version from the Release CR rather than hardcoded one.
 
 ## [2.26.0] - 2022-10-20
