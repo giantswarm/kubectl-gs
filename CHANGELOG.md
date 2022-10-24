@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.26.1] - 2022-10-24
+
 ### Fixed
 
 - Avoid panic in `get nodepools` when node pool is lacking the release version label.
@@ -1092,7 +1094,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.26.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.26.1...HEAD
+[2.26.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.26.0...v2.26.1
 [2.26.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.25.0...v2.26.0
 [2.25.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.2...v2.25.0
 [2.24.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.1...v2.24.2
