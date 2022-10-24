@@ -169,7 +169,7 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 					Publisher: "kinvolk",
 					Offer:     "flatcar-container-linux-free",
 					SKU:       "stable",
-					Version:   "2345.3.1",
+					Version:   config.ReleaseComponents["containerlinux"],
 				},
 			},
 			OSDisk: capz.OSDisk{
