@@ -3,10 +3,10 @@ package organization
 import (
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
-	orgtmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/organization/templates"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
+	orgtmpl "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/organization/templates"
 )
 
 // NewOrganization creates a new Organization directory

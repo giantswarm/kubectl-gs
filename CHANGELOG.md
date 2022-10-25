@@ -11,6 +11,33 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Disable `kubectl gs template nodepool` command for Cluster API (CAPI) based workload Clusters.
 
+## [2.26.1] - 2022-10-24
+
+### Fixed
+
+- Avoid panic in `get nodepools` when node pool is lacking the release version label.
+- When templating Vintage Azure Cluster, use Flatcar version from the Release CR rather than hardcoded one.
+
+## [2.26.0] - 2022-10-20
+
+### Fixed
+
+- Change module name to `github.com/giantswarm/kubectl-gs/v2`.
+
+### Changed
+
+- Upgraded dependencies
+
+## [2.25.0] - 2022-10-19
+
+### Changed
+
+- Use the `cluster-values` configmap when templating the `default-apps-aws` app.
+
+### Fixed
+
+- Fixed a bug in modifying existing entries in self-contained config files where new data for the existing entries failed to be written to the file.
+
 ## [2.24.2] - 2022-10-13
 
 ### Fixed
@@ -1071,7 +1098,10 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.26.1...HEAD
+[2.26.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.26.0...v2.26.1
+[2.26.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.25.0...v2.26.0
+[2.25.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.2...v2.25.0
 [2.24.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.1...v2.24.2
 [2.24.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.24.0...v2.24.1
 [2.24.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.23.2...v2.24.0

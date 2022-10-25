@@ -15,7 +15,7 @@ import (
 
 	"github.com/giantswarm/appcatalog"
 
-	catalogdata "github.com/giantswarm/kubectl-gs/pkg/data/domain/catalog"
+	catalogdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
 )
 
 var _ Interface = &Service{}

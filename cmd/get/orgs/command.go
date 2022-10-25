@@ -7,15 +7,15 @@ import (
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/pkg/middleware/renewtoken"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware/renewtoken"
 )
 
 const (

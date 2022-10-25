@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/openstack"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/openstack"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 )
 
 func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {

@@ -3,10 +3,10 @@ package root
 import (
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/internal/gitops/structure/common"
-	roottmpl "github.com/giantswarm/kubectl-gs/internal/gitops/structure/root/templates"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
+	roottmpl "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/root/templates"
 )
 
 const (

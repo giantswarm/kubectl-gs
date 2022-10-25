@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/util/validation"
 
-	"github.com/giantswarm/kubectl-gs/internal/label"
+	"github.com/giantswarm/kubectl-gs/v2/internal/label"
 )
 
 // Logic partially lifted from https://github.com/kubernetes/kubectl/blob/445ad13/pkg/cmd/label/label.go#L400-L425

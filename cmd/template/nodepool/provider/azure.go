@@ -22,8 +22,9 @@ import (
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/scheme"
+	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/v2/cmd/template/nodepool/provider/templates/azure"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
-	template "github.com/giantswarm/kubectl-gs/pkg/template/organization"
+	template "github.com/giantswarm/kubectl-gs/v2/pkg/template/organization"
 )
 
 type runner struct {

@@ -1,4 +1,4 @@
-module github.com/giantswarm/kubectl-gs
+module github.com/giantswarm/kubectl-gs/v2
 
 go 1.19
 
@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mozilla.org/sops/v3 v3.7.3
-	golang.org/x/oauth2 v0.0.0-20221006150949-b44042a4b9c1
+	golang.org/x/oauth2 v0.1.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.4.0
 	k8s.io/api v0.24.3
@@ -115,7 +115,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/mlock v0.1.2 // indirect
-	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.3 // indirect
+	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/vault/api v1.5.0 // indirect
-	github.com/hashicorp/vault/sdk v0.4.1 // indirect
+	github.com/hashicorp/vault/sdk v0.6.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
@@ -142,7 +142,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
-	github.com/mitchellh/mapstructure v1.4.3 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -175,10 +175,10 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/term v0.1.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.84.0 // indirect
@@ -205,9 +205,13 @@ replace (
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.5
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
-	github.com/docker/docker => github.com/moby/moby v20.10.18+incompatible // Use moby v20.10.x to fix build issue on darwin.
+	github.com/docker/docker => github.com/moby/moby v20.10.20+incompatible // Use moby v20.10.x to fix build issue on darwin.
+	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	golang.org/x/text => golang.org/x/text v0.3.8
+	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.15.3
+	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.1
+	golang.org/x/text => golang.org/x/text v0.4.0
+	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )

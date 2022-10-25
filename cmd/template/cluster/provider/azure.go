@@ -18,8 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
 )
 
 const (
@@ -169,7 +169,7 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 					Publisher: "kinvolk",
 					Offer:     "flatcar-container-linux-free",
 					SKU:       "stable",
-					Version:   "2345.3.1",
+					Version:   config.ReleaseComponents["containerlinux"],
 				},
 			},
 			OSDisk: capz.OSDisk{

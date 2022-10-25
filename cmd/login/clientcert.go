@@ -26,13 +26,13 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	kgslabel "github.com/giantswarm/kubectl-gs/internal/label"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/clientcert"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	kgslabel "github.com/giantswarm/kubectl-gs/v2/internal/label"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/release"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 )
 
 const (
@@ -382,6 +382,19 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		if err != nil {
 			return "", false, microerror.Mask(err)
 		}
+
+		// First remove entries included in the new config from the existing one
+		for clusterName := range kubeconfig.Clusters {
+			delete(existingKubeConfig.Clusters, clusterName)
+		}
+		for authInfoName := range kubeconfig.AuthInfos {
+			delete(existingKubeConfig.AuthInfos, authInfoName)
+		}
+		for ctxName := range kubeconfig.Contexts {
+			delete(existingKubeConfig.Contexts, ctxName)
+		}
+
+		// Then merge the 2 configs (entries from the new config will be added to the existing one)
 		err = mergo.Merge(&kubeconfig, existingKubeConfig, mergo.WithOverride)
 		if err != nil {
 			return "", false, microerror.Mask(err)
