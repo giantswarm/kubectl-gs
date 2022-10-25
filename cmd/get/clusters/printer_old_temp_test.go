@@ -12,10 +12,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
 )
 
 // Test_printOutput uses golden files.

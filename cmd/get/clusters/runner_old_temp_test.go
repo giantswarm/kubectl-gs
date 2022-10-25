@@ -14,11 +14,11 @@ import (
 
 	//nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
 )
 
 // Test_run uses golden files.

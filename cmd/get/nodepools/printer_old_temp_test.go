@@ -10,10 +10,10 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
 )
 
 // Test_printOutput uses golden files.

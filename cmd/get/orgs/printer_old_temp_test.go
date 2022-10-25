@@ -8,9 +8,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
 )
 
 func Test_printOutputOldTemp(t *testing.T) {
