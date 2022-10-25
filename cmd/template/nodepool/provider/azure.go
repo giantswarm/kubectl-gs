@@ -22,7 +22,6 @@ import (
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
-	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/v2/cmd/template/nodepool/provider/templates/azure"
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
 )
