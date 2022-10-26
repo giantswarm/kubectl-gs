@@ -21,8 +21,6 @@ import (
 )
 
 func Test_run(t *testing.T) {
-	suiteStart := time.Now()
-
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -97,8 +95,6 @@ func Test_run(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			testStart := time.Now()
-
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfigFromConfig(kubeconfig.CreateValidTestConfig())
 
 			flg := &flag{
@@ -135,7 +131,7 @@ func Test_run(t *testing.T) {
 
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
-				t.Fatalf("suite start %s, test start %s, test end: %s, value not expected, got:\n %s", suiteStart, testStart, time.Now(), diff)
+				t.Fatalf("value not expected, got:\n %s", diff)
 			}
 		})
 	}

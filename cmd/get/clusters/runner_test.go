@@ -28,8 +28,6 @@ import (
 //
 // go test ./cmd/get/clusters -run Test_run -update
 func Test_run(t *testing.T) {
-	suiteStart := time.Now()
-
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -85,8 +83,6 @@ func Test_run(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			testStart := time.Now()
-
 			ctx := context.TODO()
 
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfig()
@@ -133,7 +129,7 @@ func Test_run(t *testing.T) {
 
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
-				t.Fatalf("suite start %s, test start %s, test end: %s, value not expected, got:\n %s", suiteStart, testStart, time.Now(), diff)
+				t.Fatalf("value not expected, got:\n %s", diff)
 			}
 		})
 	}
