@@ -36,9 +36,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
+				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
 			},
 		},
 		{
@@ -46,9 +46,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_non_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
+				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
 			},
 			permittedResources: []v1.ResourceRule{
 				{
@@ -70,9 +70,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_empty.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
+				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func Test_run(t *testing.T) {
 			args:               []string{"test-1"},
 			expectedGoldenFile: "run_get_org_by_name.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
 			},
 		},
 		{
@@ -88,14 +88,13 @@ func Test_run(t *testing.T) {
 			args:         []string{"test-2"},
 			errorMatcher: IsNotFound,
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfigFromConfig(kubeconfig.CreateValidTestConfig())
 
 			flg := &flag{

@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a bug in CLI output tests that made them fail randomly
+
 ## [2.27.0] - 2022-10-25
 
 ### Changed
