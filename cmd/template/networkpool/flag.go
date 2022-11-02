@@ -27,7 +27,7 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.CIDRBlock, flagCIDRBlock, "", "Installation infrastructure provider.")
-	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, false, "Allow long names.")
+	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, true, "Allow long names.")
 	cmd.Flags().StringVar(&f.NetworkPoolName, flagNetworkPoolName, "", "NetworkPool identifier.")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
