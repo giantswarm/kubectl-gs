@@ -31,7 +31,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.mozilla.org/sops/v3 v3.7.3
+	go.mozilla.org/sops/v3 v3.7.2
 	golang.org/x/oauth2 v0.1.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.4.0
@@ -111,7 +111,7 @@ require (
 	github.com/hashicorp/go-hclog v1.2.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-plugin v1.4.3 // indirect
+	github.com/hashicorp/go-plugin v1.4.5 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/mlock v0.1.2 // indirect
@@ -210,7 +210,7 @@ replace (
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.15.3
-	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.1
+	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.2
 	golang.org/x/text => golang.org/x/text v0.4.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
