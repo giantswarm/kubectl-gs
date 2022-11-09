@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Use `n2-standard-4` as default instance types for GAPG worker nodes.
+
 ## [2.28.0] - 2022-11-09
 
 ### Fixed
