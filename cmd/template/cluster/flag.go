@@ -160,7 +160,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.GCP.ControlPlane.ServiceAccount.Scopes, flagGCPControlPlaneServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the control plane's Google Cloud Platform Service Account")
 
 	cmd.Flags().StringVar(&f.GCP.MachineDeployment.Name, flagGCPMachineDeploymentName, "worker0", "Google Cloud Platform project name")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n1-standard-2", "Google Cloud Platform worker instance type")
+	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n2-standard-4", "Google Cloud Platform worker instance type")
 	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "Google Cloud Platform worker replicas")
 	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "Google Cloud Platform worker failure domain")
 	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "Google Cloud Platform worker root disk size")
