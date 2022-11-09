@@ -23,6 +23,11 @@ data:
       name: worker1
       replicas: 7
       rootVolumeSizeGB: 5
+      serviceAccount:
+        email: service-account@email
+        scopes:
+        - scope1
+        - scope2
     organization: test
 kind: ConfigMap
 metadata:

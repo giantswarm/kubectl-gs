@@ -41,10 +41,11 @@ type ServiceAccount struct {
 }
 
 type MachineDeployment struct {
-	Name             string   `json:"name,omitempty"`
-	FailureDomain    string   `json:"failureDomain,omitempty"`
-	InstanceType     string   `json:"instanceType,omitempty"`
-	Replicas         int      `json:"replicas,omitempty"`
-	RootVolumeSizeGB int      `json:"rootVolumeSizeGB,omitempty"`
-	CustomNodeLabels []string `json:"customNodeLabels,omitempty"`
+	Name             string         `json:"name,omitempty"`
+	FailureDomain    string         `json:"failureDomain,omitempty"`
+	InstanceType     string         `json:"instanceType,omitempty"`
+	Replicas         int            `json:"replicas,omitempty"`
+	RootVolumeSizeGB int            `json:"rootVolumeSizeGB,omitempty"`
+	CustomNodeLabels []string       `json:"customNodeLabels,omitempty"`
+	ServiceAccount   ServiceAccount `json:"serviceAccount,omitempty"`
 }

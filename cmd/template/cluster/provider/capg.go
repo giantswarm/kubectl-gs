@@ -64,6 +64,10 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 					Replicas:         config.GCP.MachineDeployment.Replicas,
 					RootVolumeSizeGB: config.GCP.MachineDeployment.RootVolumeSizeGB,
 					CustomNodeLabels: config.GCP.MachineDeployment.CustomNodeLabels,
+					ServiceAccount: capg.ServiceAccount{
+						Email:  config.GCP.MachineDeployment.ServiceAccount.Email,
+						Scopes: config.GCP.MachineDeployment.ServiceAccount.Scopes,
+					},
 				},
 			},
 		}

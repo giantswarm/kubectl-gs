@@ -71,6 +71,7 @@ type GCPMachineDeployment struct {
 	Replicas         int
 	RootVolumeSizeGB int
 	CustomNodeLabels []string
+	ServiceAccount   ServiceAccount
 }
 
 type MachineConfig struct {

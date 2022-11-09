@@ -61,6 +61,10 @@ func Test_run(t *testing.T) {
 						InstanceType:     "very-large",
 						Replicas:         7,
 						RootVolumeSizeGB: 5,
+						ServiceAccount: provider.ServiceAccount{
+							Email:  "service-account@email",
+							Scopes: []string{"scope1", "scope2"},
+						},
 					},
 				},
 			},
