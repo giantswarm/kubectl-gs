@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/pkg/annotations"
-	"github.com/giantswarm/kubectl-gs/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/annotations"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/labels"
 )
 
 const (

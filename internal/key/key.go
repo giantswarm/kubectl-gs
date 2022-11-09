@@ -19,7 +19,7 @@ import (
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/pkg/normalize"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/normalize"
 )
 
 const (

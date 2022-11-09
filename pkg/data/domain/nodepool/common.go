@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 )
 
 func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {

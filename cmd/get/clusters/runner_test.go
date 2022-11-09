@@ -15,13 +15,13 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/pkg/scheme"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
 )
 
 // Test_run uses golden files.
@@ -38,10 +38,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
-				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, parseCreated("default"), nil),
+				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", time.Now(), nil),
+				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, parseCreated("default"), nil),
+				newAWSClusterResource("f930q", "11.0.0", "some-other", "test cluster 4", time.Now(), nil),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_clusters.golden",
@@ -55,10 +55,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", time.Now().Format(time.RFC3339), "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, nil),
-				newAWSClusterResource("f930q", time.Now().Format(time.RFC3339), "11.0.0", "some-other", "test cluster 4", nil),
+				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, time.Now(), nil),
+				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", time.Now(), nil),
+				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, time.Now(), nil),
+				newAWSClusterResource("f930q", "11.0.0", "some-other", "test cluster 4", time.Now(), nil),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_cluster_by_id.golden",
@@ -72,9 +72,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 4: get cluster by id, with no infrastructure cluster",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "default", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, nil),
-				newAWSClusterResource("1sad2", "2021-01-01T15:04:32Z", "10.5.0", "some-org", "test cluster 3", nil),
-				newcapiCluster("f930q", "default", "11.0.0", "some-other", "test cluster 3", label.ServicePriorityMedium, nil),
+				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, parseCreated("default"), nil),
+				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", parseCreated("2021-01-01T15:04:32Z"), nil),
+				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 3", label.ServicePriorityMedium, parseCreated("default"), nil),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,

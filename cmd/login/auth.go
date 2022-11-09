@@ -9,9 +9,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/pkg/kubeconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
 )
 
 type authInfo struct {

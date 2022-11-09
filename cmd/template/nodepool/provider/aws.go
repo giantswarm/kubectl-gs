@@ -11,38 +11,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/aws"
-	"github.com/giantswarm/kubectl-gs/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/nodepool/provider/templates/aws"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 )
 
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
-	var err error
-
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		if config.EKS {
-			err = WriteCAPAEKSTemplate(ctx, client, out, config)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else {
-			err = WriteCAPATemplate(ctx, client, out, config)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-	} else {
-		err = WriteGSAWSTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	return nil
+	return WriteGSAWSTemplate(ctx, client, out, config)
 }
 
 func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {

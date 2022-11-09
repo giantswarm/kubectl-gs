@@ -14,13 +14,13 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/pkg/scheme"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
 )
 
 // Test_run uses golden files.
@@ -38,43 +38,41 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get nodepools",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", time.Now(), 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", time.Now(), 1, 3),
+				newcapiMachineDeployment("f930q", "s921a", "11.0.0", time.Now(), 6, 6),
+				newAWSMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", time.Now(), 5, 8),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools.golden",
 		},
 		{
 			name:               "case 1: get nodepools, with empty storage",
-			storage:            nil,
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools_empty_storage.golden",
 		},
 		{
 			name: "case 2: get nodepool by name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
+				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", time.Now(), 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", time.Now(), 1, 3),
+				newcapiMachineDeployment("f930q", "s921a", "11.0.0", time.Now(), 6, 6),
+				newAWSMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", time.Now(), 5, 8),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_nodepool_by_id.golden",
 		},
 		{
 			name:         "case 3: get nodepool by name, with empty storage",
-			storage:      nil,
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
 		},
 		{
 			name: "case 4: get nodepool by name, with no infrastructure ref",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
+				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", time.Now(), 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", time.Now(), 1, 3),
+				newcapiMachineDeployment("f930q", "s921a", "11.0.0", time.Now(), 6, 6),
 			},
 			args:         []string{"f930q"},
 			errorMatcher: IsNotFound,
@@ -82,12 +80,12 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 5: get nodepools by cluster name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
-				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", time.Now(), 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", time.Now(), 1, 3),
+				newcapiMachineDeployment("f930q", "s921a", "11.0.0", time.Now(), 6, 6),
+				newAWSMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", time.Now(), 5, 8),
+				newcapiMachineDeployment("9f012", "29sa0", "9.0.0", time.Now(), 0, 3),
+				newAWSMachineDeployment("9f012", "29sa0", "9.0.0", "test nodepool 5", time.Now(), 1, 1),
 			},
 			args:               nil,
 			clusterName:        "s921a",
@@ -96,12 +94,12 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 6: get nodepools by name and cluster name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", 2, 1),
-				newAWSMachineDeployment("1sad2", "s921a", time.Now().Format(time.RFC3339), "10.5.0", "test nodepool 3", 1, 3),
-				newcapiMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", 6, 6),
-				newAWSMachineDeployment("f930q", "s921a", time.Now().Format(time.RFC3339), "11.0.0", "test nodepool 4", 5, 8),
-				newcapiMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", 0, 3),
-				newAWSMachineDeployment("9f012", "29sa0", time.Now().Format(time.RFC3339), "9.0.0", "test nodepool 5", 1, 1),
+				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", time.Now(), 2, 1),
+				newAWSMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", time.Now(), 1, 3),
+				newcapiMachineDeployment("f930q", "s921a", "11.0.0", time.Now(), 6, 6),
+				newAWSMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", time.Now(), 5, 8),
+				newcapiMachineDeployment("9f012", "29sa0", "9.0.0", time.Now(), 0, 3),
+				newAWSMachineDeployment("9f012", "29sa0", "9.0.0", "test nodepool 5", time.Now(), 1, 1),
 			},
 			args:               []string{"f930q"},
 			clusterName:        "s921a",
@@ -109,14 +107,12 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name:               "case 7: get nodepools by cluster name, with empty storage",
-			storage:            nil,
 			args:               nil,
 			clusterName:        "s921a",
 			expectedGoldenFile: "run_get_nodepool_by_cluster_id_empty_storage.golden",
 		},
 		{
 			name:         "case 8: get nodepools by name and cluster name, with empty storage",
-			storage:      nil,
 			args:         []string{"f930q"},
 			clusterName:  "s921a",
 			errorMatcher: IsNotFound,

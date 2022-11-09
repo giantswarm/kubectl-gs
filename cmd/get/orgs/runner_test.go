@@ -12,12 +12,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
-	"github.com/giantswarm/kubectl-gs/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/test/kubeclient"
-	"github.com/giantswarm/kubectl-gs/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
 )
 
 func Test_run(t *testing.T) {
@@ -36,9 +36,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
+				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
 			},
 		},
 		{
@@ -46,9 +46,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_non_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
+				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
 			},
 			permittedResources: []v1.ResourceRule{
 				{
@@ -70,9 +70,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_empty.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now().Format(time.RFC3339)).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
+				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func Test_run(t *testing.T) {
 			args:               []string{"test-1"},
 			expectedGoldenFile: "run_get_org_by_name.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
 			},
 		},
 		{
@@ -88,14 +88,13 @@ func Test_run(t *testing.T) {
 			args:         []string{"test-2"},
 			errorMatcher: IsNotFound,
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now().Format(time.RFC3339)).Organization,
+				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			fakeKubeConfig := kubeconfig.CreateFakeKubeConfigFromConfig(kubeconfig.CreateValidTestConfig())
 
 			flg := &flag{

@@ -11,8 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/pkg/data/domain/release"
-	"github.com/giantswarm/kubectl-gs/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/release"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
 )
 
 const (

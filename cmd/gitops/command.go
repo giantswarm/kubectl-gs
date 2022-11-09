@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/cmd/gitops/add"
-	"github.com/giantswarm/kubectl-gs/cmd/gitops/initialize"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/gitops/initialize"
 )
 
 const (

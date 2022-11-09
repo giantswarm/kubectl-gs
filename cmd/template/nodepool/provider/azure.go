@@ -22,84 +22,12 @@ import (
 	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
-	azurenodepooltemplate "github.com/giantswarm/kubectl-gs/cmd/template/nodepool/provider/templates/azure"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	"github.com/giantswarm/kubectl-gs/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
-	var err error
-
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		err = WriteCAPZTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else {
-		err = WriteGSAzureTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	return nil
-}
-
-func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
-	var err error
-
-	var sshSSOPublicKey string
-	{
-		sshSSOPublicKey, err = key.SSHSSOPublicKey(ctx, client.CtrlClient())
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	data := struct {
-		KubernetesVersion  string
-		ClusterName        string
-		Description        string
-		MaxSize            int
-		MinSize            int
-		Name               string
-		Namespace          string
-		Organization       string
-		Replicas           int
-		SSHDConfig         string
-		SSOPublicKey       string
-		StorageAccountType string
-		Version            string
-		VMSize             string
-	}{
-		KubernetesVersion:  "v1.19.9",
-		ClusterName:        config.ClusterName,
-		Description:        config.Description,
-		MaxSize:            config.NodesMax,
-		MinSize:            config.NodesMin,
-		Name:               config.NodePoolName,
-		Namespace:          key.OrganizationNamespaceFromName(config.Organization),
-		Organization:       config.Organization,
-		Replicas:           config.NodesMin,
-		SSHDConfig:         key.NodeSSHDConfigEncoded(),
-		SSOPublicKey:       sshSSOPublicKey,
-		StorageAccountType: key.AzureStorageAccountTypeForVMSize(config.VMSize),
-		Version:            config.ReleaseVersion,
-		VMSize:             config.VMSize,
-	}
-
-	t := template.Must(template.New(config.FileName).Parse(azurenodepooltemplate.GetTemplate()))
-	err = t.Execute(out, data)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
+	return WriteGSAzureTemplate(ctx, client, out, config)
 }
 
 func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {

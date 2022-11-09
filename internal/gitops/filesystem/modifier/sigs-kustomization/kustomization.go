@@ -3,7 +3,7 @@ package sigskus
 import (
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/internal/gitops/filesystem/modifier/helper"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/helper"
 )
 
 type empty struct{}

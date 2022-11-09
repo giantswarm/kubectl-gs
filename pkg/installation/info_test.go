@@ -10,7 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	"github.com/giantswarm/kubectl-gs/pkg/graphql"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/graphql"
 )
 
 func Test_getInstallationInfo(t *testing.T) {

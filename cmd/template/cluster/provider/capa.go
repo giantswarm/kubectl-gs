@@ -12,10 +12,10 @@ import (
 
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/aws"
-	"github.com/giantswarm/kubectl-gs/cmd/template/cluster/provider/templates/capa"
-	"github.com/giantswarm/kubectl-gs/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/aws"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 )
 
 const (
@@ -230,11 +230,16 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			AppName:                 appName,
 			Cluster:                 config.Name,
 			Catalog:                 config.App.DefaultAppsCatalog,
+			DefaultingEnabled:       false,
 			InCluster:               true,
 			Name:                    DefaultAppsRepoName,
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
+			UseClusterValuesConfig:  true,
+			ExtraLabels: map[string]string{
+				k8smetadata.ManagedBy: "cluster",
+			},
 		})
 		if err != nil {
 			return microerror.Mask(err)
