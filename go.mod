@@ -40,7 +40,7 @@ require (
 	k8s.io/apimachinery v0.24.3
 	k8s.io/cli-runtime v0.24.3
 	k8s.io/client-go v0.24.3
-	k8s.io/utils v0.0.0-20221012122500-cfd413dd9e85
+	k8s.io/utils v0.0.0-20221108210102-8e77b1f39fe2
 	sigs.k8s.io/cluster-api v1.1.4
 	sigs.k8s.io/cluster-api-provider-azure v1.3.2
 	sigs.k8s.io/controller-runtime v0.12.1
