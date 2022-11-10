@@ -298,10 +298,10 @@ func TestKubeConfigModification(t *testing.T) {
 			}
 
 			s, err := mockKubernetesAndAuthServer(tc.organization, tc.workloadCluster, tc.idToken, tc.renewToken)
-			defer s.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
+			defer s.Close()
 
 			r := runner{
 				commonConfig: commonconfig.New(cf),
