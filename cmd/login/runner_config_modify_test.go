@@ -267,13 +267,6 @@ func TestKubeConfigModification(t *testing.T) {
 		},
 	}
 
-	/*err := rest.RegisterAuthProviderPlugin("oidc", func(clusterAddress string, config map[string]string, persister rest.AuthProviderConfigPersister) (rest.AuthProvider, error) {
-		return &MockAuthProvider{}, nil
-	})
-	if err != nil {
-		t.Fatal(err)
-	}*/
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			configDir, err := os.MkdirTemp("", "loginTest")
@@ -322,7 +315,6 @@ func TestKubeConfigModification(t *testing.T) {
 				}
 			}
 
-			//idp-issuer-url
 			for _, cluster := range mergedConfig.Clusters {
 				if cluster.Server == "https://anything.com:8080" {
 					cluster.Server = s.URL
@@ -375,20 +367,8 @@ func TestKubeConfigModification(t *testing.T) {
 	}
 }
 
-/*type MockAuthProvider struct{}
-
-func (p *MockAuthProvider) WrapTransport(roundTripper http.RoundTripper) http.RoundTripper {
-
-	// Login allows the plugin to initialize its configuration. It must not
-	// require direct user interaction.
-	return roundTripper
-}
-
-func (p *MockAuthProvider) Login() error {
-	return nil
-}*/
-
 func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cluster, idToken string, refreshToken string) (*httptest.Server, error) {
+	// Mock Kubernetes API and auth issuer
 
 	var issuer string
 
@@ -455,7 +435,6 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 		return "", ""
 	}
 
-	// mock the API issuer
 	hf := func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		contentType, responseBody := routeAuth(r)
