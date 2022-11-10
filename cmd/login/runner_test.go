@@ -7,7 +7,6 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/square/go-jose.v2"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -18,6 +17,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"gopkg.in/square/go-jose.v2"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/giantswarm/microerror"
