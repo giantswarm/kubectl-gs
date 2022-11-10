@@ -125,15 +125,26 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	if err != nil {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
+
+	hasWCNameFlag := r.flag.WCName != ""
+	hasSelfContainedFlag := r.flag.SelfContained != ""
+	hasContextOverride := contextOverride != ""
+
+	// indicates whether it is desired to update current context in the kubeconfig file
+	shouldSwitchContextInConfig := !hasContextOverride && (hasWCNameFlag || !(hasSelfContainedFlag || r.flag.KeepContext))
+
+	// indicates whether it is desired to update current context in the kubeconfig file to the wc client context
+	shouldSwitchContentInClusterConfig := hasWCNameFlag && !(hasSelfContainedFlag || r.flag.KeepContext)
+
 	r.loginOptions = LoginOptions{
-		originContext:           originContext,
-		contextOverride:         contextOverride,
-		isWCClientCert:          len(r.flag.WCName) > 0,
-		selfContained:           len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0),
-		selfContainedClientCert: len(r.flag.SelfContained) > 0 && len(r.flag.WCName) > 0,
+		originContext:             originContext,
+		contextOverride:           contextOverride,
+		isWCClientCert:            hasWCNameFlag,
+		selfContained:             hasSelfContainedFlag && !hasWCNameFlag,
+		selfContainedClientCert:   hasSelfContainedFlag && hasWCNameFlag,
+		switchToContext:           shouldSwitchContextInConfig,
+		switchToClientCertContext: shouldSwitchContentInClusterConfig,
 	}
-	r.loginOptions.switchToContext = r.loginOptions.contextOverride == "" && (r.loginOptions.isWCClientCert || !(r.loginOptions.selfContained || r.flag.KeepContext))
-	r.loginOptions.switchToClientCertContext = r.loginOptions.isWCClientCert && !(r.loginOptions.selfContainedClientCert || r.flag.KeepContext)
 }
 
 func (r *runner) tryToReuseExistingContext(ctx context.Context) error {
