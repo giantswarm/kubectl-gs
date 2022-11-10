@@ -346,6 +346,9 @@ func TestKubeConfigModification(t *testing.T) {
 
 			initialLastMod := fileInfo.ModTime()
 
+			// Simulate a delay in request processing
+			time.Sleep(50 * time.Millisecond)
+
 			ctx := context.Background()
 			r.setLoginOptions(ctx, &tc.mcArg)
 			err = r.run(ctx, &cobra.Command{}, tc.mcArg)
