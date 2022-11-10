@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
+	"gopkg.in/square/go-jose.v2"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -22,7 +23,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"gopkg.in/square/go-jose.v2"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -454,7 +454,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				if r.URL.Path == "/auth" {
 					http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
 				} else if r.URL.Path == "/token" {
-					token, err := getToken(issuer, key)
+					token, err := generateAndGetToken(issuer, key)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -555,15 +555,22 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 	return config
 }
 
-func getToken(issuer string, key *rsa.PrivateKey) (string, error) {
+func generateAndGetToken(issuer string, key *rsa.PrivateKey) (string, error) {
 	idToken, err := getRawToken(issuer, key)
 	if err != nil {
 		return "", err
 	}
+	return getToken(idToken, ""), nil
+}
+
+func getToken(idToken string, refreshToken string) string {
 	params := url.Values{}
 	params.Add("id_token", idToken)
 	params.Add("access_token", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9")
-	return params.Encode(), nil
+	if refreshToken != "" {
+		params.Add("refresh_token", refreshToken)
+	}
+	return params.Encode()
 }
 
 func CreateTestInstallationWithIssuer(issuer string) *installation.Installation {

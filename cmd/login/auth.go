@@ -185,6 +185,9 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		return microerror.Maskf(contextDoesNotExistError, "There is no context named '%s'. Please make sure you spelled the installation handle correctly.\nIf not sure, pass the Management API URL or the web UI URL of the cluster as an argument.", newContextName)
 	}
 
+	hasNewTokens := false
+	hasNewContext := false
+	isContextAlreadySelected := config.CurrentContext == newContextName
 	authType := kubeconfig.GetAuthType(config, newContextName)
 	if authType == kubeconfig.AuthTypeAuthProvider {
 		authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
@@ -199,7 +202,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 			return microerror.Maskf(incorrectConfigurationError, "The authentication configuration is corrupted, please log in again using a URL.")
 		}
 
-		if newContextName == config.CurrentContext {
+		if isContextAlreadySelected {
 			return microerror.Mask(contextAlreadySelectedError)
 		}
 
@@ -222,19 +225,24 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 			if err != nil {
 				return microerror.Mask(tokenRenewalFailedError)
 			}
+			hasNewTokens = authProvider.Config[RefreshToken] != rToken || authProvider.Config[IDToken] != idToken
 			authProvider.Config[RefreshToken] = rToken
 			authProvider.Config[IDToken] = idToken
 		}
 	} else if authType == kubeconfig.AuthTypeUnknown {
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
-	if switchContext {
+
+	if switchContext && !isContextAlreadySelected {
 		config.CurrentContext = newContextName
+		hasNewContext = true
 	}
 
-	err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
-	if err != nil {
-		return microerror.Mask(err)
+	if hasNewContext || hasNewTokens {
+		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, true)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil

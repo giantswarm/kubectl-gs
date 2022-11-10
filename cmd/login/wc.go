@@ -184,7 +184,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
-	clusterBasePath, err := getWCBasePath(r.commonConfig.GetConfigAccess(), provider)
+	clusterBasePath, err := getWCBasePath(r.commonConfig.GetConfigAccess(), provider, r.loginOptions.contextOverride)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -282,18 +282,21 @@ func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool,
 	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	if r.loginOptions.selfContainedClientCert && c.filePath != "" {
-		return printWCClientCertCredentials(k8sConfigAccess, r.fs, c)
+		return printWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 	}
-	return storeWCClientCertCredentials(k8sConfigAccess, r.fs, c)
+	return storeWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 }
 
-func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (string, error) {
+func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, currentContext string) (string, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	clusterServer, _ := kubeconfig.GetClusterServer(config, config.CurrentContext)
+	if currentContext == "" {
+		currentContext = config.CurrentContext
+	}
+	clusterServer, _ := kubeconfig.GetClusterServer(config, currentContext)
 
 	// Ensure any trailing ports are trimmed.
 	reg := regexp.MustCompile(`:[0-9]+$`)
@@ -308,11 +311,11 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string) (str
 
 	// pure CAPI clusters have an api.$INSTALLATION prefix
 	if key.IsPureCAPIProvider(provider) {
-		if _, contextType := kubeconfig.IsKubeContext(config.CurrentContext); contextType == kubeconfig.ContextTypeMC {
-			clusterName := kubeconfig.GetCodeNameFromKubeContext(config.CurrentContext)
+		if _, contextType := kubeconfig.IsKubeContext(currentContext); contextType == kubeconfig.ContextTypeMC {
+			clusterName := kubeconfig.GetCodeNameFromKubeContext(currentContext)
 			clusterServer = strings.TrimPrefix(clusterServer, clusterName+".")
 		} else {
-			return "", microerror.Maskf(selectedContextNonCompatibleError, "Can not parse MC codename from context %v. Valid MC context schema is `gs-$CODENAME`.", config.CurrentContext)
+			return "", microerror.Maskf(selectedContextNonCompatibleError, "Can not parse MC codename from context %v. Valid MC context schema is `gs-$CODENAME`.", currentContext)
 		}
 	}
 

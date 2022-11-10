@@ -267,13 +267,15 @@ func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 }
 
 // storeWCClientCertCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
+func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig, mcContextName string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
-	mcContextName := config.CurrentContext
+	if mcContextName == "" {
+		mcContextName = config.CurrentContext
+	}
 	contextName := kubeconfig.GenerateWCClientCertKubeContextName(mcContextName, c.clusterID)
 	userName := fmt.Sprintf("%s-user", contextName)
 	clusterName := contextName
@@ -340,13 +342,15 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 }
 
 // printWCClientCertCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig) (string, bool, error) {
+func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig, mcContextName string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
-	mcContextName := config.CurrentContext
+	if mcContextName == "" {
+		mcContextName = config.CurrentContext
+	}
 	contextName := kubeconfig.GenerateWCClientCertKubeContextName(mcContextName, c.clusterID)
 
 	kubeconfig := clientcmdapi.Config{
