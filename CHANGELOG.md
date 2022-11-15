@@ -12,7 +12,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Use `n1-standard-4` as default instance types for GAPG worker nodes.
-- Adjusted behaviour of Login command to prevent updates of the main kubeconfig file in case there are no changes in access tokens and/or the current context, or if the current context is provided via override (e.g. by using a --context flag).
+- Adjusted behaviour of the `login` command to prevent updates of the main kubeconfig file in case there are no changes in access tokens and/or the current context, or if the current context is provided via override (e.g. by using the `--context` flag).
 
 ## [2.28.0] - 2022-11-09
 
