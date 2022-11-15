@@ -437,7 +437,7 @@ func Test_getWCBasePath(t *testing.T) {
 			t.Fatalf("unexpected error %s", err)
 		}
 
-		clusterBasePath, err := getWCBasePath(k8sConfigAccess, tc.provider)
+		clusterBasePath, err := getWCBasePath(k8sConfigAccess, tc.provider, "")
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}

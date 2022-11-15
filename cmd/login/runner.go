@@ -35,6 +35,7 @@ type LoginOptions struct {
 	switchToContext           bool
 	switchToClientCertContext bool
 	originContext             string
+	contextOverride           string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -107,27 +108,43 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func (r *runner) tryToGetCurrentContext(ctx context.Context) (string, error) {
+func (r *runner) tryToGetCurrentContexts(ctx context.Context) (string, string, error) {
 	config, err := r.commonConfig.GetConfigAccess().GetStartingConfig()
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", "", microerror.Mask(err)
 	}
-	return config.CurrentContext, nil
+	contextOverride := r.commonConfig.GetContextOverride()
+	if _, ok := config.Contexts[contextOverride]; !ok {
+		contextOverride = ""
+	}
+	return config.CurrentContext, contextOverride, nil
 }
 
 func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
-	originContext, err := r.tryToGetCurrentContext(ctx)
+	originContext, contextOverride, err := r.tryToGetCurrentContexts(ctx)
 	if err != nil {
 		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
+
+	hasWCNameFlag := r.flag.WCName != ""
+	hasSelfContainedFlag := r.flag.SelfContained != ""
+	hasContextOverride := contextOverride != ""
+
+	// indicates whether it is desired to update current context in the kubeconfig file
+	shouldSwitchContextInConfig := !hasContextOverride && (hasWCNameFlag || !(hasSelfContainedFlag || r.flag.KeepContext))
+
+	// indicates whether it is desired to update current context in the kubeconfig file to the wc client context
+	shouldSwitchToWCContextInConfig := hasWCNameFlag && !(hasSelfContainedFlag || r.flag.KeepContext)
+
 	r.loginOptions = LoginOptions{
-		originContext:           originContext,
-		isWCClientCert:          len(r.flag.WCName) > 0,
-		selfContained:           len(r.flag.SelfContained) > 0 && !(len(r.flag.WCName) > 0),
-		selfContainedClientCert: len(r.flag.SelfContained) > 0 && len(r.flag.WCName) > 0,
+		originContext:             originContext,
+		contextOverride:           contextOverride,
+		isWCClientCert:            hasWCNameFlag,
+		selfContained:             hasSelfContainedFlag && !hasWCNameFlag,
+		selfContainedClientCert:   hasSelfContainedFlag && hasWCNameFlag,
+		switchToContext:           shouldSwitchContextInConfig,
+		switchToClientCertContext: shouldSwitchToWCContextInConfig,
 	}
-	r.loginOptions.switchToContext = r.loginOptions.isWCClientCert || !(r.loginOptions.selfContained || r.flag.KeepContext)
-	r.loginOptions.switchToClientCertContext = r.loginOptions.isWCClientCert && !(r.loginOptions.selfContainedClientCert || r.flag.KeepContext)
 }
 
 func (r *runner) tryToReuseExistingContext(ctx context.Context) error {

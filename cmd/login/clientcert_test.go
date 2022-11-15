@@ -276,7 +276,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 			}
 
 			tc.credentialConfig.filePath = selfContainedFilePath
-			_, _, err = printWCClientCertCredentials(k8sConfigAccess, fs, tc.credentialConfig)
+			_, _, err = printWCClientCertCredentials(k8sConfigAccess, fs, tc.credentialConfig, "")
 			if err != nil {
 				t.Fatal(err)
 			}
