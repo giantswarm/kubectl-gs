@@ -58,11 +58,13 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			},
 			MachineDeployments: &[]capg.MachineDeployment{
 				{
-					Name:             config.GCP.MachineDeployment.Name,
-					FailureDomain:    config.GCP.MachineDeployment.FailureDomain,
-					InstanceType:     config.GCP.MachineDeployment.InstanceType,
-					Replicas:         config.GCP.MachineDeployment.Replicas,
-					RootVolumeSizeGB: config.GCP.MachineDeployment.RootVolumeSizeGB,
+					Name:          config.GCP.MachineDeployment.Name,
+					FailureDomain: config.GCP.MachineDeployment.FailureDomain,
+					InstanceType:  config.GCP.MachineDeployment.InstanceType,
+					Replicas:      config.GCP.MachineDeployment.Replicas,
+					RootVolume: capg.Volume{
+						SizeGB: config.GCP.MachineDeployment.RootVolumeSizeGB,
+					},
 					CustomNodeLabels: config.GCP.MachineDeployment.CustomNodeLabels,
 					ServiceAccount: capg.ServiceAccount{
 						Email:  config.GCP.MachineDeployment.ServiceAccount.Email,

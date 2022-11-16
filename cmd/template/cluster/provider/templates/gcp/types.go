@@ -31,8 +31,17 @@ type Network struct {
 type ControlPlane struct {
 	InstanceType     string         `json:"instanceType,omitempty"`
 	Replicas         int            `json:"replicas,omitempty"`
-	RootVolumeSizeGB int            `json:"rootVolumeSizeGB,omitempty"`
+	RootVolume       Volume         `json:"rootVolume,omitempty"`
+	EtcdVolume       Volume         `json:"etcdVolume,omitempty"`
+	ContainerdVolume Volume         `json:"containerdVolume,omitempty"`
+	KubeletVolume    Volume         `json:"kubeletVolume,omitempty"`
 	ServiceAccount   ServiceAccount `json:"serviceAccount,omitempty"`
+}
+
+// Defines the size and disk type for a volume
+type Volume struct {
+	SizeGB   int    `json:"sizeGB,omitempty"`
+	DiskType string `json:"diskType,omitempty"`
 }
 
 type ServiceAccount struct {
@@ -45,7 +54,9 @@ type MachineDeployment struct {
 	FailureDomain    string         `json:"failureDomain,omitempty"`
 	InstanceType     string         `json:"instanceType,omitempty"`
 	Replicas         int            `json:"replicas,omitempty"`
-	RootVolumeSizeGB int            `json:"rootVolumeSizeGB,omitempty"`
+	RootVolume       Volume         `json:"rootVolume,omitempty"`
+	ContainerdVolume Volume         `json:"containerdVolume,omitempty"`
+	KubeletVolume    Volume         `json:"kubeletVolume,omitempty"`
 	CustomNodeLabels []string       `json:"customNodeLabels,omitempty"`
 	ServiceAccount   ServiceAccount `json:"serviceAccount,omitempty"`
 }
