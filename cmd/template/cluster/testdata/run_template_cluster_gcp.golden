@@ -22,10 +22,9 @@ data:
       project: the-project
       region: the-region
     machineDeployments:
-    - failureDomain: failure-domain2-b
       containerdVolume: {}
+    - failureDomain: failure-domain2-b
       instanceType: very-large
-      kubeletVolume: {}
       name: worker1
       replicas: 7
       rootVolume:
