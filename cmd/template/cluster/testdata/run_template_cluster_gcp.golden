@@ -22,7 +22,8 @@ data:
       instanceType: very-large
       name: worker1
       replicas: 7
-      rootVolumeSizeGB: 5
+      rootVolume:
+        sizeGB: 5
       serviceAccount:
         email: service-account@email
         scopes:
