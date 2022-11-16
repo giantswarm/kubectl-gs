@@ -5,7 +5,11 @@ data:
     clusterDescription: just a test cluster
     clusterName: test1
     controlPlane:
+      containerdVolume: {}
+      etcdVolume: {}
+      kubeletVolume: {}
       replicas: 3
+      rootVolume: {}
       serviceAccount:
         email: service-account@email
         scopes:

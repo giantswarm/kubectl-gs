@@ -20,8 +20,7 @@ data:
       maxSize: 5
       minSize: 2
       name: worker1
-      rootVolume:
-        sizeGB: 200
+      rootVolumeSizeGB: 200
     network:
       vpcCIDR: 10.123.0.0/16
     organization: test
