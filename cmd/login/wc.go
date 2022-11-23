@@ -110,19 +110,7 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 		return "", nil
 	}
 
-	releaseVersion, err := getClusterReleaseVersion(c, provider)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	certOperatorVersion, err := getCertOperatorVersion(ctx, services.releaseService, releaseVersion)
-	// If the release does not contain cert-operator anymore (e.g. in CAPI versions) we return an empty string
-	// In this case we try to create the client certificate using the MC PKI
-	if IsMissingComponent(err) {
-		return "", nil
-	} else if err != nil {
-		return "", microerror.Mask(err)
-	}
-	return certOperatorVersion, nil
+	return key.CertOperatorVersionKubeconfig, nil
 }
 
 func (r *runner) handleWCClientCert(ctx context.Context) error {

@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- When creating `CertConfig` during `login` use special version `0.0.0` to make dedicated `cert-operator` instance reconcile them.
+
 ## [2.28.2] - 2022-11-16
 
 ## [2.28.1] - 2022-11-09
