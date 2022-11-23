@@ -83,7 +83,7 @@ func generateClientCertUID() string {
 }
 
 func generateClientCert(config clientCertConfig) (*clientcert.ClientCert, error) {
-	clientCertUID := generateClientCertUID()
+	clientCertUID := fmt.Sprintf("kubeconfig-%s", generateClientCertUID())
 	clientCertName := fmt.Sprintf("%s-%s", config.clusterName, clientCertUID)
 	var clientCertCNPrefix string
 	{

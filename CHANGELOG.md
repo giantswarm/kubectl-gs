@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add `kubeconfig-` prefix to `CertConfig`'s `ClusterComponent` field in `login` command.
+
 ## [2.28.2] - 2022-11-16
 
 ## [2.28.1] - 2022-11-09
