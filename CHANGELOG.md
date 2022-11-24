@@ -7,9 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Changed
-
 - Ensure dedicated `cert-operator` version `0.0.0` is used for client certificate creation in `login` command to avoid timeouts.
+- Adjusted GCP config to support the volume type for all kind of volumes (root, etcd, kubelet, containerd)
 
 ## [2.28.2] - 2022-11-16
 
