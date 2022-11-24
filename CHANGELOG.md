@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- When creating `CertConfig` during `login` use special version `0.0.0` to make dedicated `cert-operator` instance reconcile them.
+- Ensure dedicated `cert-operator` version `0.0.0` is used for client certificate creation in `login` command to avoid timeouts.
 
 ## [2.28.2] - 2022-11-16
 
