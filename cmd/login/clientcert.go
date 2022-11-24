@@ -558,37 +558,6 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	}
 }
 
-func getClusterReleaseVersion(c *cluster.Cluster, provider string) (string, error) {
-	if c.Cluster.Labels == nil {
-		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s does not have a release version label.", name)
-	}
-
-	releaseVersion := c.Cluster.Labels[label.ReleaseVersion]
-	if len(releaseVersion) < 1 {
-		return "", microerror.Maskf(invalidReleaseVersionError, "The workload cluster %s has an invalid release version.", name)
-	}
-
-	return releaseVersion, nil
-}
-
-func getCertOperatorVersion(ctx context.Context, releaseService release.Interface, name string) (string, error) {
-	resource, err := releaseService.Get(ctx, release.GetOptions{Name: fmt.Sprintf("v%s", name)})
-	if release.IsNotFound(err) {
-		return "", microerror.Maskf(releaseNotFoundError, "Release v%s could not be found.", name)
-	} else if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	components := resource.(*release.Release).CR.Spec.Components
-	for _, component := range components {
-		if component.Name == "cert-operator" {
-			return component.Version, nil
-		}
-	}
-
-	return "", microerror.Maskf(missingComponentError, "The release v%s does not include the required 'cert-operator' component.", name)
-}
-
 func validateProvider(provider string) error {
 	if provider == key.ProviderKVM {
 		return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is not supported on provider %s.", provider)
