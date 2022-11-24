@@ -26,7 +26,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
-	github.com/spf13/afero v1.9.2
+	github.com/spf13/afero v1.9.3
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.1
@@ -201,15 +201,15 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.9 // [CVE-2022-31030]
-	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.5
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.10 // [CVE-2022-31030]
+	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.6
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.21+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.15.3
+	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.17.0
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.2
 	golang.org/x/text => golang.org/x/text v0.4.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.2
