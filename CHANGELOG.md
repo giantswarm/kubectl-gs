@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+- Adjusted GCP config to support the volume type for all kind of volumes (root, etcd, kubelet, containerd)
+
 ## [2.28.2] - 2022-11-16
 
 ## [2.28.1] - 2022-11-09

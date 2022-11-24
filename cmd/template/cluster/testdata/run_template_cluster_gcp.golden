@@ -5,7 +5,11 @@ data:
     clusterDescription: just a test cluster
     clusterName: test1
     controlPlane:
+      containerdVolume: {}
+      etcdVolume: {}
+      kubeletVolume: {}
       replicas: 3
+      rootVolume: {}
       serviceAccount:
         email: service-account@email
         scopes:
@@ -18,11 +22,14 @@ data:
       project: the-project
       region: the-region
     machineDeployments:
-    - failureDomain: failure-domain2-b
+    - containerdVolume: {}
+      failureDomain: failure-domain2-b
       instanceType: very-large
+      kubeletVolume: {}
       name: worker1
       replicas: 7
-      rootVolumeSizeGB: 5
+      rootVolume:
+        sizeGB: 5
       serviceAccount:
         email: service-account@email
         scopes:
