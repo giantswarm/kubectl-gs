@@ -35,9 +35,10 @@ const (
 )
 
 const (
-	RoleLabel           = "role"
-	SSHSSOPubKeyLabel   = "ssh-sso-public-key"
-	GiantswarmNamespace = "giantswarm"
+	RoleLabel                     = "role"
+	SSHSSOPubKeyLabel             = "ssh-sso-public-key"
+	GiantswarmNamespace           = "giantswarm"
+	CertOperatorVersionKubeconfig = "0.0.0"
 )
 
 const (
