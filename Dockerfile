@@ -1,4 +1,4 @@
-FROM quay.io/giantswarm/alpine:3.16.2 AS binaries
+FROM quay.io/giantswarm/alpine:3.16.3 AS binaries
 
 ARG KUBECTL_VERSION=1.24.2
 
@@ -7,7 +7,7 @@ RUN apk add --no-cache ca-certificates curl \
     && curl -sSLf https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o /binaries/kubectl \
     && chmod +x /binaries/*
 
-FROM quay.io/giantswarm/alpine:3.16.2
+FROM quay.io/giantswarm/alpine:3.16.3
 
 COPY --from=binaries /binaries/* /usr/bin/
 COPY ./kubectl-gs /usr/bin/kubectl-gs
