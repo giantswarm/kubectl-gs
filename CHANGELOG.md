@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `update cluster` command when scheduling an upgrade for a Cluster when the Cluster CR had no previous annotations.
+
 ## [2.29.0] - 2022-11-24
 
 - Ensure dedicated `cert-operator` version `0.0.0` is used for client certificate creation in `login` command to avoid timeouts.
