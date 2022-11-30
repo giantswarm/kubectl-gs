@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.29.1] - 2022-11-30
+
 ### Fixed
 
 - Fix `update cluster` command when scheduling an upgrade for a Cluster when the Cluster CR had no previous annotations.
@@ -1125,7 +1127,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...HEAD
+[2.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.0...v2.29.1
 [2.29.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.28.2...v2.29.0
 [2.28.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.28.1...v2.28.2
 [2.28.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.28.0...v2.28.1
