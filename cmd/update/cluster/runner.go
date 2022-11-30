@@ -98,19 +98,27 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var patches cluster.PatchOptions
 	var msg string
 	if scheduledTime != "" {
+		patchSpecs := make([]cluster.PatchSpec, 0)
+		if resource.Cluster.Annotations == nil {
+			patchSpecs = append(patchSpecs, cluster.PatchSpec{
+				Op:    "add",
+				Path:  "/metadata/annotations",
+				Value: make(map[string]string, 0),
+			})
+		}
+		patchSpecs = append(patchSpecs, cluster.PatchSpec{
+			Op:    "add",
+			Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetRelease)),
+			Value: targetRelease,
+		})
+		patchSpecs = append(patchSpecs, cluster.PatchSpec{
+			Op:    "add",
+			Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetTime)),
+			Value: scheduledTime,
+		})
+
 		patches = cluster.PatchOptions{
-			PatchSpecs: []cluster.PatchSpec{
-				{
-					Op:    "add",
-					Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetRelease)),
-					Value: targetRelease,
-				},
-				{
-					Op:    "add",
-					Path:  fmt.Sprintf("/metadata/annotations/%s", replaceToEscape(annotation.UpdateScheduleTargetTime)),
-					Value: scheduledTime,
-				},
-			},
+			PatchSpecs: patchSpecs,
 		}
 		messageFormat := "An upgrade of cluster %s to release %s has been scheduled for\n\n    %v, (%v)"
 		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
