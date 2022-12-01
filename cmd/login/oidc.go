@@ -27,7 +27,7 @@ const (
 	oidcCallbackPath = "/oauth/callback"
 
 	customerConnectorID   = "customer"
-	giantswarmConnectorID = "giantswarm"
+	giantswarmConnectorID = "giantswarm-ad"
 
 	oidcResultTimeout     = 1 * time.Minute
 	oidcReadHeaderTimeout = 1 * time.Minute
