@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Add missing namespace in SOPS related secrets created by GitOps subcommands.
+
 ## [2.29.1] - 2022-11-30
 
 ### Fixed
