@@ -3,7 +3,7 @@ module github.com/giantswarm/kubectl-gs/v2
 go 1.19
 
 require (
-	github.com/Masterminds/sprig/v3 v3.2.2
+	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/ProtonMail/gopenpgp/v2 v2.4.10
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
@@ -62,7 +62,7 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220822140716-1678d6eb0cbe // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect
@@ -126,7 +126,7 @@ require (
 	github.com/hashicorp/vault/sdk v0.6.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef // indirect
-	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -174,7 +174,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.4.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
+	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/term v0.2.0 // indirect
@@ -203,15 +203,15 @@ require (
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.10 // [CVE-2022-31030]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.6
-	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v20.10.21+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.17.0
+	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.18.0
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.2
-	golang.org/x/text => golang.org/x/text v0.4.0
+	golang.org/x/text => golang.org/x/text v0.5.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.2
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
