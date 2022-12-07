@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.29.2] - 2022-12-02
+
+### Fixed
+
+- Add missing namespace in SOPS related secrets created by GitOps subcommands.
+
 ## [2.29.1] - 2022-11-30
 
 ### Fixed
@@ -1127,7 +1133,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...HEAD
+[2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2
 [2.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.0...v2.29.1
 [2.29.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.28.2...v2.29.0
 [2.28.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.28.1...v2.28.2
