@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed logging in to clusters running on custom domains by removing domain restriction from API URL validation
+
 ## [2.29.2] - 2022-12-02
 
 ### Fixed
