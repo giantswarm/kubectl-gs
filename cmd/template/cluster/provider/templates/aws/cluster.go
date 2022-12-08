@@ -13,31 +13,32 @@ import (
 )
 
 const (
-	defaultMasterInstanceType = "m5.xlarge"
-	kindAWSCluster            = "AWSCluster"
-	kindAWSControlPlane       = "AWSControlPlane"
-	kindG8sControlPlane       = "G8sControlPlane"
+	defaultControlPlaneInstanceType = "m5.xlarge"
+	kindAWSCluster                  = "AWSCluster"
+	kindAWSControlPlane             = "AWSControlPlane"
+	kindG8sControlPlane             = "G8sControlPlane"
 )
 
 // +k8s:deepcopy-gen=false
 
 type ClusterCRsConfig struct {
-	ClusterName       string
-	ControlPlaneName  string
-	Credential        string
-	Domain            string
-	EnableLongNames   bool
-	ExternalSNAT      bool
-	ControlPlaneAZ    []string
-	Description       string
-	PodsCIDR          string
-	Owner             string
-	Region            string
-	ReleaseComponents map[string]string
-	ReleaseVersion    string
-	Labels            map[string]string
-	NetworkPool       string
-	ServicePriority   string
+	ClusterName              string
+	ControlPlaneName         string
+	Credential               string
+	Domain                   string
+	EnableLongNames          bool
+	ExternalSNAT             bool
+	ControlPlaneAZ           []string
+	ControlPlaneInstanceType string
+	Description              string
+	PodsCIDR                 string
+	Owner                    string
+	Region                   string
+	ReleaseComponents        map[string]string
+	ReleaseVersion           string
+	Labels                   map[string]string
+	NetworkPool              string
+	ServicePriority          string
 }
 
 // +k8s:deepcopy-gen=false
@@ -69,6 +70,10 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 			}
 
 			config.ControlPlaneName = generatedName
+		}
+
+		if config.ControlPlaneInstanceType == "" {
+			config.ControlPlaneInstanceType = defaultControlPlaneInstanceType
 		}
 	}
 
@@ -136,7 +141,7 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 	if len(c.ControlPlaneAZ) == 1 {
 		awsClusterCR.Spec.Provider.Master = v1alpha3.AWSClusterSpecProviderMaster{
 			AvailabilityZone: c.ControlPlaneAZ[0],
-			InstanceType:     defaultMasterInstanceType,
+			InstanceType:     c.ControlPlaneInstanceType,
 		}
 	}
 
@@ -166,7 +171,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
 			AvailabilityZones: c.ControlPlaneAZ,
-			InstanceType:      defaultMasterInstanceType,
+			InstanceType:      c.ControlPlaneInstanceType,
 		},
 	}
 }

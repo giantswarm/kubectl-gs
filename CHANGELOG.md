@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Respect `--control-plane-instance-type` for AWS cluster templating. Previously, the default value `m5.xlarge` was always used.
+
 ## [2.29.3] - 2022-12-08
 
 ### Fixed

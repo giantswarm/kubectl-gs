@@ -9,6 +9,7 @@ data:
     clusterDescription: just a test cluster
     clusterName: test1
     controlPlane:
+      instanceType: control-plane-instance-type
       replicas: 3
     machinePools:
     - availabilityZones:

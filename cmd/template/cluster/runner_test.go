@@ -74,11 +74,12 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 1: template cluster capa",
 			flags: &flag{
-				Name:         "test1",
-				Provider:     "capa",
-				Description:  "just a test cluster",
-				Region:       "the-region",
-				Organization: "test",
+				Name:                     "test1",
+				Provider:                 "capa",
+				Description:              "just a test cluster",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: provider.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
@@ -153,7 +154,7 @@ func Test_run(t *testing.T) {
 
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
-				t.Fatalf("value not expected, got:\n %s", diff)
+				t.Fatalf("no difference from golden file %s expected, got:\n %s", tc.expectedGoldenFile, diff)
 			}
 		})
 	}
