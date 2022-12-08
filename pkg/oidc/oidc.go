@@ -81,6 +81,18 @@ func (a *Authenticator) GetAuthURL(connectorID string) string {
 	return authURLWithConnectorID
 }
 
+func (a *Authenticator) GetAuthSelectionURL(connectorType string) string {
+	authURL := a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)
+
+	// connector_type is specific to GS. It is resolved in the custom Dex frontend.
+	// It allows user filter the available connectors and only display the relevant ones
+	if connectorType != "" {
+		return fmt.Sprintf("%s&connector_filter=%s", authURL, connectorType)
+	}
+
+	return authURL
+}
+
 func (a *Authenticator) RenewToken(ctx context.Context, refreshToken string) (idToken string, rToken string, err error) {
 	s := a.clientConfig.TokenSource(ctx, &oauth2.Token{RefreshToken: refreshToken})
 	t, err := s.Token()

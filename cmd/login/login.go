@@ -137,7 +137,8 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 				token:    tokenOverride,
 			}
 		} else {
-			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
+
+			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerPort)
 			if err != nil {
 				return microerror.Mask(err)
 			}

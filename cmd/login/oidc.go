@@ -26,8 +26,8 @@ const (
 	oidcCallbackURL  = "http://localhost"
 	oidcCallbackPath = "/oauth/callback"
 
-	customerConnectorID   = "customer"
-	giantswarmConnectorID = "giantswarm"
+	customerConnectorType   = "customer"
+	giantswarmConnectorType = "giantswarm"
 
 	oidcResultTimeout     = 1 * time.Minute
 	oidcReadHeaderTimeout = 1 * time.Minute
@@ -38,7 +38,7 @@ var (
 )
 
 // handleOIDC executes the OIDC authentication against an installation's authentication provider.
-func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, clusterAdmin bool, port int) (authInfo, error) {
+func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, port int) (authInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, oidcResultTimeout)
 	defer cancel()
 
@@ -67,17 +67,14 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		return authInfo{}, microerror.Mask(err)
 	}
 
-	// select dex connector_id based on clusterAdmin value
-	var connectorID string
-	{
-		if clusterAdmin {
-			connectorID = giantswarmConnectorID
-		} else {
-			connectorID = customerConnectorID
-		}
+	var authURL string
+	if connectorID != "" {
+		authURL = auther.GetAuthURL(connectorID)
+	} else if clusterAdmin { // select dex connector_type based on clusterAdmin value
+		authURL = auther.GetAuthSelectionURL(giantswarmConnectorType)
+	} else {
+		authURL = auther.GetAuthSelectionURL(customerConnectorType)
 	}
-
-	authURL := auther.GetAuthURL(connectorID)
 
 	fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
 	fmt.Fprintf(out, "%s\n\n", authURL)

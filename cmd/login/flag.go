@@ -21,6 +21,8 @@ const (
 	flagWCCertTTL           = "certificate-ttl"
 	flagSelfContained       = "self-contained"
 	flagWCInsecureNamespace = "insecure-namespace"
+
+	flagConnectorID = "connector-id"
 )
 
 type flag struct {
@@ -36,6 +38,8 @@ type flag struct {
 	WCCertTTL           string
 	SelfContained       string
 	WCInsecureNamespace bool
+
+	ConnectorID string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -51,6 +55,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCCertTTL, flagWCCertTTL, "1h", fmt.Sprintf(`For client certificate creation. How long the client certificate should live for. Valid time units are "ms", "s", "m", "h". Requires --%s.`, flagWCName))
 	cmd.Flags().StringVar(&f.WCCertCNPrefix, flagWCCertCNPrefix, "", fmt.Sprintf(`For client certificate creation. Prefix for the name encoded in the X.509 field "CN". Requires --%s.`, flagWCName))
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
+
+	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Identifier of a specific Dex connector to be used for authentication. The connector is selected during the oids authentication process by default. If this flag is specified, the selection step is skipped.")
 
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)
 	_ = cmd.Flags().MarkHidden("namespace")
