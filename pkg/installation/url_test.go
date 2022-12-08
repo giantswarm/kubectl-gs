@@ -72,6 +72,12 @@ func Test_GetBasePath(t *testing.T) {
 			expectedResult:         "abc12def34.k8s.installation.customer.gigantic.io",
 			expectedInternalResult: "internal-api.abc12def34.k8s.installation.customer.gigantic.io",
 		},
+		{
+			name:                   "case 7: mc k8s api custom domain",
+			url:                    "https://api.installation.xx-xxxx-x.aaa.bbb.ccc.tld",
+			expectedResult:         "installation.xx-xxxx-x.aaa.bbb.ccc.tld",
+			expectedInternalResult: "internal-installation.xx-xxxx-x.aaa.bbb.ccc.tld",
+		},
 	}
 
 	for _, tc := range testCases {
