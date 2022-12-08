@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.29.3] - 2022-12-08
+
 ### Fixed
 
 - Fixed logging in to clusters running on custom domains by removing domain restriction from API URL validation
@@ -1137,7 +1139,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...HEAD
+[2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
 [2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2
 [2.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.0...v2.29.1
 [2.29.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.28.2...v2.29.0
