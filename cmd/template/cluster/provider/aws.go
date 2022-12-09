@@ -29,14 +29,15 @@ func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	crsConfig := aws.ClusterCRsConfig{
 		ClusterName: config.Name,
 
-		ExternalSNAT:    config.AWS.ExternalSNAT,
-		ControlPlaneAZ:  config.ControlPlaneAZ,
-		Description:     config.Description,
-		PodsCIDR:        config.PodsCIDR,
-		Owner:           config.Organization,
-		ReleaseVersion:  config.ReleaseVersion,
-		Labels:          config.Labels,
-		ServicePriority: config.ServicePriority,
+		ExternalSNAT:             config.AWS.ExternalSNAT,
+		ControlPlaneAZ:           config.ControlPlaneAZ,
+		ControlPlaneInstanceType: config.ControlPlaneInstanceType,
+		Description:              config.Description,
+		PodsCIDR:                 config.PodsCIDR,
+		Owner:                    config.Organization,
+		ReleaseVersion:           config.ReleaseVersion,
+		Labels:                   config.Labels,
+		ServicePriority:          config.ServicePriority,
 	}
 
 	crsConfig.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)

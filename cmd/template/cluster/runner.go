@@ -107,16 +107,17 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 
 func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	config := provider.ClusterConfig{
-		ControlPlaneAZ:    r.flag.ControlPlaneAZ,
-		Description:       r.flag.Description,
-		KubernetesVersion: r.flag.KubernetesVersion,
-		Name:              r.flag.Name,
-		Organization:      r.flag.Organization,
-		PodsCIDR:          r.flag.PodsCIDR,
-		ReleaseVersion:    r.flag.Release,
-		Namespace:         metav1.NamespaceDefault,
-		Region:            r.flag.Region,
-		ServicePriority:   r.flag.ServicePriority,
+		ControlPlaneAZ:           r.flag.ControlPlaneAZ,
+		ControlPlaneInstanceType: r.flag.ControlPlaneInstanceType,
+		Description:              r.flag.Description,
+		KubernetesVersion:        r.flag.KubernetesVersion,
+		Name:                     r.flag.Name,
+		Organization:             r.flag.Organization,
+		PodsCIDR:                 r.flag.PodsCIDR,
+		ReleaseVersion:           r.flag.Release,
+		Namespace:                metav1.NamespaceDefault,
+		Region:                   r.flag.Region,
+		ServicePriority:          r.flag.ServicePriority,
 
 		App:       r.flag.App,
 		AWS:       r.flag.AWS,
