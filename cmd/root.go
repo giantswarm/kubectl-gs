@@ -29,7 +29,7 @@ const (
 	name        = "kubectl\u00a0gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
-Get more information at https://docs.giantswarm.io/ui-api/kubectl-gs/
+Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
 `
 )
 
