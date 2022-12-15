@@ -201,7 +201,7 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.12 // [CVE-2022-31030, CVE-2022-23471]
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.13 // [CVE-2022-31030, CVE-2022-23471]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.6
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
