@@ -27,6 +27,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Respect `--control-plane-instance-type` for AWS cluster templating. Previously, the default value `m5.xlarge` was always used.
 
+### Changed
+
+- Adjusted communication with Dex in the `login` command to provide an option to choose from multiple connectors
+- Introduced a new flag `--connector-id` in the `login` command to specify a Dex connector to use and skip the selection step 
+
 ## [2.29.3] - 2022-12-08
 
 ### Fixed
