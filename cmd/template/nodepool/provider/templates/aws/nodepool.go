@@ -85,7 +85,7 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 			Name:      c.MachineDeploymentName,
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awsmachinedeployments.infrastructure.giantswarm.io/",
+				annotation.Docs: "https://docs.giantswarm.io/use-the-api/management-api/crd/awsmachinedeployments.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
 				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
@@ -133,7 +133,7 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 			Name:      c.MachineDeploymentName,
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/machinedeployments.cluster.x-k8s.io/",
+				annotation.Docs: "https://docs.giantswarm.io/use-the-api/management-api/crd/machinedeployments.cluster.x-k8s.io/",
 			},
 			Labels: map[string]string{
 				label.Cluster:                c.ClusterName,

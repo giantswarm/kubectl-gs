@@ -102,7 +102,7 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awsclusters.infrastructure.giantswarm.io/",
+				annotation.Docs: "https://docs.giantswarm.io/use-the-api/management-api/crd/awsclusters.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
 				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
@@ -158,7 +158,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 			Name:      c.ControlPlaneName,
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/awscontrolplanes.infrastructure.giantswarm.io/",
+				annotation.Docs: "https://docs.giantswarm.io/use-the-api/management-api/crd/awscontrolplanes.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
 				label.AWSOperatorVersion: c.ReleaseComponents["aws-operator"],
@@ -209,7 +209,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 			Name:      c.ClusterName,
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/clusters.cluster.x-k8s.io/",
+				annotation.Docs: "https://docs.giantswarm.io/use-the-api/management-api/crd/clusters.cluster.x-k8s.io/",
 			},
 			Labels: clusterLabels,
 		},
@@ -240,7 +240,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 			Name:      c.ControlPlaneName,
 			Namespace: metav1.NamespaceDefault,
 			Annotations: map[string]string{
-				annotation.Docs: "https://docs.giantswarm.io/ui-api/management-api/crd/g8scontrolplanes.infrastructure.giantswarm.io/",
+				annotation.Docs: "https://docs.giantswarm.io/use-the-api/management-api/crd/g8scontrolplanes.infrastructure.giantswarm.io/",
 			},
 			Labels: map[string]string{
 				label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
