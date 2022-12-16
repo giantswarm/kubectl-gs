@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.29.4] - 2022-12-15
+
 ### Fixed
 
 - Respect `--control-plane-instance-type` for AWS cluster templating. Previously, the default value `m5.xlarge` was always used.
@@ -1143,7 +1145,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...HEAD
+[2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
 [2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
 [2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2
 [2.29.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.0...v2.29.1
