@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -14,6 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
 )
 
