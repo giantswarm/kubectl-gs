@@ -9,28 +9,31 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.30.0] - 2023-01-12
 
+### Changed
+
+- Adjusted communication with Dex in the `login` command to provide an option to choose from multiple connectors
+
+### Added
+
+- Introduced a new `--connector-id` flag in the `login` command to specify a Dex connector to use and skip the selection step
+
 ### Added
 
 - Add flags `--cluster-type`, `--https-proxy`, `--http-proxy`, `--no-proxy`, `--api-mode`, `--dns-mode`, `--vpc-mode` and `--topol
 - ogy-mode` to `template cluster` that specify `capa` as provider.
-- Add `gitops add base` command to generate CAP[A,G,O] bases. The values for `--provider` flag is compatible with the `template cluster` command (A: capa, G: gcp, O: openstack). 
+- Add `gitops add base` command to generate CAP[A,G,O] bases. The values for `--provider` flag is compatible with the `template cluster` command (A: capa, G: gcp, O: openstack).
 
 ## [2.29.5] - 2022-12-20
 
 ### Changed
 
-- Extended detection of providers in the login command to take the provider value primarily from Athena with fallback to the original way of inspecting the API URL 
+- Extended detection of providers in the login command to take the provider value primarily from Athena with fallback to the original way of inspecting the API URL
 
 ## [2.29.4] - 2022-12-15
 
 ### Fixed
 
 - Respect `--control-plane-instance-type` for AWS cluster templating. Previously, the default value `m5.xlarge` was always used.
-
-### Changed
-
-- Adjusted communication with Dex in the `login` command to provide an option to choose from multiple connectors
-- Introduced a new flag `--connector-id` in the `login` command to specify a Dex connector to use and skip the selection step 
 
 ## [2.29.3] - 2022-12-08
 
