@@ -24,7 +24,7 @@ type Installation struct {
 	CACert            string
 }
 
-func New(ctx context.Context, fromUrl string) (*Installation, error) {
+func New(ctx context.Context, fromUrl string, athenaUrl string) (*Installation, error) {
 	basePath, internalApiPath, err := GetBaseAndInternalPath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -35,7 +35,9 @@ func New(ctx context.Context, fromUrl string) (*Installation, error) {
 		httpClient := http.DefaultClient
 		httpClient.Timeout = requestTimeout
 
-		athenaUrl := getAthenaUrl(basePath)
+		if athenaUrl == "" {
+			athenaUrl = getAthenaUrl(basePath)
+		}
 		config := graphql.ClientImplConfig{
 			HttpClient: httpClient,
 			Url:        fmt.Sprintf("%s/graphql", athenaUrl),
