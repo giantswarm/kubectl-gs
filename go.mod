@@ -201,7 +201,7 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.12 // [CVE-2022-31030, CVE-2022-23471]
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.13 // [CVE-2022-31030, CVE-2022-23471]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.6
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
@@ -214,6 +214,6 @@ replace (
 	// CVE-2022-41717
 	golang.org/x/net => golang.org/x/net v0.4.0
 	golang.org/x/text => golang.org/x/text v0.5.0
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.2
+	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.3
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
