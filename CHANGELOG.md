@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Extended detection of providers in the login command to take the provider value primarily from Athena with fallback to the original way of inspecting the API URL 
+
 ## [2.29.4] - 2022-12-15
 
 ### Fixed

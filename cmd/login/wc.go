@@ -114,8 +114,7 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 }
 
 func (r *runner) handleWCClientCert(ctx context.Context) error {
-
-	provider, err := r.commonConfig.GetProvider()
+	provider, err := r.commonConfig.GetProviderFromInstallation(ctx, "", true)
 	if err != nil {
 		return microerror.Mask(err)
 	}

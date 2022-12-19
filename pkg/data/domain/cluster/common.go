@@ -48,7 +48,7 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace strin
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderOpenStack:
+		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderKVM, key.ProviderVSphere:
 			cluster, err = s.getByNameOpenStack(ctx, name, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
