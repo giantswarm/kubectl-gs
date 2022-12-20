@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.29.5] - 2022-12-20
+
 ### Changed
 
 - Extended detection of providers in the login command to take the provider value primarily from Athena with fallback to the original way of inspecting the API URL 
@@ -1149,7 +1151,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...HEAD
+[2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
 [2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
 [2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
 [2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2
