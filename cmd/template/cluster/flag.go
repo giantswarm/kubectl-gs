@@ -28,6 +28,10 @@ const (
 	flagAWSRole             = "role"
 	flagNetworkAZUsageLimit = "az-usage-limit"
 	flagNetworkVPCCidr      = "vpc-cidr"
+	flagClusterType         = "cluster-type"
+	flagHttpsProxy          = "https-proxy"
+	flagHttpProxy           = "http-proxy"
+	flagNoProxy             = "no-proxy"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -141,6 +145,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().StringVar(&f.AWS.ClusterType, flagClusterType, "public", "Cluster type to be created (public,proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagHttpsProxy, "", "Https proxy configuration (required if cluster-type is set to proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagHttpProxy, "", "Http proxy configuration")
+	cmd.Flags().StringVar(&f.AWS.NoProxy, flagNoProxy, "", "No proxy configuration")
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	// aws machine pool
@@ -233,6 +241,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolRootVolumeSizeGB)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
+	_ = cmd.Flags().MarkHidden(flagClusterType)
+	_ = cmd.Flags().MarkHidden(flagHttpsProxy)
+	_ = cmd.Flags().MarkHidden(flagHttpProxy)
+	_ = cmd.Flags().MarkHidden(flagNoProxy)
 
 	_ = cmd.Flags().MarkHidden(flagGCPProject)
 	_ = cmd.Flags().MarkHidden(flagGCPFailureDomains)
@@ -433,7 +445,12 @@ func (f *flag) Validate() error {
 			if f.OpenStack.Worker.Image == "" {
 				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerImage)
 			}
+		case key.ProviderCAPA:
+			if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
+				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagHttpsProxy, flagNetworkVPCCidr)
+			}
 		}
+
 	}
 
 	if f.Release == "" {

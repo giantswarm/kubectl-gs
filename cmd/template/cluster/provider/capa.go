@@ -120,6 +120,23 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			},
 		}
 
+		if config.AWS.ClusterType == "proxy-private" {
+			httpProxy := config.AWS.HttpsProxy
+			if config.AWS.HttpProxy != "" {
+				httpProxy = config.AWS.HttpProxy
+			}
+			flagValues.Proxy = &capa.Proxy{
+				Enabled:    true,
+				HttpsProxy: config.AWS.HttpsProxy,
+				HttpProxy:  httpProxy,
+				NoProxy:    config.AWS.NoProxy,
+			}
+
+			flagValues.Network.ApiMode = "private"
+			flagValues.Network.VPCMode = "private"
+			flagValues.Network.DnsMode = "private"
+		}
+
 		configData, err := capa.GenerateClusterValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)

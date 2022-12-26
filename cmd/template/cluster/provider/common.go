@@ -36,6 +36,10 @@ type AWSConfig struct {
 	MachinePool         AWSMachinePoolConfig
 	NetworkAZUsageLimit int
 	NetworkVPCCIDR      string
+	ClusterType         string
+	HttpProxy           string
+	HttpsProxy          string
+	NoProxy             string
 }
 
 type AWSMachinePoolConfig struct {
