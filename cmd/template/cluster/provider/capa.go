@@ -21,6 +21,7 @@ import (
 const (
 	DefaultAppsRepoName = "default-apps-aws"
 	ClusterAWSRepoName  = "cluster-aws"
+	NetworkModePrivate  = "private"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -132,9 +133,9 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.Network.ApiMode = "private"
-			flagValues.Network.VPCMode = "private"
-			flagValues.Network.DnsMode = "private"
+			flagValues.Network.ApiMode = NetworkModePrivate
+			flagValues.Network.VPCMode = NetworkModePrivate
+			flagValues.Network.DnsMode = NetworkModePrivate
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)
