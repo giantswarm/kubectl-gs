@@ -6,6 +6,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/3th1nk/cidr"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -122,6 +123,18 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		}
 
 		if config.AWS.ClusterType == "proxy-private" {
+			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			subnets, err := c.SubNetting(cidr.MethodSubnetNum, 4)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			for i, subnet := range subnets {
+				flagValues.Network.Subnets = append(flagValues.Network.Subnets, fmt.Sprintf("cidrBlock: %s", subnet.CIDR().String()))
+				if i == len(flagValues.ControlPlane.AvailabilityZones)-1 {
+					break
+				}
+			}
+
 			httpProxy := config.AWS.HttpsProxy
 			if config.AWS.HttpProxy != "" {
 				httpProxy = config.AWS.HttpProxy
