@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add flags `--cluster-type, `--https-proxy`, `--http-proxy` and `--no-proxy` to `template cluster` that specify `CAPA` as provider.
+
 ## [2.29.5] - 2022-12-20
 
 ### Changed
