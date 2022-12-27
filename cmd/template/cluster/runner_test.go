@@ -103,6 +103,42 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capa.golden",
 		},
+		{
+			name: "case 2: template cluster capa",
+			flags: &flag{
+				Name:                     "test1",
+				Provider:                 "capa",
+				Description:              "just a test cluster",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				App: provider.AppConfig{
+					ClusterVersion:     "1.0.0",
+					ClusterCatalog:     "the-catalog",
+					DefaultAppsCatalog: "the-default-catalog",
+					DefaultAppsVersion: "2.0.0",
+				},
+				AWS: provider.AWSConfig{
+					ClusterType: "proxy-private",
+					MachinePool: provider.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					Role:           "default",
+					NetworkVPCCIDR: "10.123.0.0/16",
+					HttpsProxy:     "https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
+					HttpProxy:      "http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
+					NoProxy:        "test-domain.com",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa_2.golden",
+		},
 	}
 
 	for _, tc := range testCases {

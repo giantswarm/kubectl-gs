@@ -26,6 +26,7 @@ type AWS struct {
 type Network struct {
 	AvailabilityZoneUsageLimit int      `json:"availabilityZoneUsageLimit,omitempty"`
 	VPCCIDR                    string   `json:"vpcCIDR,omitempty"`
+	TopologyMode               string   `json:"topologyMode,omitempty"`
 	VPCMode                    string   `json:"vpcMode,omitempty"`
 	ApiMode                    string   `json:"apiMode,omitempty"`
 	DnsMode                    string   `json:"dnsMode,omitempty"`

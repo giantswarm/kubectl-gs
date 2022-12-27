@@ -23,6 +23,7 @@ const (
 	DefaultAppsRepoName = "default-apps-aws"
 	ClusterAWSRepoName  = "cluster-aws"
 	NetworkModePrivate  = "private"
+	TopoloyModeManaged  = "GiantSwarmManaged"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -128,11 +129,9 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			for i, subnet := range subnets {
-				flagValues.Network.Subnets = append(flagValues.Network.Subnets, fmt.Sprintf("cidrBlock: %s", subnet.CIDR().String()))
-				if i == len(flagValues.ControlPlane.AvailabilityZones)-1 {
-					break
-				}
+
+			for i := range config.AWS.MachinePool.AZs {
+				flagValues.Network.Subnets = append(flagValues.Network.Subnets, fmt.Sprintf("cidrBlock: %s", subnets[i].CIDR().String()))
 			}
 
 			httpProxy := config.AWS.HttpsProxy
@@ -149,6 +148,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			flagValues.Network.ApiMode = NetworkModePrivate
 			flagValues.Network.VPCMode = NetworkModePrivate
 			flagValues.Network.DnsMode = NetworkModePrivate
+			flagValues.Network.TopologyMode = TopoloyModeManaged
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)
