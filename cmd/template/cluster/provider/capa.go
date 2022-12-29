@@ -157,8 +157,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Println(configData)
-		fmt.Println("-----------------***************--------------")
+
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
 			Namespace: organizationNamespace(config.Organization),
