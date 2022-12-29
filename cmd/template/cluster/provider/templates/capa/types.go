@@ -30,7 +30,11 @@ type Network struct {
 	VPCMode                    string   `json:"vpcMode,omitempty"`
 	ApiMode                    string   `json:"apiMode,omitempty"`
 	DnsMode                    string   `json:"dnsMode,omitempty"`
-	Subnets                    []string `json:"subnets,omitempty"`
+	Subnets                    []Subnet `json:"subnets,omitempty"`
+}
+
+type Subnet struct {
+	CidrBlock string `json:"cidrBlock"`
 }
 
 type Bastion struct {

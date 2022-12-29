@@ -131,7 +131,9 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			}
 
 			for i := range config.AWS.MachinePool.AZs {
-				flagValues.Network.Subnets = append(flagValues.Network.Subnets, fmt.Sprintf("cidrBlock: %s", subnets[i].CIDR().String()))
+				flagValues.Network.Subnets = append(flagValues.Network.Subnets, capa.Subnet{
+					CidrBlock: subnets[i].CIDR().String(),
+				})
 			}
 
 			httpProxy := config.AWS.HttpsProxy
@@ -155,7 +157,8 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
+		fmt.Println(configData)
+		fmt.Println("-----------------***************--------------")
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
 			Namespace: organizationNamespace(config.Organization),
