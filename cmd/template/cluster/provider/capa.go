@@ -130,10 +130,17 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				return microerror.Mask(err)
 			}
 
-			for i := range config.AWS.MachinePool.AZs {
+			subnetCount := len(config.AWS.MachinePool.AZs)
+			if subnetCount == 0 {
+				subnetCount = config.AWS.NetworkAZUsageLimit
+			}
+
+			i := 0
+			for i < subnetCount {
 				flagValues.Network.Subnets = append(flagValues.Network.Subnets, capa.Subnet{
 					CidrBlock: subnets[i].CIDR().String(),
 				})
+				i++
 			}
 
 			httpProxy := config.AWS.HttpsProxy
