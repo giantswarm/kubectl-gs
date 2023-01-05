@@ -28,7 +28,7 @@ type Network struct {
 	VPCCIDR                    string   `json:"vpcCIDR,omitempty"`
 	TopologyMode               string   `json:"topologyMode,omitempty"`
 	VPCMode                    string   `json:"vpcMode,omitempty"`
-	ApiMode                    string   `json:"apiMode,omitempty"`
+	APIMode                    string   `json:"apiMode,omitempty"`
 	DnsMode                    string   `json:"dnsMode,omitempty"`
 	Subnets                    []Subnet `json:"subnets,omitempty"`
 }

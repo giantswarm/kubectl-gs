@@ -154,7 +154,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.Network.ApiMode = NetworkModePrivate
+			flagValues.Network.APIMode = NetworkModePrivate
 			flagValues.Network.VPCMode = NetworkModePrivate
 			flagValues.Network.DnsMode = NetworkModePrivate
 			flagValues.Network.TopologyMode = TopoloyModeManaged
