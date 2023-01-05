@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+
 	"github.com/giantswarm/kubectl-gs/v2/cmd/gitops/add"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/gitops/initialize"
 )
@@ -21,6 +23,8 @@ const (
 type Config struct {
 	Logger     micrologger.Logger
 	FileSystem afero.Fs
+
+	ConfigFlags *genericclioptions.RESTClientGetter
 
 	Stderr io.Writer
 	Stdout io.Writer
@@ -47,6 +51,8 @@ func New(config Config) (*cobra.Command, error) {
 		c := add.Config{
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
+
+			ConfigFlags: config.ConfigFlags,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,
