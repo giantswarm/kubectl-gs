@@ -124,15 +124,19 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		}
 
 		if config.AWS.ClusterType == "proxy-private" {
-			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
-			subnets, err := c.SubNetting(cidr.MethodSubnetNum, 4)
-			if err != nil {
-				return microerror.Mask(err)
+			subnetCidrBlockCountLimit := len(config.AWS.MachinePool.AZs)
+			subnetCount := len(config.AWS.MachinePool.AZs)
+			if subnetCidrBlockCountLimit == 0 {
+				subnetCidrBlockCountLimit = 4
+				subnetCount = config.AWS.NetworkAZUsageLimit
+			} else if subnetCidrBlockCountLimit%2 == 1 {
+				subnetCidrBlockCountLimit++
 			}
 
-			subnetCount := len(config.AWS.MachinePool.AZs)
-			if subnetCount == 0 {
-				subnetCount = config.AWS.NetworkAZUsageLimit
+			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			subnets, err := c.SubNetting(cidr.MethodSubnetNum, subnetCidrBlockCountLimit)
+			if err != nil {
+				return microerror.Mask(err)
 			}
 
 			i := 0
