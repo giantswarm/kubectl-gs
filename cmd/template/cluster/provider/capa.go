@@ -20,10 +20,10 @@ import (
 )
 
 const (
-	DefaultAppsRepoName = "default-apps-aws"
-	ClusterAWSRepoName  = "cluster-aws"
-	NetworkModePrivate  = "private"
-	TopoloyModeManaged  = "GiantSwarmManaged"
+	DefaultAppsRepoName  = "default-apps-aws"
+	ClusterAWSRepoName   = "cluster-aws"
+	ModePrivate          = "private"
+	TopoloyModeGSManaged = "GiantSwarmManaged"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -124,17 +124,17 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		}
 
 		if config.AWS.ClusterType == "proxy-private" {
-			subnetCidrBlockCountLimit := len(config.AWS.MachinePool.AZs)
+			subnetCountLimit := 0
 			subnetCount := len(config.AWS.MachinePool.AZs)
-			if subnetCidrBlockCountLimit == 0 {
-				subnetCidrBlockCountLimit = 4
+			if subnetCount == 0 {
+				subnetCountLimit = 4
 				subnetCount = config.AWS.NetworkAZUsageLimit
-			} else if subnetCidrBlockCountLimit%2 == 1 {
-				subnetCidrBlockCountLimit++
+			} else {
+				subnetCountLimit = findNextPowerOfTwo(subnetCount)
 			}
 
 			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
-			subnets, err := c.SubNetting(cidr.MethodSubnetNum, subnetCidrBlockCountLimit)
+			subnets, err := c.SubNetting(cidr.MethodSubnetNum, subnetCountLimit)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -158,10 +158,10 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.Network.APIMode = NetworkModePrivate
-			flagValues.Network.VPCMode = NetworkModePrivate
-			flagValues.Network.DnsMode = NetworkModePrivate
-			flagValues.Network.TopologyMode = TopoloyModeManaged
+			flagValues.Network.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
+			flagValues.Network.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
+			flagValues.Network.DNSMode = defaultTo(config.AWS.DNSMode, ModePrivate)
+			flagValues.Network.TopologyMode = defaultTo(config.AWS.TopologyMode, TopoloyModeGSManaged)
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)

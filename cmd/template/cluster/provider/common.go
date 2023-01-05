@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"text/template"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -40,6 +41,10 @@ type AWSConfig struct {
 	HttpProxy           string
 	HttpsProxy          string
 	NoProxy             string
+	APIMode             string
+	VPCMode             string
+	DNSMode             string
+	TopologyMode        string
 }
 
 type AWSMachinePoolConfig struct {
@@ -302,4 +307,16 @@ func organizationNamespace(org string) string {
 
 func userConfigMapName(app string) string {
 	return fmt.Sprintf("%s-userconfig", app)
+}
+
+func findNextPowerOfTwo(num int) int {
+	log2OfNum := math.Ceil(math.Log2(float64(num)))
+	return int(math.Pow(2, log2OfNum+1))
+}
+
+func defaultTo(value string, defaultValue string) string {
+	if value != "" {
+		return value
+	}
+	return defaultValue
 }

@@ -32,6 +32,10 @@ const (
 	flagHttpsProxy          = "https-proxy"
 	flagHttpProxy           = "http-proxy"
 	flagNoProxy             = "no-proxy"
+	flagAPIMode             = "api-mode"
+	flagDNSMode             = "dns-mode"
+	flagVPCMode             = "vpc-mode"
+	flagTopologyMode        = "topology-mode"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -149,6 +153,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagHttpsProxy, "", "Https proxy configuration (required if cluster-type is set to proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagHttpProxy, "", "Http proxy configuration")
 	cmd.Flags().StringVar(&f.AWS.NoProxy, flagNoProxy, "", "No proxy configuration")
+	cmd.Flags().StringVar(&f.AWS.APIMode, flagAPIMode, "", "api mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.VPCMode, flagVPCMode, "", "vpc mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.DNSMode, flagDNSMode, "", "dns mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagTopologyMode, "", "topology mode of the network (UserManaged,GiantSwarmManaged)")
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	// aws machine pool

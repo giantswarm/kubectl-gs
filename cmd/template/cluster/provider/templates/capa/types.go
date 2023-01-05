@@ -29,7 +29,7 @@ type Network struct {
 	TopologyMode               string   `json:"topologyMode,omitempty"`
 	VPCMode                    string   `json:"vpcMode,omitempty"`
 	APIMode                    string   `json:"apiMode,omitempty"`
-	DnsMode                    string   `json:"dnsMode,omitempty"`
+	DNSMode                    string   `json:"dnsMode,omitempty"`
 	Subnets                    []Subnet `json:"subnets,omitempty"`
 }
 
