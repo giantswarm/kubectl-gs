@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
+	capg "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/gcp"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -41,15 +44,15 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	fmt.Println("Hello world!")
 
-	//err := r.writeCapaTemplate(ctx)
-	//if err != nil {
-	//	return microerror.Mask(err)
-	//}
-
-	err := r.writeCapgTemplate(ctx)
+	err := r.writeCapaTemplate(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	//err := r.writeCapgTemplate(ctx)
+	//if err != nil {
+	//	return microerror.Mask(err)
+	//}
 
 	//err := r.writeCapvTemplate(ctx)
 	//if err != nil {
@@ -71,6 +74,30 @@ func (r *runner) writeCapaTemplate(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
+	// ********************************************************************************
+
+	clusterValues, err := capa.GenerateClusterValues(capa.ClusterConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Println(clusterValues)
+
+	defaultAppsValues, err := capa.GenerateDefaultAppsValues(capa.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Println(defaultAppsValues)
+
+	// ********************************************************************************
+
 	return provider.WriteCAPATemplate(ctx, client, r.stdout, provider.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
@@ -91,6 +118,30 @@ func (r *runner) writeCapgTemplate(ctx context.Context) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	// ********************************************************************************
+
+	clusterValues, err := capg.GenerateClusterValues(capg.ClusterConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Println(clusterValues)
+
+	defaultAppsValues, err := capg.GenerateDefaultAppsValues(capg.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	fmt.Println(defaultAppsValues)
+
+	// ********************************************************************************
 
 	return provider.WriteGCPTemplate(ctx, client, r.stdout, provider.ClusterConfig{
 		Name:         "${cluster_name}",
