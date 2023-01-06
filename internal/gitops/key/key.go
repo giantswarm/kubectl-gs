@@ -28,9 +28,10 @@ const (
 	sopsSecretFile             = "%s.gpgkey.enc.yaml" //#nosec G101 -- false positive (no secret here)
 	workloadClusterDirectory   = "workload-clusters"
 
-	mcDirectoryTemplate  = "management-clusters/%s"
-	orgDirectoryTemplate = "%s/organizations/%s"
-	wcDirectoryTemplate  = "%s/workload-clusters/%s"
+	clusterBaseDirectoryTemplate = "bases/clusters/%s"
+	mcDirectoryTemplate          = "management-clusters/%s"
+	orgDirectoryTemplate         = "%s/organizations/%s"
+	wcDirectoryTemplate          = "%s/workload-clusters/%s"
 )
 
 func AppCRFileName() string {
@@ -43,6 +44,10 @@ func AppsDirName() string {
 
 func AutoUpdatesDirName() string {
 	return automaticUpdatesDirectory
+}
+
+func ClusterBasePath(provider string) string {
+	return fmt.Sprintf(clusterBaseDirectoryTemplate, provider)
 }
 
 // BaseDirPath is one of the most important functions that

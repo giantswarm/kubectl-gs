@@ -23,6 +23,8 @@ type StructureConfig struct {
 	AppVersion             string
 	AppVersionRepository   string
 
+	Provider string
+
 	ClusterBase           string
 	ClusterRelease        string
 	ClusterUserConfig     string
