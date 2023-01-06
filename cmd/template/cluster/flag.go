@@ -150,13 +150,13 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.AWS.ClusterType, flagClusterType, "public", "Cluster type to be created (public,proxy-private)")
-	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagHttpsProxy, "", "Https proxy configuration (required if cluster-type is set to proxy-private)")
-	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagHttpProxy, "", "Http proxy configuration")
-	cmd.Flags().StringVar(&f.AWS.NoProxy, flagNoProxy, "", "No proxy configuration")
+	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster, if not set, --https-proxy value will be used instead")
+	cmd.Flags().StringVar(&f.AWS.NoProxy, flagNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
 	cmd.Flags().StringVar(&f.AWS.APIMode, flagAPIMode, "", "api mode of the network (public,private)")
 	cmd.Flags().StringVar(&f.AWS.VPCMode, flagVPCMode, "", "vpc mode of the network (public,private)")
 	cmd.Flags().StringVar(&f.AWS.DNSMode, flagDNSMode, "", "dns mode of the network (public,private)")
-	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagTopologyMode, "", "topology mode of the network (UserManaged,GiantSwarmManaged)")
+	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagTopologyMode, "", "topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	// aws machine pool

@@ -139,12 +139,10 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				return microerror.Mask(err)
 			}
 
-			i := 0
-			for i < subnetCount {
+			for i := 0; i < subnetCount; i++ {
 				flagValues.Network.Subnets = append(flagValues.Network.Subnets, capa.Subnet{
 					CidrBlock: subnets[i].CIDR().String(),
 				})
-				i++
 			}
 
 			httpProxy := config.AWS.HttpsProxy
