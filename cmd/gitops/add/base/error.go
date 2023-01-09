@@ -6,19 +6,9 @@ var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
 
-//// IsInvalidConfig asserts invalidConfigError.
-//func IsInvalidConfig(err error) bool {
-//	return microerror.Cause(err) == invalidConfigError
-//}
-
 var invalidFlagError = &microerror.Error{
 	Kind: "invalidFlagsError",
 }
-
-//// IsInvalidFlags asserts invalidFlagsError.
-//func IsInvalidFlags(err error) bool {
-//	return microerror.Cause(err) == invalidFlagsError
-//}
 
 var invalidProviderError = &microerror.Error{
 	Kind: "invalidProviderError",

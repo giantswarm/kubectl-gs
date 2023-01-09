@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 )
 
+// TODO Update these
 const (
 	name = "base"
 

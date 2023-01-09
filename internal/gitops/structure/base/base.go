@@ -20,40 +20,13 @@ func NewClusterBase(config common.StructureConfig) (*creator.CreatorConfig, erro
 
 	templates := base.GetClusterBaseTemplates
 	err := common.AppendFromTemplate(&fsObjects, clusterBaseDir, templates, config)
+
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	//var resources []string
-	//for _, tmpl := range templates() {
-	//	resources = append(resources, tmpl.Name)
-	//}
-	//
-	//baseKusFile := key.ResourcePath(clusterBaseDir, key.SigsKustomizationFileName())
-	//
-	//fsModifiers := map[string]modifier.Modifier{
-	//	baseKusFile: sigskusmod.KustomizationModifier{
-	//		ResourcesToAdd: resources,
-	//	},
-	//}
-
 	creatorConfig := creator.CreatorConfig{
 		FsObjects: fsObjects,
-		//PostModifiers: fsModifiers,
-		//PreValidators: map[string]func(fs *afero.Afero, path string) error{
-		//	//appDir: func(fs *afero.Afero, path string) error {
-		//	//	ok, err := fs.Exists(path)
-		//	//	if err != nil {
-		//	//		return microerror.Mask(err)
-		//	//	}
-		//	//
-		//	//	if !ok {
-		//	//		return nil
-		//	//	}
-		//	//
-		//	//	return microerror.Maskf(creator.ValidationError, appExists, config.AppName)
-		//	//},
-		//},
 	}
 
 	return &creatorConfig, nil
