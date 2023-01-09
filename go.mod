@@ -8,7 +8,7 @@ require (
 	github.com/ProtonMail/gopenpgp/v2 v2.5.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
-	github.com/coreos/go-oidc/v3 v3.4.0
+	github.com/coreos/go-oidc/v3 v3.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.13.0
 	github.com/giantswarm/apiextensions-application v0.6.0
@@ -33,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mozilla.org/sops/v3 v3.7.3
-	golang.org/x/oauth2 v0.3.0
+	golang.org/x/oauth2 v0.4.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.4.0
 	k8s.io/api v0.24.3
@@ -81,6 +81,7 @@ require (
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-kit/log v0.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -176,10 +177,10 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
-	golang.org/x/net v0.3.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/term v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.84.0 // indirect
@@ -202,7 +203,7 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.14 // [CVE-2022-31030, CVE-2022-23471]
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.15 // [CVE-2022-31030, CVE-2022-23471]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.6
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
@@ -213,8 +214,8 @@ replace (
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.18.0
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.2
 	// CVE-2022-41717
-	golang.org/x/net => golang.org/x/net v0.4.0
-	golang.org/x/text => golang.org/x/text v0.5.0
+	golang.org/x/net => golang.org/x/net v0.5.0
+	golang.org/x/text => golang.org/x/text v0.6.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.3
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
