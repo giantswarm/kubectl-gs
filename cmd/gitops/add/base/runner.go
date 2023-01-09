@@ -3,11 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
+	"io"
+	"strconv"
+
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/base"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	"io"
-	"strconv"
+	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
 	capg "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/gcp"
@@ -50,6 +53,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Provider: r.flag.Provider,
 	}
 
+	var err error
+	config.ClusterBaseTemplates, err = generateClusterBaseTemplates(config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	// TODO move new method to structure package?
 	creatorConfig, err := base.NewClusterBase(config)
 	if err != nil {
@@ -75,6 +84,100 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func generateClusterBaseTemplates(config common.StructureConfig) (common.ClusterBaseTemplates, error) {
+	switch config.Provider {
+	case key.ProviderCAPA:
+		return generateCapAClusterBaseTemplates(config)
+	case key.ProviderGCP:
+		return generateCapGClusterBaseTemplates(config)
+	case key.ProviderOpenStack:
+		return generateCapOClusterBaseTemplates(config)
+	}
+
+	return common.ClusterBaseTemplates{}, invalidProviderError
+}
+
+func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
+	clusterBaseTemplates := common.ClusterBaseTemplates{}
+
+	clusterValues, err := capa.GenerateClusterValues(capa.ClusterConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsValues, err := capa.GenerateDefaultAppsValues(capa.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
+
+	return clusterBaseTemplates, nil
+}
+
+func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
+	clusterBaseTemplates := common.ClusterBaseTemplates{}
+
+	clusterValues, err := capg.GenerateClusterValues(capg.ClusterConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsValues, err := capg.GenerateDefaultAppsValues(capg.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
+
+	return clusterBaseTemplates, nil
+}
+
+func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
+	clusterBaseTemplates := common.ClusterBaseTemplates{}
+
+	clusterValues, err := openstack.GenerateClusterValues(openstack.ClusterConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsValues, err := openstack.GenerateDefaultAppsValues(openstack.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
+
+	return clusterBaseTemplates, nil
 }
 
 func (r *runner) testTemplates(ctx context.Context) error {

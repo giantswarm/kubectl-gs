@@ -19,3 +19,7 @@ var invalidFlagError = &microerror.Error{
 //func IsInvalidFlags(err error) bool {
 //	return microerror.Cause(err) == invalidFlagsError
 //}
+
+var invalidProviderError = &microerror.Error{
+	Kind: "invalidProviderError",
+}

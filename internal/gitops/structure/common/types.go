@@ -23,7 +23,8 @@ type StructureConfig struct {
 	AppVersion             string
 	AppVersionRepository   string
 
-	Provider string
+	Provider             string
+	ClusterBaseTemplates ClusterBaseTemplates
 
 	ClusterBase           string
 	ClusterRelease        string
@@ -39,6 +40,14 @@ type StructureConfig struct {
 	RepositoryName    string
 	SkipMAPI          bool
 	WorkloadCluster   string
+}
+
+type ClusterBaseTemplates struct {
+	ClusterAppCr  string
+	ClusterValues string
+
+	DefaultAppsAppCr  string
+	DefaultAppsValues string
 }
 
 type Template struct {
