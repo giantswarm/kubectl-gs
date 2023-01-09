@@ -28,14 +28,14 @@ const (
 	flagAWSRole             = "role"
 	flagNetworkAZUsageLimit = "az-usage-limit"
 	flagNetworkVPCCidr      = "vpc-cidr"
-	flagClusterType         = "cluster-type"
-	flagHttpsProxy          = "https-proxy"
-	flagHttpProxy           = "http-proxy"
-	flagNoProxy             = "no-proxy"
-	flagAPIMode             = "api-mode"
-	flagDNSMode             = "dns-mode"
-	flagVPCMode             = "vpc-mode"
-	flagTopologyMode        = "topology-mode"
+	flagAWSClusterType      = "cluster-type"
+	flagAWSHttpsProxy       = "https-proxy"
+	flagAWSHttpProxy        = "http-proxy"
+	flagAWSNoProxy          = "no-proxy"
+	flagAWSAPIMode          = "api-mode"
+	flagAWSDNSMode          = "dns-mode"
+	flagAWSVPCMode          = "vpc-mode"
+	flagAWSTopologyMode     = "topology-mode"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -149,14 +149,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
-	cmd.Flags().StringVar(&f.AWS.ClusterType, flagClusterType, "public", "Cluster type to be created (public,proxy-private)")
-	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
-	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster, if not set, --https-proxy value will be used instead")
-	cmd.Flags().StringVar(&f.AWS.NoProxy, flagNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
-	cmd.Flags().StringVar(&f.AWS.APIMode, flagAPIMode, "", "api mode of the network (public,private)")
-	cmd.Flags().StringVar(&f.AWS.VPCMode, flagVPCMode, "", "vpc mode of the network (public,private)")
-	cmd.Flags().StringVar(&f.AWS.DNSMode, flagDNSMode, "", "dns mode of the network (public,private)")
-	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagTopologyMode, "", "topology mode of the network (UserManaged,GiantSwarmManaged,None)")
+	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagAWSHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster, if not set, --https-proxy value will be used instead")
+	cmd.Flags().StringVar(&f.AWS.NoProxy, flagAWSNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.AWS.APIMode, flagAWSAPIMode, "", "API mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.VPCMode, flagAWSVPCMode, "", "VPC mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.DNSMode, flagAWSDNSMode, "", "DNS  mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	// aws machine pool
@@ -249,10 +249,14 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolRootVolumeSizeGB)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
-	_ = cmd.Flags().MarkHidden(flagClusterType)
-	_ = cmd.Flags().MarkHidden(flagHttpsProxy)
-	_ = cmd.Flags().MarkHidden(flagHttpProxy)
-	_ = cmd.Flags().MarkHidden(flagNoProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSClusterType)
+	_ = cmd.Flags().MarkHidden(flagAWSHttpsProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSHttpProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSNoProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSAPIMode)
+	_ = cmd.Flags().MarkHidden(flagAWSVPCMode)
+	_ = cmd.Flags().MarkHidden(flagAWSDNSMode)
+	_ = cmd.Flags().MarkHidden(flagAWSTopologyMode)
 
 	_ = cmd.Flags().MarkHidden(flagGCPProject)
 	_ = cmd.Flags().MarkHidden(flagGCPFailureDomains)
@@ -455,7 +459,7 @@ func (f *flag) Validate() error {
 			}
 		case key.ProviderCAPA:
 			if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
-				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagHttpsProxy, flagNetworkVPCCidr)
+				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagAWSHttpsProxy, flagNetworkVPCCidr)
 			}
 		}
 
