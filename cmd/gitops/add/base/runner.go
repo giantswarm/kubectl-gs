@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
+	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 	"io"
 	"strconv"
 
@@ -99,13 +101,69 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 	return common.ClusterBaseTemplates{}, invalidProviderError
 }
 
+// TODO Go through / share common logic
+func generateClusterAppCrTemplate(appName string) (string, error) {
+	template, err := templateapp.NewAppCR(templateapp.Config{
+		Name:                    appName,
+		AppName:                 "${cluster_name}",
+		Catalog:                 "cluster",
+		InCluster:               true,
+		Namespace:               "org-${organization}",
+		Version:                 "${cluster_version}",
+		UserConfigConfigMapName: "${cluster_name}-config",
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(template), nil
+}
+
+// TODO Go through / share common logic
+func generateDefaultAppsAppCrTemplate(appName string) (string, error) {
+	template, err := templateapp.NewAppCR(templateapp.Config{
+		Name:                    appName,
+		AppName:                 "${cluster_name}-default-apps",
+		Cluster:                 "${cluster_name}",
+		Catalog:                 "cluster",
+		DefaultingEnabled:       false,
+		InCluster:               true,
+		Namespace:               "org-${organization}",
+		Version:                 "${default_apps_version}",
+		UserConfigConfigMapName: "${cluster_name}-default-apps-config",
+		UseClusterValuesConfig:  true,
+		ExtraLabels: map[string]string{
+			k8smetadata.ManagedBy: "cluster",
+		},
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(template), nil
+}
+
 func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
+
+	clusterAppCr, err := generateClusterAppCrTemplate("cluster-aws")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
 
 	clusterValues, err := capa.GenerateClusterValues(capa.ClusterConfig{
 		ClusterName:  "${cluster_name}",
 		Organization: "${organization}",
 	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsAppCr, err := generateDefaultAppsAppCrTemplate("default-apps-aws")
 
 	if err != nil {
 		return clusterBaseTemplates, err
@@ -120,7 +178,9 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
+	clusterBaseTemplates.ClusterAppCr = clusterAppCr
 	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsAppCr = defaultAppsAppCr
 	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
 
 	return clusterBaseTemplates, nil
@@ -129,10 +189,22 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
+	clusterAppCr, err := generateClusterAppCrTemplate("cluster-gcp")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
 	clusterValues, err := capg.GenerateClusterValues(capg.ClusterConfig{
 		ClusterName:  "${cluster_name}",
 		Organization: "${organization}",
 	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsAppCr, err := generateDefaultAppsAppCrTemplate("default-apps-gcp")
 
 	if err != nil {
 		return clusterBaseTemplates, err
@@ -147,7 +219,9 @@ func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
+	clusterBaseTemplates.ClusterAppCr = clusterAppCr
 	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsAppCr = defaultAppsAppCr
 	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
 
 	return clusterBaseTemplates, nil
@@ -156,10 +230,22 @@ func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (c
 func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
+	clusterAppCr, err := generateClusterAppCrTemplate("cluster-openstack")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
 	clusterValues, err := openstack.GenerateClusterValues(openstack.ClusterConfig{
 		ClusterName:  "${cluster_name}",
 		Organization: "${organization}",
 	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsAppCr, err := generateDefaultAppsAppCrTemplate("default-apps-openstack")
 
 	if err != nil {
 		return clusterBaseTemplates, err
@@ -174,7 +260,9 @@ func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
+	clusterBaseTemplates.ClusterAppCr = clusterAppCr
 	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsAppCr = defaultAppsAppCr
 	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
 
 	return clusterBaseTemplates, nil
