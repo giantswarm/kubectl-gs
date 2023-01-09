@@ -3,7 +3,11 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/base"
+	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
 	"io"
+	"strconv"
 
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
 	capg "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/gcp"
@@ -42,6 +46,38 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	config := common.StructureConfig{
+		Provider: r.flag.Provider,
+	}
+
+	// TODO move new method to structure package?
+	creatorConfig, err := base.NewClusterBase(config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// TODO These are repeated across all commands, possible to dry it?
+	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
+	if dryRunFlag != nil {
+		creatorConfig.DryRun, _ = strconv.ParseBool(dryRunFlag.Value.String())
+	}
+
+	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
+	if localPathFlag != nil {
+		creatorConfig.Path = localPathFlag.Value.String()
+	}
+
+	creatorObj := creator.NewCreator(*creatorConfig)
+
+	err = creatorObj.Create()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (r *runner) testTemplates(ctx context.Context) error {
 	fmt.Println("Hello world!")
 
 	err := r.writeCapaTemplate(ctx)
@@ -65,6 +101,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	//}
 
 	fmt.Println("Good bye world!")
+
 	return nil
 }
 

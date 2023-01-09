@@ -18,10 +18,10 @@ var clusterConfig string
 //go:embed default_apps.yaml.tmpl
 var defaultApps string
 
-//go:embed default_apps_config.yaml
+//go:embed default_apps_config.yaml.tmpl
 var defaultAppsConfig string
 
-func GetClusterDirectoryTemplates() []common.Template {
+func GetClusterBaseTemplates() []common.Template {
 	return []common.Template{
 		{Name: "kustomization.yaml", Data: kustomization},
 		{Name: "cluster.yaml", Data: cluster},
