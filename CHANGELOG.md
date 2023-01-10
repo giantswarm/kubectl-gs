@@ -9,7 +9,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add flags `--cluster-type`, `--https-proxy`, `--http-proxy`, `--no-proxy`, `--api-mode`, `--dns-mode`, `--vpc-mode` and `--topology-mode` to `template cluster` that specify `capa` as provider.
+- Add flags `--cluster-type`, `--https-proxy`, `--http-proxy`, `--no-proxy`, `--api-mode`, `--dns-mode`, `--vpc-mode` and `--topol
+- ogy-mode` to `template cluster` that specify `capa` as provider.
+- Add `gitops add base` command to generate CAP[A,G,O] bases. The values for `--provider` flag is compatible with the `template cluster` command (A: capa, G: gcp, O: openstack). 
 
 ## [2.29.5] - 2022-12-20
 
