@@ -6,6 +6,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/3th1nk/cidr"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -19,8 +20,10 @@ import (
 )
 
 const (
-	DefaultAppsRepoName = "default-apps-aws"
-	ClusterAWSRepoName  = "cluster-aws"
+	DefaultAppsRepoName  = "default-apps-aws"
+	ClusterAWSRepoName   = "cluster-aws"
+	ModePrivate          = "private"
+	TopoloyModeGSManaged = "GiantSwarmManaged"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -118,6 +121,45 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 					CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
 				},
 			},
+		}
+
+		if config.AWS.ClusterType == "proxy-private" {
+			subnetCountLimit := 0
+			subnetCount := len(config.AWS.MachinePool.AZs)
+			if subnetCount == 0 {
+				subnetCountLimit = 4
+				subnetCount = config.AWS.NetworkAZUsageLimit
+			} else {
+				subnetCountLimit = findNextPowerOfTwo(subnetCount)
+			}
+
+			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			subnets, err := c.SubNetting(cidr.MethodSubnetNum, subnetCountLimit)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			for i := 0; i < subnetCount; i++ {
+				flagValues.Network.Subnets = append(flagValues.Network.Subnets, capa.Subnet{
+					CidrBlock: subnets[i].CIDR().String(),
+				})
+			}
+
+			httpProxy := config.AWS.HttpsProxy
+			if config.AWS.HttpProxy != "" {
+				httpProxy = config.AWS.HttpProxy
+			}
+			flagValues.Proxy = &capa.Proxy{
+				Enabled:    true,
+				HttpsProxy: config.AWS.HttpsProxy,
+				HttpProxy:  httpProxy,
+				NoProxy:    config.AWS.NoProxy,
+			}
+
+			flagValues.Network.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
+			flagValues.Network.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
+			flagValues.Network.DNSMode = defaultTo(config.AWS.DNSMode, ModePrivate)
+			flagValues.Network.TopologyMode = defaultTo(config.AWS.TopologyMode, TopoloyModeGSManaged)
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)

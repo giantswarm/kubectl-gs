@@ -3,6 +3,7 @@ module github.com/giantswarm/kubectl-gs/v2
 go 1.19
 
 require (
+	github.com/3th1nk/cidr v0.2.0
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/ProtonMail/gopenpgp/v2 v2.5.0
 	github.com/blang/semver v3.5.1+incompatible
