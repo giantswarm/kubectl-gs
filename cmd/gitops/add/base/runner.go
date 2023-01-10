@@ -2,10 +2,12 @@ package app
 
 import (
 	"context"
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
-	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 	"io"
 	"strconv"
+
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
+
+	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
@@ -60,7 +62,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	// TODO move new method to structure package?
 	creatorConfig, err := base.NewClusterBase(config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -68,7 +69,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	creatorConfig.Stdout = r.stdout
 
-	// TODO These are repeated across all commands, possible to dry it?
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
 	if dryRunFlag != nil {
 		creatorConfig.DryRun, _ = strconv.ParseBool(dryRunFlag.Value.String())
@@ -102,7 +102,6 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 	return common.ClusterBaseTemplates{}, invalidProviderError
 }
 
-// TODO Go through / share common logic
 func generateClusterAppCrTemplate(appName string) (string, error) {
 	template, err := templateapp.NewAppCR(templateapp.Config{
 		Name:                    appName,
@@ -121,7 +120,6 @@ func generateClusterAppCrTemplate(appName string) (string, error) {
 	return string(template), nil
 }
 
-// TODO Go through / share common logic
 func generateDefaultAppsAppCrTemplate(appName string) (string, error) {
 	template, err := templateapp.NewAppCR(templateapp.Config{
 		Name:                    appName,

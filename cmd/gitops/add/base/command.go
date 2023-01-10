@@ -13,17 +13,26 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 )
 
-// TODO Update these
 const (
 	name = "base"
 
-	shortDescription = "Adds a new base to your GitOps directory structure"
-	longDescription  = `Adds a new base to your GitOps directory structure.
+	shortDescription = "Adds a new Cluster base template to your GitOps directory structure"
+	longDescription  = `Adds a new Cluster base template to your GitOps directory structure.
 
-...
-`
+base \
+--provider <provider>
 
-	examples = ``
+It respects the Giantswarm's GitOps repository structure recommendation:
+https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+
+	examples = `  # Add a CAPA base to your GitOps directory structure
+  kubectl gs gitops add base --provider capa
+
+  # Add a CAPG base to your GitOps directory structure
+  kubectl gs gitops add base --provider gcp
+
+  # Add a CAPO base to your GitOps directory structure
+  kubectl gs gitops add base --provider openstack`
 )
 
 type Config struct {
