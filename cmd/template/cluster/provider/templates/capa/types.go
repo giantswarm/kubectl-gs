@@ -10,6 +10,7 @@ type ClusterConfig struct {
 	ControlPlane       *ControlPlane  `json:"controlPlane,omitempty"`
 	MachinePools       *[]MachinePool `json:"machinePools,omitempty"`
 	FlatcarAWSAccount  string         `json:"flatcarAWSAccount,omitempty"`
+	Proxy              *Proxy         `json:"proxy,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -23,8 +24,17 @@ type AWS struct {
 }
 
 type Network struct {
-	AvailabilityZoneUsageLimit int    `json:"availabilityZoneUsageLimit,omitempty"`
-	VPCCIDR                    string `json:"vpcCIDR,omitempty"`
+	AvailabilityZoneUsageLimit int      `json:"availabilityZoneUsageLimit,omitempty"`
+	VPCCIDR                    string   `json:"vpcCIDR,omitempty"`
+	TopologyMode               string   `json:"topologyMode,omitempty"`
+	VPCMode                    string   `json:"vpcMode,omitempty"`
+	APIMode                    string   `json:"apiMode,omitempty"`
+	DNSMode                    string   `json:"dnsMode,omitempty"`
+	Subnets                    []Subnet `json:"subnets,omitempty"`
+}
+
+type Subnet struct {
+	CidrBlock string `json:"cidrBlock"`
 }
 
 type Bastion struct {
@@ -50,4 +60,11 @@ type MachinePool struct {
 	MaxSize           int      `json:"maxSize,omitempty"`
 	RootVolumeSizeGB  int      `json:"rootVolumeSizeGB,omitempty"`
 	CustomNodeLabels  []string `json:"customNodeLabels,omitempty"`
+}
+
+type Proxy struct {
+	Enabled    bool   `json:"enabled,omitempty"`
+	HttpsProxy string `json:"https_proxy,omitempty"`
+	HttpProxy  string `json:"http_proxy,omitempty"`
+	NoProxy    string `json:"no_proxy,omitempty"`
 }
