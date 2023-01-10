@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 
+	providers "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
 	capg "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/gcp"
 
@@ -154,10 +155,11 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterValues, err := capa.GenerateClusterValues(capa.ClusterConfig{
-		ClusterName:  "${cluster_name}",
+	clusterConfig := providers.BuildCapaClusterConfig(providers.ClusterConfig{
+		Name:         "${cluster_name}",
 		Organization: "${organization}",
 	})
+	clusterValues, err := capa.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err
@@ -195,10 +197,11 @@ func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterValues, err := capg.GenerateClusterValues(capg.ClusterConfig{
-		ClusterName:  "${cluster_name}",
+	clusterConfig := providers.BuildCapgClusterConfig(providers.ClusterConfig{
+		Name:         "${cluster_name}",
 		Organization: "${organization}",
 	})
+	clusterValues, err := capg.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err
@@ -236,10 +239,11 @@ func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterValues, err := openstack.GenerateClusterValues(openstack.ClusterConfig{
-		ClusterName:  "${cluster_name}",
+	clusterConfig := providers.BuildCapoClusterConfig(providers.ClusterConfig{
+		Name:         "${cluster_name}",
 		Organization: "${organization}",
-	})
+	}, 1)
+	clusterValues, err := openstack.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err

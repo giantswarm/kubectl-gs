@@ -86,39 +86,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 	var configMapYAML []byte
 	{
-		flagValues := capa.ClusterConfig{
-			ClusterName:        config.Name,
-			ClusterDescription: config.Description,
-			Organization:       config.Organization,
-
-			AWS: &capa.AWS{
-				Region: config.Region,
-				Role:   config.AWS.Role,
-			},
-			Network: &capa.Network{
-				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
-				VPCCIDR:                    config.AWS.NetworkVPCCIDR,
-			},
-			Bastion: &capa.Bastion{
-				InstanceType: config.BastionInstanceType,
-				Replicas:     config.BastionReplicas,
-			},
-			ControlPlane: &capa.ControlPlane{
-				InstanceType: config.ControlPlaneInstanceType,
-				Replicas:     3,
-			},
-			MachinePools: &[]capa.MachinePool{
-				{
-					Name:              config.AWS.MachinePool.Name,
-					AvailabilityZones: config.AWS.MachinePool.AZs,
-					InstanceType:      config.AWS.MachinePool.InstanceType,
-					MinSize:           config.AWS.MachinePool.MinSize,
-					MaxSize:           config.AWS.MachinePool.MaxSize,
-					RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
-					CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
-				},
-			},
-		}
+		flagValues := BuildCapaClusterConfig(config)
 
 		configData, err := capa.GenerateClusterValues(flagValues)
 		if err != nil {
@@ -178,6 +146,42 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		UserConfigConfigMap: string(configMapYAML),
 	})
 	return microerror.Mask(err)
+}
+
+func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
+	return capa.ClusterConfig{
+		ClusterName:        config.Name,
+		ClusterDescription: config.Description,
+		Organization:       config.Organization,
+
+		AWS: &capa.AWS{
+			Region: config.Region,
+			Role:   config.AWS.Role,
+		},
+		Network: &capa.Network{
+			AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
+			VPCCIDR:                    config.AWS.NetworkVPCCIDR,
+		},
+		Bastion: &capa.Bastion{
+			InstanceType: config.BastionInstanceType,
+			Replicas:     config.BastionReplicas,
+		},
+		ControlPlane: &capa.ControlPlane{
+			InstanceType: config.ControlPlaneInstanceType,
+			Replicas:     3,
+		},
+		MachinePools: &[]capa.MachinePool{
+			{
+				Name:              config.AWS.MachinePool.Name,
+				AvailabilityZones: config.AWS.MachinePool.AZs,
+				InstanceType:      config.AWS.MachinePool.InstanceType,
+				MinSize:           config.AWS.MachinePool.MinSize,
+				MaxSize:           config.AWS.MachinePool.MaxSize,
+				RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
+				CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
+			},
+		},
+	}
 }
 
 func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
