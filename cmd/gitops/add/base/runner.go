@@ -109,7 +109,7 @@ func generateClusterAppCrTemplate(appName string) (string, error) {
 		Catalog:                 "cluster",
 		InCluster:               true,
 		Namespace:               "org-${organization}",
-		Version:                 "${cluster_version}",
+		Version:                 "${cluster_release}",
 		UserConfigConfigMapName: "${cluster_name}-config",
 	})
 
@@ -129,7 +129,7 @@ func generateDefaultAppsAppCrTemplate(appName string) (string, error) {
 		DefaultingEnabled:       false,
 		InCluster:               true,
 		Namespace:               "org-${organization}",
-		Version:                 "${default_apps_version}",
+		Version:                 "${default_apps_release}",
 		UserConfigConfigMapName: "${cluster_name}-default-apps-config",
 		UseClusterValuesConfig:  true,
 		ExtraLabels: map[string]string{
