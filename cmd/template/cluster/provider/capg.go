@@ -37,42 +37,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 	var configMapYAML []byte
 	{
-		flagValues := capg.ClusterConfig{
-			ClusterName:        config.Name,
-			ClusterDescription: config.Description,
-			Organization:       config.Organization,
-
-			GCP: &capg.GCP{
-				Region:         config.Region,
-				Project:        config.GCP.Project,
-				FailureDomains: config.GCP.FailureDomains,
-			},
-			BastionInstanceType: config.BastionInstanceType,
-			ControlPlane: &capg.ControlPlane{
-				InstanceType: config.ControlPlaneInstanceType,
-				Replicas:     3,
-				ServiceAccount: capg.ServiceAccount{
-					Email:  config.GCP.ControlPlane.ServiceAccount.Email,
-					Scopes: config.GCP.ControlPlane.ServiceAccount.Scopes,
-				},
-			},
-			MachineDeployments: &[]capg.MachineDeployment{
-				{
-					Name:          config.GCP.MachineDeployment.Name,
-					FailureDomain: config.GCP.MachineDeployment.FailureDomain,
-					InstanceType:  config.GCP.MachineDeployment.InstanceType,
-					Replicas:      config.GCP.MachineDeployment.Replicas,
-					RootVolume: capg.Volume{
-						SizeGB: config.GCP.MachineDeployment.RootVolumeSizeGB,
-					},
-					CustomNodeLabels: config.GCP.MachineDeployment.CustomNodeLabels,
-					ServiceAccount: capg.ServiceAccount{
-						Email:  config.GCP.MachineDeployment.ServiceAccount.Email,
-						Scopes: config.GCP.MachineDeployment.ServiceAccount.Scopes,
-					},
-				},
-			},
-		}
+		flagValues := BuildCapgClusterConfig(config)
 
 		configData, err := capg.GenerateClusterValues(flagValues)
 		if err != nil {
@@ -132,6 +97,45 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 		UserConfigConfigMap: string(configMapYAML),
 	})
 	return microerror.Mask(err)
+}
+
+func BuildCapgClusterConfig(config ClusterConfig) capg.ClusterConfig {
+	return capg.ClusterConfig{
+		ClusterName:        config.Name,
+		ClusterDescription: config.Description,
+		Organization:       config.Organization,
+
+		GCP: &capg.GCP{
+			Region:         config.Region,
+			Project:        config.GCP.Project,
+			FailureDomains: config.GCP.FailureDomains,
+		},
+		BastionInstanceType: config.BastionInstanceType,
+		ControlPlane: &capg.ControlPlane{
+			InstanceType: config.ControlPlaneInstanceType,
+			Replicas:     3,
+			ServiceAccount: capg.ServiceAccount{
+				Email:  config.GCP.ControlPlane.ServiceAccount.Email,
+				Scopes: config.GCP.ControlPlane.ServiceAccount.Scopes,
+			},
+		},
+		MachineDeployments: &[]capg.MachineDeployment{
+			{
+				Name:          config.GCP.MachineDeployment.Name,
+				FailureDomain: config.GCP.MachineDeployment.FailureDomain,
+				InstanceType:  config.GCP.MachineDeployment.InstanceType,
+				Replicas:      config.GCP.MachineDeployment.Replicas,
+				RootVolume: capg.Volume{
+					SizeGB: config.GCP.MachineDeployment.RootVolumeSizeGB,
+				},
+				CustomNodeLabels: config.GCP.MachineDeployment.CustomNodeLabels,
+				ServiceAccount: capg.ServiceAccount{
+					Email:  config.GCP.MachineDeployment.ServiceAccount.Email,
+					Scopes: config.GCP.MachineDeployment.ServiceAccount.Scopes,
+				},
+			},
+		},
+	}
 }
 
 func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {

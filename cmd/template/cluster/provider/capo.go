@@ -37,41 +37,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 
 	var configMapYAML []byte
 	{
-		flagValues := openstack.ClusterConfig{
-			ClusterDescription: config.Description,
-			ClusterName:        config.Name,
-			DNSNameservers:     config.OpenStack.DNSNameservers,
-			KubernetesVersion:  config.KubernetesVersion,
-			Organization:       config.Organization,
-			CloudConfig:        config.OpenStack.CloudConfig,
-			CloudName:          config.OpenStack.Cloud,
-			NodeCIDR:           config.OpenStack.NodeCIDR,
-			NetworkName:        config.OpenStack.NetworkName,
-			SubnetName:         config.OpenStack.SubnetName,
-			ExternalNetworkID:  config.OpenStack.ExternalNetworkID,
-			Bastion: &openstack.Bastion{
-				MachineConfig: openstack.MachineConfig(config.OpenStack.Bastion),
-			},
-			NodeClasses: []openstack.NodeClass{
-				{
-					Name:          "default",
-					MachineConfig: openstack.MachineConfig(config.OpenStack.Worker),
-				},
-			},
-			ControlPlane: &openstack.ControlPlane{
-				MachineConfig:     openstack.MachineConfig(config.OpenStack.ControlPlane),
-				Replicas:          controlPlaneReplicas,
-				AvailabilityZones: config.ControlPlaneAZ,
-			},
-			NodePools: []openstack.NodePool{
-				{
-					Class:         "default",
-					FailureDomain: config.OpenStack.WorkerFailureDomain,
-					Name:          "default",
-					Replicas:      config.OpenStack.WorkerReplicas,
-				},
-			},
-		}
+		flagValues := BuildCapoClusterConfig(config, controlPlaneReplicas)
 
 		if config.OIDC.IssuerURL != "" {
 			flagValues.OIDC = &openstack.OIDC{
@@ -138,6 +104,44 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 		UserConfigConfigMap: string(configMapYAML),
 	})
 	return microerror.Mask(err)
+}
+
+func BuildCapoClusterConfig(config ClusterConfig, controlPlaneReplicas int) openstack.ClusterConfig {
+	return openstack.ClusterConfig{
+		ClusterDescription: config.Description,
+		ClusterName:        config.Name,
+		DNSNameservers:     config.OpenStack.DNSNameservers,
+		KubernetesVersion:  config.KubernetesVersion,
+		Organization:       config.Organization,
+		CloudConfig:        config.OpenStack.CloudConfig,
+		CloudName:          config.OpenStack.Cloud,
+		NodeCIDR:           config.OpenStack.NodeCIDR,
+		NetworkName:        config.OpenStack.NetworkName,
+		SubnetName:         config.OpenStack.SubnetName,
+		ExternalNetworkID:  config.OpenStack.ExternalNetworkID,
+		Bastion: &openstack.Bastion{
+			MachineConfig: openstack.MachineConfig(config.OpenStack.Bastion),
+		},
+		NodeClasses: []openstack.NodeClass{
+			{
+				Name:          "default",
+				MachineConfig: openstack.MachineConfig(config.OpenStack.Worker),
+			},
+		},
+		ControlPlane: &openstack.ControlPlane{
+			MachineConfig:     openstack.MachineConfig(config.OpenStack.ControlPlane),
+			Replicas:          controlPlaneReplicas,
+			AvailabilityZones: config.ControlPlaneAZ,
+		},
+		NodePools: []openstack.NodePool{
+			{
+				Class:         "default",
+				FailureDomain: config.OpenStack.WorkerFailureDomain,
+				Name:          "default",
+				Replicas:      config.OpenStack.WorkerReplicas,
+			},
+		},
+	}
 }
 
 func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
