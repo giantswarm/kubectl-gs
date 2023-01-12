@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.30.0] - 2023-01-12
+
 ### Added
 
 - Add flags `--cluster-type`, `--https-proxy`, `--http-proxy`, `--no-proxy`, `--api-mode`, `--dns-mode`, `--vpc-mode` and `--topol
@@ -1157,7 +1159,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...HEAD
+[2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0
 [2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
 [2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
 [2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
