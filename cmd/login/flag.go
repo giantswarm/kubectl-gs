@@ -56,7 +56,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCCertCNPrefix, flagWCCertCNPrefix, "", fmt.Sprintf(`For client certificate creation. Prefix for the name encoded in the X.509 field "CN". Requires --%s.`, flagWCName))
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
-	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Identifier of a specific Dex connector to be used for authentication. The connector is selected during the oidc authentication process by default. If this flag is specified, the selection step is skipped.")
+	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector to use for authentication. This allows to skip the selection page.")
 
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)
 	_ = cmd.Flags().MarkHidden("namespace")
