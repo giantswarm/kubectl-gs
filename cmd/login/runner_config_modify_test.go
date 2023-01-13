@@ -394,6 +394,8 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 		var responseData interface{}
 
 		switch r.URL.Path {
+		case "/graphql":
+			responseData = createAthenaGraphQL("", issuer)
 		case "/api":
 			responseData = apiVersions
 		case "/apis":
@@ -610,6 +612,42 @@ func createApiVersions() v1.APIVersions {
 		Versions: []string{"v1"},
 		ServerAddressByClientCIDRs: []v1.ServerAddressByClientCIDR{
 			{ServerAddress: "127.0.0.1:8000"},
+		},
+	}
+}
+
+type athenaIdentity struct {
+	Provider string `json:"provider"`
+	Codename string `json:"codename"`
+}
+
+type athenaKubernetes struct {
+	ApiUrl  string `json:"apiUrl"`
+	AuthUrl string `json:"authUrl"`
+	CaCert  string `json:"caCert"`
+}
+
+type athenaData struct {
+	Identity   athenaIdentity   `json:"identity"`
+	Kubernetes athenaKubernetes `json:"kubernetes"`
+}
+
+type athenaContent struct {
+	Data athenaData `json:"data"`
+}
+
+func createAthenaGraphQL(codename string, url string) athenaContent {
+	return athenaContent{
+		Data: athenaData{
+			Identity: athenaIdentity{
+				Provider: "capa",
+				Codename: codename,
+			},
+			Kubernetes: athenaKubernetes{
+				ApiUrl:  url,
+				AuthUrl: url,
+				CaCert:  "-----BEGIN CERTIFICATE-----\\n\\n-----END CERTIFICATE-----",
+			},
 		},
 	}
 }

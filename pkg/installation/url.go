@@ -22,13 +22,17 @@ const (
 	UrlTypeK8sApi
 	UrlTypeHappa
 	UrlTypeWcK8sApi
+	UrlTypeIPAddress
 )
 
 var k8sApiURLRegexp = regexp.MustCompile(fmt.Sprintf("([^.]*)%s.*$", k8sApiUrlPrefix))
 var wcK8sApiUrlRegexp = regexp.MustCompile(fmt.Sprintf("^api\\.[0-9a-zA-Z]{5,10}\\.%s.*$", wcK8sApiUrlPrefix))
+var ipAddressRegexp = regexp.MustCompile("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}(:[0-9]+)$")
 
 func GetUrlType(u string) int {
 	switch {
+	case isIPAddress(u):
+		return UrlTypeIPAddress
 	case isHappaUrl(u):
 		return UrlTypeHappa
 	case isWcK8sApiUrl(u):
@@ -54,7 +58,11 @@ func isHappaUrl(u string) bool {
 	return strings.Contains(u, fmt.Sprintf("%s.", happaUrlPrefix))
 }
 
-func GetBaseAndInternalPath(u string) (string, string, error) {
+func isIPAddress(u string) bool {
+	return ipAddressRegexp.MatchString(u)
+}
+
+func GetBaseAndInternalPath(u string) (string, string, string, error) {
 	// Add https scheme if it doesn't exist.
 	urlRegexp := regexp.MustCompile("^http(s)?://.*$")
 	if matched := urlRegexp.MatchString(u); !matched {
@@ -63,24 +71,27 @@ func GetBaseAndInternalPath(u string) (string, string, error) {
 
 	path, err := url.ParseRequestURI(u)
 	if err != nil {
-		return "", "", microerror.Mask(err)
+		return "", "", "", microerror.Mask(err)
 	}
 
 	urlType := GetUrlType(path.Host)
 	switch urlType {
 	case UrlTypeWcK8sApi:
-		return getSanitizedApiPath(path.Host), getInternalPath(path.Host), nil
+		basePath := getSanitizedApiPath(path.Host)
+		return basePath, getInternalPath(path.Host), getAthenaUrl(path.Scheme, basePath, urlType), nil
 	case UrlTypeK8sApi:
 		if p := k8sApiURLRegexp.FindString(path.Host); len(p) > 0 {
-			return p, getInternalPath(p), nil
+			return p, getInternalPath(p), getAthenaUrl(path.Scheme, p, urlType), nil
 		}
 		p := getSanitizedApiPath(path.Host)
-		return p, getInternalPath(p), nil
+		return p, getInternalPath(p), getAthenaUrl(path.Scheme, p, urlType), nil
 	case UrlTypeHappa:
 		basePath := strings.Replace(path.Host, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
-		return basePath, getInternalPath(basePath), nil
+		return basePath, getInternalPath(basePath), getAthenaUrl(path.Scheme, basePath, urlType), nil
+	case UrlTypeIPAddress:
+		return path.Host, path.Host, getAthenaUrl(path.Scheme, path.Host, urlType), nil
 	default:
-		return "", "", microerror.Mask(unknownUrlTypeError)
+		return "", "", "", microerror.Mask(unknownUrlTypeError)
 	}
 }
 
@@ -94,6 +105,12 @@ func getInternalPath(u string) string {
 	return fmt.Sprintf("%s-%s", internalPrefix, p)
 }
 
-func getAthenaUrl(basePath string) string {
-	return fmt.Sprintf("https://%s.%s", athenaUrlPrefix, basePath)
+func getAthenaUrl(scheme string, basePath string, urlType int) string {
+	if scheme == "" {
+		scheme = "https"
+	}
+	if urlType == UrlTypeIPAddress {
+		return fmt.Sprintf("%s://%s", scheme, basePath)
+	}
+	return fmt.Sprintf("%s://%s.%s", scheme, athenaUrlPrefix, basePath)
 }

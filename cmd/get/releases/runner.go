@@ -51,7 +51,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	{
 		if r.provider == "" {
-			r.provider, err = r.commonConfig.GetProviderFromConfig()
+			r.provider, err = r.commonConfig.GetProviderFromConfig(ctx, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
