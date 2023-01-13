@@ -1,13 +1,16 @@
 package provider
 
 import (
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"strings"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
+
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
