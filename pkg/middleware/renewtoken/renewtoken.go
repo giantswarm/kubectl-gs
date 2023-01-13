@@ -3,11 +3,12 @@ package renewtoken
 import (
 	"encoding/base64"
 	"encoding/json"
+	"strings"
+	"time"
+
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
-	"strings"
-	"time"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
