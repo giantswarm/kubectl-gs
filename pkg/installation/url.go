@@ -27,7 +27,7 @@ const (
 
 var k8sApiURLRegexp = regexp.MustCompile(fmt.Sprintf("([^.]*)%s.*$", k8sApiUrlPrefix))
 var wcK8sApiUrlRegexp = regexp.MustCompile(fmt.Sprintf("^api\\.[0-9a-zA-Z]{5,10}\\.%s.*$", wcK8sApiUrlPrefix))
-var ipAddressRegexp = regexp.MustCompile("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}(:[0-9]+)$")
+var ipAddressRegexp = regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(:[0-9]+)$`)
 
 func GetUrlType(u string) int {
 	switch {
