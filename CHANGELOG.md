@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Modified detection of installation providers - downloading the provider information from Athena with a fallback to the old detection from API URLs
+- Added a new provider - `cloud-director`
+
 ## [2.30.0] - 2023-01-12
 
 ### Changed
