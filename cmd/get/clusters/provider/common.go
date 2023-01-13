@@ -1,16 +1,46 @@
 package provider
 
 import (
+	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"strings"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
 )
 
 const (
 	naValue = "n/a"
 )
+
+func GetCommonClusterTable(clusterResource cluster.Resource) *metav1.Table {
+	// Creating a custom table resource.
+	table := &metav1.Table{}
+
+	table.ColumnDefinitions = []metav1.TableColumnDefinition{
+		{Name: "Name", Type: "string"},
+		{Name: "Age", Type: "string", Format: "date-time"},
+		{Name: "Condition", Type: "string"},
+		{Name: "Service Priority", Type: "string"},
+		{Name: "Organization", Type: "string"},
+		{Name: "Description", Type: "string"},
+	}
+
+	switch c := clusterResource.(type) {
+	case *cluster.Cluster:
+		table.Rows = append(table.Rows, getCommonClusterRow(*c))
+	case *cluster.Collection:
+		for _, clusterItem := range c.Items {
+			table.Rows = append(table.Rows, getCommonClusterRow(clusterItem))
+		}
+	}
+
+	return table
+}
 
 func formatCondition(condition string) string {
 	return strings.ToUpper(condition)
@@ -53,4 +83,24 @@ func getClusterServicePriority(res *capi.Cluster) string {
 	}
 
 	return servicePriority
+}
+
+func getCommonClusterRow(c cluster.Cluster) metav1.TableRow {
+	if c.Cluster == nil {
+		return metav1.TableRow{}
+	}
+
+	return metav1.TableRow{
+		Cells: []interface{}{
+			c.Cluster.GetName(),
+			output.TranslateTimestampSince(c.Cluster.CreationTimestamp),
+			getLatestCondition(c.Cluster.GetConditions()),
+			getClusterServicePriority(c.Cluster),
+			c.Cluster.Labels[label.Organization],
+			getClusterDescription(c.Cluster),
+		},
+		Object: runtime.RawExtension{
+			Object: c.Cluster,
+		},
+	}
 }

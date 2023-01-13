@@ -29,6 +29,8 @@ func (r *runner) printOutput(clusterResource cluster.Resource) error {
 			resource = provider.GetAzureTable(clusterResource)
 		case key.ProviderOpenStack:
 			resource = provider.GetOpenStackTable(clusterResource)
+		default:
+			resource = provider.GetCommonClusterTable(clusterResource)
 		}
 
 		printOptions := printers.PrintOptions{
