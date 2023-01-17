@@ -90,6 +90,9 @@ func Test_RenewTokenMiddleware(t *testing.T) {
 			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
 			k8sConfigAccess := cf.ToRawKubeConfigLoader().ConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *createValidTestConfig(authServer.URL, idToken, tc.renewToken), false)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			cmd := &cobra.Command{
 				PreRunE: middleware.Compose(
@@ -101,7 +104,6 @@ func Test_RenewTokenMiddleware(t *testing.T) {
 			}
 
 			err = cmd.ExecuteContext(context.TODO())
-
 			if err != nil {
 				t.Fatal(err)
 			}
