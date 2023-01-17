@@ -9,20 +9,22 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
-	"github.com/spf13/cobra"
 	"io"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"k8s.io/utils/pointer"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
 )
 
 const (
