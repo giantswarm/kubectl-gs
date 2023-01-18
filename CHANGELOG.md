@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.31.0] - 2023-01-18
+
 ### Changed
 
 - Adjusted communication with Dex in the `login` command to provide an option to choose from multiple connectors
@@ -1170,7 +1172,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...HEAD
+[2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0
 [2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
 [2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
