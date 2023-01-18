@@ -12,15 +12,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Modified detection of installation providers - downloading the provider information from Athena with a fallback to the old detection from API URLs
 - Added a new provider - `cloud-director`
 
+### Added
+
+- Introduced a new `--connector-id` flag in the `login` command to specify a Dex connector to use and skip the selection step
+
 ## [2.30.0] - 2023-01-12
 
 ### Changed
 
 - Adjusted communication with Dex in the `login` command to provide an option to choose from multiple connectors
-
-### Added
-
-- Introduced a new `--connector-id` flag in the `login` command to specify a Dex connector to use and skip the selection step
 
 ### Added
 
