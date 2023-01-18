@@ -16,12 +16,12 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	var err error
 
 	if len(options.Name) > 0 {
-		resource, err = s.getByName(ctx, options.Provider, options.Name, options.Namespace)
+		resource, err = s.getByName(ctx, options.Provider, options.Name, options.Namespace, options.FallbackToCapi)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	} else {
-		resource, err = s.getAll(ctx, options.Provider, options.Namespace)
+		resource, err = s.getAll(ctx, options.Provider, options.Namespace, options.FallbackToCapi)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -30,7 +30,7 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
-func (s *Service) getByName(ctx context.Context, provider, name, namespace string) (Resource, error) {
+func (s *Service) getByName(ctx context.Context, provider, name, namespace string, fallbackToCapi bool) (Resource, error) {
 	var err error
 
 	var cluster Resource
@@ -48,27 +48,34 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace strin
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderKVM, key.ProviderVSphere:
-			cluster, err = s.getByNameOpenStack(ctx, name, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
 		case key.ProviderGCP:
 			cluster, err = s.getByNameGCP(ctx, name, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
+		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderKVM, key.ProviderVSphere, key.ProviderCloudDirector:
+			cluster, err = s.getByNameCommonCapi(ctx, name, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 		default:
-			return nil, microerror.Mask(invalidProviderError)
+			if !fallbackToCapi {
+				return nil, microerror.Mask(invalidProviderError)
+			}
+
+			cluster, err = s.getByNameCommonCapi(ctx, name, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
 	}
 
 	return cluster, nil
 }
 
-func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resource, error) {
+func (s *Service) getAll(ctx context.Context, provider, namespace string, fallbackToCapi bool) (Resource, error) {
 	var err error
 
 	var clusterCollection Resource
@@ -86,20 +93,27 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string) (Resou
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderOpenStack:
-			clusterCollection, err = s.getAllOpenStack(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
 		case key.ProviderGCP:
 			clusterCollection, err = s.getAllGCP(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
+		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderKVM, key.ProviderVSphere, key.ProviderCloudDirector:
+			clusterCollection, err = s.getAllCommonCapi(ctx, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 		default:
-			return nil, microerror.Mask(invalidProviderError)
+			if !fallbackToCapi {
+				return nil, microerror.Mask(invalidProviderError)
+			}
+
+			clusterCollection, err = s.getAllCommonCapi(ctx, namespace)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
 	}
 

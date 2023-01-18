@@ -13,9 +13,10 @@ import (
 )
 
 type GetOptions struct {
-	Name      string
-	Provider  string
-	Namespace string
+	Name           string
+	Provider       string
+	Namespace      string
+	FallbackToCapi bool
 }
 
 type PatchOptions struct {

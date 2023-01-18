@@ -22,10 +22,11 @@ type Installation struct {
 	Provider          string
 	Codename          string
 	CACert            string
+	SourcePath        string
 }
 
-func New(ctx context.Context, fromUrl string, athenaUrl string) (*Installation, error) {
-	basePath, internalApiPath, err := GetBaseAndInternalPath(fromUrl)
+func New(ctx context.Context, fromUrl, customAthenaUrl string) (*Installation, error) {
+	_, internalApiPath, athenaUrl, err := GetBaseAndInternalPath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -35,8 +36,8 @@ func New(ctx context.Context, fromUrl string, athenaUrl string) (*Installation, 
 		httpClient := http.DefaultClient
 		httpClient.Timeout = requestTimeout
 
-		if athenaUrl == "" {
-			athenaUrl = getAthenaUrl(basePath)
+		if customAthenaUrl != "" {
+			athenaUrl = customAthenaUrl
 		}
 		config := graphql.ClientImplConfig{
 			HttpClient: httpClient,
@@ -61,6 +62,7 @@ func New(ctx context.Context, fromUrl string, athenaUrl string) (*Installation, 
 		Provider:          info.Identity.Provider,
 		Codename:          info.Identity.Codename,
 		CACert:            info.Kubernetes.CaCert,
+		SourcePath:        fromUrl,
 	}
 
 	return i, nil

@@ -13,7 +13,7 @@ import (
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *Service) getAllOpenStack(ctx context.Context, namespace string) (Resource, error) {
+func (s *Service) getAllCommonCapi(ctx context.Context, namespace string) (Resource, error) {
 	var clusterList capi.ClusterList
 	{
 		err := s.client.List(ctx, &clusterList, runtimeClient.InNamespace(namespace))
@@ -85,7 +85,7 @@ func (s *Service) getAllOpenStack(ctx context.Context, namespace string) (Resour
 	return &clusterCollection, nil
 }
 
-func (s *Service) getByNameOpenStack(ctx context.Context, name, namespace string) (Resource, error) {
+func (s *Service) getByNameCommonCapi(ctx context.Context, name, namespace string) (Resource, error) {
 	var cluster Cluster
 
 	{

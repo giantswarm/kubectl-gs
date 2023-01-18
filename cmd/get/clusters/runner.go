@@ -51,7 +51,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	{
 		if r.provider == "" {
-			r.provider, err = r.commonConfig.GetProviderFromConfig()
+			r.provider, err = r.commonConfig.GetProviderFromConfig(ctx, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -66,7 +66,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var resource cluster.Resource
 	{
 		options := cluster.GetOptions{
-			Provider: r.provider,
+			Provider:       r.provider,
+			FallbackToCapi: true,
 		}
 		{
 			if len(args) > 0 {

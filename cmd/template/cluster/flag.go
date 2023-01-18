@@ -316,6 +316,7 @@ func (f *flag) Validate() error {
 		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,
+		key.ProviderCloudDirector,
 	}
 	isValidProvider := false
 	for _, p := range validProviders {

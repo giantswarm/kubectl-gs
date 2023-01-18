@@ -82,7 +82,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 // loginWithURL performs the OIDC login into an installation's
 // k8s api with a happa/k8s api URL.
 func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool, tokenOverride string) error {
-	i, err := installation.New(ctx, path, "")
+	i, err := r.commonConfig.GetInstallation(ctx, path, "")
 	if installation.IsUnknownUrlType(err) {
 		return microerror.Maskf(unknownUrlError, "'%s' is not a valid Giant Swarm Management API URL. Please check the spelling.\nIf not sure, pass the web UI URL of the installation or the installation handle as an argument instead.", path)
 	} else if err != nil {
