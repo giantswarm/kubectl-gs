@@ -16,6 +16,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Introduced a new `--connector-id` flag in the `login` command to specify a Dex connector to use and skip the selection step
+- Ensured that ID tokens needed for OIDC authentication are renewed only when they expire
 
 ## [2.30.0] - 2023-01-12
 

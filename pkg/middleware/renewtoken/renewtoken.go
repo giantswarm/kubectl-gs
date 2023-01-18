@@ -1,6 +1,11 @@
 package renewtoken
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"strings"
+	"time"
+
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
@@ -34,6 +39,10 @@ func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware
 			return nil
 		}
 
+		if isValidIdToken(authProvider.Config["id-token"]) {
+			return nil
+		}
+
 		var auther *oidc.Authenticator
 		{
 			oidcConfig := oidc.Config{
@@ -60,4 +69,36 @@ func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware
 
 		return nil
 	}
+}
+
+func isValidIdToken(idToken string) bool {
+	idTokenParts := strings.Split(idToken, ".")
+	if len(idTokenParts) != 3 {
+		return false
+	}
+
+	rawIdTokenBody, err := base64.RawStdEncoding.DecodeString(idTokenParts[1])
+	if err != nil {
+		return false
+	}
+
+	var bodyMap map[string]json.RawMessage
+	err = json.Unmarshal(rawIdTokenBody, &bodyMap)
+	if err != nil {
+		return false
+	}
+
+	var expTimestamp int64
+	err = json.Unmarshal(bodyMap["exp"], &expTimestamp)
+	if err != nil {
+		return false
+	}
+
+	if expTimestamp == 0 {
+		return false
+	}
+
+	expTime := time.Unix(expTimestamp, 0)
+
+	return expTime.After(time.Now())
 }
