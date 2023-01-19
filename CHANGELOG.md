@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.31.1] - 2023-01-19
+
 ### Changed
 
 - Updated CAPA template output to support new subnet layout as of cluster-aws v0.21.0
@@ -1181,7 +1183,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...HEAD
+[2.31.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...v2.31.1
 [2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0
 [2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
