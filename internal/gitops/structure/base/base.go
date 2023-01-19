@@ -15,6 +15,7 @@ func NewClusterBase(config common.StructureConfig) (*creator.CreatorConfig, erro
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(key.BaseTemplatesDirName(), nil, 0),
 		creator.NewFsObject(key.ClusterBaseTemplatesPath(), nil, 0),
+		creator.NewFsObject(key.ClusterBaseProviderPath(config.Provider), nil, 0),
 		creator.NewFsObject(clusterBaseDir, nil, 0),
 	}
 

@@ -44,23 +44,26 @@ func Test_NewManagementCluster(t *testing.T) {
 					RelativePath: "bases/clusters/capa",
 				},
 				{
-					RelativePath: "bases/clusters/capa/kustomization.yaml",
+					RelativePath: "bases/clusters/capa/template",
+				},
+				{
+					RelativePath: "bases/clusters/capa/template/kustomization.yaml",
 					GoldenFile:   "testdata/expected/0-capa-kustomization.golden",
 				},
 				{
-					RelativePath: "bases/clusters/capa/cluster.yaml",
+					RelativePath: "bases/clusters/capa/template/cluster.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 				{
-					RelativePath: "bases/clusters/capa/cluster_config.yaml",
+					RelativePath: "bases/clusters/capa/template/cluster_config.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 				{
-					RelativePath: "bases/clusters/capa/default_apps.yaml",
+					RelativePath: "bases/clusters/capa/template/default_apps.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 				{
-					RelativePath: "bases/clusters/capa/default_apps_config.yaml",
+					RelativePath: "bases/clusters/capa/template/default_apps_config.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 			},
