@@ -156,6 +156,11 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	clusterConfig := providers.BuildCapaClusterConfig(providers.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
+		AWS: providers.AWSConfig{
+			MachinePool: providers.AWSMachinePoolConfig{
+				Name: "machine-pool0",
+			},
+		},
 	})
 	clusterValues, err := capa.GenerateClusterValues(clusterConfig)
 
@@ -198,6 +203,11 @@ func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	clusterConfig := providers.BuildCapgClusterConfig(providers.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
+		GCP: providers.GCPConfig{
+			MachineDeployment: providers.GCPMachineDeployment{
+				Name: "machine-pool0",
+			},
+		},
 	})
 	clusterValues, err := capg.GenerateClusterValues(clusterConfig)
 

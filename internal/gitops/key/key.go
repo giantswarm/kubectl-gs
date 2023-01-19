@@ -30,7 +30,8 @@ const (
 
 	baseTemplatesDirectory        = "bases"
 	clusterBaseTemplatesDirectory = "clusters"
-	clusterBaseTemplate           = baseTemplatesDirectory + "/" + clusterBaseTemplatesDirectory + "/%s"
+	clusterBaseProviderDirectory  = baseTemplatesDirectory + "/" + clusterBaseTemplatesDirectory + "/%s"
+	clusterBaseTemplate           = clusterBaseProviderDirectory + "/template"
 
 	mcDirectoryTemplate  = "management-clusters/%s"
 	orgDirectoryTemplate = "%s/organizations/%s"
@@ -59,6 +60,10 @@ func ClusterBaseTemplatesDirName() string {
 
 func ClusterBaseTemplatesPath() string {
 	return fmt.Sprintf("%s/%s", BaseTemplatesDirName(), ClusterBaseTemplatesDirName())
+}
+
+func ClusterBaseProviderPath(provider string) string {
+	return fmt.Sprintf(clusterBaseProviderDirectory, provider)
 }
 
 func ClusterBasePath(provider string) string {
