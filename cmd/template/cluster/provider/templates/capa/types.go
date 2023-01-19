@@ -34,7 +34,13 @@ type Network struct {
 }
 
 type Subnet struct {
-	CidrBlock string `json:"cidrBlock"`
+	CidrBlocks []CIDRBlock `json:"cidrBlocks"`
+	IsPublic   bool        `json:"isPublic"`
+}
+
+type CIDRBlock struct {
+	CIDR             string `json:"cidr"`
+	AvailabilityZone string `json:"availabilityZone"`
 }
 
 type Bastion struct {

@@ -107,9 +107,16 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				return microerror.Mask(err)
 			}
 
+			flagValues.Network.Subnets = []capa.Subnet{
+				{
+					CidrBlocks: []capa.CIDRBlock{},
+				},
+			}
+
 			for i := 0; i < subnetCount; i++ {
-				flagValues.Network.Subnets = append(flagValues.Network.Subnets, capa.Subnet{
-					CidrBlock: subnets[i].CIDR().String(),
+				flagValues.Network.Subnets[0].CidrBlocks = append(flagValues.Network.Subnets[0].CidrBlocks, capa.CIDRBlock{
+					CIDR:             subnets[i].CIDR().String(),
+					AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
 				})
 			}
 

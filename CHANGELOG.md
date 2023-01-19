@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Updated CAPA template output to support new subnet layout as of cluster-aws v0.21.0
+
 ## [2.31.0] - 2023-01-18
 
 ### Changed
