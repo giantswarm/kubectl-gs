@@ -26,8 +26,12 @@ data:
       apiMode: public
       dnsMode: private
       subnets:
-      - cidrBlock: 10.123.0.0/18
-      - cidrBlock: 10.123.64.0/18
+      - cidrBlocks:
+        - availabilityZone: a
+          cidr: 10.123.0.0/18
+        - availabilityZone: b
+          cidr: 10.123.64.0/18
+        isPublic: false
       topologyMode: UserManaged
       vpcCIDR: 10.123.0.0/16
       vpcMode: private
