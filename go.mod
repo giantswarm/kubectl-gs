@@ -216,6 +216,6 @@ replace (
 	// CVE-2022-41717
 	golang.org/x/net => golang.org/x/net v0.5.0
 	golang.org/x/text => golang.org/x/text v0.6.0
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.10.3
+	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.0
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
