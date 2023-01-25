@@ -158,7 +158,7 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		Organization: "${organization}",
 		AWS: providers.AWSConfig{
 			MachinePool: providers.AWSMachinePoolConfig{
-				Name: "machine-pool0",
+				Name: "machinePool0",
 			},
 		},
 	})
@@ -205,7 +205,7 @@ func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		Organization: "${organization}",
 		GCP: providers.GCPConfig{
 			MachineDeployment: providers.GCPMachineDeployment{
-				Name: "machine-pool0",
+				Name: "machinePool0",
 			},
 		},
 	})

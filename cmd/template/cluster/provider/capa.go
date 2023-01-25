@@ -219,9 +219,8 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 			InstanceType: config.ControlPlaneInstanceType,
 			Replicas:     3,
 		},
-		MachinePools: &[]capa.MachinePool{
-			{
-				Name:              config.AWS.MachinePool.Name,
+		MachinePools: &map[string]capa.MachinePool{
+			config.AWS.MachinePool.Name: {
 				AvailabilityZones: config.AWS.MachinePool.AZs,
 				InstanceType:      config.AWS.MachinePool.InstanceType,
 				MinSize:           config.AWS.MachinePool.MinSize,

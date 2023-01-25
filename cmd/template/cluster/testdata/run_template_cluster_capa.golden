@@ -12,16 +12,16 @@ data:
       instanceType: control-plane-instance-type
       replicas: 3
     machinePools:
-    - availabilityZones:
-      - eu-west-1a
-      - eu-west-1b
-      customNodeLabels:
-      - label=value
-      instanceType: big-one
-      maxSize: 5
-      minSize: 2
-      name: worker1
-      rootVolumeSizeGB: 200
+      worker1:
+        availabilityZones:
+        - eu-west-1a
+        - eu-west-1b
+        customNodeLabels:
+        - label=value
+        instanceType: big-one
+        maxSize: 5
+        minSize: 2
+        rootVolumeSizeGB: 200
     network:
       vpcCIDR: 10.123.0.0/16
     organization: test

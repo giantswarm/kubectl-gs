@@ -1,16 +1,16 @@
 package capa
 
 type ClusterConfig struct {
-	ClusterDescription string         `json:"clusterDescription,omitempty"`
-	ClusterName        string         `json:"clusterName,omitempty"`
-	Organization       string         `json:"organization,omitempty"`
-	AWS                *AWS           `json:"aws,omitempty"`
-	Network            *Network       `json:"network,omitempty"`
-	Bastion            *Bastion       `json:"bastion,omitempty"`
-	ControlPlane       *ControlPlane  `json:"controlPlane,omitempty"`
-	MachinePools       *[]MachinePool `json:"machinePools,omitempty"`
-	FlatcarAWSAccount  string         `json:"flatcarAWSAccount,omitempty"`
-	Proxy              *Proxy         `json:"proxy,omitempty"`
+	ClusterDescription string                  `json:"clusterDescription,omitempty"`
+	ClusterName        string                  `json:"clusterName,omitempty"`
+	Organization       string                  `json:"organization,omitempty"`
+	AWS                *AWS                    `json:"aws,omitempty"`
+	Network            *Network                `json:"network,omitempty"`
+	Bastion            *Bastion                `json:"bastion,omitempty"`
+	ControlPlane       *ControlPlane           `json:"controlPlane,omitempty"`
+	MachinePools       *map[string]MachinePool `json:"machinePools,omitempty"`
+	FlatcarAWSAccount  string                  `json:"flatcarAWSAccount,omitempty"`
+	Proxy              *Proxy                  `json:"proxy,omitempty"`
 }
 
 type DefaultAppsConfig struct {
