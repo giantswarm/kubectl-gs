@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed creating client certificates for workload clusters in `capvcd` installations.
+
 ## [2.31.1] - 2023-01-19
 
 ### Changed
