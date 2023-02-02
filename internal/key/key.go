@@ -13,7 +13,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/giantswarm/microerror"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
