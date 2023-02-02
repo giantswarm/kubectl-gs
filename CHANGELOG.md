@@ -13,7 +13,13 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 ### Changed
 
-- Breaking: Update `capa` machine pools to template usings an object instead of arrays as of cluster-aws `v0.23.0`
+- Breaking: Update `capa` machine pools to template usings an object instead of arrays as of cluster-aws `v0.24.0`
+
+## [2.31.2] - 2023-02-02
+
+### Fixed
+
+- Fixed creating client certificates for workload clusters in `capvcd` installations.
 
 ## [2.31.1] - 2023-01-19
 
@@ -1191,7 +1197,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...HEAD
+[2.31.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...v2.31.2
 [2.31.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...v2.31.1
 [2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0

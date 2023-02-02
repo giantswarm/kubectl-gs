@@ -18,5 +18,6 @@ func PureCAPIProviders() []string {
 		ProviderGCP,
 		ProviderVSphere,
 		ProviderOpenStack,
+		ProviderCloudDirector,
 	}
 }

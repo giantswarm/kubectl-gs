@@ -7,7 +7,7 @@ import (
 	provider "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	securityv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
-	release "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	release "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	k8score "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
