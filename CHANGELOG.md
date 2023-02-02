@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.32.0] - 2023-02-02
+
 As part of our automatic upgrades journey, we have learnt that cluster chart should structure in such a way that allows overwriting all sections in different levels
 
 **Warning:** This results in a **breaking change** in the template output of a `capa` clusters machine pools.
@@ -1197,7 +1199,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...HEAD
+[2.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...v2.32.0
 [2.31.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...v2.31.2
 [2.31.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...v2.31.1
 [2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
