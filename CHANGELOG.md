@@ -7,6 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+As part of our automatic upgrades journey, we have learnt that cluster chart should structure in such a way that allows overwriting all sections in different levels
+
+**Warning:** This results in a **breaking change** in the template output of a `capa` clusters machine pools.
+
+### Changed
+
+- Breaking: Update `capa` machine pools to template usings an object instead of arrays as of cluster-aws `v0.24.0`
+
 ## [2.31.2] - 2023-02-02
 
 ### Fixed
