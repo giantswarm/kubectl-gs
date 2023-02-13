@@ -17,7 +17,7 @@ require (
 	github.com/giantswarm/appcatalog v0.9.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
-	github.com/giantswarm/k8smetadata v0.19.0
+	github.com/giantswarm/k8smetadata v0.20.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/giantswarm/organization-operator v1.0.5
@@ -217,6 +217,6 @@ replace (
 	// CVE-2022-41717
 	golang.org/x/net => golang.org/x/net v0.5.0
 	golang.org/x/text => golang.org/x/text v0.6.0
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.0
+	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
