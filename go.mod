@@ -13,7 +13,7 @@ require (
 	github.com/fatih/color v1.14.1
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.5.0
-	github.com/giantswarm/app/v6 v6.15.2
+	github.com/giantswarm/app/v6 v6.7.0
 	github.com/giantswarm/appcatalog v0.9.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
@@ -208,7 +208,7 @@ replace (
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.7
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
-	github.com/docker/docker => github.com/moby/moby v20.10.23+incompatible // Use moby v20.10.x to fix build issue on darwin.
+	github.com/docker/docker => github.com/moby/moby/v23 v23.0.1+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
