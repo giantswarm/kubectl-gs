@@ -13,7 +13,7 @@ require (
 	github.com/fatih/color v1.14.1
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.5.0
-	github.com/giantswarm/app/v6 v6.7.0
+	github.com/giantswarm/app/v6 v6.15.2
 	github.com/giantswarm/appcatalog v0.9.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
@@ -204,7 +204,7 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.16 // [CVE-2022-31030, CVE-2022-23471]
+	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18 // [CVE-2023-25153]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.7
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
