@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- CAPA: Renamed hidden parameter `--role` to `--aws-cluster-role-identity-name` and adapted manifest output to the new name `awsClusterRoleIdentityName` (see [cluster-aws](https://github.com/giantswarm/cluster-aws/pull/192) change)
+
 ## [2.32.0] - 2023-02-02
 
 As part of our automatic upgrades journey, we have learnt that cluster chart should structure in such a way that allows overwriting all sections in different levels

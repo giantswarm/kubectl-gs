@@ -204,8 +204,8 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 		Organization:       config.Organization,
 
 		AWS: &capa.AWS{
-			Region: config.Region,
-			Role:   config.AWS.Role,
+			Region:                     config.Region,
+			AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
 		},
 		Network: &capa.Network{
 			AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,

@@ -19,8 +19,8 @@ type DefaultAppsConfig struct {
 }
 
 type AWS struct {
-	Region string `json:"region,omitempty"`
-	Role   string `json:"awsClusterRole,omitempty"`
+	Region                     string `json:"region,omitempty"`
+	AWSClusterRoleIdentityName string `json:"awsClusterRoleIdentityName,omitempty"`
 }
 
 type Network struct {
