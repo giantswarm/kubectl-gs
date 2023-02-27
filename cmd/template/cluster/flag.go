@@ -25,17 +25,17 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
-	flagAWSRole             = "role"
-	flagNetworkAZUsageLimit = "az-usage-limit"
-	flagNetworkVPCCidr      = "vpc-cidr"
-	flagAWSClusterType      = "cluster-type"
-	flagAWSHttpsProxy       = "https-proxy"
-	flagAWSHttpProxy        = "http-proxy"
-	flagAWSNoProxy          = "no-proxy"
-	flagAWSAPIMode          = "api-mode"
-	flagAWSDNSMode          = "dns-mode"
-	flagAWSVPCMode          = "vpc-mode"
-	flagAWSTopologyMode     = "topology-mode"
+	flagAWSClusterRoleIdentityName = "aws-cluster-role-identity-name"
+	flagNetworkAZUsageLimit        = "az-usage-limit"
+	flagNetworkVPCCidr             = "vpc-cidr"
+	flagAWSClusterType             = "cluster-type"
+	flagAWSHttpsProxy              = "https-proxy"
+	flagAWSHttpProxy               = "http-proxy"
+	flagAWSNoProxy                 = "no-proxy"
+	flagAWSAPIMode                 = "api-mode"
+	flagAWSDNSMode                 = "dns-mode"
+	flagAWSVPCMode                 = "vpc-mode"
+	flagAWSTopologyMode            = "topology-mode"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -144,7 +144,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
-	cmd.Flags().StringVar(&f.AWS.Role, flagAWSRole, "", "Name of the AWSClusterRole that will be used for cluster creation.")
+	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
@@ -236,7 +236,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
 
 	_ = cmd.Flags().MarkHidden(flagRegion)
-	_ = cmd.Flags().MarkHidden(flagAWSRole)
+	_ = cmd.Flags().MarkHidden(flagAWSClusterRoleIdentityName)
 	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
 	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
 	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)

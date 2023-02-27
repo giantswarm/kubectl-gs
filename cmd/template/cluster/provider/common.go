@@ -33,18 +33,18 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 
 	// for CAPA
-	Role                string
-	MachinePool         AWSMachinePoolConfig
-	NetworkAZUsageLimit int
-	NetworkVPCCIDR      string
-	ClusterType         string
-	HttpProxy           string
-	HttpsProxy          string
-	NoProxy             string
-	APIMode             string
-	VPCMode             string
-	DNSMode             string
-	TopologyMode        string
+	AWSClusterRoleIdentityName string
+	MachinePool                AWSMachinePoolConfig
+	NetworkAZUsageLimit        int
+	NetworkVPCCIDR             string
+	ClusterType                string
+	HttpProxy                  string
+	HttpsProxy                 string
+	NoProxy                    string
+	APIMode                    string
+	VPCMode                    string
+	DNSMode                    string
+	TopologyMode               string
 }
 
 type AWSMachinePoolConfig struct {
