@@ -25,6 +25,7 @@ data:
     network:
       apiMode: public
       dnsMode: private
+      prefixListID: pl-123456789abc
       subnets:
       - cidrBlocks:
         - availabilityZone: a
@@ -33,6 +34,7 @@ data:
           cidr: 10.123.64.0/18
         isPublic: false
       topologyMode: UserManaged
+      transitGatewayID: tgw-987987987987def
       vpcCIDR: 10.123.0.0/16
       vpcMode: private
     organization: test
