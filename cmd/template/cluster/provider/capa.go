@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/aws"
@@ -20,10 +21,9 @@ import (
 )
 
 const (
-	DefaultAppsRepoName  = "default-apps-aws"
-	ClusterAWSRepoName   = "cluster-aws"
-	ModePrivate          = "private"
-	TopoloyModeGSManaged = "GiantSwarmManaged"
+	DefaultAppsRepoName = "default-apps-aws"
+	ClusterAWSRepoName  = "cluster-aws"
+	ModePrivate         = "private"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -134,7 +134,9 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			flagValues.Network.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
 			flagValues.Network.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
 			flagValues.Network.DNSMode = defaultTo(config.AWS.DNSMode, ModePrivate)
-			flagValues.Network.TopologyMode = defaultTo(config.AWS.TopologyMode, TopoloyModeGSManaged)
+			flagValues.Network.TopologyMode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
+			flagValues.Network.PrefixListID = config.AWS.PrefixListID
+			flagValues.Network.TransitGatewayID = config.AWS.TransitGatewayID
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)

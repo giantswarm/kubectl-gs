@@ -27,6 +27,8 @@ type Network struct {
 	AvailabilityZoneUsageLimit int      `json:"availabilityZoneUsageLimit,omitempty"`
 	VPCCIDR                    string   `json:"vpcCIDR,omitempty"`
 	TopologyMode               string   `json:"topologyMode,omitempty"`
+	PrefixListID               string   `json:"prefixListID,omitempty"`
+	TransitGatewayID           string   `json:"transitGatewayID,omitempty"`
 	VPCMode                    string   `json:"vpcMode,omitempty"`
 	APIMode                    string   `json:"apiMode,omitempty"`
 	DNSMode                    string   `json:"dnsMode,omitempty"`

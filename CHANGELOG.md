@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- CAPA: Add hidden flags `--aws-prefix-list-id` and `--aws-transit-gateway-id` for private clusters
+
 ### Changed
 
 - CAPA: Renamed hidden parameter `--role` to `--aws-cluster-role-identity-name` and adapted manifest output to the new name `awsClusterRoleIdentityName` (see [cluster-aws](https://github.com/giantswarm/cluster-aws/pull/192) change)

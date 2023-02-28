@@ -45,6 +45,8 @@ type AWSConfig struct {
 	VPCMode                    string
 	DNSMode                    string
 	TopologyMode               string
+	PrefixListID               string
+	TransitGatewayID           string
 }
 
 type AWSMachinePoolConfig struct {

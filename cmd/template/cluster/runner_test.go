@@ -169,6 +169,8 @@ func Test_run(t *testing.T) {
 					NetworkVPCCIDR:             "10.123.0.0/16",
 					APIMode:                    "public",
 					TopologyMode:               "UserManaged",
+					PrefixListID:               "pl-123456789abc",
+					TransitGatewayID:           "tgw-987987987987def",
 					HttpsProxy:                 "https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
 					HttpProxy:                  "http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
 					NoProxy:                    "test-domain.com",
