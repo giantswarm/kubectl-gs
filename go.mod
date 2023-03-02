@@ -14,7 +14,7 @@ require (
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.5.0
 	github.com/giantswarm/app/v6 v6.7.0
-	github.com/giantswarm/appcatalog v0.9.1
+	github.com/giantswarm/appcatalog v0.10.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
 	github.com/giantswarm/k8smetadata v0.20.0
@@ -212,7 +212,7 @@ replace (
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.18.0
+	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.19.1
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.3
 	// CVE-2022-41717
 	golang.org/x/net => golang.org/x/net v0.7.0
