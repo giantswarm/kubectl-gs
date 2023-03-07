@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add workload cluster login support for `CAPZ` based clusters
 - CAPA: Add hidden flags `--aws-prefix-list-id` and `--aws-transit-gateway-id` for private clusters
 
 ### Changed

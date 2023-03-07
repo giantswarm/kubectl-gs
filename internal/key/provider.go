@@ -4,6 +4,7 @@ const (
 	ProviderAWS           = "aws"
 	ProviderAzure         = "azure"
 	ProviderCAPA          = "capa"
+	ProviderCAPZ          = "capz"
 	ProviderGCP           = "gcp"
 	ProviderKVM           = "kvm"
 	ProviderOpenStack     = "openstack"
@@ -15,6 +16,7 @@ const (
 func PureCAPIProviders() []string {
 	return []string{
 		ProviderCAPA,
+		ProviderCAPZ,
 		ProviderGCP,
 		ProviderVSphere,
 		ProviderOpenStack,
