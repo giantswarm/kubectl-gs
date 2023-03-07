@@ -1,23 +1,55 @@
 package provider
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
-	"text/template"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+)
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/azure"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+const (
+	DefaultAppsRepoName = "default-apps-azure"
+	ClusterAWSRepoName  = "cluster-azure"
+	ModePrivate         = "private"
 )
 
 func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
+
+	err := templateClusterAzure(ctx, client, out, config)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = templateDefaultAppsAzure(ctx, client, out, config)
+	return microerror.Mask(err)
+
+	return nil
+
+}
+
+func templateClusterAzure(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+
+	appName := config.Name
+	configMapName := userConfigMapName(appName)
+
+	var configMapYAML []byte
+	{
+
+	}
+
+	return nil
+}
+
+func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+	appName := fmt.Sprintf("%s-default-apps", config.Name)
+	configMapName := userConfigMapName(appName)
+
+	return nil
+}
+
+/*
 
 	var sshSSOPublicKey string
 	{
@@ -109,3 +141,4 @@ func jsonEscape(i string) string {
 	// Trim the beginning and trailing " character
 	return string(b[1 : len(b)-1])
 }
+*/
