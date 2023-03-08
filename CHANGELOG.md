@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.33.0] - 2023-03-08
+
 ### Added
 
 - Add workload cluster login support for `CAPZ` based clusters
@@ -1208,7 +1210,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.33.0...HEAD
+[2.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...v2.32.0
 [2.31.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...v2.31.2
 [2.31.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...v2.31.1
