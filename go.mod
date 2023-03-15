@@ -219,4 +219,6 @@ replace (
 	golang.org/x/text => golang.org/x/text v0.6.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
+	// CVE-2023-27561
+	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.4
 )
