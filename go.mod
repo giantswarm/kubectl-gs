@@ -214,6 +214,8 @@ replace (
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.19.1
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.3
+	// CVE-2023-27561
+	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.4
 	// CVE-2022-41717
 	golang.org/x/net => golang.org/x/net v0.7.0
 	golang.org/x/text => golang.org/x/text v0.6.0
