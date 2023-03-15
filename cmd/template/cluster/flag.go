@@ -109,6 +109,10 @@ const (
 	flagRelease                  = "release"
 	flagLabel                    = "label"
 	flagServicePriority          = "service-priority"
+
+	// new YAML
+	flagClusterAppYaml = "cluster-config"
+	flagDefaultAppYaml = "default-app-config"
 )
 
 type flag struct {
@@ -131,6 +135,10 @@ type flag struct {
 	ControlPlaneInstanceType string
 	ServicePriority          string
 
+	// new YAML
+	ClusterAppConfigYAML string
+	DefaultAppConfigYAML string
+
 	// Provider-specific
 	AWS       provider.AWSConfig
 	GCP       provider.GCPConfig
@@ -144,6 +152,10 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, true, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
+
+	// new YAML
+	cmd.Flags().StringVar(&f.ClusterAppConfigYAML, flagClusterAppYaml, "", "cluster yaml config.")
+	cmd.Flags().StringVar(&f.DefaultAppConfigYAML, flagDefaultAppYaml, "", "default app yaml config.")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
@@ -214,10 +226,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 0, "Default worker node pool replicas (OpenStack only).")
 
 	// App-based clusters only.
-	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
+	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created.")
+	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app.")
+	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created.")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
@@ -319,6 +331,7 @@ func (f *flag) Validate() error {
 		key.ProviderAWS,
 		key.ProviderAzure,
 		key.ProviderCAPA,
+		key.ProviderCAPZ,
 		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,
@@ -350,143 +363,147 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	if f.PodsCIDR != "" {
-		if !validateCIDR(f.PodsCIDR) {
-			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagPodsCIDR)
+	if f.ClusterAppConfigYAML == "" {
+
+		if f.PodsCIDR != "" {
+			if !validateCIDR(f.PodsCIDR) {
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagPodsCIDR)
+			}
 		}
-	}
 
-	if f.Organization == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
-	}
+		if f.Organization == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+		}
 
-	{
-		// Validate Master AZs.
-		switch f.Provider {
-		case key.ProviderAWS:
-			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
-				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
-			}
-			if f.AWS.ControlPlaneSubnet != "" {
-				matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
-				if err == nil && !matchedSubnet {
-					return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
+		{
+			// Validate Master AZs.
+			switch f.Provider {
+			case key.ProviderAWS:
+				if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
+					return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
 				}
-			}
-		case key.ProviderGCP:
-			if f.Region == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagRegion)
-			}
-			if f.GCP.Project == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPProject)
-			}
-			if f.GCP.FailureDomains == nil {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPFailureDomains)
-			}
-		case key.ProviderAzure:
-			if len(f.ControlPlaneAZ) > 1 {
-				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
-			}
-		case key.ProviderOpenStack:
-			if f.OpenStack.Cloud == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloud)
-			}
-			if f.OpenStack.CloudConfig == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloudConfig)
-			}
-			if f.OpenStack.ExternalNetworkID == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
-			}
-			if f.OpenStack.NodeCIDR != "" {
-				if f.OpenStack.NetworkName != "" || f.OpenStack.SubnetName != "" {
-					return microerror.Maskf(invalidFlagError, "--%s and --%s must be empty when --%s is used",
-						flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
-				}
-				if !validateCIDR(f.OpenStack.NodeCIDR) {
-					return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
-				}
-			} else {
-				if f.OpenStack.NetworkName == "" || f.OpenStack.SubnetName == "" {
-					return microerror.Maskf(invalidFlagError, "--%s and --%s must be set when --%s is empty",
-						flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
-				}
-			}
-			// bastion
-			if f.OpenStack.Bastion.BootFromVolume && f.OpenStack.Bastion.DiskSize < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackBastionDiskSize, flagOpenStackBastionBootFromVolume)
-			}
-			if f.OpenStack.Bastion.Flavor == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionMachineFlavor)
-			}
-			if f.OpenStack.Bastion.Image == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionImage)
-			}
-			// control plane
-			if f.OpenStack.ControlPlane.BootFromVolume && f.OpenStack.ControlPlane.DiskSize < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackControlPlaneDiskSize, flagOpenStackControlPlaneBootFromVolume)
-			}
-			if f.OpenStack.ControlPlane.Flavor == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneMachineFlavor)
-			}
-			if f.OpenStack.ControlPlane.Image == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneImage)
-			}
-			// worker
-			if f.OpenStack.WorkerReplicas < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagOpenStackWorkerReplicas)
-			}
-			if f.OpenStack.WorkerFailureDomain == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerFailureDomain)
-			}
-			if len(f.ControlPlaneAZ) != 0 {
-				if len(f.ControlPlaneAZ)%2 != 1 {
-					return microerror.Maskf(invalidFlagError, "--%s must be an odd number number of values (usually 1 or 3 for non-HA and HA respectively)", flagControlPlaneAZ)
-				}
-
-				var validFailureDomain bool
-				for _, az := range f.ControlPlaneAZ {
-					if f.OpenStack.WorkerFailureDomain == az {
-						validFailureDomain = true
-						break
+				if f.AWS.ControlPlaneSubnet != "" {
+					matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
+					if err == nil && !matchedSubnet {
+						return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
 					}
 				}
+			case key.ProviderGCP:
+				if f.Region == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagRegion)
+				}
+				if f.GCP.Project == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPProject)
+				}
+				if f.GCP.FailureDomains == nil {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPFailureDomains)
+				}
+			case key.ProviderAzure:
+				if len(f.ControlPlaneAZ) > 1 {
+					return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
+				}
+			case key.ProviderOpenStack:
+				if f.OpenStack.Cloud == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloud)
+				}
+				if f.OpenStack.CloudConfig == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloudConfig)
+				}
+				if f.OpenStack.ExternalNetworkID == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
+				}
+				if f.OpenStack.NodeCIDR != "" {
+					if f.OpenStack.NetworkName != "" || f.OpenStack.SubnetName != "" {
+						return microerror.Maskf(invalidFlagError, "--%s and --%s must be empty when --%s is used",
+							flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
+					}
+					if !validateCIDR(f.OpenStack.NodeCIDR) {
+						return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
+					}
+				} else {
+					if f.OpenStack.NetworkName == "" || f.OpenStack.SubnetName == "" {
+						return microerror.Maskf(invalidFlagError, "--%s and --%s must be set when --%s is empty",
+							flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
+					}
+				}
+				// bastion
+				if f.OpenStack.Bastion.BootFromVolume && f.OpenStack.Bastion.DiskSize < 1 {
+					return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackBastionDiskSize, flagOpenStackBastionBootFromVolume)
+				}
+				if f.OpenStack.Bastion.Flavor == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionMachineFlavor)
+				}
+				if f.OpenStack.Bastion.Image == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionImage)
+				}
+				// control plane
+				if f.OpenStack.ControlPlane.BootFromVolume && f.OpenStack.ControlPlane.DiskSize < 1 {
+					return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackControlPlaneDiskSize, flagOpenStackControlPlaneBootFromVolume)
+				}
+				if f.OpenStack.ControlPlane.Flavor == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneMachineFlavor)
+				}
+				if f.OpenStack.ControlPlane.Image == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneImage)
+				}
+				// worker
+				if f.OpenStack.WorkerReplicas < 1 {
+					return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagOpenStackWorkerReplicas)
+				}
+				if f.OpenStack.WorkerFailureDomain == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerFailureDomain)
+				}
+				if len(f.ControlPlaneAZ) != 0 {
+					if len(f.ControlPlaneAZ)%2 != 1 {
+						return microerror.Maskf(invalidFlagError, "--%s must be an odd number number of values (usually 1 or 3 for non-HA and HA respectively)", flagControlPlaneAZ)
+					}
 
-				if !validFailureDomain {
-					return microerror.Maskf(invalidFlagError, "--%s must be among the AZs specified with --%s", flagOpenStackWorkerFailureDomain, flagControlPlaneAZ)
+					var validFailureDomain bool
+					for _, az := range f.ControlPlaneAZ {
+						if f.OpenStack.WorkerFailureDomain == az {
+							validFailureDomain = true
+							break
+						}
+					}
+
+					if !validFailureDomain {
+						return microerror.Maskf(invalidFlagError, "--%s must be among the AZs specified with --%s", flagOpenStackWorkerFailureDomain, flagControlPlaneAZ)
+					}
+				}
+				if f.OpenStack.Worker.BootFromVolume && f.OpenStack.Worker.DiskSize < 1 {
+					return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackWorkerDiskSize, flagOpenStackWorkerBootFromVolume)
+				}
+				if f.OpenStack.Worker.Flavor == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerMachineFlavor)
+				}
+				if f.OpenStack.Worker.Image == "" {
+					return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerImage)
+				}
+			case key.ProviderCAPA:
+				if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
+					return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagAWSHttpsProxy, flagNetworkVPCCidr)
 				}
 			}
-			if f.OpenStack.Worker.BootFromVolume && f.OpenStack.Worker.DiskSize < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackWorkerDiskSize, flagOpenStackWorkerBootFromVolume)
-			}
-			if f.OpenStack.Worker.Flavor == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerMachineFlavor)
-			}
-			if f.OpenStack.Worker.Image == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerImage)
-			}
-		case key.ProviderCAPA:
-			if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
-				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagAWSHttpsProxy, flagNetworkVPCCidr)
+
+		}
+
+		if f.Release == "" {
+			if key.IsPureCAPIProvider(f.Provider) {
+				// skip release validation
+			} else {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
 			}
 		}
 
-	}
-
-	if f.Release == "" {
-		if key.IsPureCAPIProvider(f.Provider) {
-			// skip release validation
-		} else {
-			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+		_, err = labels.Parse(f.Label)
+		if err != nil {
+			return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
 		}
-	}
 
-	_, err = labels.Parse(f.Label)
-	if err != nil {
-		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
-	}
+		if !isValidServicePriority(f.ServicePriority) {
+			return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
+		}
 
-	if !isValidServicePriority(f.ServicePriority) {
-		return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
 	}
 
 	return nil
