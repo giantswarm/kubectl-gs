@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+
+### Added
+
+- `cluster template` supports a generic way to template `CAPI` based clusters where all the input parameters are given as `values.yaml` from the corresponding `cluster` and `default-apps` chart.
+- CAPZ: removed unmaintained `CAPZ` implementation and switched to the generic templating implementation.
+
 ## [2.33.0] - 2023-03-08
 
 ### Added

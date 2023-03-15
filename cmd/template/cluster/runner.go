@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -70,81 +69,66 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		output = outFile
 	}
 
-	switch r.flag.Provider {
-	case key.ProviderAWS:
+	if r.flag.ClusterAppConfigYAML == "" && r.flag.DefaultAppConfigYAML == "" {
 		config, err := r.getClusterConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		err = provider.WriteAWSTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderAzure:
-		config, err := r.getClusterConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		err = provider.WriteAzureTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderCAPA:
-		config, err := r.getClusterConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		err = provider.WriteCAPATemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderGCP:
-		config, err := r.getClusterConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		err = provider.WriteGCPTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderOpenStack:
-		config, err := r.getClusterConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		err = provider.WriteOpenStackTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderVSphere:
-		config, err := r.getClusterConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		err = provider.WriteVSphereTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderCAPZ:
-		// read given cluster yaml
-		config, err := r.getClusterYAML()
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		capzApp, err := provider.GetClusterApp(ctx, client, key.ProviderCAPZ, r.flag.App.ClusterCatalog, r.flag.App.ClusterVersion)
+		switch r.flag.Provider {
+		case key.ProviderAWS:
+			err = provider.WriteAWSTemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case key.ProviderAzure:
+			err = provider.WriteAzureTemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case key.ProviderCAPA:
+			err = provider.WriteCAPATemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case key.ProviderGCP:
+			err = provider.WriteGCPTemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case key.ProviderOpenStack:
+			err = provider.WriteOpenStackTemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case key.ProviderVSphere:
+			err = provider.WriteVSphereTemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		default:
+			return microerror.Mask(templateFlagNotImplemented)
+		}
+	} else {
+		// read given cluster yaml
+		clusterAppConfig, err := r.getClusterYAML()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		clusterApp, err := provider.GetClusterApp(ctx, client, r.flag.Provider, r.flag.App.ClusterCatalog, r.flag.App.ClusterVersion)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
 		// validate given yaml against cluster-azure app values schema
-		err = provider.ValidateYAML(ctx, r.logger, client, capzApp, config)
+		err = provider.ValidateYAML(ctx, r.logger, client, clusterApp, clusterAppConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
 		// template cluster app
-		err = provider.TemplateClusterApp(ctx, output, key.ProviderCAPZ, r.clusterName, r.clusterOrganization, capzApp, config)
+		err = provider.TemplateClusterApp(ctx, output, r.flag.Provider, r.clusterName, r.clusterOrganization, clusterApp, clusterAppConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -155,21 +139,22 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 			return microerror.Mask(err)
 		}
 
-		capzDefaultApp, err := provider.GetDefaultApp(ctx, client, key.ProviderCAPZ, r.flag.App.DefaultAppsCatalog, r.flag.App.DefaultAppsVersion)
+		clusterDefaultApp, err := provider.GetDefaultApp(ctx, client, r.flag.Provider, r.flag.App.DefaultAppsCatalog, r.flag.App.DefaultAppsVersion)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
 		// validate given yaml against cluster-azure app values schema
-		err = provider.ValidateYAML(ctx, r.logger, client, capzDefaultApp, defaultAppConfig)
+		err = provider.ValidateYAML(ctx, r.logger, client, clusterDefaultApp, defaultAppConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = provider.TemplateDefaultApp(ctx, output, key.ProviderCAPZ, r.clusterName, r.clusterOrganization, capzDefaultApp, defaultAppConfig)
+		err = provider.TemplateDefaultApp(ctx, output, r.flag.Provider, r.clusterName, r.clusterOrganization, clusterDefaultApp, defaultAppConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
 	}
 
 	return nil
@@ -224,7 +209,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 // getClusterYAML reads the given cluster yaml file
 // and overwrite some metadata fields if --name and/or --organization is set
 func (r *runner) getClusterYAML() (map[string]interface{}, error) {
-	yamlFile, err := ioutil.ReadFile(r.flag.ClusterAppConfigYAML)
+	yamlFile, err := os.ReadFile(r.flag.ClusterAppConfigYAML)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -257,7 +242,7 @@ func (r *runner) getClusterYAML() (map[string]interface{}, error) {
 // getDefaultAppYAML reads the given cluster yaml file
 // and overwrite some metadata fields if --name and/or --organization is set
 func (r *runner) getDefaultAppYAML() (map[string]interface{}, error) {
-	yamlFile, err := ioutil.ReadFile(r.flag.DefaultAppConfigYAML)
+	yamlFile, err := os.ReadFile(r.flag.DefaultAppConfigYAML)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -27,9 +27,7 @@ const (
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
-
-	err = WriteGSAzureTemplate(ctx, client, out, config)
+	err := WriteGSAzureTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
