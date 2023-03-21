@@ -10,9 +10,9 @@ type ClusterConfig struct {
 }
 
 type Metadata struct {
-	Name         string
-	Description  string
-	Organization string
+	Name         string `json:"name,omitempty"`
+	Description  string `json:"description,omitempty"`
+	Organization string `json:"organization,omitempty"`
 }
 
 type DefaultAppsConfig struct {
