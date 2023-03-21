@@ -6,7 +6,6 @@ type ClusterConfig struct {
 	Metadata         *Metadata               `json:"metadata,omitempty"`
 	NodePools        *map[string]MachinePool `json:"nodePools,omitempty"`
 	ProviderSpecific *ProviderSpecific       `json:"providerSpecific,omitempty"`
-	Internal         *Internal               `json:"internal,omitempty"`
 }
 
 type Metadata struct {
@@ -94,7 +93,4 @@ type Proxy struct {
 	HttpsProxy string `json:"httpsProxy,omitempty"`
 	HttpProxy  string `json:"httpProxy,omitempty"`
 	NoProxy    string `json:"noProxy,omitempty"`
-}
-
-type Internal struct {
 }
