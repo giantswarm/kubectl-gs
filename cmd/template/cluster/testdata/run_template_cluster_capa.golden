@@ -13,9 +13,9 @@ data:
       instanceType: control-plane-instance-type
       replicas: 3
     metadata:
-      Description: just a test cluster
-      Name: test1
-      Organization: test
+      description: just a test cluster
+      name: test1
+      organization: test
     nodePools:
       worker1:
         availabilityZones:
