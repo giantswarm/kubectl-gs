@@ -279,8 +279,8 @@ github.com/giantswarm/apiextensions-application v0.6.0 h1:ZPIiq27zJ2VatrWH21/dK6
 github.com/giantswarm/apiextensions-application v0.6.0/go.mod h1:O6mg+EdXC9CyTLgi0d3rf6QTXrQX/79iw4kjMJRinig=
 github.com/giantswarm/apiextensions/v6 v6.5.0 h1:zCzZjB5nKQqINZr+HNONEuHHjuXx6kiXPDZxAVYfVAY=
 github.com/giantswarm/apiextensions/v6 v6.5.0/go.mod h1:Wgc2Rx8YAYF2HidjabEvhsj5ADL+RteIC86ofulY+YE=
-github.com/giantswarm/app/v6 v6.7.0 h1:DCU3/RsF8+1q0GBSVeHZQebnff8xxJ+oVFJsuY3ohTk=
-github.com/giantswarm/app/v6 v6.7.0/go.mod h1:JUNwY302w+ydkH4UwHD+kn8bZTIT5cp4t5BtLv9i/tY=
+github.com/giantswarm/app/v6 v6.15.5 h1:lkSznEo2Jork2GacF1m4izT1S0HdmBcvRQSbUbKdRA8=
+github.com/giantswarm/app/v6 v6.15.5/go.mod h1:eSA53r9jMGhD//voaXM6xCH4YEI9RjouE/cU4v0Cq4g=
 github.com/giantswarm/appcatalog v0.10.1 h1:9wNi53D5m85S87FIIuX4849FmqtdpsHWwbeSCibSgOw=
 github.com/giantswarm/appcatalog v0.10.1/go.mod h1:/FmHAicJ82jifSwq8VDS4zsupnrHbZt0xWAkRAMuvsk=
 github.com/giantswarm/backoff v1.0.0 h1:1oeTvyPsm1tJrHlSmfxbIWuoCNWPOkWJCb8kfLvE2T0=
