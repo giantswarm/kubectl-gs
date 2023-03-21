@@ -2,16 +2,37 @@
 apiVersion: v1
 data:
   values: |
-    aws:
-      awsClusterRoleIdentityName: default
-      region: the-region
-    bastion: {}
-    clusterDescription: just a test cluster
-    clusterName: test1
+    connectivity:
+      bastion:
+        enabled: true
+      dns:
+        mode: private
+      network:
+        vpcCidr: 10.123.0.0/16
+      proxy:
+        enabled: true
+        httpProxy: http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
+        httpsProxy: https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
+        noProxy: test-domain.com
+      subnets:
+      - cidrBlocks:
+        - availabilityZone: a
+          cidr: 10.123.0.0/18
+        - availabilityZone: b
+          cidr: 10.123.64.0/18
+        isPublic: false
+      topology:
+        mode: GiantSwarmManaged
+      vpcMode: private
     controlPlane:
+      apiMode: private
       instanceType: control-plane-instance-type
       replicas: 3
-    machinePools:
+    metadata:
+      Description: just a test cluster
+      Name: test1
+      Organization: test
+    nodePools:
       worker1:
         availabilityZones:
         - eu-west-1a
@@ -22,25 +43,9 @@ data:
         maxSize: 5
         minSize: 2
         rootVolumeSizeGB: 200
-    network:
-      apiMode: private
-      dnsMode: private
-      subnets:
-      - cidrBlocks:
-        - availabilityZone: a
-          cidr: 10.123.0.0/18
-        - availabilityZone: b
-          cidr: 10.123.64.0/18
-        isPublic: false
-      topologyMode: GiantSwarmManaged
-      vpcCIDR: 10.123.0.0/16
-      vpcMode: private
-    organization: test
-    proxy:
-      enabled: true
-      http_proxy: http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
-      https_proxy: https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
-      no_proxy: test-domain.com
+    providerSpecific:
+      awsClusterRoleIdentityName: default
+      region: the-region
 kind: ConfigMap
 metadata:
   creationTimestamp: null
