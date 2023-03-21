@@ -10,14 +10,14 @@ import (
 )
 
 func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
-	if flagInputs.Network.TopologyMode != "" && flagInputs.Network.TopologyMode != gsannotation.NetworkTopologyModeGiantSwarmManaged && flagInputs.Network.TopologyMode != gsannotation.NetworkTopologyModeUserManaged && flagInputs.Network.TopologyMode != gsannotation.NetworkTopologyModeNone {
-		return "", fmt.Errorf("invalid topology mode value %q", flagInputs.Network.TopologyMode)
+	if flagInputs.Connectivity.Topology.Mode != "" && flagInputs.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeGiantSwarmManaged && flagInputs.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeUserManaged && flagInputs.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeNone {
+		return "", fmt.Errorf("invalid topology mode value %q", flagInputs.Connectivity.Topology.Mode)
 	}
-	if flagInputs.Network.PrefixListID != "" && !strings.HasPrefix(flagInputs.Network.PrefixListID, "pl-") {
-		return "", fmt.Errorf("invalid AWS prefix list ID %q", flagInputs.Network.PrefixListID)
+	if flagInputs.Connectivity.Topology.PrefixListID != "" && !strings.HasPrefix(flagInputs.Connectivity.Topology.PrefixListID, "pl-") {
+		return "", fmt.Errorf("invalid AWS prefix list ID %q", flagInputs.Connectivity.Topology.PrefixListID)
 	}
-	if flagInputs.Network.TransitGatewayID != "" && !strings.HasPrefix(flagInputs.Network.TransitGatewayID, "tgw-") {
-		return "", fmt.Errorf("invalid AWS transit gateway ID %q", flagInputs.Network.TransitGatewayID)
+	if flagInputs.Connectivity.Topology.TransitGatewayID != "" && !strings.HasPrefix(flagInputs.Connectivity.Topology.TransitGatewayID, "tgw-") {
+		return "", fmt.Errorf("invalid AWS transit gateway ID %q", flagInputs.Connectivity.Topology.TransitGatewayID)
 	}
 
 	var flagConfigData map[string]interface{}
