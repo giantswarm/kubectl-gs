@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- `kubectl gs template cluster` for Cluster API provider AWS has been adapted to work with the latest values schema of cluster-aws.
+- `kubectl gs template cluster` for Cluster API provider AWS has been adapted to work with the values schema of cluster-aws v0.28.0.
 
 ## [2.33.0] - 2023-03-08
 
