@@ -107,14 +107,14 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 				return microerror.Mask(err)
 			}
 
-			flagValues.Network.Subnets = []capa.Subnet{
+			flagValues.Connectivity.Subnets = []capa.Subnet{
 				{
 					CidrBlocks: []capa.CIDRBlock{},
 				},
 			}
 
 			for i := 0; i < subnetCount; i++ {
-				flagValues.Network.Subnets[0].CidrBlocks = append(flagValues.Network.Subnets[0].CidrBlocks, capa.CIDRBlock{
+				flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
 					CIDR:             subnets[i].CIDR().String(),
 					AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
 				})
@@ -124,19 +124,19 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			if config.AWS.HttpProxy != "" {
 				httpProxy = config.AWS.HttpProxy
 			}
-			flagValues.Proxy = &capa.Proxy{
+			flagValues.Connectivity.Proxy = &capa.Proxy{
 				Enabled:    true,
 				HttpsProxy: config.AWS.HttpsProxy,
 				HttpProxy:  httpProxy,
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.Network.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
-			flagValues.Network.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
-			flagValues.Network.DNSMode = defaultTo(config.AWS.DNSMode, ModePrivate)
-			flagValues.Network.TopologyMode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
-			flagValues.Network.PrefixListID = config.AWS.PrefixListID
-			flagValues.Network.TransitGatewayID = config.AWS.TransitGatewayID
+			flagValues.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
+			flagValues.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
+			flagValues.Connectivity.DNS.Mode = defaultTo(config.AWS.DNSMode, ModePrivate)
+			flagValues.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
+			flagValues.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
+			flagValues.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)
@@ -201,27 +201,33 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 	return capa.ClusterConfig{
-		ClusterName:        config.Name,
-		ClusterDescription: config.Description,
-		Organization:       config.Organization,
-
-		AWS: &capa.AWS{
+		Metadata: &capa.Metadata{
+			Name:         config.Name,
+			Description:  config.Description,
+			Organization: config.Organization,
+		},
+		ProviderSpecific: &capa.ProviderSpecific{
 			Region:                     config.Region,
 			AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
 		},
-		Network: &capa.Network{
+		Connectivity: &capa.Connectivity{
 			AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
-			VPCCIDR:                    config.AWS.NetworkVPCCIDR,
-		},
-		Bastion: &capa.Bastion{
-			InstanceType: config.BastionInstanceType,
-			Replicas:     config.BastionReplicas,
+			Bastion: &capa.Bastion{
+				Enabled:      true,
+				InstanceType: config.BastionInstanceType,
+				Replicas:     config.BastionReplicas,
+			},
+			DNS: &capa.DNS{},
+			Network: &capa.Network{
+				VPCCIDR: config.AWS.NetworkVPCCIDR,
+			},
+			Topology: &capa.Topology{},
 		},
 		ControlPlane: &capa.ControlPlane{
 			InstanceType: config.ControlPlaneInstanceType,
 			Replicas:     3,
 		},
-		MachinePools: &map[string]capa.MachinePool{
+		NodePools: &map[string]capa.MachinePool{
 			config.AWS.MachinePool.Name: {
 				AvailabilityZones: config.AWS.MachinePool.AZs,
 				InstanceType:      config.AWS.MachinePool.InstanceType,
