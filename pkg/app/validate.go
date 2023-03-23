@@ -55,7 +55,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 		Name:      name,
 	}
 
-	appResource, err := s.appDataService.Get(ctx, options)
+	appResource, err := s.AppDataService.Get(ctx, options)
 	if app.IsNotFound(err) {
 		return nil, microerror.Maskf(notFoundError, fmt.Sprintf("An app '%s/%s' cannot be found.\n", options.Namespace, options.Name))
 	} else if err != nil {
@@ -71,7 +71,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 		return results, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
 	}
 
-	valuesSchema, schemaValidationResult, err := s.validateApp(ctx, appCR, customValuesSchema)
+	valuesSchema, schemaValidationResult, err := s.ValidateApp(ctx, appCR, customValuesSchema, nil)
 	if err != nil {
 		results = append(results, &ValidationResult{
 			App:          appCR,
@@ -89,7 +89,6 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	})
 
 	return results, nil
-
 }
 
 func (s *Service) validateMultiple(ctx context.Context, namespace string, labelSelector string, customValuesSchema string) (ValidationResults, error) {
@@ -101,7 +100,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 		LabelSelector: labelSelector,
 	}
 
-	appResource, err := s.appDataService.Get(ctx, options)
+	appResource, err := s.AppDataService.Get(ctx, options)
 	if err != nil {
 		return results, microerror.Mask(err)
 	}
@@ -124,7 +123,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 	// Iterate over all apps and fetch the Catalog CR, index.yaml, and
 	// corresponding values.schema.json if it is defined for that app's version.
 	for _, app := range apps {
-		valuesSchema, schemaValidationResult, err := s.validateApp(ctx, app, customValuesSchema)
+		valuesSchema, schemaValidationResult, err := s.ValidateApp(ctx, app, customValuesSchema, nil)
 		if err != nil {
 			results = append(results, &ValidationResult{
 				App:          app,
@@ -148,7 +147,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 	return results, nil
 }
 
-func (s *Service) validateApp(ctx context.Context, app *applicationv1alpha1.App, customValuesSchema string) (string, *gojsonschema.Result, error) {
+func (s *Service) ValidateApp(ctx context.Context, app *applicationv1alpha1.App, customValuesSchema string, yamlData map[string]interface{}) (string, *gojsonschema.Result, error) {
 	catalogName := app.Spec.Catalog
 	catalogNamespace := app.Spec.CatalogNamespace
 
@@ -177,45 +176,47 @@ func (s *Service) validateApp(ctx context.Context, app *applicationv1alpha1.App,
 	pullOptions := helmbinary.PullOptions{
 		URL: findTarballURL(index.Entries[app.Spec.Name], app.Spec.Version),
 	}
-	tmpDir, err := s.helmbinaryService.Pull(ctx, pullOptions)
+	tmpDir, err := s.HelmbinaryService.Pull(ctx, pullOptions)
 	if err != nil {
 		return "", nil, microerror.Mask(err)
 	}
 
-	// Gather all the values that we want to merge together. (1,2,3,4)
-	// 1. Chart values (the starting point, what is in the values.yaml file of
-	// the chart itself)
-	valuesFilePath := path.Join(tmpDir, app.Spec.Name, "values.yaml")
-	chartValuesYamlFile, err := os.ReadFile(valuesFilePath)
-	if err != nil {
-		return "", nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
-	}
+	// if no user defined manifest data is given, discover and merge
+	// all the app-platform managed values for schema validation
+	if yamlData == nil {
 
-	chartValues := make(map[string]interface{})
-	err = yaml.Unmarshal(chartValuesYamlFile, &chartValues)
-	if err != nil {
-		return "", nil, microerror.Maskf(ioError, "failed to unmarshal yaml file: %s", err.Error())
-	}
+		// Gather all the values that we want to merge together. (1,2,3,4)
+		// 1. Chart values (the starting point, what is in the values.yaml file of
+		// the chart itself)
+		valuesFilePath := path.Join(tmpDir, app.Spec.Name, "values.yaml")
+		chartValuesYamlFile, err := os.ReadFile(valuesFilePath)
+		if err != nil {
+			return "", nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
+		}
 
-	// Use MergeAll from the values package in the app library repo to fetch and
-	// merge the various values that users and admins can provide in the three
-	// configuration levels and merges them together into a single result.
-	// 2. Catalog values (configmap & secret)
-	// 3. Cluster values (configmap & secret)
-	// 4. User values (configmap & secret)
-	providedValues, err := s.valuesService.MergeAll(ctx, *app, *catalog)
-	if err != nil {
-		return "", nil, microerror.Maskf(ioError, "failed fetch and/or merge user provided values: %s", err.Error())
-	}
+		chartValues := make(map[string]interface{})
+		err = yaml.Unmarshal(chartValuesYamlFile, &chartValues)
+		if err != nil {
+			return "", nil, microerror.Maskf(ioError, "failed to unmarshal yaml file: %s", err.Error())
+		}
 
-	// Finally, merge the user & admin provided values with the chart values.
-	mergedData := mergeValues(chartValues, providedValues)
+		// Use MergeAll from the values package in the app library repo to fetch and
+		// merge the various values that users and admins can provide in the three
+		// configuration levels and merges them together into a single result.
+		// 2. Catalog values (configmap & secret)
+		// 3. Cluster values (configmap & secret)
+		// 4. User values (configmap & secret)
+		providedValues, err := s.ValuesService.MergeAll(ctx, *app, *catalog)
+		if err != nil {
+			return "", nil, microerror.Maskf(ioError, "failed fetch and/or merge user provided values: %s", err.Error())
+		}
+
+		// Finally, merge the user & admin provided values with the chart values.
+		yamlData = mergeValues(chartValues, providedValues)
+	}
 
 	// Validate the merged values against the schema using gojsonschema.
-	schemaLoader := gojsonschema.NewStringLoader(valuesSchema)
-	documentLoader := gojsonschema.NewGoLoader(mergedData)
-
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	result, err := ValidateSchema(valuesSchema, yamlData)
 	if err != nil {
 		return "", nil, microerror.Mask(err)
 	}
@@ -232,7 +233,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 	}
 
 	// Skip all the HTTP requests and Unmarshalling if we already fetched this schema.
-	if result, isCached := s.schemaFetchResults[valuesSchemaURL]; isCached {
+	if result, isCached := s.SchemaFetchResults[valuesSchemaURL]; isCached {
 		return result.schema, nil
 	}
 
@@ -242,7 +243,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 	resp, err := http.Get(valuesSchemaURL) // #nosec
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch values.schema.json, http error: %s", err.Error())
-		s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
+		s.SchemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
 			err: err,
 		}
 		return "", err
@@ -252,14 +253,14 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch values.schema.json, error processing http response body: %s", err.Error())
-		s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
+		s.SchemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
 			err: err,
 		}
 		return "", err
 	}
 
 	// Cache the result.
-	s.schemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
+	s.SchemaFetchResults[valuesSchemaURL] = SchemaFetchResult{
 		schema: string(body),
 	}
 
@@ -275,7 +276,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	}
 
 	// Skip all the HTTP requests and Unmarshalling if we already fetched this catalog.
-	if result, isCached := s.catalogFetchResults[catalogName]; isCached {
+	if result, isCached := s.CatalogFetchResults[catalogName]; isCached {
 		return result.index, result.catalog, nil
 	}
 
@@ -285,10 +286,10 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 		Namespace: catalogNamespace,
 	}
 
-	catalogResource, err := s.catalogDataService.Get(ctx, options)
+	catalogResource, err := s.CatalogDataService.Get(ctx, options)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch Catalog: %s", err.Error())
-		s.catalogFetchResults[catalogName] = CatalogFetchResult{
+		s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
 
@@ -324,7 +325,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	// know about the storage type yet.
 	if !foundHelmRepository {
 		err = microerror.Maskf(fetchError, "unable to fetch index, only \"helm\" storage type is supported")
-		s.catalogFetchResults[catalogName] = CatalogFetchResult{
+		s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
 
@@ -335,7 +336,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	// URL is missing in the Catalog CR.
 	if catalogURL == "" {
 		err = microerror.Maskf(fetchError, "unable to fetch index, the URL for the helm repo's index.yaml is missing from 'Spec.Repositories[].URL' in the Catalog CR")
-		s.catalogFetchResults[catalogName] = CatalogFetchResult{
+		s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
 
@@ -346,7 +347,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	resp, err := http.Get(catalogURL + "/index.yaml")
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch index, http request failed: %s", err.Error())
-		s.catalogFetchResults[catalogName] = CatalogFetchResult{
+		s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
 
@@ -357,7 +358,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch index, error processing http response body: %s", err.Error())
-		s.catalogFetchResults[catalogName] = CatalogFetchResult{
+		s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
 
@@ -368,7 +369,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	err = yaml.Unmarshal(body, index)
 	if err != nil {
 		err = microerror.Maskf(fetchError, "unable to fetch index, error unmarshalling body: %s", err.Error())
-		s.catalogFetchResults[catalogName] = CatalogFetchResult{
+		s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 			err: err,
 		}
 
@@ -376,7 +377,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 	}
 
 	// Cache the succesfull result.
-	s.catalogFetchResults[catalogName] = CatalogFetchResult{
+	s.CatalogFetchResults[catalogName] = CatalogFetchResult{
 		catalog: catalog,
 		index:   index,
 		err:     nil,
@@ -384,6 +385,19 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 
 	// Return the Catalog CR and the unmarshalled index.yaml.
 	return index, catalog, nil
+}
+
+func ValidateSchema(valuesSchema string, yamlData map[string]interface{}) (*gojsonschema.Result, error) {
+	// Validate the merged values against the schema using gojsonschema.
+	schemaLoader := gojsonschema.NewStringLoader(valuesSchema)
+	documentLoader := gojsonschema.NewGoLoader(yamlData)
+
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return result, nil
 }
 
 func findValuesSchemaURL(entries ChartVersions, version string) string {

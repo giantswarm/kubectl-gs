@@ -27,23 +27,9 @@ const (
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
-
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+	err := WriteGSAzureTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		err = WriteCAPZTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else {
-		err = WriteGSAzureTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil

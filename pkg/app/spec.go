@@ -74,4 +74,5 @@ type ChartVersion struct {
 // service in tests much simpler.
 type Interface interface {
 	Validate(context.Context, ValidateOptions) (ValidationResults, error)
+	ValidateApp(context.Context, *applicationv1alpha1.App, string, map[string]interface{}) (string, *gojsonschema.Result, error)
 }
