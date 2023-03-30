@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.34.1] - 2023-03-30
+
 ### Fixed
 
 - `kubectl gs template cluster` now by default creates a node pool with the name `nodepool0`, instead of `machine-pool0`, as the latter is no longer valid according to the cluster-aws schema as of v0.24.0.
@@ -1225,7 +1227,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...HEAD
+[2.34.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...v2.34.1
 [2.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.33.0...v2.34.0
 [2.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...v2.32.0
