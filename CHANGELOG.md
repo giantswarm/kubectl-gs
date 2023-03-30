@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- `kubectl gs template cluster` now by default creates a node pool with the name `nodepool0`, instead of `machine-pool0`, as the latter is no longer valid according to the cluster-aws schema as of v0.28.0.
+- `kubectl gs template cluster` now by default creates a node pool with the name `nodepool0`, instead of `machine-pool0`, as the latter is no longer valid according to the cluster-aws schema as of v0.24.0.
 
 ## [2.34.0] - 2023-03-23
 
