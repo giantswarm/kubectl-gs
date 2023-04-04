@@ -13,7 +13,7 @@ require (
 	github.com/fatih/color v1.14.1
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.5.0
-	github.com/giantswarm/app/v6 v6.7.0
+	github.com/giantswarm/app/v6 v6.15.6
 	github.com/giantswarm/appcatalog v0.10.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
@@ -215,7 +215,7 @@ replace (
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.19.1
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.8.3
 	// CVE-2023-27561
-	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.4
+	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	// CVE-2022-41717
 	golang.org/x/net => golang.org/x/net v0.7.0
 	golang.org/x/text => golang.org/x/text v0.6.0
