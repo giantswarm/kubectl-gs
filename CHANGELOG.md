@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Stop using old `v1alpha3` version when using CAPI CRDs. 
+
 ## [2.34.1] - 2023-03-30
 
 ### Fixed
