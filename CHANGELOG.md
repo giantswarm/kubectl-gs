@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.35.0] - 2023-04-17
+
 ### Changed
 
 - Stop using old `v1alpha3` version when using CAPI CRDs. 
@@ -1231,7 +1233,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...HEAD
+[2.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...v2.35.0
 [2.34.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...v2.34.1
 [2.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.33.0...v2.34.0
 [2.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...v2.33.0
