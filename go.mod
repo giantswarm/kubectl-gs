@@ -9,7 +9,6 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.5.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.14.1
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.5.0
@@ -22,6 +21,7 @@ require (
 	github.com/giantswarm/micrologger v1.0.0
 	github.com/giantswarm/organization-operator v1.0.6
 	github.com/giantswarm/release-operator/v4 v4.0.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
 	github.com/imdario/mergo v0.3.13
 	github.com/pkg/errors v0.9.1
@@ -206,7 +206,6 @@ require (
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18 // [CVE-2023-25153]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.7
-	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby/v23 v23.0.1+incompatible // Use moby v20.10.x to fix build issue on darwin.
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4

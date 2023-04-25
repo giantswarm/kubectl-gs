@@ -18,12 +18,11 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/square/go-jose.v2"
-
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/giantswarm/microerror"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"gopkg.in/square/go-jose.v2"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
