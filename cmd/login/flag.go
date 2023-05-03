@@ -64,7 +64,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector to use for authentication. This allows to skip the selection page.")
 
-	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster")
+	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")
 
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)
