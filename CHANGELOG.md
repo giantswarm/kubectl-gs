@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.36.0] - 2023-05-04
+
 ### Changed
 
 - Add support for `--proxy` and `--proxy-port` flags to `login cmd` to enable `proxy-url: socks5://localhost:9000` in the cluster section of the configuration added to kubeconfig
@@ -1238,7 +1240,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...HEAD
+[2.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...v2.36.0
 [2.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...v2.35.0
 [2.34.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...v2.34.1
 [2.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.33.0...v2.34.0
