@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add support for `--proxy` and `--proxy-port` flags to `login cmd` to enable `proxy-url: socks5://localhost:9000` in the cluster section of the configuration added to kubeconfig
+  - This is only supported for `clientcert` Workload Clusters
+
 ## [2.35.0] - 2023-04-17
 
 ### Changed

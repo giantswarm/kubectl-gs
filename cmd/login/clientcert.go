@@ -71,6 +71,8 @@ type credentialConfig struct {
 	clusterServer string
 	loginOptions  LoginOptions
 	filePath      string
+	proxy         bool
+	proxyPort     int
 }
 
 func generateClientCertUID() string {
@@ -306,6 +308,10 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		cluster.Server = c.clusterServer
 		cluster.CertificateAuthority = ""
 		cluster.CertificateAuthorityData = c.certCA
+
+		if c.proxy {
+			cluster.ProxyURL = fmt.Sprintf("socks5://localhost:%d", c.proxyPort)
+		}
 
 		// Add cluster configuration to config.
 		config.Clusters[clusterName] = cluster

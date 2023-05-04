@@ -209,6 +209,8 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		clusterServer: clusterServer,
 		filePath:      r.flag.SelfContained,
 		loginOptions:  r.loginOptions,
+		proxy:         r.flag.Proxy,
+		proxyPort:     r.flag.ProxyPort,
 	}
 
 	contextName, contextExists, err = r.storeWCClientCertCredentials(credentialConfig)
