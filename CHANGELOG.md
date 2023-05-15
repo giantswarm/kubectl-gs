@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Setting `spec.config.configMap` in `app/<cluster-name>-default-apps` for `CAPZ` clusters.
+
 ## [2.36.0] - 2023-05-04
 
 ### Changed
