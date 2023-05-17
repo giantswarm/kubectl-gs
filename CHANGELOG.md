@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.37.0] - 2023-05-17
+
 ### Changed
 
 - Use non-exp apiVersion for azure machine pool types in `template nodepool`.
@@ -1250,7 +1252,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...HEAD
+[2.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...v2.37.0
 [2.36.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...v2.36.1
 [2.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...v2.36.0
 [2.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...v2.35.0
