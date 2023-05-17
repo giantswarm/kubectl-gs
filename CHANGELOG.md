@@ -7,15 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Use non-exp apiVersion for azure machine pool types in `template nodepool`.
+
 ## [2.36.1] - 2023-05-17
 
 ### Fixed
 
 - Setting `spec.config.configMap` in `app/<cluster-name>-default-apps` for `CAPZ` clusters.
-
-### Changed
-
-- Use non-exp apiVersion for azure machine pool types in `template nodepool`.
 
 ## [2.36.0] - 2023-05-04
 
