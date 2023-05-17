@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
+	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
@@ -457,6 +458,7 @@ func TemplateClusterApp(ctx context.Context, output io.Writer, provider, cluster
 func TemplateDefaultApp(ctx context.Context, output io.Writer, provider, clusterName, clusterOrganization string, clusterApp applicationv1alpha1.App, clusterAppConfigValues map[string]interface{}) error {
 
 	appCR, err := templateapp.NewAppCR(templateapp.Config{
+		Cluster:                 clusterName,
 		AppName:                 fmt.Sprintf("%s-default-apps", clusterName),
 		Catalog:                 clusterApp.Spec.Catalog,
 		InCluster:               true,
@@ -464,6 +466,10 @@ func TemplateDefaultApp(ctx context.Context, output io.Writer, provider, cluster
 		Namespace:               organizationNamespace(clusterOrganization),
 		Version:                 clusterApp.Spec.Version,
 		UserConfigConfigMapName: fmt.Sprintf("%s-default-apps-user-values", clusterName),
+		UseClusterValuesConfig:  true,
+		ExtraLabels: map[string]string{
+			k8smetadata.ManagedBy: "cluster",
+		},
 	})
 	if err != nil {
 		return err
