@@ -10,16 +10,16 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	capzexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capzexp/v1alpha3"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/reference"
-	infrav1 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
@@ -85,7 +85,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 }
 
 func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
-	var spot *infrav1.SpotVMOptions
+	var spot *v1beta1.SpotVMOptions
 	if config.AzureUseSpotVms {
 		var maxPrice resource.Quantity
 		if config.AzureSpotMaxPrice > 0 {
@@ -94,7 +94,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
 		} else {
 			maxPrice = resource.MustParse("-1")
 		}
-		spot = &infrav1.SpotVMOptions{
+		spot = &v1beta1.SpotVMOptions{
 			MaxPrice: &maxPrice,
 		}
 	}
@@ -102,7 +102,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
 	azureMp := &capzexp.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachinePool",
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolName,
@@ -117,8 +117,13 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
 			},
 		},
 		Spec: capzexp.AzureMachinePoolSpec{
-			Template: capzexp.AzureMachineTemplate{
-				VMSize:        config.VMSize,
+			Template: capzexp.AzureMachinePoolMachineTemplate{
+				VMSize: config.VMSize,
+				OSDisk: v1beta1.OSDisk{
+					ManagedDisk: &v1beta1.ManagedDiskParameters{
+						StorageAccountType: "",
+					},
+				},
 				SSHPublicKey:  "",
 				SpotVMOptions: spot,
 			},
