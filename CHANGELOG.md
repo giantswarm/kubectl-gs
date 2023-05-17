@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.36.1] - 2023-05-17
+
 ### Fixed
 
 - Setting `spec.config.configMap` in `app/<cluster-name>-default-apps` for `CAPZ` clusters.
@@ -1244,7 +1246,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...HEAD
+[2.36.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...v2.36.1
 [2.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...v2.36.0
 [2.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...v2.35.0
 [2.34.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...v2.34.1
