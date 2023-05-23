@@ -42,7 +42,7 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 	mp := &capiexp.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
-			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolName,

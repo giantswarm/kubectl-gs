@@ -12,7 +12,7 @@ require (
 	github.com/fatih/color v1.14.1
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.5.0
-	github.com/giantswarm/app/v6 v6.15.6
+	github.com/giantswarm/app/v6 v6.7.0
 	github.com/giantswarm/appcatalog v0.10.1
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.0.1
@@ -92,7 +92,6 @@ require (
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/go-test/deep v1.0.7 // indirect
-	github.com/gobuffalo/flect v0.2.5 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -152,7 +151,6 @@ require (
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/onsi/gomega v1.19.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	github.com/opencontainers/runc v1.1.2 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -207,7 +205,7 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18 // [CVE-2023-25153]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.7
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
-	github.com/docker/docker => github.com/moby/moby/v23 v23.0.1+incompatible // Use moby v20.10.x to fix build issue on darwin.
+	github.com/docker/docker => github.com/moby/moby/v24 v24.0.1 // Use moby v20.10.x to fix build issue on darwin.
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
