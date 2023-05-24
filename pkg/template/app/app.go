@@ -37,6 +37,7 @@ type Config struct {
 	ExtraLabels                map[string]string
 	ExtraAnnotations           map[string]string
 	UseClusterValuesConfig     bool
+	ExtraConfigs               []v1alpha1.AppExtraConfig
 }
 
 type UserConfig struct {
@@ -149,6 +150,10 @@ func NewAppCR(config Config) ([]byte, error) {
 				Namespace: crNamespace,
 			},
 		}
+	}
+
+	if len(config.ExtraConfigs) > 0 {
+		appCR.Spec.ExtraConfigs = config.ExtraConfigs
 	}
 
 	config.setTimeouts(appCR)
