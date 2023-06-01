@@ -11,7 +11,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.5.0
 	github.com/fatih/color v1.14.1
 	github.com/giantswarm/apiextensions-application v0.6.0
-	github.com/giantswarm/apiextensions/v6 v6.5.0
+	github.com/giantswarm/apiextensions/v6 v6.6.0
 	github.com/giantswarm/app/v6 v6.7.0
 	github.com/giantswarm/appcatalog v0.10.1
 	github.com/giantswarm/backoff v1.0.0
