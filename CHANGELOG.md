@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- App: Rename `nginx-ingress-controller-app` to `ingress-nginx`. ([#1077](https://github.com/giantswarm/kubectl-gs/pull/1077))
+
 ## [2.37.0] - 2023-05-17
 
 ### Changed
