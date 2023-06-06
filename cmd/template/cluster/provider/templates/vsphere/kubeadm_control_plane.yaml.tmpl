@@ -86,8 +86,12 @@ spec:
     useExperimentalRetryJoin: true
     users:
     - name: capv
+      {{ with .SSHPublicKeys }}
       sshAuthorizedKeys:
-      - "{{ .SSHPublicKey }}"
+      {{ range . }}
+      - "{{ . }}"
+      {{ end }}
+      {{ end }}
       sudo: ALL=(ALL) NOPASSWD:ALL
   machineTemplate:
     infrastructureRef:
