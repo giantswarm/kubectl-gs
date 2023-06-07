@@ -20,6 +20,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Organization      string
 		PodsCIDR          string
 		ReleaseVersion    string
+		SSHPublicKeys     []string
 	}{
 		Description:       config.Description,
 		KubernetesVersion: "v1.20.1",
@@ -28,6 +29,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, out i
 		Organization:      config.Organization,
 		PodsCIDR:          config.PodsCIDR,
 		ReleaseVersion:    config.ReleaseVersion,
+		SSHPublicKeys:     []string{},
 	}
 
 	var templates []templateConfig
