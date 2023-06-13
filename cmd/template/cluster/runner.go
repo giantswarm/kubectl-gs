@@ -91,6 +91,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
+		case key.ProviderCAPZ:
+			err = provider.WriteCAPZTemplate(ctx, client, output, config)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		case key.ProviderGCP:
 			err = provider.WriteGCPTemplate(ctx, client, output, config)
 			if err != nil {
@@ -176,6 +181,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 
 		App:       r.flag.App,
 		AWS:       r.flag.AWS,
+		Azure:     r.flag.Azure,
 		GCP:       r.flag.GCP,
 		OIDC:      r.flag.OIDC,
 		OpenStack: r.flag.OpenStack,

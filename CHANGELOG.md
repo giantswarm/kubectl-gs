@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add minimal support for templating CAPZ clusters
+
 ### Changed
 
 - App: Rename `nginx-ingress-controller-app` to `ingress-nginx`. ([#1077](https://github.com/giantswarm/kubectl-gs/pull/1077))
@@ -35,7 +39,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Stop using old `v1alpha3` version when using CAPI CRDs. 
+- Stop using old `v1alpha3` version when using CAPI CRDs.
 
 ## [2.34.1] - 2023-03-30
 

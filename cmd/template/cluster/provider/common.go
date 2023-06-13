@@ -66,6 +66,10 @@ type AWSMachinePoolConfig struct {
 	CustomNodeLabels []string
 }
 
+type AzureConfig struct {
+	SubscriptionID string
+}
+
 type GCPConfig struct {
 	Project           string
 	FailureDomains    []string
@@ -146,6 +150,7 @@ type ClusterConfig struct {
 
 	App       AppConfig
 	AWS       AWSConfig
+	Azure     AzureConfig
 	GCP       GCPConfig
 	OpenStack OpenStackConfig
 }

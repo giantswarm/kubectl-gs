@@ -179,6 +179,28 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capa_3.golden",
 		},
+		{
+			name: "case 4: template cluster capz",
+			flags: &flag{
+				Name:                     "test1",
+				Provider:                 "capz",
+				Description:              "just a test cluster",
+				Region:                   "northeurope",
+				Organization:             "test",
+				ControlPlaneInstanceType: "B2s",
+				App: provider.AppConfig{
+					ClusterVersion:     "1.0.0",
+					ClusterCatalog:     "the-catalog",
+					DefaultAppsCatalog: "the-default-catalog",
+					DefaultAppsVersion: "2.0.0",
+				},
+				Azure: provider.AzureConfig{
+					SubscriptionID: "12345678-ebb8-4b1f-8f96-d950d9e7aaaa",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capz.golden",
+		},
 	}
 
 	for _, tc := range testCases {

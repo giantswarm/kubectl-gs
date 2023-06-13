@@ -47,6 +47,9 @@ const (
 	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
+	// Azure only
+	flagAzureSubscriptionID = "azure-subscription-id"
+
 	// GCP only.
 	flagGCPProject                               = "gcp-project"
 	flagGCPFailureDomains                        = "gcp-failure-domains"
@@ -141,6 +144,7 @@ type flag struct {
 
 	// Provider-specific
 	AWS       provider.AWSConfig
+	Azure     provider.AzureConfig
 	GCP       provider.GCPConfig
 	OpenStack provider.OpenStackConfig
 	App       provider.AppConfig
@@ -183,6 +187,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 300, "AWS Machine pool disk size")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
+
+	// Azure only
+	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
 
 	// GCP only.
 	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "Google Cloud Platform project name")
@@ -306,7 +313,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, label.ServicePriorityHighest, fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS region where cluster will be created")
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure/GCP region where cluster will be created")
 	// bastion
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
 	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
