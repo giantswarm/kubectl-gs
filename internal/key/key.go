@@ -152,7 +152,23 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 		return "", microerror.Maskf(unmashalToMapFailedError, err.Error())
 	}
 
-	return string(data), nil
+	return sanitize(string(data)), nil
+}
+
+// Sanitize input yaml files
+//
+// Trim spaces from end of lines, because sig.k8s.io/yaml@v1.3.0 outputs the whole file content
+// as a raw, single line string if there are empty spaces at end of lines.
+func sanitize(content string) string {
+	var sanitizedContent []string
+
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		sanitizedLine := strings.TrimRight(line, " ")
+		sanitizedContent = append(sanitizedContent, sanitizedLine)
+	}
+
+	return strings.Join(sanitizedContent, "\n")
 }
 
 // ReadSecretYamlFromFile reads a configmap from a YAML file.

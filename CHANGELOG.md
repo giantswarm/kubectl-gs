@@ -12,6 +12,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - App: Rename `nginx-ingress-controller-app` to `ingress-nginx`. ([#1077](https://github.com/giantswarm/kubectl-gs/pull/1077))
 - vSphere: Fix templating. ([#1079](https://github.com/giantswarm/kubectl-gs/pull/1079))
 
+### Fixed
+
+- Sanitize file passed as inputs data for config maps by stripping spaces from the right end of the lines.
+  - This makes the output to use proper multi-line strings for the embedded YAML content by working around a bug in `sig.k8s.io/yam@v1.3.0`
+
 ## [2.37.0] - 2023-05-17
 
 ### Changed
