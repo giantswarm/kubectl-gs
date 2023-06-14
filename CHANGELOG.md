@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.38.0] - 2023-06-14
+
 ### Changed
 
 - App: Rename `nginx-ingress-controller-app` to `ingress-nginx`. ([#1077](https://github.com/giantswarm/kubectl-gs/pull/1077))
@@ -1262,7 +1264,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.38.0...HEAD
+[2.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...v2.38.0
 [2.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...v2.37.0
 [2.36.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...v2.36.1
 [2.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...v2.36.0
