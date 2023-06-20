@@ -40,6 +40,11 @@ type StructureConfig struct {
 	RepositoryName    string
 	SkipMAPI          bool
 	WorkloadCluster   string
+
+	Region string
+
+	// Azure only
+	AzureSubscriptionID string
 }
 
 type ClusterBaseTemplates struct {
