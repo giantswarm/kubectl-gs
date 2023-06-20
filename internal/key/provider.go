@@ -1,7 +1,5 @@
 package key
 
-import "fmt"
-
 const (
 	ProviderAWS           = "aws"
 	ProviderAzure         = "azure"
@@ -40,26 +38,4 @@ func PureCAPIProviders() []string {
 		ProviderOpenStack,
 		ProviderCloudDirector,
 	}
-}
-
-// CAPIProviderApps return the provider specific apps
-func CAPIClusterApps(CAPIProvider string) string {
-
-	switch CAPIProvider {
-	case ProviderCAPZ:
-		return fmt.Sprintf("%s-%s", ProviderClusterAppPrefix, ProviderCAPZAppSuffix)
-	}
-
-	return ""
-}
-
-// CAPIProviderApps return the provider specific apps
-func CAPIDefaultApps(CAPIProvider string) string {
-
-	switch CAPIProvider {
-	case ProviderCAPZ:
-		return fmt.Sprintf("%s-%s", ProviderDefaultAppPrefix, ProviderCAPZAppSuffix)
-	}
-
-	return ""
 }

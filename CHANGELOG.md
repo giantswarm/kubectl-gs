@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Breaking changes
+
+- Add minimal support for templating CAPZ clusters by command line parameters. This removes `--cluster-config` and `--default-app-config` parameters which required handcrafted YAML input. It leaves one consistent templating option for CAPI products (`kubectl gs template cluster --provider ... --other-params`).
+
 ## [2.38.0] - 2023-06-14
 
 ### Changed
@@ -42,7 +46,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Stop using old `v1alpha3` version when using CAPI CRDs. 
+- Stop using old `v1alpha3` version when using CAPI CRDs.
 
 ## [2.34.1] - 2023-03-30
 

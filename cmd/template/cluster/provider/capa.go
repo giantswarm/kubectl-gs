@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	DefaultAppsRepoName = "default-apps-aws"
-	ClusterAWSRepoName  = "cluster-aws"
-	ModePrivate         = "private"
+	DefaultAppsAWSRepoName = "default-apps-aws"
+	ClusterAWSRepoName     = "cluster-aws"
+	ModePrivate            = "private"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -279,7 +279,7 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 		appVersion := config.App.DefaultAppsVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsRepoName, config.App.DefaultAppsCatalog)
+			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsAWSRepoName, config.App.DefaultAppsCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -292,7 +292,7 @@ func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, 
 			Catalog:                 config.App.DefaultAppsCatalog,
 			DefaultingEnabled:       false,
 			InCluster:               true,
-			Name:                    DefaultAppsRepoName,
+			Name:                    DefaultAppsAWSRepoName,
 			Namespace:               organizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,

@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
@@ -29,9 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/app"
-	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 )
 
 type AWSConfig struct {
@@ -64,6 +61,10 @@ type AWSMachinePoolConfig struct {
 	InstanceType     string
 	RootVolumeSizeGB int
 	CustomNodeLabels []string
+}
+
+type AzureConfig struct {
+	SubscriptionID string
 }
 
 type GCPConfig struct {
@@ -146,6 +147,7 @@ type ClusterConfig struct {
 
 	App       AppConfig
 	AWS       AWSConfig
+	Azure     AzureConfig
 	GCP       GCPConfig
 	OpenStack OpenStackConfig
 }
@@ -355,155 +357,6 @@ func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclie
 		}
 		// return all validation errors
 		return microerror.Mask(fmt.Errorf(strings.Join(validationErrors, "; ")))
-	}
-
-	return nil
-}
-
-func GetClusterApp(ctx context.Context, client k8sclient.Interface, capiProvider, clusterAppCatalog, clusterAppVersion string) (applicationv1alpha1.App, error) {
-
-	clusterApp := applicationv1alpha1.App{}
-
-	clusterApp.Spec.Catalog = clusterAppCatalog
-
-	clusterApp.Spec.Name = key.CAPIClusterApps(capiProvider)
-
-	if clusterAppVersion == "" {
-		latestAppVersion, err := getLatestVersion(ctx, client.CtrlClient(), clusterApp.Spec.Name, clusterApp.Spec.Catalog)
-		if err != nil {
-			return clusterApp, microerror.Mask(err)
-		}
-		clusterApp.Spec.Version = latestAppVersion
-	} else {
-		clusterApp.Spec.Version = clusterAppVersion
-	}
-
-	return clusterApp, nil
-
-}
-
-func GetDefaultApp(ctx context.Context, client k8sclient.Interface, capiProvider, clusterAppCatalog, clusterAppVersion string) (applicationv1alpha1.App, error) {
-
-	clusterApp := applicationv1alpha1.App{}
-
-	clusterApp.Spec.Catalog = clusterAppCatalog
-
-	clusterApp.Spec.Name = key.CAPIDefaultApps(capiProvider)
-
-	if clusterAppVersion == "" {
-		latestAppVersion, err := getLatestVersion(ctx, client.CtrlClient(), clusterApp.Spec.Name, clusterApp.Spec.Catalog)
-		if err != nil {
-			return clusterApp, microerror.Mask(err)
-		}
-		clusterApp.Spec.Version = latestAppVersion
-	} else {
-		clusterApp.Spec.Version = clusterAppVersion
-	}
-
-	return clusterApp, nil
-
-}
-
-// templateClusterApp templates the Cluster app
-func TemplateClusterApp(ctx context.Context, output io.Writer, provider, clusterName, clusterOrganization string, clusterApp applicationv1alpha1.App, clusterAppConfigValues map[string]interface{}) error {
-
-	appCR, err := templateapp.NewAppCR(templateapp.Config{
-		AppName:                 clusterName, // should be probably the name from the flag aka the name of my cluster
-		Catalog:                 clusterApp.Spec.Catalog,
-		InCluster:               true,
-		Name:                    clusterApp.Spec.Name,                       // should be hardcoeded
-		Namespace:               organizationNamespace(clusterOrganization), // should be the name of the org given by the flag
-		Version:                 clusterApp.Spec.Version,
-		UserConfigConfigMapName: fmt.Sprintf("%s-user-values", clusterName),
-	})
-	if err != nil {
-		return err
-	}
-
-	// marshal the given raw
-	clusterAppConfigYAML, err := yaml.Marshal(clusterAppConfigValues)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	clusterAppConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
-		Name:      fmt.Sprintf("%s-user-values", clusterName),
-		Namespace: organizationNamespace(clusterOrganization),
-		Data:      string(clusterAppConfigYAML),
-	})
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// marshal the generated cluster specific config map for later templating
-	clusterAppConfigMapRaw, err := yaml.Marshal(clusterAppConfigMap)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err = t.Execute(output, templateapp.AppCROutput{
-		AppCR:               string(appCR),
-		UserConfigConfigMap: string(clusterAppConfigMapRaw),
-	})
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-// templateClusterApp templates the Cluster app
-func TemplateDefaultApp(ctx context.Context, output io.Writer, provider, clusterName, clusterOrganization string, clusterApp applicationv1alpha1.App, clusterAppConfigValues map[string]interface{}) error {
-
-	appCR, err := templateapp.NewAppCR(templateapp.Config{
-		Cluster:                 clusterName,
-		AppName:                 fmt.Sprintf("%s-default-apps", clusterName),
-		Catalog:                 clusterApp.Spec.Catalog,
-		InCluster:               true,
-		Name:                    clusterApp.Spec.Name,
-		Namespace:               organizationNamespace(clusterOrganization),
-		Version:                 clusterApp.Spec.Version,
-		UserConfigConfigMapName: fmt.Sprintf("%s-default-apps-user-values", clusterName),
-		UseClusterValuesConfig:  true,
-		ExtraLabels: map[string]string{
-			k8smetadata.ManagedBy: "cluster",
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	// marshal the given raw
-	clusterAppConfigYAML, err := yaml.Marshal(clusterAppConfigValues)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	clusterAppConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
-		Name:      fmt.Sprintf("%s-default-apps-user-values", clusterName),
-		Namespace: organizationNamespace(clusterOrganization),
-		Data:      string(clusterAppConfigYAML),
-	})
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// marshal the generated cluster specific config map for later templating
-	clusterAppConfigMapRaw, err := yaml.Marshal(clusterAppConfigMap)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err = t.Execute(output, templateapp.AppCROutput{
-		AppCR:               string(appCR),
-		UserConfigConfigMap: string(clusterAppConfigMapRaw),
-	})
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	return nil
