@@ -25,8 +25,3 @@ func IsInvalidFlag(err error) bool {
 var templateFlagNotImplemented = &microerror.Error{
 	Kind: "templateFlagsNotImplementedError",
 }
-
-// IsTemplateFlagNotImplemented asserts templateFlagNotImplemented
-func IsTemplateFlagNotImplemented(err error) bool {
-	return microerror.Cause(err) == templateFlagNotImplemented
-}
