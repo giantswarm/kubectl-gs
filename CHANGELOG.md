@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.39.0] - 2023-06-22
+
 ### Breaking changes
 
 - Add minimal support for templating CAPZ clusters by command line parameters. This removes `--cluster-config` and `--default-app-config` parameters which required handcrafted YAML input. It leaves one consistent templating option for CAPI products (`kubectl gs template cluster --provider ... --other-params`).
@@ -1268,7 +1270,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.38.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.39.0...HEAD
+[2.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.38.0...v2.39.0
 [2.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...v2.38.0
 [2.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...v2.37.0
 [2.36.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...v2.36.1
