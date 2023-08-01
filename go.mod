@@ -198,6 +198,7 @@ replace (
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.19.1
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.9.0
+	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v0.9.2
 	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	// CVE-2022-41717
