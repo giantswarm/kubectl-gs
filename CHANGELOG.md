@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Graceful failure of the `login` command in case workload cluster API is not known
+
 ## [2.39.0] - 2023-06-22
 
 ### Breaking changes
