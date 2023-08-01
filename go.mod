@@ -23,7 +23,7 @@ require (
 	github.com/giantswarm/release-operator/v4 v4.0.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
-	github.com/imdario/mergo v0.3.13
+	github.com/imdario/mergo v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
