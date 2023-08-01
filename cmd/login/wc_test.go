@@ -29,7 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
@@ -290,7 +290,7 @@ func TestWCClientCert(t *testing.T) {
 				t.Fatal(err)
 			}
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained

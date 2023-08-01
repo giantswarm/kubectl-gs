@@ -21,7 +21,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
 	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
@@ -87,7 +87,7 @@ func Test_RenewTokenMiddleware(t *testing.T) {
 			}
 
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			k8sConfigAccess := cf.ToRawKubeConfigLoader().ConfigAccess()
 			err = clientcmd.ModifyConfig(k8sConfigAccess, *createValidTestConfig(authServer.URL, idToken, tc.renewToken), false)
 			if err != nil {
@@ -109,7 +109,7 @@ func Test_RenewTokenMiddleware(t *testing.T) {
 			}
 
 			newCf := genericclioptions.NewConfigFlags(true)
-			newCf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			newCf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			newk8sConfigAccess := newCf.ToRawKubeConfigLoader().ConfigAccess()
 
 			newConfig, err := newk8sConfigAccess.GetStartingConfig()

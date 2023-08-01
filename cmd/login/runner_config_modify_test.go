@@ -30,7 +30,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
@@ -276,7 +276,7 @@ func TestKubeConfigModification(t *testing.T) {
 
 			configPath := path.Join(configDir, "config.yaml")
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(configPath)
+			cf.KubeConfig = ptr.To[string](configPath)
 			if tc.contextOverride != "" {
 				cf.Context = &tc.contextOverride
 			}
