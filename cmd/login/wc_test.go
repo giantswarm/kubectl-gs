@@ -7,11 +7,13 @@ import (
 	"crypto/x509"
 	"fmt"
 	"math/big"
+	"net/url"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	v1 "k8s.io/api/authorization/v1"
 
@@ -43,6 +45,8 @@ func TestWCClientCert(t *testing.T) {
 		name                 string
 		flags                *flag
 		provider             string
+		controlPlaneEndpoint string
+		creationTimestamp    time.Time
 		capi                 bool
 		clustersInNamespaces map[string]string
 		isAdmin              bool
@@ -53,6 +57,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 0",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -64,6 +69,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 1",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "anothercluster",
 				WCCertTTL: "8h",
@@ -76,6 +82,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 2",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:        "cluster",
 				WCCertTTL:     "8h",
@@ -95,6 +102,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 3",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:      "cluster",
 				WCCertTTL:   "8h",
@@ -114,6 +122,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 4",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:         "cluster",
 				WCCertTTL:      "8h",
@@ -126,6 +135,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 5",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization", "anothercluster": "default"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -137,6 +147,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 6",
 			clustersInNamespaces: map[string]string{"cluster": "default"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -156,6 +167,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 7",
 			clustersInNamespaces: map[string]string{"cluster": "default"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:              "cluster",
 				WCCertTTL:           "8h",
@@ -175,6 +187,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 8",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -187,6 +200,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 9",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -198,6 +212,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 10",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -217,6 +232,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 11",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:         "cluster",
 				WCCertTTL:      "8h",
@@ -229,6 +245,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 12",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:         "cluster",
 				WCCertTTL:      "8h",
@@ -238,10 +255,36 @@ func TestWCClientCert(t *testing.T) {
 			capi:     true,
 			isAdmin:  true,
 		},
+		// Logging into WC with empty control plane endpoint
+		{
+			name:                 "case 13",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			flags: &flag{
+				WCName:    "cluster",
+				WCCertTTL: "8h",
+			},
+			provider:    "aws",
+			isAdmin:     true,
+			expectError: clusterAPINotKnownError,
+		},
+		// Logging into newly created WC with empty control plane endpoint
+		{
+			name:                 "case 14",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			creationTimestamp:    time.Now().Add(-15 * time.Minute),
+			flags: &flag{
+				WCName:    "cluster",
+				WCCertTTL: "8h",
+			},
+			provider:    "capa",
+			capi:        true,
+			isAdmin:     true,
+			expectError: clusterAPINotReadyError,
+		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			configDir, err := os.MkdirTemp("", "loginTest")
 			if err != nil {
 				t.Fatal(err)
@@ -285,7 +328,7 @@ func TestWCClientCert(t *testing.T) {
 					}
 				}
 				for wcName, wcNamespace := range tc.clustersInNamespaces {
-					err = client.CtrlClient().Create(ctx, getCluster(wcName, wcNamespace))
+					err = client.CtrlClient().Create(ctx, getCluster(wcName, wcNamespace, tc.controlPlaneEndpoint, tc.creationTimestamp))
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -498,7 +541,8 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster(name string, namespace string) *capi.Cluster {
+func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp time.Time) *capi.Cluster {
+	controlPlaneURL, _ := url.Parse(controlPlaneEndpoint)
 	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
@@ -515,6 +559,20 @@ func getCluster(name string, namespace string) *capi.Cluster {
 			},
 		},
 		Spec: capi.ClusterSpec{},
+	}
+
+	if controlPlaneURL != nil {
+		port, err := strconv.Atoi(controlPlaneURL.Port())
+		if err == nil {
+			cluster.Spec.ControlPlaneEndpoint = capi.APIEndpoint{
+				Host: controlPlaneURL.Host,
+				Port: int32(port),
+			}
+		}
+	}
+
+	if !creationTimestamp.IsZero() {
+		cluster.ObjectMeta.CreationTimestamp = metav1.NewTime(creationTimestamp)
 	}
 
 	return cluster

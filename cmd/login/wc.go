@@ -3,22 +3,26 @@ package login
 import (
 	"context"
 	"fmt"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
 	"net"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
-	"github.com/giantswarm/microerror"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
-
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/release"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
+	"github.com/giantswarm/microerror"
+)
+
+const (
+	newClusterMaxAge = 30 * time.Minute
 )
 
 func (r *runner) getServiceSet(client k8sclient.Interface) (serviceSet, error) {
@@ -129,6 +133,13 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 	// At the moment, the only available login option for WC is client cert
 	contextName, contextExists, err := r.createClusterClientCert(ctx, client, provider)
 	if err != nil {
+		if IsClusterAPINotReady(err) {
+			fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known yet.\n", r.flag.WCName)
+			fmt.Fprintf(r.stdout, "If the cluster has been created recently, please wait for a few minutes and try again.\n")
+		} else if IsClusterAPINotKnown(err) {
+			fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known.\n", r.flag.WCName)
+			fmt.Fprintf(r.stdout, "Since the cluster has been created a while ago, this appears to be a problem with cluster creation. Please contact Giant Swarm's support.\n")
+		}
 		return microerror.Mask(err)
 	}
 
@@ -191,6 +202,13 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 	clientCertResource, secret, err := r.getCredentials(ctx, services.clientCertService, certConfig)
 	if err != nil {
 		return "", false, microerror.Mask(err)
+	}
+
+	if c.Cluster.Spec.ControlPlaneEndpoint.Host == "" || c.Cluster.Spec.ControlPlaneEndpoint.Port == 0 {
+		if c.Cluster.ObjectMeta.CreationTimestamp.Time.Before(time.Now().Add(-newClusterMaxAge)) {
+			return "", false, microerror.Maskf(clusterAPINotKnownError, "API for cluster '%s' is not known", r.flag.WCName)
+		}
+		return "", false, microerror.Maskf(clusterAPINotReadyError, "API for cluster '%s' is not ready yet", r.flag.WCName)
 	}
 
 	clusterServer := fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port)
