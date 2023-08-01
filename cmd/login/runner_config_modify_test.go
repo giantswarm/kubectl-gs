@@ -593,8 +593,13 @@ func createCluster(name string, namespace string) v1beta1.Cluster {
 	return v1beta1.Cluster{
 		TypeMeta:   v1.TypeMeta{Kind: "Cluster", APIVersion: "cluster.x-k8s.io/v1beta1"},
 		ObjectMeta: v1.ObjectMeta{Name: name, Namespace: namespace},
-		Spec:       v1beta1.ClusterSpec{},
-		Status:     v1beta1.ClusterStatus{},
+		Spec: v1beta1.ClusterSpec{
+			ControlPlaneEndpoint: v1beta1.APIEndpoint{
+				Host: "localhost",
+				Port: 6443,
+			},
+		},
+		Status: v1beta1.ClusterStatus{},
 	}
 }
 
