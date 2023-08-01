@@ -3,6 +3,7 @@ module github.com/giantswarm/kubectl-gs/v2
 go 1.19
 
 require (
+	dario.cat/mergo v1.0.0
 	github.com/3th1nk/cidr v0.2.0
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/ProtonMail/gopenpgp/v2 v2.5.2
@@ -23,7 +24,6 @@ require (
 	github.com/giantswarm/release-operator/v4 v4.0.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
-	github.com/imdario/mergo v0.3.13
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
@@ -130,6 +130,7 @@ require (
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
+	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
