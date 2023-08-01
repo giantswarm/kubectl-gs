@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"strings"
 	"text/template"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -13,6 +14,7 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -25,6 +27,8 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/app"
 )
 
 type AWSConfig struct {
@@ -33,18 +37,20 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 
 	// for CAPA
-	Role                string
-	MachinePool         AWSMachinePoolConfig
-	NetworkAZUsageLimit int
-	NetworkVPCCIDR      string
-	ClusterType         string
-	HttpProxy           string
-	HttpsProxy          string
-	NoProxy             string
-	APIMode             string
-	VPCMode             string
-	DNSMode             string
-	TopologyMode        string
+	AWSClusterRoleIdentityName string
+	MachinePool                AWSMachinePoolConfig
+	NetworkAZUsageLimit        int
+	NetworkVPCCIDR             string
+	ClusterType                string
+	HttpProxy                  string
+	HttpsProxy                 string
+	NoProxy                    string
+	APIMode                    string
+	VPCMode                    string
+	DNSMode                    string
+	TopologyMode               string
+	PrefixListID               string
+	TransitGatewayID           string
 }
 
 type AWSMachinePoolConfig struct {
@@ -55,6 +61,10 @@ type AWSMachinePoolConfig struct {
 	InstanceType     string
 	RootVolumeSizeGB int
 	CustomNodeLabels []string
+}
+
+type AzureConfig struct {
+	SubscriptionID string
 }
 
 type GCPConfig struct {
@@ -137,6 +147,7 @@ type ClusterConfig struct {
 
 	App       AppConfig
 	AWS       AWSConfig
+	Azure     AzureConfig
 	GCP       GCPConfig
 	OpenStack OpenStackConfig
 }
@@ -319,4 +330,34 @@ func defaultTo(value string, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// validateYAML validates the given yaml against the cluster specific app values schema
+func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclient.Interface, clusterApp applicationv1alpha1.App, yaml map[string]interface{}) error {
+
+	serviceConfig := app.Config{
+		Client: client,
+		Logger: logger,
+	}
+	service, err := app.New(serviceConfig)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, resultJsonValidate, err := service.ValidateApp(ctx, &clusterApp, "", yaml)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	resultErrors := resultJsonValidate.Errors()
+	var validationErrors []string
+	if len(resultErrors) > 0 {
+		for _, resultError := range resultErrors {
+			validationErrors = append(validationErrors, fmt.Errorf("%s", resultError.Description()).Error())
+		}
+		// return all validation errors
+		return microerror.Mask(fmt.Errorf(strings.Join(validationErrors, "; ")))
+	}
+
+	return nil
 }

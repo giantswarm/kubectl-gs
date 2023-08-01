@@ -15,11 +15,11 @@ import (
 	"sync"
 	"time"
 
+	"dario.cat/mergo"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
-	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,6 +71,8 @@ type credentialConfig struct {
 	clusterServer string
 	loginOptions  LoginOptions
 	filePath      string
+	proxy         bool
+	proxyPort     int
 }
 
 func generateClientCertUID() string {
@@ -306,6 +308,10 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		cluster.Server = c.clusterServer
 		cluster.CertificateAuthority = ""
 		cluster.CertificateAuthorityData = c.certCA
+
+		if c.proxy {
+			cluster.ProxyURL = fmt.Sprintf("socks5://localhost:%d", c.proxyPort)
+		}
 
 		// Add cluster configuration to config.
 		config.Clusters[clusterName] = cluster

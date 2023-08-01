@@ -18,16 +18,16 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/square/go-jose.v2"
+	"k8s.io/utils/ptr"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/giantswarm/microerror"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"gopkg.in/square/go-jose.v2"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
@@ -205,7 +205,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("gs-anothercodename"),
+			contextOverride: *ptr.To[string]("gs-anothercodename"),
 		},
 		// Logging in without argument using context flag but context does not exist
 		{
@@ -214,7 +214,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("gs-anothercodename"),
+			contextOverride: *ptr.To[string]("gs-anothercodename"),
 			expectError:     contextDoesNotExistError,
 		},
 		// Logging in with argument using context flag
@@ -225,7 +225,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("gs-anothercodename"),
+			contextOverride: *ptr.To[string]("gs-anothercodename"),
 		},
 		// Existing WC context
 		{
@@ -303,7 +303,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("arbitraryname"),
+			contextOverride: *ptr.To[string]("arbitraryname"),
 		},
 	}
 
@@ -314,7 +314,7 @@ func TestLogin(t *testing.T) {
 				t.Fatal(err)
 			}
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			if tc.contextOverride != "" {
 				cf.Context = &tc.contextOverride
 			}
@@ -418,7 +418,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				t.Fatal(err)
 			}
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained

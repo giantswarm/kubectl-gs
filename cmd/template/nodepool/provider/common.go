@@ -1,14 +1,13 @@
 package provider
 
 import (
-	capiexp "github.com/giantswarm/apiextensions/v6/pkg/apis/capiexp/v1alpha3"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 )
 
 type NodePoolCRsConfig struct {
@@ -43,7 +42,7 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 	mp := &capiexp.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
-			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "cluster.x-k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      config.NodePoolName,
@@ -64,11 +63,11 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 			ClusterName:    config.ClusterName,
 			Replicas:       toInt32Ptr(int32(config.NodesMin)),
 			FailureDomains: config.AvailabilityZones,
-			Template: clusterv1.MachineTemplateSpec{
-				Spec: clusterv1.MachineSpec{
+			Template: capi.MachineTemplateSpec{
+				Spec: capi.MachineSpec{
 					ClusterName:       config.ClusterName,
 					InfrastructureRef: *infrastructureRef,
-					Bootstrap: clusterv1.Bootstrap{
+					Bootstrap: capi.Bootstrap{
 						ConfigRef: bootstrapConfigRef,
 					},
 				},

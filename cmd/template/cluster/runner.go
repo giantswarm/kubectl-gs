@@ -53,11 +53,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
-	config, err := r.getClusterConfig()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	output := r.stdout
 	if r.flag.Output != "" {
 		outFile, err := os.Create(r.flag.Output)
@@ -67,6 +62,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 
 		defer outFile.Close()
 		output = outFile
+	}
+
+	config, err := r.getClusterConfig()
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	switch r.flag.Provider {
@@ -85,6 +85,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	case key.ProviderCAPZ:
+		err = provider.WriteCAPZTemplate(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	case key.ProviderGCP:
 		err = provider.WriteGCPTemplate(ctx, client, output, config)
 		if err != nil {
@@ -100,6 +105,8 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	default:
+		return microerror.Mask(templateFlagNotImplemented)
 	}
 
 	return nil
@@ -121,6 +128,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 
 		App:       r.flag.App,
 		AWS:       r.flag.AWS,
+		Azure:     r.flag.Azure,
 		GCP:       r.flag.GCP,
 		OIDC:      r.flag.OIDC,
 		OpenStack: r.flag.OpenStack,

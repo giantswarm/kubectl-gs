@@ -30,7 +30,7 @@ Without any flags it provides a quick overview of all apps installed across
 all clusters. Use flags to narrow down which apps are being validated, or to
 get more detailed information about any validation errors.
 
-This command requires a helm 3 binary called 'helm' in your $PATH.
+This command requires a Helm 3 binary called 'helm' in your $PATH.
 
 Output columns:
 
@@ -49,29 +49,29 @@ Output columns:
   # Narrow down by namespace to validate apps on a specific workload cluster
 
     kubectl gs validate apps \
-      -n oby63
+      --namespace oby63
 
   # Get a detailed validation report on a specific app on a specific cluster
 
-    kubectl gs validate apps \
-      nginx-ingress-controller
-      -n oby63 \
-      -o report
+    kubectl gs validate app \
+      --namespace oby63 \
+      ingress-nginx \
+      --output report
 
   # Get a detailed validation report of a specific app across all workload clusters
   # the "app" label contains the name of the app in the Catalog, so we can use --selector for that.
 
     kubectl gs validate apps \
-      --selector=app=nginx-ingress-controller-app \
-      -o report
+      --selector app.kubernetes.io/name=ingress-nginx \
+      --output report
 
   # Validate the values of an app against a local values schema file. Not using the label
   # selector in this case, because we want a specific instance of an app, so the positional
   # argument can be used to fetch an app by its name.
 
-    kubectl gs validate apps
-      my-nginx-ingress-controller \
-      -n oby63 \
+    kubectl gs validate app
+      --namespace oby63 \
+      ingress-nginx \
       --values-schema-file=values.schema.json`
 )
 

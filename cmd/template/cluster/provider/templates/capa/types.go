@@ -1,16 +1,17 @@
 package capa
 
 type ClusterConfig struct {
-	ClusterDescription string                  `json:"clusterDescription,omitempty"`
-	ClusterName        string                  `json:"clusterName,omitempty"`
-	Organization       string                  `json:"organization,omitempty"`
-	AWS                *AWS                    `json:"aws,omitempty"`
-	Network            *Network                `json:"network,omitempty"`
-	Bastion            *Bastion                `json:"bastion,omitempty"`
-	ControlPlane       *ControlPlane           `json:"controlPlane,omitempty"`
-	MachinePools       *map[string]MachinePool `json:"machinePools,omitempty"`
-	FlatcarAWSAccount  string                  `json:"flatcarAWSAccount,omitempty"`
-	Proxy              *Proxy                  `json:"proxy,omitempty"`
+	Connectivity     *Connectivity           `json:"connectivity,omitempty"`
+	ControlPlane     *ControlPlane           `json:"controlPlane,omitempty"`
+	Metadata         *Metadata               `json:"metadata,omitempty"`
+	NodePools        *map[string]MachinePool `json:"nodePools,omitempty"`
+	ProviderSpecific *ProviderSpecific       `json:"providerSpecific,omitempty"`
+}
+
+type Metadata struct {
+	Name         string `json:"name,omitempty"`
+	Description  string `json:"description,omitempty"`
+	Organization string `json:"organization,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -18,19 +19,36 @@ type DefaultAppsConfig struct {
 	Organization string `json:"organization,omitempty"`
 }
 
-type AWS struct {
-	Region string `json:"region,omitempty"`
-	Role   string `json:"awsClusterRole,omitempty"`
+type ProviderSpecific struct {
+	AMI                        string `json:"ami,omitempty"`
+	AWSClusterRoleIdentityName string `json:"awsClusterRoleIdentityName,omitempty"`
+	FlatcarAWSAccount          string `json:"flatcarAwsAccount,omitempty"`
+	Region                     string `json:"region,omitempty"`
+}
+
+type Connectivity struct {
+	AvailabilityZoneUsageLimit int       `json:"availabilityZoneUsageLimit,omitempty"`
+	Bastion                    *Bastion  `json:"bastion,omitempty"`
+	DNS                        *DNS      `json:"dns,omitempty"`
+	Network                    *Network  `json:"network,omitempty"`
+	Proxy                      *Proxy    `json:"proxy,omitempty"`
+	Subnets                    []Subnet  `json:"subnets,omitempty"`
+	Topology                   *Topology `json:"topology,omitempty"`
+	VPCMode                    string    `json:"vpcMode,omitempty"`
 }
 
 type Network struct {
-	AvailabilityZoneUsageLimit int      `json:"availabilityZoneUsageLimit,omitempty"`
-	VPCCIDR                    string   `json:"vpcCIDR,omitempty"`
-	TopologyMode               string   `json:"topologyMode,omitempty"`
-	VPCMode                    string   `json:"vpcMode,omitempty"`
-	APIMode                    string   `json:"apiMode,omitempty"`
-	DNSMode                    string   `json:"dnsMode,omitempty"`
-	Subnets                    []Subnet `json:"subnets,omitempty"`
+	VPCCIDR string `json:"vpcCidr,omitempty"`
+}
+
+type Topology struct {
+	Mode             string `json:"mode,omitempty"`
+	PrefixListID     string `json:"prefixListId,omitempty"`
+	TransitGatewayID string `json:"transitGatewayId,omitempty"`
+}
+
+type DNS struct {
+	Mode string `json:"mode,omitempty"`
 }
 
 type Subnet struct {
@@ -44,11 +62,13 @@ type CIDRBlock struct {
 }
 
 type Bastion struct {
+	Enabled      bool   `json:"enabled,omitempty"`
 	InstanceType string `json:"instanceType,omitempty"`
 	Replicas     int    `json:"replicas,omitempty"`
 }
 
 type ControlPlane struct {
+	APIMode                string   `json:"apiMode,omitempty"`
 	InstanceType           string   `json:"instanceType,omitempty"`
 	Replicas               int      `json:"replicas,omitempty"`
 	RootVolumeSizeGB       int      `json:"rootVolumeSizeGB,omitempty"`
@@ -70,7 +90,7 @@ type MachinePool struct {
 
 type Proxy struct {
 	Enabled    bool   `json:"enabled,omitempty"`
-	HttpsProxy string `json:"https_proxy,omitempty"`
-	HttpProxy  string `json:"http_proxy,omitempty"`
-	NoProxy    string `json:"no_proxy,omitempty"`
+	HttpsProxy string `json:"httpsProxy,omitempty"`
+	HttpProxy  string `json:"httpProxy,omitempty"`
+	NoProxy    string `json:"noProxy,omitempty"`
 }

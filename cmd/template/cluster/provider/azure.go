@@ -12,7 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/reference"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,23 +27,9 @@ const (
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
-
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+	err := WriteGSAzureTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		err = WriteCAPZTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else {
-		err = WriteGSAzureTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil
@@ -175,7 +161,7 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			OSDisk: capz.OSDisk{
 				OSType:      "Linux",
 				CachingType: "ReadWrite",
-				DiskSizeGB:  pointer.Int32(50),
+				DiskSizeGB:  ptr.To[int32](50),
 				ManagedDisk: &capz.ManagedDiskParameters{
 					StorageAccountType: "Premium_LRS",
 				},

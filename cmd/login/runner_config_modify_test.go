@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"dario.cat/mergo"
 	"github.com/giantswarm/micrologger"
 	securityv1alpha "github.com/giantswarm/organization-operator/api/v1alpha1"
-	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -30,7 +30,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
@@ -276,7 +276,7 @@ func TestKubeConfigModification(t *testing.T) {
 
 			configPath := path.Join(configDir, "config.yaml")
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(configPath)
+			cf.KubeConfig = ptr.To[string](configPath)
 			if tc.contextOverride != "" {
 				cf.Context = &tc.contextOverride
 			}
@@ -593,8 +593,13 @@ func createCluster(name string, namespace string) v1beta1.Cluster {
 	return v1beta1.Cluster{
 		TypeMeta:   v1.TypeMeta{Kind: "Cluster", APIVersion: "cluster.x-k8s.io/v1beta1"},
 		ObjectMeta: v1.ObjectMeta{Name: name, Namespace: namespace},
-		Spec:       v1beta1.ClusterSpec{},
-		Status:     v1beta1.ClusterStatus{},
+		Spec: v1beta1.ClusterSpec{
+			ControlPlaneEndpoint: v1beta1.APIEndpoint{
+				Host: "localhost",
+				Port: 6443,
+			},
+		},
+		Status: v1beta1.ClusterStatus{},
 	}
 }
 

@@ -7,6 +7,81 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Graceful failure of the `login` command in case workload cluster API is not known
+
+## [2.39.0] - 2023-06-22
+
+### Breaking changes
+
+- Add minimal support for templating CAPZ clusters by command line parameters. This removes `--cluster-config` and `--default-app-config` parameters which required handcrafted YAML input. It leaves one consistent templating option for CAPI products (`kubectl gs template cluster --provider ... --other-params`).
+
+## [2.38.0] - 2023-06-14
+
+### Changed
+
+- App: Rename `nginx-ingress-controller-app` to `ingress-nginx`. ([#1077](https://github.com/giantswarm/kubectl-gs/pull/1077))
+- vSphere: Fix templating. ([#1079](https://github.com/giantswarm/kubectl-gs/pull/1079))
+
+### Fixed
+
+- Sanitize file passed as inputs data for config maps by stripping spaces from the right end of the lines.
+  - This makes the output to use proper multi-line strings for the embedded YAML content by working around a bug in `sig.k8s.io/yam@v1.3.0`
+
+## [2.37.0] - 2023-05-17
+
+### Changed
+
+- Use non-exp apiVersion for azure machine pool types in `template nodepool`.
+
+## [2.36.1] - 2023-05-17
+
+### Fixed
+
+- Setting `spec.config.configMap` in `app/<cluster-name>-default-apps` for `CAPZ` clusters.
+
+## [2.36.0] - 2023-05-04
+
+### Changed
+
+- Add support for `--proxy` and `--proxy-port` flags to `login cmd` to enable `proxy-url: socks5://localhost:9000` in the cluster section of the configuration added to kubeconfig
+  - This is only supported for `clientcert` Workload Clusters
+
+## [2.35.0] - 2023-04-17
+
+### Changed
+
+- Stop using old `v1alpha3` version when using CAPI CRDs.
+
+## [2.34.1] - 2023-03-30
+
+### Fixed
+
+- `kubectl gs template cluster` now by default creates a node pool with the name `nodepool0`, instead of `machine-pool0`, as the latter is no longer valid according to the cluster-aws schema as of v0.24.0.
+
+## [2.34.0] - 2023-03-23
+
+### Added
+
+- `cluster template` supports a generic way to template `CAPI` based clusters where all the input parameters are given as `values.yaml` from the corresponding `cluster` and `default-apps` chart.
+- CAPZ: removed unmaintained `CAPZ` implementation and switched to the generic templating implementation.
+
+### Changed
+
+- `kubectl gs template cluster` for Cluster API provider AWS has been adapted to work with the values schema of cluster-aws v0.28.0.
+
+## [2.33.0] - 2023-03-08
+
+### Added
+
+- Add workload cluster login support for `CAPZ` based clusters
+- CAPA: Add hidden flags `--aws-prefix-list-id` and `--aws-transit-gateway-id` for private clusters
+
+### Changed
+
+- CAPA: Renamed hidden parameter `--role` to `--aws-cluster-role-identity-name` and adapted manifest output to the new name `awsClusterRoleIdentityName` (see [cluster-aws](https://github.com/giantswarm/cluster-aws/pull/192) change)
+
 ## [2.32.0] - 2023-02-02
 
 As part of our automatic upgrades journey, we have learnt that cluster chart should structure in such a way that allows overwriting all sections in different levels
@@ -1199,7 +1274,16 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.39.0...HEAD
+[2.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.38.0...v2.39.0
+[2.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...v2.38.0
+[2.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...v2.37.0
+[2.36.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...v2.36.1
+[2.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...v2.36.0
+[2.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...v2.35.0
+[2.34.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...v2.34.1
+[2.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.33.0...v2.34.0
+[2.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...v2.32.0
 [2.31.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...v2.31.2
 [2.31.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...v2.31.1

@@ -9,6 +9,7 @@ import (
 
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capz"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/base"
@@ -53,7 +54,9 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	config := common.StructureConfig{
-		Provider: r.flag.Provider,
+		Provider:            r.flag.Provider,
+		Region:              r.flag.Region,
+		AzureSubscriptionID: r.flag.AzureSubscriptionID,
 	}
 
 	var err error
@@ -93,6 +96,8 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 	switch config.Provider {
 	case key.ProviderCAPA:
 		return generateCapAClusterBaseTemplates(config)
+	case key.ProviderCAPZ:
+		return generateCapZClusterBaseTemplates(config)
 	case key.ProviderGCP:
 		return generateCapGClusterBaseTemplates(config)
 	case key.ProviderOpenStack:
@@ -158,7 +163,7 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		Organization: "${organization}",
 		AWS: providers.AWSConfig{
 			MachinePool: providers.AWSMachinePoolConfig{
-				Name: "machine-pool0",
+				Name: "nodepool0",
 			},
 		},
 	})
@@ -264,6 +269,52 @@ func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	}
 
 	defaultAppsValues, err := openstack.GenerateDefaultAppsValues(openstack.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterBaseTemplates.ClusterAppCr = clusterAppCr
+	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsAppCr = defaultAppsAppCr
+	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
+
+	return clusterBaseTemplates, nil
+}
+
+func generateCapZClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
+	clusterBaseTemplates := common.ClusterBaseTemplates{}
+
+	clusterAppCr, err := generateClusterAppCrTemplate("cluster-azure")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterConfig := providers.BuildCapzClusterConfig(providers.ClusterConfig{
+		Name:         "${cluster_name}",
+		Organization: "${organization}",
+		Region:       structureConfig.Region,
+		Azure: providers.AzureConfig{
+			SubscriptionID: structureConfig.AzureSubscriptionID,
+		},
+	})
+	clusterValues, err := capz.GenerateClusterValues(clusterConfig)
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsAppCr, err := generateDefaultAppsAppCrTemplate("default-apps-azure")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsValues, err := capz.GenerateDefaultAppsValues(capz.DefaultAppsConfig{
 		ClusterName:  "${cluster_name}",
 		Organization: "${organization}",
 	})

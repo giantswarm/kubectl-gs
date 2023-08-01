@@ -5,49 +5,16 @@ data:
     connectivity:
       bastion:
         enabled: true
-      dns:
-        mode: private
-      network:
-        vpcCidr: 10.123.0.0/16
-      proxy:
-        enabled: true
-        httpProxy: http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
-        httpsProxy: https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
-        noProxy: test-domain.com
-      subnets:
-      - cidrBlocks:
-        - availabilityZone: a
-          cidr: 10.123.0.0/18
-        - availabilityZone: b
-          cidr: 10.123.64.0/18
-        isPublic: false
-      topology:
-        mode: UserManaged
-        prefixListId: pl-123456789abc
-        transitGatewayId: tgw-987987987987def
-      vpcMode: private
     controlPlane:
-      apiMode: public
-      instanceType: control-plane-instance-type
+      instanceType: B2s
       replicas: 3
     metadata:
       description: just a test cluster
       name: test1
       organization: test
-    nodePools:
-      worker1:
-        availabilityZones:
-        - eu-west-1a
-        - eu-west-1b
-        customNodeLabels:
-        - label=value
-        instanceType: big-one
-        maxSize: 5
-        minSize: 2
-        rootVolumeSizeGB: 200
     providerSpecific:
-      awsClusterRoleIdentityName: other-identity
-      region: the-region
+      location: northeurope
+      subscriptionId: 12345678-ebb8-4b1f-8f96-d950d9e7aaaa
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -79,7 +46,7 @@ spec:
     secret:
       name: ""
       namespace: ""
-  name: cluster-aws
+  name: cluster-azure
   namespace: org-test
   userConfig:
     configMap:
@@ -125,7 +92,7 @@ spec:
     secret:
       name: ""
       namespace: ""
-  name: default-apps-aws
+  name: default-apps-azure
   namespace: org-test
   userConfig:
     configMap:

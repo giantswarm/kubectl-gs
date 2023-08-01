@@ -26,6 +26,10 @@ spec:
       - echo "{{ `{{ ds.meta_data.hostname }}` }}" >/etc/hostname
       users:
       - name: capv
+        {{ with .SSHPublicKeys }}
         sshAuthorizedKeys:
-        - "{{ .SSHPublicKey }}"
+        {{ range . }}
+        - "{{ . }}"
+        {{ end }}
+        {{ end }}
         sudo: ALL=(ALL) NOPASSWD:ALL

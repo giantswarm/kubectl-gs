@@ -10,7 +10,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 )
@@ -293,7 +293,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 
 func readConfigFile(filePath string) clientcmd.ConfigAccess {
 	cf := genericclioptions.NewConfigFlags(true)
-	cf.KubeConfig = pointer.String(filePath)
+	cf.KubeConfig = ptr.To[string](filePath)
 	commonConfig := commonconfig.New(cf)
 	return commonConfig.GetConfigAccess()
 }

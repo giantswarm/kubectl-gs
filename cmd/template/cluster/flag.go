@@ -25,17 +25,19 @@ const (
 	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
-	flagAWSRole             = "role"
-	flagNetworkAZUsageLimit = "az-usage-limit"
-	flagNetworkVPCCidr      = "vpc-cidr"
-	flagAWSClusterType      = "cluster-type"
-	flagAWSHttpsProxy       = "https-proxy"
-	flagAWSHttpProxy        = "http-proxy"
-	flagAWSNoProxy          = "no-proxy"
-	flagAWSAPIMode          = "api-mode"
-	flagAWSDNSMode          = "dns-mode"
-	flagAWSVPCMode          = "vpc-mode"
-	flagAWSTopologyMode     = "topology-mode"
+	flagAWSClusterRoleIdentityName = "aws-cluster-role-identity-name"
+	flagNetworkAZUsageLimit        = "az-usage-limit"
+	flagNetworkVPCCidr             = "vpc-cidr"
+	flagAWSClusterType             = "cluster-type"
+	flagAWSHttpsProxy              = "https-proxy"
+	flagAWSHttpProxy               = "http-proxy"
+	flagAWSNoProxy                 = "no-proxy"
+	flagAWSAPIMode                 = "api-mode"
+	flagAWSDNSMode                 = "dns-mode"
+	flagAWSVPCMode                 = "vpc-mode"
+	flagAWSTopologyMode            = "topology-mode"
+	flagAWSPrefixListID            = "aws-prefix-list-id"
+	flagAWSTransitGatewayID        = "aws-transit-gateway-id"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -44,6 +46,9 @@ const (
 	flagAWSMachinePoolInstanceType     = "machine-pool-instance-type"
 	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
+
+	// Azure only
+	flagAzureSubscriptionID = "azure-subscription-id"
 
 	// GCP only.
 	flagGCPProject                               = "gcp-project"
@@ -131,6 +136,7 @@ type flag struct {
 
 	// Provider-specific
 	AWS       provider.AWSConfig
+	Azure     provider.AzureConfig
 	GCP       provider.GCPConfig
 	OpenStack provider.OpenStackConfig
 	App       provider.AppConfig
@@ -144,7 +150,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
-	cmd.Flags().StringVar(&f.AWS.Role, flagAWSRole, "", "Name of the AWSClusterRole that will be used for cluster creation.")
+	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
@@ -157,16 +163,21 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.VPCMode, flagAWSVPCMode, "", "VPC mode of the network (public,private)")
 	cmd.Flags().StringVar(&f.AWS.DNSMode, flagAWSDNSMode, "", "DNS  mode of the network (public,private)")
 	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
+	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
+	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	// aws machine pool
-	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "machine-pool0", "AWS Machine pool name")
+	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "nodepool0", "AWS Machine pool name")
 	cmd.Flags().StringVar(&f.AWS.MachinePool.InstanceType, flagAWSMachinePoolInstanceType, "m5.xlarge", "AWS Machine pool instance type")
 	cmd.Flags().IntVar(&f.AWS.MachinePool.MinSize, flagAWSMachinePoolMinSize, 3, "AWS Machine pool min size")
 	cmd.Flags().IntVar(&f.AWS.MachinePool.MaxSize, flagAWSMachinePoolMaxSize, 10, "AWS Machine pool max size")
 	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 300, "AWS Machine pool disk size")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
+
+	// Azure only
+	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
 
 	// GCP only.
 	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "Google Cloud Platform project name")
@@ -210,10 +221,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 0, "Default worker node pool replicas (OpenStack only).")
 
 	// App-based clusters only.
-	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app. (OpenStack only).")
-	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created. (OpenStack only).")
+	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
+	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created.")
+	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app.")
+	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created.")
 
 	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
 	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
@@ -236,7 +247,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
 
 	_ = cmd.Flags().MarkHidden(flagRegion)
-	_ = cmd.Flags().MarkHidden(flagAWSRole)
+	_ = cmd.Flags().MarkHidden(flagAWSClusterRoleIdentityName)
 	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
 	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
 	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
@@ -257,6 +268,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSVPCMode)
 	_ = cmd.Flags().MarkHidden(flagAWSDNSMode)
 	_ = cmd.Flags().MarkHidden(flagAWSTopologyMode)
+	_ = cmd.Flags().MarkHidden(flagAWSPrefixListID)
+	_ = cmd.Flags().MarkHidden(flagAWSTransitGatewayID)
 
 	_ = cmd.Flags().MarkHidden(flagGCPProject)
 	_ = cmd.Flags().MarkHidden(flagGCPFailureDomains)
@@ -288,7 +301,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, label.ServicePriorityHighest, fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS region where cluster will be created")
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure/GCP region where cluster will be created")
 	// bastion
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
 	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
@@ -313,6 +326,7 @@ func (f *flag) Validate() error {
 		key.ProviderAWS,
 		key.ProviderAzure,
 		key.ProviderCAPA,
+		key.ProviderCAPZ,
 		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,
@@ -464,23 +478,23 @@ func (f *flag) Validate() error {
 			}
 		}
 
-	}
-
-	if f.Release == "" {
-		if key.IsPureCAPIProvider(f.Provider) {
-			// skip release validation
-		} else {
-			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+		if f.Release == "" {
+			if key.IsPureCAPIProvider(f.Provider) {
+				// skip release validation
+			} else {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+			}
 		}
-	}
 
-	_, err = labels.Parse(f.Label)
-	if err != nil {
-		return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
-	}
+		_, err = labels.Parse(f.Label)
+		if err != nil {
+			return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
+		}
 
-	if !isValidServicePriority(f.ServicePriority) {
-		return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
+		if !isValidServicePriority(f.ServicePriority) {
+			return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
+		}
+
 	}
 
 	return nil

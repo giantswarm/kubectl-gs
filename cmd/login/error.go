@@ -226,3 +226,21 @@ var insufficientPermissionsError = &microerror.Error{
 func IsInsufficientPermissions(err error) bool {
 	return microerror.Cause(err) == insufficientPermissionsError
 }
+
+var clusterAPINotReadyError = &microerror.Error{
+	Kind: "clusterAPINotReadyError",
+}
+
+// IsClusterAPINotReady asserts clusterAPINotReadyError.
+func IsClusterAPINotReady(err error) bool {
+	return microerror.Cause(err) == clusterAPINotReadyError
+}
+
+var clusterAPINotKnownError = &microerror.Error{
+	Kind: "clusterAPINotKnownError",
+}
+
+// IsClusterAPINotKnown asserts clusterAPINotKnownError.
+func IsClusterAPINotKnown(err error) bool {
+	return microerror.Cause(err) == clusterAPINotKnownError
+}
