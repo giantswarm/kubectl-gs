@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"k8s.io/utils/ptr"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -19,9 +18,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
+	"k8s.io/utils/ptr"
+
 	"github.com/giantswarm/microerror"
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/afero"
@@ -30,6 +28,10 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
 )
 
 func TestLogin(t *testing.T) {
