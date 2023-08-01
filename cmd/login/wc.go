@@ -3,12 +3,13 @@ package login
 import (
 	"context"
 	"fmt"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
 	"net"
 	"regexp"
 	"strings"
 	"time"
+
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
