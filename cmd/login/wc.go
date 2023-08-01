@@ -13,13 +13,14 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/microerror"
+
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/clientcert"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/release"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
-	"github.com/giantswarm/microerror"
 )
 
 const (
