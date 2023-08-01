@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"dario.cat/mergo"
 	"github.com/giantswarm/micrologger"
 	securityv1alpha "github.com/giantswarm/organization-operator/api/v1alpha1"
-	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	authorizationv1 "k8s.io/api/authorization/v1"
