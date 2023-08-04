@@ -161,11 +161,11 @@ require (
 	go.opentelemetry.io/otel v1.4.0 // indirect
 	go.opentelemetry.io/otel/trace v1.4.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.13.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/term v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.114.0 // indirect
@@ -201,9 +201,9 @@ replace (
 	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v0.9.2
 	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
-	// CVE-2022-41717
-	golang.org/x/net => golang.org/x/net v0.7.0
-	golang.org/x/text => golang.org/x/text v0.7.0
+	// CVE-2023-3978
+	golang.org/x/net => golang.org/x/net v0.13.0
+	golang.org/x/text => golang.org/x/text v0.11.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
