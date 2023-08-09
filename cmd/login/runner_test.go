@@ -13,7 +13,6 @@ import (
 	"net/url"
 	"os"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -307,8 +306,8 @@ func TestLogin(t *testing.T) {
 		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			configDir, err := os.MkdirTemp("", "loginTest")
 			if err != nil {
 				t.Fatal(err)
@@ -356,7 +355,8 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		token       string
 		skipInCI    bool
 
-		expectError *microerror.Error
+		expectError    *microerror.Error
+		expectedOutput string
 	}{
 		// empty start config
 		{
@@ -398,14 +398,27 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			flags: &flag{
 				ClusterAdmin:       false,
 				CallbackServerPort: 8080,
+				LoginTimeout:       60 * time.Second,
 			},
 			startConfig: &clientcmdapi.Config{},
 			skipInCI:    true,
 		},
+		// Fail in case the OIDC flow does not finish within time period specified in the flag
+		{
+			name: "case 5",
+			flags: &flag{
+				ClusterAdmin:       false,
+				CallbackServerPort: 8080,
+				LoginTimeout:       1 * time.Millisecond,
+			},
+			startConfig:    &clientcmdapi.Config{},
+			expectError:    authResponseTimedOutError,
+			expectedOutput: "\nYour authentication flow timed out after 1ms. Please execute the same command again.\nYou can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=0s.\n",
+		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			if _, ok := os.LookupEnv("CI"); ok {
 				if tc.skipInCI {
 					t.Skip()
@@ -423,11 +436,14 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
+
+			out := new(bytes.Buffer)
+
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				flag:         tc.flags,
-				stdout:       new(bytes.Buffer),
-				stderr:       new(bytes.Buffer),
+				stdout:       out,
+				stderr:       out,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
 			k8sConfigAccess := r.commonConfig.GetConfigAccess()
@@ -515,6 +531,12 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				}
 			}
 
+			if tc.expectedOutput != "" {
+				outStr := out.String()
+				if !strings.Contains(outStr, tc.expectedOutput) {
+					t.Fatalf("output does not contain expected string:\nvalue: %s\nexpected string: %s\n", outStr, tc.expectedOutput)
+				}
+			}
 		})
 	}
 }
