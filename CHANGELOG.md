@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add `--login-timeout` flag to control the time period of OIDC login timeout
+- Add experimental support for templating `cluster-eks` with provider `eks`.
 
 ### Changed
 

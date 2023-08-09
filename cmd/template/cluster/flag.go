@@ -22,7 +22,6 @@ const (
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
-	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	flagAWSClusterRoleIdentityName = "aws-cluster-role-identity-name"
@@ -153,7 +152,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
-	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
@@ -309,9 +307,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
 	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
 
-	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
-	_ = cmd.Flags().MarkHidden(flagAWSEKS)
-
 	f.print = genericclioptions.NewPrintFlags("")
 	f.print.OutputFormat = nil
 
@@ -327,6 +322,7 @@ func (f *flag) Validate() error {
 		key.ProviderAzure,
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
+		key.ProviderEKS,
 		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,

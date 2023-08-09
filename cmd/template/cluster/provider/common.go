@@ -32,7 +32,6 @@ import (
 )
 
 type AWSConfig struct {
-	EKS                bool
 	ExternalSNAT       bool
 	ControlPlaneSubnet string
 
