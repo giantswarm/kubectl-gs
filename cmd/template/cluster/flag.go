@@ -22,7 +22,6 @@ const (
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
-	flagAWSEKS                = "aws-eks"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	flagAWSClusterRoleIdentityName = "aws-cluster-role-identity-name"
@@ -307,9 +306,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
 	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
-
-	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
-	_ = cmd.Flags().MarkHidden(flagAWSEKS)
 
 	f.print = genericclioptions.NewPrintFlags("")
 	f.print.OutputFormat = nil
