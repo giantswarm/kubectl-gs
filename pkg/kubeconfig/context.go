@@ -9,6 +9,7 @@ import (
 const (
 	ContextPrefix    = "gs-"
 	ClientCertSuffix = "-clientcert"
+	AWSIAMSuffix     = "-awsiam"
 )
 
 type ContextType int
@@ -33,6 +34,10 @@ func GenerateWCKubeContextName(mcKubeContextName string, wcName string) string {
 
 func GenerateWCClientCertKubeContextName(mcKubeContextName string, wcName string) string {
 	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, ClientCertSuffix)
+}
+
+func GenerateWCAWSIAMKubeContextName(mcKubeContextName string, wcName string) string {
+	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, AWSIAMSuffix)
 }
 
 // IsKubeContext checks whether the name provided,

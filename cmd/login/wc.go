@@ -10,6 +10,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -119,7 +120,7 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 	return key.CertOperatorVersionKubeconfig, nil
 }
 
-func (r *runner) handleWCClientCert(ctx context.Context) error {
+func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 	provider, err := r.commonConfig.GetProviderFromConfig(ctx, "")
 	if err != nil {
 		return microerror.Mask(err)
@@ -132,8 +133,7 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 	}
-	// At the moment, the only available login option for WC is client cert
-	contextName, contextExists, err := r.createClusterClientCert(ctx, client, provider)
+	contextName, contextExists, err := r.createClusterKubeconfig(ctx, client, provider)
 	if err != nil {
 		if IsClusterAPINotReady(err) {
 			fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known yet.\n", r.flag.WCName)
@@ -163,7 +163,7 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 	return nil
 }
 
-func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
+func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
 	err = validateProvider(provider)
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -179,6 +179,24 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
+	// for EKS the kubeconfig cannot be client-cert as it uses aws authentication
+	// for the rest of WC cluster client-cert kubeconfig will be generated
+	if isEKS(c.Cluster) {
+		contextName, contextExists, err = r.createEKSKubeconfig(ctx, client, c)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	} else {
+		contextName, contextExists, err = r.createCertKubeconfig(ctx, c, services, provider)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	}
+
+	return contextName, contextExists, nil
+}
+
+func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, services serviceSet, provider string) (string, bool, error) {
 	certOperatorVersion, err := r.getCertOperatorVersion(c, provider, services, ctx)
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -233,7 +251,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		proxyPort:     r.flag.ProxyPort,
 	}
 
-	contextName, contextExists, err = r.storeWCClientCertCredentials(credentialConfig)
+	contextName, contextExists, err := r.storeWCClientCertCredentials(credentialConfig)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -248,6 +266,25 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 	}
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
+
+	return contextName, contextExists, nil
+}
+
+func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.Interface, c *cluster.Cluster) (string, bool, error) {
+
+	eksClusterConfig := eksClusterConfig{
+		clusterName:          c.Cluster.Name,
+		controlPlaneEndpoint: c.Cluster.Spec.ControlPlaneEndpoint.Host,
+	}
+
+	contextName, contextExists, err := r.storeAWSIAMCredentials(eksClusterConfig)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	fmt.Fprint(r.stdout, color.GreenString("\nCreated aws IAM based kubeconfig for EKS workload cluster '%s'.\n", r.flag.WCName))
+	fmt.Fprint(r.stdout, color.GreenString("\nRemember to have valid and active AWS credentials that have 'eks:GetToken' permissions on the EKS cluster resource..\n", r.flag.WCName))
+
 	return contextName, contextExists, nil
 }
 
@@ -296,6 +333,15 @@ func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool,
 	return storeWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 }
 
+func (r *runner) storeAWSIAMCredentials(c eksClusterConfig) (string, bool, error) {
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
+	if r.loginOptions.selfContained && c.filePath != "" {
+		fmt.Printf("selfcontained aws iam kubeconfig is not implemeneted yet\n")
+		return "", false, nil
+	}
+	return storeWCAWSIAMKubeconfig(k8sConfigAccess, c, r.loginOptions.contextOverride)
+}
+
 func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, currentContext string) (string, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
@@ -329,4 +375,8 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, curr
 	}
 
 	return strings.TrimPrefix(clusterServer, "g8s."), nil
+}
+
+func isEKS(c *capi.Cluster) bool {
+	return c.Spec.InfrastructureRef != nil && c.Spec.InfrastructureRef.Kind == "AWSManagedCluster"
 }

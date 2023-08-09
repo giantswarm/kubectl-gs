@@ -29,7 +29,6 @@ type runner struct {
 }
 
 type LoginOptions struct {
-	isWCClientCert            bool
 	selfContained             bool
 	selfContainedClientCert   bool
 	switchToContext           bool
@@ -89,6 +88,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
 			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
 			foundContext, err = r.findContext(ctx, clientCertContext)
+			// TODO check for aws based context
 		}
 		if err != nil {
 			return microerror.Mask(err)
@@ -100,9 +100,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 	}
 
-	// Clientcert creation if desired
-	if r.loginOptions.isWCClientCert {
-		return r.handleWCClientCert(ctx)
+	err := r.handleWCKubeconfig(ctx)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
@@ -139,7 +139,6 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	r.loginOptions = LoginOptions{
 		originContext:             originContext,
 		contextOverride:           contextOverride,
-		isWCClientCert:            hasWCNameFlag,
 		selfContained:             hasSelfContainedFlag && !hasWCNameFlag,
 		selfContainedClientCert:   hasSelfContainedFlag && hasWCNameFlag,
 		switchToContext:           shouldSwitchContextInConfig,
