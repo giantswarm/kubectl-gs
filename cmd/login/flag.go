@@ -26,6 +26,8 @@ const (
 
 	flagProxy     = "proxy"
 	flagProxyPort = "proxy-port"
+
+	flagLoginTimeout = "login-timeout"
 )
 
 type flag struct {
@@ -46,6 +48,8 @@ type flag struct {
 
 	Proxy     bool
 	ProxyPort int
+
+	LoginTimeout time.Duration
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -67,6 +71,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")
 
+	cmd.Flags().DurationVar(&f.LoginTimeout, flagLoginTimeout, 60*time.Second, "Duration for which kubectl gs will wait for the OIDC login to complete. Once the timeout is reached, OIDC login will fail. Default value is 60s.")
+
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)
 	_ = cmd.Flags().MarkHidden("namespace")
 }
@@ -79,6 +85,10 @@ func (f *flag) Validate() error {
 	}
 	if ttlFlag <= 0 {
 		return microerror.Maskf(invalidFlagError, `--%s cannot be negative or zero.`, flagWCCertTTL)
+	}
+
+	if f.LoginTimeout <= 0 {
+		return microerror.Maskf(invalidFlagError, `--%s cannot be negative or zero`, flagLoginTimeout)
 	}
 
 	return nil

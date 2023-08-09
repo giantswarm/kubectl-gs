@@ -29,7 +29,6 @@ const (
 	customerConnectorType   = "customer"
 	giantswarmConnectorType = "giantswarm"
 
-	oidcResultTimeout     = 1 * time.Minute
 	oidcReadHeaderTimeout = 1 * time.Minute
 )
 
@@ -38,7 +37,7 @@ var (
 )
 
 // handleOIDC executes the OIDC authentication against an installation's authentication provider.
-func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, port int) (authInfo, error) {
+func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, port int, oidcResultTimeout time.Duration) (authInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, oidcResultTimeout)
 	defer cancel()
 
