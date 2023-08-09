@@ -11,6 +11,7 @@ import (
 	k8score "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	eks "sigs.k8s.io/cluster-api-provider-aws/controlplane/eks/api/v1beta1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -23,6 +24,7 @@ func NewSchemeBuilder() []func(*runtime.Scheme) error {
 		application.AddToScheme,      // App, Catalog
 		capi.AddToScheme,             // Cluster
 		capiexp.AddToScheme,          // AWSMachinePool
+		eks.AddToScheme,              // EKS CRs
 		k8score.AddToScheme,          // Secret, ConfigMap
 		infrastructure.AddToScheme,   // AWSCluster (Giant Swarm CAPI)
 		capz.AddToScheme,             // AzureCluster

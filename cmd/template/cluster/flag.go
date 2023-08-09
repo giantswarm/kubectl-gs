@@ -307,7 +307,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
 	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
 
-a	f.print = genericclioptions.NewPrintFlags("")
+	f.print = genericclioptions.NewPrintFlags("")
 	f.print.OutputFormat = nil
 
 	// Merging current command flags and config flags,

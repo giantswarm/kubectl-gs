@@ -61,7 +61,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 
 	if contextAlreadySelected {
 		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
-	} else if !r.loginOptions.isWCClientCert && r.loginOptions.switchToContext {
+	} else if r.loginOptions.switchToContext {
 		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 

@@ -1,13 +1,17 @@
 package login
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	eks "sigs.k8s.io/cluster-api-provider-aws/controlplane/eks/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 )
@@ -109,14 +113,46 @@ func storeWCAWSIAMKubeconfig(k8sConfigAccess clientcmd.ConfigAccess, c eksCluste
 	return contextName, contextExists, nil
 }
 
-
-func fetchEKSCAData(c k8sclient.Interface, clusterName string, clusterNamespace string) ([]byte , error) {
-	c.CtrlClient().Get(ctx, client.ObjectKey{Name: })
-
-
-
+type kubeconfigFile struct {
+	Clusters []kubeCluster `json:"clusters"`
 }
 
-func eksKubeconfigSecretName(clusterName string) string  {
-	fmt.Sprintf("%s-")
+type kubeCluster struct {
+	Cluster kubeClusterSpec `json:"cluster"`
+}
+
+type kubeClusterSpec struct {
+	CertificateAuthorityData []byte `json:"certificate-authority-data"`
+}
+
+func fetchEKSCAData(ctx context.Context, c k8sclient.Interface, clusterName string, clusterNamespace string) ([]byte, error) {
+	var secret v1.Secret
+	err := c.CtrlClient().Get(ctx, client.ObjectKey{Name: eksKubeconfigSecretName(clusterName), Namespace: clusterNamespace}, &secret)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	secretData := secret.Data["value"]
+
+	kConfig := &kubeconfigFile{}
+
+	err = yaml.Unmarshal(secretData, kConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return kConfig.Clusters[0].Cluster.CertificateAuthorityData, err
+}
+
+func fetchEKSRegion(ctx context.Context, c k8sclient.Interface, clusterName string, clusterNamespace string) (string, error) {
+	var eksCluster eks.AWSManagedControlPlane
+	err := c.CtrlClient().Get(ctx, client.ObjectKey{Name: clusterName, Namespace: clusterNamespace}, &eksCluster)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return eksCluster.Spec.Region, nil
+}
+
+func eksKubeconfigSecretName(clusterName string) string {
+	return fmt.Sprintf("%s-user-kubeconfig", clusterName)
 }
