@@ -7,9 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--login-timeout` flag to control the time period of OIDC login timeout
+
 ### Changed
 
 - Graceful failure of the `login` command in case workload cluster API is not known
+- Improved error message after login timeout
 
 ## [2.39.0] - 2023-06-22
 
