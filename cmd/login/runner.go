@@ -29,12 +29,13 @@ type runner struct {
 }
 
 type LoginOptions struct {
-	selfContained             bool
-	selfContainedClientCert   bool
-	switchToContext           bool
-	switchToClientCertContext bool
-	originContext             string
-	contextOverride           string
+	selfContained     bool
+	selfContainedWC   bool
+	isWC              bool
+	switchToContext   bool
+	switchToWCContext bool
+	originContext     string
+	contextOverride   string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -88,7 +89,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
 			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
 			foundContext, err = r.findContext(ctx, clientCertContext)
-			// TODO check for aws based context
 		}
 		if err != nil {
 			return microerror.Mask(err)
@@ -100,9 +100,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 	}
 
-	err := r.handleWCKubeconfig(ctx)
-	if err != nil {
-		return microerror.Mask(err)
+	if r.loginOptions.isWC {
+		err := r.handleWCKubeconfig(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
@@ -137,12 +139,13 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	shouldSwitchToWCContextInConfig := hasWCNameFlag && !(hasSelfContainedFlag || r.flag.KeepContext)
 
 	r.loginOptions = LoginOptions{
-		originContext:             originContext,
-		contextOverride:           contextOverride,
-		selfContained:             hasSelfContainedFlag && !hasWCNameFlag,
-		selfContainedClientCert:   hasSelfContainedFlag && hasWCNameFlag,
-		switchToContext:           shouldSwitchContextInConfig,
-		switchToClientCertContext: shouldSwitchToWCContextInConfig,
+		originContext:     originContext,
+		contextOverride:   contextOverride,
+		isWC:              hasWCNameFlag,
+		selfContained:     hasSelfContainedFlag && !hasWCNameFlag,
+		selfContainedWC:   hasSelfContainedFlag && hasWCNameFlag,
+		switchToContext:   shouldSwitchContextInConfig,
+		switchToWCContext: shouldSwitchToWCContextInConfig,
 	}
 }
 

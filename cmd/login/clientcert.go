@@ -269,7 +269,7 @@ func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 }
 
 // storeWCClientCertCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig, mcContextName string) (string, bool, error) {
+func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, c credentialConfig, mcContextName string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -332,7 +332,7 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		config.Contexts[contextName] = context
 
 		// Select newly created context as current or revert to origin context if that is desired
-		if c.loginOptions.switchToClientCertContext {
+		if c.loginOptions.switchToWCContext {
 			config.CurrentContext = contextName
 		} else if c.loginOptions.originContext != "" {
 			config.CurrentContext = c.loginOptions.originContext

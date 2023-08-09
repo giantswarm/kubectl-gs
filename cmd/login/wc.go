@@ -145,10 +145,10 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	if r.loginOptions.selfContainedClientCert {
+	if r.loginOptions.selfContainedWC {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
-	} else if !r.loginOptions.switchToClientCertContext {
+	} else if !r.loginOptions.isWC && !r.loginOptions.switchToWCContext {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
@@ -287,6 +287,7 @@ func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.In
 		controlPlaneEndpoint: c.Cluster.Spec.ControlPlaneEndpoint.Host,
 		filePath:             r.flag.SelfContained,
 		region:               region,
+		loginOptions:         r.loginOptions,
 		// TODO aws profile
 	}
 
@@ -340,10 +341,10 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool, error) {
 	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
-	if r.loginOptions.selfContainedClientCert && c.filePath != "" {
+	if r.loginOptions.selfContainedWC && c.filePath != "" {
 		return printWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 	}
-	return storeWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
+	return storeWCClientCertCredentials(k8sConfigAccess, c, r.loginOptions.contextOverride)
 }
 
 func (r *runner) storeAWSIAMCredentials(c eksClusterConfig) (string, bool, error) {

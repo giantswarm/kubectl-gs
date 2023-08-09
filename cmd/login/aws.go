@@ -98,7 +98,7 @@ func storeWCAWSIAMKubeconfig(k8sConfigAccess clientcmd.ConfigAccess, c eksCluste
 		config.Contexts[contextName] = context
 
 		// Select newly created context as current or revert to origin context if that is desired
-		if c.loginOptions.switchToClientCertContext {
+		if c.loginOptions.switchToWCContext {
 			config.CurrentContext = contextName
 		} else if c.loginOptions.originContext != "" {
 			config.CurrentContext = c.loginOptions.originContext
