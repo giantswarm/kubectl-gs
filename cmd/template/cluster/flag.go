@@ -153,7 +153,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
-	cmd.Flags().BoolVar(&f.AWS.EKS, flagAWSEKS, false, "Enable AWSEKS. Only available for AWS Release v20.0.0 (CAPA)")
 	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
@@ -327,6 +326,7 @@ func (f *flag) Validate() error {
 		key.ProviderAzure,
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
+		key.ProviderEKS,
 		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,

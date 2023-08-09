@@ -14,7 +14,6 @@ import (
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/aws"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
@@ -27,51 +26,12 @@ const (
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	var err error
-
-	if config.AWS.EKS {
-		err = WriteCAPAEKSTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else {
-		err = templateClusterAWS(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = templateDefaultAppsAWS(ctx, client, output, config)
+	err := templateClusterAWS(ctx, client, output, config)
+	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	return nil
-}
-
-func WriteCAPAEKSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
-
-	data := struct {
-		Description       string
-		KubernetesVersion string
-		Name              string
-		Namespace         string
-		Organization      string
-		ReleaseVersion    string
-	}{
-		Description:       config.Description,
-		KubernetesVersion: "v1.21",
-		Name:              config.Name,
-		Namespace:         key.OrganizationNamespaceFromName(config.Organization),
-		Organization:      config.Organization,
-		ReleaseVersion:    config.ReleaseVersion,
-	}
-
-	var templates []templateConfig
-	for _, t := range aws.GetEKSTemplates() {
-		templates = append(templates, templateConfig(t))
-	}
-
-	err = runMutation(ctx, client, data, templates, out)
+	err = templateDefaultAppsAWS(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
