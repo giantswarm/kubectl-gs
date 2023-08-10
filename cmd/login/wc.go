@@ -282,13 +282,13 @@ func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.In
 	}
 
 	eksClusterConfig := eksClusterConfig{
+		awsProfileName:       r.flag.AWSProfile,
 		clusterName:          c.Cluster.Name,
 		certCA:               caData,
 		controlPlaneEndpoint: c.Cluster.Spec.ControlPlaneEndpoint.Host,
 		filePath:             r.flag.SelfContained,
 		region:               region,
 		loginOptions:         r.loginOptions,
-		// TODO aws profile
 	}
 
 	contextName, contextExists, err := r.storeAWSIAMCredentials(eksClusterConfig)
@@ -297,7 +297,7 @@ func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.In
 	}
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated aws IAM based kubeconfig for EKS workload cluster '%s'.\n", r.flag.WCName))
-	fmt.Fprint(r.stdout, color.YellowString("\nRemember to have valid and active AWS credentials that have 'eks:GetToken' permissions on the EKS cluster resource in order to use the kubeconfig.\n"))
+	fmt.Fprint(r.stdout, color.YellowString("\nRemember to have valid and active AWS credentials that have 'eks:GetToken' permissions on the EKS cluster resource in order to use the kubeconfig.\n\n"))
 
 	return contextName, contextExists, nil
 }
