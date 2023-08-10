@@ -56,7 +56,7 @@ func storeWCAWSIAMKubeconfig(k8sConfigAccess clientcmd.ConfigAccess, c eksCluste
 		if c.awsProfileName != "" {
 			user.Exec.Env = []clientcmdapi.ExecEnvVar{
 				{
-					Name:  "AWS_PROFILE",
+					Name:  "AWS_DEFAULT_PROFILE",
 					Value: c.awsProfileName,
 				},
 			}
@@ -147,7 +147,7 @@ func printWCAWSIamCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.F
 	if c.awsProfileName != "" {
 		kubeconfig.AuthInfos[fmt.Sprintf("%s-user", contextName)].Exec.Env = []clientcmdapi.ExecEnvVar{
 			{
-				Name:  "AWS_PROFILE",
+				Name:  "AWS_DEFAULT_PROFILE",
 				Value: c.awsProfileName,
 			},
 		}
