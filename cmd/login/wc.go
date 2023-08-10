@@ -148,7 +148,7 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 	if r.loginOptions.selfContainedWC {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
-	} else if !r.loginOptions.isWC && !r.loginOptions.switchToWCContext {
+	} else if !r.loginOptions.switchToWCContext {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
