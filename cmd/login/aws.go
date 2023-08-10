@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -50,11 +51,7 @@ func storeWCAWSIAMKubeconfig(k8sConfigAccess clientcmd.ConfigAccess, c eksCluste
 			user = clientcmdapi.NewAuthInfo()
 		}
 
-		user.Exec = &clientcmdapi.ExecConfig{
-			APIVersion: "client.authentication.k8s.io/v1beta1",
-			Command:    "aws",
-			Args:       []string{"--region", c.region, "eks", "get-token", "--cluster-name", c.clusterName, "--output", "json"},
-		}
+		user.Exec = awsIAMExec(c.clusterName, c.region)
 
 		if c.awsProfileName != "" {
 			user.Exec.Env = []clientcmdapi.ExecEnvVar{
@@ -113,6 +110,67 @@ func storeWCAWSIAMKubeconfig(k8sConfigAccess clientcmd.ConfigAccess, c eksCluste
 	return contextName, contextExists, nil
 }
 
+// printWCAWSIamCredentials saves the created client certificate credentials into a separate kubectl config file.
+func printWCAWSIamCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c eksClusterConfig, mcContextName string) (string, bool, error) {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	if mcContextName == "" {
+		mcContextName = config.CurrentContext
+	}
+	contextName := kubeconfig.GenerateWCAWSIAMKubeContextName(mcContextName, c.clusterName)
+
+	kubeconfig := clientcmdapi.Config{
+		APIVersion: "v1",
+		Kind:       "Config",
+		Clusters: map[string]*clientcmdapi.Cluster{
+			contextName: {
+				Server:                   c.controlPlaneEndpoint,
+				CertificateAuthorityData: c.certCA,
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			contextName: {
+				Cluster:  contextName,
+				AuthInfo: fmt.Sprintf("%s-user", contextName),
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			fmt.Sprintf("%s-user", contextName): {
+				Exec: awsIAMExec(c.clusterName, c.region),
+			},
+		},
+		CurrentContext: contextName,
+	}
+	if c.awsProfileName != "" {
+		kubeconfig.AuthInfos[fmt.Sprintf("%s-user", contextName)].Exec.Env = []clientcmdapi.ExecEnvVar{
+			{
+				Name:  "AWS_PROFILE",
+				Value: c.awsProfileName,
+			},
+		}
+	}
+
+	err = mergeKubeconfigs(fs, c.filePath, kubeconfig, contextName)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	// Change back to the origin context if needed
+	if c.loginOptions.originContext != "" && config.CurrentContext != "" && c.loginOptions.originContext != config.CurrentContext {
+		// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
+		config.CurrentContext = c.loginOptions.originContext
+		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	}
+
+	return contextName, false, nil
+}
+
 type kubeconfigFile struct {
 	Clusters []kubeCluster `json:"clusters"`
 }
@@ -155,4 +213,16 @@ func fetchEKSRegion(ctx context.Context, c k8sclient.Interface, clusterName stri
 
 func eksKubeconfigSecretName(clusterName string) string {
 	return fmt.Sprintf("%s-user-kubeconfig", clusterName)
+}
+
+func awsIAMExec(clusterName string, region string) *clientcmdapi.ExecConfig {
+	return &clientcmdapi.ExecConfig{
+		APIVersion: "client.authentication.k8s.io/v1beta1",
+		Command:    "aws",
+		Args:       awsKubeconfigExecArgs(clusterName, region),
+	}
+}
+
+func awsKubeconfigExecArgs(clusterName string, region string) []string {
+	return []string{"--region", region, "eks", "get-token", "--cluster-name", clusterName, "--output", "json"}
 }

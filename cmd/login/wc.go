@@ -239,7 +239,7 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 	}
 
-	credentialConfig := credentialConfig{
+	credentialConfig := clientCertCredentialConfig{
 		clusterID:     r.flag.WCName,
 		certCRT:       secret.Data[credentialKeyCertCRT],
 		certKey:       secret.Data[credentialKeyCertKey],
@@ -338,7 +338,7 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 	return clientCert, clientCertsecret, nil
 }
 
-func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool, error) {
+func (r *runner) storeWCClientCertCredentials(c clientCertCredentialConfig) (string, bool, error) {
 	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
 	if r.loginOptions.selfContainedWC && c.filePath != "" {
@@ -350,8 +350,7 @@ func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool,
 func (r *runner) storeAWSIAMCredentials(c eksClusterConfig) (string, bool, error) {
 	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 	if r.loginOptions.selfContained && c.filePath != "" {
-		fmt.Printf("selfcontained aws iam kubeconfig is not implemeneted yet\n")
-		return "", false, nil
+		return printWCAWSIamCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 	}
 	return storeWCAWSIAMKubeconfig(k8sConfigAccess, c, r.loginOptions.contextOverride)
 }

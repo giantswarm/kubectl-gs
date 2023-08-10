@@ -20,13 +20,13 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 		name             string
 		fileName         string
 		sourceConfig     *clientcmdapi.Config
-		credentialConfig credentialConfig
+		credentialConfig clientCertCredentialConfig
 		expectedConfig   clientcmdapi.Config
 	}{
 		{
 			name:     "case 0: Create a new self-contained file",
 			fileName: "cluster.yaml",
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("CertCRT"),
 				certKey:       []byte("CertKey"),
@@ -79,7 +79,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 				},
 				CurrentContext: "initial-context",
 			},
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("CertCRT"),
 				certKey:       []byte("CertKey"),
@@ -156,7 +156,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 				},
 				CurrentContext: "gs-codename-cluster-clientcert",
 			},
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("NewCertCRT"),
 				certKey:       []byte("NewCertKey"),
@@ -221,7 +221,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 				},
 				CurrentContext: "gs-codename-cluster-clientcert",
 			},
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("NewCertCRT"),
 				certKey:       []byte("NewCertKey"),
