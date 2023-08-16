@@ -30,10 +30,10 @@ type runner struct {
 
 type LoginOptions struct {
 	selfContained     bool
-	selfContainedWC   bool
-	isWC              bool
+	selfContainedWC   bool // used only if both MC and WC are specified on command line
+	isWC              bool // used only if both MC and WC are specified on command line
 	switchToContext   bool
-	switchToWCContext bool
+	switchToWCContext bool // used only if both MC and WC are specified on command line
 	originContext     string
 	contextOverride   string
 }
@@ -100,6 +100,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 	}
 
+	// used only if both MC and WC are specified on command line
 	if r.loginOptions.isWC {
 		err := r.handleWCKubeconfig(ctx)
 		if err != nil {

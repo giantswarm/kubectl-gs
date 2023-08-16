@@ -120,6 +120,7 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 	return key.CertOperatorVersionKubeconfig, nil
 }
 
+// used only if both MC and WC are specified on command line
 func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 	provider, err := r.commonConfig.GetProviderFromConfig(ctx, "")
 	if err != nil {
@@ -163,6 +164,7 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 	return nil
 }
 
+// used only if both MC and WC are specified on command line
 func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
 	err = validateProvider(provider)
 	if err != nil {
@@ -196,6 +198,7 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 	return contextName, contextExists, nil
 }
 
+// used only if both MC and WC are specified on command line
 func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, services serviceSet, provider string) (string, bool, error) {
 	certOperatorVersion, err := r.getCertOperatorVersion(c, provider, services, ctx)
 	if err != nil {
