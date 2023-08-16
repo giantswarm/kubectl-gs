@@ -22,6 +22,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Graceful failure of the `login` command in case workload cluster API is not known
 - Improved error message after login timeout
+- Adjusted description of the `--cluster-admin` flag in the `login` command
 
 ## [2.39.0] - 2023-06-22
 
