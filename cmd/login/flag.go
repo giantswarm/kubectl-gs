@@ -27,6 +27,8 @@ const (
 	flagProxy     = "proxy"
 	flagProxyPort = "proxy-port"
 
+	flagAwsProfile = "aws-profile"
+
 	flagLoginTimeout = "login-timeout"
 )
 
@@ -49,6 +51,8 @@ type flag struct {
 	Proxy     bool
 	ProxyPort int
 
+	AWSProfile string
+
 	LoginTimeout time.Duration
 }
 
@@ -70,6 +74,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")
+
+	cmd.Flags().StringVar(&f.AWSProfile, flagAwsProfile, "", "AWS profile name that the created kubeconfig will always use, Only applicable for EKS clusters.")
 
 	cmd.Flags().DurationVar(&f.LoginTimeout, flagLoginTimeout, 60*time.Second, "Duration for which kubectl gs will wait for the OIDC login to complete. Once the timeout is reached, OIDC login will fail.")
 

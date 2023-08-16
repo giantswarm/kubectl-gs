@@ -63,7 +63,7 @@ type serviceSet struct {
 	releaseService      release.Interface
 }
 
-type credentialConfig struct {
+type clientCertCredentialConfig struct {
 	clusterID     string
 	certCRT       []byte
 	certKey       []byte
@@ -269,7 +269,7 @@ func getPrivKey(keyPEM []byte) (*rsa.PrivateKey, error) {
 }
 
 // storeWCClientCertCredentials saves the created client certificate credentials into the kubectl config.
-func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig, mcContextName string) (string, bool, error) {
+func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, c clientCertCredentialConfig, mcContextName string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -332,7 +332,7 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		config.Contexts[contextName] = context
 
 		// Select newly created context as current or revert to origin context if that is desired
-		if c.loginOptions.switchToClientCertContext {
+		if c.loginOptions.switchToWCContext {
 			config.CurrentContext = contextName
 		} else if c.loginOptions.originContext != "" {
 			config.CurrentContext = c.loginOptions.originContext
@@ -348,7 +348,7 @@ func storeWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 }
 
 // printWCClientCertCredentials saves the created client certificate credentials into a separate kubectl config file.
-func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c credentialConfig, mcContextName string) (string, bool, error) {
+func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs, c clientCertCredentialConfig, mcContextName string) (string, bool, error) {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -382,15 +382,35 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		},
 		CurrentContext: contextName,
 	}
-	// If the destination file exists, we merge the contexts contained in it with the newly created one
-	exists, err := afero.Exists(fs, c.filePath)
+
+	err = mergeKubeconfigs(fs, c.filePath, kubeconfig, contextName)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
-	if exists {
-		existingKubeConfig, err := clientcmd.LoadFromFile(c.filePath)
+
+	// Change back to the origin context if needed
+	if c.loginOptions.originContext != "" && config.CurrentContext != "" && c.loginOptions.originContext != config.CurrentContext {
+		// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
+		config.CurrentContext = c.loginOptions.originContext
+		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
 		if err != nil {
 			return "", false, microerror.Mask(err)
+		}
+	}
+
+	return contextName, false, nil
+}
+
+func mergeKubeconfigs(fs afero.Fs, filePath string, kubeconfig clientcmdapi.Config, contextName string) error {
+	// If the destination file exists, we merge the contexts contained in it with the newly created one
+	exists, err := afero.Exists(fs, filePath)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if exists {
+		existingKubeConfig, err := clientcmd.LoadFromFile(filePath)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 
 		// First remove entries included in the new config from the existing one
@@ -407,25 +427,16 @@ func printWCClientCertCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afe
 		// Then merge the 2 configs (entries from the new config will be added to the existing one)
 		err = mergo.Merge(&kubeconfig, existingKubeConfig, mergo.WithOverride)
 		if err != nil {
-			return "", false, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 		kubeconfig.CurrentContext = contextName
 	}
-	err = clientcmd.WriteToFile(kubeconfig, c.filePath)
+	err = clientcmd.WriteToFile(kubeconfig, filePath)
 	if err != nil {
-		return "", false, microerror.Mask(err)
-	}
-	// Change back to the origin context if needed
-	if c.loginOptions.originContext != "" && config.CurrentContext != "" && c.loginOptions.originContext != config.CurrentContext {
-		// Because we are still in the MC context we need to switch back to the origin context after creating the WC kubeconfig file
-		config.CurrentContext = c.loginOptions.originContext
-		err = clientcmd.ModifyConfig(k8sConfigAccess, *config, false)
-		if err != nil {
-			return "", false, microerror.Mask(err)
-		}
+		return microerror.Mask(err)
 	}
 
-	return contextName, false, nil
+	return nil
 }
 
 func cleanUpClientCertResources(ctx context.Context, clientCertService clientcert.Interface, clientCertResource *clientcert.ClientCert) error {

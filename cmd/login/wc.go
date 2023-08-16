@@ -10,6 +10,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
@@ -119,7 +120,8 @@ func (r *runner) getCertOperatorVersion(c *cluster.Cluster, provider string, ser
 	return key.CertOperatorVersionKubeconfig, nil
 }
 
-func (r *runner) handleWCClientCert(ctx context.Context) error {
+// used only if both MC and WC are specified on command line
+func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 	provider, err := r.commonConfig.GetProviderFromConfig(ctx, "")
 	if err != nil {
 		return microerror.Mask(err)
@@ -132,8 +134,7 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 	}
-	// At the moment, the only available login option for WC is client cert
-	contextName, contextExists, err := r.createClusterClientCert(ctx, client, provider)
+	contextName, contextExists, err := r.createClusterKubeconfig(ctx, client, provider)
 	if err != nil {
 		if IsClusterAPINotReady(err) {
 			fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known yet.\n", r.flag.WCName)
@@ -145,10 +146,10 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	if r.loginOptions.selfContainedClientCert {
+	if r.loginOptions.selfContainedWC {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
-	} else if !r.loginOptions.switchToClientCertContext {
+	} else if !r.loginOptions.switchToWCContext {
 		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
 		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
@@ -163,7 +164,8 @@ func (r *runner) handleWCClientCert(ctx context.Context) error {
 	return nil
 }
 
-func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
+// used only if both MC and WC are specified on command line
+func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
 	err = validateProvider(provider)
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -179,6 +181,25 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		return "", false, microerror.Mask(err)
 	}
 
+	// for EKS the kubeconfig cannot be client-cert as it uses aws authentication
+	// for the rest of WC cluster client-cert kubeconfig will be generated
+	if isEKS(c.Cluster) {
+		contextName, contextExists, err = r.createEKSKubeconfig(ctx, client, c)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	} else {
+		contextName, contextExists, err = r.createCertKubeconfig(ctx, c, services, provider)
+		if err != nil {
+			return "", false, microerror.Mask(err)
+		}
+	}
+
+	return contextName, contextExists, nil
+}
+
+// used only if both MC and WC are specified on command line
+func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, services serviceSet, provider string) (string, bool, error) {
 	certOperatorVersion, err := r.getCertOperatorVersion(c, provider, services, ctx)
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -221,7 +242,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 	}
 
-	credentialConfig := credentialConfig{
+	credentialConfig := clientCertCredentialConfig{
 		clusterID:     r.flag.WCName,
 		certCRT:       secret.Data[credentialKeyCertCRT],
 		certKey:       secret.Data[credentialKeyCertKey],
@@ -233,7 +254,7 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 		proxyPort:     r.flag.ProxyPort,
 	}
 
-	contextName, contextExists, err = r.storeWCClientCertCredentials(credentialConfig)
+	contextName, contextExists, err := r.storeWCClientCertCredentials(credentialConfig)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
@@ -248,6 +269,39 @@ func (r *runner) createClusterClientCert(ctx context.Context, client k8sclient.I
 	}
 
 	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
+
+	return contextName, contextExists, nil
+}
+
+func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.Interface, c *cluster.Cluster) (string, bool, error) {
+	caData, err := fetchEKSCAData(ctx, k8sClient, c.Cluster.Name, c.Cluster.Namespace)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	region, err := fetchEKSRegion(ctx, k8sClient, c.Cluster.Name, c.Cluster.Namespace)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	eksClusterConfig := eksClusterConfig{
+		awsProfileName:       r.flag.AWSProfile,
+		clusterName:          c.Cluster.Name,
+		certCA:               caData,
+		controlPlaneEndpoint: c.Cluster.Spec.ControlPlaneEndpoint.Host,
+		filePath:             r.flag.SelfContained,
+		region:               region,
+		loginOptions:         r.loginOptions,
+	}
+
+	contextName, contextExists, err := r.storeAWSIAMCredentials(eksClusterConfig)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+
+	fmt.Fprint(r.stdout, color.GreenString("\nCreated aws IAM based kubeconfig for EKS workload cluster '%s'.\n", r.flag.WCName))
+	fmt.Fprint(r.stdout, color.YellowString("\nRemember to have valid and active AWS credentials that have 'eks:GetToken' permissions on the EKS cluster resource in order to use the kubeconfig.\n\n"))
+
 	return contextName, contextExists, nil
 }
 
@@ -287,13 +341,21 @@ func (r *runner) getCredentials(ctx context.Context, clientCertService clientcer
 	return clientCert, clientCertsecret, nil
 }
 
-func (r *runner) storeWCClientCertCredentials(c credentialConfig) (string, bool, error) {
+func (r *runner) storeWCClientCertCredentials(c clientCertCredentialConfig) (string, bool, error) {
 	k8sConfigAccess := r.commonConfig.GetConfigAccess()
 	// Store client certificate credential either into the current kubeconfig or a self-contained file if a path is given.
-	if r.loginOptions.selfContainedClientCert && c.filePath != "" {
+	if r.loginOptions.selfContainedWC && c.filePath != "" {
 		return printWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 	}
-	return storeWCClientCertCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
+	return storeWCClientCertCredentials(k8sConfigAccess, c, r.loginOptions.contextOverride)
+}
+
+func (r *runner) storeAWSIAMCredentials(c eksClusterConfig) (string, bool, error) {
+	k8sConfigAccess := r.commonConfig.GetConfigAccess()
+	if r.loginOptions.selfContained && c.filePath != "" {
+		return printWCAWSIamCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
+	}
+	return storeWCAWSIAMKubeconfig(k8sConfigAccess, c, r.loginOptions.contextOverride)
 }
 
 func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, currentContext string) (string, error) {
@@ -329,4 +391,8 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, curr
 	}
 
 	return strings.TrimPrefix(clusterServer, "g8s."), nil
+}
+
+func isEKS(c *capi.Cluster) bool {
+	return c.Spec.InfrastructureRef != nil && c.Spec.InfrastructureRef.Kind == "AWSManagedCluster"
 }

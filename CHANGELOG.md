@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Adding `opsctl login` support for EKS clusters.
+
 ## [2.40.0] - 2023-08-09
 
 ### Added

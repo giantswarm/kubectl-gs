@@ -29,13 +29,13 @@ type runner struct {
 }
 
 type LoginOptions struct {
-	isWCClientCert            bool
-	selfContained             bool
-	selfContainedClientCert   bool
-	switchToContext           bool
-	switchToClientCertContext bool
-	originContext             string
-	contextOverride           string
+	selfContained     bool
+	selfContainedWC   bool // used only if both MC and WC are specified on command line
+	isWC              bool // used only if both MC and WC are specified on command line
+	switchToContext   bool
+	switchToWCContext bool // used only if both MC and WC are specified on command line
+	originContext     string
+	contextOverride   string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -100,9 +100,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 	}
 
-	// Clientcert creation if desired
-	if r.loginOptions.isWCClientCert {
-		return r.handleWCClientCert(ctx)
+	// used only if both MC and WC are specified on command line
+	if r.loginOptions.isWC {
+		err := r.handleWCKubeconfig(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
@@ -137,13 +140,13 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	shouldSwitchToWCContextInConfig := hasWCNameFlag && !(hasSelfContainedFlag || r.flag.KeepContext)
 
 	r.loginOptions = LoginOptions{
-		originContext:             originContext,
-		contextOverride:           contextOverride,
-		isWCClientCert:            hasWCNameFlag,
-		selfContained:             hasSelfContainedFlag && !hasWCNameFlag,
-		selfContainedClientCert:   hasSelfContainedFlag && hasWCNameFlag,
-		switchToContext:           shouldSwitchContextInConfig,
-		switchToClientCertContext: shouldSwitchToWCContextInConfig,
+		originContext:     originContext,
+		contextOverride:   contextOverride,
+		isWC:              hasWCNameFlag,
+		selfContained:     hasSelfContainedFlag && !hasWCNameFlag,
+		selfContainedWC:   hasSelfContainedFlag && hasWCNameFlag,
+		switchToContext:   shouldSwitchContextInConfig,
+		switchToWCContext: shouldSwitchToWCContextInConfig,
 	}
 }
 
