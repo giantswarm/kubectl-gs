@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.41.0] - 2023-08-16
+
 ### Added
 
 - Adding `opsctl login` support for EKS clusters.
@@ -1287,7 +1289,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.40.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.0...HEAD
+[2.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.40.0...v2.41.0
 [2.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.39.0...v2.40.0
 [2.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.38.0...v2.39.0
 [2.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...v2.38.0
