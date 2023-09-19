@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Change how `login` works on CAPA and `gcp` to use our DNS record for the k8s API when using these providers, rather than the value found in the CAPI CRs.
+
 ## [2.41.0] - 2023-08-16
 
 ### Added
