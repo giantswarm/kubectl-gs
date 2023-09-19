@@ -3,18 +3,16 @@ package login
 import (
 	"context"
 	"fmt"
-	"net"
 	"regexp"
 	"strings"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/clientcert"
@@ -236,9 +234,8 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 
 	clusterServer := fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 
-	// If the control plane host is an IP address then it is a CAPI cluster and
-	// we need to manually set the cluster server to the correct domain
-	if net.ParseIP(c.Cluster.Spec.ControlPlaneEndpoint.Host) != nil {
+	// When CAPA or CGP we need our custom DNS record for the k8s api, rather than the value found in the CAPI CRs so that our connection through the VPN works.
+	if provider == key.ProviderCAPA || provider == key.ProviderGCP {
 		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 	}
 
