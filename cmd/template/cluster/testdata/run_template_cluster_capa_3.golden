@@ -6,7 +6,7 @@ data:
       bastion:
         enabled: true
       dns:
-        mode: private
+        mode: public
       network:
         vpcCidr: 10.123.0.0/16
       proxy:
