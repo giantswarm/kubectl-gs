@@ -32,7 +32,6 @@ const (
 	flagAWSHttpProxy               = "http-proxy"
 	flagAWSNoProxy                 = "no-proxy"
 	flagAWSAPIMode                 = "api-mode"
-	flagAWSDNSMode                 = "dns-mode"
 	flagAWSVPCMode                 = "vpc-mode"
 	flagAWSTopologyMode            = "topology-mode"
 	flagAWSPrefixListID            = "aws-prefix-list-id"
@@ -159,7 +158,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.NoProxy, flagAWSNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
 	cmd.Flags().StringVar(&f.AWS.APIMode, flagAWSAPIMode, "", "API mode of the network (public,private)")
 	cmd.Flags().StringVar(&f.AWS.VPCMode, flagAWSVPCMode, "", "VPC mode of the network (public,private)")
-	cmd.Flags().StringVar(&f.AWS.DNSMode, flagAWSDNSMode, "", "DNS  mode of the network (public,private)")
 	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
 	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
@@ -264,7 +262,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSNoProxy)
 	_ = cmd.Flags().MarkHidden(flagAWSAPIMode)
 	_ = cmd.Flags().MarkHidden(flagAWSVPCMode)
-	_ = cmd.Flags().MarkHidden(flagAWSDNSMode)
 	_ = cmd.Flags().MarkHidden(flagAWSTopologyMode)
 	_ = cmd.Flags().MarkHidden(flagAWSPrefixListID)
 	_ = cmd.Flags().MarkHidden(flagAWSTransitGatewayID)

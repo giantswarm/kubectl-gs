@@ -46,7 +46,6 @@ type AWSConfig struct {
 	NoProxy                    string
 	APIMode                    string
 	VPCMode                    string
-	DNSMode                    string
 	TopologyMode               string
 	PrefixListID               string
 	TransitGatewayID           string

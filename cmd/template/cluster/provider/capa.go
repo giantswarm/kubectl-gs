@@ -17,12 +17,14 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
+	// templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 )
 
 const (
 	DefaultAppsAWSRepoName = "default-apps-aws"
 	ClusterAWSRepoName     = "cluster-aws"
 	ModePrivate            = "private"
+	ModePublic             = "public"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -93,7 +95,7 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 			flagValues.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
 			flagValues.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
-			flagValues.Connectivity.DNS.Mode = defaultTo(config.AWS.DNSMode, ModePrivate)
+			flagValues.Connectivity.DNS.Mode = ModePublic
 			flagValues.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
 			flagValues.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
 			flagValues.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
