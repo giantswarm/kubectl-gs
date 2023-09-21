@@ -29,7 +29,6 @@ type ProviderSpecific struct {
 type Connectivity struct {
 	AvailabilityZoneUsageLimit int       `json:"availabilityZoneUsageLimit,omitempty"`
 	Bastion                    *Bastion  `json:"bastion,omitempty"`
-	DNS                        *DNS      `json:"dns,omitempty"`
 	Network                    *Network  `json:"network,omitempty"`
 	Proxy                      *Proxy    `json:"proxy,omitempty"`
 	Subnets                    []Subnet  `json:"subnets,omitempty"`
@@ -46,11 +45,6 @@ type Topology struct {
 	PrefixListID     string `json:"prefixListId,omitempty"`
 	TransitGatewayID string `json:"transitGatewayId,omitempty"`
 }
-
-type DNS struct {
-	Mode string `json:"mode,omitempty"`
-}
-
 type Subnet struct {
 	CidrBlocks []CIDRBlock `json:"cidrBlocks"`
 	IsPublic   bool        `json:"isPublic"`
