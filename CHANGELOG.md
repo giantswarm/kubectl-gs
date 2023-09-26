@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Removed a support for DNS mode for proxy based CAPA clusters.
+
 ## [2.41.1] - 2023-09-19
 
 ### Changed

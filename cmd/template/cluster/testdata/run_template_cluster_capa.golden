@@ -5,7 +5,6 @@ data:
     connectivity:
       bastion:
         enabled: true
-      dns: {}
       network:
         vpcCidr: 10.123.0.0/16
       topology: {}

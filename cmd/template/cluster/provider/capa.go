@@ -93,7 +93,6 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 			flagValues.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
 			flagValues.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
-			flagValues.Connectivity.DNS.Mode = defaultTo(config.AWS.DNSMode, ModePrivate)
 			flagValues.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
 			flagValues.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
 			flagValues.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
@@ -177,7 +176,6 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 				InstanceType: config.BastionInstanceType,
 				Replicas:     config.BastionReplicas,
 			},
-			DNS: &capa.DNS{},
 			Network: &capa.Network{
 				VPCCIDR: config.AWS.NetworkVPCCIDR,
 			},
