@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove `controlPlane.replicas` value for CAPA since it is not supported anymore
+
 ### Removed
 
 - Removed a support for DNS mode for proxy based CAPA clusters.
