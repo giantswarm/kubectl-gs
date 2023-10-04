@@ -20,7 +20,7 @@ require (
 	github.com/giantswarm/k8smetadata v0.22.0
 	github.com/giantswarm/microerror v0.4.0
 	github.com/giantswarm/micrologger v1.0.0
-	github.com/giantswarm/organization-operator v1.4.0
+	github.com/giantswarm/organization-operator v1.6.0
 	github.com/giantswarm/release-operator/v4 v4.1.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/go-cmp v0.5.9
@@ -145,7 +145,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	github.com/opencontainers/runc v1.1.8 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
@@ -166,10 +166,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.starlark.net v0.0.0-20230807144010-2aa75752d1da // indirect
 	golang.org/x/crypto v0.12.0 // indirect
-	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/term v0.11.0 // indirect
-	golang.org/x/text v0.12.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/api v0.135.0 // indirect
@@ -200,9 +200,9 @@ replace (
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.19.1
-	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.9.0
-	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v0.9.2
+	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.25.1
+	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.10.0
+	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v1.10.0
 	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	// CVE-2023-3978

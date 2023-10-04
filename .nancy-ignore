@@ -1,7 +1,7 @@
 # Consul - no fix yet
-CVE-2022-29153 until=2023-10-01
+CVE-2022-29153 until=2023-11-01
 
 # pkg:golang/k8s.io/apiserver@v0.25.0
 # # This is present in the current latest v0.26.0 as well
-CVE-2020-8561 until=2023-10-01
+CVE-2020-8561 until=2023-11-01
 
