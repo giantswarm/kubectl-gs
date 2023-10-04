@@ -64,7 +64,6 @@ type Bastion struct {
 type ControlPlane struct {
 	APIMode                string   `json:"apiMode,omitempty"`
 	InstanceType           string   `json:"instanceType,omitempty"`
-	Replicas               int      `json:"replicas,omitempty"`
 	RootVolumeSizeGB       int      `json:"rootVolumeSizeGB,omitempty"`
 	EtcdVolumeSizeGB       int      `json:"etcdVolumeSizeGB,omitempty"`
 	ContainerdVolumeSizeGB int      `json:"containerdVolumeSizeGB,omitempty"`

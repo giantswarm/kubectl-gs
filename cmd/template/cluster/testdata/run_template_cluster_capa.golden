@@ -10,7 +10,6 @@ data:
       topology: {}
     controlPlane:
       instanceType: control-plane-instance-type
-      replicas: 3
     metadata:
       description: just a test cluster
       name: test1

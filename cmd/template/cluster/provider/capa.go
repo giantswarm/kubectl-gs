@@ -183,7 +183,6 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 		},
 		ControlPlane: &capa.ControlPlane{
 			InstanceType: config.ControlPlaneInstanceType,
-			Replicas:     3,
 		},
 		NodePools: &map[string]capa.MachinePool{
 			config.AWS.MachinePool.Name: {
