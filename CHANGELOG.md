@@ -7,13 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.42.0] - 2023-10-06
+
 ### Fixed
 
-- Remove `controlPlane.replicas` value for CAPA since it is not supported anymore
+- Removed `controlPlane.replicas` value for CAPA since it is not supported anymore
 
 ### Removed
 
-- Removed a support for DNS mode for proxy based CAPA clusters.
+- Removed support for private DNS mode for proxy based CAPA clusters
 
 ## [2.41.1] - 2023-09-19
 
@@ -1303,7 +1305,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.42.0...HEAD
+[2.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.1...v2.42.0
 [2.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.0...v2.41.1
 [2.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.40.0...v2.41.0
 [2.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.39.0...v2.40.0
