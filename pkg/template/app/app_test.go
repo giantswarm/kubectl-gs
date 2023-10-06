@@ -144,6 +144,23 @@ func Test_NewAppCR(t *testing.T) {
 			},
 			expectedGoldenFile: "app_config_cluster_values_yaml_output.golden",
 		},
+		{
+			name: "case 9: user values + extra labels",
+			config: Config{
+				AppName:           "ingress-nginx",
+				Catalog:           "giantswarm",
+				Cluster:           "eggs2",
+				DefaultingEnabled: true,
+				ExtraLabels: map[string]string{
+					"giantswarm.io/prevent-deletion": "true",
+				},
+				Name:                    "ingress-nginx",
+				Namespace:               "kube-system",
+				UserConfigConfigMapName: "ingress-nginx-user-values",
+				Version:                 "3.0.0",
+			},
+			expectedGoldenFile: "app_user_values_and_extra_labels_yaml_output.golden",
+		},
 	}
 
 	for i, tc := range testCases {

@@ -73,6 +73,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		CatalogNamespace:  r.flag.CatalogNamespace,
 		Cluster:           clusterName,
 		DefaultingEnabled: r.flag.DefaultingEnabled,
+		ExtraLabels:       map[string]string{},
 		InCluster:         r.flag.InCluster,
 		Name:              r.flag.Name,
 		Namespace:         targetNamespace,
@@ -110,6 +111,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		appConfig.UserConfigSecretName = userSecret.GetName()
 
+		if r.flag.PreventDeletion {
+			if userSecret.Labels == nil {
+				userSecret.Labels = map[string]string{}
+			}
+			userSecret.Labels["giantswarm.io/prevent-deletion"] = "true"
+		}
+
 		userConfigSecretYaml, err = yaml.Marshal(userSecret)
 		if err != nil {
 			return microerror.Mask(err)
@@ -129,6 +137,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		appConfig.UserConfigConfigMapName = userConfigMap.GetName()
 
+		if r.flag.PreventDeletion {
+			if userConfigMap.Labels == nil {
+				userConfigMap.Labels = map[string]string{}
+			}
+			userConfigMap.Labels["giantswarm.io/prevent-deletion"] = "true"
+		}
+
 		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
 		if err != nil {
 			return microerror.Mask(err)
@@ -146,6 +161,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 	appConfig.NamespaceConfigLabels = namespaceLabels
+
+	if r.flag.PreventDeletion {
+		appConfig.ExtraLabels["giantswarm.io/prevent-deletion"] = "true"
+	}
 
 	r.setTimeouts(&appConfig)
 
