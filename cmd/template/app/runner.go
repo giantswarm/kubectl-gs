@@ -115,7 +115,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if userSecret.Labels == nil {
 				userSecret.Labels = map[string]string{}
 			}
-			userSecret.Labels["giantswarm.io/prevent-deletion"] = "true"
+			userSecret.Labels["giantswarm.io/prevent-deletion"] = "true" //nolint:goconst
 		}
 
 		userConfigSecretYaml, err = yaml.Marshal(userSecret)
