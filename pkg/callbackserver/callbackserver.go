@@ -72,7 +72,7 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 		})
 
 		server = &http.Server{
-			Addr:              fmt.Sprintf(":%d", cs.port),
+			Addr:              fmt.Sprintf("localhost:%d", cs.port),
 			Handler:           mux,
 			ReadHeaderTimeout: cs.readHeaderTimeout,
 		}
