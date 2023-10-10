@@ -14,12 +14,14 @@ import (
 type CallbackFunc func(http.ResponseWriter, *http.Request) (interface{}, error)
 
 type Config struct {
+	Host              string // empty to listen on all network interfaces
 	Port              int
 	RedirectURI       string
 	ReadHeaderTimeout time.Duration
 }
 
 type CallbackServer struct {
+	host              string
 	port              int
 	redirectURI       string
 	readHeaderTimeout time.Duration
@@ -40,6 +42,7 @@ func New(config Config) (*CallbackServer, error) {
 	}
 
 	cs := &CallbackServer{
+		host:              config.Host,
 		port:              config.Port,
 		redirectURI:       config.RedirectURI,
 		readHeaderTimeout: config.ReadHeaderTimeout,
@@ -72,7 +75,7 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 		})
 
 		server = &http.Server{
-			Addr:              fmt.Sprintf("localhost:%d", cs.port),
+			Addr:              fmt.Sprintf("%s:%d", cs.host, cs.port),
 			Handler:           mux,
 			ReadHeaderTimeout: cs.readHeaderTimeout,
 		}

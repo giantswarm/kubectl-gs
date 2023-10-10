@@ -138,8 +138,7 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 				token:    tokenOverride,
 			}
 		} else {
-
-			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerPort, r.flag.LoginTimeout)
+			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
 			if err != nil {
 				if errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
 					fmt.Fprintf(r.stderr, "\nYour authentication flow timed out after %s. Please execute the same command again.\n", r.flag.LoginTimeout.String())
