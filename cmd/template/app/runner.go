@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -115,7 +116,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if userSecret.Labels == nil {
 				userSecret.Labels = map[string]string{}
 			}
-			userSecret.Labels["giantswarm.io/prevent-deletion"] = "true" //nolint:goconst
+			userSecret.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
 
 		userConfigSecretYaml, err = yaml.Marshal(userSecret)
@@ -141,7 +142,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if userConfigMap.Labels == nil {
 				userConfigMap.Labels = map[string]string{}
 			}
-			userConfigMap.Labels["giantswarm.io/prevent-deletion"] = "true"
+			userConfigMap.Labels[label.PreventDeletion] = "true"
 		}
 
 		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
@@ -163,7 +164,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	appConfig.NamespaceConfigLabels = namespaceLabels
 
 	if r.flag.PreventDeletion {
-		appConfig.ExtraLabels["giantswarm.io/prevent-deletion"] = "true"
+		appConfig.ExtraLabels[label.PreventDeletion] = "true"
 	}
 
 	r.setTimeouts(&appConfig)
