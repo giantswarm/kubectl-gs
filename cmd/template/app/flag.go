@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
@@ -26,6 +27,7 @@ const (
 	flagNamespaceConfigAnnotations = "namespace-annotations"
 	flagNamespaceConfigLabels      = "namespace-labels"
 	flagOrganization               = "organization"
+	flagPreventDeletion            = "prevent-deletion"
 	flagRollbackTimeout            = "rollback-timeout"
 	flagUninstallTimeout           = "uninstall-timeout"
 	flagUpgradeTimeout             = "upgrade-timeout"
@@ -55,6 +57,7 @@ type flag struct {
 	UpgradeTimeout                 time.Duration
 	flagUserConfigMap              string
 	flagUserSecret                 string
+	PreventDeletion                bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -78,6 +81,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "App version to be installed.")
 	cmd.Flags().StringSliceVar(&f.flagNamespaceConfigAnnotations, flagNamespaceConfigAnnotations, nil, "Namespace configuration annotations in form key=value.")
 	cmd.Flags().StringSliceVar(&f.flagNamespaceConfigLabels, flagNamespaceConfigLabels, nil, "Namespace configuration labels in form key=value.")
+	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, fmt.Sprintf("Label the App and other templated resources with '%s' to prevent deletion (see https://docs.giantswarm.io/advanced/deletion-prevention/).", label.PreventDeletion))
 
 	_ = cmd.Flags().MarkDeprecated(flagNamespace, fmt.Sprintf("use --%s instead", flagTargetNamespace))
 	_ = cmd.Flags().MarkDeprecated(flagCluster, fmt.Sprintf("use --%s instead", flagClusterName))

@@ -73,7 +73,7 @@ const (
 	flagOpenStackDNSNameservers             = "dns-nameservers"
 	flagOpenStackExternalNetworkID          = "external-network-id"
 	flagOpenStackNodeCIDR                   = "node-cidr"
-	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume"
+	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume" //nolint:gosec
 	flagOpenStackNetworkName                = "network-name"
 	flagOpenStackSubnetName                 = "subnet-name"
 	flagOpenStackBastionDiskSize            = "bastion-disk-size"

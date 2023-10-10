@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Support deletion prevention for `kubectl gs template app` command
+
 ## [2.42.0] - 2023-10-06
 
 ### Fixed
