@@ -7,13 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Added
-
-- Support deletion prevention for `kubectl gs template app` command
-
 ### Fixed
 
 - Listen only on localhost for callbacks
+
+## [2.43.0] - 2023-10-11
+
+### Added
+
+- Support deletion prevention for `kubectl gs template app` command
 
 ## [2.42.0] - 2023-10-06
 
@@ -1313,7 +1315,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.42.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.43.0...HEAD
+[2.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.42.0...v2.43.0
 [2.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.1...v2.42.0
 [2.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.0...v2.41.1
 [2.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.40.0...v2.41.0
