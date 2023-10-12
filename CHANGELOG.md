@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Make the `--organization` flag visible when templating App CR.
+
 ## [2.43.0] - 2023-10-11
 
 ### Added
