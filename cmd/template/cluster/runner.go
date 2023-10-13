@@ -137,6 +137,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 		GCP:       r.flag.GCP,
 		OIDC:      r.flag.OIDC,
 		OpenStack: r.flag.OpenStack,
+		VSphere:   r.flag.VSphere,
 	}
 
 	if config.Name == "" {
