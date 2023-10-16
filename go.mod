@@ -33,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.mozilla.org/sops/v3 v3.7.3
-	golang.org/x/oauth2 v0.11.0
+	golang.org/x/oauth2 v0.13.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.0
 	k8s.io/api v0.25.0
@@ -102,10 +102,10 @@ require (
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/s2a-go v0.1.4 // indirect
+	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.3.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.2.5 // indirect
+	github.com/google/uuid v1.3.1 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/goware/prefixer v0.0.0-20160118172347-395022866408 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
@@ -165,18 +165,17 @@ require (
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.starlark.net v0.0.0-20230807144010-2aa75752d1da // indirect
-	golang.org/x/crypto v0.12.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
-	google.golang.org/api v0.135.0 // indirect
+	google.golang.org/api v0.147.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230807174057-1744710a1577 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
-	google.golang.org/grpc v1.57.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231009173412-8bfb1ae86b6c // indirect
+	google.golang.org/grpc v1.58.2 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
@@ -205,8 +204,6 @@ replace (
 	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v1.10.0
 	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
-	// CVE-2023-3978
-	golang.org/x/net => golang.org/x/net v0.13.0
 	golang.org/x/text => golang.org/x/text v0.11.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
