@@ -85,8 +85,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	_ = cmd.Flags().MarkDeprecated(flagNamespace, fmt.Sprintf("use --%s instead", flagTargetNamespace))
 	_ = cmd.Flags().MarkDeprecated(flagCluster, fmt.Sprintf("use --%s instead", flagClusterName))
-
-	_ = cmd.Flags().MarkHidden(flagOrganization)
 }
 
 func (f *flag) Validate() error {
