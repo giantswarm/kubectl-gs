@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- Listen only on localhost for callbacks
+- `kubectl-gs login`: listen only on localhost for callbacks
 
 ## [2.43.0] - 2023-10-11
 
