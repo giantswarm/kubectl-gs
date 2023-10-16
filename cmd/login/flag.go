@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	flagClusterAdmin   = "cluster-admin"
-	flagInternalAPI    = "internal-api"
-	callbackServerPort = "callback-port"
-	flagKeepContext    = "keep-context"
+	flagClusterAdmin       = "cluster-admin"
+	flagInternalAPI        = "internal-api"
+	flagCallbackServerHost = "callback-host"
+	flagCallbackServerPort = "callback-port"
+	flagKeepContext        = "keep-context"
 
 	flagWCName              = "workload-cluster"
 	flagWCOrganization      = "organization"
@@ -33,6 +34,7 @@ const (
 )
 
 type flag struct {
+	CallbackServerHost string
 	CallbackServerPort int
 	ClusterAdmin       bool
 	InternalAPI        bool
@@ -57,7 +59,8 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().IntVar(&f.CallbackServerPort, callbackServerPort, 0, "TCP port to use by the OIDC callback server. If not specified, a free port will be selected randomly.")
+	cmd.Flags().StringVar(&f.CallbackServerHost, flagCallbackServerHost, "localhost", "Address to listen on for the OIDC callback server. If not specified, it only listens on 'localhost'. Use an empty value or '0.0.0.0' to listen on all interfaces. The redirect URL will still contain 'http://localhost' since that is the allowed URL.")
+	cmd.Flags().IntVar(&f.CallbackServerPort, flagCallbackServerPort, 0, "TCP port to use by the OIDC callback server. If not specified, a free port will be selected randomly.")
 	cmd.Flags().BoolVar(&f.ClusterAdmin, flagClusterAdmin, false, "Log in as Giant Swarm staff member.")
 	cmd.Flags().BoolVar(&f.InternalAPI, flagInternalAPI, false, "Use Internal API in the kube config. Please check the documentation for more details.")
 	cmd.Flags().StringVar(&f.SelfContained, flagSelfContained, "", "Create a self-contained kubectl config with embedded credentials and write it to this path.")

@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Make the `--organization` flag visible when templating App CR.
 
+### Fixed
+
+- `kubectl-gs login`: listen only on localhost for callbacks
+
 ## [2.43.0] - 2023-10-11
 
 ### Added
