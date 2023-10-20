@@ -6,10 +6,10 @@ require (
 	dario.cat/mergo v1.0.0
 	github.com/3th1nk/cidr v0.2.0
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/ProtonMail/gopenpgp/v2 v2.7.2
+	github.com/ProtonMail/gopenpgp/v2 v2.7.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
-	github.com/coreos/go-oidc/v3 v3.5.0
+	github.com/coreos/go-oidc/v3 v3.7.0
 	github.com/fatih/color v1.15.0
 	github.com/giantswarm/apiextensions-application v0.6.0
 	github.com/giantswarm/apiextensions/v6 v6.6.0
@@ -23,19 +23,19 @@ require (
 	github.com/giantswarm/organization-operator v1.6.0
 	github.com/giantswarm/release-operator/v4 v4.1.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
-	github.com/google/go-cmp v0.5.9
+	github.com/google/go-cmp v0.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
-	github.com/spf13/afero v1.9.5
+	github.com/spf13/afero v1.10.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.mozilla.org/sops/v3 v3.7.3
+	go.mozilla.org/sops/v3 v3.8.1
 	golang.org/x/oauth2 v0.13.0
 	gopkg.in/square/go-jose.v2 v2.6.0
-	gotest.tools/v3 v3.5.0
+	gotest.tools/v3 v3.5.1
 	k8s.io/api v0.25.0
 	k8s.io/apiextensions-apiserver v0.25.0
 	k8s.io/apimachinery v0.25.0
@@ -192,11 +192,11 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18 // [CVE-2023-25153]
-	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.7
+	github.com/containerd/containerd => github.com/containerd/containerd v1.7.7 // [CVE-2023-25153]
+	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.9
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
-	github.com/docker/docker => github.com/moby/moby/v24 v24.0.1 // Use moby v20.10.x to fix build issue on darwin.
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
+	github.com/docker/docker => github.com/moby/moby/v24 v24.0.6 // Use moby v20.10.x to fix build issue on darwin.
+	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.25.1
@@ -204,7 +204,7 @@ replace (
 	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v1.10.0
 	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
-	golang.org/x/text => golang.org/x/text v0.11.0
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.1
+	golang.org/x/text => golang.org/x/text v0.13.0
+	helm.sh/helm/v3 => helm.sh/helm/v3 v3.13.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
