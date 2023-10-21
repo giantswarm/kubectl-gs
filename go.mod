@@ -204,7 +204,7 @@ replace (
 	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v1.10.0
 	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
-	golang.org/x/text => golang.org/x/text v0.11.0
+	golang.org/x/text => golang.org/x/text v0.13.0
 	helm.sh/helm/v3 => helm.sh/helm/v3 v3.11.1
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.0.4
 )
