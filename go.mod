@@ -6,7 +6,7 @@ require (
 	dario.cat/mergo v1.0.0
 	github.com/3th1nk/cidr v0.2.0
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/ProtonMail/gopenpgp/v2 v2.7.2
+	github.com/ProtonMail/gopenpgp/v2 v2.7.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.5.0
