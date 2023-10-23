@@ -32,7 +32,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.mozilla.org/sops/v3 v3.7.3
+	go.mozilla.org/sops/v3 v3.8.1
 	golang.org/x/oauth2 v0.13.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.1
