@@ -201,6 +201,45 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capz.golden",
 		},
+		{
+			name: "case 5: template cluster capv",
+			flags: &flag{
+				Name:              "test1",
+				Provider:          "vsphere",
+				Description:       "yet another test cluster",
+				Organization:      "test",
+				KubernetesVersion: "v1.2.3",
+				App: provider.AppConfig{
+					ClusterVersion:     "1.2.3",
+					ClusterCatalog:     "foo-catalog",
+					DefaultAppsCatalog: "foo-default-catalog",
+					DefaultAppsVersion: "3.2.1",
+				},
+				VSphere: provider.VSphereConfig{
+					ServiceLoadBalancerCIDR: "1.2.3.4/32",
+					ResourcePool:            "foopool",
+					NetworkName:             "foonet",
+					CredentialsSecretName:   "foosecret",
+					ImageTemplate:           "foo-%-os",
+					ControlPlane: provider.VSphereControlPlane{
+						VSphereMachineTemplate: provider.VSphereMachineTemplate{
+							DiskGiB:   42,
+							MemoryMiB: 42000,
+							NumCPUs:   6,
+							Replicas:  5,
+						},
+					},
+					Worker: provider.VSphereMachineTemplate{
+						DiskGiB:   43,
+						MemoryMiB: 43000,
+						NumCPUs:   7,
+						Replicas:  4,
+					},
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capv.golden",
+		},
 	}
 
 	for _, tc := range testCases {
