@@ -1,9 +1,9 @@
 package helper
 
 import (
-	sops "go.mozilla.org/sops/v3"
-	"go.mozilla.org/sops/v3/cmd/sops/formats"
-	"go.mozilla.org/sops/v3/decrypt"
+	sops "github.com/getsops/sops/v3"
+	"github.com/getsops/sops/v3/cmd/sops/formats"
+	"github.com/getsops/sops/v3/decrypt"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/microerror"
