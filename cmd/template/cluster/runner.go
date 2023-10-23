@@ -35,7 +35,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
-	err := r.flag.Validate()
+	err := r.flag.Validate(cmd)
 	if err != nil {
 		return microerror.Mask(err)
 	}

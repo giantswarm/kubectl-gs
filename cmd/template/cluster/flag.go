@@ -351,7 +351,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	f.print.AddFlags(cmd)
 }
 
-func (f *flag) Validate() error {
+func (f *flag) Validate(cmd *cobra.Command) error {
 	var err error
 	validProviders := []string{
 		key.ProviderAWS,
@@ -434,7 +434,8 @@ func (f *flag) Validate() error {
 			if !validateCIDR(f.VSphere.ServiceLoadBalancerCIDR) {
 				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagVSphereServiceLoadBalancerCIDR)
 			}
-			if f.KubernetesVersion == defaultKubernetesVersion {
+			ver, err := cmd.Flags().GetString(flagKubernetesVersion)
+			if err != nil || ver == "" {
 				f.KubernetesVersion = defaultVSphereKubernetesVersion
 			}
 			if f.VSphere.Worker.Replicas < 1 {
