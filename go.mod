@@ -219,7 +219,7 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.7.7 // [CVE-2023-25153]
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.9
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
-	github.com/docker/docker => github.com/moby/moby v23.0.7+incompatible
+	github.com/docker/docker => github.com/moby/moby v24.0.6+incompatible
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
