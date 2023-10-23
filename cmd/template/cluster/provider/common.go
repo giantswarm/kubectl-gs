@@ -80,7 +80,8 @@ type VSphereMachineTemplate struct {
 }
 
 type VSphereControlPlane struct {
-	IP string
+	IP         string
+	IPPoolName string
 	VSphereMachineTemplate
 }
 

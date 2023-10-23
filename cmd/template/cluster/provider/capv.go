@@ -127,7 +127,7 @@ func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 				AllowAllEgress: true,
 				ControlPlaneEndpoint: &capv.ControlPlaneEndpoint{
 					Host:       config.VSphere.ControlPlane.IP,
-					IpPoolName: "wc-cp-ips",
+					IpPoolName: config.VSphere.ControlPlane.IPPoolName,
 					Port:       6443,
 				},
 				LoadBalancers: &capv.LoadBalancers{

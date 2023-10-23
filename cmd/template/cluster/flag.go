@@ -95,6 +95,7 @@ const (
 	flagVSphereServiceLoadBalancerCIDR = "vsphere-service-load-balancer-cidr"
 	flagVSphereNetworkName             = "vsphere-network-name"
 	flagVSphereControlPlaneDiskGiB     = "vsphere-control-plane-disk-gib"
+	flagVSphereControlPlaneIpPool      = "vsphere-control-plane-ip-pool"
 	flagVSphereControlPlaneMemoryMiB   = "vsphere-control-plane-memory-mib"
 	flagVSphereControlPlaneNumCPUs     = "vsphere-control-plane-num-cpus"
 	flagVSphereControlPlaneReplicas    = "vsphere-control-plane-replicas"
@@ -241,6 +242,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IP, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
 	cmd.Flags().StringVar(&f.VSphere.ServiceLoadBalancerCIDR, flagVSphereServiceLoadBalancerCIDR, "", "CIDR for Service LB for new cluster")
 	cmd.Flags().StringVar(&f.VSphere.NetworkName, flagVSphereNetworkName, "grasshopper-capv", "Network name in vcenter that should be used for the new VMs")
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IPPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.DiskGiB, flagVSphereControlPlaneDiskGiB, 50, "Disk size in GiB for control individual plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8096, "Memory size in MiB for individual control plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.NumCPUs, flagVSphereControlPlaneNumCPUs, 4, "Number of CPUs for individual control plane nodes")

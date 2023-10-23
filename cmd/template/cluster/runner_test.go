@@ -228,6 +228,7 @@ func Test_run(t *testing.T) {
 							NumCPUs:   6,
 							Replicas:  5,
 						},
+						IPPoolName: "foo-pool",
 					},
 					Worker: provider.VSphereMachineTemplate{
 						DiskGiB:   43,

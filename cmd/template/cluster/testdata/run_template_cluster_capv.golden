@@ -11,7 +11,7 @@ data:
         allowAllEgress: true
         controlPlaneEndpoint:
           host: ""
-          ipPoolName: wc-cp-ips
+          ipPoolName: foo-pool
           port: 6443
         loadBalancers:
           cidrBlocks:
