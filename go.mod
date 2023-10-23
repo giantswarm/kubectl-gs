@@ -196,7 +196,7 @@ replace (
 	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.9
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby/v24 v24.0.1 // Use moby v20.10.x to fix build issue on darwin.
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.4
+	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
 	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.25.1
