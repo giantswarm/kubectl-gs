@@ -9,6 +9,7 @@ import (
 
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capv"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capz"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
@@ -102,6 +103,8 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 		return generateCapGClusterBaseTemplates(config)
 	case key.ProviderOpenStack:
 		return generateCapOClusterBaseTemplates(config)
+	case key.ProviderVSphere:
+		return generateCapVClusterBaseTemplates(config)
 	}
 
 	return common.ClusterBaseTemplates{}, invalidProviderError
@@ -269,6 +272,48 @@ func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	}
 
 	defaultAppsValues, err := openstack.GenerateDefaultAppsValues(openstack.DefaultAppsConfig{
+		ClusterName:  "${cluster_name}",
+		Organization: "${organization}",
+	})
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterBaseTemplates.ClusterAppCr = clusterAppCr
+	clusterBaseTemplates.ClusterValues = clusterValues
+	clusterBaseTemplates.DefaultAppsAppCr = defaultAppsAppCr
+	clusterBaseTemplates.DefaultAppsValues = defaultAppsValues
+
+	return clusterBaseTemplates, nil
+}
+
+func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
+	clusterBaseTemplates := common.ClusterBaseTemplates{}
+
+	clusterAppCr, err := generateClusterAppCrTemplate("cluster-vsphere")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	clusterConfig := providers.BuildCapvClusterConfig(providers.ClusterConfig{
+		Name:         "${cluster_name}",
+		Organization: "${organization}",
+	})
+	clusterValues, err := capv.GenerateClusterValues(clusterConfig)
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsAppCr, err := generateDefaultAppsAppCrTemplate("default-apps-vsphere")
+
+	if err != nil {
+		return clusterBaseTemplates, err
+	}
+
+	defaultAppsValues, err := capv.GenerateDefaultAppsValues(capv.DefaultAppsConfig{
 		ClusterName:  "${cluster_name}",
 		Organization: "${organization}",
 	})
