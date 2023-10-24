@@ -49,7 +49,7 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:              config.ClusterName,
-				capi.ClusterLabelName:      config.ClusterName,
+				capi.ClusterNameLabel:      config.ClusterName,
 				label.MachinePool:          config.NodePoolName,
 				label.Organization:         config.Organization,
 				label.ReleaseVersion:       config.ReleaseVersion,
@@ -89,7 +89,7 @@ func newSparkCR(config NodePoolCRsConfig) *corev1alpha1.Spark {
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:         config.ClusterName,
-				capi.ClusterLabelName: config.ClusterName,
+				capi.ClusterNameLabel: config.ClusterName,
 				label.ReleaseVersion:  config.ReleaseVersion,
 			},
 		},

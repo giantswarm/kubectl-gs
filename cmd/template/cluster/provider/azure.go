@@ -96,7 +96,7 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:              config.Name,
-				capi.ClusterLabelName:      config.Name,
+				capi.ClusterNameLabel:      config.Name,
 				label.Organization:         config.Organization,
 				label.ReleaseVersion:       config.ReleaseVersion,
 				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
@@ -139,12 +139,12 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			Name:      fmt.Sprintf("%s-master-%d", config.Name, 0),
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                     config.Name,
-				capi.ClusterLabelName:             config.Name,
-				capi.MachineControlPlaneLabelName: "true",
-				label.Organization:                config.Organization,
-				label.ReleaseVersion:              config.ReleaseVersion,
-				label.AzureOperatorVersion:        config.ReleaseComponents["azure-operator"],
+				label.Cluster:                 config.Name,
+				capi.ClusterNameLabel:         config.Name,
+				capi.MachineControlPlaneLabel: "true",
+				label.Organization:            config.Organization,
+				label.ReleaseVersion:          config.ReleaseVersion,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 			},
 		},
 		Spec: capz.AzureMachineSpec{
@@ -152,10 +152,12 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			FailureDomain: failureDomain,
 			Image: &capz.Image{
 				Marketplace: &capz.AzureMarketplaceImage{
-					Publisher: "kinvolk",
-					Offer:     "flatcar-container-linux-free",
-					SKU:       "stable",
-					Version:   config.ReleaseComponents["containerlinux"],
+					ImagePlan: capz.ImagePlan{
+						Publisher: "kinvolk",
+						Offer:     "flatcar-container-linux-free",
+						SKU:       "stable",
+					},
+					Version: config.ReleaseComponents["containerlinux"],
 				},
 			},
 			OSDisk: capz.OSDisk{

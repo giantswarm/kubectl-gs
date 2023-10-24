@@ -109,7 +109,7 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 				label.Cluster:            c.ClusterName,
 				label.Organization:       c.Owner,
 				label.ReleaseVersion:     c.ReleaseVersion,
-				capi.ClusterLabelName:    c.ClusterName,
+				capi.ClusterNameLabel:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSClusterSpec{
@@ -166,7 +166,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 				label.ControlPlane:       c.ControlPlaneName,
 				label.Organization:       c.Owner,
 				label.ReleaseVersion:     c.ReleaseVersion,
-				capi.ClusterLabelName:    c.ClusterName,
+				capi.ClusterNameLabel:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
@@ -186,7 +186,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 		gsLabels := map[string]string{
 			label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
 			label.Cluster:                c.ClusterName,
-			capi.ClusterLabelName:        c.ClusterName,
+			capi.ClusterNameLabel:        c.ClusterName,
 			label.Organization:           c.Owner,
 			label.ReleaseVersion:         c.ReleaseVersion,
 
@@ -248,7 +248,7 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 				label.ControlPlane:           c.ControlPlaneName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				capi.ClusterLabelName:        c.ClusterName,
+				capi.ClusterNameLabel:        c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{

@@ -109,7 +109,7 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:              config.ClusterName,
-				capi.ClusterLabelName:      config.ClusterName,
+				capi.ClusterNameLabel:      config.ClusterName,
 				label.MachinePool:          config.NodePoolName,
 				label.Organization:         config.Organization,
 				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
