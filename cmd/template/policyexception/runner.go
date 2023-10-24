@@ -65,7 +65,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	policyexceptionCR, err := template.NewPolicyExceptionCR(config, client)
+	policyexceptionCR, err := template.NewPolicyExceptionCR(config, client.CtrlClient())
 	if err != nil {
 		return microerror.Mask(err)
 	}

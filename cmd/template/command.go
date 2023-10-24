@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/networkpool"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/nodepool"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/organization"
+	"github.com/giantswarm/kubectl-gs/v2/cmd/template/policyexception"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 )
 
@@ -133,6 +134,21 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var policyexceptionCmd *cobra.Command
+	{
+		c := policyexception.Config{
+			Logger:      config.Logger,
+			ConfigFlags: config.ConfigFlags,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
+		}
+
+		policyexceptionCmd, err = policyexception.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -161,6 +177,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(networkpoolCmd)
 	c.AddCommand(nodepoolCmd)
 	c.AddCommand(organizationCmd)
+	c.AddCommand(policyexceptionCmd)
 
 	return c, nil
 }
