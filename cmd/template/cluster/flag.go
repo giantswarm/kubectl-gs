@@ -90,6 +90,23 @@ const (
 	flagOpenStackWorkerMachineFlavor        = "worker-machine-flavor"
 	flagOpenStackWorkerReplicas             = "worker-replicas"
 
+	// VSphere only.
+	flagVSphereControlPlaneIP          = "vsphere-control-plane-ip"
+	flagVSphereServiceLoadBalancerCIDR = "vsphere-service-load-balancer-cidr"
+	flagVSphereNetworkName             = "vsphere-network-name"
+	flagVSphereControlPlaneDiskGiB     = "vsphere-control-plane-disk-gib"
+	flagVSphereControlPlaneIpPool      = "vsphere-control-plane-ip-pool"
+	flagVSphereControlPlaneMemoryMiB   = "vsphere-control-plane-memory-mib"
+	flagVSphereControlPlaneNumCPUs     = "vsphere-control-plane-num-cpus"
+	flagVSphereControlPlaneReplicas    = "vsphere-control-plane-replicas"
+	flagVSphereWorkerDiskGiB           = "vsphere-worker-disk-gib"
+	flagVSphereWorkerMemoryMiB         = "vsphere-worker-memory-mib"
+	flagVSphereWorkerNumCPUs           = "vsphere-worker-num-cpus"
+	flagVSphereWorkerReplicas          = "vsphere-worker-replicas"
+	flagVSphereResourcePool            = "vsphere-resource-pool"
+	flagVSphereImageTemplate           = "vsphere-image-template"
+	flagVSphereCredentialsSecretName   = "vsphere-credentials-secret-name" // #nosec G101
+
 	// Common.
 	flagRegion                   = "region"
 	flagBastionInstanceType      = "bastion-instance-type"
@@ -110,6 +127,10 @@ const (
 	flagRelease                  = "release"
 	flagLabel                    = "label"
 	flagServicePriority          = "service-priority"
+
+	// defaults
+	defaultKubernetesVersion        = "v1.20.9"
+	defaultVSphereKubernetesVersion = "v1.24.11"
 )
 
 type flag struct {
@@ -137,6 +158,7 @@ type flag struct {
 	Azure     provider.AzureConfig
 	GCP       provider.GCPConfig
 	OpenStack provider.OpenStackConfig
+	VSphere   provider.VSphereConfig
 	App       provider.AppConfig
 	OIDC      provider.OIDC
 
@@ -216,6 +238,23 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.OpenStack.Worker.Flavor, flagOpenStackWorkerMachineFlavor, "", "Default worker node pool machine flavor (OpenStack only).")
 	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 0, "Default worker node pool replicas (OpenStack only).")
 
+	// VSphere only
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IP, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
+	cmd.Flags().StringVar(&f.VSphere.ServiceLoadBalancerCIDR, flagVSphereServiceLoadBalancerCIDR, "", "CIDR for Service LB for new cluster")
+	cmd.Flags().StringVar(&f.VSphere.NetworkName, flagVSphereNetworkName, "grasshopper-capv", "Network name in vcenter that should be used for the new VMs")
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IPPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.DiskGiB, flagVSphereControlPlaneDiskGiB, 50, "Disk size in GiB for control individual plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8096, "Memory size in MiB for individual control plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.NumCPUs, flagVSphereControlPlaneNumCPUs, 4, "Number of CPUs for individual control plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.Replicas, flagVSphereControlPlaneReplicas, 3, "Number of control plane replicas (use odd number)")
+	cmd.Flags().IntVar(&f.VSphere.Worker.DiskGiB, flagVSphereWorkerDiskGiB, 50, "Disk size in GiB for control individual worker nodes")
+	cmd.Flags().IntVar(&f.VSphere.Worker.MemoryMiB, flagVSphereWorkerMemoryMiB, 14144, "Memory size in MiB for individual worker plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.Worker.NumCPUs, flagVSphereWorkerNumCPUs, 6, "Number of CPUs for individual worker plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
+	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "grasshopper", "What resource pool in vsphere should be used")
+	cmd.Flags().StringVar(&f.VSphere.ImageTemplate, flagVSphereImageTemplate, "ubuntu-2004-kube-%s", "OS images with Kubernetes that should be used for VMs. The '%s' will be replaced with correct Kubernetes version.")
+	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
+
 	// App-based clusters only.
 	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
 	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created.")
@@ -283,7 +322,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes. Azure only supports one.")
 	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
-	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, "v1.20.9", "Cluster Kubernetes version.")
+	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
@@ -312,7 +351,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	f.print.AddFlags(cmd)
 }
 
-func (f *flag) Validate() error {
+func (f *flag) Validate(cmd *cobra.Command) error {
 	var err error
 	validProviders := []string{
 		key.ProviderAWS,
@@ -387,6 +426,23 @@ func (f *flag) Validate() error {
 		case key.ProviderAzure:
 			if len(f.ControlPlaneAZ) > 1 {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
+			}
+		case key.ProviderVSphere:
+			if f.VSphere.ServiceLoadBalancerCIDR == "" {
+				return microerror.Maskf(invalidFlagError, "CIDR range from which the public IPs for Services of type LoadBalancer are taken (required) (--%s)", flagVSphereServiceLoadBalancerCIDR)
+			}
+			if !validateCIDR(f.VSphere.ServiceLoadBalancerCIDR) {
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagVSphereServiceLoadBalancerCIDR)
+			}
+			ver, err := cmd.Flags().GetString(flagKubernetesVersion)
+			if err != nil || ver == "" {
+				f.KubernetesVersion = defaultVSphereKubernetesVersion
+			}
+			if f.VSphere.Worker.Replicas < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereWorkerReplicas)
+			}
+			if f.VSphere.ControlPlane.Replicas < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereControlPlaneReplicas)
 			}
 		case key.ProviderOpenStack:
 			if f.OpenStack.Cloud == "" {

@@ -31,6 +31,7 @@ type Config struct {
 	UpgradeTimeout             *metav1.Duration
 	UserConfigConfigMapName    string
 	UserConfigSecretName       string
+	ExtraConfigs               []applicationv1alpha1.AppExtraConfig
 	Organization               string
 	RollbackTimeout            *metav1.Duration
 	Version                    string
@@ -114,8 +115,9 @@ func NewAppCR(config Config) ([]byte, error) {
 			KubeConfig: applicationv1alpha1.AppSpecKubeConfig{
 				InCluster: config.InCluster,
 			},
-			UserConfig: userConfig,
-			Version:    config.Version,
+			UserConfig:   userConfig,
+			ExtraConfigs: config.ExtraConfigs,
+			Version:      config.Version,
 			NamespaceConfig: applicationv1alpha1.AppSpecNamespaceConfig{
 				Annotations: config.NamespaceConfigAnnotations,
 				Labels:      config.NamespaceConfigLabels,

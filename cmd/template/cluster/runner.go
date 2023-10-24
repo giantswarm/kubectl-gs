@@ -35,7 +35,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
-	err := r.flag.Validate()
+	err := r.flag.Validate(cmd)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -137,6 +137,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 		GCP:       r.flag.GCP,
 		OIDC:      r.flag.OIDC,
 		OpenStack: r.flag.OpenStack,
+		VSphere:   r.flag.VSphere,
 	}
 
 	if config.Name == "" {

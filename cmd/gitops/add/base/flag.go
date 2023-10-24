@@ -28,6 +28,7 @@ func supportedProviders() []string {
 		key.ProviderCAPZ,
 		key.ProviderGCP,
 		key.ProviderOpenStack,
+		key.ProviderVSphere,
 	}
 }
 
