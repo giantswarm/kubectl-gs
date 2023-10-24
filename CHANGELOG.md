@@ -15,6 +15,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   - Migrate sigs.k8s.io/cluster-api-provider-aws to v2 (2.2.4).
   - Upgrade sigs.k8s.io/cluster-api-provider-azure to v1.11.4.
   - Upgrade sigs.k8s.io/controller-runtime to v0.16.3.
+  - Upgrade github.com/coreos/go-oidc/v3 to v3.6.0.
   - Upgrade other dependencies.
   - Replace capi.ClusterLabelName with capi.ClusterNameLabel.
 
