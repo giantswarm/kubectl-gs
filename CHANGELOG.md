@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.45.0] - 2023-10-25
 
+### Added
+
+- `cluster template` for up-to-date vsphere cluster app.
+
 ## [2.44.0] - 2023-10-16
 
 ### Changed
@@ -18,10 +22,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - `kubectl-gs login`: listen only on localhost for callbacks
-
-### Added
-
-- `cluster template` for up-to-date vsphere cluster app.
 
 ## [2.43.0] - 2023-10-11
 
