@@ -313,6 +313,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentReplicas)
 	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentInstanceType)
 
+	_ = cmd.Flags().MarkHidden(flagVSphereImageTemplate)
+
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
 	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
@@ -434,9 +436,16 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 			if !validateCIDR(f.VSphere.ServiceLoadBalancerCIDR) {
 				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagVSphereServiceLoadBalancerCIDR)
 			}
-			ver, err := cmd.Flags().GetString(flagKubernetesVersion)
-			if err != nil || ver == "" {
+			if !cmd.Flags().Changed(flagKubernetesVersion) {
 				f.KubernetesVersion = defaultVSphereKubernetesVersion
+			}
+			// todo: add validation for flagVSphereImageTemplate
+			placeholders := strings.Count(f.VSphere.ImageTemplate, "%s")
+			if placeholders > 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must contain at most one occurrence of '%%s' where k8s version will be injected", flagVSphereImageTemplate)
+			}
+			if placeholders == 1 {
+				f.VSphere.ImageTemplate = fmt.Sprintf(f.VSphere.ImageTemplate, f.KubernetesVersion)
 			}
 			if f.VSphere.Worker.Replicas < 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereWorkerReplicas)

@@ -29,7 +29,7 @@ data:
             networkName: foonet
         numCPUs: 6
         resourcePool: foopool
-        template: foo-%!o(string=v1.2.3)s
+        template: foobar
       replicas: 5
     helmReleases:
       cilium:
@@ -49,7 +49,7 @@ data:
             networkName: foonet
         numCPUs: 7
         resourcePool: foopool
-        template: foo-%!o(string=v1.2.3)s
+        template: foobar
     nodePools:
       worker:
         class: default
