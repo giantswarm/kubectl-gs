@@ -31,7 +31,7 @@ func TestRunner_Run(t *testing.T) {
 		{
 			name: "",
 			flag: &flag{
-				Name:   "example",
+				Draft:  "example",
 				Output: "",
 			},
 			expectedGoldenFile: "run_with_name.golden",
