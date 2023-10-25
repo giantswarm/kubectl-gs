@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.45.0] - 2023-10-25
+
+### Added
+
+- `cluster template` for up-to-date vsphere cluster app.
+
 ## [2.44.0] - 2023-10-16
 
 ### Changed
@@ -16,10 +22,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - `kubectl-gs login`: listen only on localhost for callbacks
-
-### Added
-
-- `cluster template` for up-to-date vsphere cluster app.
 
 ## [2.43.0] - 2023-10-11
 
@@ -1325,7 +1327,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.44.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.0...HEAD
+[2.45.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.44.0...v2.45.0
 [2.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.43.0...v2.44.0
 [2.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.42.0...v2.43.0
 [2.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.1...v2.42.0

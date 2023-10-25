@@ -241,7 +241,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IP, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
 	cmd.Flags().StringVar(&f.VSphere.ServiceLoadBalancerCIDR, flagVSphereServiceLoadBalancerCIDR, "", "CIDR for Service LB for new cluster")
-	cmd.Flags().StringVar(&f.VSphere.NetworkName, flagVSphereNetworkName, "grasshopper-capv", "Network name in vcenter that should be used for the new VMs")
+	cmd.Flags().StringVar(&f.VSphere.NetworkName, flagVSphereNetworkName, "", "Network name in vcenter that should be used for the new VMs")
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IPPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.DiskGiB, flagVSphereControlPlaneDiskGiB, 50, "Disk size in GiB for control individual plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8096, "Memory size in MiB for individual control plane nodes")
@@ -251,7 +251,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.VSphere.Worker.MemoryMiB, flagVSphereWorkerMemoryMiB, 14144, "Memory size in MiB for individual worker plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.Worker.NumCPUs, flagVSphereWorkerNumCPUs, 6, "Number of CPUs for individual worker plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
-	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "grasshopper", "What resource pool in vsphere should be used")
+	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "*/Resources", "What resource pool in vsphere should be used")
 	cmd.Flags().StringVar(&f.VSphere.ImageTemplate, flagVSphereImageTemplate, "ubuntu-2004-kube-%s", "OS images with Kubernetes that should be used for VMs. The '%s' will be replaced with correct Kubernetes version.")
 	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
 
