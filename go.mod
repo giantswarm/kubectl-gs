@@ -1,6 +1,6 @@
 module github.com/giantswarm/kubectl-gs/v2
 
-go 1.19
+go 1.20
 
 require (
 	dario.cat/mergo v1.0.0
