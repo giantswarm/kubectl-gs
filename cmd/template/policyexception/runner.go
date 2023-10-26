@@ -11,8 +11,10 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
+	polexdraftv1alpha1 "github.com/giantswarm/exception-recommender/api/v1alpha1"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 	template "github.com/giantswarm/kubectl-gs/v2/pkg/template/policyexception"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type runner struct {
@@ -30,7 +32,13 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	err = r.run(ctx, cmd, args)
+
+	client, err := r.commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.run(ctx, client.CtrlClient(), args)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -38,16 +46,11 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+func (r *runner) run(ctx context.Context, client runtimeclient.Client, args []string) error {
 	var err error
 
 	config := template.Config{
 		Name: r.flag.Draft,
-	}
-
-	client, err := r.commonConfig.GetClient(r.logger)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	var outputWriter io.Writer
@@ -65,10 +68,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	policyexceptionCR, err := template.NewPolicyExceptionCR(config, client.CtrlClient())
+	polexdraft := polexdraftv1alpha1.PolicyExceptionDraft{}
+	err = client.Get(ctx, runtimeclient.ObjectKey{Namespace: "policy-exceptions", Name: config.Name}, &polexdraft)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	policyexceptionCR := template.NewPolicyExceptionCR(polexdraft)
 
 	policyexceptionCRYaml, err := yaml.Marshal(policyexceptionCR)
 	if err != nil {

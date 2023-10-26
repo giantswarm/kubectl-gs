@@ -1,0 +1,15 @@
+apiVersion: policy.giantswarm.io/v1alpha1
+kind: PolicyExceptionDraft
+metadata:
+  name: test-app
+  namespace: policy-exceptions
+spec:
+  policies:
+  - restrict-policy
+  targets:
+  - kind: Deployment
+    names:
+    - test-app*
+    namespaces:
+    - test-app
+
