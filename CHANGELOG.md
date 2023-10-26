@@ -9,6 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [2.45.3] - 2023-10-26
 
+## [2.45.3] - 2023-10-26
+
 ## [2.45.2] - 2023-10-26
 
 ## [2.45.1] - 2023-10-26
@@ -1346,6 +1348,7 @@ This release supports rendering for CRs:
 - `App`
 
 [Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...HEAD
+[2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.3
 [2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.2...v2.45.3
 [2.45.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.1...v2.45.2
 [2.45.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.0...v2.45.1
