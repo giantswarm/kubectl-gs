@@ -74,9 +74,9 @@ func GenerateName(enableLongNames bool) (string, error) {
 			length = NameLengthLong
 		}
 		characters := make([]rune, length)
-		rand.Seed(time.Now().UnixNano())
+		r := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 		for i := range characters {
-			characters[i] = letterRunes[rand.Intn(len(letterRunes))] //nolint:gosec
+			characters[i] = letterRunes[r.Intn(len(letterRunes))] //nolint:gosec
 		}
 
 		generatedName := string(characters)
