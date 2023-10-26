@@ -184,7 +184,7 @@ func getMachineTemplate(machineTemplate *VSphereMachineTemplate, clusterConfig *
 		NumCPUs:      machineTemplate.NumCPUs,
 		MemoryMiB:    machineTemplate.MemoryMiB,
 		ResourcePool: config.ResourcePool,
-		Template:     fmt.Sprintf(config.ImageTemplate, clusterConfig.KubernetesVersion),
+		Template:     config.ImageTemplate,
 	}
 }
 

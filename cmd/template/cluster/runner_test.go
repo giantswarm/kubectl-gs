@@ -220,7 +220,7 @@ func Test_run(t *testing.T) {
 					ResourcePool:            "foopool",
 					NetworkName:             "foonet",
 					CredentialsSecretName:   "foosecret",
-					ImageTemplate:           "foo-%-os",
+					ImageTemplate:           "foobar",
 					ControlPlane: provider.VSphereControlPlane{
 						VSphereMachineTemplate: provider.VSphereMachineTemplate{
 							DiskGiB:   42,
