@@ -81,7 +81,7 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 
 	{
 		labelSelector := runtimeClient.MatchingLabels{
-			capi.ClusterLabelName: name,
+			capi.ClusterNameLabel: name,
 		}
 		crs := &capi.ClusterList{}
 		err = s.client.List(ctx, crs, labelSelector, inNamespace)

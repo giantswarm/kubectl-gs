@@ -11,7 +11,7 @@ import (
 )
 
 type Authenticator struct {
-	provider     gooidc.Provider
+	provider     *gooidc.Provider
 	clientConfig oauth2.Config
 	challenge    string
 }
@@ -62,7 +62,7 @@ func New(ctx context.Context, c Config) (*Authenticator, error) {
 	}
 
 	a := &Authenticator{
-		provider:     *provider,
+		provider:     provider,
 		clientConfig: oauthConfig,
 		challenge:    challenge,
 	}

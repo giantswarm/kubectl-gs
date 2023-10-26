@@ -334,7 +334,7 @@ func newAzureMachinePool(name, clusterName, release string, creationDate time.Ti
 				label.MachinePool:     name,
 				label.ReleaseVersion:  release,
 				label.Organization:    "giantswarm",
-				capi.ClusterLabelName: clusterName,
+				capi.ClusterNameLabel: clusterName,
 			},
 		},
 	}
@@ -356,7 +356,7 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 				label.MachinePool:     name,
 				label.ReleaseVersion:  release,
 				label.Organization:    "giantswarm",
-				capi.ClusterLabelName: clusterName,
+				capi.ClusterNameLabel: clusterName,
 			},
 			Annotations: map[string]string{
 				annotation.NodePoolMinSize: fmt.Sprintf("%d", nodesMin),

@@ -262,7 +262,7 @@ func newcapiCluster(id, release, org, description, servicePriority string, creat
 			Labels: map[string]string{
 				label.ReleaseVersion:  release,
 				label.Organization:    org,
-				capi.ClusterLabelName: id,
+				capi.ClusterNameLabel: id,
 				label.ServicePriority: servicePriority,
 			},
 			Annotations: map[string]string{
@@ -293,7 +293,7 @@ func newAWSClusterResource(id, release, org, description string, creationDate ti
 				label.ReleaseVersion:  release,
 				label.Organization:    org,
 				label.Cluster:         id,
-				capi.ClusterLabelName: id,
+				capi.ClusterNameLabel: id,
 			},
 		},
 		Spec: infrastructurev1alpha3.AWSClusterSpec{
@@ -339,7 +339,7 @@ func newAzureClusterResource(id, namespace string) *capz.AzureCluster {
 			Name:      id,
 			Namespace: namespace,
 			Labels: map[string]string{
-				capi.ClusterLabelName: id,
+				capi.ClusterNameLabel: id,
 			}},
 	}
 

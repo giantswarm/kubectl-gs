@@ -93,7 +93,7 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 				label.MachineDeployment:  c.MachineDeploymentName,
 				label.Organization:       c.Owner,
 				label.ReleaseVersion:     c.ReleaseVersion,
-				capi.ClusterLabelName:    c.ClusterName,
+				capi.ClusterNameLabel:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSMachineDeploymentSpec{
@@ -141,7 +141,7 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 				label.MachineDeployment:      c.MachineDeploymentName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				capi.ClusterLabelName:        c.ClusterName,
+				capi.ClusterNameLabel:        c.ClusterName,
 			},
 		},
 		Spec: capi.MachineDeploymentSpec{

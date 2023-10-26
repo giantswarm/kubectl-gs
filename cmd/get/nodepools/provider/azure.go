@@ -38,10 +38,10 @@ func GetAzureTable(npResource nodepool.Resource, capabilities *feature.Service) 
 			var iClusterName, jClusterName string
 
 			if n.Items[i].MachinePool != nil && n.Items[i].MachinePool.Labels != nil {
-				iClusterName = n.Items[i].MachinePool.Labels[capi.ClusterLabelName]
+				iClusterName = n.Items[i].MachinePool.Labels[capi.ClusterNameLabel]
 			}
 			if n.Items[j].MachinePool != nil && n.Items[j].MachinePool.Labels != nil {
-				jClusterName = n.Items[j].MachinePool.Labels[capi.ClusterLabelName]
+				jClusterName = n.Items[j].MachinePool.Labels[capi.ClusterNameLabel]
 			}
 
 			return strings.Compare(iClusterName, jClusterName) > 0
@@ -63,7 +63,7 @@ func getAzureNodePoolRow(nodePool nodepool.Nodepool, capabilities *feature.Servi
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachinePool.GetName(),
-			nodePool.MachinePool.Labels[capi.ClusterLabelName],
+			nodePool.MachinePool.Labels[capi.ClusterNameLabel],
 			output.TranslateTimestampSince(nodePool.MachinePool.CreationTimestamp),
 			getAzureLatestCondition(nodePool, capabilities),
 			getAzureAutoscaling(nodePool, capabilities),

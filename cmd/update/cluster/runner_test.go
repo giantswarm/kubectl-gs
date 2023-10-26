@@ -79,7 +79,7 @@ func newCluster(name, namespace, targetRelease string) *capi.Cluster {
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.ReleaseVersion:  "16.0.1",
 			},
 			Annotations: map[string]string{

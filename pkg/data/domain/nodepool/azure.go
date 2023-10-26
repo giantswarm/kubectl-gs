@@ -17,7 +17,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace, clusterID string) 
 
 	labelSelector := runtimeClient.MatchingLabels{}
 	if len(clusterID) > 0 {
-		labelSelector[capi.ClusterLabelName] = clusterID
+		labelSelector[capi.ClusterNameLabel] = clusterID
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 
@@ -82,7 +82,7 @@ func (s *Service) getByIdAzure(ctx context.Context, id, namespace, clusterID str
 		label.MachinePool: id,
 	}
 	if len(clusterID) > 0 {
-		labelSelector[capi.ClusterLabelName] = clusterID
+		labelSelector[capi.ClusterNameLabel] = clusterID
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 

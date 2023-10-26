@@ -183,7 +183,7 @@ func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectRefe
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:                config.Name,
-				capi.ClusterLabelName:        config.Name,
+				capi.ClusterNameLabel:        config.Name,
 				label.Organization:           config.Organization,
 				label.ReleaseVersion:         config.ReleaseVersion,
 				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],

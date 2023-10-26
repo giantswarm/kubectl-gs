@@ -553,7 +553,7 @@ func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp 
 			Namespace: namespace,
 			Labels: map[string]string{
 				label.Cluster:         name,
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.Organization:    "organization",
 				label.ReleaseVersion:  "20.0.0",
 			},
@@ -589,7 +589,7 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 			Namespace: namespace,
 			Labels: map[string]string{
 				label.Cluster:         name,
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.Organization:    "organization",
 				label.ReleaseVersion:  "20.0.0",
 			},
@@ -611,7 +611,7 @@ func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSClu
 			Namespace: namespace,
 			Labels: map[string]string{
 				label.Cluster:         name,
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.Organization:    "organization",
 				label.ReleaseVersion:  "20.0.0",
 			},
