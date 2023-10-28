@@ -12,9 +12,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	//nolint:staticcheck
-
 	polexdraftv1alpha1 "github.com/giantswarm/exception-recommender/api/v1alpha1"
+
 	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
 )

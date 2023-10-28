@@ -12,9 +12,10 @@ import (
 	"sigs.k8s.io/yaml"
 
 	polexdraftv1alpha1 "github.com/giantswarm/exception-recommender/api/v1alpha1"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 	template "github.com/giantswarm/kubectl-gs/v2/pkg/template/policyexception"
-	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type runner struct {
