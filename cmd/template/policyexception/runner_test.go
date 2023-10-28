@@ -3,7 +3,6 @@ package policyexception
 import (
 	"bytes"
 	"context"
-	goflag "flag"
 	"testing"
 
 	"github.com/giantswarm/micrologger"
@@ -18,11 +17,9 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
 )
 
-var update = goflag.Bool("update", false, "update .golden reference test files")
-
 // Test_run uses golden files.
 //
-// go test ./cmd/template/policyexception -run Test_run -update
+// go test ./cmd/template/policyexception -run Test_run
 func Test_run(t *testing.T) {
 	testCases := []struct {
 		name               string
