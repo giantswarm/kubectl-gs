@@ -9,9 +9,12 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	//nolint:staticcheck
 
+	polexdraftv1alpha1 "github.com/giantswarm/exception-recommender/api/v1alpha1"
 	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
 )
@@ -29,6 +32,7 @@ func Test_run(t *testing.T) {
 		clusterName        string
 		expectedGoldenFile string
 		errorMatcher       func(error) bool
+		storage            []runtime.Object
 	}{
 		{
 			name: "template polex",
@@ -37,6 +41,7 @@ func Test_run(t *testing.T) {
 			},
 			args:               nil,
 			expectedGoldenFile: "run_template_polex.golden",
+			storage:            []runtime.Object{newPolexDraft("test-app", "policy-exceptions")},
 		},
 	}
 
@@ -58,7 +63,7 @@ func Test_run(t *testing.T) {
 				stdout: out,
 			}
 
-			k8sClient := kubeclient.FakeK8sClient()
+			k8sClient := kubeclient.FakeK8sClient(tc.storage...)
 			err = runner.run(ctx, k8sClient.CtrlClient(), tc.args)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
@@ -73,17 +78,9 @@ func Test_run(t *testing.T) {
 			var expectedResult []byte
 			{
 				gf := goldenfile.New("testdata", tc.expectedGoldenFile)
-				if *update {
-					err = gf.Update(out.Bytes())
-					if err != nil {
-						t.Fatalf("unexpected error: %s", err.Error())
-					}
-					expectedResult = out.Bytes()
-				} else {
-					expectedResult, err = gf.Read()
-					if err != nil {
-						t.Fatalf("unexpected error: %s", err.Error())
-					}
+				expectedResult, err = gf.Read()
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err.Error())
 				}
 			}
 
@@ -93,4 +90,28 @@ func Test_run(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newPolexDraft(name string, namespace string) *polexdraftv1alpha1.PolicyExceptionDraft {
+	p := &polexdraftv1alpha1.PolicyExceptionDraft{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "policy.giantswarm.io",
+			Kind:       "PolicyExceptionDraft",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: polexdraftv1alpha1.PolicyExceptionDraftSpec{
+			Targets: []polexdraftv1alpha1.Target{
+				{
+					Kind:       "Deployment",
+					Names:      []string{"test-app*"},
+					Namespaces: []string{"test-app"},
+				},
+			},
+			Policies: []string{"restrict-policy"},
+		},
+	}
+	return p
 }

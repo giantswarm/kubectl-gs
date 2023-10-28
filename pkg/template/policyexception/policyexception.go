@@ -17,7 +17,8 @@ func NewPolicyExceptionCR(polexdraft polexdraftv1alpha1.PolicyExceptionDraft) *p
 			APIVersion: "policy.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: polexdraft.GetName(),
+			Name:      polexdraft.GetName(),
+			Namespace: polexdraft.GetNamespace(),
 		},
 		Spec: policyExceptionSpecDeepCopy(polexdraft.Spec),
 	}

@@ -1,6 +1,7 @@
 apiVersion: policy.giantswarm.io/v1alpha1
-kind: PolicyExceptionDraft
+kind: PolicyException
 metadata:
+  creationTimestamp: null
   name: test-app
   namespace: policy-exceptions
 spec:
@@ -12,4 +13,3 @@ spec:
     - test-app*
     namespaces:
     - test-app
-
