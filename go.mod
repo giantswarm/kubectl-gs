@@ -223,7 +223,7 @@ require (
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.7.8 // [CVE-2023-25153]
-	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.9
+	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.10
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v23.0.7+incompatible
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
