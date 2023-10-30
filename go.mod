@@ -6,7 +6,7 @@ require (
 	dario.cat/mergo v1.0.0
 	github.com/3th1nk/cidr v0.2.0
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/ProtonMail/gopenpgp/v2 v2.7.3
+	github.com/ProtonMail/gopenpgp/v2 v2.7.4
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.6.0
@@ -222,8 +222,8 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.7.7 // [CVE-2023-25153]
-	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.9
+	github.com/containerd/containerd => github.com/containerd/containerd v1.7.8 // [CVE-2023-25153]
+	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.10
 	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v23.0.7+incompatible
 	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
