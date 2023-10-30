@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Added a bash script to generate self-contained kubeconfig files with client certificate for workload clusters in Vintage installations using device auth flow in Dex
+
 ## [2.45.3] - 2023-10-26
 
 ## [2.45.3] - 2023-10-26
