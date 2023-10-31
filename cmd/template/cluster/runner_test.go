@@ -219,6 +219,7 @@ func Test_run(t *testing.T) {
 					ServiceLoadBalancerCIDR: "1.2.3.4/32",
 					ResourcePool:            "foopool",
 					NetworkName:             "foonet",
+					SvcLbIpPoolName:         "svc-foo-pool",
 					CredentialsSecretName:   "foosecret",
 					ImageTemplate:           "foobar",
 					ControlPlane: provider.VSphereControlPlane{
@@ -228,7 +229,7 @@ func Test_run(t *testing.T) {
 							NumCPUs:   6,
 							Replicas:  5,
 						},
-						IPPoolName: "foo-pool",
+						IpPoolName: "foo-pool",
 					},
 					Worker: provider.VSphereMachineTemplate{
 						DiskGiB:   43,
