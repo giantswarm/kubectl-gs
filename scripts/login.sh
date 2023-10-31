@@ -73,7 +73,7 @@ wcBaseUrl=${baseUrl:1}
 payload="{\"apiVersion\":\"core.giantswarm.io/v1alpha1\",\"kind\":\"CertConfig\",\"metadata\":{\"labels\":{\"cert-operator.giantswarm.io/version\":\"2.0.1\",\"giantswarm.io/certificate\":\"$certId\",\"giantswarm.io/cluster\":\"$wcName\",\"giantswarm.io/managed-by\":\"cluster-operator\",\"giantswarm.io/organization\":\"$wcOrg\"},\"name\":\"$certName\",\"namespace\":\"$wcNamespace\"},\"spec\":{\"cert\":{\"allowBareDomains\":true,\"clusterComponent\":\"$certId\",\"clusterID\":\"$wcName\",\"commonName\":\"$certId.$wcName.k$wcBaseUrl\",\"disableRegeneration\":false,\"organizations\":[\"system:masters\"],\"ttl\":\"$ttl\"},\"versionBundle\":{\"version\":\"2.0.1\"}}}"
 
 certConfigResponse=$(curl -X POST "$apiUrl/apis/core.giantswarm.io/v1alpha1/namespaces/$wcNamespace/certconfigs" \
-  -d "$(echo "$payload" | jq -c)" -s -H "Content-Type: application/json" \
+  -d "$payload" -s -H "Content-Type: application/json" \
   --header "Authorization: Bearer $idToken" \
   --insecure)
 
