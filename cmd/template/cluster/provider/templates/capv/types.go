@@ -40,6 +40,7 @@ type ControlPlaneEndpoint struct {
 
 type LoadBalancers struct {
 	CidrBlocks []string `json:"cidrBlocks,omitempty"`
+	IpPoolName string   `json:"ipPoolName,omitempty"`
 }
 
 type ControlPlane struct {

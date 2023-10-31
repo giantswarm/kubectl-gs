@@ -16,6 +16,7 @@ data:
         loadBalancers:
           cidrBlocks:
           - 1.2.3.4/32
+          ipPoolName: svc-foo-pool
     controlPlane:
       image:
         repository: registry.k8s.io

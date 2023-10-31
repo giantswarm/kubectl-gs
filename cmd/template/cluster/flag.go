@@ -94,6 +94,7 @@ const (
 	flagVSphereControlPlaneIP          = "vsphere-control-plane-ip"
 	flagVSphereServiceLoadBalancerCIDR = "vsphere-service-load-balancer-cidr"
 	flagVSphereNetworkName             = "vsphere-network-name"
+	flagVSphereSvcLbIpPool             = "vsphere-service-lb-pool"
 	flagVSphereControlPlaneDiskGiB     = "vsphere-control-plane-disk-gib"
 	flagVSphereControlPlaneIpPool      = "vsphere-control-plane-ip-pool"
 	flagVSphereControlPlaneMemoryMiB   = "vsphere-control-plane-memory-mib"
@@ -239,10 +240,11 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 0, "Default worker node pool replicas (OpenStack only).")
 
 	// VSphere only
-	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IP, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
 	cmd.Flags().StringVar(&f.VSphere.ServiceLoadBalancerCIDR, flagVSphereServiceLoadBalancerCIDR, "", "CIDR for Service LB for new cluster")
 	cmd.Flags().StringVar(&f.VSphere.NetworkName, flagVSphereNetworkName, "", "Network name in vcenter that should be used for the new VMs")
-	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IPPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
+	cmd.Flags().StringVar(&f.VSphere.SvcLbIpPoolName, flagVSphereSvcLbIpPool, "svc-lb-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for Service LB (kubevip) is taken")
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IpPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.DiskGiB, flagVSphereControlPlaneDiskGiB, 50, "Disk size in GiB for control individual plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8096, "Memory size in MiB for individual control plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.NumCPUs, flagVSphereControlPlaneNumCPUs, 4, "Number of CPUs for individual control plane nodes")
@@ -430,16 +432,16 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
 			}
 		case key.ProviderVSphere:
-			if f.VSphere.ServiceLoadBalancerCIDR == "" {
-				return microerror.Maskf(invalidFlagError, "CIDR range from which the public IPs for Services of type LoadBalancer are taken (required) (--%s)", flagVSphereServiceLoadBalancerCIDR)
+			if f.VSphere.NetworkName == "" {
+				return microerror.Maskf(invalidFlagError, "Provide the network name in vcenter (required) (--%s)", flagVSphereNetworkName)
 			}
-			if !validateCIDR(f.VSphere.ServiceLoadBalancerCIDR) {
+			if f.VSphere.ServiceLoadBalancerCIDR != "" && !validateCIDR(f.VSphere.ServiceLoadBalancerCIDR) {
 				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagVSphereServiceLoadBalancerCIDR)
 			}
 			if !cmd.Flags().Changed(flagKubernetesVersion) {
 				f.KubernetesVersion = defaultVSphereKubernetesVersion
 			}
-			// todo: add validation for flagVSphereImageTemplate
+
 			placeholders := strings.Count(f.VSphere.ImageTemplate, "%s")
 			if placeholders > 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must contain at most one occurrence of '%%s' where k8s version will be injected", flagVSphereImageTemplate)

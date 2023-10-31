@@ -70,6 +70,7 @@ type VSphereConfig struct {
 	Worker                  VSphereMachineTemplate
 	ResourcePool            string
 	ServiceLoadBalancerCIDR string
+	SvcLbIpPoolName         string
 }
 
 type VSphereMachineTemplate struct {
@@ -80,8 +81,8 @@ type VSphereMachineTemplate struct {
 }
 
 type VSphereControlPlane struct {
-	IP         string
-	IPPoolName string
+	Ip         string
+	IpPoolName string
 	VSphereMachineTemplate
 }
 

@@ -114,7 +114,7 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 
 func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 	const className = "default"
-	return capv.ClusterConfig{
+	cfg := capv.ClusterConfig{
 		BaseDomain:         "test.gigantic.io",
 		ClusterDescription: config.Description,
 		Organization:       config.Organization,
@@ -126,14 +126,12 @@ func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 			Network: &capv.Network{
 				AllowAllEgress: true,
 				ControlPlaneEndpoint: &capv.ControlPlaneEndpoint{
-					Host:       config.VSphere.ControlPlane.IP,
-					IpPoolName: config.VSphere.ControlPlane.IPPoolName,
+					Host:       config.VSphere.ControlPlane.Ip,
+					IpPoolName: config.VSphere.ControlPlane.IpPoolName,
 					Port:       6443,
 				},
 				LoadBalancers: &capv.LoadBalancers{
-					CidrBlocks: []string{
-						config.VSphere.ServiceLoadBalancerCIDR,
-					},
+					IpPoolName: config.VSphere.SvcLbIpPoolName,
 				},
 			},
 		},
@@ -165,6 +163,10 @@ func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 			},
 		},
 	}
+	if config.VSphere.ServiceLoadBalancerCIDR != "" {
+		cfg.Connectivity.Network.LoadBalancers.CidrBlocks = []string{config.VSphere.ServiceLoadBalancerCIDR}
+	}
+	return cfg
 }
 
 func getMachineTemplate(machineTemplate *VSphereMachineTemplate, clusterConfig *ClusterConfig) *capv.MachineTemplate {
