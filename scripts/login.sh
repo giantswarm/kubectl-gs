@@ -87,10 +87,11 @@ fi
 wcCa=""
 wcCrt=""
 wcKey=""
-attempts=5
 
-while [ $attempts -gt 0 ]
+for attempt in {1..5}
 do
+    echo "Retrieving client certificate data, attempt $attempt/5"
+
     sleep 3
     secretAttemptResponse=$(curl -X GET "$apiUrl/api/v1/namespaces/$wcNamespace/secrets/$certName" --header "Authorization: Bearer $idToken" --insecure -s)
 
@@ -98,19 +99,13 @@ do
     wcCrt=$(echo "$secretAttemptResponse" | jq -r .data.crt)
     wcKey=$(echo "$secretAttemptResponse" | jq -r .data.key)
 
-    if [ -z "$wcCa" ] || [ "$wcCa" == 'null' ]
+    if [ -n "$wcCa" ] && [ "$wcCa" != 'null' ]
     then
-        if [ $attempts == 5 ]
-        then
-          echo "Waiting for client certificate data ..."
-        fi
-        attempts=$(( $attempts - 1 ))
-    else
-        attempts=0
+        break
     fi
 done
 
-if [ "$wcCa" == 'null' ]
+if [ -z "$wcCa" ] || [ "$wcCa" == 'null' ]
 then
     echo "Failed to generate certificate for $wcName in organization $wcOrg"
     exit 1
