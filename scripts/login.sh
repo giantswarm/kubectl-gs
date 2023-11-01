@@ -65,7 +65,6 @@ fi
 wcNamespace="org-$wcOrg"
 certIdHash=$(date +"%s" | shasum -a 256)
 certId=${certIdHash::16}
-ttl="1h"
 
 certName="$wcName-$certId"
 wcBaseUrl=${baseUrl:1}
