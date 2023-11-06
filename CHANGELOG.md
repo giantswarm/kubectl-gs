@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.45.4] - 2023-11-06
+
 ### Added
 
 - Added a bash script to generate self-contained kubeconfig files with client certificate for workload clusters in Vintage installations using device auth flow in Dex
@@ -1351,7 +1353,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.4...HEAD
+[2.45.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.4
 [2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.3
 [2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.2...v2.45.3
 [2.45.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.1...v2.45.2
