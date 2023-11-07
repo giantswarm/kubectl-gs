@@ -551,17 +551,19 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 	)
 	clustername := "codename" + wcSuffix
 
+	clusterKey := "gs-" + clustername
+	userKey := "gs-user-" + clustername
 	config := clientcmdapi.NewConfig()
-	config.Clusters["gs-"+clustername] = &clientcmdapi.Cluster{
+	config.Clusters[clusterKey] = &clientcmdapi.Cluster{
 		Server: server,
 	}
-	config.Contexts["gs-"+clustername] = &clientcmdapi.Context{
-		Cluster:  "gs-" + clustername,
-		AuthInfo: "gs-user-" + clustername,
+	config.Contexts[clusterKey] = &clientcmdapi.Context{
+		Cluster:  clusterKey,
+		AuthInfo: userKey,
 	}
-	config.CurrentContext = "gs-" + clustername
+	config.CurrentContext = clusterKey
 	if authProvider {
-		config.AuthInfos["gs-user-"+clustername] = &clientcmdapi.AuthInfo{
+		config.AuthInfos[userKey] = &clientcmdapi.AuthInfo{
 			AuthProvider: &clientcmdapi.AuthProviderConfig{
 				Config: map[string]string{ClientID: clientid,
 					Issuer:       server,
@@ -571,7 +573,7 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 			},
 		}
 	} else {
-		config.AuthInfos["gs-user-"+clustername] = &clientcmdapi.AuthInfo{
+		config.AuthInfos[userKey] = &clientcmdapi.AuthInfo{
 			Token: token,
 		}
 	}
