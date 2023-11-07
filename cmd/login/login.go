@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"k8s.io/client-go/tools/clientcmd"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
@@ -138,7 +140,11 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 				token:    tokenOverride,
 			}
 		} else {
-			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
+			if r.flag.DeviceAuth || r.isDeviceAuthContext(k8sConfigAccess) {
+				authResult, err = handleDeviceFlowOIDC(ctx, r.stdout, r.stderr, r.stdin, i)
+			} else {
+				authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
+			}
 			if err != nil {
 				if errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
 					fmt.Fprintf(r.stderr, "\nYour authentication flow timed out after %s. Please execute the same command again.\n", r.flag.LoginTimeout.String())
@@ -171,4 +177,21 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
 	}
 	return nil
+}
+
+func (r *runner) isDeviceAuthContext(k8sConfigAccess clientcmd.ConfigAccess) bool {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return false
+	}
+
+	if r.loginOptions.contextOverride != "" {
+		return strings.HasPrefix("gs-device-", config.Contexts[r.loginOptions.contextOverride].AuthInfo)
+	}
+
+	if originContext, ok := config.Contexts[r.loginOptions.originContext]; ok {
+		return strings.HasPrefix("gs-device-", originContext.AuthInfo)
+	}
+
+	return false
 }

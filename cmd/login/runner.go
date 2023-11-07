@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -26,6 +27,7 @@ type runner struct {
 
 	stdout io.Writer
 	stderr io.Writer
+	stdin  *os.File
 }
 
 type LoginOptions struct {
