@@ -26,19 +26,20 @@ type AWSConfig struct {
 	ControlPlaneSubnet string
 
 	// for CAPA
-	AWSClusterRoleIdentityName string
-	MachinePool                AWSMachinePoolConfig
-	NetworkAZUsageLimit        int
-	NetworkVPCCIDR             string
-	ClusterType                string
-	HttpProxy                  string
-	HttpsProxy                 string
-	NoProxy                    string
-	APIMode                    string
-	VPCMode                    string
-	TopologyMode               string
-	PrefixListID               string
-	TransitGatewayID           string
+	AWSClusterRoleIdentityName                     string
+	MachinePool                                    AWSMachinePoolConfig
+	NetworkAZUsageLimit                            int
+	NetworkVPCCIDR                                 string
+	ClusterType                                    string
+	HttpProxy                                      string
+	HttpsProxy                                     string
+	NoProxy                                        string
+	APIMode                                        string
+	VPCMode                                        string
+	TopologyMode                                   string
+	PrefixListID                                   string
+	TransitGatewayID                               string
+	ControlPlaneLoadBalancerIngressAllowCIDRBlocks []string
 }
 
 type AWSMachinePoolConfig struct {
@@ -138,6 +139,7 @@ type AppConfig struct {
 }
 
 type ClusterConfig struct {
+	ManagementCluster string
 	KubernetesVersion string
 	FileName          string
 	ControlPlaneAZ    []string

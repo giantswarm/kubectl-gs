@@ -9,7 +9,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 
 	//nolint:staticcheck
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider"
@@ -24,6 +26,23 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 //
 // go test ./cmd/template/cluster -run Test_run -update
 func Test_run(t *testing.T) {
+	capaManagementCluster := &capainfrav1.AWSCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "my-mc",
+			Namespace:       "org-giantswarm",
+			ResourceVersion: "",
+		},
+		Status: capainfrav1.AWSClusterStatus{
+			Network: capainfrav1.NetworkStatus{
+				NatGatewaysIPs: []string{
+					"1.2.3.4",
+					"5.6.7.8",
+					"9.10.11.12",
+				},
+			},
+		},
+	}
+
 	testCases := []struct {
 		name               string
 		flags              *flag
@@ -108,6 +127,7 @@ func Test_run(t *testing.T) {
 			flags: &flag{
 				Name:                     "test1",
 				Provider:                 "capa",
+				ManagementCluster:        "my-mc",
 				Description:              "just a test cluster",
 				Region:                   "the-region",
 				Organization:             "test",
@@ -134,6 +154,7 @@ func Test_run(t *testing.T) {
 					HttpsProxy:                 "https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
 					HttpProxy:                  "http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
 					NoProxy:                    "test-domain.com",
+					ControlPlaneLoadBalancerIngressAllowCIDRBlocks: []string{""},
 				},
 			},
 			args:               nil,
@@ -144,6 +165,7 @@ func Test_run(t *testing.T) {
 			flags: &flag{
 				Name:                     "test1",
 				Provider:                 "capa",
+				ManagementCluster:        "my-mc",
 				Description:              "just a test cluster",
 				Region:                   "the-region",
 				Organization:             "test",
@@ -174,6 +196,7 @@ func Test_run(t *testing.T) {
 					HttpsProxy:                 "https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
 					HttpProxy:                  "http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000",
 					NoProxy:                    "test-domain.com",
+					ControlPlaneLoadBalancerIngressAllowCIDRBlocks: []string{"7.7.7.7/32"},
 				},
 			},
 			args:               nil,
@@ -263,6 +286,12 @@ func Test_run(t *testing.T) {
 			}
 
 			k8sClient := kubeclient.FakeK8sClient()
+			if tc.flags.Provider == "capa" {
+				err = k8sClient.CtrlClient().Create(ctx, capaManagementCluster.DeepCopy())
+				if err != nil {
+					t.Fatalf("failed to fake AWSCluster object: %s", err.Error())
+				}
+			}
 			err = runner.run(ctx, k8sClient)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {

@@ -123,6 +123,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 		ControlPlaneInstanceType: r.flag.ControlPlaneInstanceType,
 		Description:              r.flag.Description,
 		KubernetesVersion:        r.flag.KubernetesVersion,
+		ManagementCluster:        r.flag.ManagementCluster,
 		Name:                     r.flag.Name,
 		Organization:             r.flag.Organization,
 		PodsCIDR:                 r.flag.PodsCIDR,

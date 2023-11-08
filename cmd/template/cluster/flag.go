@@ -17,25 +17,27 @@ import (
 )
 
 const (
-	flagEnableLongNames = "enable-long-names"
-	flagProvider        = "provider"
+	flagEnableLongNames   = "enable-long-names"
+	flagProvider          = "provider"
+	flagManagementCluster = "management-cluster"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
 	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
-	flagAWSClusterRoleIdentityName = "aws-cluster-role-identity-name"
-	flagNetworkAZUsageLimit        = "az-usage-limit"
-	flagNetworkVPCCidr             = "vpc-cidr"
-	flagAWSClusterType             = "cluster-type"
-	flagAWSHttpsProxy              = "https-proxy"
-	flagAWSHttpProxy               = "http-proxy"
-	flagAWSNoProxy                 = "no-proxy"
-	flagAWSAPIMode                 = "api-mode"
-	flagAWSVPCMode                 = "vpc-mode"
-	flagAWSTopologyMode            = "topology-mode"
-	flagAWSPrefixListID            = "aws-prefix-list-id"
-	flagAWSTransitGatewayID        = "aws-transit-gateway-id"
+	flagAWSClusterRoleIdentityName                       = "aws-cluster-role-identity-name"
+	flagNetworkAZUsageLimit                              = "az-usage-limit"
+	flagNetworkVPCCidr                                   = "vpc-cidr"
+	flagAWSClusterType                                   = "cluster-type"
+	flagAWSHttpsProxy                                    = "https-proxy"
+	flagAWSHttpProxy                                     = "http-proxy"
+	flagAWSNoProxy                                       = "no-proxy"
+	flagAWSAPIMode                                       = "api-mode"
+	flagAWSVPCMode                                       = "vpc-mode"
+	flagAWSTopologyMode                                  = "topology-mode"
+	flagAWSPrefixListID                                  = "aws-prefix-list-id"
+	flagAWSTransitGatewayID                              = "aws-transit-gateway-id"
+	flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock = "control-plane-load-balancer-ingress-allow-cidr-block"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -135,8 +137,9 @@ const (
 )
 
 type flag struct {
-	EnableLongNames bool
-	Provider        string
+	EnableLongNames   bool
+	Provider          string
+	ManagementCluster string
 
 	// Common.
 	ControlPlaneAZ           []string
@@ -169,6 +172,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, true, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
+	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
@@ -186,6 +190,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
+	cmd.Flags().StringArrayVar(&f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, nil, fmt.Sprintf("IPv4 address ranges that are allowed to connect to the control plane load balancer, in CIDR notation. When setting this flag, kubectl-gs automatically adds the NAT Gateway IPs of the management cluster so that the workload cluster can still be managed. If only the management cluster's IP ranges should be allowed, specify one empty value instead of an IP range ('--%s \"\"'). Supported for CAPA. You also need to specify --%s.", flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, flagManagementCluster))
 	// aws machine pool
 	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "nodepool0", "AWS Machine pool name")
 	cmd.Flags().StringVar(&f.AWS.MachinePool.InstanceType, flagAWSMachinePoolInstanceType, "m5.xlarge", "AWS Machine pool instance type")
@@ -535,6 +540,10 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		case key.ProviderCAPA:
 			if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
 				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagAWSHttpsProxy, flagNetworkVPCCidr)
+			}
+
+			if len(f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 && f.ManagementCluster == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty when specifying --%s", flagManagementCluster, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock)
 			}
 		}
 
