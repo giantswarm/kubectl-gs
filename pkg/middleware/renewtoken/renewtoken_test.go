@@ -119,6 +119,7 @@ func Test_RenewTokenMiddleware(t *testing.T) {
 
 			if newConfig == nil {
 				t.Fatal("New config should not be nil")
+				return
 			}
 
 			newAuthInfo, ok := newConfig.AuthInfos["clean"]
