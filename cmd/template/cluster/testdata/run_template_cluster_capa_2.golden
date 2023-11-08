@@ -25,6 +25,10 @@ data:
     controlPlane:
       apiMode: private
       instanceType: control-plane-instance-type
+      loadBalancerIngressAllowCidrBlocks:
+      - 1.2.3.4/32
+      - 5.6.7.8/32
+      - 9.10.11.12/32
     metadata:
       description: just a test cluster
       name: test1

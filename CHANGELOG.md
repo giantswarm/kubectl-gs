@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add CAPA cluster templating parameter `--control-plane-load-balancer-ingress-allow-cidr-block` which automatically adds NAT Gateway IPs of the MC to the allowlist
+
 ## [2.45.4] - 2023-11-08
 
 ### Added

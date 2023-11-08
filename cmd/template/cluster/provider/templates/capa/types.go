@@ -62,13 +62,14 @@ type Bastion struct {
 }
 
 type ControlPlane struct {
-	APIMode                string   `json:"apiMode,omitempty"`
-	InstanceType           string   `json:"instanceType,omitempty"`
-	RootVolumeSizeGB       int      `json:"rootVolumeSizeGB,omitempty"`
-	EtcdVolumeSizeGB       int      `json:"etcdVolumeSizeGB,omitempty"`
-	ContainerdVolumeSizeGB int      `json:"containerdVolumeSizeGB,omitempty"`
-	KubeletVolumeSizeGB    int      `json:"kubeletVolumeSizeGB,omitempty"`
-	AvailabilityZones      []string `json:"availabilityZones,omitempty"`
+	APIMode                            string   `json:"apiMode,omitempty"`
+	InstanceType                       string   `json:"instanceType,omitempty"`
+	RootVolumeSizeGB                   int      `json:"rootVolumeSizeGB,omitempty"`
+	EtcdVolumeSizeGB                   int      `json:"etcdVolumeSizeGB,omitempty"`
+	ContainerdVolumeSizeGB             int      `json:"containerdVolumeSizeGB,omitempty"`
+	KubeletVolumeSizeGB                int      `json:"kubeletVolumeSizeGB,omitempty"`
+	AvailabilityZones                  []string `json:"availabilityZones,omitempty"`
+	LoadBalancerIngressAllowCIDRBlocks []string `json:"loadBalancerIngressAllowCidrBlocks,omitempty"`
 }
 
 type MachinePool struct {
