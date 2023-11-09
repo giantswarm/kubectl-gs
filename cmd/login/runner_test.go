@@ -389,7 +389,7 @@ func TestLogin(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
+			ctx := context.Background()
 			r.setLoginOptions(ctx, &tc.mcArg)
 			err = r.run(ctx, &cobra.Command{}, tc.mcArg)
 			if err != nil {
