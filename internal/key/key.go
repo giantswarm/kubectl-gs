@@ -44,7 +44,6 @@ const (
 const (
 	// FirstAWSOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
 	FirstAWSOrgNamespaceRelease = "16.0.0"
-	FirstCAPIRelease            = "20.0.0-alpha1"
 )
 
 func BastionSSHDConfigEncoded() string {
