@@ -44,7 +44,6 @@ const (
 const (
 	// FirstAWSOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
 	FirstAWSOrgNamespaceRelease = "16.0.0"
-	FirstCAPIRelease            = "20.0.0-alpha1"
 )
 
 func BastionSSHDConfigEncoded() string {
@@ -93,21 +92,6 @@ func GenerateName(enableLongNames bool) (string, error) {
 
 func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
-}
-
-// IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
-func IsCAPIVersion(version string) (bool, error) {
-	capiVersion, err := semver.New(FirstCAPIRelease)
-	if err != nil {
-		return false, microerror.Maskf(parsingReleaseError, err.Error())
-	}
-
-	releaseVersion, err := semver.New(version)
-	if err != nil {
-		return false, microerror.Maskf(parsingReleaseError, err.Error())
-	}
-
-	return releaseVersion.GE(*capiVersion), nil
 }
 
 // IsPureCAPIProvider returns whether a given provider is purely based on or fully migrated to CAPI
