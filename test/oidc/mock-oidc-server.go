@@ -62,6 +62,20 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 				s.tokenFailures--
 				return
 			}
+			_ = r.ParseForm()
+			grantType := r.Form.Get(oidc.DeviceAuthKeyGrantType)
+			if grantType == oidc.DeviceAuthGrantType {
+				w.Header().Set("Content-Type", "application/json")
+				body, err := getDeviceTokenResponseData(s.clientID, s.issuerURL, key)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, err = w.Write(body)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
 			token, err := generateAndGetToken(s.clientID, s.issuerURL, key)
 			if err != nil {
 				t.Fatal(err)
@@ -84,16 +98,6 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 		} else if r.URL.Path == "/device/code" {
 			w.Header().Set("Content-Type", "application/json")
 			body, err := getDeviceCodeResponseData(s.issuerURL)
-			if err != nil {
-				t.Fatal(err)
-			}
-			_, err = w.Write(body)
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else if r.URL.Path == "/device/token" {
-			w.Header().Set("Content-Type", "application/json")
-			body, err := getDeviceTokenResponseData(s.clientID, s.issuerURL, key)
 			if err != nil {
 				t.Fatal(err)
 			}

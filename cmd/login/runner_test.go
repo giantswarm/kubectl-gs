@@ -341,7 +341,7 @@ func TestLogin(t *testing.T) {
 				config := testoidc.MockOidcServerConfig{
 					ClientID:             clientID,
 					InstallationCodename: "codename",
-					TokenFailures:        3,
+					TokenFailures:        2,
 				}
 				s = testoidc.NewServer(config)
 				err = s.Start(t)

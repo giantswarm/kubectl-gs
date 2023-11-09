@@ -16,15 +16,15 @@ import (
 
 const (
 	deviceCodeUrlTemplate  = "%s/device/code"
-	deviceTokenUrlTemplate = "%s/device/token"
+	deviceTokenUrlTemplate = "%s/token"
 
-	payloadKeyClientID   = "client_id"
-	payloadKeyScope      = "scope"
-	payloadKeyDeviceCode = "device_code"
-	payloadKeyGrantType  = "grant_type"
+	DeviceAuthKeyClientID   = "client_id"
+	DeviceAuthKeyScope      = "scope"
+	DeviceAuthKeyDeviceCode = "device_code"
+	DeviceAuthKeyGrantType  = "grant_type"
 
-	payloadValueScopes     = "openid profile email groups offline_access audience:server:client_id:dex-k8s-authenticator"
-	payloadValueGrantTypes = "urn:ietf:params:oauth:grant-type:device_code"
+	DeviceAuthScopes    = "openid profile email groups offline_access audience:server:client_id:dex-k8s-authenticator"
+	DeviceAuthGrantType = "urn:ietf:params:oauth:grant-type:device_code"
 )
 
 type DeviceAuthenticator struct {
@@ -62,8 +62,8 @@ func NewDeviceAuthenticator(clientID string, i *installation.Installation) *Devi
 
 func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 	formData := url.Values{}
-	formData.Add(payloadKeyClientID, a.clientID)
-	formData.Add(payloadKeyScope, payloadValueScopes)
+	formData.Add(DeviceAuthKeyClientID, a.clientID)
+	formData.Add(DeviceAuthKeyScope, DeviceAuthScopes)
 
 	result := DeviceCodeResponseData{}
 	response, err := http.PostForm(fmt.Sprintf(deviceCodeUrlTemplate, a.authURL), formData)
@@ -91,8 +91,8 @@ func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 func (a *DeviceAuthenticator) LoadDeviceToken(deviceCode string) (DeviceTokenResponseData, string, error) {
 
 	formData := url.Values{}
-	formData.Add(payloadKeyDeviceCode, deviceCode)
-	formData.Add(payloadKeyGrantType, payloadValueGrantTypes)
+	formData.Add(DeviceAuthKeyDeviceCode, deviceCode)
+	formData.Add(DeviceAuthKeyGrantType, DeviceAuthGrantType)
 
 	response, err := http.PostForm(fmt.Sprintf(deviceTokenUrlTemplate, a.authURL), formData)
 	if err != nil {
