@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"k8s.io/client-go/tools/clientcmd"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
@@ -140,22 +140,23 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 				token:    tokenOverride,
 			}
 		} else {
-			if r.flag.DeviceAuth || r.isDeviceAuthContext(k8sConfigAccess) {
-				authResult, err = handleDeviceFlowOIDC(ctx, r.stdout, r.stderr, r.stdin, i)
+			contextName := kubeconfig.GenerateKubeContextName(i.Codename)
+			isDeviceAuthFlow := r.isDeviceAuthContext(k8sConfigAccess, contextName)
+			if r.flag.DeviceAuth || isDeviceAuthFlow {
+				authResult, err = handleDeviceFlowOIDC(r.stdout, r.stdin, i)
 			} else {
 				authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
-			}
-			if err != nil {
-				if errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
+				if err != nil && errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
 					fmt.Fprintf(r.stderr, "\nYour authentication flow timed out after %s. Please execute the same command again.\n", r.flag.LoginTimeout.String())
 					fmt.Fprintf(r.stderr, "You can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=%.0fs.\n", 2*r.flag.LoginTimeout.Seconds())
 					if errors.Is(err, context.DeadlineExceeded) {
 						return microerror.Maskf(authResponseTimedOutError, "failed to get an authentication response on time")
 					}
 				}
+			}
+			if err != nil {
 				return microerror.Mask(err)
 			}
-
 		}
 	}
 	if r.loginOptions.selfContained {
@@ -179,19 +180,19 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 	return nil
 }
 
-func (r *runner) isDeviceAuthContext(k8sConfigAccess clientcmd.ConfigAccess) bool {
+func (r *runner) isDeviceAuthContext(k8sConfigAccess clientcmd.ConfigAccess, contextName string) bool {
 	config, err := k8sConfigAccess.GetStartingConfig()
 	if err != nil {
 		return false
 	}
 
-	if r.loginOptions.contextOverride != "" {
-		return strings.HasPrefix("gs-device-", config.Contexts[r.loginOptions.contextOverride].AuthInfo)
-	}
-
-	if originContext, ok := config.Contexts[r.loginOptions.originContext]; ok {
-		return strings.HasPrefix("gs-device-", originContext.AuthInfo)
+	if originContext, ok := config.Contexts[contextName]; ok {
+		return isDeviceAuthInfo(originContext.AuthInfo)
 	}
 
 	return false
+}
+
+func isDeviceAuthInfo(authInfo string) bool {
+	return strings.HasSuffix(authInfo, "-device")
 }
