@@ -66,8 +66,16 @@ func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 	formData.Add(payloadKeyScope, payloadValueScopes)
 
 	result := DeviceCodeResponseData{}
-	deviceCodeUrl := fmt.Sprintf(deviceCodeUrlTemplate, a.authURL)
-	responseBytes, err := submitFormData(deviceCodeUrl, formData)
+	response, err := http.PostForm(fmt.Sprintf(deviceCodeUrlTemplate, a.authURL), formData)
+	if err != nil {
+		return result, microerror.Mask(err)
+	}
+
+	responseBytes, err := bytesFromResponse(response)
+	if err != nil {
+		return result, microerror.Mask(err)
+	}
+
 	if err != nil {
 		return result, microerror.Mask(err)
 	}
@@ -86,8 +94,12 @@ func (a *DeviceAuthenticator) LoadDeviceToken(deviceCode string) (DeviceTokenRes
 	formData.Add(payloadKeyDeviceCode, deviceCode)
 	formData.Add(payloadKeyGrantType, payloadValueGrantTypes)
 
-	deviceTokenUrl := fmt.Sprintf(deviceTokenUrlTemplate, a.authURL)
-	responseBytes, err := submitFormData(deviceTokenUrl, formData)
+	response, err := http.PostForm(fmt.Sprintf(deviceTokenUrlTemplate, a.authURL), formData)
+	if err != nil {
+		return DeviceTokenResponseData{}, "", microerror.Mask(err)
+	}
+
+	responseBytes, err := bytesFromResponse(response)
 	if err != nil {
 		return DeviceTokenResponseData{}, "", microerror.Mask(err)
 	}
@@ -106,23 +118,17 @@ func (a *DeviceAuthenticator) LoadDeviceToken(deviceCode string) (DeviceTokenRes
 	return result, userName, nil
 }
 
-func submitFormData(url string, data url.Values) ([]byte, error) {
-	response, err := http.PostForm(url, data)
-
+func bytesFromResponse(response *http.Response) ([]byte, error) {
 	defer func() {
 		_ = response.Body.Close()
 	}()
 
+	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	responseBytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return responseBytes, nil
+	return bytes, nil
 }
 
 func nameFromToken(token string) (string, error) {
