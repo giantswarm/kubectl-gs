@@ -468,11 +468,11 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			flags: &flag{
 				ClusterAdmin:       false,
 				CallbackServerPort: 8080,
-				LoginTimeout:       1 * time.Millisecond,
+				LoginTimeout:       500 * time.Microsecond,
 			},
 			startConfig:    &clientcmdapi.Config{},
 			expectError:    authResponseTimedOutError,
-			expectedOutput: "\nYour authentication flow timed out after 1ms. Please execute the same command again.\nYou can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=0s.\n",
+			expectedOutput: "\nYour authentication flow timed out after 500µs. Please execute the same command again.\nYou can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=0s.\n",
 		},
 		// Device auth flow
 		{
@@ -480,6 +480,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			flags: &flag{
 				ClusterAdmin: false,
 				DeviceAuth:   true,
+				LoginTimeout: 60 * time.Second,
 			},
 			input:          "\n",
 			startConfig:    &clientcmdapi.Config{},

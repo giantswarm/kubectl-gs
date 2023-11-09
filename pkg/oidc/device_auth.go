@@ -9,8 +9,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 )
 
 const (
