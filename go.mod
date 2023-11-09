@@ -222,19 +222,10 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.7.8 // [CVE-2023-25153]
-	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.10
-	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v23.0.7+incompatible
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
-	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.26.1
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.10.0
-	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v1.10.0
-	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.8.1
 	golang.org/x/text => golang.org/x/text v0.14.0
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.13.1
 )
