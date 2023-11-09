@@ -95,21 +95,6 @@ func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
 }
 
-// IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
-func IsCAPIVersion(version string) (bool, error) {
-	capiVersion, err := semver.New(FirstCAPIRelease)
-	if err != nil {
-		return false, microerror.Maskf(parsingReleaseError, err.Error())
-	}
-
-	releaseVersion, err := semver.New(version)
-	if err != nil {
-		return false, microerror.Maskf(parsingReleaseError, err.Error())
-	}
-
-	return releaseVersion.GE(*capiVersion), nil
-}
-
 // IsPureCAPIProvider returns whether a given provider is purely based on or fully migrated to CAPI
 func IsPureCAPIProvider(provider string) bool {
 	return contains(PureCAPIProviders(), provider)
