@@ -3,14 +3,7 @@ package login
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"os"
 	"reflect"
 	"strings"
@@ -20,10 +13,8 @@ import (
 	"k8s.io/utils/ptr"
 
 	"github.com/giantswarm/microerror"
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"gopkg.in/square/go-jose.v2"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -31,16 +22,19 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v2/test/oidc"
 )
 
 func TestLogin(t *testing.T) {
 	testCases := []struct {
-		name            string
-		startConfig     *clientcmdapi.Config
-		mcArg           []string
-		flags           *flag
-		contextOverride string
-		expectError     *microerror.Error
+		name               string
+		startConfig        *clientcmdapi.Config
+		startConfigCreator func(issuer string) *clientcmdapi.Config
+		mcArg              []string
+		flags              *flag
+		stdin              string
+		contextOverride    string
+		expectError        *microerror.Error
 	}{
 		// Empty starting config, logging into MC using codename
 		{
@@ -304,6 +298,23 @@ func TestLogin(t *testing.T) {
 			},
 			contextOverride: *ptr.To[string]("arbitraryname"),
 		},
+		{
+			name:  "case 29",
+			flags: &flag{},
+			mcArg: []string{"gs-codename"},
+			stdin: "\n",
+			startConfigCreator: func(issuer string) *clientcmdapi.Config {
+				return kubeconfig.CreateProviderTestConfig(
+					"codename",
+					"gs-codename",
+					"gs-codename-user-device",
+					"https://anything.com:8080",
+					clientID,
+					"id-token",
+					issuer,
+					"refresh-token")
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -322,18 +333,63 @@ func TestLogin(t *testing.T) {
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
+
+			var s *testoidc.MockOidcServer
+
+			startConfig := tc.startConfig
+			if startConfig == nil && tc.startConfigCreator != nil {
+				config := testoidc.MockOidcServerConfig{
+					ClientID:             clientID,
+					InstallationCodename: "codename",
+					TokenFailures:        3,
+				}
+				s = testoidc.NewServer(config)
+				err = s.Start(t)
+				if err != nil {
+					t.Fatal(err)
+				}
+				startConfig = tc.startConfigCreator(s.Issuer())
+			}
+
+			defer func() {
+				if s != nil {
+					s.Stop()
+				}
+			}()
+
+			var in *os.File
+			if tc.stdin != "" {
+				in, err = os.CreateTemp("", "stdin")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = in.WriteString(tc.stdin); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = in.Seek(0, 0); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			defer func() {
+				if in != nil {
+					_ = os.Remove(in.Name())
+				}
+			}()
+
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				stdout:       new(bytes.Buffer),
+				stdin:        in,
 				flag:         tc.flags,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
 			k8sConfigAccess := r.commonConfig.GetConfigAccess()
-			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
+			err = clientcmd.ModifyConfig(k8sConfigAccess, *startConfig, false)
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx := context.Background()
+			ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 			r.setLoginOptions(ctx, &tc.mcArg)
 			err = r.run(ctx, &cobra.Command{}, tc.mcArg)
 			if err != nil {
@@ -355,6 +411,8 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		flags       *flag
 		token       string
 		skipInCI    bool
+
+		input string
 
 		expectError    *microerror.Error
 		expectedOutput string
@@ -416,6 +474,17 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			expectError:    authResponseTimedOutError,
 			expectedOutput: "\nYour authentication flow timed out after 1ms. Please execute the same command again.\nYou can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=0s.\n",
 		},
+		// Device auth flow
+		{
+			name: "case 6",
+			flags: &flag{
+				ClusterAdmin: false,
+				DeviceAuth:   true,
+			},
+			input:          "\n",
+			startConfig:    &clientcmdapi.Config{},
+			expectedOutput: "Press ENTER when ready to continue\nLogged in successfully as '-device' on cluster 'codename'.\n\n",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -440,11 +509,32 @@ func TestMCLoginWithInstallation(t *testing.T) {
 
 			out := new(bytes.Buffer)
 
+			var in *os.File
+			if tc.input != "" {
+				in, err = os.CreateTemp("", "stdin")
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = in.WriteString(tc.input); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = in.Seek(0, 0); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			defer func() {
+				if in != nil {
+					_ = os.Remove(in.Name())
+				}
+			}()
+
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				flag:         tc.flags,
 				stdout:       out,
 				stderr:       out,
+				stdin:        in,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
 			k8sConfigAccess := r.commonConfig.GetConfigAccess()
@@ -460,53 +550,18 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			// generate a key
-			key, err := getKey()
+			s := testoidc.NewServer(testoidc.MockOidcServerConfig{
+				ClientID: clientID,
+			})
+			err = s.Start(t)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			// mock the OIDC issuer
-			var issuer string
-			hf := func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path == "/auth" {
-					http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
-				} else if r.URL.Path == "/token" {
-					token, err := generateAndGetToken(issuer, key)
-					if err != nil {
-						t.Fatal(err)
-					}
-					w.Header().Set("Content-Type", "text/plain")
-					_, err = io.WriteString(w, token)
-					if err != nil {
-						t.Fatal(err)
-					}
-				} else if r.URL.Path == "/keys" {
-					webKey, err := getJSONWebKey(key)
-					if err != nil {
-						t.Fatal(err)
-					}
-					w.Header().Set("Content-Type", "application/json")
-					_, err = io.WriteString(w, webKey)
-					if err != nil {
-						t.Fatal(err)
-					}
-				} else {
-					w.Header().Set("Content-Type", "application/json")
-					_, err = io.WriteString(w, strings.ReplaceAll(getIssuerData(), "ISSUER", issuer))
-					if err != nil {
-						t.Fatal(err)
-					}
-				}
-			}
-			s := httptest.NewServer(http.HandlerFunc(hf))
-			defer s.Close()
-
-			issuer = s.URL
+			defer s.Stop()
 
 			r.setLoginOptions(ctx, &[]string{"codename"})
 
-			err = r.loginWithInstallation(ctx, tc.token, CreateTestInstallationWithIssuer(issuer))
+			err = r.loginWithInstallation(ctx, tc.token, CreateTestInstallationWithIssuer(s.Issuer()))
 
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
@@ -581,24 +636,6 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 	return config
 }
 
-func generateAndGetToken(issuer string, key *rsa.PrivateKey) (string, error) {
-	idToken, err := getRawToken(issuer, key)
-	if err != nil {
-		return "", err
-	}
-	return getToken(idToken, ""), nil
-}
-
-func getToken(idToken string, refreshToken string) string {
-	params := url.Values{}
-	params.Add("id_token", idToken)
-	params.Add("access_token", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9")
-	if refreshToken != "" {
-		params.Add("refresh_token", refreshToken)
-	}
-	return params.Encode()
-}
-
 func CreateTestInstallationWithIssuer(issuer string) *installation.Installation {
 	return &installation.Installation{
 		K8sApiURL:         "https://g8s.codename.eu-west-1.aws.gigantic.io",
@@ -608,81 +645,4 @@ func CreateTestInstallationWithIssuer(issuer string) *installation.Installation 
 		Codename:          "codename",
 		CACert:            "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----",
 	}
-}
-
-func getRawToken(issuer string, key *rsa.PrivateKey) (string, error) {
-	token := jwt.New(jwt.SigningMethodRS256)
-	claims := make(jwt.MapClaims)
-	claims["iss"] = issuer
-	claims["aud"] = clientID
-	claims["exp"] = time.Now().Add(time.Hour).Unix()
-	token.Claims = claims
-	tokenString, err := token.SignedString(key)
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func getIssuerData() string {
-	return `{
-		"issuer": "ISSUER",
-		"authorization_endpoint": "ISSUER/auth",
-		"token_endpoint": "ISSUER/token",
-		"jwks_uri": "ISSUER/keys",
-		"userinfo_endpoint": "ISSUER/userinfo",
-		"response_types_supported": [
-		  "code"
-		],
-		"subject_types_supported": [
-		  "public"
-		],
-		"id_token_signing_alg_values_supported": [
-		  "RS256"
-		],
-		"scopes_supported": [
-		  "openid",
-		  "email",
-		  "groups",
-		  "profile",
-		  "offline_access"
-		],
-		"token_endpoint_auth_methods_supported": [
-		  "client_secret_basic"
-		],
-		"claims_supported": [
-		  "aud",
-		  "email",
-		  "email_verified",
-		  "exp",
-		  "iat",
-		  "iss",
-		  "locale",
-		  "name",
-		  "sub"
-		]
-	}`
-}
-
-func getKey() (*rsa.PrivateKey, error) {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, err
-	}
-	return key, nil
-}
-
-func getJSONWebKey(key *rsa.PrivateKey) (string, error) {
-	jwk := jose.JSONWebKeySet{
-		Keys: []jose.JSONWebKey{
-			{
-				Key:       &key.PublicKey,
-				Algorithm: "RS256",
-			},
-		}}
-	json, err := json.Marshal(jwk)
-	if err != nil {
-		return "", err
-	}
-	return string(json), nil
 }
