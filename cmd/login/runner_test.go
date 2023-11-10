@@ -34,6 +34,7 @@ func TestLogin(t *testing.T) {
 		flags              *flag
 		stdin              string
 		contextOverride    string
+		mockOidcConfig     *testoidc.MockOidcServerConfig
 		expectError        *microerror.Error
 	}{
 		// Empty starting config, logging into MC using codename
@@ -298,11 +299,17 @@ func TestLogin(t *testing.T) {
 			},
 			contextOverride: *ptr.To[string]("arbitraryname"),
 		},
+		// Re-logging in using device auth flow
 		{
 			name:  "case 29",
 			flags: &flag{},
 			mcArg: []string{"gs-codename"},
 			stdin: "\n",
+			mockOidcConfig: &testoidc.MockOidcServerConfig{
+				ClientID:             clientID,
+				InstallationCodename: "codename",
+				TokenFailures:        2,
+			},
 			startConfigCreator: func(issuer string) *clientcmdapi.Config {
 				return kubeconfig.CreateProviderTestConfig(
 					"codename",
@@ -335,20 +342,19 @@ func TestLogin(t *testing.T) {
 			}
 
 			var s *testoidc.MockOidcServer
+			var issuer string
 
 			startConfig := tc.startConfig
-			if startConfig == nil && tc.startConfigCreator != nil {
-				config := testoidc.MockOidcServerConfig{
-					ClientID:             clientID,
-					InstallationCodename: "codename",
-					TokenFailures:        2,
-				}
-				s = testoidc.NewServer(config)
+			if tc.mockOidcConfig != nil {
+				s = testoidc.NewServer(*tc.mockOidcConfig)
 				err = s.Start(t)
 				if err != nil {
 					t.Fatal(err)
 				}
-				startConfig = tc.startConfigCreator(s.Issuer())
+				issuer = s.Issuer()
+			}
+			if startConfig == nil && tc.startConfigCreator != nil {
+				startConfig = tc.startConfigCreator(issuer)
 			}
 
 			defer func() {
