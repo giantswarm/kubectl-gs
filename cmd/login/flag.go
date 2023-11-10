@@ -86,7 +86,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	cmd.Flags().DurationVar(&f.LoginTimeout, flagLoginTimeout, 60*time.Second, "Duration for which kubectl gs will wait for the OIDC login to complete. Once the timeout is reached, OIDC login will fail.")
 
-	cmd.Flags().BoolVar(&f.DeviceAuth, flagDeviceAuth, false, "Use device authentication flow for log in")
+	cmd.Flags().BoolVar(&f.DeviceAuth, flagDeviceAuth, false, "Use device authentication flow to log in")
 
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)
 	_ = cmd.Flags().MarkHidden("namespace")

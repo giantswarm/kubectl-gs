@@ -141,8 +141,7 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 			}
 		} else {
 			contextName := kubeconfig.GenerateKubeContextName(i.Codename)
-			isDeviceAuthFlow := r.isDeviceAuthContext(k8sConfigAccess, contextName)
-			if r.flag.DeviceAuth || isDeviceAuthFlow {
+			if r.flag.DeviceAuth || r.isDeviceAuthContext(k8sConfigAccess, contextName) {
 				authResult, err = handleDeviceFlowOIDC(r.stdout, r.stdin, i)
 			} else {
 				authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
