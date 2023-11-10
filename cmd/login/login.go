@@ -157,6 +157,7 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 			if err != nil {
 				return microerror.Mask(err)
 			}
+
 		}
 	}
 	if r.loginOptions.selfContained {

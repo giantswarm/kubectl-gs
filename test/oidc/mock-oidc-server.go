@@ -201,21 +201,6 @@ func getJSONWebKey(key *rsa.PrivateKey) (string, error) {
 }
 
 func installationInfo(codename, issuer string) string {
-	/*
-		{
-		  "data": {
-		    "identity": {
-		      "provider": "aws",
-		      "codename": "viking"
-		    },
-		    "kubernetes": {
-		      "apiUrl": "https://api.g8s.eu-central-1.aws.cps.vodafone.com:443",
-		      "authUrl": "https://dex.g8s.eu-central-1.aws.cps.vodafone.com",
-		      "caCert": "-----BEGIN CERTIFICATE-----\nMIIDYjCCAkqgAwIBAgIUJGdipWo8k8ls2ys4W1rtYp56DKAwDQYJKoZIhvcNAQEL\nBQAwMDEuMCwGA1UEAxMlZzhzLmV1LWNlbnRyYWwtMS5hd3MuY3BzLnZvZGFmb25l\nLmNvbTAeFw0xNzA3MTExMjQ2NTdaFw0yNzA1MjAxMjQ3MjdaMDAxLjAsBgNVBAMT\nJWc4cy5ldS1jZW50cmFsLTEuYXdzLmNwcy52b2RhZm9uZS5jb20wggEiMA0GCSqG\nSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC1Zd5dzkcPPZ0+RJX8Qi5A5jrvcYibttZZ\nnrQy9JdMCBTr2TigtYkLhle1m/yirETe2qSxZi9/H6Tc/qOaUsjonLa92p8Tqe8q\nRfCT9xYHkAq1SxgfolHT1HtKFb7DTTy3NgFoVi+eKLp/KwEWEf/FndVTpy2xmeas\n6jaCDlLQaR1Fy+ufuhSsFCGD5BMMntN4op0rgByvjNxDT7vlLS07/iGKFXEGk1ur\nj1o8w68gQyvUkCh+oLmqtIBEnmUKDvVZQcPjseVDFb8PtYlR2fXxfamPlx77U0Pz\nBqmknhCDlbZh+ok/rtkH0ucLEQKzMnc6Tu6AXntDTTKCtsPiXC7dAgMBAAGjdDBy\nMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSbnngl\naO8+suqjXx64xDP6meQ6fTAwBgNVHREEKTAngiVnOHMuZXUtY2VudHJhbC0xLmF3\ncy5jcHMudm9kYWZvbmUuY29tMA0GCSqGSIb3DQEBCwUAA4IBAQCDIw2PaNSbu0ZA\n7CdynZdp6m4niWPMFCTzdgHOq5QlmsHKc+rzihqchJ/wpII6B7kvNrfCOHB75Y6K\n8bwkrXk5wHvzJYRmk4CWfDZR67Tp5gWWbmCcogxfMLruVJCwG5tUCB2xs/wIm6cW\nlQERw6oPMuXb6fOsj+xgq4r0e9Qd/h7oq0zv03vexuv5cP1EKj+s9Pgy53So4gPh\nt1V2x1f9R7jAl5cCs6GJzBUQ1A+SVmd3zMVKhGsuaK0EvWouJ3ITm5iKte7Jog2/\ne6lenoLgH3vfpufN/sZ2OZU1g+dClxz4CmCO+z5wEZbqsNhzBL6EZnpbr1bosDnF\nZFiXYZp6\n-----END CERTIFICATE-----"
-		    }
-		  }
-		}
-	*/
 	return fmt.Sprintf(`{
 		"data": {
 			"identity": {
