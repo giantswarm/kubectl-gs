@@ -3,6 +3,7 @@ package oidc
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -68,21 +69,21 @@ func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 	result := DeviceCodeResponseData{}
 	response, err := http.PostForm(fmt.Sprintf(deviceCodeUrlTemplate, a.authURL), formData)
 	if err != nil {
-		return result, microerror.Mask(err)
+		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error())
 	}
 
 	responseBytes, err := bytesFromResponse(response)
 	if err != nil {
-		return result, microerror.Mask(err)
+		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error())
 	}
 
 	if err != nil {
-		return result, microerror.Mask(err)
+		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error())
 	}
 
 	err = json.Unmarshal(responseBytes, &result)
 	if err != nil {
-		return result, microerror.Mask(err)
+		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error())
 	}
 
 	return result, nil
@@ -96,23 +97,23 @@ func (a *DeviceAuthenticator) LoadDeviceToken(deviceCode string) (DeviceTokenRes
 
 	response, err := http.PostForm(fmt.Sprintf(deviceTokenUrlTemplate, a.authURL), formData)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Mask(err)
+		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
 	}
 
 	responseBytes, err := bytesFromResponse(response)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Mask(err)
+		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
 	}
 
 	result := DeviceTokenResponseData{}
 	err = json.Unmarshal(responseBytes, &result)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Mask(err)
+		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
 	}
 
 	userName, err := nameFromToken(result.IdToken)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Mask(err)
+		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
 	}
 
 	return result, userName, nil
@@ -122,6 +123,9 @@ func bytesFromResponse(response *http.Response) ([]byte, error) {
 	defer func() {
 		_ = response.Body.Close()
 	}()
+	if response.StatusCode > 200 {
+		return nil, microerror.Mask(errors.New(response.Status))
+	}
 
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -134,18 +138,18 @@ func bytesFromResponse(response *http.Response) ([]byte, error) {
 func nameFromToken(token string) (string, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		return "", microerror.Mask(fmt.Errorf("invalid jwt token with %d parts", len(parts)))
+		return "", microerror.Mask(cannotParseJwtError)
 	}
 
 	tokenBody, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", microerror.Maskf(cannotParseJwtError, err.Error())
 	}
 
 	tokenName := JwtName{}
 	err = json.Unmarshal(tokenBody, &tokenName)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", microerror.Maskf(cannotParseJwtError, err.Error())
 	}
 
 	return strings.ToLower(strings.ReplaceAll(tokenName.Name, " ", ".")), nil
