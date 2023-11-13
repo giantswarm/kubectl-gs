@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.47.0] - 2023-11-13
+
 ### Changed
 
 - Change default volume Docker size to 10Gb on AWS vintage NodePools.
@@ -1363,7 +1365,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...HEAD
+[2.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...v2.47.0
 [2.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.4...v2.46.0
 [2.45.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.4
 [2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.3
