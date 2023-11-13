@@ -100,7 +100,7 @@ func newAWSMachineDeploymentCR(c NodePoolCRsConfig) *v1alpha3.AWSMachineDeployme
 			NodePool: v1alpha3.AWSMachineDeploymentSpecNodePool{
 				Description: c.Description,
 				Machine: v1alpha3.AWSMachineDeploymentSpecNodePoolMachine{
-					DockerVolumeSizeGB:  100,
+					DockerVolumeSizeGB:  10,
 					KubeletVolumeSizeGB: 100,
 				},
 				Scaling: v1alpha3.AWSMachineDeploymentSpecNodePoolScaling{
