@@ -21,12 +21,7 @@ import (
 )
 
 const (
-	// Hack to set base command name as 'kubectl gs', since
-	// cobra splits all the words in the 'usage' field and
-	// only prints the first word. The splitting is done by
-	// space characters (' '), and we trick it by using a
-	// NBSP character (NBSP) between the 2 words.
-	name        = "kubectl\u00a0gs"
+	name        = "kubectl-gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
 Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
@@ -80,6 +75,9 @@ func New(config Config) (*cobra.Command, error) {
 				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
 			}
 			return nil
+		},
+		Annotations: map[string]string{
+			cobra.CommandDisplayNameAnnotation: "kubectl gs",
 		},
 	}
 	f.Init(c)
