@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Change default volume Docker size to 10Gb on AWS vintage NodePools.
+
 ## [2.46.0] - 2023-11-08
 
 ### Added
