@@ -57,6 +57,7 @@ func New(config Config) (*cobra.Command, error) {
 		Use:   name,
 		Short: description,
 		Long:  description,
+		Args:  cobra.NoArgs,
 		RunE:  r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(*config.ConfigFlags),

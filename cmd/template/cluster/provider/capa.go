@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 	"text/template"
 
 	"github.com/3th1nk/cidr"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/pkg/errors"
+	"k8s.io/utils/net"
+	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
@@ -26,12 +31,12 @@ const (
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	err := templateClusterAWS(ctx, client, output, config)
+	err := templateClusterCAPA(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = templateDefaultAppsAWS(ctx, client, output, config)
+	err = templateDefaultAppsCAPA(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -39,7 +44,7 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output i
 	return nil
 }
 
-func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := config.Name
 	configMapName := userConfigMapName(appName)
 
@@ -50,6 +55,50 @@ func templateClusterAWS(ctx context.Context, k8sClient k8sclient.Interface, outp
 	var configMapYAML []byte
 	{
 		flagValues := BuildCapaClusterConfig(config)
+
+		if len(config.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 {
+			if config.ManagementCluster == "" {
+				// Should have been checked in flag validation code
+				return errors.New("logic error - ManagementCluster empty")
+			}
+
+			managementCluster := &capainfrav1.AWSCluster{}
+			err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{
+				Namespace: "org-giantswarm",
+				Name:      config.ManagementCluster,
+			}, managementCluster)
+			if err != nil {
+				return errors.Wrap(err, "failed to get management cluster's AWSCluster object")
+			}
+
+			if len(managementCluster.Status.Network.NatGatewaysIPs) == 0 {
+				return errors.New("management cluster's AWSCluster object did not have the list `.status.networkStatus.natGatewaysIPs` filled yet, cannot determine IP ranges to allowlist")
+			}
+
+			for _, ip := range managementCluster.Status.Network.NatGatewaysIPs {
+				var cidr string
+				if net.IsIPv4String(ip) {
+					cidr = ip + "/32"
+				} else {
+					return fmt.Errorf("management cluster's AWSCluster object had an invalid IPv4 in `.status.networkStatus.natGatewaysIPs`: %q", ip)
+				}
+
+				if !slices.Contains(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr) {
+					flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
+				}
+			}
+
+			for _, cidr := range config.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks {
+				if cidr == "" {
+					// We allow specifying an empty value `--control-plane-load-balancer-ingress-allow-cidr-block ""`
+					// to denote that only the management cluster's IPs should be allowed. Skip this value.
+				} else if net.IsIPv4CIDRString(cidr) {
+					flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
+				} else {
+					return fmt.Errorf("invalid CIDR (for single IPv4, please use `/32` suffix): %q", cidr)
+				}
+			}
+		}
 
 		if config.AWS.ClusterType == "proxy-private" {
 			subnetCountLimit := 0
@@ -197,7 +246,7 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 	}
 }
 
-func templateDefaultAppsAWS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateDefaultAppsCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := userConfigMapName(appName)
 

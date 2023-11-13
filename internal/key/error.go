@@ -19,19 +19,3 @@ var unmashalToMapFailedError = &microerror.Error{
 	Kind: "unmashalToMapFailedError",
 	Desc: "Could not unmarshal YAML into a map[string]interface{} structure. Seems like the YAML is invalid.",
 }
-
-// IsUnmashalToMapFailed asserts unmashalToMapFailedError.
-func IsUnmashalToMapFailed(err error) bool {
-	return microerror.Cause(err) == unmashalToMapFailedError
-}
-
-// parsingReleaseError is used when trying to parse the Release name as a SemVer fails.
-var parsingReleaseError = &microerror.Error{
-	Kind: "parsingReleaseError",
-	Desc: "Could not parse the Release as a SemVer.",
-}
-
-// IsUnmashalToMapFailed asserts parsingReleaseError.
-func IsParsingReleaseError(err error) bool {
-	return microerror.Cause(err) == unmashalToMapFailedError
-}

@@ -50,14 +50,16 @@ func AddExtraContext(config *clientcmdapi.Config) *clientcmdapi.Config {
 		existingcontext = "anothercodename"
 	)
 	// adding another context to the kubeconfig
-	config.Clusters["gs-"+existingcontext] = &clientcmdapi.Cluster{
+	clusterKey := "gs-" + existingcontext
+	userKey := "gs-user-" + existingcontext
+	config.Clusters[clusterKey] = &clientcmdapi.Cluster{
 		Server: server,
 	}
-	config.Contexts["gs-"+existingcontext] = &clientcmdapi.Context{
-		Cluster:  "gs-" + existingcontext,
-		AuthInfo: "gs-user-" + existingcontext,
+	config.Contexts[clusterKey] = &clientcmdapi.Context{
+		Cluster:  clusterKey,
+		AuthInfo: userKey,
 	}
-	config.AuthInfos["gs-user-"+existingcontext] = &clientcmdapi.AuthInfo{
+	config.AuthInfos[userKey] = &clientcmdapi.AuthInfo{
 		Token: token,
 	}
 	return config

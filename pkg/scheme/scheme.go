@@ -11,6 +11,7 @@ import (
 	k8score "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta2"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
@@ -33,6 +34,7 @@ func NewSchemeBuilder() []func(*runtime.Scheme) error {
 		provider.AddToScheme,         // AWSConfig/AzureConfig
 		release.AddToScheme,          // Release
 		securityv1alpha1.AddToScheme, // Organizations
+		capainfrav1.AddToScheme,      // AWSCluster (CAPA)
 	}
 }
 

@@ -7,6 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.46.0] - 2023-11-08
+
+### Added
+
+- Add CAPA cluster templating parameter `--control-plane-load-balancer-ingress-allow-cidr-block` which automatically adds NAT Gateway IPs of the MC to the allowlist
+
+## [2.45.4] - 2023-11-08
+
 ### Added
 
 - Added a bash script to generate self-contained kubeconfig files with client certificate for workload clusters in Vintage installations using device auth flow in Dex
@@ -1351,7 +1359,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...HEAD
+[2.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.4...v2.46.0
+[2.45.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.4
 [2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.3
 [2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.2...v2.45.3
 [2.45.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.1...v2.45.2

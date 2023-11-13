@@ -1,6 +1,6 @@
 module github.com/giantswarm/kubectl-gs/v2
 
-go 1.20
+go 1.21
 
 require (
 	dario.cat/mergo v1.0.0
@@ -17,13 +17,13 @@ require (
 	github.com/giantswarm/app/v7 v7.0.0
 	github.com/giantswarm/appcatalog v0.10.1
 	github.com/giantswarm/backoff v1.0.0
-	github.com/giantswarm/k8sclient/v7 v7.1.0
+	github.com/giantswarm/k8sclient/v7 v7.2.0
 	github.com/giantswarm/k8smetadata v0.23.0
-	github.com/giantswarm/microerror v0.4.0
-	github.com/giantswarm/micrologger v1.0.0
+	github.com/giantswarm/microerror v0.4.1
+	github.com/giantswarm/micrologger v1.1.1
 	github.com/giantswarm/organization-operator v1.6.0
 	github.com/giantswarm/release-operator/v4 v4.1.0
-	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/google/go-cmp v0.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
@@ -33,7 +33,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.13.0
+	golang.org/x/oauth2 v0.14.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.1
 	k8s.io/api v0.28.3
@@ -111,7 +111,7 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/go-logr/logr v1.2.4 // indirect
+	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
@@ -192,13 +192,13 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.starlark.net v0.0.0-20230807144010-2aa75752d1da // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/crypto v0.15.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
 	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.147.0 // indirect
@@ -222,19 +222,10 @@ require (
 )
 
 replace (
-	github.com/containerd/containerd => github.com/containerd/containerd v1.7.8 // [CVE-2023-25153]
-	github.com/coreos/etcd => go.etcd.io/etcd/client/v3 v3.5.10
-	github.com/docker/distribution v2.7.1+incompatible => github.com/docker/distribution v2.8.0+incompatible
 	github.com/docker/docker => github.com/moby/moby v23.0.7+incompatible
-	github.com/go-ldap/ldap/v3 => github.com/go-ldap/ldap/v3 v3.4.6
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2 // [CVE-2021-3121]
-	github.com/gorilla/websocket v1.4.0 => github.com/gorilla/websocket v1.4.2
-	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.26.1
+	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.10.0
-	github.com/hashicorp/vault/sdk v0.4.1 => github.com/hashicorp/vault/sdk v1.10.0
-	// CVE-2023-27561
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.8.1
 	golang.org/x/text => golang.org/x/text v0.14.0
-	helm.sh/helm/v3 => helm.sh/helm/v3 v3.13.1
 )
