@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Change how `login` works on CAPVCD and CAPV to use our DNS record for the k8s API when using these providers, rather than the value found in the CAPI CRs.
+- Change how `login` works to use our DNS record for the k8s API when using non-vintage providers, rather than the value found in the CAPI CRs.
 
 ## [2.47.0] - 2023-11-13
 
