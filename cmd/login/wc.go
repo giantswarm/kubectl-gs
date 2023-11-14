@@ -235,7 +235,7 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 	clusterServer := fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 
 	// When on CAPI we need our custom DNS record for the k8s api, rather than the value found in the CAPI CRs so that our connection through the VPN works.
-	if provider != key.ProviderAWS && provider != key.ProviderAzure {
+	if provider != key.ProviderAWS && provider != key.ProviderAzure && provider != key.ProviderEKS {
 		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
 	}
 
