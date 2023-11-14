@@ -41,12 +41,12 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		return microerror.Mask(err)
 	}
 
-	if newLoginRequired || r.loginOptions.selfContained {
-		config, err := k8sConfigAccess.GetStartingConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
+	if newLoginRequired || r.loginOptions.selfContained {
 		authType := kubeconfig.GetAuthType(config, contextName)
 		if authType == kubeconfig.AuthTypeAuthProvider {
 			// If we get here, we are sure that the kubeconfig context exists.
@@ -59,6 +59,15 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		}
 
 		return nil
+	}
+
+	if r.flag.DeviceAuth {
+		fmt.Fprintf(r.stdout, "A valid `%s` context already exists, there is no need to log in again, ignoring the `device-flow` flag.\n", contextName)
+		if clusterServer, exists := kubeconfig.GetClusterServer(config, contextName); exists {
+			fmt.Fprintf(r.stdout, "Run kubectl gs login with `%s` instead of the context name to force the re-login.\n", clusterServer)
+		} else {
+			fmt.Fprintln(r.stdout, "Run kubectl gs login with the API URL to force the re-login.")
+		}
 	}
 
 	if contextAlreadySelected {
