@@ -27,7 +27,7 @@ const (
 	// (does not contain 1 and l, to avoid confusion)
 	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
 	// NameLengthLong represents the number of characters used to create a resource name when --enable-long-names feature flag is used.
-	NameLengthLong = 10
+	NameLengthLong = 20
 	// NameLengthShort represents the number of characters used to create a resource name.
 	NameLengthShort = 5
 
