@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.47.1] - 2023-11-15
+
 ### Changed
 
 - Change how `login` works to use our DNS record for the k8s API when using non-vintage providers, rather than the value found in the CAPI CRs.
@@ -1369,7 +1371,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.1...HEAD
+[2.47.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...v2.47.1
 [2.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...v2.47.0
 [2.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.4...v2.46.0
 [2.45.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.4
