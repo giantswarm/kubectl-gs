@@ -133,7 +133,7 @@ const (
 
 	// defaults
 	defaultKubernetesVersion        = "v1.20.9"
-	defaultVSphereKubernetesVersion = "v1.24.11"
+	defaultVSphereKubernetesVersion = "v1.24.12"
 )
 
 type flag struct {
@@ -259,7 +259,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.VSphere.Worker.NumCPUs, flagVSphereWorkerNumCPUs, 6, "Number of CPUs for individual worker plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
 	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "*/Resources", "What resource pool in vsphere should be used")
-	cmd.Flags().StringVar(&f.VSphere.ImageTemplate, flagVSphereImageTemplate, "ubuntu-2004-kube-%s", "OS images with Kubernetes that should be used for VMs. The '%s' will be replaced with correct Kubernetes version.")
+	cmd.Flags().StringVar(&f.VSphere.ImageTemplate, flagVSphereImageTemplate, "flatcar-stable-3602.2.1-kube-%s-gs", "OS images with Kubernetes that should be used for VMs. These template should be available in vCenter. The '%s' will be replaced with correct Kubernetes version. Example: 'ubuntu-2004-kube-%%s'")
 	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
 
 	// App-based clusters only.
