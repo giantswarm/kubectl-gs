@@ -13,6 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Increase the cluster name length to 20 characters.
 - Change how `login` works to use our DNS record for the k8s API when using non-vintage providers, rather than the value found in the CAPI CRs.
+- Defaults for `cluster template --provider vsphere` since it was migrated to flatcar os.
 
 ## [2.47.0] - 2023-11-13
 
