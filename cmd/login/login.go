@@ -62,7 +62,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 	}
 
 	if r.flag.DeviceAuth {
-		fmt.Fprintf(r.stdout, "A valid `%s` context already exists, there is no need to log in again, ignoring the `device-flow` flag.\n", contextName)
+		fmt.Fprintf(r.stdout, color.YellowString("A valid `%s` context already exists, there is no need to log in again, ignoring the `device-flow` flag.\n\n"), contextName)
 		if clusterServer, exists := kubeconfig.GetClusterServer(config, contextName); exists {
 			fmt.Fprintf(r.stdout, "Run kubectl gs login with `%s` instead of the context name to force the re-login.\n", clusterServer)
 		} else {
