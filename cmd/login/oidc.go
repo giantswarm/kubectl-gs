@@ -1,13 +1,11 @@
 package login
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	gooidc "github.com/coreos/go-oidc/v3/oidc"
@@ -114,7 +112,7 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 }
 
 // handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
-func handleDeviceFlowOIDC(out io.Writer, in *os.File, i *installation.Installation) (authInfo, error) {
+func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo, error) {
 	auther := oidc.NewDeviceAuthenticator(clientID, i)
 
 	deviceCodeData, err := auther.LoadDeviceCode()
@@ -122,17 +120,11 @@ func handleDeviceFlowOIDC(out io.Writer, in *os.File, i *installation.Installati
 		return authInfo{}, microerror.Mask(err)
 	}
 
-	_, _ = fmt.Fprintf(out, "Open this URL in the browser to log in:\n%s\nPress ENTER when ready to continue\n", deviceCodeData.VerificationUriComplete)
+	_, _ = fmt.Fprintf(out, "Open this URL in the browser to log in:\n%s\n\nThe process will continue automatically once the in-browser login is completed\n", deviceCodeData.VerificationUriComplete)
 
-	inputReader := bufio.NewReader(in)
-	_, err = inputReader.ReadString('\n')
+	deviceTokenData, userName, err := auther.AwaitDeviceToken(deviceCodeData)
 	if err != nil {
-		return authInfo{}, microerror.Mask(err)
-	}
-
-	deviceTokenData, userName, err := auther.LoadDeviceToken(deviceCodeData.DeviceCode)
-	if err != nil {
-		return authInfo{}, microerror.Mask(err)
+		return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
 	}
 
 	return authInfo{

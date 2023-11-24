@@ -1,18 +1,18 @@
 package oidc
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
-	"github.com/giantswarm/microerror"
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
+	"github.com/giantswarm/microerror"
 )
 
 const (
@@ -24,8 +24,13 @@ const (
 	DeviceAuthKeyDeviceCode = "device_code"
 	DeviceAuthKeyGrantType  = "grant_type"
 
+	ErrorTypeAuthPending = "authorization_pending"
+	ErrorTypeSlowDown    = "slow_down"
+
 	DeviceAuthScopes    = "openid profile email groups offline_access audience:server:client_id:dex-k8s-authenticator"
 	DeviceAuthGrantType = "urn:ietf:params:oauth:grant-type:device_code"
+
+	nameClaimKey = "name"
 )
 
 type DeviceAuthenticator struct {
@@ -48,6 +53,10 @@ type DeviceTokenResponseData struct {
 	ExpiresIn    int    `json:"expires_in"`
 	RefreshToken string `json:"refresh_token"`
 	IdToken      string `json:"id_token"`
+}
+
+type ErrorResponseData struct {
+	Error string `json:"error"`
 }
 
 type JwtName struct {
@@ -89,43 +98,101 @@ func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 	return result, nil
 }
 
-func (a *DeviceAuthenticator) LoadDeviceToken(deviceCode string) (DeviceTokenResponseData, string, error) {
+func (a *DeviceAuthenticator) AwaitDeviceToken(data DeviceCodeResponseData) (DeviceTokenResponseData, string, error) {
+	loadTokenTicker := time.NewTicker(time.Duration(data.Interval*1000+250) * time.Millisecond)
+	expirationTimer := time.NewTimer(time.Duration(data.ExpiresIn) * time.Second)
+	responseCh := make(chan DeviceTokenResponseData)
+	errCh := make(chan error)
 
-	formData := url.Values{}
-	formData.Add(DeviceAuthKeyDeviceCode, deviceCode)
-	formData.Add(DeviceAuthKeyGrantType, DeviceAuthGrantType)
+	go func() {
+		for {
+			<-loadTokenTicker.C
+			response, err := loadDeviceToken(a.authURL, data.DeviceCode)
+			if err == nil {
+				responseCh <- response
+				return
+			} else if !IsAuthorizationPendingError(err) && !IsTooManyAuthRequestsError(err) {
+				errCh <- err
+				return
+			}
+		}
+	}()
 
-	response, err := http.PostForm(fmt.Sprintf(deviceTokenUrlTemplate, a.authURL), formData)
+	go func() {
+		<-expirationTimer.C
+		errCh <- cannotGetDeviceTokenError
+	}()
+
+	var response DeviceTokenResponseData
+	var err error
+	select {
+	case response = <-responseCh:
+		break
+	case err = <-errCh:
+		break
+	}
+
+	expirationTimer.Stop()
+	loadTokenTicker.Stop()
+
+	if err != nil {
+		return DeviceTokenResponseData{}, "", err
+	}
+
+	userName, err := nameFromToken(response.IdToken)
 	if err != nil {
 		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
 	}
 
+	return response, userName, nil
+}
+
+func loadDeviceToken(authURL, deviceCode string) (DeviceTokenResponseData, error) {
+	formData := url.Values{}
+	formData.Add(DeviceAuthKeyDeviceCode, deviceCode)
+	formData.Add(DeviceAuthKeyGrantType, DeviceAuthGrantType)
+
+	response, err := http.PostForm(fmt.Sprintf(deviceTokenUrlTemplate, authURL), formData)
+	if err != nil {
+		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error())
+	}
+
 	responseBytes, err := bytesFromResponse(response)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
+		fmt.Println(err)
+		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error())
+	}
+
+	if response.StatusCode > 200 {
+		result := ErrorResponseData{}
+		err = json.Unmarshal(responseBytes, &result)
+		if err != nil {
+			return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error())
+		}
+
+		switch result.Error {
+		case ErrorTypeAuthPending:
+			return DeviceTokenResponseData{}, microerror.Maskf(authorizationPendingError, result.Error)
+		case ErrorTypeSlowDown:
+			return DeviceTokenResponseData{}, microerror.Maskf(tooManyAuthRequestsError, result.Error)
+		default:
+			return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, result.Error)
+		}
 	}
 
 	result := DeviceTokenResponseData{}
 	err = json.Unmarshal(responseBytes, &result)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
+		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error())
 	}
 
-	userName, err := nameFromToken(result.IdToken)
-	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
-	}
-
-	return result, userName, nil
+	return result, nil
 }
 
 func bytesFromResponse(response *http.Response) ([]byte, error) {
 	defer func() {
 		_ = response.Body.Close()
 	}()
-	if response.StatusCode > 200 {
-		return nil, microerror.Mask(errors.New(response.Status))
-	}
 
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -136,21 +203,26 @@ func bytesFromResponse(response *http.Response) ([]byte, error) {
 }
 
 func nameFromToken(token string) (string, error) {
-	parts := strings.Split(token, ".")
-	if len(parts) != 3 {
+	parsedToken, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
+	if err != nil {
+		return "", microerror.Maskf(cannotParseJwtError, err.Error())
+	}
+
+	var claims jwt.MapClaims
+	var ok bool
+	if claims, ok = parsedToken.Claims.(jwt.MapClaims); !ok {
 		return "", microerror.Mask(cannotParseJwtError)
 	}
 
-	tokenBody, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", microerror.Maskf(cannotParseJwtError, err.Error())
+	var nameClaim interface{}
+	if nameClaim, ok = claims[nameClaimKey]; !ok {
+		return "", microerror.Mask(cannotParseJwtError)
 	}
 
-	tokenName := JwtName{}
-	err = json.Unmarshal(tokenBody, &tokenName)
-	if err != nil {
-		return "", microerror.Maskf(cannotParseJwtError, err.Error())
+	var name string
+	if name, ok = nameClaim.(string); !ok {
+		return "", microerror.Mask(cannotParseJwtError)
 	}
 
-	return strings.ToLower(strings.ReplaceAll(tokenName.Name, " ", ".")), nil
+	return strings.ToLower(strings.ReplaceAll(name, " ", ".")), nil
 }

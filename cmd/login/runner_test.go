@@ -32,7 +32,6 @@ func TestLogin(t *testing.T) {
 		startConfigCreator func(issuer string) *clientcmdapi.Config
 		mcArg              []string
 		flags              *flag
-		stdin              string
 		contextOverride    string
 		mockOidcConfig     *testoidc.MockOidcServerConfig
 		expectError        *microerror.Error
@@ -304,11 +303,10 @@ func TestLogin(t *testing.T) {
 			name:  "case 29",
 			flags: &flag{},
 			mcArg: []string{"gs-codename"},
-			stdin: "\n",
 			mockOidcConfig: &testoidc.MockOidcServerConfig{
-				ClientID:             clientID,
-				InstallationCodename: "codename",
-				TokenFailures:        2,
+				ClientID:                 clientID,
+				InstallationCodename:     "codename",
+				TokenRecoverableFailures: 2,
 			},
 			startConfigCreator: func(issuer string) *clientcmdapi.Config {
 				return kubeconfig.CreateProviderTestConfig(
@@ -363,30 +361,9 @@ func TestLogin(t *testing.T) {
 				}
 			}()
 
-			var in *os.File
-			if tc.stdin != "" {
-				in, err = os.CreateTemp("", "stdin")
-				if err != nil {
-					t.Fatal(err)
-				}
-				if _, err = in.WriteString(tc.stdin); err != nil {
-					t.Fatal(err)
-				}
-				if _, err = in.Seek(0, 0); err != nil {
-					t.Fatal(err)
-				}
-			}
-
-			defer func() {
-				if in != nil {
-					_ = os.Remove(in.Name())
-				}
-			}()
-
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				stdout:       new(bytes.Buffer),
-				stdin:        in,
 				flag:         tc.flags,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
@@ -413,22 +390,22 @@ func TestMCLoginWithInstallation(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		startConfig *clientcmdapi.Config
-		flags       *flag
-		token       string
-		skipInCI    bool
-
-		input string
+		startConfig  *clientcmdapi.Config
+		serverConfig testoidc.MockOidcServerConfig
+		flags        *flag
+		token        string
+		skipInCI     bool
 
 		expectError    *microerror.Error
 		expectedOutput string
 	}{
 		// empty start config
 		{
-			name:        "case 0",
-			startConfig: &clientcmdapi.Config{},
-			flags:       &flag{},
-			token:       "token",
+			name:         "case 0",
+			startConfig:  &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
+			flags:        &flag{},
+			token:        "token",
 		},
 		// filled start config
 		{
@@ -439,8 +416,9 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		},
 		// self contained file
 		{
-			name:        "case 2",
-			startConfig: createValidTestConfig("", false),
+			name:         "case 2",
+			startConfig:  createValidTestConfig("", false),
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
 			flags: &flag{
 				SelfContained: "/codename.yaml",
 			},
@@ -448,8 +426,9 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		},
 		// keeping WC context
 		{
-			name:        "case 3",
-			startConfig: createValidTestConfig("-cluster", false),
+			name:         "case 3",
+			startConfig:  createValidTestConfig("-cluster", false),
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
 			flags: &flag{
 				KeepContext: true,
 			},
@@ -465,8 +444,9 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				CallbackServerPort: 8080,
 				LoginTimeout:       60 * time.Second,
 			},
-			startConfig: &clientcmdapi.Config{},
-			skipInCI:    true,
+			startConfig:  &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
+			skipInCI:     true,
 		},
 		// Fail in case the OIDC flow does not finish within time period specified in the flag
 		{
@@ -477,6 +457,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				LoginTimeout:       500 * time.Microsecond,
 			},
 			startConfig:    &clientcmdapi.Config{},
+			serverConfig:   testoidc.MockOidcServerConfig{ClientID: clientID},
 			expectError:    authResponseTimedOutError,
 			expectedOutput: "\nYour authentication flow timed out after 500µs. Please execute the same command again.\nYou can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=0s.\n",
 		},
@@ -488,9 +469,39 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				DeviceAuth:   true,
 				LoginTimeout: 60 * time.Second,
 			},
-			input:          "\n",
 			startConfig:    &clientcmdapi.Config{},
-			expectedOutput: "Press ENTER when ready to continue\nLogged in successfully as '-device' on cluster 'codename'.\n\n",
+			serverConfig:   testoidc.MockOidcServerConfig{ClientID: clientID},
+			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as '-device' on cluster 'codename'.\n\n",
+		},
+		// Device auth flow - log in successfully after several attempts
+		{
+			name: "case 7",
+			flags: &flag{
+				ClusterAdmin: false,
+				DeviceAuth:   true,
+				LoginTimeout: 60 * time.Second,
+			},
+			startConfig: &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{
+				ClientID:                 clientID,
+				TokenRecoverableFailures: 1,
+			},
+			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as '-device' on cluster 'codename'.\n\n",
+		},
+		// Device auth flow error
+		{
+			name: "case 8",
+			flags: &flag{
+				ClusterAdmin: false,
+				DeviceAuth:   true,
+				LoginTimeout: 60 * time.Second,
+			},
+			startConfig: &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{
+				ClientID:           clientID,
+				TokenFatalFailures: 1,
+			},
+			expectError: deviceAuthError,
 		},
 	}
 
@@ -516,32 +527,11 @@ func TestMCLoginWithInstallation(t *testing.T) {
 
 			out := new(bytes.Buffer)
 
-			var in *os.File
-			if tc.input != "" {
-				in, err = os.CreateTemp("", "stdin")
-				if err != nil {
-					t.Fatal(err)
-				}
-				if _, err = in.WriteString(tc.input); err != nil {
-					t.Fatal(err)
-				}
-				if _, err = in.Seek(0, 0); err != nil {
-					t.Fatal(err)
-				}
-			}
-
-			defer func() {
-				if in != nil {
-					_ = os.Remove(in.Name())
-				}
-			}()
-
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				flag:         tc.flags,
 				stdout:       out,
 				stderr:       out,
-				stdin:        in,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
 			k8sConfigAccess := r.commonConfig.GetConfigAccess()
@@ -557,9 +547,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			s := testoidc.NewServer(testoidc.MockOidcServerConfig{
-				ClientID: clientID,
-			})
+			s := testoidc.NewServer(tc.serverConfig)
 			err = s.Start(t)
 			if err != nil {
 				t.Fatal(err)

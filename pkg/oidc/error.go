@@ -57,3 +57,21 @@ var cannotParseJwtError = &microerror.Error{
 func IsCannotParseJwtError(err error) bool {
 	return microerror.Cause(err) == cannotParseJwtError
 }
+
+var authorizationPendingError = &microerror.Error{
+	Kind: "authorizationPendingError",
+}
+
+// IsAuthorizationPendingError asserts authorizationPendingError.
+func IsAuthorizationPendingError(err error) bool {
+	return microerror.Cause(err) == authorizationPendingError
+}
+
+var tooManyAuthRequestsError = &microerror.Error{
+	Kind: "tooManyAuthRequestsError",
+}
+
+// IsTooManyAuthRequestsError asserts tooManyAuthRequestsError.
+func IsTooManyAuthRequestsError(err error) bool {
+	return microerror.Cause(err) == tooManyAuthRequestsError
+}

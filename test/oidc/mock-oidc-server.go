@@ -18,24 +18,27 @@ import (
 )
 
 type MockOidcServerConfig struct {
-	ClientID             string
-	InstallationCodename string
-	TokenFailures        int
+	ClientID                 string
+	InstallationCodename     string
+	TokenRecoverableFailures int
+	TokenFatalFailures       int
 }
 
 type MockOidcServer struct {
-	clientID             string
-	installationCodename string
-	tokenFailures        int
-	server               *httptest.Server
-	issuerURL            string
+	clientID                 string
+	installationCodename     string
+	tokenRecoverableFailures int
+	tokenFatalFailures       int
+	server                   *httptest.Server
+	issuerURL                string
 }
 
 func NewServer(config MockOidcServerConfig) *MockOidcServer {
 	return &MockOidcServer{
-		clientID:             config.ClientID,
-		installationCodename: config.InstallationCodename,
-		tokenFailures:        config.TokenFailures,
+		clientID:                 config.ClientID,
+		installationCodename:     config.InstallationCodename,
+		tokenRecoverableFailures: config.TokenRecoverableFailures,
+		tokenFatalFailures:       config.TokenFatalFailures,
 	}
 }
 
@@ -53,13 +56,24 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 		if r.URL.Path == "/auth" {
 			http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
 		} else if r.URL.Path == "/token" {
-			if s.tokenFailures > 0 {
-				w.WriteHeader(http.StatusBadRequest)
-				_, err := w.Write([]byte{})
+			if s.tokenRecoverableFailures > 0 {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Header().Set("Content-Type", "application/json")
+				_, err := w.Write([]byte(`{"error":"authorization_pending"}`))
 				if err != nil {
 					t.Fatal(err)
 				}
-				s.tokenFailures--
+				s.tokenRecoverableFailures--
+				return
+			}
+			if s.tokenFatalFailures > 0 {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Header().Set("Content-Type", "application/json")
+				_, err := w.Write([]byte(`{"error":"simulated_error"}`))
+				if err != nil {
+					t.Fatal(err)
+				}
+				s.tokenFatalFailures--
 				return
 			}
 			_ = r.ParseForm()
@@ -142,8 +156,8 @@ func getDeviceCodeResponseData(issuer string) ([]byte, error) {
 		UserCode:                "USER-CODE",
 		VerificationUri:         fmt.Sprintf("%s/device/code", issuer),
 		VerificationUriComplete: fmt.Sprintf("%s/device/code?user_code=USER_CODE", issuer),
-		ExpiresIn:               60,
-		Interval:                10,
+		ExpiresIn:               3,
+		Interval:                1,
 	}
 	return json.Marshal(data)
 }

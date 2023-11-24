@@ -151,7 +151,7 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 		} else {
 			contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 			if r.flag.DeviceAuth || r.isDeviceAuthContext(k8sConfigAccess, contextName) {
-				authResult, err = handleDeviceFlowOIDC(r.stdout, r.stdin, i)
+				authResult, err = handleDeviceFlowOIDC(r.stdout, i)
 			} else {
 				authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
 				if err != nil && errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
