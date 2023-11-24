@@ -180,6 +180,7 @@ func getDeviceTokenResponseData(clientID, issuer string, key *rsa.PrivateKey) ([
 func getRawToken(clientID, issuer string, key *rsa.PrivateKey) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := make(jwt.MapClaims)
+	claims["name"] = "user"
 	claims["iss"] = issuer
 	claims["aud"] = clientID
 	claims["exp"] = time.Now().Add(time.Hour).Unix()

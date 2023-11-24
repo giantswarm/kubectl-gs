@@ -471,7 +471,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			},
 			startConfig:    &clientcmdapi.Config{},
 			serverConfig:   testoidc.MockOidcServerConfig{ClientID: clientID},
-			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as '-device' on cluster 'codename'.\n\n",
+			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as 'user-device' on cluster 'codename'.\n\n",
 		},
 		// Device auth flow - log in successfully after several attempts
 		{
@@ -486,7 +486,7 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				ClientID:                 clientID,
 				TokenRecoverableFailures: 1,
 			},
-			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as '-device' on cluster 'codename'.\n\n",
+			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as 'user-device' on cluster 'codename'.\n\n",
 		},
 		// Device auth flow error
 		{
