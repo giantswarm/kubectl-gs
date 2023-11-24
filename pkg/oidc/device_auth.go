@@ -11,8 +11,9 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 )
 
 const (
