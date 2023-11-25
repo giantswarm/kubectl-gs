@@ -99,21 +99,39 @@ func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 	return result, nil
 }
 
-func (a *DeviceAuthenticator) AwaitDeviceToken(data DeviceCodeResponseData) (DeviceTokenResponseData, string, error) {
+func (a *DeviceAuthenticator) LoadDeviceToken(data DeviceCodeResponseData) (DeviceTokenResponseData, string, error) {
+	response, err := awaitDeviceToken(a.authURL, data)
+	if err != nil {
+		return DeviceTokenResponseData{}, "", err
+	}
+
+	userName, err := nameFromToken(response.IdToken)
+	if err != nil {
+		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
+	}
+
+	return response, userName, nil
+}
+
+func awaitDeviceToken(authURL string, data DeviceCodeResponseData) (DeviceTokenResponseData, error) {
 	loadTokenTicker := time.NewTicker(time.Duration(data.Interval*1000+250) * time.Millisecond)
+	defer loadTokenTicker.Stop()
+
 	expirationTimer := time.NewTimer(time.Duration(data.ExpiresIn) * time.Second)
+	defer expirationTimer.Stop()
+
 	responseCh := make(chan DeviceTokenResponseData)
 	errCh := make(chan error)
 
 	go func() {
 		for {
 			<-loadTokenTicker.C
-			response, err := loadDeviceToken(a.authURL, data.DeviceCode)
-			if err == nil {
-				responseCh <- response
+			loadResponse, loadErr := loadDeviceToken(authURL, data.DeviceCode)
+			if loadErr == nil {
+				responseCh <- loadResponse
 				return
-			} else if !IsAuthorizationPendingError(err) && !IsTooManyAuthRequestsError(err) {
-				errCh <- err
+			} else if !IsAuthorizationPendingError(loadErr) && !IsTooManyAuthRequestsError(loadErr) {
+				errCh <- loadErr
 				return
 			}
 		}
@@ -133,19 +151,7 @@ func (a *DeviceAuthenticator) AwaitDeviceToken(data DeviceCodeResponseData) (Dev
 		break
 	}
 
-	expirationTimer.Stop()
-	loadTokenTicker.Stop()
-
-	if err != nil {
-		return DeviceTokenResponseData{}, "", err
-	}
-
-	userName, err := nameFromToken(response.IdToken)
-	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error())
-	}
-
-	return response, userName, nil
+	return response, err
 }
 
 func loadDeviceToken(authURL, deviceCode string) (DeviceTokenResponseData, error) {
