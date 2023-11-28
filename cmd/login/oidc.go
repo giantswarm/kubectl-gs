@@ -111,6 +111,30 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	return authResult, nil
 }
 
+// handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
+func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo, error) {
+	auther := oidc.NewDeviceAuthenticator(clientID, i)
+
+	deviceCodeData, err := auther.LoadDeviceCode()
+	if err != nil {
+		return authInfo{}, microerror.Mask(err)
+	}
+
+	_, _ = fmt.Fprintf(out, "Open this URL in the browser to log in:\n%s\n\nThe process will continue automatically once the in-browser login is completed\n", deviceCodeData.VerificationUriComplete)
+
+	deviceTokenData, userName, err := auther.LoadDeviceToken(deviceCodeData)
+	if err != nil {
+		return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
+	}
+
+	return authInfo{
+		username:     fmt.Sprintf("%s-device", userName),
+		token:        deviceTokenData.IdToken,
+		refreshToken: deviceTokenData.RefreshToken,
+		clientID:     clientID,
+	}, nil
+}
+
 // handleOIDCCallback is the callback executed after the authentication response was
 // received from the authentication provider.
 func handleOIDCCallback(ctx context.Context, a *oidc.Authenticator) func(w http.ResponseWriter, r *http.Request) (interface{}, error) {

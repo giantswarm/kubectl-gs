@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for device authentication flow in the `login` command and a new `--device-auth` flag to activate it.
+
 ## [2.47.1] - 2023-11-15
 
 ### Changed

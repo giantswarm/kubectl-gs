@@ -38,6 +38,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/internal/label"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
+	testoidc "github.com/giantswarm/kubectl-gs/v2/test/oidc"
 )
 
 func TestWCClientCert(t *testing.T) {
@@ -653,14 +654,14 @@ func getSecret(name string, namespace string, data map[string][]byte) *corev1.Se
 }
 
 func getCAdata() map[string][]byte {
-	key, _ := getKey()
+	privateKey, _ := testoidc.GetKey()
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(5),
 		IsCA:         true,
 	}
-	ca, _ := x509.CreateCertificate(rand.Reader, cert, cert, &key.PublicKey, key)
+	ca, _ := x509.CreateCertificate(rand.Reader, cert, cert, &privateKey.PublicKey, privateKey)
 	return map[string][]byte{
-		"tls.key": getPrivKeyPEM(key),
+		"tls.key": getPrivKeyPEM(privateKey),
 		"tls.crt": getCertPEM(ca),
 	}
 }

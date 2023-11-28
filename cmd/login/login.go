@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
@@ -39,12 +41,12 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		return microerror.Mask(err)
 	}
 
-	if newLoginRequired || r.loginOptions.selfContained {
-		config, err := k8sConfigAccess.GetStartingConfig()
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
+	if newLoginRequired || r.loginOptions.selfContained {
 		authType := kubeconfig.GetAuthType(config, contextName)
 		if authType == kubeconfig.AuthTypeAuthProvider {
 			// If we get here, we are sure that the kubeconfig context exists.
@@ -57,6 +59,15 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 		}
 
 		return nil
+	}
+
+	if r.flag.DeviceAuth {
+		fmt.Fprintf(r.stdout, color.YellowString("A valid `%s` context already exists, there is no need to log in again, ignoring the `device-flow` flag.\n\n"), contextName)
+		if clusterServer, exists := kubeconfig.GetClusterServer(config, contextName); exists {
+			fmt.Fprintf(r.stdout, "Run kubectl gs login with `%s` instead of the context name to force the re-login.\n", clusterServer)
+		} else {
+			fmt.Fprintln(r.stdout, "Run kubectl gs login with the API URL to force the re-login.")
+		}
 	}
 
 	if contextAlreadySelected {
@@ -138,15 +149,20 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 				token:    tokenOverride,
 			}
 		} else {
-			authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
-			if err != nil {
-				if errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
+			contextName := kubeconfig.GenerateKubeContextName(i.Codename)
+			if r.flag.DeviceAuth || r.isDeviceAuthContext(k8sConfigAccess, contextName) {
+				authResult, err = handleDeviceFlowOIDC(r.stdout, i)
+			} else {
+				authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
+				if err != nil && errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
 					fmt.Fprintf(r.stderr, "\nYour authentication flow timed out after %s. Please execute the same command again.\n", r.flag.LoginTimeout.String())
 					fmt.Fprintf(r.stderr, "You can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=%.0fs.\n", 2*r.flag.LoginTimeout.Seconds())
 					if errors.Is(err, context.DeadlineExceeded) {
 						return microerror.Maskf(authResponseTimedOutError, "failed to get an authentication response on time")
 					}
 				}
+			}
+			if err != nil {
 				return microerror.Mask(err)
 			}
 
@@ -171,4 +187,21 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
 	}
 	return nil
+}
+
+func (r *runner) isDeviceAuthContext(k8sConfigAccess clientcmd.ConfigAccess, contextName string) bool {
+	config, err := k8sConfigAccess.GetStartingConfig()
+	if err != nil {
+		return false
+	}
+
+	if originContext, ok := config.Contexts[contextName]; ok {
+		return isDeviceAuthInfo(originContext.AuthInfo)
+	}
+
+	return false
+}
+
+func isDeviceAuthInfo(authInfo string) bool {
+	return strings.HasSuffix(authInfo, "-device")
 }

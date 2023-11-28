@@ -244,3 +244,12 @@ var clusterAPINotKnownError = &microerror.Error{
 func IsClusterAPINotKnown(err error) bool {
 	return microerror.Cause(err) == clusterAPINotKnownError
 }
+
+var deviceAuthError = &microerror.Error{
+	Kind: "deviceAuthError",
+}
+
+// IsDeviceAuthError asserts deviceAuthError.
+func IsDeviceAuthError(err error) bool {
+	return microerror.Cause(err) == deviceAuthError
+}
