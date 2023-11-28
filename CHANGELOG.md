@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add support for device authentication flow in the `login` command and a new `--device-auth` flag to activate it.
 
+### Fixed
+
+- Fix storage of separate kubeconfig file (`--self-contained`) for EKS workload clusters
+
 ## [2.47.1] - 2023-11-15
 
 ### Changed
