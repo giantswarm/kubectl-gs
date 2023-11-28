@@ -5,6 +5,8 @@ import (
 	gscore "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	provider "github.com/giantswarm/apiextensions/v6/pkg/apis/provider/v1alpha1"
+	polexdraftv1alpha1 "github.com/giantswarm/exception-recommender/api/v1alpha1"
+	polexv1alpha1 "github.com/giantswarm/kyverno-policy-operator/api/v1alpha1"
 	"github.com/giantswarm/microerror"
 	securityv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
 	release "github.com/giantswarm/release-operator/v4/api/v1alpha1"
@@ -21,20 +23,22 @@ import (
 
 func NewSchemeBuilder() []func(*runtime.Scheme) error {
 	return []func(*runtime.Scheme) error{
-		apiextensions.AddToScheme,    // CustomResourceDefinition
-		application.AddToScheme,      // App, Catalog
-		capi.AddToScheme,             // Cluster
-		capiexp.AddToScheme,          // AWSMachinePool
-		eks.AddToScheme,              // EKS CRs
-		k8score.AddToScheme,          // Secret, ConfigMap
-		infrastructure.AddToScheme,   // AWSCluster (Giant Swarm CAPI)
-		capz.AddToScheme,             // AzureCluster
-		capzexp.AddToScheme,          // AzureMachinePool
-		gscore.AddToScheme,           // Spark
-		provider.AddToScheme,         // AWSConfig/AzureConfig
-		release.AddToScheme,          // Release
-		securityv1alpha1.AddToScheme, // Organizations
-		capainfrav1.AddToScheme,      // AWSCluster (CAPA)
+		apiextensions.AddToScheme,      // CustomResourceDefinition
+		application.AddToScheme,        // App, Catalog
+		capi.AddToScheme,               // Cluster
+		capiexp.AddToScheme,            // AWSMachinePool
+		eks.AddToScheme,                // EKS CRs
+		k8score.AddToScheme,            // Secret, ConfigMap
+		infrastructure.AddToScheme,     // AWSCluster (Giant Swarm CAPI)
+		capz.AddToScheme,               // AzureCluster
+		capzexp.AddToScheme,            // AzureMachinePool
+		gscore.AddToScheme,             // Spark
+		provider.AddToScheme,           // AWSConfig/AzureConfig
+		release.AddToScheme,            // Release
+		securityv1alpha1.AddToScheme,   // Organizations
+		capainfrav1.AddToScheme,        // AWSCluster (CAPA)
+		polexdraftv1alpha1.AddToScheme, // PolicyExceptionDraft
+		polexv1alpha1.AddToScheme,      // PolicyException
 	}
 }
 
