@@ -17,7 +17,6 @@ import (
 )
 
 const (
-	flagEnableLongNames   = "enable-long-names"
 	flagProvider          = "provider"
 	flagManagementCluster = "management-cluster"
 
@@ -137,7 +136,6 @@ const (
 )
 
 type flag struct {
-	EnableLongNames   bool
 	Provider          string
 	ManagementCluster string
 
@@ -170,7 +168,6 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, true, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
 
@@ -349,9 +346,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
 	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
 
-	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
-	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
-
 	f.print = genericclioptions.NewPrintFlags("")
 	f.print.OutputFormat = nil
 
@@ -390,10 +384,7 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 			return microerror.Mask(err)
 		} else if !valid {
 			message := fmt.Sprintf("--%s must only contain alphanumeric characters, start with a letter", flagName)
-			maxLength := key.NameLengthShort
-			if f.EnableLongNames {
-				maxLength = key.NameLengthLong
-			}
+			maxLength := key.NameLengthMax
 			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
 			return microerror.Maskf(invalidFlagError, message)
 		}

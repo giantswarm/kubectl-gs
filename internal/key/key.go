@@ -26,11 +26,10 @@ const (
 	// NameChars represents the character set used to generate resource names.
 	// (does not contain 1 and l, to avoid confusion)
 	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
-	// NameLengthLong represents the number of characters used to create a resource name when --enable-long-names feature flag is used.
-	NameLengthLong    = 20
+	// NameLengthMax represents the maximum number of characters that can be used to create a resource.
+	NameLengthMax = 20
+	// NameLengthDefault represents the number of characters used to randomly generated names
 	NameLengthDefault = 10
-	// NameLengthShort represents the number of characters used to create a resource name.
-	NameLengthShort = 5
 
 	organizationNamespaceFormat = "org-%s"
 )
@@ -56,10 +55,7 @@ func NodeSSHDConfigEncoded() string {
 }
 
 func ValidateName(name string, enableLongNames bool) (bool, error) {
-	maxLength := NameLengthShort
-	if enableLongNames {
-		maxLength = NameLengthLong
-	}
+	maxLength := NameLengthMax
 
 	pattern := fmt.Sprintf("^[a-z][a-z0-9]{0,%d}$", maxLength-1)
 	matched, err := regexp.MatchString(pattern, name)
@@ -69,10 +65,8 @@ func ValidateName(name string, enableLongNames bool) (bool, error) {
 func GenerateName(enableLongNames bool) (string, error) {
 	for {
 		letterRunes := []rune(NameChars)
-		length := NameLengthShort
-		if enableLongNames {
-			length = NameLengthDefault
-		}
+		length := NameLengthMax
+
 		characters := make([]rune, length)
 		r := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 		for i := range characters {
