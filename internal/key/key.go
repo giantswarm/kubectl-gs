@@ -54,7 +54,7 @@ func NodeSSHDConfigEncoded() string {
 	return base64.StdEncoding.EncodeToString([]byte(nodeSSHDConfig))
 }
 
-func ValidateName(name string, enableLongNames bool) (bool, error) {
+func ValidateName(name string) (bool, error) {
 	maxLength := NameLengthMax
 
 	pattern := fmt.Sprintf("^[a-z][a-z0-9]{0,%d}$", maxLength-1)
@@ -62,7 +62,7 @@ func ValidateName(name string, enableLongNames bool) (bool, error) {
 	return matched, microerror.Mask(err)
 }
 
-func GenerateName(enableLongNames bool) (string, error) {
+func GenerateName() (string, error) {
 	for {
 		letterRunes := []rune(NameChars)
 		length := NameLengthMax
@@ -75,7 +75,7 @@ func GenerateName(enableLongNames bool) (string, error) {
 
 		generatedName := string(characters)
 
-		if valid, err := ValidateName(generatedName, enableLongNames); err != nil {
+		if valid, err := ValidateName(generatedName); err != nil {
 			return "", microerror.Mask(err)
 		} else if !valid {
 			continue

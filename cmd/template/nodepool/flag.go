@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	flagEnableLongNames = "enable-long-names"
-	flagProvider        = "provider"
+	flagProvider = "provider"
 
 	// AWS only.
 	flagAWSInstanceType                     = "aws-instance-type"
@@ -46,8 +45,7 @@ const (
 )
 
 type flag struct {
-	EnableLongNames bool
-	Provider        string
+	Provider string
 
 	// AWS only.
 	AWSInstanceType                     string
@@ -77,7 +75,6 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, true, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 
 	// AWS only.
@@ -103,9 +100,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs. (default: stdout)")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
-
-	_ = cmd.Flags().MarkHidden(flagEnableLongNames)
-	_ = cmd.Flags().MarkDeprecated(flagEnableLongNames, "Long names are supported by default, so this flag is not needed anymore and will be removed in the next major version.")
 
 	// TODO: Make this flag visible when we roll CAPA/EKS out for customers
 	_ = cmd.Flags().MarkHidden(flagEKS)

@@ -43,7 +43,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var configMapYaml []byte
 	var secretYaml []byte
 
-	catalogID, err := key.GenerateName(false)
+	catalogID, err := key.GenerateName()
 	if err != nil {
 		return microerror.Mask(err)
 	}

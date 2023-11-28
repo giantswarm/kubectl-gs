@@ -46,7 +46,7 @@ func NewNodePoolCRs(config NodePoolCRsConfig) (NodePoolCRs, error) {
 	// the workload cluster name may be provided by the user.
 	{
 		if config.ClusterName == "" {
-			generatedName, err := key.GenerateName(true)
+			generatedName, err := key.GenerateName()
 			if err != nil {
 				return NodePoolCRs{}, microerror.Mask(err)
 			}
@@ -55,7 +55,7 @@ func NewNodePoolCRs(config NodePoolCRsConfig) (NodePoolCRs, error) {
 		}
 
 		if config.MachineDeploymentName == "" {
-			generatedName, err := key.GenerateName(true)
+			generatedName, err := key.GenerateName()
 			if err != nil {
 				return NodePoolCRs{}, microerror.Mask(err)
 			}
