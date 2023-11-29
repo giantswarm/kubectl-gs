@@ -65,7 +65,7 @@ func ValidateName(name string) (bool, error) {
 func GenerateName() (string, error) {
 	for {
 		letterRunes := []rune(NameChars)
-		length := NameLengthMax
+		length := NameLengthDefault
 
 		characters := make([]rune, length)
 		r := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
