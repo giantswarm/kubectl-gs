@@ -7,6 +7,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+- Changed the length of random generated cluster names to `10`
+
 ## [2.48.0] - 2023-11-29
 
 ### Added
