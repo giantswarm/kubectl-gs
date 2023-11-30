@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove deprecated `--enable-long-name` flag
+
 ### Changed
 - Changed the length of random generated cluster names to `10`
 
