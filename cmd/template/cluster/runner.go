@@ -142,7 +142,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	}
 
 	if config.Name == "" {
-		generatedName, err := key.GenerateName(true)
+		generatedName, err := key.GenerateName()
 		if err != nil {
 			return provider.ClusterConfig{}, microerror.Mask(err)
 		}
