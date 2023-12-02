@@ -23,7 +23,7 @@ require (
 	github.com/giantswarm/micrologger v1.1.1
 	github.com/giantswarm/organization-operator v1.6.0
 	github.com/giantswarm/release-operator/v4 v4.1.0
-	github.com/golang-jwt/jwt/v5 v5.1.0
+	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/go-cmp v0.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
