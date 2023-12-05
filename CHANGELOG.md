@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.49.0] - 2023-12-05
+
 ### Changed 
 
 - **BREAKING** All values of cluster userconfig for `CAPA` are moving under `global`.
@@ -1388,7 +1390,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.0...HEAD
+[2.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...v2.49.0
 [2.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.0...v2.48.1
 [2.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.1...v2.48.0
 [2.47.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...v2.47.1
