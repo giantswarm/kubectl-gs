@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed 
 
-- **BREAKING** Move CAPA userconfig values to global chart values.
+- **BREAKING** All values of cluster userconfig for `CAPA` are moving under `global`.
 
 ## [2.48.1] - 2023-11-30
 
