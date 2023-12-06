@@ -27,7 +27,8 @@ const (
 	// (does not contain 1 and l, to avoid confusion)
 	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
 	// NameLengthLong represents the number of characters used to create a resource name when --enable-long-names feature flag is used.
-	NameLengthLong = 20
+	NameLengthLong    = 20
+	NameLengthDefault = 10
 	// NameLengthShort represents the number of characters used to create a resource name.
 	NameLengthShort = 5
 
@@ -70,7 +71,7 @@ func GenerateName(enableLongNames bool) (string, error) {
 		letterRunes := []rune(NameChars)
 		length := NameLengthShort
 		if enableLongNames {
-			length = NameLengthLong
+			length = NameLengthDefault
 		}
 		characters := make([]rune, length)
 		r := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404

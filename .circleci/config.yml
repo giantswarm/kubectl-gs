@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@4.35.1
+  architect: giantswarm/architect@4.35.5
 
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2023.11
+      - image: cimg/base:2023.12
     steps:
       - checkout
       - run: |
@@ -45,12 +45,9 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - architect/push-to-docker:
-          name: push-kgs-to-quay
+      - architect/push-to-registries:
           context: architect
-          image: "quay.io/giantswarm/kubectl-gs"
-          username_envar: "QUAY_USERNAME"
-          password_envar: "QUAY_PASSWORD"
+          name: push-to-registries
           requires:
             - go-build
           filters:
