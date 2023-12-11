@@ -117,6 +117,7 @@ const (
 	flagControlPlaneInstanceType = "control-plane-instance-type"
 	flagControlPlaneAZ           = "control-plane-az"
 	flagDescription              = "description"
+	flagGenerateName             = "generate-name"
 	flagKubernetesVersion        = "kubernetes-version"
 	flagName                     = "name"
 	flagOIDCIssuerURL            = "oidc-issuer-url"
@@ -144,6 +145,7 @@ type flag struct {
 	// Common.
 	ControlPlaneAZ           []string
 	Description              string
+	GenerateName             bool
 	KubernetesVersion        string
 	Name                     string
 	Output                   string
@@ -332,7 +334,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
+	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
+	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
@@ -384,7 +387,18 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
 	}
 
+	// For vintage, don't break CLI parameter compatibility. But for CAPI or newer implementations, we want to enforce
+	// an explicit choice for a specified name (`--name`) or randomly generated name (`--generate-name`).
+	requireEitherNameOrGenerateNameFlag := key.IsPureCAPIProvider(f.Provider)
+
 	if f.Name != "" {
+		if f.GenerateName {
+			return microerror.Maskf(
+				invalidFlagError,
+				"--%s and --%s are mutually exclusive. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		}
+
 		valid, err := key.ValidateName(f.Name, true)
 		if err != nil {
 			return microerror.Mask(err)
@@ -396,6 +410,17 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 			}
 			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
 			return microerror.Maskf(invalidFlagError, message)
+		}
+	} else if !f.GenerateName {
+		if requireEitherNameOrGenerateNameFlag {
+			return microerror.Maskf(
+				invalidFlagError,
+				"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		} else {
+			// Keep supporting this old default for vintage (= no naming parameter given means to randomly
+			// generate a cluster name)
+			f.GenerateName = true
 		}
 	}
 

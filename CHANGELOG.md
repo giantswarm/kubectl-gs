@@ -7,18 +7,23 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Breaking changes
+
+- `kubectl gs template cluster`: Either `--name` or new `--generated-name` parameter is now required for CAPI cluster names. We kept the CLI backward-compatible for vintage, so if none of these parameters is specified, the old default of generating a random name still applies and no error is thrown.
+
 ## [2.49.1] - 2023-12-06
 
 ## [2.49.0] - 2023-12-05
 
-### Changed 
+### Changed
 
 - **BREAKING** All values of cluster userconfig for `CAPA` are moving under `global`.
 
 ## [2.48.1] - 2023-11-30
 
 ### Changed
-- Changed the length of random generated cluster names to `10`
+
+- Changed the length of randomly-generated cluster names to 10
 
 ## [2.48.0] - 2023-11-29
 
