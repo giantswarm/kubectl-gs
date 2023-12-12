@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.50.0] - 2023-12-12
+
 ### Breaking changes
 
 - `kubectl gs template cluster`: Either `--name` or new `--generated-name` parameter is now required for CAPI cluster names. We kept the CLI backward-compatible for vintage, so if none of these parameters is specified, the old default of generating a random name still applies and no error is thrown.
@@ -1401,7 +1403,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.0...HEAD
+[2.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.1...v2.50.0
 [2.49.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.0...v2.49.1
 [2.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...v2.49.0
 [2.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.0...v2.48.1
