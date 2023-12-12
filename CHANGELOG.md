@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update values schema for generating EKS cluster.
+
 ## [2.50.0] - 2023-12-12
 
 ### Breaking changes
