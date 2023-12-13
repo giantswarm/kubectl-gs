@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.50.1] - 2023-12-13
+
 ### Changed
 
 - Update values schema for generating EKS cluster.
@@ -1407,7 +1409,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.1...HEAD
+[2.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.0...v2.50.1
 [2.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.1...v2.50.0
 [2.49.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.0...v2.49.1
 [2.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...v2.49.0
