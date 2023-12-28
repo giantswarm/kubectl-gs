@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"slices"
 	"text/template"
 
@@ -98,6 +99,61 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 					return fmt.Errorf("invalid CIDR (for single IPv4, please use `/32` suffix): %q", cidr)
 				}
 			}
+		}
+
+		if config.AWS.NetworkVPCCIDR != "" {
+			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
+
+			subnetCount := config.AWS.NetworkAZUsageLimit
+
+			//First will be used for public subnet, the last 3 for private subnets
+			subnets, err := c.SubNetting(cidr.MethodSubnetNum, 4)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			flagValues.Connectivity.Subnets = []capa.Subnet{
+				{
+					IsPublic:   true,
+					CidrBlocks: []capa.CIDRBlock{},
+				},
+				{
+					IsPublic:   false,
+					CidrBlocks: []capa.CIDRBlock{},
+				},
+			}
+
+			ones, _ := subnets[0].MaskSize()
+			publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetSize-ones))))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			for i := 0; i < subnetCount; i++ {
+				flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
+					CIDR:             publicSubnets[i].CIDR().String(),
+					AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
+				})
+			}
+
+			privateSubnetCount := 0
+			for j := 1; j < 4 && privateSubnetCount < subnetCount; j++ {
+				ones, _ := subnets[j].MaskSize()
+
+				privateSubnets, err := subnets[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetSize-ones))))
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				for k := 0; k < len(privateSubnets) && privateSubnetCount < subnetCount; k++ {
+					flagValues.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
+						CIDR:             privateSubnets[k].CIDR().String(),
+						AvailabilityZone: string(rune('a' + privateSubnetCount)), // Adjusted to start from 'a' for each subnet
+					})
+					privateSubnetCount++
+				}
+			}
+
 		}
 
 		if config.AWS.ClusterType == "proxy-private" {
