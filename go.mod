@@ -41,7 +41,7 @@ require (
 	k8s.io/apimachinery v0.28.4
 	k8s.io/cli-runtime v0.28.3
 	k8s.io/client-go v0.28.4
-	k8s.io/utils v0.0.0-20231127182322-b307cd553661
+	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
 	sigs.k8s.io/cluster-api v1.5.2
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.2.4
 	sigs.k8s.io/cluster-api-provider-azure v1.11.4
@@ -192,7 +192,7 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.starlark.net v0.0.0-20230807144010-2aa75752d1da // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.16.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
