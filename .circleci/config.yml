@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@4.36.0
+  architect: giantswarm/architect@4.37.0
 
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2023.12
+      - image: cimg/base:2024.01
     steps:
       - checkout
       - run: |
