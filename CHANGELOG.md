@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Remove bastion section for generating CAPA cluster manifests.
+
 ## [2.50.1] - 2023-12-13
 
 ### Changed
