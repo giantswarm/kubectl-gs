@@ -212,11 +212,6 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 		Global: &capa.Global{
 			Connectivity: &capa.Connectivity{
 				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
-				Bastion: &capa.Bastion{
-					Enabled:      true,
-					InstanceType: config.BastionInstanceType,
-					Replicas:     config.BastionReplicas,
-				},
 				Network: &capa.Network{
 					VPCCIDR: config.AWS.NetworkVPCCIDR,
 				},
