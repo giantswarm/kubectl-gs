@@ -29,6 +29,7 @@ const (
 	DefaultAppsAWSRepoName = "default-apps-aws"
 	ClusterAWSRepoName     = "cluster-aws"
 	ModePrivate            = "private"
+	ProxyPrivateType       = "proxy-private"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
@@ -123,7 +124,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				},
 			}
 
-			if config.AWS.ClusterType != "proxy-private" {
+			if config.AWS.ClusterType != ProxyPrivateType {
 				ones, _ := subnets[0].MaskSize()
 				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetSize-ones))))
 				if err != nil {
@@ -140,7 +141,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 			//if cluster has public subnets, we use blocks 2,3,4 for private subnets
 			cidrStart := 1
-			if config.AWS.ClusterType == "proxy-private" {
+			if config.AWS.ClusterType == ProxyPrivateType {
 				//if cluster has only private subnets we can use all 4 blocks
 				cidrStart = 0
 			}
@@ -164,7 +165,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		}
 
-		if config.AWS.ClusterType == "proxy-private" {
+		if config.AWS.ClusterType == ProxyPrivateType {
 			httpProxy := config.AWS.HttpsProxy
 			if config.AWS.HttpProxy != "" {
 				httpProxy = config.AWS.HttpProxy

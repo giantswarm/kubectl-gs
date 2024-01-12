@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"math"
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -241,11 +240,6 @@ func organizationNamespace(org string) string {
 
 func userConfigMapName(app string) string {
 	return fmt.Sprintf("%s-userconfig", app)
-}
-
-func findNextPowerOfTwo(num int) int {
-	log2OfNum := math.Ceil(math.Log2(float64(num)))
-	return int(math.Pow(2, log2OfNum+1))
 }
 
 func defaultTo(value string, defaultValue string) string {
