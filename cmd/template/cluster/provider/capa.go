@@ -123,21 +123,29 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				},
 			}
 
-			ones, _ := subnets[0].MaskSize()
-			publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetSize-ones))))
-			if err != nil {
-				return microerror.Mask(err)
+			if config.AWS.ClusterType != "proxy-private" {
+				ones, _ := subnets[0].MaskSize()
+				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetSize-ones))))
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				for i := 0; i < subnetCount; i++ {
+					flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
+						CIDR:             publicSubnets[i].CIDR().String(),
+						AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
+					})
+				}
 			}
 
-			for i := 0; i < subnetCount; i++ {
-				flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
-					CIDR:             publicSubnets[i].CIDR().String(),
-					AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
-				})
+			//if cluster has public subnets, we use blocks 2,3,4 for private subnets
+			cidrStart := 1
+			if config.AWS.ClusterType == "proxy-private" {
+				//if cluster has only private subnets we can use all 4 blocks
+				cidrStart = 0
 			}
-
 			privateSubnetCount := 0
-			for j := 1; j < 4 && privateSubnetCount < subnetCount; j++ {
+			for j := cidrStart; j < 4 && privateSubnetCount < subnetCount; j++ {
 				ones, _ := subnets[j].MaskSize()
 
 				privateSubnets, err := subnets[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetSize-ones))))
@@ -157,34 +165,6 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		}
 
 		if config.AWS.ClusterType == "proxy-private" {
-			subnetCountLimit := 0
-			subnetCount := len(config.AWS.MachinePool.AZs)
-			if subnetCount == 0 {
-				subnetCountLimit = 4
-				subnetCount = config.AWS.NetworkAZUsageLimit
-			} else {
-				subnetCountLimit = findNextPowerOfTwo(subnetCount)
-			}
-
-			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
-			subnets, err := c.SubNetting(cidr.MethodSubnetNum, subnetCountLimit)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			flagValues.Connectivity.Subnets = []capa.Subnet{
-				{
-					CidrBlocks: []capa.CIDRBlock{},
-				},
-			}
-
-			for i := 0; i < subnetCount; i++ {
-				flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
-					CIDR:             subnets[i].CIDR().String(),
-					AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
-				})
-			}
-
 			httpProxy := config.AWS.HttpsProxy
 			if config.AWS.HttpProxy != "" {
 				httpProxy = config.AWS.HttpProxy
