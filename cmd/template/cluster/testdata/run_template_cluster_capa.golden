@@ -2,50 +2,49 @@
 apiVersion: v1
 data:
   values: |
-    connectivity:
-      availabilityZoneUsageLimit: 3
-      bastion:
-        enabled: true
-      network:
-        vpcCidr: 10.123.0.0/16
-      subnets:
-      - cidrBlocks:
-        - availabilityZone: a
-          cidr: 10.123.0.0/20
-        - availabilityZone: b
-          cidr: 10.123.16.0/20
-        - availabilityZone: c
-          cidr: 10.123.32.0/20
-        isPublic: true
-      - cidrBlocks:
-        - availabilityZone: a
-          cidr: 10.123.64.0/18
-        - availabilityZone: b
-          cidr: 10.123.128.0/18
-        - availabilityZone: c
-          cidr: 10.123.192.0/18
-        isPublic: false
-      topology: {}
-    controlPlane:
-      instanceType: control-plane-instance-type
-    metadata:
-      description: just a test cluster
-      name: test1
-      organization: test
-    nodePools:
-      worker1:
-        availabilityZones:
-        - eu-west-1a
-        - eu-west-1b
-        customNodeLabels:
-        - label=value
-        instanceType: big-one
-        maxSize: 5
-        minSize: 2
-        rootVolumeSizeGB: 200
-    providerSpecific:
-      awsClusterRoleIdentityName: default
-      region: the-region
+    global:
+      connectivity:
+        availabilityZoneUsageLimit: 3
+        network:
+          vpcCidr: 10.123.0.0/16
+        subnets:
+        - cidrBlocks:
+          - availabilityZone: a
+            cidr: 10.123.0.0/20
+          - availabilityZone: b
+            cidr: 10.123.16.0/20
+          - availabilityZone: c
+            cidr: 10.123.32.0/20
+          isPublic: true
+        - cidrBlocks:
+          - availabilityZone: a
+            cidr: 10.123.64.0/18
+          - availabilityZone: b
+            cidr: 10.123.128.0/18
+          - availabilityZone: c
+            cidr: 10.123.192.0/18
+          isPublic: false
+        topology: {}
+      controlPlane:
+        instanceType: control-plane-instance-type
+      metadata:
+        description: just a test cluster
+        name: test1
+        organization: test
+      nodePools:
+        worker1:
+          availabilityZones:
+          - eu-west-1a
+          - eu-west-1b
+          customNodeLabels:
+          - label=value
+          instanceType: big-one
+          maxSize: 5
+          minSize: 2
+          rootVolumeSizeGB: 200
+      providerSpecific:
+        awsClusterRoleIdentityName: default
+        region: the-region
 kind: ConfigMap
 metadata:
   creationTimestamp: null

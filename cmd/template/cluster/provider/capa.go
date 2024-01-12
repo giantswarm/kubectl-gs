@@ -131,7 +131,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				}
 
 				for i := 0; i < subnetCount; i++ {
-					flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
+					flagValues.Global.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
 						CIDR:             publicSubnets[i].CIDR().String(),
 						AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
 					})
@@ -154,7 +154,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				}
 
 				for k := 0; k < len(privateSubnets) && privateSubnetCount < subnetCount; k++ {
-					flagValues.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
+					flagValues.Global.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
 						CIDR:             privateSubnets[k].CIDR().String(),
 						AvailabilityZone: string(rune('a' + privateSubnetCount)), // Adjusted to start from 'a' for each subnet
 					})
