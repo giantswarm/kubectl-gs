@@ -20,23 +20,28 @@ func CreateFakeKubeConfigFromConfig(config *clientcmdapi.Config) clientcmd.Clien
 
 func CreateValidTestConfig() *clientcmdapi.Config {
 	const (
+		name   = "clean"
 		server = "https://anything.com:8080"
 		token  = "the-token"
 	)
 
+	return CreateTestConfig(name, name, name, server, token)
+}
+
+func CreateTestConfig(cluster, context, authInfo, server, token string) *clientcmdapi.Config {
 	config := clientcmdapi.NewConfig()
-	config.Clusters["clean"] = &clientcmdapi.Cluster{
+	config.Clusters[cluster] = &clientcmdapi.Cluster{
 		Server: server,
 	}
-	config.AuthInfos["clean"] = &clientcmdapi.AuthInfo{
+	config.AuthInfos[authInfo] = &clientcmdapi.AuthInfo{
 		Token: token,
 	}
-	config.Contexts["clean"] = &clientcmdapi.Context{
-		Cluster:   "clean",
-		AuthInfo:  "clean",
+	config.Contexts[context] = &clientcmdapi.Context{
+		Cluster:   cluster,
+		AuthInfo:  authInfo,
 		Namespace: "default",
 	}
-	config.CurrentContext = "clean"
+	config.CurrentContext = context
 
 	return config
 }
@@ -85,5 +90,37 @@ func CreateNonDefaultTestConfig() *clientcmdapi.Config {
 	config.AuthInfos["user-"+clustername] = &clientcmdapi.AuthInfo{
 		ClientCertificateData: []byte(clientcert),
 		ClientKeyData:         []byte(clientkey)}
+	return config
+}
+
+func CreateProviderTestConfig(cluster, context, authInfo, server, clientID, idToken, issuerURL, refreshToken string) *clientcmdapi.Config {
+	const (
+		authProviderName = "oidc"
+		keyClientID      = "client-id"
+		keyIdToken       = "id-token"
+		keyIdpIssuerUrl  = "idp-issuer-url"
+		keyRefreshToken  = "refresh-token"
+	)
+
+	config := clientcmdapi.NewConfig()
+	config.Clusters[cluster] = &clientcmdapi.Cluster{
+		Server: issuerURL,
+	}
+	config.AuthInfos[authInfo] = &clientcmdapi.AuthInfo{
+		AuthProvider: &clientcmdapi.AuthProviderConfig{
+			Name: authProviderName,
+			Config: map[string]string{
+				keyClientID:     clientID,
+				keyIdToken:      idToken,
+				keyIdpIssuerUrl: issuerURL,
+				keyRefreshToken: refreshToken,
+			},
+		},
+	}
+	config.Contexts[context] = &clientcmdapi.Context{
+		Cluster:  cluster,
+		AuthInfo: authInfo,
+	}
+
 	return config
 }

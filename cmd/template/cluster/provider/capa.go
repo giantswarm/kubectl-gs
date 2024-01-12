@@ -84,8 +84,8 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 					return fmt.Errorf("management cluster's AWSCluster object had an invalid IPv4 in `.status.networkStatus.natGatewaysIPs`: %q", ip)
 				}
 
-				if !slices.Contains(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr) {
-					flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
+				if !slices.Contains(flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr) {
+					flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
 				}
 			}
 
@@ -94,7 +94,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 					// We allow specifying an empty value `--control-plane-load-balancer-ingress-allow-cidr-block ""`
 					// to denote that only the management cluster's IPs should be allowed. Skip this value.
 				} else if net.IsIPv4CIDRString(cidr) {
-					flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
+					flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
 				} else {
 					return fmt.Errorf("invalid CIDR (for single IPv4, please use `/32` suffix): %q", cidr)
 				}
@@ -112,7 +112,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				return microerror.Mask(err)
 			}
 
-			flagValues.Connectivity.Subnets = []capa.Subnet{
+			flagValues.Global.Connectivity.Subnets = []capa.Subnet{
 				{
 					IsPublic:   true,
 					CidrBlocks: []capa.CIDRBlock{},
@@ -169,18 +169,18 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			if config.AWS.HttpProxy != "" {
 				httpProxy = config.AWS.HttpProxy
 			}
-			flagValues.Connectivity.Proxy = &capa.Proxy{
+			flagValues.Global.Connectivity.Proxy = &capa.Proxy{
 				Enabled:    true,
 				HttpsProxy: config.AWS.HttpsProxy,
 				HttpProxy:  httpProxy,
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
-			flagValues.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
-			flagValues.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
-			flagValues.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
-			flagValues.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
+			flagValues.Global.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
+			flagValues.Global.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
+			flagValues.Global.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
+			flagValues.Global.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
+			flagValues.Global.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)
@@ -245,38 +245,35 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 	return capa.ClusterConfig{
-		Metadata: &capa.Metadata{
-			Name:         config.Name,
-			Description:  config.Description,
-			Organization: config.Organization,
-		},
-		ProviderSpecific: &capa.ProviderSpecific{
-			Region:                     config.Region,
-			AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
-		},
-		Connectivity: &capa.Connectivity{
-			AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
-			Bastion: &capa.Bastion{
-				Enabled:      true,
-				InstanceType: config.BastionInstanceType,
-				Replicas:     config.BastionReplicas,
+		Global: &capa.Global{
+			Connectivity: &capa.Connectivity{
+				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
+				Network: &capa.Network{
+					VPCCIDR: config.AWS.NetworkVPCCIDR,
+				},
+				Topology: &capa.Topology{},
 			},
-			Network: &capa.Network{
-				VPCCIDR: config.AWS.NetworkVPCCIDR,
+			ControlPlane: &capa.ControlPlane{
+				InstanceType: config.ControlPlaneInstanceType,
 			},
-			Topology: &capa.Topology{},
-		},
-		ControlPlane: &capa.ControlPlane{
-			InstanceType: config.ControlPlaneInstanceType,
-		},
-		NodePools: &map[string]capa.MachinePool{
-			config.AWS.MachinePool.Name: {
-				AvailabilityZones: config.AWS.MachinePool.AZs,
-				InstanceType:      config.AWS.MachinePool.InstanceType,
-				MinSize:           config.AWS.MachinePool.MinSize,
-				MaxSize:           config.AWS.MachinePool.MaxSize,
-				RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
-				CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
+			Metadata: &capa.Metadata{
+				Name:         config.Name,
+				Description:  config.Description,
+				Organization: config.Organization,
+			},
+			NodePools: &map[string]capa.MachinePool{
+				config.AWS.MachinePool.Name: {
+					AvailabilityZones: config.AWS.MachinePool.AZs,
+					InstanceType:      config.AWS.MachinePool.InstanceType,
+					MinSize:           config.AWS.MachinePool.MinSize,
+					MaxSize:           config.AWS.MachinePool.MaxSize,
+					RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
+					CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
+				},
+			},
+			ProviderSpecific: &capa.ProviderSpecific{
+				Region:                     config.Region,
+				AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
 			},
 		},
 	}

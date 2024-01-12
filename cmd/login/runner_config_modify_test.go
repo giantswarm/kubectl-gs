@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v2/test/oidc"
 )
 
 func TestKubeConfigModification(t *testing.T) {
@@ -431,9 +432,9 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 	routeAuth := func(r *http.Request) (string, string) {
 		switch r.URL.Path {
 		case "/token":
-			return "text/plain", getToken(idToken, refreshToken)
+			return "text/plain", testoidc.GetToken(idToken, refreshToken)
 		case "/.well-known/openid-configuration":
-			return "application/json", strings.ReplaceAll(getIssuerData(), "ISSUER", issuer)
+			return "application/json", strings.ReplaceAll(testoidc.GetIssuerData(), "ISSUER", issuer)
 		}
 		return "", ""
 	}
@@ -466,7 +467,7 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 }
 
 func createCertificate() (certPem []byte, keyPem []byte, err error) {
-	key, err := getKey()
+	key, err := testoidc.GetKey()
 	if err != nil {
 		return
 	}

@@ -7,12 +7,55 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.51.0] - 2024-01-10
+
+### Changed
+
+- Remove bastion section for generating CAPA cluster manifests.
+
+## [2.50.1] - 2023-12-13
+
+### Changed
+
+- Update values schema for generating EKS cluster.
+
+## [2.50.0] - 2023-12-12
+
+### Breaking changes
+
+- `kubectl gs template cluster`: Either `--name` or new `--generated-name` parameter is now required for CAPI cluster names. We kept the CLI backward-compatible for vintage, so if none of these parameters is specified, the old default of generating a random name still applies and no error is thrown.
+
+## [2.49.1] - 2023-12-06
+
+## [2.49.0] - 2023-12-05
+
+### Changed
+
+- **BREAKING** All values of cluster userconfig for `CAPA` are moving under `global`.
+
+## [2.48.1] - 2023-11-30
+
+### Changed
+
+- Changed the length of randomly-generated cluster names to 10
+
+## [2.48.0] - 2023-11-29
+
+### Added
+
+- Add support for device authentication flow in the `login` command and a new `--device-auth` flag to activate it.
+
+### Fixed
+
+- Fix storage of separate kubeconfig file (`--self-contained`) for EKS workload clusters
+
 ## [2.47.1] - 2023-11-15
 
 ### Changed
 
 - Increase the cluster name length to 20 characters.
 - Change how `login` works to use our DNS record for the k8s API when using non-vintage providers, rather than the value found in the CAPI CRs.
+- Defaults for `cluster template --provider vsphere` since it was migrated to flatcar os.
 
 ## [2.47.0] - 2023-11-13
 
@@ -1372,7 +1415,14 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.51.0...HEAD
+[2.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.1...v2.51.0
+[2.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.0...v2.50.1
+[2.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.1...v2.50.0
+[2.49.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.0...v2.49.1
+[2.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...v2.49.0
+[2.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.0...v2.48.1
+[2.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.1...v2.48.0
 [2.47.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...v2.47.1
 [2.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...v2.47.0
 [2.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.4...v2.46.0

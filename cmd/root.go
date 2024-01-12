@@ -34,6 +34,7 @@ type Config struct {
 
 	Stderr io.Writer
 	Stdout io.Writer
+	Stdin  *os.File
 }
 
 func New(config Config) (*cobra.Command, error) {
@@ -48,6 +49,9 @@ func New(config Config) (*cobra.Command, error) {
 	}
 	if config.Stdout == nil {
 		config.Stdout = os.Stdout
+	}
+	if config.Stdin == nil {
+		config.Stdin = os.Stdin
 	}
 
 	var err error

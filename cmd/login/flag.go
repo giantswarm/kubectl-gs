@@ -31,6 +31,8 @@ const (
 	flagAwsProfile = "aws-profile"
 
 	flagLoginTimeout = "login-timeout"
+
+	flagDeviceAuth = "device-auth"
 )
 
 type flag struct {
@@ -56,6 +58,8 @@ type flag struct {
 	AWSProfile string
 
 	LoginTimeout time.Duration
+
+	DeviceAuth bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -81,6 +85,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWSProfile, flagAwsProfile, "", "AWS profile name that the created kubeconfig will always use, Only applicable for EKS clusters.")
 
 	cmd.Flags().DurationVar(&f.LoginTimeout, flagLoginTimeout, 60*time.Second, "Duration for which kubectl gs will wait for the OIDC login to complete. Once the timeout is reached, OIDC login will fail.")
+
+	cmd.Flags().BoolVar(&f.DeviceAuth, flagDeviceAuth, false, "Use device authentication flow to log in")
 
 	_ = cmd.Flags().MarkHidden(flagWCInsecureNamespace)
 	_ = cmd.Flags().MarkHidden("namespace")
