@@ -3,30 +3,34 @@ apiVersion: v1
 data:
   values: |
     connectivity:
-      availabilityZoneUsageLimit: 2
+      availabilityZoneUsageLimit: 3
       bastion:
         enabled: true
       network:
-        vpcCidr: 192.168.0.0/16
+        vpcCidr: 192.168.0.0/18
       subnets:
       - cidrBlocks:
         - availabilityZone: a
-          cidr: 192.168.0.0/20
+          cidr: 192.168.0.0/22
         - availabilityZone: b
-          cidr: 192.168.16.0/20
+          cidr: 192.168.4.0/22
+        - availabilityZone: c
+          cidr: 192.168.8.0/22
         isPublic: true
       - cidrBlocks:
         - availabilityZone: a
-          cidr: 192.168.64.0/18
+          cidr: 192.168.16.0/20
         - availabilityZone: b
-          cidr: 192.168.128.0/18
+          cidr: 192.168.32.0/20
+        - availabilityZone: c
+          cidr: 192.168.48.0/20
         isPublic: false
       topology: {}
     controlPlane:
       instanceType: control-plane-instance-type
     metadata:
       description: just a test cluster
-      name: test5
+      name: test7
       organization: test
     nodePools:
       worker1:
@@ -46,8 +50,8 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   labels:
-    giantswarm.io/cluster: test5
-  name: test5-userconfig
+    giantswarm.io/cluster: test7
+  name: test7-userconfig
   namespace: org-test
 ---
 apiVersion: application.giantswarm.io/v1alpha1
@@ -55,7 +59,7 @@ kind: App
 metadata:
   labels:
     app-operator.giantswarm.io/version: 0.0.0
-  name: test5
+  name: test7
   namespace: org-test
 spec:
   catalog: the-catalog
@@ -77,21 +81,21 @@ spec:
   namespace: org-test
   userConfig:
     configMap:
-      name: test5-userconfig
+      name: test7-userconfig
       namespace: org-test
   version: 1.0.0
 ---
 apiVersion: v1
 data:
   values: |
-    clusterName: test5
+    clusterName: test7
     organization: test
 kind: ConfigMap
 metadata:
   creationTimestamp: null
   labels:
-    giantswarm.io/cluster: test5
-  name: test5-default-apps-userconfig
+    giantswarm.io/cluster: test7
+  name: test7-default-apps-userconfig
   namespace: org-test
 ---
 apiVersion: application.giantswarm.io/v1alpha1
@@ -99,15 +103,15 @@ kind: App
 metadata:
   labels:
     app-operator.giantswarm.io/version: 0.0.0
-    giantswarm.io/cluster: test5
+    giantswarm.io/cluster: test7
     giantswarm.io/managed-by: cluster
-  name: test5-default-apps
+  name: test7-default-apps
   namespace: org-test
 spec:
   catalog: the-default-catalog
   config:
     configMap:
-      name: test5-cluster-values
+      name: test7-cluster-values
       namespace: org-test
     secret:
       name: ""
@@ -123,6 +127,6 @@ spec:
   namespace: org-test
   userConfig:
     configMap:
-      name: test5-default-apps-userconfig
+      name: test7-default-apps-userconfig
       namespace: org-test
   version: 2.0.0
