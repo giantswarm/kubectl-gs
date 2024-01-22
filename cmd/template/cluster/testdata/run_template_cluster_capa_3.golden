@@ -13,8 +13,6 @@ data:
           httpsProxy: https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
           noProxy: test-domain.com
         subnets:
-        - cidrBlocks: []
-          isPublic: true
         - cidrBlocks:
           - availabilityZone: a
             cidr: 10.123.0.0/18

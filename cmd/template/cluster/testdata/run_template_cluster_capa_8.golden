@@ -10,12 +10,12 @@ data:
         subnets:
         - cidrBlocks:
           - availabilityZone: a
-            cidr: 10.0.0.0/21
-          isPublic: true
-        - cidrBlocks:
-          - availabilityZone: a
             cidr: 10.4.0.0/16
           isPublic: false
+        - cidrBlocks:
+          - availabilityZone: a
+            cidr: 10.0.0.0/21
+          isPublic: true
         topology: {}
       controlPlane:
         instanceType: control-plane-instance-type

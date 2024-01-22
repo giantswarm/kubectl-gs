@@ -115,28 +115,9 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 			flagValues.Global.Connectivity.Subnets = []capa.Subnet{
 				{
-					IsPublic:   true,
-					CidrBlocks: []capa.CIDRBlock{},
-				},
-				{
 					IsPublic:   false,
 					CidrBlocks: []capa.CIDRBlock{},
 				},
-			}
-
-			if config.AWS.ClusterType != ProxyPrivateType {
-				ones, _ := subnets[0].MaskSize()
-				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
-				if err != nil {
-					return microerror.Mask(err)
-				}
-
-				for i := 0; i < subnetCount; i++ {
-					flagValues.Global.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
-						CIDR:             publicSubnets[i].CIDR().String(),
-						AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
-					})
-				}
 			}
 
 			//if cluster has public subnets, we use blocks 2,3,4 for private subnets
@@ -155,11 +136,32 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				}
 
 				for k := 0; k < len(privateSubnets) && privateSubnetCount < subnetCount; k++ {
-					flagValues.Global.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
+					flagValues.Global.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
 						CIDR:             privateSubnets[k].CIDR().String(),
 						AvailabilityZone: string(rune('a' + privateSubnetCount)), // Adjusted to start from 'a' for each subnet
 					})
 					privateSubnetCount++
+				}
+			}
+
+			if config.AWS.ClusterType != ProxyPrivateType {
+
+				flagValues.Global.Connectivity.Subnets = append(flagValues.Global.Connectivity.Subnets, capa.Subnet{
+					IsPublic:   true,
+					CidrBlocks: []capa.CIDRBlock{},
+				})
+
+				ones, _ := subnets[0].MaskSize()
+				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				for i := 0; i < subnetCount; i++ {
+					flagValues.Global.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
+						CIDR:             publicSubnets[i].CIDR().String(),
+						AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
+					})
 				}
 			}
 
