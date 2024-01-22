@@ -39,8 +39,8 @@ type AWSConfig struct {
 	PrefixListID                                   string
 	TransitGatewayID                               string
 	ControlPlaneLoadBalancerIngressAllowCIDRBlocks []string
-	PublicSubnetSize                               int
-	PrivateSubnetSize                              int
+	PublicSubnetMask                               int
+	PrivateSubnetMask                              int
 }
 
 type AWSMachinePoolConfig struct {

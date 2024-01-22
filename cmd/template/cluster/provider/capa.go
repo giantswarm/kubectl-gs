@@ -126,7 +126,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 			if config.AWS.ClusterType != ProxyPrivateType {
 				ones, _ := subnets[0].MaskSize()
-				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetSize-ones))))
+				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -149,7 +149,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			for j := cidrStart; j < 4 && privateSubnetCount < subnetCount; j++ {
 				ones, _ := subnets[j].MaskSize()
 
-				privateSubnets, err := subnets[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetSize-ones))))
+				privateSubnets, err := subnets[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetMask-ones))))
 				if err != nil {
 					return microerror.Mask(err)
 				}

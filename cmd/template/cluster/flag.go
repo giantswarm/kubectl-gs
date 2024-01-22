@@ -38,8 +38,8 @@ const (
 	flagAWSPrefixListID                                  = "aws-prefix-list-id"
 	flagAWSTransitGatewayID                              = "aws-transit-gateway-id"
 	flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock = "control-plane-load-balancer-ingress-allow-cidr-block"
-	flagAWSPublicSubnetSize                              = "public-subnet-size"
-	flagAWSPrivateSubnetSize                             = "private-subnet-size"
+	flagAWSPublicSubnetMask                              = "public-subnet-size"
+	flagAWSPrivateSubnetMask                             = "private-subnet-size"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -192,8 +192,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
 	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
-	cmd.Flags().IntVar(&f.AWS.PublicSubnetSize, flagAWSPublicSubnetSize, 20, "Size of the public subnets. Minimum size is 25.")
-	cmd.Flags().IntVar(&f.AWS.PrivateSubnetSize, flagAWSPrivateSubnetSize, 18, "Size of the private subnets. Minimum size is 25.")
+	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25.")
+	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, flagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25.")
 
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
