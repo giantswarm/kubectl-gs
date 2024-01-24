@@ -107,12 +107,14 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 			subnetCount := config.AWS.NetworkAZUsageLimit
 
-			//First will be used for public subnet, the last 3 for private subnets
-			subnets, err := c.SubNetting(cidr.MethodSubnetNum, 4)
+			//I cluster has public subnets, first split will be used for the public subnets, the last 3 splits for private subnets
+			//if cluster has only private subnets, all 4 splits will be used for private subnets
+			cidrSplit, err := c.SubNetting(cidr.MethodSubnetNum, 4)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
+			//initialize the subnet structure, there will always be private subnets
 			flagValues.Global.Connectivity.Subnets = []capa.Subnet{
 				{
 					IsPublic:   false,
@@ -120,24 +122,28 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				},
 			}
 
-			//if cluster has public subnets, we use blocks 2,3,4 for private subnets
-			cidrStart := 1
+			//if cluster has public subnets, we use splits 1 for public subnets and 2,3,4 for private subnets
+			privateCidrSplitStart := 1
 			if config.AWS.ClusterType == ProxyPrivateType {
-				//if cluster has only private subnets we can use all 4 blocks
-				cidrStart = 0
+				//if cluster has only private subnets we use all 4 splits
+				privateCidrSplitStart = 0
 			}
-			privateSubnetCount := 0
-			for j := cidrStart; j < 4 && privateSubnetCount < subnetCount; j++ {
-				ones, _ := subnets[j].MaskSize()
 
-				privateSubnets, err := subnets[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetMask-ones))))
+			privateSubnetCount := 0
+			// loop over the private subnet splits in order to generate the required amount of private subnets
+			for j := privateCidrSplitStart; j < 4 && privateSubnetCount < subnetCount; j++ {
+				ones, _ := cidrSplit[j].MaskSize()
+
+				//divide the current split in blocks with the size of the private subnet mask
+				availablePrivateSubnetSplits, err := cidrSplit[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetMask-ones))))
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
-				for k := 0; k < len(privateSubnets) && privateSubnetCount < subnetCount; k++ {
+				//while there is space in the current split, generate private subnets
+				for k := 0; k < len(availablePrivateSubnetSplits) && privateSubnetCount < subnetCount; k++ {
 					flagValues.Global.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
-						CIDR:             privateSubnets[k].CIDR().String(),
+						CIDR:             availablePrivateSubnetSplits[k].CIDR().String(),
 						AvailabilityZone: string(rune('a' + privateSubnetCount)), // Adjusted to start from 'a' for each subnet
 					})
 					privateSubnetCount++
@@ -146,20 +152,25 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 			if config.AWS.ClusterType != ProxyPrivateType {
 
+				//initialize public subnets in the cluster structure
 				flagValues.Global.Connectivity.Subnets = append(flagValues.Global.Connectivity.Subnets, capa.Subnet{
 					IsPublic:   true,
 					CidrBlocks: []capa.CIDRBlock{},
 				})
 
-				ones, _ := subnets[0].MaskSize()
-				publicSubnets, err := subnets[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
+				//always use the first split for public subnets
+				ones, _ := cidrSplit[0].MaskSize()
+
+				//divide the current split in blocks with the size of the public subnet mask
+				availablePublicSubnets, err := cidrSplit[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
+				//generate public subnets
 				for i := 0; i < subnetCount; i++ {
 					flagValues.Global.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
-						CIDR:             publicSubnets[i].CIDR().String(),
+						CIDR:             availablePublicSubnets[i].CIDR().String(),
 						AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
 					})
 				}
