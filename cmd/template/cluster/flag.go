@@ -192,8 +192,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
 	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
-	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25.")
-	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, flagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25.")
+	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
+	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, flagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
 
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
