@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Allow subnet generation customization for CAPA clusters.
+
 ## [2.51.0] - 2024-01-10
 
 ### Changed
