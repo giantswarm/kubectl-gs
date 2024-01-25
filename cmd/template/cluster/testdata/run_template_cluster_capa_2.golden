@@ -4,6 +4,7 @@ data:
   values: |
     global:
       connectivity:
+        availabilityZoneUsageLimit: 2
         network:
           vpcCidr: 10.123.0.0/16
         proxy:
