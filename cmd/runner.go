@@ -106,7 +106,8 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 
 		return nil
 	} else if err != nil {
-		return microerror.Mask(err)
+		// Print, but do no quit. We don't want to get into the way of the user.
+		fmt.Fprintf(r.stderr, "Error while checking for a new version of %s: %s\n\n", project.Name(), microerror.Mask(err))
 	}
 
 	return nil
