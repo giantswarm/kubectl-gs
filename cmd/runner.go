@@ -71,8 +71,7 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 	}
 
 	if r.flag.disableVersionCheck {
-		// User wants to risk their life and use an older version.
-		// Not my problem anymore.
+		// User disabled the update check.
 		return nil
 	}
 
