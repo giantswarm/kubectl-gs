@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Errors during update checks no longer interrupt the command execution.
+
 ## [2.52.1] - 2024-02-01
 
 No significant changes compared to v2.52.0. This release was made to ensure the proper distribution to all channels, which failed with the last release.
