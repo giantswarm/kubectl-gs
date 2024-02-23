@@ -69,7 +69,6 @@ func (cc *CommonConfig) GetProviderFromConfig(ctx context.Context, athenaUrl str
 	awsRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderAWS))
 	azureRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderAzure))
 	capaRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderCAPA))
-	capzRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderCAPZ))
 
 	var provider string
 	switch {
@@ -79,8 +78,6 @@ func (cc *CommonConfig) GetProviderFromConfig(ctx context.Context, athenaUrl str
 		provider = key.ProviderAzure
 	case capaRegexp.MatchString(config.Host):
 		provider = key.ProviderCAPA
-	case capzRegexp.MatchString(config.Host):
-		provider = key.ProviderCAPZ
 	default:
 		provider = key.ProviderOpenStack
 	}

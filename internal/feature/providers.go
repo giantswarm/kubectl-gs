@@ -6,5 +6,4 @@ const (
 	ProviderKVM       = "kvm"
 	ProviderOpenStack = "openstack"
 	ProviderCAPA      = "capa"
-	ProviderCAPZ      = "capz"
 )

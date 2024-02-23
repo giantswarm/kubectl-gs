@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta1"
+	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
@@ -209,58 +209,58 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 16: print list of CAPA nodepools, with table output",
 			np: newNodePoolCollection(
-				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", time.Now(), 1, 3, -1, -1),
-				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", time.Now(), 3, 10, -1, -1),
-				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", time.Now(), 10, 10, 10, 10),
-				*newCAPINodePool("f930q", "s921a", "test nodepool 4", time.Now(), 3, 3, -1, -1),
-				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", time.Now(), 0, 3, 1, 1),
-				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", time.Now(), 2, 5, -1, -1),
+				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", time.Now(), 1, 3, -1, -1),
+				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", time.Now(), 3, 10, -1, -1),
+				*newCAPANodePool("asd29", "s0a10", "test nodepool 3", time.Now(), 10, 10, 10, 10),
+				*newCAPANodePool("f930q", "s921a", "test nodepool 4", time.Now(), 3, 3, -1, -1),
+				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", time.Now(), 0, 3, 1, 1),
+				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", time.Now(), 2, 5, -1, -1),
 			),
 			provider:           key.ProviderCAPA,
 			outputType:         output.TypeDefault,
-			expectedGoldenFile: "print_list_of_capi_nodepools_table_output.golden",
+			expectedGoldenFile: "print_list_of_capa_nodepools_table_output.golden",
 		},
 		{
 			name: "case 17: print list of CAPA nodepools, with JSON output",
 			np: newNodePoolCollection(
-				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
-				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
-				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
-				*newCAPINodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
-				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
+				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
+				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
+				*newCAPANodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
+				*newCAPANodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
+				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
+				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
 			),
 			provider:           key.ProviderCAPA,
 			outputType:         output.TypeJSON,
-			expectedGoldenFile: "print_list_of_capi_nodepools_json_output.golden",
+			expectedGoldenFile: "print_list_of_capa_nodepools_json_output.golden",
 		},
 		{
 			name: "case 18: print list of CAPA nodepools, with YAML output",
 			np: newNodePoolCollection(
-				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
-				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
-				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
-				*newCAPINodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
-				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
+				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
+				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
+				*newCAPANodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
+				*newCAPANodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
+				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
+				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
 			),
 			provider:           key.ProviderCAPA,
 			outputType:         output.TypeYAML,
-			expectedGoldenFile: "print_list_of_capi_nodepools_yaml_output.golden",
+			expectedGoldenFile: "print_list_of_capa_nodepools_yaml_output.golden",
 		},
 		{
 			name: "case 19: print list of CAPA nodepools, with name output",
 			np: newNodePoolCollection(
-				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
-				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
-				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
-				*newCAPINodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
-				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
+				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
+				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
+				*newCAPANodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
+				*newCAPANodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
+				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
+				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
 			),
 			provider:           key.ProviderCAPA,
 			outputType:         output.TypeName,
-			expectedGoldenFile: "print_list_of_capi_nodepools_name_output.golden",
+			expectedGoldenFile: "print_list_of_capa_nodepools_name_output.golden",
 		},
 	}
 
@@ -452,7 +452,7 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 	return n
 }
 
-func newCAPINodePool(name, clusterName, description string, creationDate time.Time, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
+func newCAPANodePool(name, clusterName, description string, creationDate time.Time, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
 	mp := newCAPIexpMachinePool(name, clusterName, "", description, creationDate, nodesMin, nodesMax, nodesDesired, nodesReady)
 	capaMP := newCAPAexpMachinePool(name, clusterName, description, creationDate)
 

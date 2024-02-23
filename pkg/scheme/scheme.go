@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta1"
 	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta2"
-	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta1"
+	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"

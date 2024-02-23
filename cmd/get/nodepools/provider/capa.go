@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
 )
 
-func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
+func GetCAPATable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "Name", Type: "string"},
@@ -30,7 +30,7 @@ func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *
 
 	switch n := npResource.(type) {
 	case *nodepool.Nodepool:
-		table.Rows = append(table.Rows, getCAPINodePoolRow(*n, capabilities))
+		table.Rows = append(table.Rows, getCAPANodePoolRow(*n, capabilities))
 	case *nodepool.Collection:
 		// Sort ASC by Cluster name.
 		sort.Slice(n.Items, func(i, j int) bool {
@@ -46,14 +46,14 @@ func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *
 			return strings.Compare(iClusterName, jClusterName) > 0
 		})
 		for _, nodePool := range n.Items {
-			table.Rows = append(table.Rows, getCAPINodePoolRow(nodePool, capabilities))
+			table.Rows = append(table.Rows, getCAPANodePoolRow(nodePool, capabilities))
 		}
 	}
 
 	return table
 }
 
-func getCAPINodePoolRow(
+func getCAPANodePoolRow(
 	nodePool nodepool.Nodepool,
 	capabilities *feature.Service,
 ) metav1.TableRow {
@@ -66,11 +66,11 @@ func getCAPINodePoolRow(
 			nodePool.MachinePool.GetName(),
 			key.ClusterID(nodePool.MachinePool),
 			output.TranslateTimestampSince(nodePool.MachinePool.CreationTimestamp),
-			getCAPILatestCondition(nodePool, capabilities),
-			getCAPIAutoscaling(nodePool, capabilities),
+			getCAPALatestCondition(nodePool, capabilities),
+			getCAPAAutoscaling(nodePool),
 			nodePool.MachinePool.Status.Replicas,
 			nodePool.MachinePool.Status.ReadyReplicas,
-			getCAPIDescription(nodePool),
+			getCAPADescription(nodePool),
 		},
 		Object: runtime.RawExtension{
 			Object: nodePool.MachinePool,
@@ -78,23 +78,12 @@ func getCAPINodePoolRow(
 	}
 }
 
-func getCAPILatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
+func getCAPALatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
 	if len(nodePool.MachinePool.Status.Conditions) > 0 {
 		return formatCondition(string(nodePool.MachinePool.Status.Conditions[0].Type))
 	}
 
 	return naValue
-}
-
-func getCAPIAutoscaling(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
-	switch capabilities.Provider() {
-	case key.ProviderCAPA:
-		return getCAPAAutoscaling(nodePool)
-	case key.ProviderCAPZ:
-		return getCAPZAutoscaling(nodePool)
-	default:
-		return naValue
-	}
 }
 
 func getCAPAAutoscaling(nodePool nodepool.Nodepool) string {
@@ -104,15 +93,7 @@ func getCAPAAutoscaling(nodePool nodepool.Nodepool) string {
 	return fmt.Sprintf("%d/%d", minScaling, maxScaling)
 }
 
-func getCAPZAutoscaling(nodePool nodepool.Nodepool) string {
-	minScaling, maxScaling := key.MachinePoolScaling(nodePool.MachinePool)
-	if minScaling >= 0 && maxScaling >= 0 {
-		return fmt.Sprintf("%d/%d", minScaling, maxScaling)
-	}
-	return naValue
-}
-
-func getCAPIDescription(nodePool nodepool.Nodepool) string {
+func getCAPADescription(nodePool nodepool.Nodepool) string {
 	description := key.MachinePoolName(nodePool.MachinePool)
 	if len(description) < 1 {
 		description = naValue

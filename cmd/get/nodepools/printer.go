@@ -31,10 +31,7 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 			resource = provider.GetAWSTable(npResource, capabilities)
 		case key.ProviderCAPA:
 			capabilities := feature.New(feature.ProviderCAPA)
-			resource = provider.GetCAPITable(npResource, capabilities)
-		case key.ProviderCAPZ:
-			capabilities := feature.New(feature.ProviderCAPZ)
-			resource = provider.GetCAPITable(npResource, capabilities)
+			resource = provider.GetCAPATable(npResource, capabilities)
 		case key.ProviderAzure:
 			capabilities := feature.New(feature.ProviderAzure)
 			resource = provider.GetAzureTable(npResource, capabilities)
