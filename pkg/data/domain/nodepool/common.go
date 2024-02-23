@@ -43,6 +43,16 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace, clus
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
+		case key.ProviderCAPA:
+			np, err = s.getByIdCAPI(ctx, name, namespace, clusterName, provider)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		case key.ProviderCAPZ:
+			np, err = s.getByIdCAPI(ctx, name, namespace, clusterName, provider)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		default:
 			return nil, microerror.Mask(invalidProviderError)
 		}
@@ -66,6 +76,18 @@ func (s *Service) getAll(ctx context.Context, provider, namespace, clusterID str
 
 		case key.ProviderAzure:
 			npCollection, err = s.getAllAzure(ctx, namespace, clusterID)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderCAPA:
+			npCollection, err = s.getAllCAPI(ctx, namespace, clusterID, provider)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+		case key.ProviderCAPZ:
+			npCollection, err = s.getAllCAPI(ctx, namespace, clusterID, provider)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

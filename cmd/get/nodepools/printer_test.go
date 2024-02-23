@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
@@ -205,6 +206,62 @@ func Test_printOutput(t *testing.T) {
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_single_azure_nodepool_name_output.golden",
 		},
+		{
+			name: "case 16: print list of CAPA nodepools, with table output",
+			np: newNodePoolCollection(
+				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", time.Now(), 1, 3, -1, -1),
+				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", time.Now(), 3, 10, -1, -1),
+				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", time.Now(), 10, 10, 10, 10),
+				*newCAPINodePool("f930q", "s921a", "test nodepool 4", time.Now(), 3, 3, -1, -1),
+				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", time.Now(), 0, 3, 1, 1),
+				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", time.Now(), 2, 5, -1, -1),
+			),
+			provider:           key.ProviderCAPA,
+			outputType:         output.TypeDefault,
+			expectedGoldenFile: "print_list_of_capi_nodepools_table_output.golden",
+		},
+		{
+			name: "case 17: print list of CAPA nodepools, with JSON output",
+			np: newNodePoolCollection(
+				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
+				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
+				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
+				*newCAPINodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
+				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
+				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
+			),
+			provider:           key.ProviderCAPA,
+			outputType:         output.TypeJSON,
+			expectedGoldenFile: "print_list_of_capi_nodepools_json_output.golden",
+		},
+		{
+			name: "case 18: print list of CAPA nodepools, with YAML output",
+			np: newNodePoolCollection(
+				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
+				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
+				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
+				*newCAPINodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
+				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
+				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
+			),
+			provider:           key.ProviderCAPA,
+			outputType:         output.TypeYAML,
+			expectedGoldenFile: "print_list_of_capi_nodepools_yaml_output.golden",
+		},
+		{
+			name: "case 19: print list of CAPA nodepools, with name output",
+			np: newNodePoolCollection(
+				*newCAPINodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
+				*newCAPINodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
+				*newCAPINodePool("asd29", "s0a10", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
+				*newCAPINodePool("f930q", "s921a", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
+				*newCAPINodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
+				*newCAPINodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
+			),
+			provider:           key.ProviderCAPA,
+			outputType:         output.TypeName,
+			expectedGoldenFile: "print_list_of_capi_nodepools_name_output.golden",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -323,7 +380,7 @@ func newAWSNodePool(name, clusterName, release, description string, creationDate
 func newAzureMachinePool(name, clusterName, release string, creationDate time.Time) *capzexp.AzureMachinePool {
 	n := &capzexp.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
 			Kind:       "AzureMachinePool",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -342,10 +399,31 @@ func newAzureMachinePool(name, clusterName, release string, creationDate time.Ti
 	return n
 }
 
+func newCAPAexpMachinePool(name, clusterName, description string, creationDate time.Time) *capaexp.AWSMachinePool {
+	n := &capaexp.AWSMachinePool{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta2",
+			Kind:       "AWSMachinePool",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              name,
+			Namespace:         "org-giantswarm",
+			CreationTimestamp: metav1.NewTime(creationDate),
+			Labels: map[string]string{
+				label.MachinePool:     name,
+				label.Organization:    "giantswarm",
+				capi.ClusterNameLabel: clusterName,
+			},
+		},
+	}
+
+	return n
+}
+
 func newCAPIexpMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexp.MachinePool {
 	n := &capiexp.MachinePool{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.cluster.x-k8s.io/v1alpha3",
+			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
 			Kind:       "MachinePool",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -353,6 +431,7 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 			Namespace:         "org-giantswarm",
 			CreationTimestamp: metav1.NewTime(creationDate),
 			Labels: map[string]string{
+				label.Cluster:         clusterName,
 				label.MachinePool:     name,
 				label.ReleaseVersion:  release,
 				label.Organization:    "giantswarm",
@@ -373,6 +452,17 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 	return n
 }
 
+func newCAPINodePool(name, clusterName, description string, creationDate time.Time, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
+	mp := newCAPIexpMachinePool(name, clusterName, "", description, creationDate, nodesMin, nodesMax, nodesDesired, nodesReady)
+	capaMP := newCAPAexpMachinePool(name, clusterName, description, creationDate)
+
+	np := &nodepool.Nodepool{
+		MachinePool:     mp,
+		CAPAMachinePool: capaMP,
+	}
+
+	return np
+}
 func newAzureNodePool(name, clusterName, release, description string, creationDate time.Time, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
 	azureMP := newAzureMachinePool(name, clusterName, release, creationDate)
 	mp := newCAPIexpMachinePool(name, clusterName, release, description, creationDate, nodesMin, nodesMax, nodesDesired, nodesReady)

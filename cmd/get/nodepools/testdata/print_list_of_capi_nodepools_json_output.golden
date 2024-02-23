@@ -15,7 +15,7 @@
                     "giantswarm.io/cluster": "s921a",
                     "giantswarm.io/machine-pool": "1sad2",
                     "giantswarm.io/organization": "giantswarm",
-                    "release.giantswarm.io/version": "13.0.0"
+                    "release.giantswarm.io/version": ""
                 },
                 "annotations": {
                     "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
@@ -53,7 +53,7 @@
                     "giantswarm.io/cluster": "3a0d1",
                     "giantswarm.io/machine-pool": "2a03f",
                     "giantswarm.io/organization": "giantswarm",
-                    "release.giantswarm.io/version": "13.0.0"
+                    "release.giantswarm.io/version": ""
                 },
                 "annotations": {
                     "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
@@ -91,7 +91,7 @@
                     "giantswarm.io/cluster": "s0a10",
                     "giantswarm.io/machine-pool": "asd29",
                     "giantswarm.io/organization": "giantswarm",
-                    "release.giantswarm.io/version": "13.2.0"
+                    "release.giantswarm.io/version": ""
                 },
                 "annotations": {
                     "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "10",
@@ -129,7 +129,7 @@
                     "giantswarm.io/cluster": "s921a",
                     "giantswarm.io/machine-pool": "f930q",
                     "giantswarm.io/organization": "giantswarm",
-                    "release.giantswarm.io/version": "13.0.0"
+                    "release.giantswarm.io/version": ""
                 },
                 "annotations": {
                     "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
@@ -167,7 +167,7 @@
                     "giantswarm.io/cluster": "29sa0",
                     "giantswarm.io/machine-pool": "9f012",
                     "giantswarm.io/organization": "giantswarm",
-                    "release.giantswarm.io/version": "13.2.0"
+                    "release.giantswarm.io/version": ""
                 },
                 "annotations": {
                     "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "1",
@@ -205,7 +205,7 @@
                     "giantswarm.io/cluster": "s00sn",
                     "giantswarm.io/machine-pool": "2f0as",
                     "giantswarm.io/organization": "giantswarm",
-                    "release.giantswarm.io/version": "13.1.0"
+                    "release.giantswarm.io/version": ""
                 },
                 "annotations": {
                     "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",

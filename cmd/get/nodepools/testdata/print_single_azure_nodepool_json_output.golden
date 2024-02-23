@@ -1,12 +1,13 @@
 {
     "kind": "MachinePool",
-    "apiVersion": "exp.cluster.x-k8s.io/v1alpha3",
+    "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
     "metadata": {
         "name": "f930q",
         "namespace": "org-giantswarm",
         "creationTimestamp": "2021-01-02T15:04:32Z",
         "labels": {
             "cluster.x-k8s.io/cluster-name": "s921a",
+            "giantswarm.io/cluster": "s921a",
             "giantswarm.io/machine-pool": "f930q",
             "giantswarm.io/organization": "giantswarm",
             "release.giantswarm.io/version": "13.0.0"
