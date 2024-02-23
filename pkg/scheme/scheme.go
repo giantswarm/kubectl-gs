@@ -11,7 +11,7 @@ import (
 	k8score "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta1"
+	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta2"
 	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
