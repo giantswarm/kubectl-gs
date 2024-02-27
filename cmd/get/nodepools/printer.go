@@ -29,6 +29,9 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 		case key.ProviderAWS:
 			capabilities := feature.New(feature.ProviderAWS)
 			resource = provider.GetAWSTable(npResource, capabilities)
+		case key.ProviderCAPA:
+			capabilities := feature.New(feature.ProviderCAPA)
+			resource = provider.GetCAPATable(npResource, capabilities)
 		case key.ProviderAzure:
 			capabilities := feature.New(feature.ProviderAzure)
 			resource = provider.GetAzureTable(npResource, capabilities)
