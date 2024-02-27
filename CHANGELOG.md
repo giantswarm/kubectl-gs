@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `kubectl gs get nodepools` for CAPA.
+
 ### Changed
 
 - Errors during update checks no longer interrupt the command execution.
