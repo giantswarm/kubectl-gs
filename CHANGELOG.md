@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add `kubectl gs get nodepools` for CAPA.
+- Add `kubectl gs get nodepools` for CAPA,CAPZ,CAPV and CAPVCD.
 
 ### Changed
 
