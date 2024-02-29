@@ -30,7 +30,7 @@ func GetCAPATable(npResource nodepool.Resource, capabilities *feature.Service) *
 
 	switch n := npResource.(type) {
 	case *nodepool.Nodepool:
-		table.Rows = append(table.Rows, getCAPANodePoolRow(*n, capabilities))
+		table.Rows = append(table.Rows, getCAPANodePoolRow(*n))
 	case *nodepool.Collection:
 		// Sort ASC by Cluster name.
 		sort.Slice(n.Items, func(i, j int) bool {
@@ -46,7 +46,7 @@ func GetCAPATable(npResource nodepool.Resource, capabilities *feature.Service) *
 			return strings.Compare(iClusterName, jClusterName) > 0
 		})
 		for _, nodePool := range n.Items {
-			table.Rows = append(table.Rows, getCAPANodePoolRow(nodePool, capabilities))
+			table.Rows = append(table.Rows, getCAPANodePoolRow(nodePool))
 		}
 	}
 
@@ -55,7 +55,6 @@ func GetCAPATable(npResource nodepool.Resource, capabilities *feature.Service) *
 
 func getCAPANodePoolRow(
 	nodePool nodepool.Nodepool,
-	capabilities *feature.Service,
 ) metav1.TableRow {
 	if nodePool.MachinePool == nil {
 		return metav1.TableRow{}
@@ -66,7 +65,7 @@ func getCAPANodePoolRow(
 			nodePool.MachinePool.GetName(),
 			key.ClusterID(nodePool.MachinePool),
 			output.TranslateTimestampSince(nodePool.MachinePool.CreationTimestamp),
-			getCAPALatestCondition(nodePool, capabilities),
+			getCAPALatestCondition(nodePool),
 			getCAPAAutoscaling(nodePool),
 			nodePool.MachinePool.Status.Replicas,
 			nodePool.MachinePool.Status.ReadyReplicas,
@@ -78,7 +77,7 @@ func getCAPANodePoolRow(
 	}
 }
 
-func getCAPALatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
+func getCAPALatestCondition(nodePool nodepool.Nodepool) string {
 	if len(nodePool.MachinePool.Status.Conditions) > 0 {
 		return formatCondition(string(nodePool.MachinePool.Status.Conditions[0].Type))
 	}
@@ -87,10 +86,21 @@ func getCAPALatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Se
 }
 
 func getCAPAAutoscaling(nodePool nodepool.Nodepool) string {
+	if nodePool.EKSManagedMachinePool != nil {
+		return getEKSManagedAutoscaling(nodePool)
+	}
+
 	minScaling := nodePool.CAPAMachinePool.Spec.MinSize
 	maxScaling := nodePool.CAPAMachinePool.Spec.MaxSize
 
 	return fmt.Sprintf("%d/%d", minScaling, maxScaling)
+}
+
+func getEKSManagedAutoscaling(nodePool nodepool.Nodepool) string {
+	minScaling := nodePool.EKSManagedMachinePool.Spec.Scaling.MinSize
+	maxScaling := nodePool.EKSManagedMachinePool.Spec.Scaling.MaxSize
+
+	return fmt.Sprintf("%d/%d", *minScaling, *maxScaling)
 }
 
 func getCAPADescription(nodePool nodepool.Nodepool) string {
