@@ -33,9 +33,10 @@ type Nodepool struct {
 	MachineDeployment *capi.MachineDeployment
 	MachinePool       *capiexp.MachinePool
 
-	AWSMachineDeployment *infrastructurev1alpha3.AWSMachineDeployment
-	AzureMachinePool     *capzexp.AzureMachinePool
-	CAPAMachinePool      *capaexp.AWSMachinePool
+	AWSMachineDeployment  *infrastructurev1alpha3.AWSMachineDeployment
+	AzureMachinePool      *capzexp.AzureMachinePool
+	CAPAMachinePool       *capaexp.AWSMachinePool
+	EKSManagedMachinePool *capaexp.AWSManagedMachinePool
 }
 
 func (n *Nodepool) Object() runtime.Object {

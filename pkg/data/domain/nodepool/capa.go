@@ -26,14 +26,26 @@ func (s *Service) getAllCAPA(ctx context.Context, namespace, clusterID string) (
 		err = s.client.List(ctx, mpCollection, labelSelector, inNamespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
-		} else if len(mpCollection.Items) == 0 {
-			return nil, microerror.Mask(noResourcesError)
+		} else if len(mpCollection.Items) > 0 {
+			capaMPs = make(map[string]*capaexp.AWSMachinePool, len(mpCollection.Items))
+			for _, machinePool := range mpCollection.Items {
+				mp := machinePool
+				capaMPs[machinePool.GetName()] = &mp
+			}
 		}
-
-		capaMPs = make(map[string]*capaexp.AWSMachinePool, len(mpCollection.Items))
-		for _, machinePool := range mpCollection.Items {
-			mp := machinePool
-			capaMPs[machinePool.GetName()] = &mp
+	}
+	var eksMPs map[string]*capaexp.AWSManagedMachinePool
+	{
+		mpCollection := &capaexp.AWSManagedMachinePoolList{}
+		err = s.client.List(ctx, mpCollection, labelSelector, inNamespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		} else if len(mpCollection.Items) > 0 {
+			eksMPs = make(map[string]*capaexp.AWSManagedMachinePool, len(mpCollection.Items))
+			for _, machinePool := range mpCollection.Items {
+				mp := machinePool
+				eksMPs[mp.Labels[label.MachinePool]] = &mp
+			}
 		}
 	}
 
@@ -57,6 +69,14 @@ func (s *Service) getAllCAPA(ctx context.Context, namespace, clusterID string) (
 				np := Nodepool{
 					MachinePool:     &o,
 					CAPAMachinePool: capaMP,
+				}
+				npCollection.Items = append(npCollection.Items, np)
+			}
+			if eksMP, exists := eksMPs[cr.GetName()]; exists {
+
+				np := Nodepool{
+					MachinePool:           &o,
+					EKSManagedMachinePool: eksMP,
 				}
 				npCollection.Items = append(npCollection.Items, np)
 			}
@@ -100,10 +120,21 @@ func (s *Service) getByIdCAPA(ctx context.Context, id, namespace, clusterID stri
 			return nil, microerror.Mask(err)
 		}
 
-		if len(crs.Items) < 1 {
-			return nil, microerror.Mask(notFoundError)
+		if len(crs.Items) > 0 {
+			np.CAPAMachinePool = &crs.Items[0]
 		}
-		np.CAPAMachinePool = &crs.Items[0]
+	}
+
+	{
+		crs := &capaexp.AWSManagedMachinePoolList{}
+		err = s.client.List(ctx, crs, labelSelector, inNamespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if len(crs.Items) > 0 {
+			np.EKSManagedMachinePool = &crs.Items[0]
+		}
 
 	}
 

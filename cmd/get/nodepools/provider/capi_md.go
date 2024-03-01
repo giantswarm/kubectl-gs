@@ -29,7 +29,7 @@ func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *
 
 	switch n := npResource.(type) {
 	case *nodepool.Nodepool:
-		table.Rows = append(table.Rows, getCAPINodePoolRow(*n, capabilities))
+		table.Rows = append(table.Rows, getCAPINodePoolRow(*n))
 	case *nodepool.Collection:
 		// Sort ASC by Cluster name.
 		sort.Slice(n.Items, func(i, j int) bool {
@@ -45,7 +45,7 @@ func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *
 			return strings.Compare(iClusterName, jClusterName) > 0
 		})
 		for _, nodePool := range n.Items {
-			table.Rows = append(table.Rows, getCAPINodePoolRow(nodePool, capabilities))
+			table.Rows = append(table.Rows, getCAPINodePoolRow(nodePool))
 		}
 	}
 
@@ -54,7 +54,6 @@ func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *
 
 func getCAPINodePoolRow(
 	nodePool nodepool.Nodepool,
-	capabilities *feature.Service,
 ) metav1.TableRow {
 	if nodePool.MachineDeployment == nil {
 		return metav1.TableRow{}
@@ -65,7 +64,7 @@ func getCAPINodePoolRow(
 			nodePool.MachineDeployment.GetName(),
 			key.ClusterID(nodePool.MachineDeployment),
 			output.TranslateTimestampSince(nodePool.MachineDeployment.CreationTimestamp),
-			getCAPILatestCondition(nodePool, capabilities),
+			getCAPILatestCondition(nodePool),
 			nodePool.MachineDeployment.Status.Replicas,
 			nodePool.MachineDeployment.Status.Replicas,
 			nodePool.MachineDeployment.Status.ReadyReplicas,
@@ -77,7 +76,7 @@ func getCAPINodePoolRow(
 	}
 }
 
-func getCAPILatestCondition(nodePool nodepool.Nodepool, capabilities *feature.Service) string {
+func getCAPILatestCondition(nodePool nodepool.Nodepool) string {
 	if len(nodePool.MachineDeployment.Status.Conditions) > 0 {
 		return formatCondition(string(nodePool.MachineDeployment.Status.Conditions[0].Type))
 	}
