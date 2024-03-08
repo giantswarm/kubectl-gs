@@ -1,0 +1,5 @@
+# pkg:golang/google.golang.org/protobuf
+CVE-2024-24786 until=2024-03-31
+
+# pkg:golang/github.com/hashicorp/vault/api
+CVE-2024-2048 until=2024-03-31
