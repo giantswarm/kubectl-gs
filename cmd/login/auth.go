@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
+
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -12,10 +15,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
-	"github.com/giantswarm/microerror"
-	"github.com/spf13/afero"
 )
-
 
 type authInfo struct {
 	username string
