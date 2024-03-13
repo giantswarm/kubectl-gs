@@ -9,12 +9,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	
-    	"k8s.io/client-go/discovery"
-    	"k8s.io/client-go/rest"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 )
 
 type authInfo struct {
@@ -111,26 +110,26 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 }
 
 func VerifyIDTokenWithKubernetesAPI(idToken, apiServerURL string, caData []byte) error {
-    config := &rest.Config{
-        Host: apiServerURL,
-        TLSClientConfig: rest.TLSClientConfig{CAData: caData},
-        BearerToken: idToken,
-    }
-    clientset, err := discovery.NewDiscoveryClientForConfig(config)
-    if err != nil {
-        return fmt.Errorf("failed to create Kubernetes discovery client: %w", err)
-    }
-    // Attempt to retrieve server version as a verification step
-    _, err = clientset.ServerVersion()
-    if err != nil {
-        // Distinguish between Unauthorized and other errors
-        if rest.IsUnauthorized(err) {
-            return fmt.Errorf("token verification failed: unauthorized")
-        }
-        return fmt.Errorf("token verification process failed: %w", err)
-    }
-    // If no error, the token is considered valid
-    return nil
+	config := &rest.Config{
+		Host:            apiServerURL,
+		TLSClientConfig: rest.TLSClientConfig{CAData: caData},
+		BearerToken:     idToken,
+	}
+	clientset, err := discovery.NewDiscoveryClientForConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes discovery client: %w", err)
+	}
+	// Attempt to retrieve server version as a verification step
+	_, err = clientset.ServerVersion()
+	if err != nil {
+		// Distinguish between Unauthorized and other errors
+		if rest.IsUnauthorized(err) {
+			return fmt.Errorf("token verification failed: unauthorized")
+		}
+		return fmt.Errorf("token verification process failed: %w", err)
+	}
+	// If no error, the token is considered valid
+	return nil
 }
 
 // printMCCredentials saves the installation's CA certificate, and
