@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -124,7 +125,7 @@ func VerifyIDTokenWithKubernetesAPI(idToken, apiServerURL string, caData []byte)
 	_, err = clientset.ServerVersion()
 	if err != nil {
 		// Distinguish between Unauthorized and other errors
-		if rest.IsUnauthorized(err) {
+		if errors.IsUnauthorized(err) {
 			return fmt.Errorf("token verification failed: unauthorized")
 		}
 		return fmt.Errorf("token verification process failed: %w", err)
