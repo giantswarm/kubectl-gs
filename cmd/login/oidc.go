@@ -117,6 +117,7 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	return authResult, nil
 }
 
+// handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
 func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo, error) {
 	auther := oidc.NewDeviceAuthenticator(clientID, i)
 
