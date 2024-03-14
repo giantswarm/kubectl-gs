@@ -117,28 +117,30 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	return authResult, nil
 }
 
-// handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
 func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo, error) {
-	auther := oidc.NewDeviceAuthenticator(clientID, i)
+    auther := oidc.NewDeviceAuthenticator(clientID, i)
 
-	deviceCodeData, err := auther.LoadDeviceCode()
-	if err != nil {
-		return authInfo{}, microerror.Mask(err)
-	}
+    deviceTokenData, userName, err := auther.LoadDeviceToken(deviceCodeData)
+    if err != nil {
+        return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
+    }
 
-	_, _ = fmt.Fprintf(out, "Open this URL in the browser to log in:\n%s\n\nThe process will continue automatically once the in-browser login is completed\n", deviceCodeData.VerificationUriComplete)
+    authResult := authInfo{
+        username:     fmt.Sprintf("%s-device", userName),
+        token:        deviceTokenData.IdToken,
+        refreshToken: deviceTokenData.RefreshToken,
+        clientID:     clientID,
+    }
 
-	deviceTokenData, userName, err := auther.LoadDeviceToken(deviceCodeData)
-	if err != nil {
-		return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
-	}
+    apiServerURL := i.K8sApiURL
+    caData := []byte(i.CACert)
 
-	return authInfo{
-		username:     fmt.Sprintf("%s-device", userName),
-		token:        deviceTokenData.IdToken,
-		refreshToken: deviceTokenData.RefreshToken,
-		clientID:     clientID,
-	}, nil
+
+    err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+    if err != nil {
+        return authInfo{}, microerror.Mask(err)
+    } 
+    return authResult, nil
 }
 
 // handleOIDCCallback is the callback executed after the authentication response was
