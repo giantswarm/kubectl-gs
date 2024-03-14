@@ -108,6 +108,12 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		authResult.clientID = clientID
 	}
 
+	apiServerURL := i.K8sApiURL
+	caData := []byte(i.CACert)
+	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+	if err != nil {
+		return authInfo{}, microerror.Mask(err)
+	}
 	return authResult, nil
 }
 
@@ -127,12 +133,21 @@ func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo
 		return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
 	}
 
-	return authInfo{
+	authResult := authInfo{
 		username:     fmt.Sprintf("%s-device", userName),
 		token:        deviceTokenData.IdToken,
 		refreshToken: deviceTokenData.RefreshToken,
 		clientID:     clientID,
-	}, nil
+	}
+
+	apiServerURL := i.K8sApiURL
+	caData := []byte(i.CACert)
+
+	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+	if err != nil {
+		return authInfo{}, microerror.Mask(err)
+	}
+	return authResult, nil
 }
 
 // handleOIDCCallback is the callback executed after the authentication response was
