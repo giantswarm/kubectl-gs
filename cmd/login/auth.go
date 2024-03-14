@@ -113,10 +113,14 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 
 func VerifyIDTokenWithKubernetesAPI(idToken, apiServerURL string, caData []byte) error {
 	config := &rest.Config{
-		Host:            apiServerURL,
-		TLSClientConfig: rest.TLSClientConfig{CAData: caData},
-		BearerToken:     idToken,
+		Host:        apiServerURL,
+		BearerToken: idToken,
 	}
+
+	if len(caData) > 0 {
+		config.TLSClientConfig = rest.TLSClientConfig{CAData: caData}
+	}
+
 	clientset, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		return fmt.Errorf("failed to create Kubernetes discovery client: %w", err)
