@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add `kubectl gs get nodepools` for CAPA,CAPZ,CAPV,EKS and CAPVCD.
+- Add validation of ID token retrieved from OIDC provider during `kubectl gs login`
 
 ### Changed
 
