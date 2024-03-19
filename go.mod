@@ -220,7 +220,7 @@ require (
 )
 
 replace (
-	github.com/docker/docker => github.com/moby/moby v25.0.4+incompatible
+	github.com/docker/docker => github.com/moby/moby v25.0.5+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.12.2
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
