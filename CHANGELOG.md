@@ -15,6 +15,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Errors during update checks no longer interrupt the command execution.
+- Fix authentication failure in case the browser sends multiple requests to the callback server during the `login` command execution
 
 ## [2.52.1] - 2024-02-01
 
