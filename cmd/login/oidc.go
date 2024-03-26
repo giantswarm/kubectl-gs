@@ -154,6 +154,13 @@ func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo
 // received from the authentication provider.
 func handleOIDCCallback(ctx context.Context, a *oidc.Authenticator) func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	return func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+		// Handle any additional requests the browser makes (e.g. OPTIONS), otherwise the authentication process will fail
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			return callbackserver.FallthroughResult{Method: r.Method}, nil
+		}
+
+		// Handle GET request with the token
 		res, err := a.HandleIssuerResponse(ctx, r.URL.Query().Get("state"), r.URL.Query().Get("code"))
 		if err != nil {
 			failureTemplate, tErr := template.GetFailedHTMLTemplateReader()
