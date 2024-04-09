@@ -33,7 +33,7 @@ require (
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	github.com/stretchr/testify v1.9.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.18.0
+	golang.org/x/oauth2 v0.19.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.1
 	k8s.io/api v0.29.1
@@ -196,13 +196,12 @@ require (
 	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/term v0.18.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.152.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
@@ -227,6 +226,6 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.12.2
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.8.1
-	golang.org/x/crypto => golang.org/x/crypto v0.21.0
+	golang.org/x/crypto => golang.org/x/crypto v0.22.0
 	golang.org/x/text => golang.org/x/text v0.14.0
 )
