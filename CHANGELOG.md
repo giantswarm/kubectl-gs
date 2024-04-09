@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Make error message actionable in case `kubectl gs template cluster` fails because the user did not log into, or point to, the management cluster
+
 ## [2.52.2] - 2024-03-26
 
 ### Added
