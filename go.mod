@@ -14,7 +14,7 @@ require (
 	github.com/getsops/sops/v3 v3.8.1
 	github.com/giantswarm/apiextensions-application v0.6.1
 	github.com/giantswarm/apiextensions/v6 v6.6.0
-	github.com/giantswarm/app/v7 v7.0.0
+	github.com/giantswarm/app/v7 v7.0.1
 	github.com/giantswarm/appcatalog v1.0.0
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.2.0
@@ -192,7 +192,7 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.starlark.net v0.0.0-20230807144010-2aa75752d1da // indirect
-	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
