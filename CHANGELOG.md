@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.53.0] - 2024-04-23
+
 ### Changed
 
 - **BREAKING** `kubectl gs template cluster` for Cluster API provider Azure has been adapted to work with the values schema of `cluster-azure` v0.7.0.
@@ -1449,7 +1451,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.3...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.53.0...HEAD
+[2.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.3...v2.53.0
 [2.52.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.2...v2.52.3
 [2.52.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.1...v2.52.2
 [2.52.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.0...v2.52.1
