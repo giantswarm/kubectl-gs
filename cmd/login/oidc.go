@@ -120,7 +120,7 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	caData := []byte(i.CACert)
 	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
+		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
 	}
 	return authResult, nil
 }
