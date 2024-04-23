@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.52.3] - 2024-04-23
+
 ### Changed
 
 - Make error message actionable in case `kubectl gs template cluster` fails because the user did not log into, or point to, the management cluster
@@ -1443,7 +1445,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.3...HEAD
+[2.52.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.2...v2.52.3
 [2.52.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.1...v2.52.2
 [2.52.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.0...v2.52.1
 [2.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.51.0...v2.52.0
