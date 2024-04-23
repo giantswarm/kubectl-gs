@@ -102,24 +102,26 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 
 func BuildCapzClusterConfig(config ClusterConfig) capz.ClusterConfig {
 	return capz.ClusterConfig{
-		Metadata: &capz.Metadata{
-			Name:         config.Name,
-			Description:  config.Description,
-			Organization: config.Organization,
-		},
-		ProviderSpecific: &capz.ProviderSpecific{
-			Location:       config.Region,
-			SubscriptionID: config.Azure.SubscriptionID,
-		},
-		Connectivity: &capz.Connectivity{
-			Bastion: &capz.Bastion{
-				Enabled:      true,
-				InstanceType: config.BastionInstanceType,
+		Global: &capz.Global{
+			Metadata: &capz.Metadata{
+				Name:         config.Name,
+				Description:  config.Description,
+				Organization: config.Organization,
 			},
-		},
-		ControlPlane: &capz.ControlPlane{
-			InstanceType: config.ControlPlaneInstanceType,
-			Replicas:     3,
+			ProviderSpecific: &capz.ProviderSpecific{
+				Location:       config.Region,
+				SubscriptionID: config.Azure.SubscriptionID,
+			},
+			Connectivity: &capz.Connectivity{
+				Bastion: &capz.Bastion{
+					Enabled:      true,
+					InstanceType: config.BastionInstanceType,
+				},
+			},
+			ControlPlane: &capz.ControlPlane{
+				InstanceType: config.ControlPlaneInstanceType,
+				Replicas:     3,
+			},
 		},
 	}
 }

@@ -10,10 +10,10 @@ import (
 func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
 	var flagConfigData map[string]interface{}
 
-	if flagInputs.ProviderSpecific.Location == "" {
+	if flagInputs.Global.ProviderSpecific.Location == "" {
 		return "", fmt.Errorf("region is required (--region)")
 	}
-	if flagInputs.ProviderSpecific.SubscriptionID == "" {
+	if flagInputs.Global.ProviderSpecific.SubscriptionID == "" {
 		return "", fmt.Errorf("subscription ID is required for Azure (--azure-subscription-id)")
 	}
 
