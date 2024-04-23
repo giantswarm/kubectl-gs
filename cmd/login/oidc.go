@@ -37,7 +37,7 @@ var (
 )
 
 // handleOIDC executes the OIDC authentication against an installation's authentication provider.
-func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, host string, port int, oidcResultTimeout time.Duration) (authInfo, error) {
+func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, internalAPI bool, host string, port int, oidcResultTimeout time.Duration) (authInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, oidcResultTimeout)
 	defer cancel()
 
@@ -108,17 +108,25 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		authResult.clientID = clientID
 	}
 
-	apiServerURL := i.K8sApiURL
+	var apiServerURL string
+	{
+		if internalAPI {
+			apiServerURL = i.K8sInternalApiURL
+		} else {
+			apiServerURL = i.K8sApiURL
+		}
+	}
+
 	caData := []byte(i.CACert)
 	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
 	if err != nil {
-		return authInfo{}, microerror.Mask(err)
+		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
 	}
 	return authResult, nil
 }
 
 // handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
-func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo, error) {
+func handleDeviceFlowOIDC(out io.Writer, errOut io.Writer, i *installation.Installation, internalAPI bool) (authInfo, error) {
 	auther := oidc.NewDeviceAuthenticator(clientID, i)
 
 	deviceCodeData, err := auther.LoadDeviceCode()
@@ -139,13 +147,20 @@ func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo
 		refreshToken: deviceTokenData.RefreshToken,
 		clientID:     clientID,
 	}
+	var apiServerURL string
+	{
+		if internalAPI {
+			apiServerURL = i.K8sInternalApiURL
+		} else {
+			apiServerURL = i.K8sApiURL
+		}
+	}
 
-	apiServerURL := i.K8sApiURL
 	caData := []byte(i.CACert)
 
 	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
 	if err != nil {
-		return authInfo{}, microerror.Mask(err)
+		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
 	}
 	return authResult, nil
 }
