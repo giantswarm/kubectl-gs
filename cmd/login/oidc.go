@@ -160,7 +160,7 @@ func handleDeviceFlowOIDC(out io.Writer, errOut io.Writer, i *installation.Insta
 
 	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
+		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
 	}
 	return authResult, nil
 }
