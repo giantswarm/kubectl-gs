@@ -1,6 +1,10 @@
 package capz
 
 type ClusterConfig struct {
+	Global *Global `json:"global,omitempty"`
+}
+
+type Global struct {
 	Connectivity     *Connectivity     `json:"connectivity,omitempty"`
 	ControlPlane     *ControlPlane     `json:"controlPlane,omitempty"`
 	Metadata         *Metadata         `json:"metadata,omitempty"`
