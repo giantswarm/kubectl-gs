@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- **BREAKING** `kubectl gs template cluster` for Cluster API provider Azure has been adapted to work with the values schema of cluster-aws v0.7.0.
+- **BREAKING** `kubectl gs template cluster` for Cluster API provider Azure has been adapted to work with the values schema of `cluster-azure` v0.7.0.
 
 ## [2.52.3] - 2024-04-23
 
