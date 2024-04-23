@@ -2,19 +2,20 @@
 apiVersion: v1
 data:
   values: |
-    connectivity:
-      bastion:
-        enabled: true
-    controlPlane:
-      instanceType: B2s
-      replicas: 3
-    metadata:
-      description: just a test cluster
-      name: test1
-      organization: test
-    providerSpecific:
-      location: northeurope
-      subscriptionId: 12345678-ebb8-4b1f-8f96-d950d9e7aaaa
+    global:
+      connectivity:
+        bastion:
+          enabled: true
+      controlPlane:
+        instanceType: B2s
+        replicas: 3
+      metadata:
+        description: just a test cluster
+        name: test1
+        organization: test
+      providerSpecific:
+        location: northeurope
+        subscriptionId: 12345678-ebb8-4b1f-8f96-d950d9e7aaaa
 kind: ConfigMap
 metadata:
   creationTimestamp: null
