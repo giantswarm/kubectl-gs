@@ -10,6 +10,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Make error message actionable in case `kubectl gs template cluster` fails because the user did not log into, or point to, the management cluster
+- Support internal api URLs in `kubectl gs login` id token verification
+- Print a warning in case `kubectl gs login` id token verification fails but don't fail the command
 
 ## [2.52.2] - 2024-03-26
 
