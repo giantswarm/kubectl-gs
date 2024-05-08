@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Default value for CAPA Node Pool `rootVolumeSizeGB` was decreased from `300` to `8`.
+
 ## [2.53.0] - 2024-04-23
 
 ### Changed
