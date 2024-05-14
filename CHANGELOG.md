@@ -13,6 +13,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Default value for CAPA Node Pool `rootVolumeSizeGB` was decreased from `300` to `8`.
 
+### Added
+
+- Support unified cluster-aws app. With cluster-aws v0.76.0 and newer, default apps are deployed with cluster-aws and default-apps-aws app is not deployed anymore.
+
 ## [2.53.0] - 2024-04-23
 
 ### Changed

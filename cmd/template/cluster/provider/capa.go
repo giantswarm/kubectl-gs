@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/3th1nk/cidr"
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/pkg/errors"
@@ -33,20 +34,38 @@ const (
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	err := templateClusterCAPA(ctx, client, output, config)
+	appVersion := config.App.ClusterVersion
+	if appVersion == "" {
+		var err error
+		appVersion, err = getLatestVersion(ctx, client.CtrlClient(), ClusterAWSRepoName, config.App.ClusterCatalog)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err := templateClusterCAPA(ctx, client, output, config, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = templateDefaultAppsCAPA(ctx, client, output, config)
+	minUnifiedClusterAwsVersion := semver.New(0, 76, 0, "", "")
+	desiredClusterAwsVersion, err := semver.StrictNewVersion(appVersion)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if desiredClusterAwsVersion.LessThan(minUnifiedClusterAwsVersion) {
+		// Render default-apps-aws only when cluster-aws version does not contain default apps.
+		err = templateDefaultAppsCAPA(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
 }
 
-func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig, appVersion string) error {
 	appName := config.Name
 	configMapName := userConfigMapName(appName)
 
@@ -222,15 +241,6 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 	var appYAML []byte
 	{
-		appVersion := config.App.ClusterVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterAWSRepoName, config.App.ClusterCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
