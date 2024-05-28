@@ -30,6 +30,7 @@ type GetOptions struct {
 type PatchOptions struct {
 	Name      string
 	Namespace string
+	Suspend   bool
 	Version   string
 }
 

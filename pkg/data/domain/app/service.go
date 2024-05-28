@@ -8,6 +8,7 @@ import (
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -87,7 +88,7 @@ func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	var err error
 
 	if len(options.Version) > 0 {
-		err = s.patchVersion(ctx, options.Namespace, options.Name, options.Version)
+		err = s.patchVersion(ctx, options.Namespace, options.Name, options.Suspend, options.Version)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -98,7 +99,7 @@ func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	return nil
 }
 
-func (s *Service) patchVersion(ctx context.Context, namespace string, name string, version string) error {
+func (s *Service) patchVersion(ctx context.Context, namespace string, name string, suspend bool, version string) error {
 	var err error
 
 	var appResource Resource
@@ -118,6 +119,22 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		return microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
 	}
 
+	// Find app catalog given the app name and version.
+	selector := fmt.Sprintf(
+		"app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
+		appCR.Spec.Name,
+		version,
+	)
+	catalogEntries, err := s.catalogDataService.GetEntries(ctx, selector)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if len(catalogEntries.Items) == 0 {
+		return microerror.Maskf(noResourcesError, "no AppCatalogEntry CRs found for the given app %s with version %s", appCR.Spec.Name, version)
+	}
+	catalogName := catalogEntries.Items[0].Spec.Catalog.Name
+	catalogNamespace := catalogEntries.Items[0].Spec.Catalog.Namespace
+
 	// Make sure the requested version is available
 	// Easy way:
 	// (1) Reuse `catalogdata.Get(ctx, options)` to get Catalog with AppCatalogEntry CR using version-specific label selector.
@@ -126,13 +143,31 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	//     the `catalogdata.Get(ctx, options)` again. Catalog CR carries the URL of the given catalog, we can use it as a fallback.
 	// (3) Now, fall back to checking the Helm Repository (Catalog) directly. Use HEAD request for the Chart archive, without fetching
 	//     the whole index.yaml which is more "expensive".
-	err = s.validateVersion(ctx, appCR.Spec.Name, version, appCR.Spec.Catalog, appCR.Spec.CatalogNamespace)
+	err = s.validateVersion(ctx, appCR.Spec.Name, version, catalogName, catalogNamespace)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	patch := client.MergeFrom(appCR.DeepCopy())
 	appCR.Spec.Version = version
+	appCR.Spec.Catalog = catalogName
+	appCR.Spec.CatalogNamespace = catalogNamespace
+
+	// Handle Flux reconcile annotation used to suspend reconciliation.
+	accessor, err := meta.Accessor(appCR)
+	if err != nil {
+		return err
+	}
+	annotations := accessor.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	if suspend {
+		annotations["kustomize.toolkit.fluxcd.io/reconcile"] = "disabled"
+	} else {
+		delete(annotations, "kustomize.toolkit.fluxcd.io/reconcile")
+	}
+	accessor.SetAnnotations(annotations)
 
 	err = s.client.Patch(ctx, appCR, patch)
 	if err != nil {

@@ -62,6 +62,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	patchOptions := app.PatchOptions{
 		Namespace: namespace,
 		Name:      name,
+		Suspend:   r.flag.Suspend,
 		Version:   version,
 	}
 
