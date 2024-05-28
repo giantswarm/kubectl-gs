@@ -9,8 +9,10 @@ import (
 	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/go-logr/logr"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
@@ -39,6 +41,8 @@ type LoginOptions struct {
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
+	log.SetLogger(logr.New(logr.Discard))
+
 	ctx := context.Background()
 
 	err := r.flag.Validate()
