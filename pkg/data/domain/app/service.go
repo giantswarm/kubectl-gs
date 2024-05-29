@@ -173,7 +173,7 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 		appVersion,
 	)
 	catalogEntries, err := s.catalogDataService.GetEntries(ctx, selector)
-	if !catalogdata.IsNoResources(err) {
+	if err != nil && !catalogdata.IsNoResources(err) {
 		return microerror.Mask(err)
 	}
 	if err == nil && len(catalogEntries.Items) > 0 {
