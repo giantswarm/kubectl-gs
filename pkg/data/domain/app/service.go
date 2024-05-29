@@ -123,7 +123,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 
 	// Make sure the requested version is available
 	// Easy way:
-	// (1) Reuse `catalogdata.Get(ctx, options)` to get Catalog with AppCatalogEntry CR using version-specific label selector.
+	// (1) Reuse `catalogdata.GetEntries(ctx, options)` to get Catalog with AppCatalogEntry CR using version-specific label selector.
 	// (2) We only keep AppCatalogEntries CRs for 5 most recent versions. If step (1) returns an error, this does not necessarily
 	//     mean an error. So, change selector to `latest=true` and fetch Catalog CR with AppCatalogEntry CR again. This is to reuse
 	//     the `catalogdata.Get(ctx, options)` again. Catalog CR carries the URL of the given catalog, we can use it as a fallback.
@@ -159,15 +159,6 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 }
 
 func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App, appVersion, appCatalog, appCatalogNamespace string) error {
-	appName := app.Spec.Name
-
-	selector := fmt.Sprintf(
-		"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
-		appCatalog,
-		appName,
-		appVersion,
-	)
-
 	/*
 		(1) Check against the AppCatalogEntry CR. No error means there is an ACE CR for the given
 		    version and we may stop processing here. The version is thus validated.
@@ -176,14 +167,7 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 		    necessarily mean the version is unavailable. Upon error we fallback to checking the
 		    Helm Chart repository directly, see (2) and (3).
 	*/
-	_, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
-	if err == nil {
-		app.Spec.Version = appVersion
-		return nil
-	}
-
-	// Find app catalog given the app name and version.
-	selector = fmt.Sprintf(
+	selector := fmt.Sprintf(
 		"app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
 		app.Spec.Name,
 		appVersion,
@@ -203,16 +187,16 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 		return nil
 	}
 
-	selector = fmt.Sprintf(
-		"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,latest=true",
-		appCatalog,
-		appName,
-	)
-
 	/*
 		(2) Fetch the Catalog CR and the latest AppCatalogEntry CR. We need to do it in order to get the
 		    repository URL from the Catalog CR.
 	*/
+	selector = fmt.Sprintf(
+		"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,latest=true",
+		appCatalog,
+		app.Spec.Name,
+	)
+
 	catalog, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
 	if err != nil {
 		return microerror.Mask(err)
@@ -227,7 +211,7 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 		// set repositories.
 		storageURL = catalog.Spec.Storage.URL
 	}
-	tarbalURL, err := appcatalog.NewTarballURL(storageURL, appName, appVersion)
+	tarbalURL, err := appcatalog.NewTarballURL(storageURL, app.Spec.Name, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
