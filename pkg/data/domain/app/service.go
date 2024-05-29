@@ -119,21 +119,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		return microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
 	}
 
-	// Find app catalog given the app name and version.
-	selector := fmt.Sprintf(
-		"app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
-		appCR.Spec.Name,
-		version,
-	)
-	catalogEntries, err := s.catalogDataService.GetEntries(ctx, selector)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	if len(catalogEntries.Items) == 0 {
-		return microerror.Maskf(noResourcesError, "no AppCatalogEntry CRs found for the given app %s with version %s", appCR.Spec.Name, version)
-	}
-	catalogName := catalogEntries.Items[0].Spec.Catalog.Name
-	catalogNamespace := catalogEntries.Items[0].Spec.Catalog.Namespace
+	patch := client.MergeFrom(appCR.DeepCopy())
 
 	// Make sure the requested version is available
 	// Easy way:
@@ -143,15 +129,10 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	//     the `catalogdata.Get(ctx, options)` again. Catalog CR carries the URL of the given catalog, we can use it as a fallback.
 	// (3) Now, fall back to checking the Helm Repository (Catalog) directly. Use HEAD request for the Chart archive, without fetching
 	//     the whole index.yaml which is more "expensive".
-	err = s.validateVersion(ctx, appCR.Spec.Name, version, catalogName, catalogNamespace)
+	err = s.findVersion(ctx, appCR, version, appCR.Spec.Catalog, appCR.Spec.CatalogNamespace)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	patch := client.MergeFrom(appCR.DeepCopy())
-	appCR.Spec.Version = version
-	appCR.Spec.Catalog = catalogName
-	appCR.Spec.CatalogNamespace = catalogNamespace
 
 	// Handle Flux reconcile annotation used to suspend reconciliation.
 	accessor, err := meta.Accessor(appCR)
@@ -177,7 +158,9 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	return nil
 }
 
-func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appCatalog, appCatalogNamespace string) error {
+func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App, appVersion, appCatalog, appCatalogNamespace string) error {
+	appName := app.Spec.Name
+
 	selector := fmt.Sprintf(
 		"application.giantswarm.io/catalog=%s,app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
 		appCatalog,
@@ -195,6 +178,28 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 	*/
 	_, err := s.fetchCatalog(ctx, appCatalog, appCatalogNamespace, selector)
 	if err == nil {
+		app.Spec.Version = appVersion
+		return nil
+	}
+
+	// Find app catalog given the app name and version.
+	selector = fmt.Sprintf(
+		"app.kubernetes.io/name=%s,app.kubernetes.io/version=%s",
+		app.Spec.Name,
+		appVersion,
+	)
+	catalogEntries, err := s.catalogDataService.GetEntries(ctx, selector)
+	if !catalogdata.IsNoResources(err) {
+		return microerror.Mask(err)
+	}
+	if err == nil && len(catalogEntries.Items) > 0 {
+		catalogName := catalogEntries.Items[0].Spec.Catalog.Name
+		catalogNamespace := catalogEntries.Items[0].Spec.Catalog.Namespace
+
+		app.Spec.Version = appVersion
+		app.Spec.Catalog = catalogName
+		app.Spec.CatalogNamespace = catalogNamespace
+
 		return nil
 	}
 
@@ -240,6 +245,7 @@ func (s *Service) validateVersion(ctx context.Context, appName, appVersion, appC
 	if resp.StatusCode == 404 {
 		return microerror.Mask(noResourcesError)
 	}
+	app.Spec.Version = appVersion
 
 	return nil
 }
