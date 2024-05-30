@@ -17,6 +17,8 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v2/internal/key"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/annotations"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/v2/pkg/labels"
 	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
 )
@@ -24,6 +26,10 @@ import (
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
+
+	catalogService catalog.Interface
+	commonService  *commonconfig.CommonConfig
+
 	stderr io.Writer
 	stdout io.Writer
 }
@@ -49,6 +55,26 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var userConfigSecretYaml []byte
 	var err error
 
+	client, err := r.commonService.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	c := catalog.Config{
+		Client: client.CtrlClient(),
+	}
+
+	r.catalogService, err = catalog.New(c)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if r.flag.Interactive {
+		err = r.runInteractive()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	appName := r.flag.AppName
 	if appName == "" {
 		appName = r.flag.Name
@@ -61,6 +87,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	targetNamespace := r.flag.TargetNamespace
 	if targetNamespace == "" {
 		targetNamespace = r.flag.Namespace
+	}
+
+	if targetNamespace == "" {
+		targetNamespace = appName
 	}
 
 	clusterName := r.flag.ClusterName
@@ -203,4 +233,24 @@ func (r *runner) setTimeouts(config *templateapp.Config) {
 	if r.flag.UpgradeTimeout != 0 {
 		config.UpgradeTimeout = &metav1.Duration{Duration: r.flag.UpgradeTimeout}
 	}
+}
+
+func (r *runner) runInteractive() (err error) {
+	if r.flag.Catalog == "" {
+		catalog, err := r.promptCatalog()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.flag.Catalog = catalog.GetName()
+	}
+
+	if r.flag.Name == "" || r.flag.Version == "" {
+		catalogEntry, err := r.promptCatalogEntries(r.flag.Catalog, r.flag.Name, r.flag.Version)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.flag.Name = catalogEntry.Spec.AppName
+		r.flag.Version = catalogEntry.Spec.Version
+	}
+	return nil
 }

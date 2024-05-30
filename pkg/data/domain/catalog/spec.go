@@ -21,12 +21,21 @@ type Collection struct {
 	Items []Catalog
 }
 
+type CatalogEntryList struct {
+	applicationv1alpha1.AppCatalogEntryList
+}
+
 // GetOptions are the parameters that the Get method takes.
 type GetOptions struct {
 	AllNamespaces bool
 	LabelSelector labels.Selector
 	Name          string
 	Namespace     string
+}
+
+// ListOptions are the parameters that the List method takes.
+type ListOptions struct {
+	LabelSelector labels.Selector
 }
 
 type Resource interface {
@@ -38,6 +47,7 @@ type Resource interface {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
+	ListCatalogEntries(context.Context, ListOptions) (Resource, error)
 }
 
 func (a *Catalog) Object() runtime.Object {
@@ -73,4 +83,8 @@ func (cc *Collection) Object() runtime.Object {
 	}
 
 	return list
+}
+
+func (c *CatalogEntryList) Object() runtime.Object {
+	return c
 }
