@@ -6,6 +6,9 @@ import (
 	"net/http"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/appcatalog"
+	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
+	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -14,10 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/appcatalog"
-
-	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
-	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
 	catalogdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
 )
 
