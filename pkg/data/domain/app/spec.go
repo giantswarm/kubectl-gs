@@ -43,7 +43,7 @@ type Resource interface {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
-	Patch(context.Context, PatchOptions) error
+	Patch(context.Context, PatchOptions) ([]string, error)
 }
 
 func (a *App) Object() runtime.Object {

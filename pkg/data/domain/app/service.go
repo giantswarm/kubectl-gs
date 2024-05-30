@@ -86,25 +86,21 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 }
 
 // Patch patches an app CR given its name and namespace.
-func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
-	var err error
-
-	err = s.patchVersion(ctx, options.Namespace, options.Name, options.SuspendReconciliation, options.Version)
+func (s *Service) Patch(ctx context.Context, options PatchOptions) ([]string, error) {
+	state, err := s.patchVersion(ctx, options.Namespace, options.Name, options.SuspendReconciliation, options.Version)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	return nil
+	return state, nil
 }
 
-func (s *Service) patchVersion(ctx context.Context, namespace string, name string, suspendReconciliation bool, version string) error {
-	var err error
-
+func (s *Service) patchVersion(ctx context.Context, namespace string, name string, suspendReconciliation bool, version string) (state []string, err error) {
 	var appResource Resource
 	{
 		appResource, err = s.getByName(ctx, namespace, name)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -114,7 +110,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	case *App:
 		appCR = a.CR
 	default:
-		return microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
+		return nil, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
 	}
 
 	patch := client.MergeFrom(appCR.DeepCopy())
@@ -130,14 +126,15 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		//     the whole index.yaml which is more "expensive".
 		err = s.findVersion(ctx, appCR, version, appCR.Spec.Catalog, appCR.Spec.CatalogNamespace)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
+		state = append(state, fmt.Sprintf("version=%s", appCR.Spec.Version))
 	}
 
 	// Handle Flux reconcile annotation used to suspend reconciliation.
 	accessor, err := meta.Accessor(appCR)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	labels := accessor.GetLabels()
 	if labels == nil {
@@ -152,18 +149,24 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		}
 		if suspendReconciliation {
 			annotations[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
+			state = append(state, fmt.Sprintf("added annotations[\"%s\"]=%s", k8smetadataAnnotation.FluxKustomizeReconcile, "disabled"))
 		} else {
-			delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
+
+			_, exists := annotations[k8smetadataAnnotation.FluxKustomizeReconcile]
+			if exists {
+				delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
+				state = append(state, fmt.Sprintf("removed annotations[\"%s\"]", k8smetadataAnnotation.FluxKustomizeReconcile))
+			}
 		}
 		accessor.SetAnnotations(annotations)
 	}
 
 	err = s.client.Patch(ctx, appCR, patch)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	return nil
+	return state, nil
 }
 
 func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App, appVersion, appCatalog, appCatalogNamespace string) error {
