@@ -89,13 +89,9 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	var err error
 
-	if len(options.Version) > 0 {
-		err = s.patchVersion(ctx, options.Namespace, options.Name, options.SuspendReconciliation, options.Version)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
+	err = s.patchVersion(ctx, options.Namespace, options.Name, options.SuspendReconciliation, options.Version)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
@@ -123,17 +119,19 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 
 	patch := client.MergeFrom(appCR.DeepCopy())
 
-	// Make sure the requested version is available
-	// Easy way:
-	// (1) Reuse `catalogdata.GetEntries(ctx, options)` to get Catalog with AppCatalogEntry CR using version-specific label selector.
-	// (2) We only keep AppCatalogEntries CRs for 5 most recent versions. If step (1) returns an error, this does not necessarily
-	//     mean an error. So, change selector to `latest=true` and fetch Catalog CR with AppCatalogEntry CR again. This is to reuse
-	//     the `catalogdata.Get(ctx, options)` again. Catalog CR carries the URL of the given catalog, we can use it as a fallback.
-	// (3) Now, fall back to checking the Helm Repository (Catalog) directly. Use HEAD request for the Chart archive, without fetching
-	//     the whole index.yaml which is more "expensive".
-	err = s.findVersion(ctx, appCR, version, appCR.Spec.Catalog, appCR.Spec.CatalogNamespace)
-	if err != nil {
-		return microerror.Mask(err)
+	if len(version) > 0 {
+		// Make sure the requested version is available
+		// Easy way:
+		// (1) Reuse `catalogdata.GetEntries(ctx, options)` to get Catalog with AppCatalogEntry CR using version-specific label selector.
+		// (2) We only keep AppCatalogEntries CRs for 5 most recent versions. If step (1) returns an error, this does not necessarily
+		//     mean an error. So, change selector to `latest=true` and fetch Catalog CR with AppCatalogEntry CR again. This is to reuse
+		//     the `catalogdata.Get(ctx, options)` again. Catalog CR carries the URL of the given catalog, we can use it as a fallback.
+		// (3) Now, fall back to checking the Helm Repository (Catalog) directly. Use HEAD request for the Chart archive, without fetching
+		//     the whole index.yaml which is more "expensive".
+		err = s.findVersion(ctx, appCR, version, appCR.Spec.Catalog, appCR.Spec.CatalogNamespace)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Handle Flux reconcile annotation used to suspend reconciliation.

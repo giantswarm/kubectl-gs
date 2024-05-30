@@ -42,9 +42,5 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
 	}
 
-	if f.Version == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
-	}
-
 	return nil
 }
