@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -33,6 +34,12 @@ const (
 	flagLoginTimeout = "login-timeout"
 
 	flagDeviceAuth = "device-auth"
+
+	envKeepContext = "KUBECTL_GS_LOGIN_KEEP_CONTEXT"
+)
+
+var (
+	keepContext bool
 )
 
 type flag struct {
@@ -68,7 +75,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.ClusterAdmin, flagClusterAdmin, false, "Log in as Giant Swarm staff member.")
 	cmd.Flags().BoolVar(&f.InternalAPI, flagInternalAPI, false, "Use Internal API in the kube config. Please check the documentation for more details.")
 	cmd.Flags().StringVar(&f.SelfContained, flagSelfContained, "", "Create a self-contained kubectl config with embedded credentials and write it to this path.")
-	cmd.Flags().BoolVar(&f.KeepContext, flagKeepContext, false, "Keep the current kubectl context. If not set/false, will set the current-context to the one representing the cluster to log in to.")
+
+	viper.AutomaticEnv()
+	keepContextDefault := viper.GetBool(envKeepContext)
+	cmd.Flags().BoolVar(&keepContext, flagKeepContext, keepContextDefault, "Keep the current kubectl context. If not set/false, will set the current-context to the one representing the cluster to log in to.")
 
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "For client certificate creation. Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("For client certificate creation. Organization that owns the workload cluster. Requires --%s.", flagWCName))
@@ -104,6 +114,11 @@ func (f *flag) Validate() error {
 
 	if f.LoginTimeout <= 0 {
 		return microerror.Maskf(invalidFlagError, `--%s cannot be negative or zero`, flagLoginTimeout)
+	}
+
+	keepContextEnvVar := viper.GetString(envKeepContext)
+	if keepContextEnvVar != "" && keepContextEnvVar != "true" && keepContextEnvVar != "false" {
+		return microerror.Maskf(invalidFlagError, "KUBECTL_GS_LOGIN_KEEP_CONTEXT environment variable must be either 'true' or 'false'")
 	}
 
 	return nil
