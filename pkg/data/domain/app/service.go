@@ -16,6 +16,8 @@ import (
 
 	"github.com/giantswarm/appcatalog"
 
+	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
+	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
 	catalogdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
 )
 
@@ -139,16 +141,24 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	if err != nil {
 		return err
 	}
-	annotations := accessor.GetAnnotations()
-	if annotations == nil {
-		annotations = make(map[string]string)
+	labels := accessor.GetLabels()
+	if labels == nil {
+		labels = make(map[string]string)
 	}
-	if suspend {
-		annotations["kustomize.toolkit.fluxcd.io/reconcile"] = "disabled"
-	} else {
-		delete(annotations, "kustomize.toolkit.fluxcd.io/reconcile")
+	// Only handle flux reconcile annotation if the app is managed by Flux.
+	_, fluxLabelExists := labels[k8smetadataLabel.FluxKustomizeName]
+	if fluxLabelExists {
+		annotations := accessor.GetAnnotations()
+		if annotations == nil {
+			annotations = make(map[string]string)
+		}
+		if suspend {
+			annotations[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
+		} else {
+			delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
+		}
+		accessor.SetAnnotations(annotations)
 	}
-	accessor.SetAnnotations(annotations)
 
 	err = s.client.Patch(ctx, appCR, patch)
 	if err != nil {
