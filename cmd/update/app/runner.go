@@ -60,10 +60,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	version := r.flag.Version
 
 	patchOptions := app.PatchOptions{
-		Namespace: namespace,
-		Name:      name,
-		Suspend:   r.flag.Suspend,
-		Version:   version,
+		Namespace:             namespace,
+		Name:                  name,
+		SuspendReconciliation: r.flag.SuspendReconciliation,
+		Version:               version,
 	}
 
 	err = r.service.Patch(ctx, patchOptions)

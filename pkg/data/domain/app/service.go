@@ -90,7 +90,7 @@ func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	var err error
 
 	if len(options.Version) > 0 {
-		err = s.patchVersion(ctx, options.Namespace, options.Name, options.Suspend, options.Version)
+		err = s.patchVersion(ctx, options.Namespace, options.Name, options.SuspendReconciliation, options.Version)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -101,7 +101,7 @@ func (s *Service) Patch(ctx context.Context, options PatchOptions) error {
 	return nil
 }
 
-func (s *Service) patchVersion(ctx context.Context, namespace string, name string, suspend bool, version string) error {
+func (s *Service) patchVersion(ctx context.Context, namespace string, name string, suspendReconciliation bool, version string) error {
 	var err error
 
 	var appResource Resource
@@ -152,7 +152,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 		if annotations == nil {
 			annotations = make(map[string]string)
 		}
-		if suspend {
+		if suspendReconciliation {
 			annotations[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
 		} else {
 			delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)

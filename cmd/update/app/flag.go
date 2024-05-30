@@ -9,19 +9,19 @@ import (
 const (
 	flagVersion = "version"
 	flagName    = "name"
-	flagSuspend = "suspend"
+	flagSuspend = "suspend-reconciliation"
 )
 
 type flag struct {
-	print   *genericclioptions.PrintFlags
-	Name    string
-	Suspend bool
-	Version string
+	print                 *genericclioptions.PrintFlags
+	Name                  string
+	SuspendReconciliation bool
+	Version               string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "Version to update the app to")
-	cmd.Flags().BoolVar(&f.Suspend, flagSuspend, false, "Suspend app reconciliation by Flux")
+	cmd.Flags().BoolVar(&f.SuspendReconciliation, flagSuspend, false, "Suspend app reconciliation by Flux")
 	// Hide flag in favour of the longDescription, otherwise if the number of supported
 	// update flags grows, it may be hard to differentiate them from the rest of the flags,
 	// like kubectl global flags.
