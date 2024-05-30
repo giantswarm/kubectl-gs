@@ -56,14 +56,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	name := r.flag.Name
-	version := r.flag.Version
-
 	patchOptions := app.PatchOptions{
 		Namespace:             namespace,
-		Name:                  name,
+		Name:                  r.flag.Name,
 		SuspendReconciliation: r.flag.SuspendReconciliation,
-		Version:               version,
+		Version:               r.flag.Version,
 	}
 
 	err = r.service.Patch(ctx, patchOptions)
@@ -75,7 +72,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "App '%s' updated to version '%s'\n", name, version)
+	fmt.Fprintf(r.stdout, "App '%s' in namespace '%s' updated\n", patchOptions.Name, patchOptions.Namespace)
 	return nil
 }
 
