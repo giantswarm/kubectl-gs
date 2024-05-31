@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add interactive mode to `kubectl gs template app` command.
+
 ## [2.55.0] - 2024-05-14
 
 ### Added
