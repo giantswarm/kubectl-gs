@@ -12,7 +12,6 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v2/cmd/get"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/gitops"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/install"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/login"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/selfupdate"
 	"github.com/giantswarm/kubectl-gs/v2/cmd/template"
@@ -158,21 +157,6 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
-	var installCmd *cobra.Command
-	{
-		c := install.Config{
-			Logger:      config.Logger,
-			ConfigFlags: &f.config,
-			Stderr:      config.Stderr,
-			Stdout:      config.Stdout,
-		}
-
-		installCmd, err = install.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var validateCmd *cobra.Command
 	{
 		c := validate.Config{
@@ -219,7 +203,6 @@ func New(config Config) (*cobra.Command, error) {
 	}
 	c.AddCommand(getCmd)
 	c.AddCommand(gitopsCmd)
-	c.AddCommand(installCmd)
 	c.AddCommand(loginCmd)
 	c.AddCommand(templateCmd)
 	c.AddCommand(updateCmd)

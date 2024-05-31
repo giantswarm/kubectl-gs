@@ -89,10 +89,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		targetNamespace = r.flag.Namespace
 	}
 
-	if targetNamespace == "" {
-		targetNamespace = appName
-	}
-
 	clusterName := r.flag.ClusterName
 	if clusterName == "" {
 		clusterName = r.flag.Cluster

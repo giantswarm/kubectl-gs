@@ -53,6 +53,16 @@ require (
 )
 
 require (
+	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+	github.com/sagikazarmark/locafero v0.4.0 // indirect
+	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
+	github.com/sourcegraph/conc v0.3.0 // indirect
+	github.com/subosito/gotenv v1.6.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
+)
+
+require (
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/kms v1.15.5 // indirect
@@ -190,6 +200,7 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
+	github.com/spf13/viper v1.18.2
 	github.com/tcnksm/go-gitconfig v0.1.2 // indirect
 	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/urfave/cli v1.22.14 // indirect
@@ -207,7 +218,7 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
-	google.golang.org/api v0.152.0 // indirect
+	google.golang.org/api v0.153.0 // indirect
 	google.golang.org/genproto v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
