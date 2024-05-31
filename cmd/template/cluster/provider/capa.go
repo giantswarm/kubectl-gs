@@ -281,9 +281,10 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 				InstanceType: config.ControlPlaneInstanceType,
 			},
 			Metadata: &capa.Metadata{
-				Name:         config.Name,
-				Description:  config.Description,
-				Organization: config.Organization,
+				Name:            config.Name,
+				Description:     config.Description,
+				Organization:    config.Organization,
+				PreventDeletion: config.PreventDeletion,
 			},
 			NodePools: &map[string]capa.MachinePool{
 				config.AWS.MachinePool.Name: {

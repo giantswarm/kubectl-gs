@@ -154,6 +154,7 @@ type ClusterConfig struct {
 	PodsCIDR          string
 	OIDC              OIDC
 	ServicePriority   string
+	PreventDeletion   bool
 
 	Region                   string
 	BastionInstanceType      string
