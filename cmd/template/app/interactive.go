@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
 	"github.com/giantswarm/microerror"
+	fuzzyfinder "github.com/ktr0731/go-fuzzyfinder"
 	"github.com/muesli/reflow/wordwrap"
 	"k8s.io/apimachinery/pkg/labels"
 
-	fuzzyfinder "github.com/ktr0731/go-fuzzyfinder"
+	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
 )
 
 func (r *runner) promptCatalog() (*applicationv1alpha1.Catalog, error) {
