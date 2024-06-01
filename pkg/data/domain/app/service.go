@@ -60,17 +60,10 @@ func New(config Config) (*Service, error) {
 
 // Create an app.
 func (s *Service) Create(ctx context.Context, app *App) error {
-	var err error
-
-	err = s.client.Create(ctx, app.CR)
+	err := s.client.Create(ctx, app.CR)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	//app.CR.TypeMeta = metav1.TypeMeta{
-	//	APIVersion: "app.application.giantswarm.io/v1alpha1",
-	//	Kind:       "App",
-	//}
 
 	return nil
 }
