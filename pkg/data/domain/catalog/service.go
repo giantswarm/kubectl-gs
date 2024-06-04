@@ -180,6 +180,34 @@ func (s *Service) ListCatalogEntries(ctx context.Context, options ListOptions) (
 	return c, nil
 }
 
+// GetEntries fetches a list of catalog entry CRs.
+func (s *Service) GetEntries(ctx context.Context, selector string) (*applicationv1alpha1.AppCatalogEntryList, error) {
+	var err error
+
+	var labelSelector labels.Selector
+	{
+		labelSelector, err = labels.Parse(selector)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var entries = &applicationv1alpha1.AppCatalogEntryList{}
+	lo := &client.ListOptions{
+		LabelSelector: labelSelector,
+	}
+	err = s.client.List(ctx, entries, lo)
+	if apimeta.IsNoMatchError(err) {
+		return nil, microerror.Mask(noMatchError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	} else if len(entries.Items) == 0 {
+		return nil, microerror.Mask(noResourcesError)
+	}
+
+	return entries, nil
+}
+
 // omitManagedFields removes managed fields to make YAML output easier to read.
 // With Kubernetes 1.21 we can use OmitManagedFieldsPrinter and remove this.
 func omitManagedFields(catalog *applicationv1alpha1.Catalog) *applicationv1alpha1.Catalog {

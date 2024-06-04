@@ -48,6 +48,7 @@ type Resource interface {
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
 	ListCatalogEntries(context.Context, ListOptions) (Resource, error)
+	GetEntries(context.Context, string) (*applicationv1alpha1.AppCatalogEntryList, error)
 }
 
 func (a *Catalog) Object() runtime.Object {
