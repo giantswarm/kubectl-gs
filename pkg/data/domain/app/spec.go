@@ -28,9 +28,10 @@ type GetOptions struct {
 
 // PatchOptions are the parameters that the Patch method takes.
 type PatchOptions struct {
-	Name      string
-	Namespace string
-	Version   string
+	Name                  string
+	Namespace             string
+	SuspendReconciliation bool
+	Version               string
 }
 
 type Resource interface {
@@ -42,7 +43,7 @@ type Resource interface {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
-	Patch(context.Context, PatchOptions) error
+	Patch(context.Context, PatchOptions) ([]string, error)
 }
 
 func (a *App) Object() runtime.Object {

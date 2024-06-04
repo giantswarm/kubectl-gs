@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Allow `kubectl gs update app` to update App CR to any version from any catalog.
+  Also add `--suspend` flag to manage Flux App reconciliation.
+
 ## [2.55.0] - 2024-05-14
 
 ### Added
