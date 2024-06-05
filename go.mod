@@ -13,9 +13,9 @@ require (
 	github.com/coreos/go-oidc/v3 v3.10.0
 	github.com/fatih/color v1.17.0
 	github.com/getsops/sops/v3 v3.8.1
-	github.com/giantswarm/apiextensions-application v0.6.1
+	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/apiextensions/v6 v6.6.0
-	github.com/giantswarm/app/v7 v7.0.1
+	github.com/giantswarm/app/v7 v7.0.2
 	github.com/giantswarm/appcatalog v1.0.0
 	github.com/giantswarm/backoff v1.0.0
 	github.com/giantswarm/k8sclient/v7 v7.2.0
@@ -227,7 +227,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/component-base v0.29.1 // indirect
-	k8s.io/klog/v2 v2.110.1 // indirect
+	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231129212854-f0671cc7e66a // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.13.5-0.20230601165947-6ce0bf390ce3 // indirect
