@@ -210,7 +210,7 @@ require (
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
 	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
@@ -242,5 +242,5 @@ replace (
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.8.1
 	golang.org/x/crypto => golang.org/x/crypto v0.24.0
-	golang.org/x/text => golang.org/x/text v0.15.0
+	golang.org/x/text => golang.org/x/text v0.16.0
 )
