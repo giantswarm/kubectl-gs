@@ -17,7 +17,7 @@ require (
 	github.com/giantswarm/apiextensions/v6 v6.6.0
 	github.com/giantswarm/app/v7 v7.0.2
 	github.com/giantswarm/appcatalog v1.0.0
-	github.com/giantswarm/backoff v1.0.0
+	github.com/giantswarm/backoff v1.0.1
 	github.com/giantswarm/k8sclient/v7 v7.2.0
 	github.com/giantswarm/k8smetadata v0.25.0
 	github.com/giantswarm/microerror v0.4.1
@@ -110,7 +110,7 @@ require (
 	github.com/aws/smithy-go v1.15.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
-	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
