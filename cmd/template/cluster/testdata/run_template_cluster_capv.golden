@@ -2,60 +2,52 @@
 apiVersion: v1
 data:
   values: |
-    baseDomain: test.gigantic.io
-    cluster:
-      kubernetesVersion: v1.2.3
-    clusterDescription: yet another test cluster
-    connectivity:
-      network:
-        allowAllEgress: true
-        controlPlaneEndpoint:
-          host: ""
-          ipPoolName: foo-pool
-          port: 6443
-        loadBalancers:
-          cidrBlocks:
-          - 1.2.3.4/32
-          ipPoolName: svc-foo-pool
-    controlPlane:
-      image:
-        repository: registry.k8s.io
-      machineTemplate:
-        cloneMode: linkedClone
-        diskGiB: 42
-        memoryMiB: 42000
+    global:
+      connectivity:
+        baseDomain: test.gigantic.io
         network:
-          devices:
-          - dhcp4: true
-            networkName: foonet
-        numCPUs: 6
-        resourcePool: foopool
-        template: foobar
-      replicas: 5
-    helmReleases:
-      cilium:
-        interval: 20s
-      coredns:
-        interval: 30s
-      cpi:
-        interval: 30s
-    nodeClasses:
-      default:
-        cloneMode: linkedClone
-        diskGiB: 43
-        memoryMiB: 43000
-        network:
-          devices:
-          - dhcp4: true
-            networkName: foonet
-        numCPUs: 7
-        resourcePool: foopool
-        template: foobar
-    nodePools:
-      worker:
-        class: default
-        replicas: 4
-    organization: test
+          controlPlaneEndpoint:
+            host: ""
+            ipPoolName: foo-pool
+            port: 6443
+          loadBalancers:
+            cidrBlocks:
+            - 1.2.3.4/32
+            ipPoolName: svc-foo-pool
+      controlPlane:
+        image:
+          repository: gsoci.azurecr.io/giantswarm
+        machineTemplate:
+          cloneMode: linkedClone
+          diskGiB: 42
+          memoryMiB: 42000
+          network:
+            devices:
+            - dhcp4: true
+              networkName: foonet
+          numCPUs: 6
+          resourcePool: foopool
+          template: foobar
+        replicas: 5
+      metadata:
+        description: yet another test cluster
+        organization: test
+      nodeClasses:
+        default:
+          cloneMode: linkedClone
+          diskGiB: 43
+          memoryMiB: 43000
+          network:
+            devices:
+            - dhcp4: true
+              networkName: foonet
+          numCPUs: 7
+          resourcePool: foopool
+          template: foobar
+      nodePools:
+        worker:
+          class: default
+          replicas: 4
 kind: ConfigMap
 metadata:
   creationTimestamp: null
