@@ -21,6 +21,7 @@ const (
 	flagDefaultingEnabled          = "defaulting-enabled"
 	flagInCluster                  = "in-cluster"
 	flagInstallTimeout             = "install-timeout"
+	flagInteractive                = "interactive"
 	flagName                       = "name"
 	flagNamespace                  = "namespace"
 	flagTargetNamespace            = "target-namespace"
@@ -45,6 +46,7 @@ type flag struct {
 	DefaultingEnabled              bool
 	InCluster                      bool
 	InstallTimeout                 time.Duration
+	Interactive                    bool
 	Name                           string
 	Namespace                      string
 	TargetNamespace                string
@@ -73,6 +75,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.DefaultingEnabled, flagDefaultingEnabled, true, "Don't template fields that will be defaulted.")
 	cmd.Flags().BoolVar(&f.InCluster, flagInCluster, false, fmt.Sprintf("Deploy the app in the current management cluster rather than in a workload cluster. If this is set, --%s will be ignored.", flagClusterName))
 	cmd.Flags().DurationVar(&f.InstallTimeout, flagInstallTimeout, 0, "Timeout for the Helm install.")
+	cmd.Flags().BoolVar(&f.Interactive, flagInteractive, false, "Run in interactive mode.")
 	cmd.Flags().DurationVar(&f.RollbackTimeout, flagRollbackTimeout, 0, "Timeout for the Helm rollback.")
 	cmd.Flags().DurationVar(&f.UninstallTimeout, flagUninstallTimeout, 0, "Timeout for the Helm uninstall.")
 	cmd.Flags().DurationVar(&f.UpgradeTimeout, flagUpgradeTimeout, 0, "Timeout for the Helm upgrade.")
@@ -88,20 +91,19 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	if f.Catalog == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagCatalog)
-	}
-	if f.Name == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
-	}
-	if f.Namespace == "" && f.TargetNamespace == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNamespace)
-	}
 	if !f.InCluster && f.Cluster == "" && f.ClusterName == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagClusterName)
 	}
-	if f.Version == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
+	if !f.Interactive {
+		if f.Catalog == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagCatalog)
+		}
+		if f.Name == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagName)
+		}
+		if f.Version == "" {
+			return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagVersion)
+		}
 	}
 
 	_, err := labels.Parse(f.flagNamespaceConfigLabels)

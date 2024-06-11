@@ -157,6 +157,29 @@ func (s *Service) getByName(ctx context.Context, namespace, name string, labelSe
 	return catalog, nil
 }
 
+func (s *Service) ListCatalogEntries(ctx context.Context, options ListOptions) (Resource, error) {
+	var catalogEntryList = applicationv1alpha1.AppCatalogEntryList{}
+	{
+
+		o := &client.ListOptions{
+			LabelSelector: options.LabelSelector,
+		}
+		err := s.client.List(ctx, &catalogEntryList, o)
+		if apimeta.IsNoMatchError(err) {
+			return nil, microerror.Mask(noMatchError)
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		} else if len(catalogEntryList.Items) == 0 {
+			return nil, microerror.Mask(noResourcesError)
+		}
+	}
+
+	c := &CatalogEntryList{
+		catalogEntryList,
+	}
+	return c, nil
+}
+
 // GetEntries fetches a list of catalog entry CRs.
 func (s *Service) GetEntries(ctx context.Context, selector string) (*applicationv1alpha1.AppCatalogEntryList, error) {
 	var err error

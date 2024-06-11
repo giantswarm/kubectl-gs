@@ -11,6 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Add interactive mode to `kubectl gs template app` command.
 - Allow `kubectl gs update app` to update App CR to any version from any catalog.
 - Also add `--suspend` flag to manage Flux App reconciliation.
 

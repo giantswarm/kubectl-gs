@@ -61,6 +61,16 @@ func New(config Config) (*Service, error) {
 	return s, nil
 }
 
+// Create an app.
+func (s *Service) Create(ctx context.Context, app *App) error {
+	err := s.client.Create(ctx, app.CR)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
 // Get fetches a list of app CRs filtered by namespace and optionally by
 // name.
 func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {

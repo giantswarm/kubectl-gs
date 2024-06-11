@@ -42,6 +42,7 @@ type Resource interface {
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
+	Create(context.Context, *App) error
 	Get(context.Context, GetOptions) (Resource, error)
 	Patch(context.Context, PatchOptions) ([]string, error)
 }

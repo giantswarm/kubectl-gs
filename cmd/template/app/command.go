@@ -7,6 +7,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+
+	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
 )
 
 const (
@@ -15,14 +18,18 @@ const (
 )
 
 type Config struct {
-	Logger micrologger.Logger
-	Stderr io.Writer
-	Stdout io.Writer
+	Logger      micrologger.Logger
+	ConfigFlags *genericclioptions.RESTClientGetter
+	Stderr      io.Writer
+	Stdout      io.Writer
 }
 
 func New(config Config) (*cobra.Command, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.ConfigFlags == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 	if config.Stderr == nil {
 		config.Stderr = os.Stderr
@@ -34,6 +41,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
+		commonService: &commonconfig.CommonConfig{
+			ConfigFlags: config.ConfigFlags,
+		},
 		flag:   f,
 		logger: config.Logger,
 		stderr: config.Stderr,

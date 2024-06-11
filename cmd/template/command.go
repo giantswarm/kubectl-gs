@@ -47,9 +47,10 @@ func New(config Config) (*cobra.Command, error) {
 	var appCmd *cobra.Command
 	{
 		c := app.Config{
-			Logger: config.Logger,
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
+			Logger:      config.Logger,
+			ConfigFlags: config.ConfigFlags,
+			Stderr:      config.Stderr,
+			Stdout:      config.Stdout,
 		}
 
 		appCmd, err = app.New(c)
