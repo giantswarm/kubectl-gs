@@ -29,6 +29,10 @@ func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
 		}
 	}
 
+	if metadata, ok := flagConfigData["global"].(map[string]interface{})["metadata"].(map[string]interface{}); ok {
+		metadata["preventDeletion"] = flagInputs.Global.Metadata.PreventDeletion
+	}
+
 	finalConfigString, err := yaml.Marshal(flagInputs)
 	if err != nil {
 		return "", microerror.Mask(err)
