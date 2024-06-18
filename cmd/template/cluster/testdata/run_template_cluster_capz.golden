@@ -13,6 +13,7 @@ data:
         description: just a test cluster
         name: test1
         organization: test
+        preventDeletion: false
       providerSpecific:
         location: northeurope
         subscriptionId: 12345678-ebb8-4b1f-8f96-d950d9e7aaaa

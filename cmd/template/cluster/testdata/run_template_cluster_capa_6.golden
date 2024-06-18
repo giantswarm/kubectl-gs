@@ -27,6 +27,7 @@ data:
         description: just a test cluster
         name: test6
         organization: test
+        preventDeletion: false
       nodePools:
         worker1:
           availabilityZones:
