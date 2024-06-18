@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -56,16 +57,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	name := r.flag.Name
-	version := r.flag.Version
-
 	patchOptions := app.PatchOptions{
-		Namespace: namespace,
-		Name:      name,
-		Version:   version,
+		Namespace:             namespace,
+		Name:                  r.flag.Name,
+		SuspendReconciliation: r.flag.SuspendReconciliation,
+		Version:               r.flag.Version,
 	}
 
-	err = r.service.Patch(ctx, patchOptions)
+	state, err := r.service.Patch(ctx, patchOptions)
 	if app.IsNotFound(err) {
 		return microerror.Maskf(notFoundError, "An app with name '%s' cannot be found in the '%s' namespace.\n", patchOptions.Name, patchOptions.Namespace)
 	} else if app.IsNoResources(err) {
@@ -74,7 +73,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "App '%s' updated to version '%s'\n", name, version)
+	fmt.Fprintf(r.stdout, "App %q in namespace %q updated with %s\n", patchOptions.Name, patchOptions.Namespace, strings.Join(state, " "))
 	return nil
 }
 

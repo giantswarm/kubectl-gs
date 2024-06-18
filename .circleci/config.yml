@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@5.2.0
+  architect: giantswarm/architect@5.2.1
 
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2024.05
+      - image: cimg/base:2024.06
     steps:
       - checkout
       - run: |
@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: cimg/go:1.22.3
+      - image: cimg/go:1.22.4
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38

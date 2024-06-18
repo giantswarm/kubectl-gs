@@ -7,6 +7,17 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.56.0] - 2024-06-10
+
+### Added
+
+- Allow `kubectl gs update app` to update App CR to any version from any catalog.
+- Also add `--suspend` flag to manage Flux App reconciliation.
+
+### Changed
+
+- **BREAKING** `kubectl gs template cluster` for Cluster API provider vSphere has been adapted to work with the values schema of `cluster-vsphere` v0.52.0.
+
 ## [2.55.0] - 2024-05-14
 
 ### Added
@@ -1463,7 +1474,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...HEAD
+[2.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.54.0...v2.55.0
 [2.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.53.0...v2.54.0
 [2.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.3...v2.53.0
