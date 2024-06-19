@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Added `--prevent-deletion` flag to cluster template command for capa, capa-eks, capz clusters
+
 ## [2.56.0] - 2024-06-10
 
 ### Added

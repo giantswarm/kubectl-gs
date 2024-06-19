@@ -104,9 +104,10 @@ func BuildCapzClusterConfig(config ClusterConfig) capz.ClusterConfig {
 	return capz.ClusterConfig{
 		Global: &capz.Global{
 			Metadata: &capz.Metadata{
-				Name:         config.Name,
-				Description:  config.Description,
-				Organization: config.Organization,
+				Name:            config.Name,
+				Description:     config.Description,
+				Organization:    config.Organization,
+				PreventDeletion: config.PreventDeletion,
 			},
 			ProviderSpecific: &capz.ProviderSpecific{
 				Location:       config.Region,

@@ -14,7 +14,8 @@ type ClusterConfig struct {
 }
 
 type Metadata struct {
-	Name         string `json:"name,omitempty"`
-	Description  string `json:"description,omitempty"`
-	Organization string `json:"organization,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Organization    string `json:"organization,omitempty"`
+	PreventDeletion bool   `json:"preventDeletion,omitempty"`
 }

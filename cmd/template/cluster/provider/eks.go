@@ -108,9 +108,10 @@ func BuildEKSClusterConfig(config ClusterConfig) eks.ClusterConfig {
 	return eks.ClusterConfig{
 		Global: &eks.Global{
 			Metadata: &eks.Metadata{
-				Name:         config.Name,
-				Description:  config.Description,
-				Organization: config.Organization,
+				Name:            config.Name,
+				Description:     config.Description,
+				Organization:    config.Organization,
+				PreventDeletion: config.PreventDeletion,
 			},
 		},
 	}

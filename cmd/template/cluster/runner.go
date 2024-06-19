@@ -131,6 +131,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 		Namespace:                metav1.NamespaceDefault,
 		Region:                   r.flag.Region,
 		ServicePriority:          r.flag.ServicePriority,
+		PreventDeletion:          r.flag.PreventDeletion,
 
 		App:       r.flag.App,
 		AWS:       r.flag.AWS,

@@ -20,6 +20,7 @@ const (
 	flagEnableLongNames   = "enable-long-names"
 	flagProvider          = "provider"
 	flagManagementCluster = "management-cluster"
+	flagPreventDeletion   = "prevent-deletion"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
@@ -143,6 +144,7 @@ type flag struct {
 	EnableLongNames   bool
 	Provider          string
 	ManagementCluster string
+	PreventDeletion   bool
 
 	// Common.
 	ControlPlaneAZ           []string
@@ -177,6 +179,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.EnableLongNames, flagEnableLongNames, true, "Allow long names.")
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
+	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
