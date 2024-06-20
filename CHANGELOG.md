@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Added `--prevent-deletion` flag to cluster template command for capa, capa-eks, capz clusters
 
+### Changed
+
+- CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
+
 ## [2.56.0] - 2024-06-10
 
 ### Added

@@ -6,6 +6,7 @@ type Global struct {
 	Metadata         *Metadata               `json:"metadata,omitempty"`
 	NodePools        *map[string]MachinePool `json:"nodePools,omitempty"`
 	ProviderSpecific *ProviderSpecific       `json:"providerSpecific,omitempty"`
+	Release          *Release                `json:"release,omitempty"`
 }
 
 type ClusterConfig struct {
@@ -17,6 +18,10 @@ type Metadata struct {
 	Name            string `json:"name,omitempty"`
 	Organization    string `json:"organization,omitempty"`
 	PreventDeletion bool   `json:"preventDeletion,omitempty"`
+}
+
+type Release struct {
+	Version string `json:"version,omitempty"`
 }
 
 type DefaultAppsConfig struct {

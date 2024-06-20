@@ -41,3 +41,10 @@ func PureCAPIProviders() []string {
 		ProviderCloudDirector,
 	}
 }
+
+// CAPIProvidersThatUseReleases is the list of CAPI providers which are using Release resources.
+func CAPIProvidersThatUseReleases() []string {
+	return []string{
+		ProviderCAPA,
+	}
+}
