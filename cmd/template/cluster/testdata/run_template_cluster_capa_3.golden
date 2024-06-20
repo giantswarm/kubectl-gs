@@ -51,6 +51,8 @@ data:
       providerSpecific:
         awsClusterRoleIdentityName: other-identity
         region: the-region
+      release:
+        version: 25.0.0
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -88,4 +90,4 @@ spec:
     configMap:
       name: test1-userconfig
       namespace: org-test
-  version: 1.0.0
+  version: ""
