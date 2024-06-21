@@ -581,7 +581,7 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		}
 
 		if f.Release == "" {
-			if key.IsPureCAPIProvider(f.Provider) && !key.IsCAPIProviderThatUsesReleases(f.Provider) {
+			if key.IsPureCAPIProvider(f.Provider) && !key.IsCAPIProviderUsingReleases(f.Provider) {
 				// skip release validation
 			} else {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
