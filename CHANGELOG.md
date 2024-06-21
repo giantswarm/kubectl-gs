@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- Support unified cluster-azure app. With cluster-azure v0.14.0 and newer, default apps are deployed with cluster-azure and default-apps-azure app is not deployed anymore.
 - Added `--prevent-deletion` flag to cluster template command for capa, capa-eks, capz clusters
 
 ## [2.56.0] - 2024-06-10

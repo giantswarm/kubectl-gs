@@ -6,6 +6,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -23,13 +24,35 @@ const (
 )
 
 func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+	appVersion := config.App.ClusterVersion
+	if appVersion == "" {
+		var err error
+		appVersion, err = getLatestVersion(ctx, client.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	err := templateClusterCAPZ(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = templateDefaultAppsAzure(ctx, client, output, config)
-	return microerror.Mask(err)
+	minUnifiedClusterAzureVersion := semver.New(0, 14, 0, "", "")
+	desiredClusterAzureVersion, err := semver.StrictNewVersion(appVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if desiredClusterAzureVersion.LessThan(minUnifiedClusterAzureVersion) {
+		// Render default-apps-azure only when cluster-azure version does not contain default apps.
+		err = templateDefaultAppsAzure(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }
 
 func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
