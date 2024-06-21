@@ -45,7 +45,7 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output i
 	}
 
 	if desiredClusterAzureVersion.LessThan(minUnifiedClusterAzureVersion) {
-		// Render default-apps-aws only when cluster-aws version does not contain default apps.
+		// Render default-apps-azure only when cluster-azure version does not contain default apps.
 		err = templateDefaultAppsAzure(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
