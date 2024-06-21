@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [2.57.0] - 2024-06-21
+
 ### Added
 
 - Support unified cluster-azure app. With cluster-azure v0.14.0 and newer, default apps are deployed with cluster-azure and default-apps-azure app is not deployed anymore.
@@ -1479,7 +1481,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...HEAD
+[2.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...v2.57.0
 [2.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.54.0...v2.55.0
 [2.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.53.0...v2.54.0
