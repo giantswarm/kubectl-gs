@@ -5,6 +5,7 @@ go 1.21
 require (
 	dario.cat/mergo v1.0.0
 	github.com/3th1nk/cidr v0.2.0
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/ProtonMail/gopenpgp/v2 v2.7.5
 	github.com/blang/semver v3.5.1+incompatible
@@ -50,7 +51,6 @@ require (
 )
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
