@@ -9,7 +9,6 @@ import (
 	"text/template"
 
 	"github.com/3th1nk/cidr"
-	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/pkg/errors"
@@ -34,38 +33,15 @@ const (
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	appVersion := config.App.ClusterVersion
-	if appVersion == "" {
-		var err error
-		appVersion, err = getLatestVersion(ctx, client.CtrlClient(), ClusterAWSRepoName, config.App.ClusterCatalog)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	err := templateClusterCAPA(ctx, client, output, config, appVersion)
+	err := templateClusterCAPA(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	minUnifiedClusterAwsVersion := semver.New(0, 76, 0, "", "")
-	desiredClusterAwsVersion, err := semver.StrictNewVersion(appVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if desiredClusterAwsVersion.LessThan(minUnifiedClusterAwsVersion) {
-		// Render default-apps-aws only when cluster-aws version does not contain default apps.
-		err = templateDefaultAppsCAPA(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil
 }
 
-func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig, appVersion string) error {
+func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	appName := config.Name
 	configMapName := userConfigMapName(appName)
 
@@ -247,7 +223,6 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			InCluster:               true,
 			Name:                    ClusterAWSRepoName,
 			Namespace:               organizationNamespace(config.Organization),
-			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 		}
 
@@ -300,81 +275,9 @@ func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 				Region:                     config.Region,
 				AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
 			},
+			Release: &capa.Release{
+				Version: config.ReleaseVersion,
+			},
 		},
 	}
-}
-
-func templateDefaultAppsCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := userConfigMapName(appName)
-
-	var configMapYAML []byte
-	{
-		flagValues := capa.DefaultAppsConfig{
-			ClusterName:  config.Name,
-			Organization: config.Organization,
-		}
-
-		configData, err := capa.GenerateDefaultAppsValues(flagValues)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
-			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
-			Data:      configData,
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
-
-		configMapYAML, err = yaml.Marshal(userConfigMap)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var appYAML []byte
-	{
-		appVersion := config.App.DefaultAppsVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsAWSRepoName, config.App.DefaultAppsCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var err error
-		appYAML, err = templateapp.NewAppCR(templateapp.Config{
-			AppName:                 appName,
-			Cluster:                 config.Name,
-			Catalog:                 config.App.DefaultAppsCatalog,
-			DefaultingEnabled:       false,
-			InCluster:               true,
-			Name:                    DefaultAppsAWSRepoName,
-			Namespace:               organizationNamespace(config.Organization),
-			Version:                 appVersion,
-			UserConfigConfigMapName: configMapName,
-			UseClusterValuesConfig:  true,
-			ExtraLabels: map[string]string{
-				k8smetadata.ManagedBy: "cluster",
-			},
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err := t.Execute(output, templateapp.AppCROutput{
-		UserConfigConfigMap: string(configMapYAML),
-		AppCR:               string(appYAML),
-	})
-	return microerror.Mask(err)
 }

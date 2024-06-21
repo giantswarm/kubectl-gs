@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
+
 ## [2.57.0] - 2024-06-21
 
 ### Added
