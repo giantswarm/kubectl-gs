@@ -53,7 +53,7 @@ spec:
     configMap:
       name: test1-userconfig
       namespace: org-test
-  version: 1.0.0
+  version: 0.13.0
 ---
 apiVersion: v1
 data:
