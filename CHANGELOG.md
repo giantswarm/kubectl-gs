@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Added `--prevent-deletion` flag to cluster template command for capv clusters
+
 ### Changed
 
 - CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
