@@ -13,8 +13,9 @@ type Global struct {
 }
 
 type Metadata struct {
-	Description  string `json:"description,omitempty"`
-	Organization string `json:"organization,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Organization    string `json:"organization,omitempty"`
+	PreventDeletion bool   `json:"preventDeletion,omitempty"`
 }
 
 type DefaultAppsConfig struct {

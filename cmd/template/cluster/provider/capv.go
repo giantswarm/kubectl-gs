@@ -137,8 +137,9 @@ func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 				MachineTemplate: getMachineTemplate(&config.VSphere.ControlPlane.VSphereMachineTemplate, &config),
 			},
 			Metadata: &capv.Metadata{
-				Description:  config.Description,
-				Organization: config.Organization,
+				Description:     config.Description,
+				Organization:    config.Organization,
+				PreventDeletion: config.PreventDeletion,
 			},
 			NodeClasses: map[string]*capv.MachineTemplate{
 				className: getMachineTemplate(&config.VSphere.Worker, &config),
