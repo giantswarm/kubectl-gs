@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
+
 ### Changed
 
 - CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
