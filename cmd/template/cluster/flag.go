@@ -19,6 +19,7 @@ import (
 const (
 	flagProvider          = "provider"
 	flagManagementCluster = "management-cluster"
+	flagPreventDeletion   = "prevent-deletion"
 
 	// AWS only.
 	flagAWSExternalSNAT       = "external-snat"
@@ -37,6 +38,8 @@ const (
 	flagAWSPrefixListID                                  = "aws-prefix-list-id"
 	flagAWSTransitGatewayID                              = "aws-transit-gateway-id"
 	flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock = "control-plane-load-balancer-ingress-allow-cidr-block"
+	flagAWSPublicSubnetMask                              = "public-subnet-size"
+	flagAWSPrivateSubnetMask                             = "private-subnet-size"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
 	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
@@ -116,6 +119,7 @@ const (
 	flagControlPlaneInstanceType = "control-plane-instance-type"
 	flagControlPlaneAZ           = "control-plane-az"
 	flagDescription              = "description"
+	flagGenerateName             = "generate-name"
 	flagKubernetesVersion        = "kubernetes-version"
 	flagName                     = "name"
 	flagOIDCIssuerURL            = "oidc-issuer-url"
@@ -138,10 +142,12 @@ const (
 type flag struct {
 	Provider          string
 	ManagementCluster string
+	PreventDeletion   bool
 
 	// Common.
 	ControlPlaneAZ           []string
 	Description              string
+	GenerateName             bool
 	KubernetesVersion        string
 	Name                     string
 	Output                   string
@@ -170,6 +176,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
+	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
@@ -185,6 +192,9 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
 	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
+	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
+	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, flagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
+
 	// aws control plane
 	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().StringArrayVar(&f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, nil, fmt.Sprintf("IPv4 address ranges that are allowed to connect to the control plane load balancer, in CIDR notation. When setting this flag, kubectl-gs automatically adds the NAT Gateway IPs of the management cluster so that the workload cluster can still be managed. If only the management cluster's IP ranges should be allowed, specify one empty value instead of an IP range ('--%s \"\"'). Supported for CAPA. You also need to specify --%s.", flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, flagManagementCluster))
@@ -193,7 +203,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.MachinePool.InstanceType, flagAWSMachinePoolInstanceType, "m5.xlarge", "AWS Machine pool instance type")
 	cmd.Flags().IntVar(&f.AWS.MachinePool.MinSize, flagAWSMachinePoolMinSize, 3, "AWS Machine pool min size")
 	cmd.Flags().IntVar(&f.AWS.MachinePool.MaxSize, flagAWSMachinePoolMaxSize, 10, "AWS Machine pool max size")
-	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 300, "AWS Machine pool disk size")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 8, "AWS Machine pool disk size")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
 
@@ -329,7 +339,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", "Unique identifier of the cluster (formerly called ID).")
+	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
+	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
@@ -378,8 +389,19 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
 	}
 
+	// For vintage, don't break CLI parameter compatibility. But for CAPI or newer implementations, we want to enforce
+	// an explicit choice for a specified name (`--name`) or randomly generated name (`--generate-name`).
+	requireEitherNameOrGenerateNameFlag := key.IsPureCAPIProvider(f.Provider)
+
 	if f.Name != "" {
-		valid, err := key.ValidateName(f.Name)
+		if f.GenerateName {
+			return microerror.Maskf(
+				invalidFlagError,
+				"--%s and --%s are mutually exclusive. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		}
+
+		valid, err := key.ValidateName(f.Name, true)
 		if err != nil {
 			return microerror.Mask(err)
 		} else if !valid {
@@ -387,6 +409,17 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 			maxLength := key.NameLengthMax
 			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
 			return microerror.Maskf(invalidFlagError, message)
+		}
+	} else if !f.GenerateName {
+		if requireEitherNameOrGenerateNameFlag {
+			return microerror.Maskf(
+				invalidFlagError,
+				"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		} else {
+			// Keep supporting this old default for vintage (= no naming parameter given means to randomly
+			// generate a cluster name)
+			f.GenerateName = true
 		}
 	}
 
@@ -539,7 +572,7 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		}
 
 		if f.Release == "" {
-			if key.IsPureCAPIProvider(f.Provider) {
+			if key.IsPureCAPIProvider(f.Provider) && !key.IsCAPIProviderUsingReleases(f.Provider) {
 				// skip release validation
 			} else {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)

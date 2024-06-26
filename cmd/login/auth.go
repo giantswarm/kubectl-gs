@@ -6,6 +6,10 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -104,6 +108,33 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 		return microerror.Mask(err)
 	}
 
+	return nil
+}
+
+func VerifyIDTokenWithKubernetesAPI(idToken, apiServerURL string, caData []byte) error {
+	config := &rest.Config{
+		Host:        apiServerURL,
+		BearerToken: idToken,
+	}
+
+	if len(caData) > 0 {
+		config.TLSClientConfig = rest.TLSClientConfig{CAData: caData}
+	}
+
+	clientset, err := discovery.NewDiscoveryClientForConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes discovery client: %w", err)
+	}
+	// Attempt to retrieve server version as a verification step
+	_, err = clientset.ServerVersion()
+	if err != nil {
+		// Distinguish between Unauthorized and other errors
+		if errors.IsUnauthorized(err) {
+			return fmt.Errorf("token verification failed: unauthorized")
+		}
+		return fmt.Errorf("token verification process failed: %w", err)
+	}
+	// If no error, the token is considered valid
 	return nil
 }
 

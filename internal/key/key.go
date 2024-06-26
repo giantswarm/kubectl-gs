@@ -94,6 +94,11 @@ func IsPureCAPIProvider(provider string) bool {
 	return contains(PureCAPIProviders(), provider)
 }
 
+// IsCAPIProviderUsingReleases returns whether a given provider is a CAPI provider that uses new releases.
+func IsCAPIProviderUsingReleases(provider string) bool {
+	return contains(CAPIProvidersUsingReleases(), provider)
+}
+
 func contains(s []string, str string) bool {
 	for _, v := range s {
 		if v == str {

@@ -1,20 +1,20 @@
 package capv
 
 type ClusterConfig struct {
-	Connectivity       *Connectivity               `json:"connectivity,omitempty"`
-	ControlPlane       *ControlPlane               `json:"controlPlane,omitempty"`
-	NodeClasses        map[string]*MachineTemplate `json:"nodeClasses,omitempty"`
-	NodePools          map[string]*NodePool        `json:"nodePools,omitempty"`
-	HelmReleases       *HelmReleases               `json:"helmReleases,omitempty"`
-	BaseDomain         string                      `json:"baseDomain,omitempty"`
-	ClusterDescription string                      `json:"clusterDescription,omitempty"`
-	Organization       string                      `json:"organization,omitempty"`
-	Cluster            *Cluster                    `json:"cluster,omitempty"`
+	Global *Global `json:"global,omitempty"`
 }
 
-type Cluster struct {
-	KubernetesVersion        string `json:"kubernetesVersion,omitempty"`
-	EnableEncryptionProvider bool   `json:"enableEncryptionProvider,omitempty"`
+type Global struct {
+	Connectivity *Connectivity               `json:"connectivity,omitempty"`
+	ControlPlane *ControlPlane               `json:"controlPlane,omitempty"`
+	Metadata     *Metadata                   `json:"metadata,omitempty"`
+	NodeClasses  map[string]*MachineTemplate `json:"nodeClasses,omitempty"`
+	NodePools    map[string]*NodePool        `json:"nodePools,omitempty"`
+}
+
+type Metadata struct {
+	Description  string `json:"description,omitempty"`
+	Organization string `json:"organization,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -23,11 +23,11 @@ type DefaultAppsConfig struct {
 }
 
 type Connectivity struct {
-	Network *Network `json:"network,omitempty"`
+	BaseDomain string   `json:"baseDomain,omitempty"`
+	Network    *Network `json:"network,omitempty"`
 }
 
 type Network struct {
-	AllowAllEgress       bool                  `json:"allowAllEgress,omitempty"`
 	ControlPlaneEndpoint *ControlPlaneEndpoint `json:"controlPlaneEndpoint,omitempty"`
 	LoadBalancers        *LoadBalancers        `json:"loadBalancers,omitempty"`
 }
@@ -75,14 +75,4 @@ type MachineTemplate struct {
 type NodePool struct {
 	Class    string `json:"class,omitempty"`
 	Replicas int    `json:"replicas,omitempty"`
-}
-
-type HelmReleases struct {
-	Cilium  *HelmRelease `json:"cilium,omitempty"`
-	Cpi     *HelmRelease `json:"cpi,omitempty"`
-	Coredns *HelmRelease `json:"coredns,omitempty"`
-}
-
-type HelmRelease struct {
-	Interval string `json:"interval,omitempty"`
 }

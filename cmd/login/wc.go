@@ -349,7 +349,7 @@ func (r *runner) storeWCClientCertCredentials(c clientCertCredentialConfig) (str
 
 func (r *runner) storeAWSIAMCredentials(c eksClusterConfig) (string, bool, error) {
 	k8sConfigAccess := r.commonConfig.GetConfigAccess()
-	if r.loginOptions.selfContained && c.filePath != "" {
+	if r.loginOptions.selfContainedWC && c.filePath != "" {
 		return printWCAWSIamCredentials(k8sConfigAccess, r.fs, c, r.loginOptions.contextOverride)
 	}
 	return storeWCAWSIAMKubeconfig(k8sConfigAccess, c, r.loginOptions.contextOverride)

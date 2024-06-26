@@ -5,12 +5,17 @@ type DefaultAppsConfig struct {
 	Organization string `json:"organization,omitempty"`
 }
 
-type ClusterConfig struct {
+type Global struct {
 	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
+type ClusterConfig struct {
+	Global *Global `json:"global,omitempty"`
+}
+
 type Metadata struct {
-	Name         string `json:"name,omitempty"`
-	Description  string `json:"description,omitempty"`
-	Organization string `json:"organization,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Organization    string `json:"organization,omitempty"`
+	PreventDeletion bool   `json:"preventDeletion,omitempty"`
 }

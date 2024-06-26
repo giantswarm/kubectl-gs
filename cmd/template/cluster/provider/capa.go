@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"slices"
 	"text/template"
 
@@ -28,15 +29,11 @@ const (
 	DefaultAppsAWSRepoName = "default-apps-aws"
 	ClusterAWSRepoName     = "cluster-aws"
 	ModePrivate            = "private"
+	ProxyPrivateType       = "proxy-private"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
 	err := templateClusterCAPA(ctx, client, output, config)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = templateDefaultAppsCAPA(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -83,8 +80,8 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 					return fmt.Errorf("management cluster's AWSCluster object had an invalid IPv4 in `.status.networkStatus.natGatewaysIPs`: %q", ip)
 				}
 
-				if !slices.Contains(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr) {
-					flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
+				if !slices.Contains(flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr) {
+					flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
 				}
 			}
 
@@ -93,58 +90,106 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 					// We allow specifying an empty value `--control-plane-load-balancer-ingress-allow-cidr-block ""`
 					// to denote that only the management cluster's IPs should be allowed. Skip this value.
 				} else if net.IsIPv4CIDRString(cidr) {
-					flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
+					flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks = append(flagValues.Global.ControlPlane.LoadBalancerIngressAllowCIDRBlocks, cidr)
 				} else {
 					return fmt.Errorf("invalid CIDR (for single IPv4, please use `/32` suffix): %q", cidr)
 				}
 			}
 		}
 
-		if config.AWS.ClusterType == "proxy-private" {
-			subnetCountLimit := 0
-			subnetCount := len(config.AWS.MachinePool.AZs)
-			if subnetCount == 0 {
-				subnetCountLimit = 4
-				subnetCount = config.AWS.NetworkAZUsageLimit
-			} else {
-				subnetCountLimit = findNextPowerOfTwo(subnetCount)
-			}
-
+		if config.AWS.NetworkVPCCIDR != "" {
 			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
-			subnets, err := c.SubNetting(cidr.MethodSubnetNum, subnetCountLimit)
+
+			subnetCount := config.AWS.NetworkAZUsageLimit
+
+			//I cluster has public subnets, first split will be used for the public subnets, the last 3 splits for private subnets
+			//if cluster has only private subnets, all 4 splits will be used for private subnets
+			cidrSplit, err := c.SubNetting(cidr.MethodSubnetNum, 4)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			flagValues.Connectivity.Subnets = []capa.Subnet{
+			//initialize the subnet structure, there will always be private subnets
+			flagValues.Global.Connectivity.Subnets = []capa.Subnet{
 				{
+					IsPublic:   false,
 					CidrBlocks: []capa.CIDRBlock{},
 				},
 			}
 
-			for i := 0; i < subnetCount; i++ {
-				flagValues.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
-					CIDR:             subnets[i].CIDR().String(),
-					AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
-				})
+			//if cluster has public subnets, we use splits 1 for public subnets and 2,3,4 for private subnets
+			privateCidrSplitStart := 1
+			if config.AWS.ClusterType == ProxyPrivateType {
+				//if cluster has only private subnets we use all 4 splits
+				privateCidrSplitStart = 0
 			}
 
+			privateSubnetCount := 0
+			// loop over the private subnet splits in order to generate the required amount of private subnets
+			for j := privateCidrSplitStart; j < 4 && privateSubnetCount < subnetCount; j++ {
+				ones, _ := cidrSplit[j].MaskSize()
+
+				//divide the current split in blocks with the size of the private subnet mask
+				availablePrivateSubnetSplits, err := cidrSplit[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetMask-ones))))
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				//while there is space in the current split, generate private subnets
+				for k := 0; k < len(availablePrivateSubnetSplits) && privateSubnetCount < subnetCount; k++ {
+					flagValues.Global.Connectivity.Subnets[0].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[0].CidrBlocks, capa.CIDRBlock{
+						CIDR:             availablePrivateSubnetSplits[k].CIDR().String(),
+						AvailabilityZone: string(rune('a' + privateSubnetCount)), // Adjusted to start from 'a' for each subnet
+					})
+					privateSubnetCount++
+				}
+			}
+
+			if config.AWS.ClusterType != ProxyPrivateType {
+
+				//initialize public subnets in the cluster structure
+				flagValues.Global.Connectivity.Subnets = append(flagValues.Global.Connectivity.Subnets, capa.Subnet{
+					IsPublic:   true,
+					CidrBlocks: []capa.CIDRBlock{},
+				})
+
+				//always use the first split for public subnets
+				ones, _ := cidrSplit[0].MaskSize()
+
+				//divide the current split in blocks with the size of the public subnet mask
+				availablePublicSubnets, err := cidrSplit[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				//generate public subnets
+				for i := 0; i < subnetCount; i++ {
+					flagValues.Global.Connectivity.Subnets[1].CidrBlocks = append(flagValues.Global.Connectivity.Subnets[1].CidrBlocks, capa.CIDRBlock{
+						CIDR:             availablePublicSubnets[i].CIDR().String(),
+						AvailabilityZone: string(rune('a' + i)), // generate `a`, `b`, etc. based on which index we're at
+					})
+				}
+			}
+
+		}
+
+		if config.AWS.ClusterType == ProxyPrivateType {
 			httpProxy := config.AWS.HttpsProxy
 			if config.AWS.HttpProxy != "" {
 				httpProxy = config.AWS.HttpProxy
 			}
-			flagValues.Connectivity.Proxy = &capa.Proxy{
+			flagValues.Global.Connectivity.Proxy = &capa.Proxy{
 				Enabled:    true,
 				HttpsProxy: config.AWS.HttpsProxy,
 				HttpProxy:  httpProxy,
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
-			flagValues.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
-			flagValues.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
-			flagValues.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
-			flagValues.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
+			flagValues.Global.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
+			flagValues.Global.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
+			flagValues.Global.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
+			flagValues.Global.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
+			flagValues.Global.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
 		}
 
 		configData, err := capa.GenerateClusterValues(flagValues)
@@ -172,22 +217,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 	var appYAML []byte
 	{
-		appVersion := config.App.ClusterVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterAWSRepoName, config.App.ClusterCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterAWSRepoName,
 			Namespace:               organizationNamespace(config.Organization),
-			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 		}
 
@@ -209,114 +244,40 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
 	return capa.ClusterConfig{
-		Metadata: &capa.Metadata{
-			Name:         config.Name,
-			Description:  config.Description,
-			Organization: config.Organization,
-		},
-		ProviderSpecific: &capa.ProviderSpecific{
-			Region:                     config.Region,
-			AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
-		},
-		Connectivity: &capa.Connectivity{
-			AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
-			Bastion: &capa.Bastion{
-				Enabled:      true,
-				InstanceType: config.BastionInstanceType,
-				Replicas:     config.BastionReplicas,
+		Global: &capa.Global{
+			Connectivity: &capa.Connectivity{
+				AvailabilityZoneUsageLimit: config.AWS.NetworkAZUsageLimit,
+				Network: &capa.Network{
+					VPCCIDR: config.AWS.NetworkVPCCIDR,
+				},
+				Topology: &capa.Topology{},
 			},
-			Network: &capa.Network{
-				VPCCIDR: config.AWS.NetworkVPCCIDR,
+			ControlPlane: &capa.ControlPlane{
+				InstanceType: config.ControlPlaneInstanceType,
 			},
-			Topology: &capa.Topology{},
-		},
-		ControlPlane: &capa.ControlPlane{
-			InstanceType: config.ControlPlaneInstanceType,
-		},
-		NodePools: &map[string]capa.MachinePool{
-			config.AWS.MachinePool.Name: {
-				AvailabilityZones: config.AWS.MachinePool.AZs,
-				InstanceType:      config.AWS.MachinePool.InstanceType,
-				MinSize:           config.AWS.MachinePool.MinSize,
-				MaxSize:           config.AWS.MachinePool.MaxSize,
-				RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
-				CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
+			Metadata: &capa.Metadata{
+				Name:            config.Name,
+				Description:     config.Description,
+				Organization:    config.Organization,
+				PreventDeletion: config.PreventDeletion,
+			},
+			NodePools: &map[string]capa.MachinePool{
+				config.AWS.MachinePool.Name: {
+					AvailabilityZones: config.AWS.MachinePool.AZs,
+					InstanceType:      config.AWS.MachinePool.InstanceType,
+					MinSize:           config.AWS.MachinePool.MinSize,
+					MaxSize:           config.AWS.MachinePool.MaxSize,
+					RootVolumeSizeGB:  config.AWS.MachinePool.RootVolumeSizeGB,
+					CustomNodeLabels:  config.AWS.MachinePool.CustomNodeLabels,
+				},
+			},
+			ProviderSpecific: &capa.ProviderSpecific{
+				Region:                     config.Region,
+				AWSClusterRoleIdentityName: config.AWS.AWSClusterRoleIdentityName,
+			},
+			Release: &capa.Release{
+				Version: config.ReleaseVersion,
 			},
 		},
 	}
-}
-
-func templateDefaultAppsCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
-	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := userConfigMapName(appName)
-
-	var configMapYAML []byte
-	{
-		flagValues := capa.DefaultAppsConfig{
-			ClusterName:  config.Name,
-			Organization: config.Organization,
-		}
-
-		configData, err := capa.GenerateDefaultAppsValues(flagValues)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
-			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
-			Data:      configData,
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
-
-		configMapYAML, err = yaml.Marshal(userConfigMap)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var appYAML []byte
-	{
-		appVersion := config.App.DefaultAppsVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsAWSRepoName, config.App.DefaultAppsCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var err error
-		appYAML, err = templateapp.NewAppCR(templateapp.Config{
-			AppName:                 appName,
-			Cluster:                 config.Name,
-			Catalog:                 config.App.DefaultAppsCatalog,
-			DefaultingEnabled:       false,
-			InCluster:               true,
-			Name:                    DefaultAppsAWSRepoName,
-			Namespace:               organizationNamespace(config.Organization),
-			Version:                 appVersion,
-			UserConfigConfigMapName: configMapName,
-			UseClusterValuesConfig:  true,
-			ExtraLabels: map[string]string{
-				k8smetadata.ManagedBy: "cluster",
-			},
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err := t.Execute(output, templateapp.AppCROutput{
-		UserConfigConfigMap: string(configMapYAML),
-		AppCR:               string(appYAML),
-	})
-	return microerror.Mask(err)
 }

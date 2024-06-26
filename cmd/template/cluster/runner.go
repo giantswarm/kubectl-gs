@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"sort"
@@ -124,13 +125,13 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 		Description:              r.flag.Description,
 		KubernetesVersion:        r.flag.KubernetesVersion,
 		ManagementCluster:        r.flag.ManagementCluster,
-		Name:                     r.flag.Name,
 		Organization:             r.flag.Organization,
 		PodsCIDR:                 r.flag.PodsCIDR,
 		ReleaseVersion:           r.flag.Release,
 		Namespace:                metav1.NamespaceDefault,
 		Region:                   r.flag.Region,
 		ServicePriority:          r.flag.ServicePriority,
+		PreventDeletion:          r.flag.PreventDeletion,
 
 		App:       r.flag.App,
 		AWS:       r.flag.AWS,
@@ -141,13 +142,20 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 		VSphere:   r.flag.VSphere,
 	}
 
-	if config.Name == "" {
-		generatedName, err := key.GenerateName()
+
+	if r.flag.GenerateName {
+		generatedName, err := key.GenerateName(true)
 		if err != nil {
 			return provider.ClusterConfig{}, microerror.Mask(err)
 		}
 
 		config.Name = generatedName
+	} else {
+		config.Name = r.flag.Name
+	}
+
+	if config.Name == "" {
+		return provider.ClusterConfig{}, errors.New("logic error in name assignment")
 	}
 
 	// Remove leading 'v' from release flag input.

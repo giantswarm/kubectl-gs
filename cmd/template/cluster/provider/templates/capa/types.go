@@ -1,17 +1,27 @@
 package capa
 
-type ClusterConfig struct {
+type Global struct {
 	Connectivity     *Connectivity           `json:"connectivity,omitempty"`
 	ControlPlane     *ControlPlane           `json:"controlPlane,omitempty"`
 	Metadata         *Metadata               `json:"metadata,omitempty"`
 	NodePools        *map[string]MachinePool `json:"nodePools,omitempty"`
 	ProviderSpecific *ProviderSpecific       `json:"providerSpecific,omitempty"`
+	Release          *Release                `json:"release,omitempty"`
+}
+
+type ClusterConfig struct {
+	Global *Global `json:"global,omitempty"`
 }
 
 type Metadata struct {
-	Name         string `json:"name,omitempty"`
-	Description  string `json:"description,omitempty"`
-	Organization string `json:"organization,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Organization    string `json:"organization,omitempty"`
+	PreventDeletion bool   `json:"preventDeletion,omitempty"`
+}
+
+type Release struct {
+	Version string `json:"version,omitempty"`
 }
 
 type DefaultAppsConfig struct {

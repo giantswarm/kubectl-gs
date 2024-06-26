@@ -27,6 +27,11 @@ type CallbackServer struct {
 	readHeaderTimeout time.Duration
 }
 
+// FallthroughResult is an intermediate result returned by the callback function that should be skipped
+type FallthroughResult struct {
+	Method string
+}
+
 func New(config Config) (*CallbackServer, error) {
 	var err error
 
@@ -68,6 +73,10 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 			result, err := callback(w, r)
 			if err != nil {
 				errorCh <- err
+				return
+			}
+
+			if _, ok := result.(FallthroughResult); ok {
 				return
 			}
 

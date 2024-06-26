@@ -10,14 +10,14 @@ import (
 )
 
 func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
-	if flagInputs.Connectivity.Topology.Mode != "" && flagInputs.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeGiantSwarmManaged && flagInputs.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeUserManaged && flagInputs.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeNone {
-		return "", fmt.Errorf("invalid topology mode value %q", flagInputs.Connectivity.Topology.Mode)
+	if flagInputs.Global.Connectivity.Topology.Mode != "" && flagInputs.Global.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeGiantSwarmManaged && flagInputs.Global.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeUserManaged && flagInputs.Global.Connectivity.Topology.Mode != gsannotation.NetworkTopologyModeNone {
+		return "", fmt.Errorf("invalid topology mode value %q", flagInputs.Global.Connectivity.Topology.Mode)
 	}
-	if flagInputs.Connectivity.Topology.PrefixListID != "" && !strings.HasPrefix(flagInputs.Connectivity.Topology.PrefixListID, "pl-") {
-		return "", fmt.Errorf("invalid AWS prefix list ID %q", flagInputs.Connectivity.Topology.PrefixListID)
+	if flagInputs.Global.Connectivity.Topology.PrefixListID != "" && !strings.HasPrefix(flagInputs.Global.Connectivity.Topology.PrefixListID, "pl-") {
+		return "", fmt.Errorf("invalid AWS prefix list ID %q", flagInputs.Global.Connectivity.Topology.PrefixListID)
 	}
-	if flagInputs.Connectivity.Topology.TransitGatewayID != "" && !strings.HasPrefix(flagInputs.Connectivity.Topology.TransitGatewayID, "tgw-") {
-		return "", fmt.Errorf("invalid AWS transit gateway ID %q", flagInputs.Connectivity.Topology.TransitGatewayID)
+	if flagInputs.Global.Connectivity.Topology.TransitGatewayID != "" && !strings.HasPrefix(flagInputs.Global.Connectivity.Topology.TransitGatewayID, "tgw-") {
+		return "", fmt.Errorf("invalid AWS transit gateway ID %q", flagInputs.Global.Connectivity.Topology.TransitGatewayID)
 	}
 
 	var flagConfigData map[string]interface{}
@@ -34,7 +34,11 @@ func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
 		}
 	}
 
-	finalConfigString, err := yaml.Marshal(flagInputs)
+	if metadata, ok := flagConfigData["global"].(map[string]interface{})["metadata"].(map[string]interface{}); ok {
+		metadata["preventDeletion"] = flagInputs.Global.Metadata.PreventDeletion
+	}
+
+	finalConfigString, err := yaml.Marshal(flagConfigData)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

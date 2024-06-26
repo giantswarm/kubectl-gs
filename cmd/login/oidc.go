@@ -37,7 +37,7 @@ var (
 )
 
 // handleOIDC executes the OIDC authentication against an installation's authentication provider.
-func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, host string, port int, oidcResultTimeout time.Duration) (authInfo, error) {
+func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, internalAPI bool, host string, port int, oidcResultTimeout time.Duration) (authInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, oidcResultTimeout)
 	defer cancel()
 
@@ -108,11 +108,25 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		authResult.clientID = clientID
 	}
 
+	var apiServerURL string
+	{
+		if internalAPI {
+			apiServerURL = i.K8sInternalApiURL
+		} else {
+			apiServerURL = i.K8sApiURL
+		}
+	}
+
+	caData := []byte(i.CACert)
+	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+	if err != nil {
+		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
+	}
 	return authResult, nil
 }
 
 // handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
-func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo, error) {
+func handleDeviceFlowOIDC(out io.Writer, errOut io.Writer, i *installation.Installation, internalAPI bool) (authInfo, error) {
 	auther := oidc.NewDeviceAuthenticator(clientID, i)
 
 	deviceCodeData, err := auther.LoadDeviceCode()
@@ -127,18 +141,41 @@ func handleDeviceFlowOIDC(out io.Writer, i *installation.Installation) (authInfo
 		return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
 	}
 
-	return authInfo{
+	authResult := authInfo{
 		username:     fmt.Sprintf("%s-device", userName),
 		token:        deviceTokenData.IdToken,
 		refreshToken: deviceTokenData.RefreshToken,
 		clientID:     clientID,
-	}, nil
+	}
+	var apiServerURL string
+	{
+		if internalAPI {
+			apiServerURL = i.K8sInternalApiURL
+		} else {
+			apiServerURL = i.K8sApiURL
+		}
+	}
+
+	caData := []byte(i.CACert)
+
+	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+	if err != nil {
+		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
+	}
+	return authResult, nil
 }
 
 // handleOIDCCallback is the callback executed after the authentication response was
 // received from the authentication provider.
 func handleOIDCCallback(ctx context.Context, a *oidc.Authenticator) func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	return func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+		// Handle any additional requests the browser makes (e.g. OPTIONS), otherwise the authentication process will fail
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			return callbackserver.FallthroughResult{Method: r.Method}, nil
+		}
+
+		// Handle GET request with the token
 		res, err := a.HandleIssuerResponse(ctx, r.URL.Query().Get("state"), r.URL.Query().Get("code"))
 		if err != nil {
 			failureTemplate, tErr := template.GetFailedHTMLTemplateReader()

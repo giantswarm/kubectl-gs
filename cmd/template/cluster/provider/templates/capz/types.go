@@ -1,6 +1,10 @@
 package capz
 
 type ClusterConfig struct {
+	Global *Global `json:"global,omitempty"`
+}
+
+type Global struct {
 	Connectivity     *Connectivity     `json:"connectivity,omitempty"`
 	ControlPlane     *ControlPlane     `json:"controlPlane,omitempty"`
 	Metadata         *Metadata         `json:"metadata,omitempty"`
@@ -8,9 +12,10 @@ type ClusterConfig struct {
 }
 
 type Metadata struct {
-	Name         string `json:"name,omitempty"`
-	Description  string `json:"description,omitempty"`
-	Organization string `json:"organization,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Description     string `json:"description,omitempty"`
+	Organization    string `json:"organization,omitempty"`
+	PreventDeletion bool   `json:"preventDeletion,omitempty"`
 }
 
 type DefaultAppsConfig struct {

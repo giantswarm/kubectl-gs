@@ -1,6 +1,8 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@6.17.1
+#    devctl
+#
+#    https://github.com/giantswarm/devctl/blob/d1e2552bd9e4ea8a8a87f8122b7dcfd1d82c707f/pkg/gen/input/makefile/internal/file/Makefile.gen.go.mk.template
 #
 
 PACKAGE_DIR    := ./bin-dist

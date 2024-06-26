@@ -106,10 +106,13 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 func BuildEKSClusterConfig(config ClusterConfig) eks.ClusterConfig {
 	return eks.ClusterConfig{
-		Metadata: &eks.Metadata{
-			Name:         config.Name,
-			Description:  config.Description,
-			Organization: config.Organization,
+		Global: &eks.Global{
+			Metadata: &eks.Metadata{
+				Name:            config.Name,
+				Description:     config.Description,
+				Organization:    config.Organization,
+				PreventDeletion: config.PreventDeletion,
+			},
 		},
 	}
 }

@@ -12,13 +12,116 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Remove deprecated `--enable-long-name` flag
 
 ### Changed
-- Changed the length of random generated cluster names to `10`
+
+- CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
+
+## [2.57.0] - 2024-06-21
+
+### Added
+
+- Support unified cluster-azure app. With cluster-azure v0.14.0 and newer, default apps are deployed with cluster-azure and default-apps-azure app is not deployed anymore.
+- Added `--prevent-deletion` flag to cluster template command for capa, capa-eks, capz clusters
+
+## [2.56.0] - 2024-06-10
+
+### Added
+
+- Allow `kubectl gs update app` to update App CR to any version from any catalog.
+- Also add `--suspend` flag to manage Flux App reconciliation.
+
+### Changed
+
+- **BREAKING** `kubectl gs template cluster` for Cluster API provider vSphere has been adapted to work with the values schema of `cluster-vsphere` v0.52.0.
+
+## [2.55.0] - 2024-05-14
+
+### Added
+
+- Support unified cluster-aws app. With cluster-aws v0.76.0 and newer, default apps are deployed with cluster-aws and default-apps-aws app is not deployed anymore.
+
+## [2.54.0] - 2024-05-09
+
+### Changed
+
+- Default value for CAPA Node Pool `rootVolumeSizeGB` was decreased from `300` to `8`.
+
+## [2.53.0] - 2024-04-23
+
+### Changed
+
+- **BREAKING** `kubectl gs template cluster` for Cluster API provider Azure has been adapted to work with the values schema of `cluster-azure` v0.7.0.
+
+## [2.52.3] - 2024-04-23
+
+### Changed
+
+- Make error message actionable in case `kubectl gs template cluster` fails because the user did not log into, or point to, the management cluster
+- Support internal api URLs in `kubectl gs login` id token verification
+- Print a warning in case `kubectl gs login` id token verification fails but don't fail the command
+
+## [2.52.2] - 2024-03-26
+
+### Added
+
+- Add `kubectl gs get nodepools` for CAPA,CAPZ,CAPV,EKS and CAPVCD.
+- Add validation of ID token retrieved from OIDC provider during `kubectl gs login`
+
+### Changed
+
+- Errors during update checks no longer interrupt the command execution.
+- Fix authentication failure in case the browser sends multiple requests to the callback server during the `login` command execution
+
+## [2.52.1] - 2024-02-01
+
+No significant changes compared to v2.52.0. This release was made to ensure the proper distribution to all channels, which failed with the last release.
+
+## [2.52.0] - 2024-01-25
+
+### Added
+
+- Allow subnet generation customization for CAPA clusters.
+
+## [2.51.0] - 2024-01-10
+
+### Changed
+
+- Remove bastion section for generating CAPA cluster manifests.
+
+## [2.50.1] - 2023-12-13
+
+### Changed
+
+- Update values schema for generating EKS cluster.
+
+## [2.50.0] - 2023-12-12
+
+### Breaking changes
+
+- `kubectl gs template cluster`: Either `--name` or new `--generated-name` parameter is now required for CAPI cluster names. We kept the CLI backward-compatible for vintage, so if none of these parameters is specified, the old default of generating a random name still applies and no error is thrown.
+
+## [2.49.1] - 2023-12-06
+
+## [2.49.0] - 2023-12-05
+
+### Changed
+
+- **BREAKING** All values of cluster userconfig for `CAPA` are moving under `global`.
+
+## [2.48.1] - 2023-11-30
+
+### Changed
+
+- Changed the length of randomly-generated cluster names to 10
 
 ## [2.48.0] - 2023-11-29
 
 ### Added
 
 - Add support for device authentication flow in the `login` command and a new `--device-auth` flag to activate it.
+
+### Fixed
+
+- Fix storage of separate kubeconfig file (`--self-contained`) for EKS workload clusters
 
 ## [2.47.1] - 2023-11-15
 
@@ -1386,7 +1489,22 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...HEAD
+[2.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...v2.57.0
+[2.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...v2.56.0
+[2.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.54.0...v2.55.0
+[2.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.53.0...v2.54.0
+[2.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.3...v2.53.0
+[2.52.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.2...v2.52.3
+[2.52.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.1...v2.52.2
+[2.52.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.0...v2.52.1
+[2.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.51.0...v2.52.0
+[2.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.1...v2.51.0
+[2.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.0...v2.50.1
+[2.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.1...v2.50.0
+[2.49.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.0...v2.49.1
+[2.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...v2.49.0
+[2.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.0...v2.48.1
 [2.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.1...v2.48.0
 [2.47.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...v2.47.1
 [2.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...v2.47.0

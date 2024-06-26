@@ -2,13 +2,15 @@
 
 # DO NOT EDIT. Generated with:
 #
-#    devctl@6.17.1
+#    devctl
+#
+#    https://github.com/giantswarm/devctl/blob/c1b5bc102e28d8733b8a2a9732af9801430aefff/pkg/gen/input/makefile/internal/file/windows-code-signing.sh.template
 #
 
 APPLICATION=$1
 VERSION=$2
 
-SIGNCODE_UTIL=quay.io/giantswarm/signcode-util:1.1.1
+SIGNCODE_UTIL=gsoci.azurecr.io/giantswarm/signcode-util:1.1.1
 
 echo "APPLICATION=${APPLICATION}"
 echo "VERSION=${VERSION}"

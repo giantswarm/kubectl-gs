@@ -125,6 +125,12 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 			if err != nil {
 				t.Fatal(err)
 			}
+		} else if r.URL.Path == "/version" {
+			w.Header().Set("Content-Type", "application/json")
+			_, err := io.WriteString(w, "{}")
+			if err != nil {
+				t.Fatal(err)
+			}
 		} else {
 			w.Header().Set("Content-Type", "application/json")
 			responseStr := strings.ReplaceAll(GetIssuerData(), "ISSUER", s.issuerURL)
@@ -223,10 +229,10 @@ func installationInfo(codename, issuer string) string {
 				"codename": "%s"
 			},
 			"kubernetes": {
-				"apiUrl": "https://anything.com:8080",
+				"apiUrl": "%s",
 				"authUrl": "%s",
 				"caCert": ""
 			}
 		}
-	}`, codename, issuer)
+	}`, codename, issuer, issuer)
 }

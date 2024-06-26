@@ -10,10 +10,10 @@ import (
 func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
 	var flagConfigData map[string]interface{}
 
-	if flagInputs.ProviderSpecific.Location == "" {
+	if flagInputs.Global.ProviderSpecific.Location == "" {
 		return "", fmt.Errorf("region is required (--region)")
 	}
-	if flagInputs.ProviderSpecific.SubscriptionID == "" {
+	if flagInputs.Global.ProviderSpecific.SubscriptionID == "" {
 		return "", fmt.Errorf("subscription ID is required for Azure (--azure-subscription-id)")
 	}
 
@@ -27,6 +27,10 @@ func GenerateClusterValues(flagInputs ClusterConfig) (string, error) {
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
+	}
+
+	if metadata, ok := flagConfigData["global"].(map[string]interface{})["metadata"].(map[string]interface{}); ok {
+		metadata["preventDeletion"] = flagInputs.Global.Metadata.PreventDeletion
 	}
 
 	finalConfigString, err := yaml.Marshal(flagInputs)

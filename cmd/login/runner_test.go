@@ -313,7 +313,7 @@ func TestLogin(t *testing.T) {
 					"codename",
 					"gs-codename",
 					"gs-codename-user-device",
-					"https://anything.com:8080",
+					issuer,
 					clientID,
 					"id-token",
 					issuer,
@@ -633,11 +633,11 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 
 func CreateTestInstallationWithIssuer(issuer string) *installation.Installation {
 	return &installation.Installation{
-		K8sApiURL:         "https://g8s.codename.eu-west-1.aws.gigantic.io",
+		K8sApiURL:         issuer,
 		K8sInternalApiURL: "https://g8s.codename.internal.eu-west-1.aws.gigantic.io",
 		AuthURL:           issuer,
 		Provider:          "aws",
 		Codename:          "codename",
-		CACert:            "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----",
+		CACert:            "",
 	}
 }

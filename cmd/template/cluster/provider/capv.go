@@ -115,56 +115,44 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 	const className = "default"
 	cfg := capv.ClusterConfig{
-		BaseDomain:         "test.gigantic.io",
-		ClusterDescription: config.Description,
-		Organization:       config.Organization,
-		Cluster: &capv.Cluster{
-			KubernetesVersion:        config.KubernetesVersion,
-			EnableEncryptionProvider: false,
-		},
-		Connectivity: &capv.Connectivity{
-			Network: &capv.Network{
-				AllowAllEgress: true,
-				ControlPlaneEndpoint: &capv.ControlPlaneEndpoint{
-					Host:       config.VSphere.ControlPlane.Ip,
-					IpPoolName: config.VSphere.ControlPlane.IpPoolName,
-					Port:       6443,
-				},
-				LoadBalancers: &capv.LoadBalancers{
-					IpPoolName: config.VSphere.SvcLbIpPoolName,
+		Global: &capv.Global{
+			Connectivity: &capv.Connectivity{
+				BaseDomain: "test.gigantic.io",
+				Network: &capv.Network{
+					ControlPlaneEndpoint: &capv.ControlPlaneEndpoint{
+						Host:       config.VSphere.ControlPlane.Ip,
+						IpPoolName: config.VSphere.ControlPlane.IpPoolName,
+						Port:       6443,
+					},
+					LoadBalancers: &capv.LoadBalancers{
+						IpPoolName: config.VSphere.SvcLbIpPoolName,
+					},
 				},
 			},
-		},
-		ControlPlane: &capv.ControlPlane{
-			Replicas: config.VSphere.ControlPlane.Replicas,
-			Image: &capv.Image{
-				Repository: "registry.k8s.io",
+			ControlPlane: &capv.ControlPlane{
+				Replicas: config.VSphere.ControlPlane.Replicas,
+				Image: &capv.Image{
+					Repository: "gsoci.azurecr.io/giantswarm",
+				},
+				MachineTemplate: getMachineTemplate(&config.VSphere.ControlPlane.VSphereMachineTemplate, &config),
 			},
-			MachineTemplate: getMachineTemplate(&config.VSphere.ControlPlane.VSphereMachineTemplate, &config),
-		},
-		NodeClasses: map[string]*capv.MachineTemplate{
-			className: getMachineTemplate(&config.VSphere.Worker, &config),
-		},
-		NodePools: map[string]*capv.NodePool{
-			"worker": {
-				Class:    className,
-				Replicas: config.VSphere.Worker.Replicas,
+			Metadata: &capv.Metadata{
+				Description:  config.Description,
+				Organization: config.Organization,
 			},
-		},
-		HelmReleases: &capv.HelmReleases{
-			Cilium: &capv.HelmRelease{
-				Interval: "20s",
+			NodeClasses: map[string]*capv.MachineTemplate{
+				className: getMachineTemplate(&config.VSphere.Worker, &config),
 			},
-			Cpi: &capv.HelmRelease{
-				Interval: "30s",
-			},
-			Coredns: &capv.HelmRelease{
-				Interval: "30s",
+			NodePools: map[string]*capv.NodePool{
+				"worker": {
+					Class:    className,
+					Replicas: config.VSphere.Worker.Replicas,
+				},
 			},
 		},
 	}
 	if config.VSphere.ServiceLoadBalancerCIDR != "" {
-		cfg.Connectivity.Network.LoadBalancers.CidrBlocks = []string{config.VSphere.ServiceLoadBalancerCIDR}
+		cfg.Global.Connectivity.Network.LoadBalancers.CidrBlocks = []string{config.VSphere.ServiceLoadBalancerCIDR}
 	}
 	return cfg
 }

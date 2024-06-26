@@ -6,35 +6,26 @@ data:
       connectivity:
         availabilityZoneUsageLimit: 2
         network:
-          vpcCidr: 10.123.0.0/16
-        proxy:
-          enabled: true
-          httpProxy: http://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
-          httpsProxy: https://internal-a1c90e5331e124481a14fb7ad80ae8eb-1778512673.eu-west-2.elb.amazonaws.com:4000
-          noProxy: test-domain.com
+          vpcCidr: 192.168.0.0/16
         subnets:
         - cidrBlocks:
           - availabilityZone: a
-            cidr: 10.123.0.0/18
+            cidr: 192.168.64.0/18
           - availabilityZone: b
-            cidr: 10.123.64.0/18
+            cidr: 192.168.128.0/18
           isPublic: false
-        topology:
-          mode: UserManaged
-          prefixListId: pl-123456789abc
-          transitGatewayId: tgw-987987987987def
-        vpcMode: private
+        - cidrBlocks:
+          - availabilityZone: a
+            cidr: 192.168.0.0/20
+          - availabilityZone: b
+            cidr: 192.168.16.0/20
+          isPublic: true
+        topology: {}
       controlPlane:
-        apiMode: public
         instanceType: control-plane-instance-type
-        loadBalancerIngressAllowCidrBlocks:
-        - 1.2.3.4/32
-        - 5.6.7.8/32
-        - 9.10.11.12/32
-        - 7.7.7.7/32
       metadata:
         description: just a test cluster
-        name: test1
+        name: test6
         organization: test
         preventDeletion: false
       nodePools:
@@ -49,7 +40,7 @@ data:
           minSize: 2
           rootVolumeSizeGB: 200
       providerSpecific:
-        awsClusterRoleIdentityName: other-identity
+        awsClusterRoleIdentityName: default
         region: the-region
       release:
         version: 25.0.0
@@ -57,8 +48,8 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   labels:
-    giantswarm.io/cluster: test1
-  name: test1-userconfig
+    giantswarm.io/cluster: test6
+  name: test6-userconfig
   namespace: org-test
 ---
 apiVersion: application.giantswarm.io/v1alpha1
@@ -66,7 +57,7 @@ kind: App
 metadata:
   labels:
     app-operator.giantswarm.io/version: 0.0.0
-  name: test1
+  name: test6
   namespace: org-test
 spec:
   catalog: the-catalog
@@ -88,6 +79,6 @@ spec:
   namespace: org-test
   userConfig:
     configMap:
-      name: test1-userconfig
+      name: test6-userconfig
       namespace: org-test
   version: ""
