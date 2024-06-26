@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Removed
 
-- Remove deprecated `--enable-long-name` flag
+- Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
 
 ### Changed
 
