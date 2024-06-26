@@ -7,10 +7,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/get/clusters/provider"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v3/cmd/get/clusters/provider"
+	"github.com/giantswarm/kubectl-gs/v3/internal/key"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
 )
 
 func (r *runner) printOutput(clusterResource cluster.Resource) error {

@@ -8,8 +8,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/app"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
 )
 
 func (r *runner) printOutput(appResource app.Resource) error {

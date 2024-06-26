@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v3/test/goldenfile"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")

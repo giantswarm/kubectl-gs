@@ -11,9 +11,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v3/test/goldenfile"
 )
 
 func Test_printOutput(t *testing.T) {

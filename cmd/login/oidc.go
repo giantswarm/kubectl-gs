@@ -14,10 +14,10 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/login/template"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/callbackserver"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v3/cmd/login/template"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/callbackserver"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/oidc"
 )
 
 const (

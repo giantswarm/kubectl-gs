@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/util"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v3/cmd/template/cluster/util"
+	"github.com/giantswarm/kubectl-gs/v3/internal/key"
 )
 
 type NetworkPoolCRsConfig struct {

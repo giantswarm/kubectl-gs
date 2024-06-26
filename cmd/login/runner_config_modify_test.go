@@ -33,8 +33,8 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	testoidc "github.com/giantswarm/kubectl-gs/v2/test/oidc"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/commonconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v3/test/oidc"
 )
 
 func TestKubeConfigModification(t *testing.T) {

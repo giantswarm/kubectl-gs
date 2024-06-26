@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	structure "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/workload-cluster"
-	commonkey "github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/workload-cluster"
+	commonkey "github.com/giantswarm/kubectl-gs/v3/internal/key"
 )
 
 type runner struct {
