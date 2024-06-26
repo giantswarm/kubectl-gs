@@ -401,7 +401,7 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 				flagName, flagGenerateName, flagName)
 		}
 
-		valid, err := key.ValidateName(f.Name, true)
+		valid, err := key.ValidateName(f.Name)
 		if err != nil {
 			return microerror.Mask(err)
 		} else if !valid {
