@@ -9,11 +9,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Removed
 
-- Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
+- **BREAKING** Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
 
 ### Changed
 
-- **BREAKING** CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
+- **BREAKING** When templating cluster manifests for CAPA clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag (like for vintage AWS), instead setting cluster-aws version via `--cluster-version`. 
 - Update module version to v3.
 
 ## [2.57.0] - 2024-06-21
