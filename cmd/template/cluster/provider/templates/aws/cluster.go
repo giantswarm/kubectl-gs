@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/v3/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 )
 
 const (

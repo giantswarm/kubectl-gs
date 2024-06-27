@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/kubeconfig"
 )
 
 type eksClusterConfig struct {

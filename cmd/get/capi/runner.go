@@ -16,7 +16,7 @@ import (
 	"k8s.io/cli-runtime/pkg/printers"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
 )
 
 const (

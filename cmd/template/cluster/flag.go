@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v3/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v3/internal/key"
-	"github.com/giantswarm/kubectl-gs/v3/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/labels"
 )
 
 const (

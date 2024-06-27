@@ -10,11 +10,11 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/common"
-	structure "github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/encryption"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/encryption"
 )
 
 type runner struct {

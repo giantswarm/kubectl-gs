@@ -14,10 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v3/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v3/internal/key"
-	"github.com/giantswarm/kubectl-gs/v3/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v3/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/labels"
 )
 
 type runner struct {

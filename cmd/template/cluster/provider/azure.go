@@ -18,8 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v3/internal/key"
-	"github.com/giantswarm/kubectl-gs/v3/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/scheme"
 )
 
 const (

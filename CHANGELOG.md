@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [3.0.0] - 2024-06-27
+
 ### Removed
 
 - **BREAKING** Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
@@ -1490,7 +1492,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...v3.0.0
 [2.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...v2.57.0
 [2.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.54.0...v2.55.0

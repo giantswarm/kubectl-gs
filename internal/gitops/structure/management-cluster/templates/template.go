@@ -3,7 +3,7 @@ package mgmtcluster
 import (
 	_ "embed"
 
-	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
 )
 
 //go:embed management-cluster.yaml.tmpl

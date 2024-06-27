@@ -7,13 +7,13 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
 
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/organization"
 )
 
 type PrintOptions struct {

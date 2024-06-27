@@ -17,10 +17,10 @@ import (
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
 
-	"github.com/giantswarm/kubectl-gs/v3/internal/key"
-	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v3/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v4/test/goldenfile"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")
