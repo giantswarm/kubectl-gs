@@ -1,4 +1,4 @@
-module github.com/giantswarm/kubectl-gs/v2
+module github.com/giantswarm/kubectl-gs/v3
 
 go 1.21
 
@@ -238,6 +238,7 @@ require (
 replace (
 	github.com/docker/docker => github.com/moby/moby v27.0.2+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.14.0
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.8.1

@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
 )
 
 type runner struct {

@@ -10,9 +10,9 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/oidc"
 )
 
 const (

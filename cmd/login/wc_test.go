@@ -34,11 +34,11 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	//nolint:staticcheck
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/internal/label"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
-	testoidc "github.com/giantswarm/kubectl-gs/v2/test/oidc"
+	"github.com/giantswarm/kubectl-gs/v3/internal/key"
+	"github.com/giantswarm/kubectl-gs/v3/internal/label"
+	"github.com/giantswarm/kubectl-gs/v3/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v3/test/kubeclient"
+	testoidc "github.com/giantswarm/kubectl-gs/v3/test/oidc"
 )
 
 func TestWCClientCert(t *testing.T) {

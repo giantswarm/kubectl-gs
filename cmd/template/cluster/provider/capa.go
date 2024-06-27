@@ -20,9 +20,9 @@ import (
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v3/cmd/template/cluster/provider/templates/capa"
+	"github.com/giantswarm/kubectl-gs/v3/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v3/pkg/template/app"
 )
 
 const (

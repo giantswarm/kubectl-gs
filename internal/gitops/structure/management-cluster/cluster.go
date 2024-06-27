@@ -5,13 +5,13 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier"
-	sopsmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/sops"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	mctmpl "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/management-cluster/templates"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/filesystem/modifier"
+	sopsmod "github.com/giantswarm/kubectl-gs/v3/internal/gitops/filesystem/modifier/sops"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/common"
+	mctmpl "github.com/giantswarm/kubectl-gs/v3/internal/gitops/structure/management-cluster/templates"
 )
 
 // NewManagementCluster creates a new Management Cluster directory
