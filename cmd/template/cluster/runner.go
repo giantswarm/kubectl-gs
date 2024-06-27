@@ -143,7 +143,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	}
 
 	if r.flag.GenerateName {
-		generatedName, err := key.GenerateName(true)
+		generatedName, err := key.GenerateName()
 		if err != nil {
 			return provider.ClusterConfig{}, microerror.Mask(err)
 		}
