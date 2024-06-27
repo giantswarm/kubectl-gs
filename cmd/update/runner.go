@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
 )
 
 type runner struct {

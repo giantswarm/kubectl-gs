@@ -8,7 +8,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/graphql"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/graphql"
 )
 
 const (

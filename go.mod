@@ -1,4 +1,4 @@
-module github.com/giantswarm/kubectl-gs/v3
+module github.com/giantswarm/kubectl-gs/v4
 
 go 1.21
 

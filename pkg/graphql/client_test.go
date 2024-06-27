@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	"github.com/giantswarm/kubectl-gs/v3/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v4/test/goldenfile"
 )
 
 var update = flag.Bool("update", false, "update .golden reference test files")

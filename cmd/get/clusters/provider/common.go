@@ -6,14 +6,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/cluster"
 )
 
 const (

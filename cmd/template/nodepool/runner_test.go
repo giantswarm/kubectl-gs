@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v3/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
 )
 
 func Test_run(t *testing.T) {

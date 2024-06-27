@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v3/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v4/test/goldenfile"
 )
 
 func Test_NewAppCR(t *testing.T) {
