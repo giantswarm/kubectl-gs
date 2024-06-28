@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPZ clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-azure version via `--cluster-version`. 
+
 ## [3.0.0] - 2024-06-27
 
 ### Removed
