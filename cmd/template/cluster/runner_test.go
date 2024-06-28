@@ -220,10 +220,11 @@ func Test_run(t *testing.T) {
 				Provider:                 "capz",
 				Description:              "just a test cluster",
 				Region:                   "northeurope",
+				Release:                  "25.0.0",
 				Organization:             "test",
 				ControlPlaneInstanceType: "B2s",
 				App: common.AppConfig{
-					ClusterVersion: "0.14.0",
+					ClusterVersion: "0.17.0",
 					ClusterCatalog: "the-catalog",
 				},
 				Azure: common.AzureConfig{

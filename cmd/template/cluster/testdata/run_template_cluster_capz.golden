@@ -16,6 +16,8 @@ data:
       providerSpecific:
         location: northeurope
         subscriptionId: 12345678-ebb8-4b1f-8f96-d950d9e7aaaa
+      release:
+        version: 25.0.0
 kind: ConfigMap
 metadata:
   creationTimestamp: null
@@ -53,4 +55,4 @@ spec:
     configMap:
       name: test1-userconfig
       namespace: org-test
-  version: 0.14.0
+  version: ""

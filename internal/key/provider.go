@@ -46,5 +46,6 @@ func PureCAPIProviders() []string {
 func CAPIProvidersUsingReleases() []string {
 	return []string{
 		ProviderCAPA,
+		ProviderCAPZ,
 	}
 }
