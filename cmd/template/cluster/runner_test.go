@@ -219,10 +219,11 @@ func Test_run(t *testing.T) {
 				Provider:                 "capz",
 				Description:              "just a test cluster",
 				Region:                   "northeurope",
+				Release:                  "25.0.0",
 				Organization:             "test",
 				ControlPlaneInstanceType: "B2s",
 				App: provider.AppConfig{
-					ClusterVersion: "0.14.0",
+					ClusterVersion: "",
 					ClusterCatalog: "the-catalog",
 				},
 				Azure: provider.AzureConfig{
@@ -231,28 +232,6 @@ func Test_run(t *testing.T) {
 			},
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capz.golden",
-		},
-		{
-			name: "case 5: template cluster capz pre unified apps",
-			flags: &flag{
-				Name:                     "test1",
-				Provider:                 "capz",
-				Description:              "just a test cluster",
-				Region:                   "northeurope",
-				Organization:             "test",
-				ControlPlaneInstanceType: "B2s",
-				App: provider.AppConfig{
-					ClusterVersion:     "0.13.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
-				},
-				Azure: provider.AzureConfig{
-					SubscriptionID: "12345678-ebb8-4b1f-8f96-d950d9e7aaaa",
-				},
-			},
-			args:               nil,
-			expectedGoldenFile: "run_template_cluster_capz_2.golden",
 		},
 		{
 			name: "case 6: template cluster capv",
