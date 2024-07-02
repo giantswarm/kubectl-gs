@@ -13,7 +13,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/installation"
 )
 
 const (

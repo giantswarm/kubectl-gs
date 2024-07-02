@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	structure "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/root"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
+	structure "github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/root"
 )
 
 type runner struct {

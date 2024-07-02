@@ -8,10 +8,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/feature"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v4/internal/feature"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
 )
 
 func GetCAPATable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {

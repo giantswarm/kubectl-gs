@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/update/app"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/update/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/update/app"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/update/cluster"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
 )
 
 const (

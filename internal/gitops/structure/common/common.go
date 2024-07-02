@@ -8,7 +8,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
 )
 
 // AppendFromTemplate add files from the given template to the

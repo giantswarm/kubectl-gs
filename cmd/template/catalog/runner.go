@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	templatecatalog "github.com/giantswarm/kubectl-gs/v2/pkg/template/catalog"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	templatecatalog "github.com/giantswarm/kubectl-gs/v4/pkg/template/catalog"
 )
 
 type runner struct {
@@ -43,7 +43,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var configMapYaml []byte
 	var secretYaml []byte
 
-	catalogID, err := key.GenerateName(false)
+	catalogID, err := key.GenerateName()
 	if err != nil {
 		return microerror.Mask(err)
 	}

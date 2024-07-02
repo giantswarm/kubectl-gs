@@ -14,10 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/labels"
 )
 
 type runner struct {
@@ -143,7 +143,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	}
 
 	if r.flag.GenerateName {
-		generatedName, err := key.GenerateName(true)
+		generatedName, err := key.GenerateName()
 		if err != nil {
 			return provider.ClusterConfig{}, microerror.Mask(err)
 		}

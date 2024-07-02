@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	capg "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/gcp"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
+	capg "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/gcp"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
 )
 
 const (

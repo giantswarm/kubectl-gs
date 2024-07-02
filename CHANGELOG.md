@@ -7,13 +7,21 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+
 ### Added
 
 - Added `--prevent-deletion` flag to cluster template command for capv clusters
 
+## [3.0.0] - 2024-06-27
+
+### Removed
+
+- **BREAKING** Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
+
 ### Changed
 
-- CAPA only change for new releases: render release version in config instead of cluster-aws version in App resource.
+- **BREAKING** When templating cluster manifests for CAPA clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag (like for vintage AWS), instead setting cluster-aws version via `--cluster-version`. 
+- Update module version to v3.
 
 ## [2.57.0] - 2024-06-21
 
@@ -1489,7 +1497,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...v3.0.0
 [2.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...v2.57.0
 [2.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.54.0...v2.55.0

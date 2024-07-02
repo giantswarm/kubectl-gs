@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/nodepool/provider"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/nodepool/provider"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
 )
 
 const (
@@ -68,7 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		if config.NodePoolName == "" {
-			generatedName, err := key.GenerateName(true)
+			generatedName, err := key.GenerateName()
 			if err != nil {
 				return microerror.Mask(err)
 			}

@@ -10,10 +10,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	structure "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/management-cluster"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/management-cluster"
 )
 
 const (

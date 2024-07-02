@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/afero"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/modifier"
 )
 
 const (

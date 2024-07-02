@@ -7,25 +7,25 @@ import (
 
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
-	templateapp "github.com/giantswarm/kubectl-gs/v2/pkg/template/app"
+	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capv"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capz"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/openstack"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/base"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capv"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capz"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/openstack"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/base"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 
-	providers "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/capa"
-	capg "github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/gcp"
+	providers "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capa"
+	capg "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/gcp"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
 )
 
 type runner struct {

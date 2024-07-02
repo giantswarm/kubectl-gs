@@ -1,13 +1,13 @@
 package encryption
 
 import (
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier"
-	fluxkusmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/flux-kustomization"
-	secmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/secret"
-	sopsmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/sops"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/modifier"
+	fluxkusmod "github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/modifier/flux-kustomization"
+	secmod "github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/modifier/secret"
+	sopsmod "github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/modifier/sops"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
 )
 
 const (

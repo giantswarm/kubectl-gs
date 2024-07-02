@@ -19,10 +19,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
-	testoidc "github.com/giantswarm/kubectl-gs/v2/test/oidc"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v4/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v4/test/kubeconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v4/test/oidc"
 )
 
 func TestLogin(t *testing.T) {
