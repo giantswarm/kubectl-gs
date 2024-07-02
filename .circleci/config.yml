@@ -6,7 +6,7 @@ orbs:
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2024.06
+      - image: cimg/base:2024.07
     steps:
       - checkout
       - run: |
