@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+
+### Added
+
+- Added `--prevent-deletion` flag to cluster template command for capv clusters
+
 ## [3.0.0] - 2024-06-27
 
 ### Removed
