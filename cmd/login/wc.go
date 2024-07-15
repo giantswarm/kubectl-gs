@@ -180,7 +180,7 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 	}
 
 	// for EKS the kubeconfig cannot be client-cert as it uses aws authentication
-	// for the rest of WC cluster client-cert kubeconfig will be generated
+	// for the rest of workload cluster client-cert kubeconfig will be generated
 	if isEKS(c.Cluster) {
 		contextName, contextExists, err = r.createEKSKubeconfig(ctx, client, c)
 		if err != nil {
