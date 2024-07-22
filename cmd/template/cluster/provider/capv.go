@@ -14,6 +14,7 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capv"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
@@ -24,7 +25,7 @@ const (
 	ClusterVsphereRepoName     = "cluster-vsphere"
 )
 
-func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	err := templateClusterVSphere(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -34,9 +35,9 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, outpu
 	return microerror.Mask(err)
 }
 
-func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -49,7 +50,7 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -70,7 +71,7 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterVsphereRepoName, config.App.ClusterCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), ClusterVsphereRepoName, config.App.ClusterCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -89,7 +90,7 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterVsphereRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 			UserConfigSecretName:    config.VSphere.CredentialsSecretName,
@@ -112,7 +113,7 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 	return microerror.Mask(err)
 }
 
-func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
+func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 	const className = "default"
 	cfg := capv.ClusterConfig{
 		Global: &capv.Global{
@@ -158,7 +159,7 @@ func BuildCapvClusterConfig(config ClusterConfig) capv.ClusterConfig {
 	return cfg
 }
 
-func getMachineTemplate(machineTemplate *VSphereMachineTemplate, clusterConfig *ClusterConfig) *capv.MachineTemplate {
+func getMachineTemplate(machineTemplate *common.VSphereMachineTemplate, clusterConfig *common.ClusterConfig) *capv.MachineTemplate {
 	config := clusterConfig.VSphere
 	commonNetwork := &capv.MTNetwork{
 		Devices: []*capv.MTDevice{
@@ -179,9 +180,9 @@ func getMachineTemplate(machineTemplate *VSphereMachineTemplate, clusterConfig *
 	}
 }
 
-func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -197,7 +198,7 @@ func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interfa
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -218,7 +219,7 @@ func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interfa
 		appVersion := config.App.DefaultAppsVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsVsphereRepoName, config.App.DefaultAppsCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsVsphereRepoName, config.App.DefaultAppsCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -232,7 +233,7 @@ func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interfa
 			DefaultingEnabled:       false,
 			InCluster:               true,
 			Name:                    DefaultAppsVsphereRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 			UseClusterValuesConfig:  true,

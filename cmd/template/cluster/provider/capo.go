@@ -11,12 +11,13 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
 )
 
-func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	err := templateClusterOpenstack(ctx, k8sClient, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -26,7 +27,7 @@ func WriteOpenStackTemplate(ctx context.Context, k8sClient k8sclient.Interface, 
 	return microerror.Mask(err)
 }
 
-func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
 	configMapName := fmt.Sprintf("%s-cluster-userconfig", appName)
 
@@ -74,7 +75,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "cluster-openstack", config.App.ClusterCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), "cluster-openstack", config.App.ClusterCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -106,7 +107,7 @@ func templateClusterOpenstack(ctx context.Context, k8sClient k8sclient.Interface
 	return microerror.Mask(err)
 }
 
-func BuildCapoClusterConfig(config ClusterConfig, controlPlaneReplicas int) openstack.ClusterConfig {
+func BuildCapoClusterConfig(config common.ClusterConfig, controlPlaneReplicas int) openstack.ClusterConfig {
 	return openstack.ClusterConfig{
 		ClusterDescription: config.Description,
 		ClusterName:        config.Name,
@@ -144,7 +145,7 @@ func BuildCapoClusterConfig(config ClusterConfig, controlPlaneReplicas int) open
 	}
 }
 
-func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
 	configMapName := fmt.Sprintf("%s-userconfig", appName)
 
@@ -180,7 +181,7 @@ func templateDefaultAppsOpenstack(ctx context.Context, k8sClient k8sclient.Inter
 		appVersion := config.App.DefaultAppsVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), "default-apps-openstack", config.App.DefaultAppsCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), "default-apps-openstack", config.App.DefaultAppsCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}

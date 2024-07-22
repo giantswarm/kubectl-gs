@@ -7,10 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-
 ### Added
 
-- Added `--prevent-deletion` flag to cluster template command for capv clusters
+- Add `--prevent-deletion` flag to cluster template command for capv clusters
+- Helpful error messages for invalid subnet split parameters of CAPA private clusters
 
 ## [3.0.0] - 2024-06-27
 
@@ -20,7 +20,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- **BREAKING** When templating cluster manifests for CAPA clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag (like for vintage AWS), instead setting cluster-aws version via `--cluster-version`. 
+- **BREAKING** When templating cluster manifests for CAPA clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag (like for vintage AWS), instead setting cluster-aws version via `--cluster-version`.
 - Update module version to v3.
 
 ## [2.57.0] - 2024-06-21

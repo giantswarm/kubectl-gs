@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/flags"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
@@ -22,7 +24,7 @@ import (
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
-	flag         *flag
+	flag         *flags.Flag
 	logger       micrologger.Logger
 	stdout       io.Writer
 	stderr       io.Writer
@@ -118,8 +120,8 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 	return nil
 }
 
-func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
-	config := provider.ClusterConfig{
+func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
+	config := common.ClusterConfig{
 		ControlPlaneAZ:           r.flag.ControlPlaneAZ,
 		ControlPlaneInstanceType: r.flag.ControlPlaneInstanceType,
 		Description:              r.flag.Description,
@@ -145,7 +147,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	if r.flag.GenerateName {
 		generatedName, err := key.GenerateName()
 		if err != nil {
-			return provider.ClusterConfig{}, microerror.Mask(err)
+			return common.ClusterConfig{}, microerror.Mask(err)
 		}
 
 		config.Name = generatedName
@@ -154,7 +156,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	}
 
 	if config.Name == "" {
-		return provider.ClusterConfig{}, errors.New("logic error in name assignment")
+		return common.ClusterConfig{}, errors.New("logic error in name assignment")
 	}
 
 	// Remove leading 'v' from release flag input.
@@ -163,7 +165,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	var err error
 	config.Labels, err = labels.Parse(r.flag.Label)
 	if err != nil {
-		return provider.ClusterConfig{}, microerror.Mask(err)
+		return common.ClusterConfig{}, microerror.Mask(err)
 	}
 
 	if r.flag.Provider != key.ProviderAWS {

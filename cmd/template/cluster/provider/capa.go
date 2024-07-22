@@ -20,6 +20,8 @@ import (
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/flags"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
@@ -32,7 +34,7 @@ const (
 	ProxyPrivateType       = "proxy-private"
 )
 
-func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	err := templateClusterCAPA(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -41,9 +43,9 @@ func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output i
 	return nil
 }
 
-func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	if config.AWS.MachinePool.AZs == nil || len(config.AWS.MachinePool.AZs) == 0 {
 		config.AWS.MachinePool.AZs = config.ControlPlaneAZ
@@ -98,7 +100,10 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		}
 
 		if config.AWS.NetworkVPCCIDR != "" {
-			c, _ := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			c, err := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			if err != nil {
+				return fmt.Errorf("failed to parse VPC CIDR %q: %w", config.AWS.NetworkVPCCIDR, err)
+			}
 
 			subnetCount := config.AWS.NetworkAZUsageLimit
 
@@ -106,7 +111,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			//if cluster has only private subnets, all 4 splits will be used for private subnets
 			cidrSplit, err := c.SubNetting(cidr.MethodSubnetNum, 4)
 			if err != nil {
-				return microerror.Mask(err)
+				return fmt.Errorf("failed to split VPC CIDR %q into 4 subnets: %w", config.AWS.NetworkVPCCIDR, err)
 			}
 
 			//initialize the subnet structure, there will always be private subnets
@@ -129,10 +134,14 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			for j := privateCidrSplitStart; j < 4 && privateSubnetCount < subnetCount; j++ {
 				ones, _ := cidrSplit[j].MaskSize()
 
+				if config.AWS.PrivateSubnetMask < ones {
+					return fmt.Errorf("failed to split VPC CIDR %q into subnets because subsplit of private subnet %q failed: you must specify a smaller private subnet size than `/%d` i.e. larger value for --%s)", config.AWS.NetworkVPCCIDR, cidrSplit[j].CIDR(), config.AWS.PrivateSubnetMask, flags.FlagAWSPrivateSubnetMask)
+				}
+
 				//divide the current split in blocks with the size of the private subnet mask
 				availablePrivateSubnetSplits, err := cidrSplit[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetMask-ones))))
 				if err != nil {
-					return microerror.Mask(err)
+					return fmt.Errorf("failed to split VPC CIDR %q into subnets because subsplit of private subnet %q failed (using specified private subnet size `/%d`): %w", config.AWS.NetworkVPCCIDR, cidrSplit[j].CIDR(), config.AWS.PrivateSubnetMask, err)
 				}
 
 				//while there is space in the current split, generate private subnets
@@ -185,9 +194,9 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				NoProxy:    config.AWS.NoProxy,
 			}
 
-			flagValues.Global.ControlPlane.APIMode = defaultTo(config.AWS.APIMode, ModePrivate)
-			flagValues.Global.Connectivity.VPCMode = defaultTo(config.AWS.VPCMode, ModePrivate)
-			flagValues.Global.Connectivity.Topology.Mode = defaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
+			flagValues.Global.ControlPlane.APIMode = common.DefaultTo(config.AWS.APIMode, ModePrivate)
+			flagValues.Global.Connectivity.VPCMode = common.DefaultTo(config.AWS.VPCMode, ModePrivate)
+			flagValues.Global.Connectivity.Topology.Mode = common.DefaultTo(config.AWS.TopologyMode, gsannotation.NetworkTopologyModeGiantSwarmManaged)
 			flagValues.Global.Connectivity.Topology.PrefixListID = config.AWS.PrefixListID
 			flagValues.Global.Connectivity.Topology.TransitGatewayID = config.AWS.TransitGatewayID
 		}
@@ -199,7 +208,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -222,7 +231,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterAWSRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			UserConfigConfigMapName: configMapName,
 		}
 
@@ -242,7 +251,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 	return microerror.Mask(err)
 }
 
-func BuildCapaClusterConfig(config ClusterConfig) capa.ClusterConfig {
+func BuildCapaClusterConfig(config common.ClusterConfig) capa.ClusterConfig {
 	return capa.ClusterConfig{
 		Global: &capa.Global{
 			Connectivity: &capa.Connectivity{

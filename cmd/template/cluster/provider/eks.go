@@ -12,6 +12,7 @@ import (
 
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capa"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/eks"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
@@ -23,7 +24,7 @@ const (
 	ClusterEKSRepoName     = "cluster-eks"
 )
 
-func WriteEKSTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func WriteEKSTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	err := templateClusterEKS(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -37,9 +38,9 @@ func WriteEKSTemplate(ctx context.Context, client k8sclient.Interface, output io
 	return nil
 }
 
-func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -51,7 +52,7 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -72,7 +73,7 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterEKSRepoName, config.App.ClusterCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), ClusterEKSRepoName, config.App.ClusterCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -83,7 +84,7 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterEKSRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 		}
@@ -104,7 +105,7 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 	return microerror.Mask(err)
 }
 
-func BuildEKSClusterConfig(config ClusterConfig) eks.ClusterConfig {
+func BuildEKSClusterConfig(config common.ClusterConfig) eks.ClusterConfig {
 	return eks.ClusterConfig{
 		Global: &eks.Global{
 			Metadata: &eks.Metadata{
@@ -117,9 +118,9 @@ func BuildEKSClusterConfig(config ClusterConfig) eks.ClusterConfig {
 	}
 }
 
-func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -135,7 +136,7 @@ func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, 
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -156,7 +157,7 @@ func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, 
 		appVersion := config.App.DefaultAppsVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsEKSRepoName, config.App.DefaultAppsCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsEKSRepoName, config.App.DefaultAppsCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -170,7 +171,7 @@ func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, 
 			DefaultingEnabled:       false,
 			InCluster:               true,
 			Name:                    DefaultAppsEKSRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 			UseClusterValuesConfig:  true,

@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	capg "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/gcp"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
@@ -21,7 +22,7 @@ const (
 	ClusterGCPRepoName     = "cluster-gcp"
 )
 
-func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	err := templateClusterGCP(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -31,9 +32,9 @@ func WriteGCPTemplate(ctx context.Context, client k8sclient.Interface, output io
 	return microerror.Mask(err)
 }
 
-func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -46,7 +47,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -67,7 +68,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterGCPRepoName, config.App.ClusterCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), ClusterGCPRepoName, config.App.ClusterCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -78,7 +79,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterGCPRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 		}
@@ -99,7 +100,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 	return microerror.Mask(err)
 }
 
-func BuildCapgClusterConfig(config ClusterConfig) capg.ClusterConfig {
+func BuildCapgClusterConfig(config common.ClusterConfig) capg.ClusterConfig {
 	return capg.ClusterConfig{
 		ClusterName:        config.Name,
 		ClusterDescription: config.Description,
@@ -138,9 +139,9 @@ func BuildCapgClusterConfig(config ClusterConfig) capg.ClusterConfig {
 	}
 }
 
-func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -156,7 +157,7 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -177,7 +178,7 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 		appVersion := config.App.DefaultAppsVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsGCPRepoName, config.App.DefaultAppsCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsGCPRepoName, config.App.DefaultAppsCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -190,7 +191,7 @@ func templateDefaultAppsGCP(ctx context.Context, k8sClient k8sclient.Interface, 
 			Catalog:                 config.App.DefaultAppsCatalog,
 			InCluster:               true,
 			Name:                    DefaultAppsGCPRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 			DefaultingEnabled:       false,
