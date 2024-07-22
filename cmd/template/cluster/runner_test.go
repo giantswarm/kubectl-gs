@@ -14,7 +14,8 @@ import (
 	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 
 	//nolint:staticcheck
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/flags"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
 	"github.com/giantswarm/kubectl-gs/v4/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/v4/test/kubeclient"
@@ -45,7 +46,7 @@ func Test_run(t *testing.T) {
 
 	testCases := []struct {
 		name               string
-		flags              *flag
+		flags              *flags.Flag
 		args               []string
 		clusterName        string
 		expectedGoldenFile string
@@ -53,34 +54,34 @@ func Test_run(t *testing.T) {
 	}{
 		{
 			name: "case 0: template cluster gcp",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:         "test1",
 				Provider:     "gcp",
 				Description:  "just a test cluster",
 				Region:       "the-region",
 				Organization: "test",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				GCP: provider.GCPConfig{
+				GCP: common.GCPConfig{
 					Project:        "the-project",
 					FailureDomains: []string{"failure-domain1-a", "failure-domain1-b"},
-					ControlPlane: provider.GCPControlPlane{
-						ServiceAccount: provider.ServiceAccount{
+					ControlPlane: common.GCPControlPlane{
+						ServiceAccount: common.ServiceAccount{
 							Email:  "service-account@email",
 							Scopes: []string{"scope1", "scope2"},
 						},
 					},
-					MachineDeployment: provider.GCPMachineDeployment{
+					MachineDeployment: common.GCPMachineDeployment{
 						Name:             "worker1",
 						FailureDomain:    "failure-domain2-b",
 						InstanceType:     "very-large",
 						Replicas:         7,
 						RootVolumeSizeGB: 5,
-						ServiceAccount: provider.ServiceAccount{
+						ServiceAccount: common.ServiceAccount{
 							Email:  "service-account@email",
 							Scopes: []string{"scope1", "scope2"},
 						},
@@ -92,7 +93,7 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 1: template cluster capa",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test1",
 				Provider:                 "capa",
 				Description:              "just a test cluster",
@@ -100,14 +101,14 @@ func Test_run(t *testing.T) {
 				Region:                   "the-region",
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				AWS: provider.AWSConfig{
-					MachinePool: provider.AWSMachinePoolConfig{
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
 						Name:             "worker1",
 						AZs:              []string{"eu-west-1a", "eu-west-1b"},
 						InstanceType:     "big-one",
@@ -128,7 +129,7 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 2: template proxy-private cluster capa with defaults",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test1",
 				Provider:                 "capa",
 				ManagementCluster:        "my-mc",
@@ -137,15 +138,15 @@ func Test_run(t *testing.T) {
 				Region:                   "the-region",
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				AWS: provider.AWSConfig{
+				AWS: common.AWSConfig{
 					ClusterType: "proxy-private",
-					MachinePool: provider.AWSMachinePoolConfig{
+					MachinePool: common.AWSMachinePoolConfig{
 						Name:             "worker1",
 						AZs:              []string{"eu-west-1a", "eu-west-1b"},
 						InstanceType:     "big-one",
@@ -169,7 +170,7 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 3: template proxy-private cluster capa",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test1",
 				Provider:                 "capa",
 				ManagementCluster:        "my-mc",
@@ -178,15 +179,15 @@ func Test_run(t *testing.T) {
 				Region:                   "the-region",
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				AWS: provider.AWSConfig{
+				AWS: common.AWSConfig{
 					ClusterType: "proxy-private",
-					MachinePool: provider.AWSMachinePoolConfig{
+					MachinePool: common.AWSMachinePoolConfig{
 						Name:             "worker1",
 						AZs:              []string{"eu-west-1a", "eu-west-1b"},
 						InstanceType:     "big-one",
@@ -214,18 +215,18 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 4: template cluster capz",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test1",
 				Provider:                 "capz",
 				Description:              "just a test cluster",
 				Region:                   "northeurope",
 				Organization:             "test",
 				ControlPlaneInstanceType: "B2s",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion: "0.14.0",
 					ClusterCatalog: "the-catalog",
 				},
-				Azure: provider.AzureConfig{
+				Azure: common.AzureConfig{
 					SubscriptionID: "12345678-ebb8-4b1f-8f96-d950d9e7aaaa",
 				},
 			},
@@ -234,20 +235,20 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 5: template cluster capz pre unified apps",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test1",
 				Provider:                 "capz",
 				Description:              "just a test cluster",
 				Region:                   "northeurope",
 				Organization:             "test",
 				ControlPlaneInstanceType: "B2s",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "0.13.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				Azure: provider.AzureConfig{
+				Azure: common.AzureConfig{
 					SubscriptionID: "12345678-ebb8-4b1f-8f96-d950d9e7aaaa",
 				},
 			},
@@ -256,27 +257,27 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 6: template cluster capv",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:              "test1",
 				Provider:          "vsphere",
 				Description:       "yet another test cluster",
 				Organization:      "test",
 				KubernetesVersion: "v1.2.3",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.2.3",
 					ClusterCatalog:     "foo-catalog",
 					DefaultAppsCatalog: "foo-default-catalog",
 					DefaultAppsVersion: "3.2.1",
 				},
-				VSphere: provider.VSphereConfig{
+				VSphere: common.VSphereConfig{
 					ServiceLoadBalancerCIDR: "1.2.3.4/32",
 					ResourcePool:            "foopool",
 					NetworkName:             "foonet",
 					SvcLbIpPoolName:         "svc-foo-pool",
 					CredentialsSecretName:   "foosecret",
 					ImageTemplate:           "foobar",
-					ControlPlane: provider.VSphereControlPlane{
-						VSphereMachineTemplate: provider.VSphereMachineTemplate{
+					ControlPlane: common.VSphereControlPlane{
+						VSphereMachineTemplate: common.VSphereMachineTemplate{
 							DiskGiB:   42,
 							MemoryMiB: 42000,
 							NumCPUs:   6,
@@ -284,7 +285,7 @@ func Test_run(t *testing.T) {
 						},
 						IpPoolName: "foo-pool",
 					},
-					Worker: provider.VSphereMachineTemplate{
+					Worker: common.VSphereMachineTemplate{
 						DiskGiB:   43,
 						MemoryMiB: 43000,
 						NumCPUs:   7,
@@ -297,7 +298,7 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 7: template cluster capa with custom network CIDR",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test6",
 				Provider:                 "capa",
 				Description:              "just a test cluster",
@@ -305,14 +306,14 @@ func Test_run(t *testing.T) {
 				Region:                   "the-region",
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				AWS: provider.AWSConfig{
-					MachinePool: provider.AWSMachinePoolConfig{
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
 						Name:             "worker1",
 						AZs:              []string{"eu-west-1a", "eu-west-1b"},
 						InstanceType:     "big-one",
@@ -333,7 +334,7 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 8: template cluster capa with custom network CIDR 3 AZ",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test7",
 				Provider:                 "capa",
 				Description:              "just a test cluster",
@@ -341,14 +342,14 @@ func Test_run(t *testing.T) {
 				Region:                   "the-region",
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				AWS: provider.AWSConfig{
-					MachinePool: provider.AWSMachinePoolConfig{
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
 						Name:             "worker1",
 						AZs:              []string{"eu-west-1a", "eu-west-1b"},
 						InstanceType:     "big-one",
@@ -369,7 +370,7 @@ func Test_run(t *testing.T) {
 		},
 		{
 			name: "case 9: template cluster capa with custom network CIDR 1 AZ",
-			flags: &flag{
+			flags: &flags.Flag{
 				Name:                     "test8",
 				Provider:                 "capa",
 				Description:              "just a test cluster",
@@ -377,14 +378,14 @@ func Test_run(t *testing.T) {
 				Region:                   "the-region",
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
-				App: provider.AppConfig{
+				App: common.AppConfig{
 					ClusterVersion:     "1.0.0",
 					ClusterCatalog:     "the-catalog",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
 				},
-				AWS: provider.AWSConfig{
-					MachinePool: provider.AWSMachinePoolConfig{
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
 						Name:             "worker1",
 						AZs:              []string{"eu-west-1a", "eu-west-1b"},
 						InstanceType:     "big-one",
@@ -410,7 +411,7 @@ func Test_run(t *testing.T) {
 			ctx := context.Background()
 
 			out := new(bytes.Buffer)
-			tc.flags.print = genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault)
+			tc.flags.Print = genericclioptions.NewPrintFlags("").WithDefaultOutput(output.TypeDefault)
 
 			logger, err := micrologger.New(micrologger.Config{})
 			if err != nil {

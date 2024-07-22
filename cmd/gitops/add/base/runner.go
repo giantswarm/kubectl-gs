@@ -9,6 +9,7 @@ import (
 
 	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
 
+	clustercommon "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capv"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capz"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/openstack"
@@ -161,11 +162,11 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterConfig := providers.BuildCapaClusterConfig(providers.ClusterConfig{
+	clusterConfig := providers.BuildCapaClusterConfig(clustercommon.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
-		AWS: providers.AWSConfig{
-			MachinePool: providers.AWSMachinePoolConfig{
+		AWS: clustercommon.AWSConfig{
+			MachinePool: clustercommon.AWSMachinePoolConfig{
 				Name: "nodepool0",
 			},
 		},
@@ -208,11 +209,11 @@ func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterConfig := providers.BuildCapgClusterConfig(providers.ClusterConfig{
+	clusterConfig := providers.BuildCapgClusterConfig(clustercommon.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
-		GCP: providers.GCPConfig{
-			MachineDeployment: providers.GCPMachineDeployment{
+		GCP: clustercommon.GCPConfig{
+			MachineDeployment: clustercommon.GCPMachineDeployment{
 				Name: "machine-pool0",
 			},
 		},
@@ -255,7 +256,7 @@ func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterConfig := providers.BuildCapoClusterConfig(providers.ClusterConfig{
+	clusterConfig := providers.BuildCapoClusterConfig(clustercommon.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
 	}, 1)
@@ -297,7 +298,7 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterConfig := providers.BuildCapvClusterConfig(providers.ClusterConfig{
+	clusterConfig := providers.BuildCapvClusterConfig(clustercommon.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
 	})
@@ -339,11 +340,11 @@ func generateCapZClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		return clusterBaseTemplates, err
 	}
 
-	clusterConfig := providers.BuildCapzClusterConfig(providers.ClusterConfig{
+	clusterConfig := providers.BuildCapzClusterConfig(clustercommon.ClusterConfig{
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
 		Region:       structureConfig.Region,
-		Azure: providers.AzureConfig{
+		Azure: clustercommon.AzureConfig{
 			SubscriptionID: structureConfig.AzureSubscriptionID,
 		},
 	})

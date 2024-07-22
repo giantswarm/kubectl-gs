@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/flags"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/middleware"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/middleware/renewtoken"
@@ -41,7 +42,7 @@ func New(config Config) (*cobra.Command, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 
-	f := &flag{}
+	f := &flags.Flag{}
 
 	r := &runner{
 		commonConfig: &commonconfig.CommonConfig{

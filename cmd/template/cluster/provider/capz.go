@@ -13,6 +13,7 @@ import (
 
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capz"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
@@ -23,11 +24,11 @@ const (
 	ClusterAzureRepoName     = "cluster-azure"
 )
 
-func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appVersion := config.App.ClusterVersion
 	if appVersion == "" {
 		var err error
-		appVersion, err = getLatestVersion(ctx, client.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
+		appVersion, err = common.GetLatestVersion(ctx, client.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -55,9 +56,9 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output i
 	return nil
 }
 
-func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -70,7 +71,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -91,7 +92,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -102,7 +103,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterAzureRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 		}
@@ -123,7 +124,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 	return microerror.Mask(err)
 }
 
-func BuildCapzClusterConfig(config ClusterConfig) capz.ClusterConfig {
+func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
 	return capz.ClusterConfig{
 		Global: &capz.Global{
 			Metadata: &capz.Metadata{
@@ -150,9 +151,9 @@ func BuildCapzClusterConfig(config ClusterConfig) capz.ClusterConfig {
 	}
 }
 
-func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config ClusterConfig) error {
+func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := userConfigMapName(appName)
+	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
@@ -168,7 +169,7 @@ func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface
 
 		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
 			Name:      configMapName,
-			Namespace: organizationNamespace(config.Organization),
+			Namespace: common.OrganizationNamespace(config.Organization),
 			Data:      configData,
 		})
 		if err != nil {
@@ -189,7 +190,7 @@ func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface
 		appVersion := config.App.DefaultAppsVersion
 		if appVersion == "" {
 			var err error
-			appVersion, err = getLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsAzureRepoName, config.App.DefaultAppsCatalog)
+			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsAzureRepoName, config.App.DefaultAppsCatalog)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -203,7 +204,7 @@ func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface
 			DefaultingEnabled:       false,
 			InCluster:               true,
 			Name:                    DefaultAppsAzureRepoName,
-			Namespace:               organizationNamespace(config.Organization),
+			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 			UseClusterValuesConfig:  true,

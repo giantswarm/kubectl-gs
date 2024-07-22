@@ -1,4 +1,4 @@
-package provider
+package common
 
 import (
 	"context"
@@ -19,6 +19,10 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v4/pkg/app"
 )
+
+var invalidFlagError = &microerror.Error{
+	Kind: "invalidFlagError",
+}
 
 type AWSConfig struct {
 	ExternalSNAT       bool
@@ -177,7 +181,7 @@ type OIDC struct {
 	GroupsClaim   string
 }
 
-func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capi.Cluster {
+func NewCapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capi.Cluster {
 	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
@@ -214,7 +218,7 @@ func newcapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectRefe
 	return cluster
 }
 
-func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
+func GetLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
 	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
 	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
 		LabelSelector: labels.SelectorFromSet(map[string]string{
@@ -235,15 +239,15 @@ func getLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalo
 	return catalogEntryList.Items[0].Spec.Version, nil
 }
 
-func organizationNamespace(org string) string {
+func OrganizationNamespace(org string) string {
 	return fmt.Sprintf("org-%s", org)
 }
 
-func userConfigMapName(app string) string {
+func UserConfigMapName(app string) string {
 	return fmt.Sprintf("%s-userconfig", app)
 }
 
-func defaultTo(value string, defaultValue string) string {
+func DefaultTo(value string, defaultValue string) string {
 	if value != "" {
 		return value
 	}

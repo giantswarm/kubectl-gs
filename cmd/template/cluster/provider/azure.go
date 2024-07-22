@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v4/internal/key"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/scheme"
 )
@@ -26,7 +27,7 @@ const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {
 	err := WriteGSAzureTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -35,7 +36,7 @@ func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.
 	return nil
 }
 
-func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
+func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {
 	var err error
 
 	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
@@ -53,7 +54,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 
 		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
 
-		clusterCR := newcapiClusterCR(config, infrastructureRef)
+		clusterCR := common.NewCapiClusterCR(config, infrastructureRef)
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -85,7 +86,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 	return nil
 }
 
-func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
+func newAzureClusterCR(config common.ClusterConfig) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
@@ -124,7 +125,7 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 	return cr
 }
 
-func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
+func newAzureMasterMachineCR(config common.ClusterConfig) *capz.AzureMachine {
 	var failureDomain *string
 	if len(config.ControlPlaneAZ) > 0 {
 		failureDomain = &config.ControlPlaneAZ[0]
