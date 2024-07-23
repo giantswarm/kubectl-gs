@@ -12,6 +12,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Add `--prevent-deletion` flag to cluster template command for capv clusters
 - Helpful error messages for invalid subnet split parameters of CAPA private clusters
 
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPZ clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-azure version via `--cluster-version`. 
+
 ## [3.0.0] - 2024-06-27
 
 ### Removed

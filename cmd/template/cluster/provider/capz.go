@@ -2,11 +2,9 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"text/template"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -20,37 +18,13 @@ import (
 )
 
 const (
-	DefaultAppsAzureRepoName = "default-apps-azure"
-	ClusterAzureRepoName     = "cluster-azure"
+	ClusterAzureRepoName = "cluster-azure"
 )
 
 func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
-	appVersion := config.App.ClusterVersion
-	if appVersion == "" {
-		var err error
-		appVersion, err = common.GetLatestVersion(ctx, client.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
 	err := templateClusterCAPZ(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	minUnifiedClusterAzureVersion := semver.New(0, 14, 0, "", "")
-	desiredClusterAzureVersion, err := semver.StrictNewVersion(appVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if desiredClusterAzureVersion.LessThan(minUnifiedClusterAzureVersion) {
-		// Render default-apps-azure only when cluster-azure version does not contain default apps.
-		err = templateDefaultAppsAzure(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil
@@ -89,22 +63,12 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 
 	var appYAML []byte
 	{
-		appVersion := config.App.ClusterVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), ClusterAzureRepoName, config.App.ClusterCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
 			Name:                    ClusterAzureRepoName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
-			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 		}
 
@@ -147,81 +111,9 @@ func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
 				InstanceType: config.ControlPlaneInstanceType,
 				Replicas:     3,
 			},
+			Release: &capz.Release{
+				Version: config.ReleaseVersion,
+			},
 		},
 	}
-}
-
-func templateDefaultAppsAzure(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
-	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := common.UserConfigMapName(appName)
-
-	var configMapYAML []byte
-	{
-		flagValues := capz.DefaultAppsConfig{
-			ClusterName:  config.Name,
-			Organization: config.Organization,
-		}
-
-		configData, err := capz.GenerateDefaultAppsValues(flagValues)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
-			Name:      configMapName,
-			Namespace: common.OrganizationNamespace(config.Organization),
-			Data:      configData,
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
-
-		configMapYAML, err = yaml.Marshal(userConfigMap)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var appYAML []byte
-	{
-		appVersion := config.App.DefaultAppsVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsAzureRepoName, config.App.DefaultAppsCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var err error
-		appYAML, err = templateapp.NewAppCR(templateapp.Config{
-			AppName:                 appName,
-			Cluster:                 config.Name,
-			Catalog:                 config.App.DefaultAppsCatalog,
-			DefaultingEnabled:       false,
-			InCluster:               true,
-			Name:                    DefaultAppsAzureRepoName,
-			Namespace:               common.OrganizationNamespace(config.Organization),
-			Version:                 appVersion,
-			UserConfigConfigMapName: configMapName,
-			UseClusterValuesConfig:  true,
-			ExtraLabels: map[string]string{
-				k8smetadata.ManagedBy: "cluster",
-			},
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err := t.Execute(output, templateapp.AppCROutput{
-		UserConfigConfigMap: string(configMapYAML),
-		AppCR:               string(appYAML),
-	})
-	return microerror.Mask(err)
 }

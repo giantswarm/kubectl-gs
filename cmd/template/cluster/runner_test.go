@@ -220,10 +220,11 @@ func Test_run(t *testing.T) {
 				Provider:                 "capz",
 				Description:              "just a test cluster",
 				Region:                   "northeurope",
+				Release:                  "25.0.0",
 				Organization:             "test",
 				ControlPlaneInstanceType: "B2s",
 				App: common.AppConfig{
-					ClusterVersion: "0.14.0",
+					ClusterVersion: "0.17.0",
 					ClusterCatalog: "the-catalog",
 				},
 				Azure: common.AzureConfig{
@@ -234,29 +235,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capz.golden",
 		},
 		{
-			name: "case 5: template cluster capz pre unified apps",
-			flags: &flags.Flag{
-				Name:                     "test1",
-				Provider:                 "capz",
-				Description:              "just a test cluster",
-				Region:                   "northeurope",
-				Organization:             "test",
-				ControlPlaneInstanceType: "B2s",
-				App: common.AppConfig{
-					ClusterVersion:     "0.13.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
-				},
-				Azure: common.AzureConfig{
-					SubscriptionID: "12345678-ebb8-4b1f-8f96-d950d9e7aaaa",
-				},
-			},
-			args:               nil,
-			expectedGoldenFile: "run_template_cluster_capz_2.golden",
-		},
-		{
-			name: "case 6: template cluster capv",
+			name: "case 5: template cluster capv",
 			flags: &flags.Flag{
 				Name:              "test1",
 				Provider:          "vsphere",
@@ -297,7 +276,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capv.golden",
 		},
 		{
-			name: "case 7: template cluster capa with custom network CIDR",
+			name: "case 6: template cluster capa with custom network CIDR",
 			flags: &flags.Flag{
 				Name:                     "test6",
 				Provider:                 "capa",
@@ -333,7 +312,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capa_6.golden",
 		},
 		{
-			name: "case 8: template cluster capa with custom network CIDR 3 AZ",
+			name: "case 7: template cluster capa with custom network CIDR 3 AZ",
 			flags: &flags.Flag{
 				Name:                     "test7",
 				Provider:                 "capa",
@@ -369,7 +348,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capa_7.golden",
 		},
 		{
-			name: "case 9: template cluster capa with custom network CIDR 1 AZ",
+			name: "case 8: template cluster capa with custom network CIDR 1 AZ",
 			flags: &flags.Flag{
 				Name:                     "test8",
 				Provider:                 "capa",

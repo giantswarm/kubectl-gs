@@ -9,6 +9,7 @@ type Global struct {
 	ControlPlane     *ControlPlane     `json:"controlPlane,omitempty"`
 	Metadata         *Metadata         `json:"metadata,omitempty"`
 	ProviderSpecific *ProviderSpecific `json:"providerSpecific,omitempty"`
+	Release          *Release          `json:"release,omitempty"`
 }
 
 type Metadata struct {
@@ -40,4 +41,7 @@ type Bastion struct {
 type ControlPlane struct {
 	InstanceType string `json:"instanceType,omitempty"`
 	Replicas     int    `json:"replicas,omitempty"`
+}
+type Release struct {
+	Version string `json:"version,omitempty"`
 }
