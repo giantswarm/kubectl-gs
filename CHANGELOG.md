@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## Changed
+
+- Use more portable, Bash specific shebang for GitOps pre-commit script template
+
 ## [3.1.0] - 2024-07-23
 
 ### Added
