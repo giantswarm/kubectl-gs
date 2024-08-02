@@ -131,7 +131,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
 	} else if isCapiProvider(resource) {
 
-		currentVersion := getReleaseVersion()
+		currentVersion := getReleaseVersion(resource)
 		if currentVersion == "" {
 			return microerror.Maskf(notFoundError, "Release version not found in cluster '%s'", name)
 		}
