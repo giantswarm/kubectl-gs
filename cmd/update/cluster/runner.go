@@ -11,6 +11,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/giantswarm/kubectl-gs/v4/internal/label"
 	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
@@ -74,6 +76,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	namespace, _, err := r.commonConfig.GetNamespace()
+
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -85,18 +88,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	c, err := r.service.Get(ctx, getOptions)
+
 	if cluster.IsNotFound(err) {
 		return microerror.Maskf(notFoundError, "Cluster with name '%s' cannot be found in the '%s' namespace.\n", getOptions.Name, getOptions.Namespace)
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
+
 	resource, ok := c.(*cluster.Cluster)
+
 	if !ok {
 		return microerror.Maskf(notFoundError, "Cluster with name '%s' cannot be found in the '%s' namespace.\n", getOptions.Name, getOptions.Namespace)
 	}
 
 	var patches cluster.PatchOptions
 	var msg string
+
 	if scheduledTime != "" {
 		patchSpecs := make([]cluster.PatchSpec, 0)
 		if resource.Cluster.Annotations == nil {
@@ -122,6 +129,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		messageFormat := "An upgrade of cluster %s to release %s has been scheduled for\n\n    %v, (%v)"
 		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
+	} else if isCapiProvider(resource) {
+
+		currentVersion := getReleaseVersion(resource)
+		if currentVersion == "" {
+			return microerror.Maskf(notFoundError, "Release version not found in cluster '%s'", name)
+		}
+
+		k8sclient, err := r.commonConfig.GetClient(r.logger)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		cm := &corev1.ConfigMap{}
+		err = k8sclient.CtrlClient().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-userconfig", resource.Cluster.GetName()), Namespace: resource.Cluster.GetNamespace()}, cm)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		// Extract the values field and replace the current version with the target version
+		values := cm.Data["values"]
+		values = strings.Replace(values, fmt.Sprintf("version: %s", currentVersion), fmt.Sprintf("version: %s", targetRelease), -1)
+		cm.Data["values"] = values
+
+		err = k8sclient.CtrlClient().Update(ctx, cm)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		msg = fmt.Sprintf("Cluster '%s' is updated to release version '%s'\n", name, targetRelease)
 	} else {
 		patches = cluster.PatchOptions{
 			PatchSpecs: []cluster.PatchSpec{
@@ -135,9 +170,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		msg = fmt.Sprintf("Cluster '%s' is updated to release version '%s'\n", name, targetRelease)
 	}
 
-	err = r.service.Patch(ctx, resource.ClientObject(), patches)
-	if err != nil {
-		return microerror.Mask(err)
+	if len(patches.PatchSpecs) > 0 {
+		err = r.service.Patch(ctx, resource.ClientObject(), patches)
+
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	fmt.Fprintln(r.stdout, msg)
@@ -164,4 +202,21 @@ func (r *runner) getService() error {
 	r.service = cluster.New(serviceConfig)
 
 	return nil
+}
+
+func isCapiProvider(cluster *cluster.Cluster) bool {
+	labels := cluster.Cluster.GetLabels()
+	name, ok := labels["cluster.x-k8s.io/watch-filter"]
+	if !ok {
+		return false
+	}
+	if name == "capi" {
+		return true
+	}
+	return false
+}
+
+func getReleaseVersion(cluster *cluster.Cluster) string {
+	labels := cluster.Cluster.GetLabels()
+	return labels[label.ReleaseVersion]
 }
