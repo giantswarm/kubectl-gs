@@ -47,7 +47,7 @@ require (
 	sigs.k8s.io/cluster-api v1.7.4
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.5.2
 	sigs.k8s.io/cluster-api-provider-azure v1.15.2
-	sigs.k8s.io/controller-runtime v0.18.4
+	sigs.k8s.io/controller-runtime v0.18.5
 	sigs.k8s.io/yaml v1.4.0
 )
 
