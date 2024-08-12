@@ -11,6 +11,7 @@ const (
 	ProviderOpenStack     = "openstack"
 	ProviderVSphere       = "vsphere"
 	ProviderCloudDirector = "cloud-director"
+	ProviderDefault       = "default"
 )
 
 const (
