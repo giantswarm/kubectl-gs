@@ -15,7 +15,6 @@ spec:
       cluster_name: "demowc"
       organization: "demoorg"
       cluster_release: "0.13.0"
-      default_apps_release: "0.6.0"
   prune: false
   serviceAccountName: automation
   sourceRef:

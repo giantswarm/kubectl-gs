@@ -29,7 +29,6 @@ type StructureConfig struct {
 	ClusterBase           string
 	ClusterRelease        string
 	ClusterUserConfig     string
-	DefaultAppsRelease    string
 	DefaultAppsUserConfig string
 
 	EncryptionKeyPair encryption.KeyPair

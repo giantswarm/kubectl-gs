@@ -11,6 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Use more portable, Bash specific shebang for GitOps pre-commit script template
 - Schedule cluster upgrades for CAPI clusters.
+- `kubectl gs gitops add workload-cluster`: Remove flag `--default-apps-release`.
 
 ## [3.1.0] - 2024-07-23
 

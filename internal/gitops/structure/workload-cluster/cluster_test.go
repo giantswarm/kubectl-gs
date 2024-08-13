@@ -65,14 +65,13 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		{
 			name: "flawless with definition",
 			config: common.StructureConfig{
-				ClusterBase:        "bases/cluster/capo",
-				ClusterRelease:     "0.13.0",
-				DefaultAppsRelease: "0.6.0",
-				ManagementCluster:  "demomc",
-				WorkloadCluster:    "demowc",
-				Organization:       "demoorg",
-				SkipMAPI:           true,
-				RepositoryName:     "gitops-demo",
+				ClusterBase:       "bases/cluster/capo",
+				ClusterRelease:    "0.13.0",
+				ManagementCluster: "demomc",
+				WorkloadCluster:   "demowc",
+				Organization:      "demoorg",
+				SkipMAPI:          true,
+				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -117,12 +116,11 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				DefaultAppsRelease: "0.6.0",
-				ManagementCluster:  "demomc",
-				WorkloadCluster:    "demowc",
-				Organization:       "demoorg",
-				SkipMAPI:           true,
-				RepositoryName:     "gitops-demo",
+				ManagementCluster: "demomc",
+				WorkloadCluster:   "demowc",
+				Organization:      "demoorg",
+				SkipMAPI:          true,
+				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -175,7 +173,6 @@ topKey:
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				DefaultAppsRelease: "0.6.0",
 				DefaultAppsUserConfig: string([]byte(`testKey: testValue
 otherTopKey:
   nestedOtherKey: nestedOtherValue`)),
@@ -244,7 +241,6 @@ otherTopKey:
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				DefaultAppsRelease: "0.6.0",
 				DefaultAppsUserConfig: string([]byte(`testKey: testValue
 otherTopKey:
   nestedOtherKey: nestedOtherValue`)),

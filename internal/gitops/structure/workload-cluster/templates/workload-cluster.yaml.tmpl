@@ -16,9 +16,6 @@ spec:
       {{- if .ClusterRelease }}
       cluster_release: {{ .ClusterRelease }}
       {{- end }}
-      {{- if .DefaultAppsRelease }}
-      default_apps_release: {{ .DefaultAppsRelease }}
-      {{- end }}
       organization: {{ .Organization }}
   prune: false
   serviceAccountName: automation
