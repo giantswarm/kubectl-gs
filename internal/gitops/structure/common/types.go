@@ -26,10 +26,9 @@ type StructureConfig struct {
 	Provider             string
 	ClusterBaseTemplates ClusterBaseTemplates
 
-	ClusterBase           string
-	ClusterRelease        string
-	ClusterUserConfig     string
-	DefaultAppsUserConfig string
+	ClusterBase       string
+	ClusterRelease    string
+	ClusterUserConfig string
 
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
@@ -49,9 +48,6 @@ type StructureConfig struct {
 type ClusterBaseTemplates struct {
 	ClusterAppCr  string
 	ClusterValues string
-
-	DefaultAppsAppCr  string
-	DefaultAppsValues string
 }
 
 type Template struct {

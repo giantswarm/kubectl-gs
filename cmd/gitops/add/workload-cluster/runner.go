@@ -64,17 +64,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		config.ClusterUserConfig = strings.TrimSpace(config.ClusterUserConfig)
 	}
-	if r.flag.DefaultAppsUserConfig != "" {
-		config.DefaultAppsUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.DefaultAppsUserConfig,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
-	}
 
 	creatorConfig, err := structure.NewWorkloadCluster(config)
 	if err != nil {

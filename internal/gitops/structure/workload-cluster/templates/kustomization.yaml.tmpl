@@ -3,13 +3,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 commonLabels:
   giantswarm.io/managed-by: flux
 kind: Kustomization
-{{- if or .ClusterUserConfig .DefaultAppsUserConfig }}
+{{- if .ClusterUserConfig }}
 patchesStrategicMerge:
 {{- if .ClusterUserConfig }}
   - patch_cluster_userconfig.yaml
-{{- end }}
-{{- if .DefaultAppsUserConfig }}
-  - patch_default_apps_userconfig.yaml
 {{- end }}
 {{- end }}
 resources:
@@ -20,8 +17,5 @@ resources:
 {{- end }}
 {{- if .ClusterUserConfig }}
   - cluster_userconfig.yaml
-{{- end }}
-{{- if .DefaultAppsUserConfig }}
-  - default_apps_userconfig.yaml
 {{- end }}
 {{- end }}

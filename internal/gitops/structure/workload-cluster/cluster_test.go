@@ -173,9 +173,6 @@ topKey:
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				DefaultAppsUserConfig: string([]byte(`testKey: testValue
-otherTopKey:
-  nestedOtherKey: nestedOtherValue`)),
 				ManagementCluster: "demomc",
 				WorkloadCluster:   "demowc",
 				Organization:      "demoorg",
@@ -220,16 +217,8 @@ otherTopKey:
 					GoldenFile:   "testdata/expected/0-cluster_userconfig.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/default_apps_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-default_apps_userconfig.golden",
-				},
-				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_cluster_userconfig.yaml",
 					GoldenFile:   "testdata/expected/0-patch_cluster_userconfig.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_default_apps_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-patch_default_apps_userconfig.golden",
 				},
 			},
 		},
@@ -241,9 +230,6 @@ otherTopKey:
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				DefaultAppsUserConfig: string([]byte(`testKey: testValue
-otherTopKey:
-  nestedOtherKey: nestedOtherValue`)),
 				ManagementCluster: "demomc",
 				WorkloadCluster:   "demowc",
 				Organization:      "demoorg",
@@ -290,16 +276,8 @@ otherTopKey:
 					GoldenFile:   "testdata/expected/0-cluster_userconfig.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/default_apps_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-default_apps_userconfig.golden",
-				},
-				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/patch_cluster_userconfig.yaml",
 					GoldenFile:   "testdata/expected/0-patch_cluster_userconfig.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/patch_default_apps_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-patch_default_apps_userconfig.golden",
 				},
 			},
 		},

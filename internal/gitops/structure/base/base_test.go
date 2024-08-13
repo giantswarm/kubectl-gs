@@ -27,10 +27,8 @@ func Test_NewManagementCluster(t *testing.T) {
 			config: common.StructureConfig{
 				Provider: "capa",
 				ClusterBaseTemplates: common.ClusterBaseTemplates{
-					ClusterAppCr:      "foo:bar",
-					ClusterValues:     "foo:bar",
-					DefaultAppsAppCr:  "foo:bar",
-					DefaultAppsValues: "foo:bar",
+					ClusterAppCr:  "foo:bar",
+					ClusterValues: "foo:bar",
 				},
 			},
 			expectedObjects: []FsObjectExpected{
@@ -56,14 +54,6 @@ func Test_NewManagementCluster(t *testing.T) {
 				},
 				{
 					RelativePath: "bases/clusters/capa/template/cluster_config.yaml",
-					GoldenFile:   "testdata/expected/foo-bar.golden",
-				},
-				{
-					RelativePath: "bases/clusters/capa/template/default_apps.yaml",
-					GoldenFile:   "testdata/expected/foo-bar.golden",
-				},
-				{
-					RelativePath: "bases/clusters/capa/template/default_apps_config.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 			},

@@ -13,10 +13,9 @@ const (
 	flagSkipMAPI          = "skip-mapi"
 	flagRepositoryName    = "repository-name"
 
-	//CAPx only
-	flagClusterRelease        = "cluster-release"
-	flagClusterUserConfig     = "cluster-user-config"
-	flagDefaultAppsUserConfig = "default-apps-user-config"
+	// CAPI only
+	flagClusterRelease    = "cluster-release"
+	flagClusterUserConfig = "cluster-user-config"
 )
 
 type flag struct {
@@ -27,9 +26,8 @@ type flag struct {
 	SkipMAPI          bool
 	RepositoryName    string
 
-	ClusterRelease        string
-	ClusterUserConfig     string
-	DefaultAppsUserConfig string
+	ClusterRelease    string
+	ClusterUserConfig string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -42,7 +40,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	cmd.Flags().StringVar(&f.ClusterRelease, flagClusterRelease, "", "Cluster app version.")
 	cmd.Flags().StringVar(&f.ClusterUserConfig, flagClusterUserConfig, "", "Cluster app user configuration to patch the base with.")
-	cmd.Flags().StringVar(&f.DefaultAppsUserConfig, flagDefaultAppsUserConfig, "", "Default apps app user configuration to patch the base with.")
 }
 
 func (f *flag) Validate() error {

@@ -15,18 +15,10 @@ var cluster string
 //go:embed cluster_config.yaml.tmpl
 var clusterConfig string
 
-//go:embed default_apps.yaml.tmpl
-var defaultApps string
-
-//go:embed default_apps_config.yaml.tmpl
-var defaultAppsConfig string
-
 func GetClusterBaseTemplates() []common.Template {
 	return []common.Template{
 		{Name: "kustomization.yaml", Data: kustomization},
 		{Name: "cluster.yaml", Data: cluster},
 		{Name: "cluster_config.yaml", Data: clusterConfig},
-		{Name: "default_apps.yaml", Data: defaultApps},
-		{Name: "default_apps_config.yaml", Data: defaultAppsConfig},
 	}
 }
