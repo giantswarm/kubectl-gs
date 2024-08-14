@@ -32,30 +32,30 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md`
 
-	examples = `  # Add dummy Workload Cluster structure, without cluster definition
+	examples = `  # Add dummy workload cluster structure, without cluster definition
   kubectl gs gitops add wc \
   --name dummy \
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo
 
-  # Add dummy Workload Cluster structure with definition from base
+  # Add dummy workload cluster structure with definition from base
   kubectl gs gitops add wc \
   --name dummy \
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo \
   --base bases/clusters/openstack \
-  --release 0.13.0
+  --release 29.0.0
 
-  # Add dummy Workload Cluster structure with definition from base and extra configuration
+  # Add dummy workload cluster structure with definition from base and extra configuration
   kubectl gs gitops add wc \
   --name dummy \
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo \
   --base bases/clusters/openstack \
-  --release 0.13.0 \
+  --release 29.0.0 \
   --cluster-user-config /tmp/cluster_user_config.yaml`
 )
 
