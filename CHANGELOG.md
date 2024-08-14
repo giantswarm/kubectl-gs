@@ -7,11 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [3.2.0] - 2024-08-12
+
 ## Changed
 
 - Use more portable, Bash specific shebang for GitOps pre-commit script template
 - Schedule cluster upgrades for CAPI clusters.
 - `kubectl gs gitops add workload-cluster`: Remove flag `--default-apps-release`.
+- Print Release information in `get cluster` command.
 
 ## [3.1.0] - 2024-07-23
 
@@ -1509,7 +1512,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...v3.0.0
 [2.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...v2.57.0
