@@ -79,7 +79,7 @@ func (cc *CommonConfig) GetProviderFromConfig(ctx context.Context, athenaUrl str
 	case capaRegexp.MatchString(config.Host):
 		provider = key.ProviderCAPA
 	default:
-		provider = key.ProviderOpenStack
+		provider = key.ProviderDefault
 	}
 
 	return provider, nil
