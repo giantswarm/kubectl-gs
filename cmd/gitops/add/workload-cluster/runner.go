@@ -45,7 +45,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	config := common.StructureConfig{
 		ClusterBase:       r.flag.Base,
-		ClusterRelease:    r.flag.ClusterRelease,
+		Release:           r.flag.Release,
 		ManagementCluster: r.flag.ManagementCluster,
 		WorkloadCluster:   r.flag.Name,
 		Organization:      r.flag.Organization,

@@ -9,7 +9,7 @@ spec:
   postBuild:
     substitute:
       cluster_name: demowc
-      cluster_release: 0.13.0
+      release: 0.13.0
       organization: demoorg
   prune: false
   serviceAccountName: automation

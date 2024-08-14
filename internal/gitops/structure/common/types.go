@@ -27,7 +27,7 @@ type StructureConfig struct {
 	ClusterBaseTemplates ClusterBaseTemplates
 
 	ClusterBase       string
-	ClusterRelease    string
+	Release           string
 	ClusterUserConfig string
 
 	EncryptionKeyPair encryption.KeyPair

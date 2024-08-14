@@ -116,7 +116,7 @@ func generateClusterAppCrTemplate(appName string) (string, error) {
 		Catalog:                 "cluster",
 		InCluster:               true,
 		Namespace:               "org-${organization}",
-		Version:                 "${cluster_release}",
+		Version:                 "",
 		UserConfigConfigMapName: "${cluster_name}-config",
 	})
 
@@ -144,6 +144,7 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 				Name: "nodepool0",
 			},
 		},
+		ReleaseVersion: "${release}",
 	})
 	clusterValues, err := capa.GenerateClusterValues(clusterConfig)
 

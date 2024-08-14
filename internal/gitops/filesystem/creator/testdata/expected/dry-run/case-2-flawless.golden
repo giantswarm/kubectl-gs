@@ -14,7 +14,7 @@ spec:
     substitute:
       cluster_name: "demowc"
       organization: "demoorg"
-      cluster_release: "0.13.0"
+      release: "0.13.0"
   prune: false
   serviceAccountName: automation
   sourceRef:

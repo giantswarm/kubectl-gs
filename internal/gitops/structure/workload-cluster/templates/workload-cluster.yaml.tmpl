@@ -13,8 +13,8 @@ spec:
   postBuild:
     substitute:
       cluster_name: {{ .WorkloadCluster }}
-      {{- if .ClusterRelease }}
-      cluster_release: {{ .ClusterRelease }}
+      {{- if .Release }}
+      release: {{ .Release }}
       {{- end }}
       organization: {{ .Organization }}
   prune: false
