@@ -357,8 +357,8 @@ func newcapiMachineDeployment(name, clusterName, release string, creationDate ti
 			},
 		},
 		Status: capi.MachineDeploymentStatus{
-			Replicas:      int32(nodesDesired),
-			ReadyReplicas: int32(nodesReady),
+			Replicas:      int32(nodesDesired), //nolint:gosec
+			ReadyReplicas: int32(nodesReady),   //nolint:gosec
 		},
 	}
 
@@ -444,8 +444,8 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 			},
 		},
 		Status: capiexp.MachinePoolStatus{
-			Replicas:      int32(nodesDesired),
-			ReadyReplicas: int32(nodesReady),
+			Replicas:      int32(nodesDesired), //nolint:gosec
+			ReadyReplicas: int32(nodesReady),   //nolint:gosec
 		},
 	}
 
