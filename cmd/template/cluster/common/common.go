@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -232,8 +233,7 @@ func GetLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalo
 	if err != nil {
 		return "", fmt.Errorf("failed to get latest version of https://github.com/giantswarm/%s. Did you log into the management cluster so the catalog %s can be accessed? You can follow the instructions at https://docs.giantswarm.io/getting-started/create-workload-cluster/ to successfully create a workload cluster. Either the KUBECONFIG environment variable or default kubectl context should be set correctly and point to your management cluster, not to a workload cluster. Detailed error: %w", app, catalog, microerror.Mask(err))
 	} else if len(catalogEntryList.Items) != 1 {
-		message := fmt.Sprintf("version not specified for %s and latest release couldn't be uniquely determined in %s catalog", app, catalog)
-		return "", microerror.Maskf(invalidFlagError, message)
+		return "", microerror.Maskf(invalidFlagError, "version not specified for %s and latest release couldn't be uniquely determined in %s catalog", app, catalog)
 	}
 
 	return catalogEntryList.Items[0].Spec.Version, nil
@@ -278,7 +278,7 @@ func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclie
 			validationErrors = append(validationErrors, fmt.Errorf("%s", resultError.Description()).Error())
 		}
 		// return all validation errors
-		return microerror.Mask(fmt.Errorf(strings.Join(validationErrors, "; ")))
+		return microerror.Mask(errors.New(strings.Join(validationErrors, "; ")))
 	}
 
 	return nil

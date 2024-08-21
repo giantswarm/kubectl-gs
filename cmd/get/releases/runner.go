@@ -2,7 +2,6 @@ package releases
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strings"
 
@@ -78,7 +77,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		resource, err = r.service.Get(ctx, options)
 		if release.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A release with name '%s' cannot be found.\n", options.Name))
+			return microerror.Maskf(notFoundError, "A release with name '%s' cannot be found.\n", options.Name)
 		} else if release.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 

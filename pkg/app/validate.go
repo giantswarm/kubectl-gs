@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -57,7 +56,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 
 	appResource, err := s.AppDataService.Get(ctx, options)
 	if app.IsNotFound(err) {
-		return nil, microerror.Maskf(notFoundError, fmt.Sprintf("An app '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+		return nil, microerror.Maskf(notFoundError, "An app '%s/%s' cannot be found.\n", options.Namespace, options.Name)
 	} else if err != nil {
 		return results, microerror.Mask(err)
 	}
