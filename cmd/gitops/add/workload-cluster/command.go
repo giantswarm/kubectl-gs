@@ -14,15 +14,13 @@ const (
 	name  = "workload-cluster"
 	alias = "wc"
 
-	shortDescription = "Adds a new Workload Cluster to your GitOps directory structure"
-	longDescription  = `Adds a new Workload Cluster to your GitOps directory structure.
+	shortDescription = "Adds a new workload cluster to your GitOps directory structure"
+	longDescription  = `Adds a new workload cluster to your GitOps directory structure.
 
 workload-cluster \
-[--base <path_to_base] \
-[--cluster-release <cluster_version>] \
+[--base <path_to_base>] \
+[--release <version>] \
 [--cluster-user-config <path_to_values.yaml>] \
-[--default-apps-release <default_apps_version>] \
-[--default-apps-user-config <path_to_values.yaml>] \
 --name <wc_id> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
@@ -34,34 +32,31 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md`
 
-	examples = `  # Add dummy Workload Cluster structure, without cluster definition
+	examples = `  # Add dummy workload cluster structure, without cluster definition
   kubectl gs gitops add wc \
   --name dummy \
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo
 
-  # Add dummy Workload Cluster structure with definition from base
+  # Add dummy workload cluster structure with definition from base
   kubectl gs gitops add wc \
   --name dummy \
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo \
   --base bases/clusters/openstack \
-  --cluster-release 0.13.0 \
-  --default-apps-release 0.6.0
+  --release 29.0.0
 
-  # Add dummy Workload Cluster structure with definition from base and extra configuration
+  # Add dummy workload cluster structure with definition from base and extra configuration
   kubectl gs gitops add wc \
   --name dummy \
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo \
   --base bases/clusters/openstack \
-  --cluster-release 0.13.0 \
-  --default-apps-release 0.6.0 \
-  --cluster-user-config /tmp/cluster_user_config.yaml \
-  --default-apps-user-config /tmp/default_apps_user_config.yaml`
+  --release 29.0.0 \
+  --cluster-user-config /tmp/cluster_user_config.yaml`
 )
 
 type Config struct {

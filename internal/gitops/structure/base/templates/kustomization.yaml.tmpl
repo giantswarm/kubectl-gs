@@ -5,13 +5,8 @@ configMapGenerator:
     - values=cluster_config.yaml
     name:  ${cluster_name}-config
     namespace: org-${organization}
-  - files:
-    - values=default_apps_config.yaml
-    name:  ${cluster_name}-default-apps-config
-    namespace: org-${organization}
 generatorOptions:
   disableNameSuffixHash: true
 kind: Kustomization
 resources:
   - cluster.yaml
-  - default_apps.yaml

@@ -13,6 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Use more portable, Bash specific shebang for GitOps pre-commit script template
 - Schedule cluster upgrades for CAPI clusters.
+- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flags `--default-apps-release` and `--cluster-release` have been replaced by `--release`.
 - Print Release information in `get cluster` command.
 
 ## [3.1.0] - 2024-07-23
@@ -24,7 +25,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- **BREAKING** When templating cluster manifests for CAPZ clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-azure version via `--cluster-version`. 
+- **BREAKING** When templating cluster manifests for CAPZ clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-azure version via `--cluster-version`.
 
 ## [3.0.0] - 2024-06-27
 

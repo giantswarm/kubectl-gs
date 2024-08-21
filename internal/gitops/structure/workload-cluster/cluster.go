@@ -133,8 +133,7 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	if config.ClusterBase != "" {
 		fsModifiers[wcFile] = fluxkusmod.KustomizationModifier{
 			PostBuildEnvs: map[string]string{
-				"cluster_release":      config.ClusterRelease,
-				"default_apps_release": config.DefaultAppsRelease,
+				"release": config.Release,
 			},
 		}
 	}
