@@ -6,6 +6,7 @@ import (
 	"io"
 	"text/template"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -26,16 +27,37 @@ const (
 )
 
 func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
-	err := templateClusterVSphere(ctx, client, output, config)
+	appVersion := config.App.ClusterVersion
+	if appVersion == "" {
+		var err error
+		appVersion, err = common.GetLatestVersion(ctx, client.CtrlClient(), ClusterVsphereRepoName, config.App.ClusterCatalog)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	err := templateClusterVSphere(ctx, client, output, config, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = templateDefaultAppsVsphere(ctx, client, output, config)
-	return microerror.Mask(err)
+	minUnifiedClusterVSphereVersion := semver.New(0, 61, 0, "", "")
+	desiredClusterVSphereVersion, err := semver.StrictNewVersion(appVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if desiredClusterVSphereVersion.LessThan(minUnifiedClusterVSphereVersion) {
+		err = templateDefaultAppsVsphere(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }
 
-func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
+func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig, appVersion string) error {
 	appName := config.Name
 	configMapName := common.UserConfigMapName(appName)
 
@@ -68,14 +90,6 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 
 	var appYAML []byte
 	{
-		appVersion := config.App.ClusterVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), ClusterVsphereRepoName, config.App.ClusterCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
 		extraConfigs := []applicationv1alpha1.AppExtraConfig{
 			{
 				Kind:      "secret",

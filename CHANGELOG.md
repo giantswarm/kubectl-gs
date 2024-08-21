@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for unified cluster-vsphere app. With cluster-vsphere v0.61.0 and newer, default apps are deployed with cluster-vsphere, and default-apps-vsphere app is not deployed anymore.
+
 ## [4.0.0] - 2024-08-22
 
 ### Changed

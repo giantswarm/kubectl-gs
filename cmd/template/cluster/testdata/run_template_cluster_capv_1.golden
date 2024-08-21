@@ -93,7 +93,7 @@ spec:
     secret:
       name: foosecret
       namespace: org-test
-  version: 1.2.3
+  version: 0.59.0
 ---
 apiVersion: v1
 data:

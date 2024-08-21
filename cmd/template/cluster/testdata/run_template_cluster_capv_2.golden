@@ -1,0 +1,96 @@
+---
+apiVersion: v1
+data:
+  values: |
+    global:
+      connectivity:
+        baseDomain: test.gigantic.io
+        network:
+          controlPlaneEndpoint:
+            host: ""
+            ipPoolName: foo-pool
+            port: 6443
+          loadBalancers:
+            cidrBlocks:
+            - 1.2.3.4/32
+            ipPoolName: svc-foo-pool
+      controlPlane:
+        image:
+          repository: gsoci.azurecr.io/giantswarm
+        machineTemplate:
+          cloneMode: linkedClone
+          diskGiB: 42
+          memoryMiB: 42000
+          network:
+            devices:
+            - dhcp4: true
+              networkName: foonet
+          numCPUs: 6
+          resourcePool: foopool
+          template: foobar
+        replicas: 5
+      metadata:
+        description: yet another test cluster
+        organization: test
+      nodeClasses:
+        default:
+          cloneMode: linkedClone
+          diskGiB: 43
+          memoryMiB: 43000
+          network:
+            devices:
+            - dhcp4: true
+              networkName: foonet
+          numCPUs: 7
+          resourcePool: foopool
+          template: foobar
+      nodePools:
+        worker:
+          class: default
+          replicas: 4
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    giantswarm.io/cluster: test1
+  name: test1-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test1
+  namespace: org-test
+spec:
+  catalog: foo-catalog
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  extraConfigs:
+  - kind: secret
+    name: container-registries-configuration
+    namespace: default
+    priority: 25
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: cluster-vsphere
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test1-userconfig
+      namespace: org-test
+    secret:
+      name: foosecret
+      namespace: org-test
+  version: 1.2.3
