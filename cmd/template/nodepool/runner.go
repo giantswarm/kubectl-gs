@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/nodepool/provider"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/nodepool/provider"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 const (

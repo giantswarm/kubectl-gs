@@ -18,7 +18,7 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/app"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/app"
 )
 
 var invalidFlagError = &microerror.Error{

@@ -10,8 +10,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
 )
 
 func (r *runner) findContext(ctx context.Context, installationIdentifier string) (bool, error) {

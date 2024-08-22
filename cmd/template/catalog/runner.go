@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	templatecatalog "github.com/giantswarm/kubectl-gs/v4/pkg/template/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	templatecatalog "github.com/giantswarm/kubectl-gs/v5/pkg/template/catalog"
 )
 
 type runner struct {

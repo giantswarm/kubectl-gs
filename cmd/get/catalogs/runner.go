@@ -13,9 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
-	catalogdata "github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 type runner struct {

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 const (

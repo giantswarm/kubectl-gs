@@ -14,11 +14,11 @@ import (
 	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 
 	//nolint:staticcheck
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/flags"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v4/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/v4/test/kubeclient"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeclient"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")

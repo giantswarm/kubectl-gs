@@ -4,9 +4,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/label"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/internal/label"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 func GetAzureTable(clusterResource cluster.Resource) *metav1.Table {

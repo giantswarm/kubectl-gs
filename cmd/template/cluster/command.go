@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/flags"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/middleware/renewtoken"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware/renewtoken"
 )
 
 const (

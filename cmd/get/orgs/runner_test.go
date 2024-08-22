@@ -12,12 +12,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v4/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/v4/test/kubeclient"
-	"github.com/giantswarm/kubectl-gs/v4/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeclient"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
 )
 
 func Test_run(t *testing.T) {

@@ -18,9 +18,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
 )
 
 const (

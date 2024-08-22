@@ -23,8 +23,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/ptr"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v4/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
 )
 
 const (

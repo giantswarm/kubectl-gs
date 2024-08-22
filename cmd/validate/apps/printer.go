@@ -7,9 +7,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/app"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/pluralize"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/app"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/pluralize"
 )
 
 func (r *runner) printOutput(results app.ValidationResults) error {

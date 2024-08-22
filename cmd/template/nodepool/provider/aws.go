@@ -11,8 +11,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/nodepool/provider/templates/aws"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/nodepool/provider/templates/aws"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {

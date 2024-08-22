@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
 )
 
 type FsObjectExpected struct {
