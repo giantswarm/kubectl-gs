@@ -2,7 +2,7 @@
 #
 #    devctl
 #
-#    https://github.com/giantswarm/devctl/blob/5d2f9f95fc86dfd1fc903399a7d057f543efec0f/pkg/gen/input/workflows/internal/file/create_release_pr.yaml.template
+#    https://github.com/giantswarm/devctl/blob/7345de0273fb431a392dc15f53961b523dba2b5e/pkg/gen/input/workflows/internal/file/create_release_pr.yaml.template
 #
 name: Create Release PR
 on:
@@ -147,12 +147,12 @@ jobs:
     steps:
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
-          go-version: '=1.18.1'
+          go-version: '=1.23'
       - name: Install architect
         uses: giantswarm/install-binary-action@c37eb401e5092993fc76d545030b1d1769e61237 # v3.0.0
         with:
           binary: "architect"
-          version: "6.11.0"
+          version: "6.17.0"
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
