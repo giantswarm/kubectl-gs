@@ -11,7 +11,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flags `--default-apps-release` and `--cluster-release` have been replaced by `--release`.
+- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flag `--cluster-release` has been replaced by `--release`.
+
+### Removed
+
+- `kubectl gs gitops add workload-cluster`:
+  - The flag `--default-apps-user-config` has been removed
+  - The flag `--default-apps-release` has been removed
+  - The flag `--cluster-release` has been removed
 
 ## [3.2.0] - 2024-08-12
 
