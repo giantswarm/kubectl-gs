@@ -97,12 +97,12 @@ func (a *Authenticator) RenewToken(ctx context.Context, refreshToken string) (id
 	s := a.clientConfig.TokenSource(ctx, &oauth2.Token{RefreshToken: refreshToken})
 	t, err := s.Token()
 	if err != nil {
-		return "", "", microerror.Maskf(cannotRenewTokenError, err.Error(), "")
+		return "", "", microerror.Maskf(cannotRenewTokenError, "%s", err.Error())
 	}
 
 	idToken, err = ConvertTokenToRawIDToken(t)
 	if err != nil {
-		return "", "", microerror.Maskf(cannotRenewTokenError, err.Error(), "")
+		return "", "", microerror.Maskf(cannotRenewTokenError, "%s", err.Error())
 	}
 	rToken = t.RefreshToken
 

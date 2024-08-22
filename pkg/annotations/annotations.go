@@ -21,7 +21,7 @@ func Parse(rawAnnotations []string) (map[string]string, error) {
 	for _, annotationSpec := range rawAnnotations {
 		parts := strings.Split(annotationSpec, "=")
 		if len(parts) != 2 {
-			return nil, microerror.Maskf(invalidAnnotationSpecError, annotationSpec, "")
+			return nil, microerror.Maskf(invalidAnnotationSpecError, "%s", annotationSpec)
 		}
 		if errs := validation.IsQualifiedName(strings.ToLower(parts[0])); len(errs) != 0 {
 			return nil, microerror.Maskf(invalidAnnotationKeyError, "%q: %s", annotationSpec, strings.Join(errs, ";"))

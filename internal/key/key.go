@@ -133,7 +133,7 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	rawMap := map[string]interface{}{}
 	err = yaml.Unmarshal(data, &rawMap)
 	if err != nil {
-		return "", microerror.Maskf(unmashalToMapFailedError, err.Error(), "")
+		return "", microerror.Maskf(unmashalToMapFailedError, "%s", err.Error())
 	}
 
 	return sanitize(string(data)), nil
@@ -164,7 +164,7 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 
 	err = yaml.Unmarshal(data, &map[string]interface{}{})
 	if err != nil {
-		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error(), "")
+		return nil, microerror.Maskf(unmashalToMapFailedError, "%s", err.Error())
 	}
 
 	return data, nil

@@ -87,7 +87,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		configMapYaml, err = yaml.Marshal(configmapCR)
 		if err != nil {
-			return microerror.Maskf(unmashalToMapFailedError, err.Error(), "")
+			return microerror.Maskf(unmashalToMapFailedError, "%s", err.Error())
 		}
 	}
 
@@ -107,7 +107,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		secretYaml, err = yaml.Marshal(secretCR)
 		if err != nil {
-			return microerror.Maskf(unmashalToMapFailedError, err.Error(), "")
+			return microerror.Maskf(unmashalToMapFailedError, "%s", err.Error())
 		}
 	}
 

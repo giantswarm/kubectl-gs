@@ -79,17 +79,17 @@ func (a *DeviceAuthenticator) LoadDeviceCode() (DeviceCodeResponseData, error) {
 	result := DeviceCodeResponseData{}
 	response, err := http.PostForm(fmt.Sprintf(deviceCodeUrlTemplate, a.authURL), formData)
 	if err != nil {
-		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error(), "")
+		return result, microerror.Maskf(cannotGetDeviceCodeError, "%s", err.Error())
 	}
 
 	responseBytes, err := bytesFromResponse(response)
 	if err != nil {
-		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error(), "")
+		return result, microerror.Maskf(cannotGetDeviceCodeError, "%s", err.Error())
 	}
 
 	err = json.Unmarshal(responseBytes, &result)
 	if err != nil {
-		return result, microerror.Maskf(cannotGetDeviceCodeError, err.Error(), "")
+		return result, microerror.Maskf(cannotGetDeviceCodeError, "%s", err.Error())
 	}
 
 	return result, nil
@@ -103,7 +103,7 @@ func (a *DeviceAuthenticator) LoadDeviceToken(data DeviceCodeResponseData) (Devi
 
 	userName, err := nameFromToken(response.IdToken)
 	if err != nil {
-		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, err.Error(), "")
+		return DeviceTokenResponseData{}, "", microerror.Maskf(cannotGetDeviceTokenError, "%s", err.Error())
 	}
 
 	return response, userName, nil
@@ -157,36 +157,36 @@ func loadDeviceToken(authURL, deviceCode string) (DeviceTokenResponseData, error
 
 	response, err := http.PostForm(fmt.Sprintf(deviceTokenUrlTemplate, authURL), formData)
 	if err != nil {
-		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error(), "")
+		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, "%s", err.Error())
 	}
 
 	responseBytes, err := bytesFromResponse(response)
 	if err != nil {
 		fmt.Println(err)
-		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error(), "")
+		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, "%s", err.Error())
 	}
 
 	if response.StatusCode > 200 {
 		result := ErrorResponseData{}
 		err = json.Unmarshal(responseBytes, &result)
 		if err != nil {
-			return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error(), "")
+			return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, "%s", err.Error())
 		}
 
 		switch result.Error {
 		case ErrorTypeAuthPending:
-			return DeviceTokenResponseData{}, microerror.Maskf(authorizationPendingError, result.Error, "")
+			return DeviceTokenResponseData{}, microerror.Maskf(authorizationPendingError, "%s", result.Error)
 		case ErrorTypeSlowDown:
-			return DeviceTokenResponseData{}, microerror.Maskf(tooManyAuthRequestsError, result.Error, "")
+			return DeviceTokenResponseData{}, microerror.Maskf(tooManyAuthRequestsError, "%s", result.Error)
 		default:
-			return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, result.Error, "")
+			return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, "%s", result.Error)
 		}
 	}
 
 	result := DeviceTokenResponseData{}
 	err = json.Unmarshal(responseBytes, &result)
 	if err != nil {
-		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, err.Error(), "")
+		return DeviceTokenResponseData{}, microerror.Maskf(cannotGetDeviceTokenError, "%s", err.Error())
 	}
 
 	return result, nil
@@ -208,7 +208,7 @@ func bytesFromResponse(response *http.Response) ([]byte, error) {
 func nameFromToken(token string) (string, error) {
 	parsedToken, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
 	if err != nil {
-		return "", microerror.Maskf(cannotParseJwtError, err.Error(), "")
+		return "", microerror.Maskf(cannotParseJwtError, "%s", err.Error())
 	}
 
 	var claims jwt.MapClaims

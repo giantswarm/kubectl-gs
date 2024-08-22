@@ -412,7 +412,7 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			message := fmt.Sprintf("--%s must only contain alphanumeric characters, start with a letter", flagName)
 			maxLength := key.NameLengthMax
 			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
-			return microerror.Maskf(invalidFlagError, message, "")
+			return microerror.Maskf(invalidFlagError, "%s", message)
 		}
 	} else if !f.GenerateName {
 		if requireEitherNameOrGenerateNameFlag {
