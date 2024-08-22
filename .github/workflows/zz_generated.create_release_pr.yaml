@@ -2,7 +2,7 @@
 #
 #    devctl
 #
-#    https://github.com/giantswarm/devctl/blob/1a381db95a01773e471818a4ce56ad16ad5d6111/pkg/gen/input/workflows/internal/file/create_release_pr.yaml.template
+#    https://github.com/giantswarm/devctl/blob/5d2f9f95fc86dfd1fc903399a7d057f543efec0f/pkg/gen/input/workflows/internal/file/create_release_pr.yaml.template
 #
 name: Create Release PR
 on:
@@ -149,7 +149,7 @@ jobs:
         with:
           go-version: '=1.18.1'
       - name: Install architect
-        uses: giantswarm/install-binary-action@033b1a657eea23d9c42e77312b370e6125e4e38f  # v2.0.0
+        uses: giantswarm/install-binary-action@c37eb401e5092993fc76d545030b1d1769e61237 # v3.0.0
         with:
           binary: "architect"
           version: "6.11.0"
@@ -205,7 +205,7 @@ jobs:
       - name: Bump go module defined in go.mod if needed
         run: |
           if [ "${{ needs.gather_facts.outputs.needs_major_bump }}" = true ] && test -f "go.mod"; then
-            go install github.com/marwan-at-work/mod/cmd/mod@v0.5.0
+            go install github.com/marwan-at-work/mod/cmd/mod@v0.7.1
             mod upgrade
           fi
       - name: Set up git identity
