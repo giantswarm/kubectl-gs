@@ -2,7 +2,6 @@ package clusters
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strings"
 
@@ -86,7 +85,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		resource, err = r.service.Get(ctx, options)
 		if cluster.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A cluster with name '%s' cannot be found.\n", options.Name))
+			return microerror.Maskf(notFoundError, "A cluster with name '%s' cannot be found.\n", options.Name)
 		} else if cluster.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 

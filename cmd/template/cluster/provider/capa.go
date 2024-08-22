@@ -47,7 +47,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 	appName := config.Name
 	configMapName := common.UserConfigMapName(appName)
 
-	if config.AWS.MachinePool.AZs == nil || len(config.AWS.MachinePool.AZs) == 0 {
+	if len(config.AWS.MachinePool.AZs) == 0 {
 		config.AWS.MachinePool.AZs = config.ControlPlaneAZ
 	}
 

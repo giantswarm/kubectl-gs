@@ -138,7 +138,7 @@ func handleDeviceFlowOIDC(out io.Writer, errOut io.Writer, i *installation.Insta
 
 	deviceTokenData, userName, err := auther.LoadDeviceToken(deviceCodeData)
 	if err != nil {
-		return authInfo{}, microerror.Maskf(deviceAuthError, err.Error())
+		return authInfo{}, microerror.Maskf(deviceAuthError, "%s", err.Error())
 	}
 
 	authResult := authInfo{

@@ -2,7 +2,6 @@ package orgs
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strings"
 
@@ -65,7 +64,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		resource, err = r.service.Get(ctx, options)
 		if organization.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("An organization with name '%s' cannot be found.\n", options.Name))
+			return microerror.Maskf(notFoundError, "An organization with name '%s' cannot be found.\n", options.Name)
 		} else if organization.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 

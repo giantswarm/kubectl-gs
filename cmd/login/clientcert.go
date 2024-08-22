@@ -571,7 +571,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 
 			errMsg.WriteString(fmt.Sprintf("\nUse the --%s flag to select one from a specific organization.", flagWCOrganization))
 
-			return nil, microerror.Maskf(multipleClustersFoundError, errMsg.String())
+			return nil, microerror.Maskf(multipleClustersFoundError, "%s", errMsg.String())
 		}
 	}
 }

@@ -61,7 +61,7 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 		},
 		Spec: capiexp.MachinePoolSpec{
 			ClusterName:    config.ClusterName,
-			Replicas:       toInt32Ptr(int32(config.NodesMin)),
+			Replicas:       toInt32Ptr(int32(config.NodesMin)), //nolint:gosec
 			FailureDomains: config.AvailabilityZones,
 			Template: capi.MachineTemplateSpec{
 				Spec: capi.MachineSpec{

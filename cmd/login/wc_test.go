@@ -567,7 +567,7 @@ func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp 
 		if err == nil {
 			cluster.Spec.ControlPlaneEndpoint = capi.APIEndpoint{
 				Host: controlPlaneURL.Host,
-				Port: int32(port),
+				Port: int32(port), //nolint:gosec
 			}
 		}
 	}

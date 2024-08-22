@@ -95,7 +95,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		catalogResource, err = r.service.Get(ctx, options)
 		if catalogdata.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A catalog '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+			return microerror.Maskf(notFoundError, "A catalog '%s/%s' cannot be found.\n", options.Namespace, options.Name)
 		} else if catalogdata.IsNoMatch(err) {
 			r.printNoMatchOutput()
 			return nil

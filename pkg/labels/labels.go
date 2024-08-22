@@ -17,7 +17,7 @@ func Parse(rawLabels []string) (map[string]string, error) {
 	for _, labelSpec := range rawLabels {
 		parts := strings.Split(labelSpec, "=")
 		if len(parts) != 2 {
-			return nil, microerror.Maskf(invalidLabelSpecError, labelSpec)
+			return nil, microerror.Maskf(invalidLabelSpecError, "%s", labelSpec)
 		}
 		if strings.Contains(parts[0], label.ForbiddenLabelKeyPart) && parts[0] != k8smetadata.ServicePriority {
 			return nil, microerror.Maskf(invalidLabelKeyError, "%q: containing forbidden substring '%s'", labelSpec, label.ForbiddenLabelKeyPart)
