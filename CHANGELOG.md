@@ -9,13 +9,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [4.0.0] - 2024-08-22
 
+### Changed
+
+- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flags `--default-apps-release` and `--cluster-release` have been replaced by `--release`.
+
 ## [3.2.0] - 2024-08-12
 
-## Changed
+### Changed
 
 - Use more portable, Bash specific shebang for GitOps pre-commit script template
 - Schedule cluster upgrades for CAPI clusters.
-- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flags `--default-apps-release` and `--cluster-release` have been replaced by `--release`.
 - Print Release information in `get cluster` command.
 
 ## [3.1.0] - 2024-07-23
