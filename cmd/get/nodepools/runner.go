@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 type runner struct {

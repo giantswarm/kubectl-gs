@@ -11,13 +11,13 @@ import (
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	app "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/app"
-	autoup "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/automatic-updates"
-	base "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/base"
-	enc "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/encryption"
-	mc "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/management-cluster"
-	org "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/organization"
-	wc "github.com/giantswarm/kubectl-gs/v4/cmd/gitops/add/workload-cluster"
+	app "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/app"
+	autoup "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/automatic-updates"
+	base "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/base"
+	enc "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/encryption"
+	mc "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/management-cluster"
+	org "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/organization"
+	wc "github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add/workload-cluster"
 )
 
 const (

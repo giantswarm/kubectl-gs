@@ -7,10 +7,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/feature"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/internal/feature"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 func GetCAPITable(npResource nodepool.Resource, capabilities *feature.Service) *metav1.Table {

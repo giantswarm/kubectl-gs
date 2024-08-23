@@ -10,8 +10,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 )
 
 type runner struct {

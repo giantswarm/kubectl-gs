@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/modifier/helper"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/modifier/helper"
 )
 
 type SecretModifier struct {

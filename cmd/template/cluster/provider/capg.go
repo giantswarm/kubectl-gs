@@ -11,10 +11,10 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
-	capg "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/gcp"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	capg "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/gcp"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v5/pkg/template/app"
 )
 
 const (

@@ -11,9 +11,9 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
 )
 
 const (

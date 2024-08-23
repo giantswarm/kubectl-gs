@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/graphql"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/graphql"
 )
 
 const infoQuery = `

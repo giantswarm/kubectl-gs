@@ -7,13 +7,25 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.0.0] - 2024-08-22
+
+### Changed
+
+- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flag `--cluster-release` has been replaced by `--release`.
+
+### Removed
+
+- `kubectl gs gitops add workload-cluster`:
+  - The flag `--default-apps-user-config` has been removed
+  - The flag `--default-apps-release` has been removed
+  - The flag `--cluster-release` has been removed
+
 ## [3.2.0] - 2024-08-12
 
-## Changed
+### Changed
 
 - Use more portable, Bash specific shebang for GitOps pre-commit script template
 - Schedule cluster upgrades for CAPI clusters.
-- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flags `--default-apps-release` and `--cluster-release` have been replaced by `--release`.
 - Print Release information in `get cluster` command.
 
 ## [3.1.0] - 2024-07-23
@@ -1512,7 +1524,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...v3.0.0

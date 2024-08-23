@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/errorprinter"
+	"github.com/giantswarm/kubectl-gs/v5/cmd"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/errorprinter"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )

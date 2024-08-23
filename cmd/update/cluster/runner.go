@@ -14,9 +14,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/label"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/internal/label"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
 )
 
 type runner struct {

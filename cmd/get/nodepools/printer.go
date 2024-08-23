@@ -7,11 +7,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/get/nodepools/provider"
-	"github.com/giantswarm/kubectl-gs/v4/internal/feature"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/get/nodepools/provider"
+	"github.com/giantswarm/kubectl-gs/v5/internal/feature"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 type PrintOptions struct {

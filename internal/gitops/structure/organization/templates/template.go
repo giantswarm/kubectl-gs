@@ -3,7 +3,7 @@ package organization
 import (
 	_ "embed"
 
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
 )
 
 //go:embed organization.yaml.tmpl

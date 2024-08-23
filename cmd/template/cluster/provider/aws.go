@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/aws"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/aws"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {

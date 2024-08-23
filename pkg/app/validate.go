@@ -12,10 +12,10 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/app"
-	appdata "github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/app"
-	catalogdata "github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/helmbinary"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
+	appdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
+	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/helmbinary"
 )
 
 const (

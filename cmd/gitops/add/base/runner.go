@@ -5,26 +5,26 @@ import (
 	"io"
 	"strconv"
 
-	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
+	templateapp "github.com/giantswarm/kubectl-gs/v5/pkg/template/app"
 
-	clustercommon "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capv"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capz"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/openstack"
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/base"
-	"github.com/giantswarm/kubectl-gs/v4/internal/gitops/structure/common"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
+	clustercommon "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capv"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capz"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/openstack"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/base"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 
-	providers "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capa"
-	capg "github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/gcp"
+	providers "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capa"
+	capg "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/gcp"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v4/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 type runner struct {

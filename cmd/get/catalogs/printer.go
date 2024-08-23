@@ -10,8 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	catalogdata "github.com/giantswarm/kubectl-gs/v4/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v4/pkg/output"
+	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 func (r *runner) printOutput(catalogResource catalogdata.Resource, maxColWidth uint) error {

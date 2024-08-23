@@ -14,10 +14,10 @@ import (
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v4/cmd/template/cluster/provider/templates/capv"
-	"github.com/giantswarm/kubectl-gs/v4/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/v4/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capv"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v5/pkg/template/app"
 )
 
 const (
