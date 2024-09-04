@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.1.0] - 2024-09-04
+
 ### Added
 
 - Add support for unified cluster-vsphere app. With cluster-vsphere v0.61.0 and newer, default apps are deployed with cluster-vsphere, and default-apps-vsphere app is not deployed anymore.
@@ -1528,7 +1530,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.0.0...v3.1.0
