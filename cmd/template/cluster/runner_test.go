@@ -235,7 +235,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capz.golden",
 		},
 		{
-			name: "case 5: template cluster capv",
+			name: "case 5: template cluster capv (cluster-vsphere and default-apps-vsphere)",
 			flags: &flags.Flag{
 				Name:              "test1",
 				Provider:          "vsphere",
@@ -243,7 +243,7 @@ func Test_run(t *testing.T) {
 				Organization:      "test",
 				KubernetesVersion: "v1.2.3",
 				App: common.AppConfig{
-					ClusterVersion:     "1.2.3",
+					ClusterVersion:     "0.59.0",
 					ClusterCatalog:     "foo-catalog",
 					DefaultAppsCatalog: "foo-default-catalog",
 					DefaultAppsVersion: "3.2.1",
@@ -273,10 +273,49 @@ func Test_run(t *testing.T) {
 				},
 			},
 			args:               nil,
-			expectedGoldenFile: "run_template_cluster_capv.golden",
+			expectedGoldenFile: "run_template_cluster_capv_1.golden",
 		},
 		{
-			name: "case 6: template cluster capa with custom network CIDR",
+			name: "case 6: template cluster capv (unified cluster-vsphere)",
+			flags: &flags.Flag{
+				Name:              "test1",
+				Provider:          "vsphere",
+				Description:       "yet another test cluster",
+				Organization:      "test",
+				KubernetesVersion: "v1.2.3",
+				App: common.AppConfig{
+					ClusterVersion: "1.2.3",
+					ClusterCatalog: "foo-catalog",
+				},
+				VSphere: common.VSphereConfig{
+					ServiceLoadBalancerCIDR: "1.2.3.4/32",
+					ResourcePool:            "foopool",
+					NetworkName:             "foonet",
+					SvcLbIpPoolName:         "svc-foo-pool",
+					CredentialsSecretName:   "foosecret",
+					ImageTemplate:           "foobar",
+					ControlPlane: common.VSphereControlPlane{
+						VSphereMachineTemplate: common.VSphereMachineTemplate{
+							DiskGiB:   42,
+							MemoryMiB: 42000,
+							NumCPUs:   6,
+							Replicas:  5,
+						},
+						IpPoolName: "foo-pool",
+					},
+					Worker: common.VSphereMachineTemplate{
+						DiskGiB:   43,
+						MemoryMiB: 43000,
+						NumCPUs:   7,
+						Replicas:  4,
+					},
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capv_2.golden",
+		},
+		{
+			name: "case 7: template cluster capa with custom network CIDR",
 			flags: &flags.Flag{
 				Name:                     "test6",
 				Provider:                 "capa",
@@ -312,7 +351,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capa_6.golden",
 		},
 		{
-			name: "case 7: template cluster capa with custom network CIDR 3 AZ",
+			name: "case 8: template cluster capa with custom network CIDR 3 AZ",
 			flags: &flags.Flag{
 				Name:                     "test7",
 				Provider:                 "capa",
@@ -348,7 +387,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capa_7.golden",
 		},
 		{
-			name: "case 8: template cluster capa with custom network CIDR 1 AZ",
+			name: "case 9: template cluster capa with custom network CIDR 1 AZ",
 			flags: &flags.Flag{
 				Name:                     "test8",
 				Provider:                 "capa",
