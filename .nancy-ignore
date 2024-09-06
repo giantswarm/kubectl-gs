@@ -1,3 +1,6 @@
 # pkg:golang/github.com/hashicorp/vault/api
-CVE-2024-2660 until=2024-09-30
-CVE-2024-6104 until=2024-09-30
+CVE-2024-2660 until=2024-10-30
+CVE-2024-6104 until=2024-10-30
+
+# pkg:golang/golang.org/x/net@v0.27.0
+CVE-2024-8421 until=2024-10-30
