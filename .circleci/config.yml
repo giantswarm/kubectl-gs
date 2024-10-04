@@ -42,6 +42,7 @@ workflows:
       - architect/go-build:
           name: go-build
           binary: kubectl-gs
+          resource_class: "medium+"
           filters:
             tags:
               only: /^v.*/
