@@ -242,5 +242,5 @@ replace (
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.9.1
 	golang.org/x/crypto => golang.org/x/crypto v0.28.0
-	golang.org/x/text => golang.org/x/text v0.18.0
+	golang.org/x/text => golang.org/x/text v0.19.0
 )
