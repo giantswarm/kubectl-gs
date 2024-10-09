@@ -22,4 +22,4 @@
 
 ### Is this a breaking change?
 
-(Breaking changes are, for example, removal of commnds/flags or substantial changes in the meaning of a flag. If yes, please add the `breaking-change` label to the PR.)
+(Breaking changes are, for example, removal of commands/flags or substantial changes in the meaning of a flag. If yes, please add the `breaking-change` label to the PR.)
