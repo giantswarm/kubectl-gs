@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPV clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-vsphere version via `--cluster-version`.
+
 ## [4.1.0] - 2024-09-04
 
 ### Added

@@ -10,10 +10,12 @@ type Global struct {
 	Metadata     *Metadata                   `json:"metadata,omitempty"`
 	NodeClasses  map[string]*MachineTemplate `json:"nodeClasses,omitempty"`
 	NodePools    map[string]*NodePool        `json:"nodePools,omitempty"`
+	Release      *Release                    `json:"release,omitempty"`
 }
 
 type Metadata struct {
 	Description     string `json:"description,omitempty"`
+	Name            string `json:"name,omitempty"`
 	Organization    string `json:"organization,omitempty"`
 	PreventDeletion bool   `json:"preventDeletion,omitempty"`
 }
@@ -76,4 +78,8 @@ type MachineTemplate struct {
 type NodePool struct {
 	Class    string `json:"class,omitempty"`
 	Replicas int    `json:"replicas,omitempty"`
+}
+
+type Release struct {
+	Version string `json:"version,omitempty"`
 }
