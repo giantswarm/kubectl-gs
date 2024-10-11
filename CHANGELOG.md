@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `TELEMETRY_OPTOUT` to an arbitrary value to disable this. The details submitted are:
+- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `KUBECTL_GS_TELEMETRY_OPTOUT` environment variable to an arbitrary value to disable this. The details submitted are:
   - kubectl-gs version
   - Command name (e. g. `kubectl gs get clusters`)
   - Operating system name (e.g. `linux`, `darwin`, `windows`)

@@ -31,7 +31,7 @@ Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
 `
 	telemetrydeckAppID = "4539763B-A291-4835-B832-9BEB80CA7039"
 
-	telemetryOptOutVariable = "TELEMETRY_OPTOUT"
+	telemetryOptOutVariable = "KUBECTL_GS_TELEMETRY_OPTOUT"
 )
 
 type Config struct {
