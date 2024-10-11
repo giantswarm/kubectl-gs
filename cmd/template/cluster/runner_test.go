@@ -240,6 +240,7 @@ func Test_run(t *testing.T) {
 				Name:              "test1",
 				Provider:          "vsphere",
 				Description:       "yet another test cluster",
+				Release:           "27.0.0",
 				Organization:      "test",
 				KubernetesVersion: "v1.2.3",
 				App: common.AppConfig{
@@ -280,6 +281,7 @@ func Test_run(t *testing.T) {
 				Name:              "test1",
 				Provider:          "vsphere",
 				Description:       "yet another test cluster",
+				Release:           "27.0.0",
 				Organization:      "test",
 				KubernetesVersion: "v1.2.3",
 				App: common.AppConfig{
