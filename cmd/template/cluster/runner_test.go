@@ -254,7 +254,6 @@ func Test_run(t *testing.T) {
 					NetworkName:             "foonet",
 					SvcLbIpPoolName:         "svc-foo-pool",
 					CredentialsSecretName:   "foosecret",
-					ImageTemplate:           "foobar",
 					ControlPlane: common.VSphereControlPlane{
 						VSphereMachineTemplate: common.VSphereMachineTemplate{
 							DiskGiB:   42,
@@ -293,7 +292,6 @@ func Test_run(t *testing.T) {
 					NetworkName:             "foonet",
 					SvcLbIpPoolName:         "svc-foo-pool",
 					CredentialsSecretName:   "foosecret",
-					ImageTemplate:           "foobar",
 					ControlPlane: common.VSphereControlPlane{
 						VSphereMachineTemplate: common.VSphereMachineTemplate{
 							DiskGiB:   42,
