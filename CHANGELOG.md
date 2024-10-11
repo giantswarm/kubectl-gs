@@ -7,6 +7,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `TELEMETRY_OPTOUT` to an arbitrary value to disable this. The details submitted are:
+  - kubectl-gs version
+  - Command name (e. g. `kubectl gs get clusters`)
+  - Operating system name (e.g. `linux`, `darwin`, `windows`)
+  - Processor architecture (e.g. `amd64`, `arm64`)
+  - The library and version used to submit the data (`telemetrydeck-go/0.0.1`).
+  - An anonymized user identifier hash, to enable counting unique users.
+
 ## [4.1.0] - 2024-09-04
 
 ### Added
