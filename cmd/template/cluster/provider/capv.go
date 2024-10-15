@@ -152,6 +152,7 @@ func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 				MachineTemplate: getMachineTemplate(&config.VSphere.ControlPlane.VSphereMachineTemplate, &config),
 			},
 			Metadata: &capv.Metadata{
+				Name:            config.Name,
 				Description:     config.Description,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
@@ -164,6 +165,9 @@ func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 					Class:    className,
 					Replicas: config.VSphere.Worker.Replicas,
 				},
+			},
+			Release: &capv.Release{
+				Version: config.ReleaseVersion,
 			},
 		},
 	}
@@ -190,7 +194,6 @@ func getMachineTemplate(machineTemplate *common.VSphereMachineTemplate, clusterC
 		NumCPUs:      machineTemplate.NumCPUs,
 		MemoryMiB:    machineTemplate.MemoryMiB,
 		ResourcePool: config.ResourcePool,
-		Template:     config.ImageTemplate,
 	}
 }
 

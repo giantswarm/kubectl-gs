@@ -109,7 +109,6 @@ const (
 	flagVSphereWorkerNumCPUs           = "vsphere-worker-num-cpus"
 	flagVSphereWorkerReplicas          = "vsphere-worker-replicas"
 	flagVSphereResourcePool            = "vsphere-resource-pool"
-	flagVSphereImageTemplate           = "vsphere-image-template"
 	flagVSphereCredentialsSecretName   = "vsphere-credentials-secret-name" // #nosec G101
 
 	// Common.
@@ -262,7 +261,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.VSphere.SvcLbIpPoolName, flagVSphereSvcLbIpPool, "svc-lb-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for Service LB (kubevip) is taken")
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IpPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.DiskGiB, flagVSphereControlPlaneDiskGiB, 50, "Disk size in GiB for control individual plane nodes")
-	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8096, "Memory size in MiB for individual control plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8192, "Memory size in MiB for individual control plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.NumCPUs, flagVSphereControlPlaneNumCPUs, 4, "Number of CPUs for individual control plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.ControlPlane.Replicas, flagVSphereControlPlaneReplicas, 3, "Number of control plane replicas (use odd number)")
 	cmd.Flags().IntVar(&f.VSphere.Worker.DiskGiB, flagVSphereWorkerDiskGiB, 50, "Disk size in GiB for control individual worker nodes")
@@ -270,7 +269,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.VSphere.Worker.NumCPUs, flagVSphereWorkerNumCPUs, 6, "Number of CPUs for individual worker plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
 	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "*/Resources", "What resource pool in vsphere should be used")
-	cmd.Flags().StringVar(&f.VSphere.ImageTemplate, flagVSphereImageTemplate, "flatcar-stable-3602.2.1-kube-%s-gs", "OS images with Kubernetes that should be used for VMs. These template should be available in vCenter. The '%s' will be replaced with correct Kubernetes version. Example: 'ubuntu-2004-kube-%%s'")
 	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
 
 	// App-based clusters only.
@@ -330,8 +328,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentRootDiskSize)
 	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentReplicas)
 	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentInstanceType)
-
-	_ = cmd.Flags().MarkHidden(flagVSphereImageTemplate)
 
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
@@ -475,13 +471,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 				f.KubernetesVersion = defaultVSphereKubernetesVersion
 			}
 
-			placeholders := strings.Count(f.VSphere.ImageTemplate, "%s")
-			if placeholders > 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must contain at most one occurrence of '%%s' where k8s version will be injected", flagVSphereImageTemplate)
-			}
-			if placeholders == 1 {
-				f.VSphere.ImageTemplate = fmt.Sprintf(f.VSphere.ImageTemplate, f.KubernetesVersion)
-			}
 			if f.VSphere.Worker.Replicas < 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereWorkerReplicas)
 			}
