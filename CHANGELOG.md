@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.2.0] - 2024-10-15
+
 ### Changed
 
 - **BREAKING** When templating cluster manifests for CAPV clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-vsphere version via `--cluster-version`.
@@ -1534,7 +1536,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...HEAD
+[4.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...v3.2.0
