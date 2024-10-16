@@ -71,7 +71,7 @@ jobs:
           name: Build the container image using 'docker build'
           command: |
             PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
-            docker build --platform ${PLATFORMS} -f "<<parameters.dockerfile>>" "<<parameters.build-context>>" --progress plain 2>&1 | tee .docker.log
+            docker build --platform ${PLATFORMS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
             docker images
 
 workflows:
