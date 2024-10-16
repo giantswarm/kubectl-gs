@@ -35,26 +35,64 @@ jobs:
       - run:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
+  go-build-multiarch:
+    executor: architect/architect
+    resource_class: "medium+"
+    steps:
+      - checkout
+      - architect/tools-info
+      - architect/go-cache-restore
+      - architect/go-test
+      - run:
+          name: Build binaries
+          command: |
+            mkdir -p ./kubectl-gs/platform/linux/{amd64,arm64,ppc64le,s390x,386}
+            for arch in $(ls ./kubectl-gs/platform/linux)
+            do
+              CGO_ENABLED=0 GOOS="linux" GOARCH=${arch} go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs/platform/linux/${arch}/kubectl-gs .
+            done
+      - architect/go-cache-save
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./kubectl-gs
+  push-to-registries-multiarch:
+    executor: architect/architect
+    resource_class: "medium+"
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: default
+      - attach_workspace:
+          at: .
+      - architect/image-prepare-tag
+      - architect/image-login-to-registries
+      - run:
+          name: Build the container image using 'docker build'
+          command: |
+            PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
+            docker build --platform ${PLATFORMS} -f "<<parameters.dockerfile>>" "<<parameters.build-context>>" --progress plain 2>&1 | tee .docker.log
+            docker images
 
 workflows:
-  go-build:
+  go-build-multiarch:
     jobs:
-      - architect/go-build:
-          name: go-build
-          binary: kubectl-gs
-          resource_class: "medium+"
-          filters:
-            tags:
-              only: /^v.*/
-      - architect/push-to-registries:
+      - go-build-multiarch:
           context: architect
-          name: push-to-registries
-          requires:
-            - go-build
+          name: go-build-multiarch
           filters:
-            # Needed to trigger job also on git tag.
             tags:
               only: /^v.*/
+      - push-to-registries-multiarch:
+          context: architect
+          name: push-to-registries-multiarch
+          requires:
+            - go-build-multiarch
+          filters:
+            tags:
+              only: /^v.*/
+
+
   update-krew:
     jobs:
       - debug-tag:
