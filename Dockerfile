@@ -10,10 +10,10 @@ RUN apk add --no-cache ca-certificates curl \
 
 FROM gsoci.azurecr.io/giantswarm/alpine:3.20.3
 
-ARG TARGETPLATFORM
+ARG TARGETARCH
 
 COPY --from=binaries /binaries/* /usr/bin/
-COPY ./kubectl-gs/platform/${TARGETPLATFORM}/kubectl-gs /usr/bin/kubectl-gs
+COPY ./kubectl-gs-${TARGETARCH} /usr/bin/kubectl-gs
 RUN ln -s /usr/bin/kubectl-gs /usr/bin/kgs
 
 ENTRYPOINT ["kubectl-gs"]

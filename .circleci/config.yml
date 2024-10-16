@@ -35,6 +35,7 @@ jobs:
       - run:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
+
   go-build-multiarch:
     executor: architect/architect
     resource_class: "medium+"
@@ -44,21 +45,36 @@ jobs:
       - architect/go-cache-restore
       - architect/go-test
       - run:
-          name: Build binaries
+          name: Prepare directory
+          command:
+      - run:
+          name: Build binary (linux/amd64)
           command: |
-            mkdir -p ./kubectl-gs/platform/linux/{amd64,arm64,ppc64le,s390x,386}
-            for arch in $(ls ./kubectl-gs/platform/linux)
-            do
-              CGO_ENABLED=0 GOOS="linux" GOARCH=${arch} go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs/platform/linux/${arch}/kubectl-gs .
-            done
+            CGO_ENABLED=0 GOOS="linux" GOARCH=amd64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-amd64 .
+      - run:
+          name: Build binary (linux/arm64)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
+      - run:
+          name: Build binary (linux/ppc64le)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
+      - run:
+          name: Build binary (linux/s390x)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
+      - run:
+          name: Build binary (linux/386)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
       - architect/go-cache-save
       - persist_to_workspace:
           root: .
           paths:
             - ./kubectl-gs
+
   push-to-registries-multiarch:
     executor: architect/architect
-    resource_class: "medium+"
     steps:
       - checkout
       - setup_remote_docker:
@@ -71,7 +87,7 @@ jobs:
           name: Build the container image using 'docker build'
           command: |
             PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
-            docker build --platform ${PLATFORMS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
+            docker buildx build --platform ${PLATFORMS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
             docker images
 
 workflows:
