@@ -87,6 +87,7 @@ jobs:
       - run:
           name: Build the container image using 'docker build'
           command: |
+            docker buildx ls
             PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
             docker buildx build --platform ${PLATFORMS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
             docker images
