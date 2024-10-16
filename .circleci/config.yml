@@ -45,9 +45,6 @@ jobs:
       - architect/go-cache-restore
       - architect/go-test
       - run:
-          name: Prepare directory
-          command:
-      - run:
           name: Build binary (linux/amd64)
           command: |
             CGO_ENABLED=0 GOOS="linux" GOARCH=amd64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-amd64 .
