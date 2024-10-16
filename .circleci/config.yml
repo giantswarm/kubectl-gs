@@ -68,7 +68,11 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - ./kubectl-gs
+            - ./kubectl-gs-amd64
+            - ./kubectl-gs-arm64
+            - ./kubectl-gs-ppc64le
+            - ./kubectl-gs-s390x
+            - ./kubectl-gs-386
 
   push-to-registries-multiarch:
     executor: architect/architect
