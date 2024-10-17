@@ -85,13 +85,53 @@ jobs:
       - architect/image-prepare-tag
       - architect/image-login-to-registries
       - run:
-          name: Build the container image using 'docker build'
+          name: Create a docker-container-driven custom builder
           command: |
             docker buildx create --name container-builder --driver docker-container --bootstrap --use
-            docker buildx ls
-            PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
-            docker buildx build --platform ${PLATFORMS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
-            docker images
+      - run:
+          name: Push image to registries
+          command: |
+            IMAGE_ACCESS=public
+            if ! [[ "${REGISTRIES_DATA_BASE64}" ]]; then
+              echo "Environment variable REGISTRIES_DATA_BASE64 is not set properly in circleci's context."
+              exit 1
+            fi
+            echo $REGISTRIES_DATA_BASE64 | base64 -d > .registries_data
+
+
+            cat .registries_data | while read -r access reg _ _ push_dev; do
+              echo -e "\nProcessing image push config for registry ${reg}."
+              if [[ "${push_dev}" == "false" ]] && [[ "${DOCKER_IMAGE_TAG}" =~ [a-f0-9]{40} ]]; then
+                echo "Not uploading image with tag ${DOCKER_IMAGE_TAG}, as 'push-dev' is 'false'"
+                continue
+              fi
+
+              if [[ "${access}" == *"${IMAGE_ACCESS}"* ]]; then
+                echo "Tagging the image as 'latest'"
+                TAGS="-t ${reg}/giantswarm/kubectl-gs:${DOCKER_IMAGE_TAG}"
+
+                if [[ "<<parameters.tag-latest-branch>>" == "${CIRCLE_BRANCH}" ]]; then
+                  echo "Tagging the image as 'latest'"
+                  TAGS="$TAGS -t ${reg}/giantswarm/kubectl-gs:latest"
+                fi
+
+                echo "Build and push the image to the ${reg}"
+
+                PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
+                docker buildx build --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
+
+
+                CMD="docker buildx build --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
+                echo $CMD
+              else
+                echo "Registry ${reg} is not configured for ${IMAGE_ACCESS} images, skipping"
+              fi
+            done
+
+            if [[ -f .failed_images ]]; then
+              echo "Some images couldn't be pushed, check: $(cat .failed_images)"
+              exit 1
+            fi
 
 workflows:
   go-build-multiarch:
