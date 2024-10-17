@@ -92,6 +92,8 @@ jobs:
           name: Push image to registries
           command: |
             IMAGE_ACCESS=public
+            PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
+
             if ! [[ "${REGISTRIES_DATA_BASE64}" ]]; then
               echo "Environment variable REGISTRIES_DATA_BASE64 is not set properly in circleci's context."
               exit 1
@@ -107,7 +109,7 @@ jobs:
               fi
 
               if [[ "${access}" == *"${IMAGE_ACCESS}"* ]]; then
-                echo "Tagging the image as 'latest'"
+                echo "Tagging the image as ${DOCKER_IMAGE_TAG}"
                 TAGS="-t ${reg}/giantswarm/kubectl-gs:${DOCKER_IMAGE_TAG}"
 
                 if [[ "main" == "${CIRCLE_BRANCH}" ]]; then
@@ -116,11 +118,6 @@ jobs:
                 fi
 
                 echo "Build and push the image to the ${reg}"
-
-                PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
-                docker buildx build --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log
-
-
                 CMD="docker buildx build --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
                 echo $CMD
               else
