@@ -117,16 +117,31 @@ jobs:
                   TAGS="$TAGS -t ${reg}/giantswarm/kubectl-gs:latest"
                 fi
 
-                echo "Build and push the image to the ${reg}"
+                echo "Building and pushing image to the ${reg} registry"
                 CMD="docker buildx build --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
-                echo $CMD
+
+                SUCCESS=false
+                for i in $(seq 1 4); do
+                  echo "attempt: ${i}"
+                  if bash -c "echo ${CMD}"; then
+                    echo "Image is built and pushed to the registry."
+                    SUCCESS=true
+                    break
+                  fi
+                  echo "Waiting 5 seconds before the next attempt."
+                  sleep 5
+                done
+                if [[ "${SUCCESS}" == "false" ]]; then
+                  echo "${reg}:${DOCKER_IMAGE_TAG}" >> .failed_images
+                fi
+
               else
                 echo "Registry ${reg} is not configured for ${IMAGE_ACCESS} images, skipping"
               fi
             done
 
             if [[ -f .failed_images ]]; then
-              echo "Some images couldn't be pushed, check: $(cat .failed_images)"
+              echo "Some images couldn't be built and pushed, check: $(cat .failed_images)"
               exit 1
             fi
 
