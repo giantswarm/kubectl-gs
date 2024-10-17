@@ -9,15 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `KUBECTL_GS_TELEMETRY_OPTOUT` environment variable to an arbitrary value to disable this. Data is submitted to [TelemetryDeck](https://telemetrydeck.com/) in the EU.
-  
-  The details submitted are:
-  - kubectl-gs version
-  - Command name (e. g. `kubectl gs get clusters`)
-  - Operating system name (e.g. `linux`, `darwin`, `windows`)
-  - Processor architecture (e.g. `amd64`, `arm64`)
-  - The library and version used to submit the data (`telemetrydeck-go/0.0.1`).
-  - An anonymized user identifier hash, to enable counting unique users.
+- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `KUBECTL_GS_TELEMETRY_OPTOUT` environment variable to an arbitrary value to disable this. Data is submitted to [TelemetryDeck](https://telemetrydeck.com/) in the EU. More details are available in our [docs](https://docs.giantswarm.io/vintage/use-the-api/kubectl-gs/telemetry/).
 
 ## [4.2.0] - 2024-10-15
 
