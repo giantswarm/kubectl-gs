@@ -118,7 +118,7 @@ jobs:
                 fi
 
                 echo "Building and pushing image to the ${reg} registry"
-                CMD="docker buildx build --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
+                CMD="docker buildx build --push --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
 
                 SUCCESS=false
                 for i in $(seq 1 4); do
