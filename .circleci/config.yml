@@ -93,7 +93,6 @@ jobs:
           command: |
             IMAGE_ACCESS=public
             PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
-            BUILDX_NO_DEFAULT_ATTESTATIONS=1
 
             if ! [[ "${REGISTRIES_DATA_BASE64}" ]]; then
               echo "Environment variable REGISTRIES_DATA_BASE64 is not set properly in circleci's context."
@@ -119,7 +118,7 @@ jobs:
                 fi
 
                 echo "Building and pushing image to the ${reg} registry"
-                CMD="docker buildx build --push --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
+                CMD="docker buildx build --push --provenance=false --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
 
                 SUCCESS=false
                 for i in $(seq 1 4); do
