@@ -19,6 +19,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   - The library and version used to submit the data (`telemetrydeck-go/0.0.1`).
   - An anonymized user identifier hash, to enable counting unique users.
 
+## [4.2.0] - 2024-10-15
+
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPV clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-vsphere version via `--cluster-version`.
+
 ## [4.1.0] - 2024-09-04
 
 ### Added
@@ -1542,7 +1548,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...HEAD
+[4.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...v3.2.0

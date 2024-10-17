@@ -72,7 +72,6 @@ type GCPConfig struct {
 type VSphereConfig struct {
 	ControlPlane            VSphereControlPlane
 	CredentialsSecretName   string
-	ImageTemplate           string
 	NetworkName             string
 	Worker                  VSphereMachineTemplate
 	ResourcePool            string
