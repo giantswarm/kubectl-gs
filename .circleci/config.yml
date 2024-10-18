@@ -36,25 +36,136 @@ jobs:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
 
+  go-build-multiarch:
+    executor: architect/architect
+    resource_class: "medium+"
+    steps:
+      - checkout
+      - architect/tools-info
+      - architect/go-cache-restore
+      - architect/go-test
+      - run:
+          name: Build binary (linux/amd64)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=amd64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-amd64 .
+      - run:
+          name: Build binary (linux/386)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
+      #- run:
+      #    name: Build binary (linux/arm64)
+      #    command: |
+      #      CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
+      #- run:
+      #    name: Build binary (linux/ppc64le)
+      #    command: |
+      #      CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
+      #- run:
+      #    name: Build binary (linux/s390x)
+      #    command: |
+      #      CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
+      - architect/go-cache-save
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./kubectl-gs-amd64
+            - ./kubectl-gs-386
+            #- ./kubectl-gs-arm64
+            #- ./kubectl-gs-ppc64le
+            #- ./kubectl-gs-s390x
+            #- ./kubectl-gs-386
+
+  push-to-registries-multiarch:
+    executor: architect/architect
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: default
+      - attach_workspace:
+          at: .
+      - architect/image-prepare-tag
+      - architect/image-login-to-registries
+      - run:
+          name: Create a docker-container-driven custom builder
+          command: |
+            docker buildx create --name container-builder --driver docker-container --bootstrap --use
+      - run:
+          name: Push image to registries
+          command: |
+            IMAGE_ACCESS=public
+            #PLATFORMS=linux/amd64,linux/386,linux/arm64,linux/ppc64le,linux/s390x
+            PLATFORMS=linux/amd64,linux/386
+
+            if ! [[ "${REGISTRIES_DATA_BASE64}" ]]; then
+              echo "Environment variable REGISTRIES_DATA_BASE64 is not set properly in circleci's context."
+              exit 1
+            fi
+            echo $REGISTRIES_DATA_BASE64 | base64 -d > .registries_data
+
+
+            cat .registries_data | while read -r access reg _ _ push_dev; do
+              echo -e "\nProcessing image push config for registry ${reg}."
+              if [[ "${push_dev}" == "false" ]] && [[ "${DOCKER_IMAGE_TAG}" =~ [a-f0-9]{40} ]]; then
+                echo "Not uploading image with tag ${DOCKER_IMAGE_TAG}, as 'push-dev' is 'false'"
+                continue
+              fi
+
+              if [[ "${access}" == *"${IMAGE_ACCESS}"* ]]; then
+                echo "Tagging the image as ${DOCKER_IMAGE_TAG}"
+                TAGS="-t ${reg}/giantswarm/kubectl-gs:${DOCKER_IMAGE_TAG}"
+
+                if [[ "main" == "${CIRCLE_BRANCH}" ]]; then
+                  echo "Tagging the image as 'latest'"
+                  TAGS="$TAGS -t ${reg}/giantswarm/kubectl-gs:latest"
+                fi
+
+                echo "Building and pushing image to the ${reg} registry"
+                CMD="docker buildx build --push --provenance=false --platform ${PLATFORMS} ${TAGS} -f ./Dockerfile . --progress plain 2>&1 | tee .docker.log"
+
+                SUCCESS=false
+                for i in $(seq 1 4); do
+                  echo "attempt: ${i}"
+                  if bash -c "${CMD}"; then
+                    echo "Image is built and pushed to the registry."
+                    SUCCESS=true
+                    break
+                  fi
+                  echo "Waiting 5 seconds before the next attempt."
+                  sleep 5
+                done
+                if [[ "${SUCCESS}" == "false" ]]; then
+                  echo "${reg}:${DOCKER_IMAGE_TAG}" >> .failed_images
+                fi
+
+              else
+                echo "Registry ${reg} is not configured for ${IMAGE_ACCESS} images, skipping"
+              fi
+            done
+
+            if [[ -f .failed_images ]]; then
+              echo "Some images couldn't be built and pushed, check: $(cat .failed_images)"
+              exit 1
+            fi
+
 workflows:
-  go-build:
+  go-build-multiarch:
     jobs:
-      - architect/go-build:
-          name: go-build
-          binary: kubectl-gs
-          resource_class: "medium+"
-          filters:
-            tags:
-              only: /^v.*/
-      - architect/push-to-registries:
+      - go-build-multiarch:
           context: architect
-          name: push-to-registries
-          requires:
-            - go-build
+          name: go-build-multiarch
           filters:
-            # Needed to trigger job also on git tag.
             tags:
               only: /^v.*/
+      - push-to-registries-multiarch:
+          context: architect
+          name: push-to-registries-multiarch
+          requires:
+            - go-build-multiarch
+          filters:
+            tags:
+              only: /^v.*/
+
+
   update-krew:
     jobs:
       - debug-tag:
