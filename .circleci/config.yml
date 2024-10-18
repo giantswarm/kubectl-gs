@@ -49,30 +49,31 @@ jobs:
           command: |
             CGO_ENABLED=0 GOOS="linux" GOARCH=amd64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-amd64 .
       - run:
-          name: Build binary (linux/arm64)
-          command: |
-            CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
-      - run:
-          name: Build binary (linux/ppc64le)
-          command: |
-            CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
-      - run:
-          name: Build binary (linux/s390x)
-          command: |
-            CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
-      - run:
           name: Build binary (linux/386)
           command: |
             CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
+      #- run:
+      #    name: Build binary (linux/arm64)
+      #    command: |
+      #      CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
+      #- run:
+      #    name: Build binary (linux/ppc64le)
+      #    command: |
+      #      CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
+      #- run:
+      #    name: Build binary (linux/s390x)
+      #    command: |
+      #      CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
       - architect/go-cache-save
       - persist_to_workspace:
           root: .
           paths:
             - ./kubectl-gs-amd64
-            - ./kubectl-gs-arm64
-            - ./kubectl-gs-ppc64le
-            - ./kubectl-gs-s390x
             - ./kubectl-gs-386
+            #- ./kubectl-gs-arm64
+            #- ./kubectl-gs-ppc64le
+            #- ./kubectl-gs-s390x
+            #- ./kubectl-gs-386
 
   push-to-registries-multiarch:
     executor: architect/architect
@@ -92,7 +93,8 @@ jobs:
           name: Push image to registries
           command: |
             IMAGE_ACCESS=public
-            PLATFORMS=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386
+            #PLATFORMS=linux/amd64,linux/386,linux/arm64,linux/ppc64le,linux/s390x
+            PLATFORMS=linux/amd64,linux/386
 
             if ! [[ "${REGISTRIES_DATA_BASE64}" ]]; then
               echo "Environment variable REGISTRIES_DATA_BASE64 is not set properly in circleci's context."
