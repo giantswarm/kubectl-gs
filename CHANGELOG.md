@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.3.0] - 2024-10-28
+
 ### Added
 
 - Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `KUBECTL_GS_TELEMETRY_OPTOUT` environment variable to an arbitrary value to disable this. Data is submitted to [TelemetryDeck](https://telemetrydeck.com/) in the EU. More details are available in our [docs](https://docs.giantswarm.io/vintage/use-the-api/kubectl-gs/telemetry/).
@@ -1540,7 +1542,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.0...HEAD
+[4.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...v4.0.0
