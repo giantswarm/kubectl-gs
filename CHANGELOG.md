@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `KUBECTL_GS_TELEMETRY_OPTOUT` environment variable to an arbitrary value to disable this. Data is submitted to [TelemetryDeck](https://telemetrydeck.com/) in the EU. More details are available in our [docs](https://docs.giantswarm.io/vintage/use-the-api/kubectl-gs/telemetry/).
+
 ## [4.2.0] - 2024-10-15
 
 ### Changed

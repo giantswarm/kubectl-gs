@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/telemetrydeck-go"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
@@ -26,6 +29,9 @@ const (
 
 Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
 `
+	telemetrydeckAppID = "4539763B-A291-4835-B832-9BEB80CA7039"
+
+	telemetryOptOutVariable = "KUBECTL_GS_TELEMETRY_OPTOUT"
 )
 
 type Config struct {
@@ -66,9 +72,34 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:                name,
-		Short:              description,
-		Long:               description,
+		Use:   name,
+		Short: description,
+		Long:  description,
+
+		// Called for every subcommand execution
+		// to track command usage.
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if os.Getenv(telemetryOptOutVariable) != "" {
+				return
+			}
+
+			logger := log.New(os.Stdout, "", 0) // to bring telemetry errors to the surface
+			tdClient, err := telemetrydeck.NewClient(telemetrydeckAppID,
+				telemetrydeck.WithLogger(logger),
+			)
+			if err != nil {
+				log.Printf("error creating telemetrydeck client: %s", err)
+			} else {
+				err = tdClient.SendSignal(context.Background(), "GiantSwarm.command", map[string]interface{}{
+					"appVersion": project.Version(),
+					"command":    cmd.CommandPath(),
+				})
+				if err != nil {
+					log.Printf("error sending telemetrydeck signal: %s", err)
+				}
+			}
+		},
+
 		RunE:               r.Run,
 		PersistentPostRunE: r.PersistentPostRun,
 		SilenceUsage:       true,
