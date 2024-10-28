@@ -1,8 +1,8 @@
 package kubeclient
 
 import (
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8scrdclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8scrdclient"
 	v1 "k8s.io/api/authorization/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/runtime"

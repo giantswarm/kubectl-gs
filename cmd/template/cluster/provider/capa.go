@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"github.com/3th1nk/cidr"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/pkg/errors"
 	"k8s.io/utils/net"

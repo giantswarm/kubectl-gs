@@ -6,7 +6,7 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
