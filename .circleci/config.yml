@@ -162,6 +162,9 @@ workflows:
           requires:
             - go-build-multiarch
           filters:
+            branches:
+              ignore:
+                - main
             tags:
               only: /^v.*/
 
