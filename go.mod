@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/micrologger v1.1.1
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/release-operator/v4 v4.2.0
-	github.com/giantswarm/telemetrydeck-go v0.0.0-20241017111948-ecfd1a61b319
+	github.com/giantswarm/telemetrydeck-go v0.0.0-20241031123115-8fc0dd371e5b
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/pkg/errors v0.9.1

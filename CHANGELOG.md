@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed unique user tracking
+- Remove debug logging regarding telemetry
+
 ## [4.3.0] - 2024-10-28
 
 ### Added
