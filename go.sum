@@ -201,10 +201,6 @@ github.com/giantswarm/organization-operator v1.6.4 h1:t0G0hoB7TfeGzRnr58NIwO6LAm
 github.com/giantswarm/organization-operator v1.6.4/go.mod h1:Rw9gG/ReI5YfvoC85F9H5wH2aWguUR7JY/NfTjZC2Jc=
 github.com/giantswarm/release-operator/v4 v4.2.0 h1:8aU8V3BlF/sKmYG1MgcPGXs8Q/cOlZfhgK4/oBfMPbg=
 github.com/giantswarm/release-operator/v4 v4.2.0/go.mod h1:/ew0vh4BnfJqOddNTcm7iAHvm7g4MBp5C+pxi+H4ydk=
-github.com/giantswarm/telemetrydeck-go v0.0.0-20241017111948-ecfd1a61b319 h1:cLItDxKZDhf7HCe7qhxeY6YL768miTCps860S/KlLvg=
-github.com/giantswarm/telemetrydeck-go v0.0.0-20241017111948-ecfd1a61b319/go.mod h1:BitlH7nTrQmWvVEtnAa8pNM+FjI0+9S7JA9tl1PVvzo=
-github.com/giantswarm/telemetrydeck-go v0.0.0-20241031104010-3a4cb143d896 h1:dx1mI+QmliDO2zrf9lu29fYeAk4vlnWMeuJENbGTOqY=
-github.com/giantswarm/telemetrydeck-go v0.0.0-20241031104010-3a4cb143d896/go.mod h1:BitlH7nTrQmWvVEtnAa8pNM+FjI0+9S7JA9tl1PVvzo=
 github.com/giantswarm/telemetrydeck-go v0.0.0-20241031105524-19d39c36041a h1:429awTtNklgWcJ1CFJTJxZBr9WAhGqO2AGi6advOE3g=
 github.com/giantswarm/telemetrydeck-go v0.0.0-20241031105524-19d39c36041a/go.mod h1:BitlH7nTrQmWvVEtnAa8pNM+FjI0+9S7JA9tl1PVvzo=
 github.com/go-errors/errors v1.4.2 h1:J6MZopCL4uSllY1OfXM374weqZFFItUbrImctkmUxIA=
