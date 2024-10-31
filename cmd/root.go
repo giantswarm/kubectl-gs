@@ -98,10 +98,6 @@ func New(config Config) (*cobra.Command, error) {
 					log.Printf("error sending telemetrydeck signal: %s", err)
 				}
 			}
-
-			// TODO: remove after testing
-			fmt.Printf("User ID: %q\n", tdClient.UserID())
-			fmt.Printf("User ID hash: %q\n\n", tdClient.UserIDHash())
 		},
 
 		RunE:               r.Run,
