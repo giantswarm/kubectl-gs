@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Cloud Director Provider.
+
 ## [4.3.1] - 2024-11-04
 
 ### Fixed

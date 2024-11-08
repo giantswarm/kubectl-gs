@@ -62,6 +62,28 @@ type AzureConfig struct {
 	SubscriptionID string
 }
 
+type CloudDirectorConfig struct {
+	VipSubnet               string
+	CredentialsSecretName   string
+	ControlPlane            CloudDirectorControlPlane
+	NetworkName             string
+	Worker                  CloudDirectorMachineTemplate
+	ResourcePool            string
+	ServiceLoadBalancerCIDR string
+	SvcLbIpPoolName         string
+}
+
+type CloudDirectorControlPlane struct {
+	Replicas        int
+	MachineTemplate CloudDirectorMachineTemplate
+}
+
+type CloudDirectorMachineTemplate struct {
+	DiskSizeGB   int
+	SizingPolicy string
+	Replicas     int
+}
+
 type GCPConfig struct {
 	Project           string
 	FailureDomains    []string
@@ -165,12 +187,13 @@ type ClusterConfig struct {
 	BastionReplicas          int
 	ControlPlaneInstanceType string
 
-	App       AppConfig
-	AWS       AWSConfig
-	Azure     AzureConfig
-	VSphere   VSphereConfig
-	GCP       GCPConfig
-	OpenStack OpenStackConfig
+	App           AppConfig
+	AWS           AWSConfig
+	Azure         AzureConfig
+	VSphere       VSphereConfig
+	CloudDirector CloudDirectorConfig
+	GCP           GCPConfig
+	OpenStack     OpenStackConfig
 }
 
 type OIDC struct {
