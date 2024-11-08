@@ -103,7 +103,7 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    ClusterCloudDirectorRepoName,
+			Name:                    ClusterVsphereRepoName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
