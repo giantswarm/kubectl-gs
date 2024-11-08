@@ -7,11 +7,12 @@ type ClusterConfig struct {
 }
 
 type Global struct {
-	Connectivity *Connectivity        `json:"connectivity,omitempty"`
-	ControlPlane *ControlPlane        `json:"controlPlane,omitempty"`
-	Metadata     *Metadata            `json:"metadata,omitempty"`
-	NodePools    map[string]*NodePool `json:"nodePools,omitempty"`
-	Release      *Release             `json:"release,omitempty"`
+	Connectivity     *Connectivity        `json:"connectivity,omitempty"`
+	ControlPlane     *ControlPlane        `json:"controlPlane,omitempty"`
+	Metadata         *Metadata            `json:"metadata,omitempty"`
+	NodePools        map[string]*NodePool `json:"nodePools,omitempty"`
+	Release          *Release             `json:"release,omitempty"`
+	ProviderSpecific *ProviderSpecific    `json:"providerSpecific,omitempty"`
 }
 
 type Connectivity struct {
@@ -69,10 +70,19 @@ type NodePool struct {
 }
 
 type ProviderSpecific struct {
-	Org         string `json:"org,omitempty"`
-	Ovdc        string `json:"ovdc,omitempty"`
-	OvdcNetwork string `json:"ovdcNetwork,omitempty"`
-	Site        string `json:"site,omitempty"`
+	Org         string       `json:"org,omitempty"`
+	Ovdc        string       `json:"ovdc,omitempty"`
+	OvdcNetwork string       `json:"ovdcNetwork,omitempty"`
+	Site        string       `json:"site,omitempty"`
+	UserContext *UserContext `json:"userContext,omitempty"`
+}
+
+type UserContext struct {
+	SecretRef *SecretRef `json:"secretRef,omitempty"`
+}
+
+type SecretRef struct {
+	SecretName string `json:"secretName,omitempty"`
 }
 
 type Release struct {

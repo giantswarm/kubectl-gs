@@ -91,7 +91,6 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
-			UserConfigSecretName:    config.CloudDirector.CredentialsSecretName,
 			ExtraConfigs:            extraConfigs,
 		}
 
@@ -149,8 +148,28 @@ func BuildCapvcdClusterConfig(config common.ClusterConfig) capvcd.ClusterConfig 
 			Release: &capvcd.Release{
 				Version: config.ReleaseVersion,
 			},
+			ProviderSpecific: &capvcd.ProviderSpecific{
+				Org:         config.CloudDirector.Org,
+				Ovdc:        config.CloudDirector.Ovdc,
+				OvdcNetwork: config.CloudDirector.OvdcNetwork,
+				Site:        config.CloudDirector.Site,
+				UserContext: &capvcd.UserContext{
+					SecretRef: &capvcd.SecretRef{
+						SecretName: config.CloudDirector.CredentialsSecretName,
+					},
+				},
+			},
 		},
 	}
+	if config.CloudDirector.HttpProxy != "" && config.CloudDirector.HttpsProxy != "" && config.CloudDirector.NoProxy != "" {
+		cfg.Global.Connectivity.Proxy = &capvcd.Proxy{
+			Enabled:    true,
+			HttpsProxy: config.CloudDirector.HttpsProxy,
+			HttpProxy:  config.CloudDirector.HttpProxy,
+			NoProxy:    config.CloudDirector.NoProxy,
+		}
+	}
+
 	return cfg
 }
 

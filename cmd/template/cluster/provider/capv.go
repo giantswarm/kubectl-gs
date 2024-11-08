@@ -107,7 +107,7 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
-			UserConfigSecretName:    config.CloudDirector.CredentialsSecretName,
+			UserConfigSecretName:    config.VSphere.CredentialsSecretName,
 			ExtraConfigs:            extraConfigs,
 		}
 

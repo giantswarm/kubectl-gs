@@ -71,6 +71,13 @@ type CloudDirectorConfig struct {
 	ResourcePool            string
 	ServiceLoadBalancerCIDR string
 	SvcLbIpPoolName         string
+	HttpProxy               string
+	HttpsProxy              string
+	NoProxy                 string
+	Org                     string
+	Ovdc                    string
+	Site                    string
+	OvdcNetwork             string
 }
 
 type CloudDirectorControlPlane struct {
