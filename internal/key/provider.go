@@ -48,6 +48,7 @@ func CAPIProvidersUsingReleases() []string {
 	return []string{
 		ProviderCAPA,
 		ProviderCAPZ,
+		ProviderCloudDirector,
 		ProviderVSphere,
 	}
 }

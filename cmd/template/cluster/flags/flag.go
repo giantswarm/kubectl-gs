@@ -111,6 +111,23 @@ const (
 	flagVSphereResourcePool            = "vsphere-resource-pool"
 	flagVSphereCredentialsSecretName   = "vsphere-credentials-secret-name" // #nosec G101
 
+	// Cloud Director only.
+	flagCloudDirectorControlPlaneReplicas     = "cloud-director-control-plane-replicas"
+	flagCloudDirectorControlPlaneDiskSizeGB   = "cloud-director-control-plane-disk-size-gb"
+	flagCloudDirectorControlPlaneSizingPolicy = "cloud-director-control-plane-sizing-policy"
+	flagCloudDirectorWorkerDiskSizeGb         = "cloud-director-worker-disk-size-gb"
+	flagCloudDirectorWorkerSizingPolicy       = "cloud-director-worker-sizing-policy"
+	flagCloudDirectorWorkerReplicas           = "cloud-director-worker-replicas"
+	flagCloudDirectorCredentialsSecretName    = "cloud-director-credentials-secret-name" // #nosec G101
+	flagCloudDirectorVipSubnet                = "cloud-director-vip-subnet"
+	flagCloudDirectorHttpsProxy               = "cloud-director-https-proxy"
+	flagCloudDirectorHttpProxy                = "cloud-director-http-proxy"
+	flagCloudDirectorNoProxy                  = "cloud-director-no-proxy"
+	flagCloudDirectorOrg                      = "cloud-director-org"
+	flagCloudDirectorOvdc                     = "cloud-director-ovdc"
+	flagCloudDirectorOvdcNetwork              = "cloud-director-ovdc-network"
+	flagCloudDirectorSite                     = "cloud-director-site"
+
 	// Common.
 	flagRegion                   = "region"
 	flagBastionInstanceType      = "bastion-instance-type"
@@ -165,13 +182,14 @@ type Flag struct {
 	ServicePriority          string
 
 	// Provider-specific
-	AWS       common.AWSConfig
-	Azure     common.AzureConfig
-	GCP       common.GCPConfig
-	OpenStack common.OpenStackConfig
-	VSphere   common.VSphereConfig
-	App       common.AppConfig
-	OIDC      common.OIDC
+	AWS           common.AWSConfig
+	Azure         common.AzureConfig
+	GCP           common.GCPConfig
+	OpenStack     common.OpenStackConfig
+	VSphere       common.VSphereConfig
+	CloudDirector common.CloudDirectorConfig
+	App           common.AppConfig
+	OIDC          common.OIDC
 
 	Print *genericclioptions.PrintFlags
 }
@@ -270,6 +288,23 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
 	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "*/Resources", "What resource pool in vsphere should be used")
 	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
+
+	// Cloud Director only
+	cmd.Flags().IntVar(&f.CloudDirector.ControlPlane.Replicas, flagCloudDirectorControlPlaneReplicas, 3, "Number of control plane replicas (use odd number)")
+	cmd.Flags().StringVar(&f.CloudDirector.ControlPlane.MachineTemplate.SizingPolicy, flagCloudDirectorControlPlaneSizingPolicy, "m1.medium", "Sizing policy for control plane nodes")
+	cmd.Flags().IntVar(&f.CloudDirector.ControlPlane.MachineTemplate.DiskSizeGB, flagCloudDirectorControlPlaneDiskSizeGB, 30, "Disk size in GB for control plane nodes")
+	cmd.Flags().IntVar(&f.CloudDirector.Worker.Replicas, flagCloudDirectorWorkerReplicas, 3, "Number of worker plane replicas")
+	cmd.Flags().IntVar(&f.CloudDirector.Worker.DiskSizeGB, flagCloudDirectorWorkerDiskSizeGb, 30, "Disk size in GB for worker nodes")
+	cmd.Flags().StringVar(&f.CloudDirector.Worker.SizingPolicy, flagCloudDirectorWorkerSizingPolicy, "m1.medium", "Sizing policy for worker nodes")
+	cmd.Flags().StringVar(&f.CloudDirector.CredentialsSecretName, flagCloudDirectorCredentialsSecretName, "vcd-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namespace and should contain the credentials for vsphere.")
+	cmd.Flags().StringVar(&f.CloudDirector.VipSubnet, flagCloudDirectorVipSubnet, "", "VIP Subnet for the Loadbalancers of the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.HttpsProxy, flagCloudDirectorHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.HttpProxy, flagCloudDirectorHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.NoProxy, flagCloudDirectorNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.Org, flagCloudDirectorOrg, "", "Organization name in Cloud Director")
+	cmd.Flags().StringVar(&f.CloudDirector.Ovdc, flagCloudDirectorOvdc, "", "Organization VDC name in Cloud Director")
+	cmd.Flags().StringVar(&f.CloudDirector.OvdcNetwork, flagCloudDirectorOvdcNetwork, "", "Organization VDC network name in Cloud Director")
+	cmd.Flags().StringVar(&f.CloudDirector.Site, flagCloudDirectorSite, "", "Site name")
 
 	// App-based clusters only.
 	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
@@ -476,6 +511,10 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			}
 			if f.VSphere.ControlPlane.Replicas < 1 {
 				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereControlPlaneReplicas)
+			}
+		case key.ProviderCloudDirector:
+			if (f.CloudDirector.VipSubnet == "") || (f.CloudDirector.VipSubnet != "" && !validateCIDR(f.CloudDirector.VipSubnet)) {
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagCloudDirectorVipSubnet)
 			}
 		case key.ProviderOpenStack:
 			if f.OpenStack.Cloud == "" {

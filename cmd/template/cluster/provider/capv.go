@@ -36,7 +36,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, outpu
 		}
 	}
 
-	err := templateClusterVSphere(ctx, client, output, config, appVersion)
+	err := templateClusterVSphere(output, config, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -57,7 +57,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, outpu
 	return nil
 }
 
-func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig, appVersion string) error {
+func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVersion string) error {
 	appName := config.Name
 	configMapName := common.UserConfigMapName(appName)
 
