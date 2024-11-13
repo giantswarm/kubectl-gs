@@ -68,7 +68,6 @@ type CloudDirectorConfig struct {
 	ControlPlane            CloudDirectorControlPlane
 	NetworkName             string
 	Worker                  CloudDirectorMachineTemplate
-	ResourcePool            string
 	ServiceLoadBalancerCIDR string
 	SvcLbIpPoolName         string
 	HttpProxy               string
