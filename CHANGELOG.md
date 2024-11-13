@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.4.0] - 2024-11-13
+
 ### Added
 
 - Cloud Director Provider.
@@ -1553,7 +1555,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.4.0...HEAD
+[4.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.1...v4.4.0
 [4.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.0...v4.3.1
 [4.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...v4.2.0
