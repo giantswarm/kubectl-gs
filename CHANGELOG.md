@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Adjust columns for `kubectl gs get releases`.
+
 ## [4.4.0] - 2024-11-13
 
 ### Added
