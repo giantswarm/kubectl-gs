@@ -1,7 +1,7 @@
 package encryption
 
 import (
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/giantswarm/microerror"
 )
 
@@ -12,23 +12,26 @@ type KeyPair struct {
 }
 
 func GenerateKeyPair(name string) (KeyPair, error) {
-	encKeys, err := crypto.GenerateKey(name, "", "x25519", 0)
+	// Generate a PGP key to use as private
+	pgp := crypto.PGP()
+	genHandle := pgp.KeyGeneration().AddUserId(name, "").New()
+	prvKey, err := genHandle.GenerateKey()
 	if err != nil {
 		return KeyPair{}, microerror.Mask(err)
 	}
 
-	prvArmor, err := encKeys.Armor()
+	prvArmor, err := prvKey.Armor()
 	if err != nil {
 		return KeyPair{}, microerror.Mask(err)
 	}
 
-	pubArmor, err := encKeys.GetArmoredPublicKey()
+	pubArmor, err := prvKey.GetArmoredPublicKey()
 	if err != nil {
 		return KeyPair{}, microerror.Mask(err)
 	}
 
 	keyPair := KeyPair{
-		Fingerprint: encKeys.GetFingerprint(),
+		Fingerprint: prvKey.GetFingerprint(),
 		PrivateData: prvArmor,
 		PublicData:  pubArmor,
 	}
