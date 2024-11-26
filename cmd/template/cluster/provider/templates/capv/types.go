@@ -5,12 +5,11 @@ type ClusterConfig struct {
 }
 
 type Global struct {
-	Connectivity *Connectivity               `json:"connectivity,omitempty"`
-	ControlPlane *ControlPlane               `json:"controlPlane,omitempty"`
-	Metadata     *Metadata                   `json:"metadata,omitempty"`
-	NodeClasses  map[string]*MachineTemplate `json:"nodeClasses,omitempty"`
-	NodePools    map[string]*NodePool        `json:"nodePools,omitempty"`
-	Release      *Release                    `json:"release,omitempty"`
+	Connectivity *Connectivity        `json:"connectivity,omitempty"`
+	ControlPlane *ControlPlane        `json:"controlPlane,omitempty"`
+	Metadata     *Metadata            `json:"metadata,omitempty"`
+	NodePools    map[string]*NodePool `json:"nodePools,omitempty"`
+	Release      *Release             `json:"release,omitempty"`
 }
 
 type Metadata struct {
@@ -76,8 +75,14 @@ type MachineTemplate struct {
 }
 
 type NodePool struct {
-	Class    string `json:"class,omitempty"`
-	Replicas int    `json:"replicas,omitempty"`
+	Replicas     int        `json:"replicas,omitempty"`
+	Network      *MTNetwork `json:"network,omitempty"`
+	CloneMode    string     `json:"cloneMode,omitempty"`
+	DiskGiB      int        `json:"diskGiB,omitempty"`
+	NumCPUs      int        `json:"numCPUs,omitempty"`
+	MemoryMiB    int        `json:"memoryMiB,omitempty"`
+	ResourcePool string     `json:"resourcePool,omitempty"`
+	Template     string     `json:"template,omitempty"`
 }
 
 type Release struct {
