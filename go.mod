@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/micrologger v1.1.1
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/release-operator/v4 v4.2.0
-	github.com/giantswarm/telemetrydeck-go v0.0.0-20241031123115-8fc0dd371e5b
+	github.com/giantswarm/telemetrydeck-go v0.1.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/pkg/errors v0.9.1
@@ -35,7 +35,7 @@ require (
 	github.com/spf13/afero v1.11.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.24.0
 	gopkg.in/square/go-jose.v2 v2.6.0
@@ -48,7 +48,7 @@ require (
 	k8s.io/utils v0.0.0-20241104163129-6fe5fd82f078
 	sigs.k8s.io/cluster-api v1.8.5
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.7.1
-	sigs.k8s.io/cluster-api-provider-azure v1.17.1
+	sigs.k8s.io/cluster-api-provider-azure v1.17.2
 	sigs.k8s.io/controller-runtime v0.19.2
 	sigs.k8s.io/yaml v1.4.0
 )
