@@ -1,7 +1,7 @@
 package encryption
 
 import (
-	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/giantswarm/microerror"
 )
 
