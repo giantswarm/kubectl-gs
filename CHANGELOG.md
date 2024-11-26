@@ -10,7 +10,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Remove node classes from vsphere template used in `kubectl gs template cluster` command.
-- Adapt keyx pair creation in `gitops` command family to use `github.com/ProtonMail/gopenpgp/v3`.
 
 ## [4.5.0] - 2024-11-15
 
