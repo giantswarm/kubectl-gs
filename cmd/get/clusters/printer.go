@@ -25,8 +25,6 @@ func (r *runner) printOutput(clusterResource cluster.Resource) error {
 		switch r.provider {
 		case key.ProviderAWS:
 			resource = provider.GetAWSTable(clusterResource)
-		case key.ProviderAzure:
-			resource = provider.GetAzureTable(clusterResource)
 		case key.ProviderOpenStack:
 			resource = provider.GetOpenStackTable(clusterResource)
 		default:
