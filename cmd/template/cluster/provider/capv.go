@@ -128,7 +128,6 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 }
 
 func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
-	const className = "default"
 	cfg := capv.ClusterConfig{
 		Global: &capv.Global{
 			Connectivity: &capv.Connectivity{
