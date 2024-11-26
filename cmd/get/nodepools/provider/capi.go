@@ -28,7 +28,12 @@ func GetCAPITable(npResource nodepool.Resource) *metav1.Table {
 
 	switch n := npResource.(type) {
 	case *nodepool.Nodepool:
-		table.Rows = append(table.Rows, getCAPIMachineDeploymentRow(*n), getCAPIMachinePoolRow(*n))
+		if row := getCAPIMachineDeploymentRow(*n); !isEmptyRow(row) {
+			table.Rows = append(table.Rows, row)
+		}
+		if row := getCAPIMachinePoolRow(*n); !isEmptyRow(row) {
+			table.Rows = append(table.Rows, row)
+		}
 	case *nodepool.Collection:
 		// Sort ASC by Cluster name.
 		sort.Slice(n.Items, func(i, j int) bool {
@@ -56,11 +61,20 @@ func GetCAPITable(npResource nodepool.Resource) *metav1.Table {
 			return strings.Compare(iClusterName, jClusterName) > 0
 		})
 		for _, nodePool := range n.Items {
-			table.Rows = append(table.Rows, getCAPIMachineDeploymentRow(nodePool), getCAPIMachinePoolRow(nodePool))
+			if row := getCAPIMachineDeploymentRow(nodePool); !isEmptyRow(row) {
+				table.Rows = append(table.Rows, row)
+			}
+			if row := getCAPIMachinePoolRow(nodePool); !isEmptyRow(row) {
+				table.Rows = append(table.Rows, row)
+			}
 		}
 	}
 
 	return table
+}
+
+func isEmptyRow(row metav1.TableRow) bool {
+	return len(row.Cells) == 0
 }
 
 func getCAPIMachineDeploymentRow(nodePool nodepool.Nodepool) metav1.TableRow {
@@ -117,8 +131,8 @@ func getCAPIMachineDeploymentLatestPhase(nodePool nodepool.Nodepool) string {
 }
 
 func getCAPIMachinePoolLatestPhase(nodePool nodepool.Nodepool) string {
-	if nodePool.MachineDeployment.Status.Phase != "" {
-		return nodePool.MachineDeployment.Status.Phase
+	if nodePool.MachinePool.Status.Phase != "" {
+		return nodePool.MachinePool.Status.Phase
 	}
 
 	return naValue
