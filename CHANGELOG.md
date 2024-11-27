@@ -14,6 +14,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - Fix getting nodepools via `kubectl gs get nodepools`.
+- Remove node classes from vsphere template used in `kubectl gs template cluster` command.
 
 ## [4.5.0] - 2024-11-15
 

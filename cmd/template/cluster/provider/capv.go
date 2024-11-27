@@ -128,7 +128,6 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 }
 
 func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
-	const className = "default"
 	cfg := capv.ClusterConfig{
 		Global: &capv.Global{
 			Connectivity: &capv.Connectivity{
@@ -157,14 +156,8 @@ func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},
-			NodeClasses: map[string]*capv.MachineTemplate{
-				className: getMachineTemplate(&config.VSphere.Worker, &config),
-			},
 			NodePools: map[string]*capv.NodePool{
-				"worker": {
-					Class:    className,
-					Replicas: config.VSphere.Worker.Replicas,
-				},
+				"worker": getNodePool(getMachineTemplate(&config.VSphere.Worker, &config), config.VSphere.Worker.Replicas),
 			},
 			Release: &capv.Release{
 				Version: config.ReleaseVersion,
@@ -194,6 +187,19 @@ func getMachineTemplate(machineTemplate *common.VSphereMachineTemplate, clusterC
 		NumCPUs:      machineTemplate.NumCPUs,
 		MemoryMiB:    machineTemplate.MemoryMiB,
 		ResourcePool: config.ResourcePool,
+	}
+}
+
+func getNodePool(machineTemplate *capv.MachineTemplate, replicas int) *capv.NodePool {
+	return &capv.NodePool{
+		Replicas:     replicas,
+		Network:      machineTemplate.Network,
+		CloneMode:    machineTemplate.CloneMode,
+		DiskGiB:      machineTemplate.DiskGiB,
+		NumCPUs:      machineTemplate.NumCPUs,
+		MemoryMiB:    machineTemplate.MemoryMiB,
+		ResourcePool: machineTemplate.ResourcePool,
+		Template:     machineTemplate.Template,
 	}
 }
 
