@@ -11,7 +11,9 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Use Phase instead of Status field for Clusters and Nodepools.
+- Use Phase instead of Status field for Clusters and Nodepools. Affected commands:
+  - `kubectl gs get clusters`
+  - `kubectl gs get nodepools`
 
 ### Fixed
 
