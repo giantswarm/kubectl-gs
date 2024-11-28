@@ -38,27 +38,7 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace, clus
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
-		case key.ProviderAzure:
-			np, err = s.getByIdAzure(ctx, name, namespace, clusterName)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		case key.ProviderCAPA:
-			np, err = s.getByIdCAPA(ctx, name, namespace, clusterName)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		case key.ProviderCAPZ:
-			np, err = s.getByIdCAPI(ctx, name, namespace, clusterName)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		case key.ProviderCloudDirector:
-			np, err = s.getByIdCAPI(ctx, name, namespace, clusterName)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		case key.ProviderVSphere:
+		case key.ProviderDefault:
 			np, err = s.getByIdCAPI(ctx, name, namespace, clusterName)
 			if err != nil {
 				return nil, microerror.Mask(err)
@@ -84,31 +64,7 @@ func (s *Service) getAll(ctx context.Context, provider, namespace, clusterID str
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderAzure:
-			npCollection, err = s.getAllAzure(ctx, namespace, clusterID)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderCAPA:
-			npCollection, err = s.getAllCAPA(ctx, namespace, clusterID)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderCAPZ:
-			npCollection, err = s.getAllCAPI(ctx, namespace, clusterID)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderCloudDirector:
-			npCollection, err = s.getAllCAPI(ctx, namespace, clusterID)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderVSphere:
+		case key.ProviderDefault:
 			npCollection, err = s.getAllCAPI(ctx, namespace, clusterID)
 			if err != nil {
 				return nil, microerror.Mask(err)
