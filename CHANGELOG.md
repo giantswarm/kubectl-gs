@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add deletion prevention label also to templated cluster's `App` and `ConfigMap` if using the `kubectl gs template --prevent-deletion` parameter
+
 ## [4.6.0] - 2024-11-28
 
 ### Changed
