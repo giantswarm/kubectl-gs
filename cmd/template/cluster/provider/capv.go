@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -81,6 +82,9 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		if config.PreventDeletion {
+			userConfigMap.Labels[label.PreventDeletion] = "true"
+		}
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -109,6 +113,10 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 			UserConfigConfigMapName: configMapName,
 			UserConfigSecretName:    config.VSphere.CredentialsSecretName,
 			ExtraConfigs:            extraConfigs,
+			ExtraLabels:             map[string]string{},
+		}
+		if config.PreventDeletion {
+			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
 		}
 
 		var err error
