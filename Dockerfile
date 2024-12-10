@@ -1,4 +1,4 @@
-FROM gsoci.azurecr.io/giantswarm/alpine:3.20.3 AS binaries
+FROM gsoci.azurecr.io/giantswarm/alpine:3.21.0 AS binaries
 
 ARG KUBECTL_VERSION=1.24.2
 ARG TARGETPLATFORM
@@ -8,7 +8,7 @@ RUN apk add --no-cache ca-certificates curl \
     && curl -sSLf https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/${TARGETPLATFORM}/kubectl -o /binaries/kubectl \
     && chmod +x /binaries/*
 
-FROM gsoci.azurecr.io/giantswarm/alpine:3.20.3
+FROM gsoci.azurecr.io/giantswarm/alpine:3.21.0
 
 ARG TARGETARCH
 
