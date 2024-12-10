@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
@@ -217,6 +218,9 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		if config.PreventDeletion {
+			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
+		}
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -233,6 +237,10 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			Name:                    ClusterAWSRepoName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			UserConfigConfigMapName: configMapName,
+			ExtraLabels:             map[string]string{},
+		}
+		if config.PreventDeletion {
+			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
 		}
 
 		var err error

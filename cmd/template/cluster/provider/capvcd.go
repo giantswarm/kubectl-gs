@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -65,6 +66,9 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		if config.PreventDeletion {
+			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
+		}
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -92,6 +96,10 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
 			ExtraConfigs:            extraConfigs,
+			ExtraLabels:             map[string]string{},
+		}
+		if config.PreventDeletion {
+			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
 		}
 
 		var err error

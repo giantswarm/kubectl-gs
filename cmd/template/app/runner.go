@@ -142,7 +142,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if userConfigMap.Labels == nil {
 				userConfigMap.Labels = map[string]string{}
 			}
-			userConfigMap.Labels[label.PreventDeletion] = "true"
+			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
 
 		userConfigConfigMapYaml, err = yaml.Marshal(userConfigMap)
