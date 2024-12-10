@@ -219,7 +219,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
 		if config.PreventDeletion {
-			userConfigMap.Labels[label.PreventDeletion] = "true"
+			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
