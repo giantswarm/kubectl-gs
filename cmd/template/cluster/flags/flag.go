@@ -197,7 +197,7 @@ type Flag struct {
 func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
-	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted")
+	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted (see https://docs.giantswarm.io/tutorials/fleet-management/deletion-prevention/)")
 
 	// AWS only.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
