@@ -257,6 +257,6 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.15.0
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.9.2
-	golang.org/x/crypto => golang.org/x/crypto v0.30.0
+	golang.org/x/crypto => golang.org/x/crypto v0.31.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 )
