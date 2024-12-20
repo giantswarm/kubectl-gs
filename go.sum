@@ -714,8 +714,8 @@ k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f h1:GA7//TjRY9yWGy1poLzYYJ
 k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f/go.mod h1:R/HEjbvWI0qdfb8viZUeVZm0X6IZnxAydC7YU42CMw4=
 k8s.io/utils v0.0.0-20241210054802-24370beab758 h1:sdbE21q2nlQtFh65saZY+rRM6x6aJJI8IUa1AmH/qa0=
 k8s.io/utils v0.0.0-20241210054802-24370beab758/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
-sigs.k8s.io/cluster-api v1.9.1 h1:s2YUB66XceK+EQ3Uq8Mq/N9TgqRU4TQUMsaQYXOIWlU=
-sigs.k8s.io/cluster-api v1.9.1/go.mod h1:pkFqVPq0ELlJgyDjgqpb4MU1XnWEi98B2q3DbEjC4ww=
+sigs.k8s.io/cluster-api v1.9.2 h1:4nUcIg/nOccn7/O1FF1IJaxQqjOxl+gH4ejQ9D/P+l8=
+sigs.k8s.io/cluster-api v1.9.2/go.mod h1:pkFqVPq0ELlJgyDjgqpb4MU1XnWEi98B2q3DbEjC4ww=
 sigs.k8s.io/cluster-api-provider-aws/v2 v2.7.1 h1:NmsH/IZsMIiQV/kfJY7+mNriqvk5ImCGZrnmbxUMEM0=
 sigs.k8s.io/cluster-api-provider-aws/v2 v2.7.1/go.mod h1:fQ/aPIQs1YKb1hDJtibBY7kspUqvXb9JSWIYkzWlX34=
 sigs.k8s.io/cluster-api-provider-azure v1.17.2 h1:uS9ggE/bryI0hiOWHBa56nYHkWmsPZW3bzYeAddL4vM=
