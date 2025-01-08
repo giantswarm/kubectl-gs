@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.7.0] - 2025-01-08
+
 ### Changed
 
 - Add deletion prevention label also to templated cluster's `App` and `ConfigMap` if using the `kubectl gs template --prevent-deletion` parameter
@@ -1578,7 +1580,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...HEAD
+[4.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...v4.7.0
 [4.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.5.0...v4.6.0
 [4.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.4.0...v4.5.0
 [4.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.1...v4.4.0
