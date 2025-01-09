@@ -217,8 +217,8 @@ github.com/giantswarm/k8smetadata v0.25.0 h1:6mKmmm4xHPuBvxDMAkIhU5oj6KJkJSaR2s5
 github.com/giantswarm/k8smetadata v0.25.0/go.mod h1:QiQAyaZnwco1U0lENLF0Kp4bSN4dIPwIlHWEvUo3ES8=
 github.com/giantswarm/microerror v0.4.1 h1:WMiD7HQASoUA9lZzPlPK+erCEOJ0uT4cyo18VfCXHD0=
 github.com/giantswarm/microerror v0.4.1/go.mod h1:URFj0gFCmZihjya6saQCXxslBrgctXb4NsXYHB5JdrI=
-github.com/giantswarm/micrologger v1.1.1 h1:gpu9uq1Vixey20Zo5pra5m/5EsmLrNlTwIgjBoc1jhE=
-github.com/giantswarm/micrologger v1.1.1/go.mod h1:l84q1WCLdXtPimHoJlgYEAJ3lmLyWbPbHW1ZpV+wPaA=
+github.com/giantswarm/micrologger v1.1.2 h1:dNmnGZgAT0rnZkpc2ivj1shJ3Stnnjsy7jIi84//Jqc=
+github.com/giantswarm/micrologger v1.1.2/go.mod h1:lJe2gBm3O3miycXjWOgDh6vVuaKCACsPjBcobc0dvPM=
 github.com/giantswarm/organization-operator v1.6.4 h1:t0G0hoB7TfeGzRnr58NIwO6LAmNcQgJ5vL+GtB0ydG8=
 github.com/giantswarm/organization-operator v1.6.4/go.mod h1:Rw9gG/ReI5YfvoC85F9H5wH2aWguUR7JY/NfTjZC2Jc=
 github.com/giantswarm/release-operator/v4 v4.2.0 h1:8aU8V3BlF/sKmYG1MgcPGXs8Q/cOlZfhgK4/oBfMPbg=
