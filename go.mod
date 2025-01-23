@@ -1,8 +1,6 @@
 module github.com/giantswarm/kubectl-gs/v5
 
-go 1.23.0
-
-toolchain go1.23.5
+go 1.23.5
 
 require (
 	dario.cat/mergo v1.0.1
@@ -154,7 +152,7 @@ require (
 	github.com/go-test/deep v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/btree v1.1.2 // indirect
+	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect

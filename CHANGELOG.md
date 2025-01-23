@@ -10,6 +10,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
+- Update Go version from 1.23.0 to 1.23.5.
+- Update `sigs.k8s.io/controller-runtime` to v0.18.6 to maintain compatibility with cluster-api-provider-aws v2.7.1 and cluster-api-provider-azure v1.17.2.
 
 ## [4.7.0] - 2025-01-08
 
