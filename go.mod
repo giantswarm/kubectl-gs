@@ -14,7 +14,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.12.0
 	github.com/fatih/color v1.18.0
-	github.com/getsops/sops/v3 v3.9.2
+	github.com/getsops/sops/v3 v3.9.3
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/apiextensions/v6 v6.6.0
 	github.com/giantswarm/app/v7 v7.0.3
@@ -254,7 +254,7 @@ replace (
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.15.0
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
-	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.9.2
+	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.9.3
 	golang.org/x/crypto => golang.org/x/crypto v0.32.0
 	golang.org/x/text => golang.org/x/text v0.21.0
 )
