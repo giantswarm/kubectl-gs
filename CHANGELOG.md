@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
+
 ## [4.7.0] - 2025-01-08
 
 ### Changed
