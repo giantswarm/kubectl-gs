@@ -7,7 +7,6 @@ const (
 	ProviderCAPZ          = "capz"
 	ProviderEKS           = "eks"
 	ProviderGCP           = "gcp"
-	ProviderKVM           = "kvm"
 	ProviderOpenStack     = "openstack"
 	ProviderVSphere       = "vsphere"
 	ProviderCloudDirector = "cloud-director"
