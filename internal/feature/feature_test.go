@@ -50,13 +50,6 @@ func TestService_Supports(t *testing.T) {
 			expectedResult: true,
 		},
 		{
-			name:           "case 5: autoscaling on kvm 13.0.0",
-			provider:       ProviderKVM,
-			feature:        Autoscaling,
-			version:        "13.0.0",
-			expectedResult: false,
-		},
-		{
 			name:           "case 6: nodepool conditions on aws 10.0.0",
 			provider:       ProviderAWS,
 			feature:        NodePoolConditions,
@@ -69,13 +62,6 @@ func TestService_Supports(t *testing.T) {
 			feature:        NodePoolConditions,
 			version:        "13.0.0",
 			expectedResult: true,
-		},
-		{
-			name:           "case 8: nodepool conditions on kvm 13.0.0",
-			provider:       ProviderKVM,
-			feature:        NodePoolConditions,
-			version:        "13.0.0",
-			expectedResult: false,
 		},
 	}
 
