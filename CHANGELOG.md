@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
 
+### Removed
+
+- Removed any code specific to KVM installations.
+
 ## [4.7.0] - 2025-01-08
 
 ### Changed
