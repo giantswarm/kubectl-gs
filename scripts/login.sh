@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# This script can be used to log i to workload clusters
-# running in aws, azure or kvm installations
+# This script can be used to log in to workload clusters
+# running in aws or azure installations
 #
 # Usage: ./login.sh <base-domain> <organization-name> <workload-cluster-name> <ttl>
 #
