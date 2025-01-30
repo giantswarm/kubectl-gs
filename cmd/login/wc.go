@@ -164,11 +164,6 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 
 // used only if both MC and WC are specified on command line
 func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.Interface, provider string) (contextName string, contextExists bool, err error) {
-	err = validateProvider(provider)
-	if err != nil {
-		return "", false, microerror.Mask(err)
-	}
-
 	services, err := r.getServiceSet(client)
 	if err != nil {
 		return "", false, microerror.Mask(err)

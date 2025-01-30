@@ -184,19 +184,6 @@ func TestWCClientCert(t *testing.T) {
 				},
 			},
 		},
-		// Trying to log into a cluster on kvm
-		{
-			name:                 "case 8",
-			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
-			controlPlaneEndpoint: "https://localhost:6443",
-			flags: &flag{
-				WCName:    "cluster",
-				WCCertTTL: "8h",
-			},
-			provider:    "kvm",
-			isAdmin:     true,
-			expectError: unsupportedProviderError,
-		},
 		// Trying to log into a cluster on azure
 		{
 			name:                 "case 9",
