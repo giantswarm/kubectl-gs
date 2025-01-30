@@ -54,7 +54,7 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace strin
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderKVM, key.ProviderVSphere, key.ProviderCloudDirector:
+		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderVSphere, key.ProviderCloudDirector:
 			cluster, err = s.getByNameCommonCapi(ctx, name, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
@@ -99,7 +99,7 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string, fallba
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderKVM, key.ProviderVSphere, key.ProviderCloudDirector:
+		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderVSphere, key.ProviderCloudDirector:
 			clusterCollection, err = s.getAllCommonCapi(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
