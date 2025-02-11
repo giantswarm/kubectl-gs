@@ -250,7 +250,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v27.5.1+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.7
-	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.15.0
+	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.16.0
 	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.9.4
 	golang.org/x/crypto => golang.org/x/crypto v0.33.0
