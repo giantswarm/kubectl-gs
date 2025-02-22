@@ -28,7 +28,7 @@ require (
 	github.com/giantswarm/release-operator/v4 v4.2.0
 	github.com/giantswarm/telemetrydeck-go v0.1.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
