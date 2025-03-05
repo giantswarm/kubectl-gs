@@ -2,7 +2,7 @@ module github.com/giantswarm/kubectl-gs/v5
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	dario.cat/mergo v1.0.1
