@@ -34,9 +34,6 @@ jobs:
           run_attempt=\\\"$GITHUB_RUN_ATTEMPT\\\" \
           run_id=\\\"$GITHUB_RUN_ID\\\" \
           run_number=\\\"$GITHUB_RUN_NUMBER\\\" \
-          region=\\\"$AWS_REGION\\\" \
-          repo_name=\\\"$GITHUB_REPOSITORY\\\" \
-          repo_owner=\\\"$GITHUB_REPOSITORY_OWNER\\\" \
           github_server_url=\\\"$GITHUB_SERVER_URL\\\" \
           workflow_name=\\\"$GITHUB_WORKFLOW\\\" \
           workflow_ref=\\\"$GITHUB_WORKFLOW_REF\\\" \
@@ -47,3 +44,9 @@ jobs:
           runner_os=\\\"$RUNNER_OS\\\" \
           url=\\\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\\\" \
           \" ]]}]}"
+      - name: Show timing data
+        run: |
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/timing
