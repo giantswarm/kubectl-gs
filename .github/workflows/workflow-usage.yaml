@@ -1,8 +1,5 @@
 name: Send workflow usage metrics
-on:
-  push:
-    branches:
-      - main
+on: pull_request
 
 jobs:
   usage:
