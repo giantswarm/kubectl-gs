@@ -12,13 +12,8 @@ jobs:
           GRAFANA_CLOUD_USER: ${{ secrets.GRAFANA_CLOUD_USER }}
         run: |
           tod_nanos=$( date +%s)000000000
-          curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_API_TOKEN}" \
-            --include \
-            --header "Content-Type: application/json" \
-            --request POST \
-            --silent "${GRAFANA_CLOUD_LOKI_URL}" \
-            --data-raw "{\"streams\": [{ \"stream\": {\
-              \"service_name\": \"github-workflows\", \"level\": \"info\"}, \"values\": [ [ \"$tod_nanos\", \"\
+          json="{\"streams\": [{ \"stream\": {\
+          \"service_name\": \"github-workflows\", \"level\": \"info\"}, \"values\": [ [ \"$tod_nanos\", \"\
           actor=\\\"$GITHUB_ACTOR\\\" \
           actor_id=\\\"$GITHUB_ACTOR_ID\\\" \
           actor_triggering=\\\"$GITHUB_TRIGGERING_ACTOR\\\" \
@@ -44,6 +39,13 @@ jobs:
           runner_os=\\\"$RUNNER_OS\\\" \
           url=\\\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\\\" \
           \" ]]}]}"
+          echo $json | jq .
+          curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_API_TOKEN}" \
+            --include \
+            --header "Content-Type: application/json" \
+            --request POST \
+            --silent "${GRAFANA_CLOUD_LOKI_URL}" \
+            --data-raw $json
       - name: Show timing data
         env:
           GH_TOKEN: ${{ github.token }}
