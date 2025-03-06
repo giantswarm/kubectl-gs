@@ -19,7 +19,6 @@ jobs:
           actor_triggering=\\\"$GITHUB_TRIGGERING_ACTOR\\\" \
           event_name=\\\"$GITHUB_EVENT_NAME\\\" \
           job_id=\\\"$GITHUB_JOB\\\" \
-          sha=\\\"$GITHUB_SHA\\\" \
           ref=\\\"$GITHUB_REF\\\" \
           ref_name=\\\"$GITHUB_REF_NAME\\\" \
           ref_type=\\\"$GITHUB_REF_TYPE\\\" \
@@ -29,15 +28,15 @@ jobs:
           run_attempt=\\\"$GITHUB_RUN_ATTEMPT\\\" \
           run_id=\\\"$GITHUB_RUN_ID\\\" \
           run_number=\\\"$GITHUB_RUN_NUMBER\\\" \
-          github_server_url=\\\"$GITHUB_SERVER_URL\\\" \
-          workflow_name=\\\"$GITHUB_WORKFLOW\\\" \
-          workflow_ref=\\\"$GITHUB_WORKFLOW_REF\\\" \
-          workflow_sha=\\\"$GITHUB_WORKFLOW_SHA\\\" \
           runner_arch=\\\"$RUNNER_ARCH\\\" \
           runner_environment=\\\"$RUNNER_ENVIRONMENT\\\" \
           runner_name=\\\"$RUNNER_NAME\\\" \
           runner_os=\\\"$RUNNER_OS\\\" \
+          sha=\\\"$GITHUB_SHA\\\" \
           url=\\\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\\\" \
+          workflow_name=\\\"$GITHUB_WORKFLOW\\\" \
+          workflow_ref=\\\"$GITHUB_WORKFLOW_REF\\\" \
+          workflow_sha=\\\"$GITHUB_WORKFLOW_SHA\\\" \
           \" ]]}]}"
           echo $json | jq .
           curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_API_TOKEN}" \
