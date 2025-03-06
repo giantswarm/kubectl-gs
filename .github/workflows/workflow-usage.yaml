@@ -8,7 +8,7 @@ jobs:
       - name: Send data to Loki
         env:
           GRAFANA_API_TOKEN: ${{ secrets.GRAFANA_API_TOKEN }}
-          GRAFANA_CLOUD_LOKI_URL: ${{ env.GRAFANA_CLOUD_LOKI_URL }}
+          GRAFANA_CLOUD_LOKI_URL: ${{ vars.GRAFANA_CLOUD_LOKI_URL }}
           GRAFANA_CLOUD_USER: ${{ secrets.GRAFANA_CLOUD_USER }}
         run: |
           tod_nanos=$( date +%s)000000000
