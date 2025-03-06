@@ -45,6 +45,8 @@ jobs:
           url=\\\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\\\" \
           \" ]]}]}"
       - name: Show timing data
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh api \
             -H "Accept: application/vnd.github+json" \
