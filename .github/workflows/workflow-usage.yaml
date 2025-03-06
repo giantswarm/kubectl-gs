@@ -45,7 +45,7 @@ jobs:
             --header "Content-Type: application/json" \
             --request POST \
             --silent "${GRAFANA_CLOUD_LOKI_URL}" \
-            --data-raw $json
+            --data-raw "$json"
       - name: Show timing data
         env:
           GH_TOKEN: ${{ github.token }}
