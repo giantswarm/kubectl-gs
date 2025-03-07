@@ -10,8 +10,6 @@ jobs:
         continue-on-error: true
         with:
           task: start-measurement
-          send-data: "false"
-          calculate-co2: "false"
 
       - name: Send data to Loki
         env:
