@@ -71,9 +71,10 @@ jobs:
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         id: total-measurement-step
         continue-on-error: true
+        env:
+          ECO_CI_JSON_OUTPUT: "true"
         with:
           task: display-results
-          json-output: true
 
       - name: Print total data
         run: |
