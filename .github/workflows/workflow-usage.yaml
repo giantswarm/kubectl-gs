@@ -75,6 +75,9 @@ jobs:
           ECO_CI_JSON_OUTPUT: "true"
         with:
           task: display-results
+          calculate-co2: false
+          display-badge: false
+          json-output: true
 
       - name: Print total data
         run: |
