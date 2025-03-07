@@ -13,12 +13,12 @@ jobs:
           send-data: "false"
           json-output: "true"
 
-      - name: Final energy measurement
-        uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
-        continue-on-error: true
-        with:
-          task: get-measurement
-          send-data: "false"
+      # - name: Final energy measurement
+      #   uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
+      #   continue-on-error: true
+      #   with:
+      #     task: get-measurement
+      #     send-data: "false"
 
       - name: Show energy measurement results
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
@@ -45,8 +45,8 @@ jobs:
           GRAFANA_CLOUD_LOKI_URL: ${{ vars.GRAFANA_CLOUD_LOKI_URL }}
           GRAFANA_CLOUD_USER: ${{ secrets.GRAFANA_CLOUD_USER }}
         run: |
-          energy_joules=$( cat /tmp/eco-ci/total-data.json | jq -r ".energy_joules" )
-          duration=$( cat /tmp/eco-ci/total-data.json | jq -r ".time" )
+          energy_joules=$( cat /tmp/eco-ci/total-data.json | jq .energy_joules )
+          duration=$( cat /tmp/eco-ci/total-data.json | jq .time )
           tod_nanos=$( date +%s)000000000
           
           json="{\"streams\": [{ \"stream\": {\
