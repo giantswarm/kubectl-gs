@@ -5,8 +5,9 @@ jobs:
   usage:
     runs-on: ubuntu-latest
     steps:
-      - name: Start Measurement
+      - name: Start carbon measurement
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
+        continue-on-error: true
         with:
           task: start-measurement
           send-data: false
@@ -59,14 +60,15 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/timing
-      - name: Show Energy Results
+      - name: Final carbon measurement
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         continue-on-error: true
         with:
           task: final-measurement
-      - name: Show Energy Results
+      - name: Show carbon results
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         id: total-measurement-step
+        continue-on-error: true
         with:
           task: display-results
           json-output: true
