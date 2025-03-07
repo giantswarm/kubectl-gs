@@ -5,12 +5,13 @@ jobs:
   usage:
     runs-on: ubuntu-latest
     steps:
-      - name: Start carbon measurement
+      - name: Start energy measurement
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         continue-on-error: true
         with:
           task: start-measurement
-          send-data: false
+          send-data: "false"
+          calculate-co2: "false"
 
       - name: Send data to Loki
         env:
@@ -61,13 +62,13 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/timing
 
-      - name: Final carbon measurement
+      - name: Final energy measurement
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         continue-on-error: true
         with:
           task: get-measurement
 
-      - name: Show carbon results
+      - name: Show energy measurement results
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         id: total-measurement-step
         continue-on-error: true
@@ -78,8 +79,10 @@ jobs:
           calculate-co2: "false"
           display-badge: "false"
           json-output: "true"
+          send-data: "false"
 
       - name: Print total data
+        continue-on-error: true
         run: |
           echo "total json: ${{ steps.total-measurement-step.outputs.data-total-json }}"
           cat /tmp/eco-ci/total-data.json
