@@ -13,55 +13,6 @@ jobs:
           send-data: "false"
           json-output: "true"
 
-      - name: Send data to Loki
-        env:
-          GRAFANA_API_TOKEN: ${{ secrets.GRAFANA_API_TOKEN }}
-          GRAFANA_CLOUD_LOKI_URL: ${{ vars.GRAFANA_CLOUD_LOKI_URL }}
-          GRAFANA_CLOUD_USER: ${{ secrets.GRAFANA_CLOUD_USER }}
-        run: |
-          tod_nanos=$( date +%s)000000000
-          json="{\"streams\": [{ \"stream\": {\
-          \"service_name\": \"github-workflows\", \"level\": \"info\"}, \"values\": [ [ \"$tod_nanos\", \"\
-          actor=\\\"$GITHUB_ACTOR\\\" \
-          actor_id=\\\"$GITHUB_ACTOR_ID\\\" \
-          actor_triggering=\\\"$GITHUB_TRIGGERING_ACTOR\\\" \
-          event_name=\\\"$GITHUB_EVENT_NAME\\\" \
-          job_id=\\\"$GITHUB_JOB\\\" \
-          ref=\\\"$GITHUB_REF\\\" \
-          ref_name=\\\"$GITHUB_REF_NAME\\\" \
-          ref_type=\\\"$GITHUB_REF_TYPE\\\" \
-          repository=\\\"$GITHUB_REPOSITORY\\\" \
-          repository_id=\\\"$GITHUB_REPOSITORY_ID\\\" \
-          repository_owner=\\\"$GITHUB_REPOSITORY_OWNER\\\" \
-          run_attempt=\\\"$GITHUB_RUN_ATTEMPT\\\" \
-          run_id=\\\"$GITHUB_RUN_ID\\\" \
-          run_number=\\\"$GITHUB_RUN_NUMBER\\\" \
-          runner_arch=\\\"$RUNNER_ARCH\\\" \
-          runner_environment=\\\"$RUNNER_ENVIRONMENT\\\" \
-          runner_name=\\\"$RUNNER_NAME\\\" \
-          runner_os=\\\"$RUNNER_OS\\\" \
-          sha=\\\"$GITHUB_SHA\\\" \
-          url=\\\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\\\" \
-          workflow_name=\\\"$GITHUB_WORKFLOW\\\" \
-          workflow_ref=\\\"$GITHUB_WORKFLOW_REF\\\" \
-          workflow_sha=\\\"$GITHUB_WORKFLOW_SHA\\\" \
-          \" ]]}]}"
-          echo $json | jq .
-          curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_API_TOKEN}" \
-            --include \
-            --header "Content-Type: application/json" \
-            --request POST \
-            --silent "${GRAFANA_CLOUD_LOKI_URL}" \
-            --data-raw "$json"
-      - name: Show timing data
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/timing
-
       - name: Final energy measurement
         uses: green-coding-solutions/eco-ci-energy-estimation@2601fdbc7d6e39e043a9b5bd11cc40481efb1d8e # v4.4.1
         continue-on-error: true
@@ -87,3 +38,51 @@ jobs:
         run: |
           echo "total json: ${{ steps.data-total.outputs.data-total-json }}"
           cat /tmp/eco-ci/total-data.json
+
+      - name: Send data to Loki
+        env:
+          GRAFANA_API_TOKEN: ${{ secrets.GRAFANA_API_TOKEN }}
+          GRAFANA_CLOUD_LOKI_URL: ${{ vars.GRAFANA_CLOUD_LOKI_URL }}
+          GRAFANA_CLOUD_USER: ${{ secrets.GRAFANA_CLOUD_USER }}
+        run: |
+          energy_joules=$( cat /tmp/eco-ci/total-data.json | jq -r ".energy_joules" )
+          duration=$( cat /tmp/eco-ci/total-data.json | jq -r ".time" )
+          tod_nanos=$( date +%s)000000000
+          
+          json="{\"streams\": [{ \"stream\": {\
+          \"service_name\": \"github-workflows\", \"level\": \"info\"}, \"values\": [ [ \"$tod_nanos\", \"\
+          actor=\\\"$GITHUB_ACTOR\\\" \
+          actor_id=\\\"$GITHUB_ACTOR_ID\\\" \
+          actor_triggering=\\\"$GITHUB_TRIGGERING_ACTOR\\\" \
+          duration=\\\"$duration\\\" \
+          energy_joules=\\\"$energy_joules\\\" \
+          event_name=\\\"$GITHUB_EVENT_NAME\\\" \
+          job_id=\\\"$GITHUB_JOB\\\" \
+          ref=\\\"$GITHUB_REF\\\" \
+          ref_name=\\\"$GITHUB_REF_NAME\\\" \
+          ref_type=\\\"$GITHUB_REF_TYPE\\\" \
+          repository=\\\"$GITHUB_REPOSITORY\\\" \
+          repository_id=\\\"$GITHUB_REPOSITORY_ID\\\" \
+          repository_owner=\\\"$GITHUB_REPOSITORY_OWNER\\\" \
+          run_attempt=\\\"$GITHUB_RUN_ATTEMPT\\\" \
+          run_id=\\\"$GITHUB_RUN_ID\\\" \
+          run_number=\\\"$GITHUB_RUN_NUMBER\\\" \
+          runner_arch=\\\"$RUNNER_ARCH\\\" \
+          runner_environment=\\\"$RUNNER_ENVIRONMENT\\\" \
+          runner_name=\\\"$RUNNER_NAME\\\" \
+          runner_os=\\\"$RUNNER_OS\\\" \
+          sha=\\\"$GITHUB_SHA\\\" \
+          url=\\\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\\\" \
+          workflow_name=\\\"$GITHUB_WORKFLOW\\\" \
+          workflow_ref=\\\"$GITHUB_WORKFLOW_REF\\\" \
+          workflow_sha=\\\"$GITHUB_WORKFLOW_SHA\\\" \
+          \" ]]}]}"
+
+          echo $json | jq .
+
+          curl -u "${GRAFANA_CLOUD_USER}:${GRAFANA_API_TOKEN}" \
+            --include \
+            --header "Content-Type: application/json" \
+            --request POST \
+            --silent "${GRAFANA_CLOUD_LOKI_URL}" \
+            --data-raw "$json"
