@@ -11,6 +11,7 @@ jobs:
         with:
           task: start-measurement
           send-data: "false"
+          json-output: "true"
 
       - name: Send data to Loki
         env:
