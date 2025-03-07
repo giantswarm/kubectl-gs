@@ -13,4 +13,4 @@ permissions: read-all
 
 jobs:
   analysis:
-    uses: giantswarm/github/.github/workflows/rw-oss-scorecard.yaml@refs/pull/3012/merge
+    uses: giantswarm/github/.github/workflows/rw-oss-scorecard.yaml@add-reusable-workflow
