@@ -87,7 +87,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the cluster '%s'.\n", codeName))
+	_, _ = fmt.Fprint(r.stdout, color.GreenString("You are logged in to the cluster '%s'.\n", codeName))
 	return nil
 }
 
@@ -102,7 +102,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	if installation.GetUrlType(path) == installation.UrlTypeHappa {
-		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
+		_, _ = fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 	err = r.loginWithInstallation(ctx, tokenOverride, i)
 	if err != nil {
@@ -182,9 +182,9 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 	}
 
 	if len(authResult.email) > 0 {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.email, i.Codename))
+		_, _ = fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.email, i.Codename))
 	} else {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
+		_, _ = fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
 	}
 	return nil
 }

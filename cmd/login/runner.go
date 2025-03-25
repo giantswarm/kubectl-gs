@@ -134,10 +134,10 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	hasContextOverride := contextOverride != ""
 
 	// indicates whether it is desired to update current context in the kubeconfig file
-	shouldSwitchContextInConfig := !hasContextOverride && (hasWCNameFlag || !(hasSelfContainedFlag || r.flag.KeepContext))
+	shouldSwitchContextInConfig := !hasContextOverride && (hasWCNameFlag || (!hasSelfContainedFlag && !r.flag.KeepContext))
 
 	// indicates whether it is desired to update current context in the kubeconfig file to the wc client context
-	shouldSwitchToWCContextInConfig := hasWCNameFlag && !(hasSelfContainedFlag || r.flag.KeepContext)
+	shouldSwitchToWCContextInConfig := hasWCNameFlag && (!hasSelfContainedFlag && !r.flag.KeepContext)
 
 	r.loginOptions = LoginOptions{
 		originContext:     originContext,

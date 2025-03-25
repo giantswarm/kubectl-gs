@@ -247,7 +247,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 		}
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -352,7 +352,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -151,7 +151,7 @@ func Test_Create(t *testing.T) {
 					continue
 				}
 
-				data, err := os.ReadFile(tfo.InputData)
+				data, err := os.ReadFile(tfo.InputData) // #nosec G304 - This is a test file with controlled input
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
@@ -171,7 +171,7 @@ func Test_Create(t *testing.T) {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
-				err = os.Mkdir(tmpDir+"/management-clusters", 0755)
+				err = os.Mkdir(tmpDir+"/management-clusters", 0750)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
@@ -189,7 +189,7 @@ func Test_Create(t *testing.T) {
 			}
 
 			if tc.expectedDryRun != "" {
-				expected, err := os.ReadFile(tc.expectedDryRun)
+				expected, err := os.ReadFile(tc.expectedDryRun) // #nosec G304 - This is a test file with controlled input
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
@@ -215,12 +215,12 @@ func Test_Create(t *testing.T) {
 					continue
 				}
 
-				got, err := os.ReadFile(fmt.Sprintf("%s/%s", tc.creator.path, p))
+				got, err := os.ReadFile(fmt.Sprintf("%s/%s", tc.creator.path, p)) // #nosec G304 - This is a test file with controlled input
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
-				expected, err := os.ReadFile(c)
+				expected, err := os.ReadFile(c) // #nosec G304 - This is a test file with controlled input
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}

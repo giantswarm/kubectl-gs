@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
+- Fixed golangci-lint v2.0.0 issues.
 
 ### Removed
 

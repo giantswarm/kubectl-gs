@@ -52,7 +52,7 @@ func (c *cache) Persist(cacheDir string) error {
 func (c *cache) Restore(fromPath string) error {
 	in := filepath.Join(fromPath, cacheFileName)
 
-	serialized, err := os.ReadFile(in)
+	serialized, err := os.ReadFile(in) // #nosec G304 - Reading from a controlled path
 	if err != nil {
 		return microerror.Mask(err)
 	}

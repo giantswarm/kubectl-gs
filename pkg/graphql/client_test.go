@@ -150,7 +150,7 @@ query GetSomething {
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
-				r.Body.Close()
+				_ = r.Body.Close()
 
 				var expectedRequest []byte
 				{

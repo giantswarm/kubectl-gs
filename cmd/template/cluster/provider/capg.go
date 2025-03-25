@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
-	"github.com/giantswarm/k8smetadata/pkg/label"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
@@ -58,7 +57,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
 		if config.PreventDeletion {
-			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
+			userConfigMap.Labels[k8smetadata.PreventDeletion] = "true" //nolint:goconst
 		}
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
@@ -89,7 +88,7 @@ func templateClusterGCP(ctx context.Context, k8sClient k8sclient.Interface, outp
 			ExtraLabels:             map[string]string{},
 		}
 		if config.PreventDeletion {
-			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
+			clusterAppConfig.ExtraLabels[k8smetadata.PreventDeletion] = "true"
 		}
 
 		var err error

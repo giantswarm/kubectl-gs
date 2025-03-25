@@ -234,7 +234,7 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 	if err != nil {
 		return microerror.Maskf(fetchError, "unable to get the app, http request failed: %s", err.Error())
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == 404 {
 		return microerror.Mask(noResourcesError)
