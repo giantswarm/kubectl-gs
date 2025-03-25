@@ -177,7 +177,7 @@ func Test_Create(t *testing.T) {
 				}
 
 				tc.creator.path = fmt.Sprintf("%s/%s", tmpDir, tc.creator.path)
-				defer os.RemoveAll(tmpDir)
+				defer func() { _ = os.RemoveAll(tmpDir) }()
 			}
 
 			out := new(bytes.Buffer)

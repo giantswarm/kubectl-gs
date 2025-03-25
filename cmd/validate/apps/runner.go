@@ -68,7 +68,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	var valuesSchema string
 	if valuesSchemaFilePath != "" {
-		valuesSchemaFile, err := os.ReadFile(valuesSchemaFilePath)
+		valuesSchemaFile, err := os.ReadFile(valuesSchemaFilePath) // #nosec G304 - Reading from a user-provided path in a validation command
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -69,7 +69,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		foundContext, err := r.findContext(ctx, installationIdentifier)
 		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
 			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
-			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+			_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
 			foundContext, err = r.findContext(ctx, clientCertContext)
 		}
 		if err != nil {
@@ -87,7 +87,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		foundContext, err := r.findContext(ctx, installationIdentifier)
 		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
 			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
-			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+			_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
 			foundContext, err = r.findContext(ctx, clientCertContext)
 		}
 		if err != nil {
@@ -126,7 +126,7 @@ func (r *runner) tryToGetCurrentContexts(ctx context.Context) (string, string, e
 func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	originContext, contextOverride, err := r.tryToGetCurrentContexts(ctx)
 	if err != nil {
-		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
+		_, _ = fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
 
 	hasWCNameFlag := r.flag.WCName != ""

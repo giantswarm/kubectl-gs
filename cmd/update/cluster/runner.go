@@ -178,7 +178,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	fmt.Fprintln(r.stdout, msg)
+	_, _ = fmt.Fprintln(r.stdout, msg)
 	return nil
 }
 

@@ -176,7 +176,7 @@ query GetSomething {
 				}
 
 				w.WriteHeader(tc.responseStatusCode)
-				w.Write(expectedResponse) // nolint:errcheck
+				_, _ = w.Write(expectedResponse) // Ignoring error in test code
 			}))
 			defer ts.Close()
 

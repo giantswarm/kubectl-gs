@@ -12,7 +12,6 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 	appdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/helmbinary"
@@ -55,7 +54,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	}
 
 	appResource, err := s.AppDataService.Get(ctx, options)
-	if app.IsNotFound(err) {
+	if appdata.IsNotFound(err) {
 		return nil, microerror.Maskf(notFoundError, "An app '%s/%s' cannot be found.\n", options.Namespace, options.Name)
 	} else if err != nil {
 		return results, microerror.Mask(err)
@@ -64,7 +63,7 @@ func (s *Service) validateByName(ctx context.Context, name, namespace string, cu
 	var appCR *applicationv1alpha1.App
 
 	switch a := appResource.(type) {
-	case *app.App:
+	case *appdata.App:
 		appCR = a.CR
 	default:
 		return results, microerror.Maskf(invalidTypeError, "unexpected type %T found", a)
@@ -107,7 +106,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 	var apps []*applicationv1alpha1.App
 
 	switch a := appResource.(type) {
-	case *app.Collection:
+	case *appdata.Collection:
 		for _, appItem := range a.Items {
 			apps = append(apps, appItem.CR)
 		}
@@ -188,7 +187,7 @@ func (s *Service) ValidateApp(ctx context.Context, app *applicationv1alpha1.App,
 		// 1. Chart values (the starting point, what is in the values.yaml file of
 		// the chart itself)
 		valuesFilePath := path.Join(tmpDir, app.Spec.Name, "values.yaml")
-		chartValuesYamlFile, err := os.ReadFile(valuesFilePath)
+		chartValuesYamlFile, err := os.ReadFile(valuesFilePath) // #nosec G304 - Reading from a controlled path in validation
 		if err != nil {
 			return "", nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
 		}
