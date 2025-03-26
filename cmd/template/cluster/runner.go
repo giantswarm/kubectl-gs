@@ -63,7 +63,7 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 			return microerror.Mask(err)
 		}
 
-		defer outFile.Close()
+		defer func() { _ = outFile.Close() }()
 		output = outFile
 	}
 

@@ -64,7 +64,7 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No node pools found.\n")
-	fmt.Fprintf(r.stdout, "To create a node pool, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template nodepool --help\n")
+	_, _ = fmt.Fprintf(r.stdout, "No node pools found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "To create a node pool, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  kubectl gs template nodepool --help\n")
 }

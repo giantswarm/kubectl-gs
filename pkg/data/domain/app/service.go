@@ -11,7 +11,6 @@ import (
 	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -131,7 +130,7 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	}
 
 	// Handle Flux reconcile annotation used to suspend reconciliation.
-	accessor, err := meta.Accessor(appCR)
+	accessor, err := apimeta.Accessor(appCR)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +233,7 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 	if err != nil {
 		return microerror.Maskf(fetchError, "unable to get the app, http request failed: %s", err.Error())
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == 404 {
 		return microerror.Mask(noResourcesError)

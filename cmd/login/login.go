@@ -62,18 +62,18 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 	}
 
 	if r.flag.DeviceAuth {
-		fmt.Fprintf(r.stdout, color.YellowString("A valid `%s` context already exists, there is no need to log in again, ignoring the `device-flow` flag.\n\n"), contextName)
+		_, _ = fmt.Fprintf(r.stdout, color.YellowString("A valid `%s` context already exists, there is no need to log in again, ignoring the `device-flow` flag.\n\n"), contextName)
 		if clusterServer, exists := kubeconfig.GetClusterServer(config, contextName); exists {
-			fmt.Fprintf(r.stdout, "Run kubectl gs login with `%s` instead of the context name to force the re-login.\n", clusterServer)
+			_, _ = fmt.Fprintf(r.stdout, "Run kubectl gs login with `%s` instead of the context name to force the re-login.\n", clusterServer)
 		} else {
-			fmt.Fprintln(r.stdout, "Run kubectl gs login with the API URL to force the re-login.")
+			_, _ = fmt.Fprintln(r.stdout, "Run kubectl gs login with the API URL to force the re-login.")
 		}
 	}
 
 	if contextAlreadySelected {
-		fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "Context '%s' is already selected.\n", contextName)
 	} else if !r.loginOptions.isWC && r.loginOptions.switchToContext {
-		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "Switched to context '%s'.\n", contextName)
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func (r *runner) loginWithCodeName(ctx context.Context, codeName string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	fmt.Fprint(r.stdout, color.GreenString("You are logged in to the cluster '%s'.\n", codeName))
+	_, _ = fmt.Fprint(r.stdout, color.GreenString("You are logged in to the cluster '%s'.\n", codeName))
 	return nil
 }
 
@@ -102,7 +102,7 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 	}
 
 	if installation.GetUrlType(path) == installation.UrlTypeHappa {
-		fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
+		_, _ = fmt.Fprint(r.stdout, color.YellowString("Note: deriving Management API URL from web UI URL: %s\n", i.K8sApiURL))
 	}
 	err = r.loginWithInstallation(ctx, tokenOverride, i)
 	if err != nil {
@@ -111,27 +111,27 @@ func (r *runner) loginWithURL(ctx context.Context, path string, firstLogin bool,
 
 	contextName := kubeconfig.GenerateKubeContextName(i.Codename)
 	if r.loginOptions.selfContained {
-		fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
-		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
+		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has '%s' been created and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else {
 		if firstLogin {
 			if !r.loginOptions.switchToContext {
-				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
-				fmt.Fprintf(r.stdout, " ")
+				_, _ = fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created.", contextName)
+				_, _ = fmt.Fprintf(r.stdout, " ")
 			} else {
-				fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
-				fmt.Fprintf(r.stdout, " ")
+				_, _ = fmt.Fprintf(r.stdout, "A new kubectl context '%s' has been created and selected.", contextName)
+				_, _ = fmt.Fprintf(r.stdout, " ")
 			}
 		}
 
 		if !r.loginOptions.switchToContext {
-			fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
+			_, _ = fmt.Fprintf(r.stdout, "To switch to this context later, use either of these commands:\n\n")
 		} else {
-			fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
+			_, _ = fmt.Fprintf(r.stdout, "To switch back to this context later, use either of these commands:\n\n")
 
 		}
-		fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
-		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl gs login %s\n", i.Codename)
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
 	return nil
 
@@ -155,8 +155,8 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 			} else {
 				authResult, err = handleOIDC(ctx, r.stdout, r.stderr, i, r.flag.ConnectorID, r.flag.ClusterAdmin, r.flag.InternalAPI, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
 				if err != nil && errors.Is(err, context.DeadlineExceeded) || IsAuthResponseTimedOut(err) {
-					fmt.Fprintf(r.stderr, "\nYour authentication flow timed out after %s. Please execute the same command again.\n", r.flag.LoginTimeout.String())
-					fmt.Fprintf(r.stderr, "You can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=%.0fs.\n", 2*r.flag.LoginTimeout.Seconds())
+					_, _ = fmt.Fprintf(r.stderr, "\nYour authentication flow timed out after %s. Please execute the same command again.\n", r.flag.LoginTimeout.String())
+					_, _ = fmt.Fprintf(r.stderr, "You can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=%.0fs.\n", 2*r.flag.LoginTimeout.Seconds())
 					if errors.Is(err, context.DeadlineExceeded) {
 						return microerror.Maskf(authResponseTimedOutError, "failed to get an authentication response on time")
 					}
@@ -182,9 +182,9 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 	}
 
 	if len(authResult.email) > 0 {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.email, i.Codename))
+		_, _ = fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.email, i.Codename))
 	} else {
-		fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
+		_, _ = fmt.Fprint(r.stdout, color.GreenString("Logged in successfully as '%s' on cluster '%s'.\n\n", authResult.username, i.Codename))
 	}
 	return nil
 }

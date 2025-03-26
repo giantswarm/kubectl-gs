@@ -94,9 +94,9 @@ func (r *runner) printOutput(orgResource organization.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No organizations found.\n")
-	fmt.Fprintf(r.stdout, "No resources of type organizations.security.giantswarm.io available. To create one, please check\n\n")
-	fmt.Fprintf(r.stdout, "  https://docs.giantswarm.io/use-the-api/management-api/crd/organizations.security.giantswarm.io/\n")
+	_, _ = fmt.Fprintf(r.stdout, "No organizations found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "No resources of type organizations.security.giantswarm.io available. To create one, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  https://docs.giantswarm.io/use-the-api/management-api/crd/organizations.security.giantswarm.io/\n")
 }
 
 func getTableRow(org organization.Organization) metav1.TableRow {

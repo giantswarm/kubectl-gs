@@ -214,8 +214,8 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 		},
 		Spec: capi.ClusterSpec{
 			InfrastructureRef: &corev1.ObjectReference{
-				APIVersion: obj.TypeMeta.APIVersion,
-				Kind:       obj.TypeMeta.Kind,
+				APIVersion: obj.APIVersion,
+				Kind:       obj.Kind,
 				Name:       obj.GetName(),
 				Namespace:  obj.GetNamespace(),
 			},
@@ -223,7 +223,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	}
 
 	if val, ok := c.Labels[label.ServicePriority]; ok {
-		clusterCR.ObjectMeta.Labels[label.ServicePriority] = val
+		clusterCR.Labels[label.ServicePriority] = val
 	}
 
 	return clusterCR
@@ -253,8 +253,8 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 		Spec: v1alpha3.G8sControlPlaneSpec{
 			Replicas: len(c.ControlPlaneAZ),
 			InfrastructureRef: corev1.ObjectReference{
-				APIVersion: obj.TypeMeta.APIVersion,
-				Kind:       obj.TypeMeta.Kind,
+				APIVersion: obj.APIVersion,
+				Kind:       obj.Kind,
 				Name:       obj.GetName(),
 				Namespace:  obj.GetNamespace(),
 			},

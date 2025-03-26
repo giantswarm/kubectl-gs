@@ -98,16 +98,16 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 	latestVersion, err := updaterService.GetLatest()
 	if selfupdate.IsHasNewVersion(err) {
 		if key.IsTTY() {
-			fmt.Fprintf(r.stderr, "\n")
+			_, _ = fmt.Fprintf(r.stderr, "\n")
 		}
 
 		_, _ = color.New(color.Bold, color.FgYellow).Fprintf(r.stderr, "You are running an outdated version of %s. The latest version is %s.\n", project.Name(), latestVersion)
-		fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate\".")
+		_, _ = fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate\".")
 
 		return nil
 	} else if err != nil {
 		// Print, but do no quit. We don't want to get into the way of the user.
-		fmt.Fprintf(r.stderr, "Error while checking for a new version of %s: %s\n\n", project.Name(), microerror.Mask(err))
+		_, _ = fmt.Fprintf(r.stderr, "Error while checking for a new version of %s: %s\n\n", project.Name(), microerror.Mask(err))
 	}
 
 	return nil

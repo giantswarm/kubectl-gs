@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@5.11.6
+  architect: giantswarm/architect@dev:ce9a62fb6407cd537b3123a9546847b7b7fb0d0b
 
 jobs:
   debug-tag:

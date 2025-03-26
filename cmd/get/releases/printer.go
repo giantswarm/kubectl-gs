@@ -100,7 +100,7 @@ func (r *runner) printOutput(rResource release.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No releases found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "No releases found.\n")
 }
 
 func getTableRow(release release.Release) metav1.TableRow {

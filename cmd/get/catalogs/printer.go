@@ -52,14 +52,14 @@ func (r *runner) printOutput(catalogResource catalogdata.Resource, maxColWidth u
 }
 
 func (r *runner) printNoMatchOutput() {
-	fmt.Fprintf(r.stdout, "No Catalog CRD found.\n")
-	fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "No Catalog CRD found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No catalogs found.\n")
-	fmt.Fprintf(r.stdout, "To create a catalog, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
+	_, _ = fmt.Fprintf(r.stdout, "No catalogs found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "To create a catalog, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
 }
 
 func getAppCatalogEntryDescription(description string, maxColWidth uint) string {

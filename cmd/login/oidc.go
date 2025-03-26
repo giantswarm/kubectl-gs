@@ -76,14 +76,14 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		authURL = auther.GetAuthSelectionURL(customerConnectorType)
 	}
 
-	fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
-	fmt.Fprintf(out, "%s\n\n", authURL)
+	_, _ = fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
+	_, _ = fmt.Fprintf(out, "%s\n\n", authURL)
 
 	// Open the authorization url in the user's browser, which will eventually
 	// redirect the user to the local web server we'll create next.
 	err = open.Start(authURL)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
+		_, _ = fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
 	}
 
 	// Create a local web server, for fetching all the authentication data from
@@ -120,7 +120,7 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	caData := []byte(i.CACert)
 	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
+		_, _ = fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
 	}
 	return authResult, nil
 }
@@ -160,7 +160,7 @@ func handleDeviceFlowOIDC(out io.Writer, errOut io.Writer, i *installation.Insta
 
 	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
+		_, _ = fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
 	}
 	return authResult, nil
 }

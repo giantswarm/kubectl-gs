@@ -17,7 +17,7 @@ func GetSuccessHTMLTemplateReader() (io.ReadSeeker, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	return f.(io.ReadSeeker), nil
 }
@@ -27,7 +27,7 @@ func GetFailedHTMLTemplateReader() (io.ReadSeeker, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	return f.(io.ReadSeeker), nil
 }

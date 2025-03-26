@@ -150,8 +150,8 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 				Spec: capi.MachineSpec{
 					ClusterName: c.ClusterName,
 					InfrastructureRef: corev1.ObjectReference{
-						APIVersion: obj.TypeMeta.APIVersion,
-						Kind:       obj.TypeMeta.Kind,
+						APIVersion: obj.APIVersion,
+						Kind:       obj.Kind,
 						Name:       obj.GetName(),
 						Namespace:  obj.GetNamespace(),
 					},

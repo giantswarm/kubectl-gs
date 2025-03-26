@@ -560,7 +560,7 @@ func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp 
 	}
 
 	if !creationTimestamp.IsZero() {
-		cluster.ObjectMeta.CreationTimestamp = metav1.NewTime(creationTimestamp)
+		cluster.CreationTimestamp = metav1.NewTime(creationTimestamp)
 	}
 
 	return cluster

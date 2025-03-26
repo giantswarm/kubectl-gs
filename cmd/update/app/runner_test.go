@@ -112,7 +112,7 @@ func Test_run(t *testing.T) {
 				if err != nil {
 					panic(fmt.Sprintf("httptest: failed to listen on a port: %v", err))
 				}
-				server.Listener.Close()
+				_ = server.Listener.Close()
 				server.Listener = l
 				server.Start()
 			}

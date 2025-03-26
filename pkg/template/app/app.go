@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 
-	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -234,7 +233,7 @@ func (config Config) setTimeouts(appCR *applicationv1alpha1.App) {
 	}
 }
 
-func deleteHelmRelated(cr *v1alpha1.App, spec *map[string]interface{}) {
+func deleteHelmRelated(cr *applicationv1alpha1.App, spec *map[string]interface{}) {
 	if cr.Spec.Install.Timeout == nil {
 		delete(*spec, "install")
 	}
@@ -252,7 +251,7 @@ func deleteHelmRelated(cr *v1alpha1.App, spec *map[string]interface{}) {
 // printAppCR removes empty fields from the app CR YAML. This is needed because
 // although the fields are optional we do not use struct pointers. This will
 // be fixed in a future version of the App CRD.
-func printAppCR(appCR *v1alpha1.App, defaultingEnabled bool) ([]byte, error) {
+func printAppCR(appCR *applicationv1alpha1.App, defaultingEnabled bool) ([]byte, error) {
 	appCRYaml, err := yaml.Marshal(appCR)
 	if err != nil {
 		return nil, microerror.Mask(err)

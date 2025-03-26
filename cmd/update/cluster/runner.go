@@ -149,7 +149,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Extract the values field and replace the current version with the target version
 		values := cm.Data["values"]
-		values = strings.Replace(values, fmt.Sprintf("version: %s", currentVersion), fmt.Sprintf("version: %s", targetRelease), -1)
+		values = strings.ReplaceAll(values, fmt.Sprintf("version: %s", currentVersion), fmt.Sprintf("version: %s", targetRelease))
 		cm.Data["values"] = values
 
 		err = k8sclient.CtrlClient().Update(ctx, cm)
@@ -178,12 +178,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
-	fmt.Fprintln(r.stdout, msg)
+	_, _ = fmt.Fprintln(r.stdout, msg)
 	return nil
 }
 
 func replaceToEscape(from string) string {
-	return strings.Replace(from, "/", "~1", -1)
+	return strings.ReplaceAll(from, "/", "~1")
 }
 
 func (r *runner) getService() error {
