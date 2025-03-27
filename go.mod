@@ -48,7 +48,7 @@ require (
 	k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e
 	sigs.k8s.io/cluster-api v1.9.6
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.2
-	sigs.k8s.io/cluster-api-provider-azure v1.19.0
+	sigs.k8s.io/cluster-api-provider-azure v1.19.1
 	sigs.k8s.io/controller-runtime v0.19.6
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -209,7 +209,7 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
-	github.com/spf13/viper v1.20.0
+	github.com/spf13/viper v1.20.1
 	github.com/tcnksm/go-gitconfig v0.1.2 // indirect
 	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/urfave/cli v1.22.16 // indirect
@@ -245,7 +245,7 @@ require (
 
 replace (
 	github.com/Azure/azure-service-operator/v2 => github.com/Azure/azure-service-operator/v2 v2.9.0 // fix checksum problem with v2.8.0
-	github.com/docker/docker => github.com/moby/moby v28.0.2+incompatible
+	github.com/docker/docker => github.com/moby/moby v28.0.4+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.16.0
