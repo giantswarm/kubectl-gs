@@ -86,7 +86,7 @@ func GetBaseAndInternalPath(u string) (string, string, string, error) {
 		p := getSanitizedApiPath(path.Host)
 		return p, getInternalPath(p), getAthenaUrl(path.Scheme, p, urlType), nil
 	case UrlTypeHappa:
-		basePath := strings.Replace(path.Host, fmt.Sprintf("%s.", happaUrlPrefix), "", -1)
+		basePath := strings.ReplaceAll(path.Host, fmt.Sprintf("%s.", happaUrlPrefix), "")
 		return basePath, getInternalPath(basePath), getAthenaUrl(path.Scheme, basePath, urlType), nil
 	case UrlTypeIPAddress:
 		return path.Host, path.Host, getAthenaUrl(path.Scheme, path.Host, urlType), nil

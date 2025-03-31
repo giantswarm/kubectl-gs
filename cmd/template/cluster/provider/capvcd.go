@@ -6,11 +6,9 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
-
-	"github.com/giantswarm/k8smetadata/pkg/label"
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 
@@ -65,7 +63,7 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 		}
 
 		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels[label.Cluster] = config.Name
 		if config.PreventDeletion {
 			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}

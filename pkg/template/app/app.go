@@ -3,8 +3,7 @@ package app
 import (
 	"fmt"
 
-	"github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	v1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
@@ -31,7 +30,7 @@ type Config struct {
 	UpgradeTimeout             *metav1.Duration
 	UserConfigConfigMapName    string
 	UserConfigSecretName       string
-	ExtraConfigs               []applicationv1alpha1.AppExtraConfig
+	ExtraConfigs               []v1alpha1.AppExtraConfig
 	Organization               string
 	RollbackTimeout            *metav1.Duration
 	Version                    string
@@ -54,7 +53,7 @@ type AppCROutput struct {
 }
 
 func NewAppCR(config Config) ([]byte, error) {
-	userConfig := applicationv1alpha1.AppSpecUserConfig{}
+	userConfig := v1alpha1.AppSpecUserConfig{}
 	appLabels := map[string]string{}
 
 	// Accomodating all the label cases here:
@@ -84,20 +83,20 @@ func NewAppCR(config Config) ([]byte, error) {
 	}
 
 	if config.UserConfigConfigMapName != "" {
-		userConfig.ConfigMap = applicationv1alpha1.AppSpecUserConfigConfigMap{
+		userConfig.ConfigMap = v1alpha1.AppSpecUserConfigConfigMap{
 			Name:      config.UserConfigConfigMapName,
 			Namespace: crNamespace,
 		}
 	}
 
 	if config.UserConfigSecretName != "" {
-		userConfig.Secret = applicationv1alpha1.AppSpecUserConfigSecret{
+		userConfig.Secret = v1alpha1.AppSpecUserConfigSecret{
 			Name:      config.UserConfigSecretName,
 			Namespace: crNamespace,
 		}
 	}
 
-	appCR := &applicationv1alpha1.App{
+	appCR := &v1alpha1.App{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "App",
 			APIVersion: "application.giantswarm.io/v1alpha1",
@@ -108,17 +107,17 @@ func NewAppCR(config Config) ([]byte, error) {
 			Labels:      appLabels,
 			Annotations: config.ExtraAnnotations,
 		},
-		Spec: applicationv1alpha1.AppSpec{
+		Spec: v1alpha1.AppSpec{
 			Catalog:   config.Catalog,
 			Name:      config.Name,
 			Namespace: config.Namespace,
-			KubeConfig: applicationv1alpha1.AppSpecKubeConfig{
+			KubeConfig: v1alpha1.AppSpecKubeConfig{
 				InCluster: config.InCluster,
 			},
 			UserConfig:   userConfig,
 			ExtraConfigs: config.ExtraConfigs,
 			Version:      config.Version,
-			NamespaceConfig: applicationv1alpha1.AppSpecNamespaceConfig{
+			NamespaceConfig: v1alpha1.AppSpecNamespaceConfig{
 				Annotations: config.NamespaceConfigAnnotations,
 				Labels:      config.NamespaceConfigLabels,
 			},
@@ -132,12 +131,12 @@ func NewAppCR(config Config) ([]byte, error) {
 	if !config.DefaultingEnabled && !config.InCluster {
 		config.UseClusterValuesConfig = true
 
-		appCR.Spec.KubeConfig = applicationv1alpha1.AppSpecKubeConfig{
-			Context: applicationv1alpha1.AppSpecKubeConfigContext{
+		appCR.Spec.KubeConfig = v1alpha1.AppSpecKubeConfig{
+			Context: v1alpha1.AppSpecKubeConfigContext{
 				Name: config.Cluster + "-kubeconfig",
 			},
 			InCluster: false,
-			Secret: applicationv1alpha1.AppSpecKubeConfigSecret{
+			Secret: v1alpha1.AppSpecKubeConfigSecret{
 				Name:      config.Cluster + "-kubeconfig",
 				Namespace: crNamespace,
 			},
@@ -145,8 +144,8 @@ func NewAppCR(config Config) ([]byte, error) {
 	}
 
 	if config.UseClusterValuesConfig {
-		appCR.Spec.Config = applicationv1alpha1.AppSpecConfig{
-			ConfigMap: applicationv1alpha1.AppSpecConfigConfigMap{
+		appCR.Spec.Config = v1alpha1.AppSpecConfig{
+			ConfigMap: v1alpha1.AppSpecConfigConfigMap{
 				Name:      config.Cluster + "-cluster-values",
 				Namespace: crNamespace,
 			},
@@ -211,24 +210,24 @@ func NewSecret(config UserConfig) (*corev1.Secret, error) {
 }
 
 // setTimeouts configures timeouts for Helm operations.
-func (config Config) setTimeouts(appCR *applicationv1alpha1.App) {
+func (config Config) setTimeouts(appCR *v1alpha1.App) {
 	if config.InstallTimeout != nil {
-		(*appCR).Spec.Install = applicationv1alpha1.AppSpecInstall{
+		(*appCR).Spec.Install = v1alpha1.AppSpecInstall{
 			Timeout: config.InstallTimeout,
 		}
 	}
 	if config.RollbackTimeout != nil {
-		(*appCR).Spec.Rollback = applicationv1alpha1.AppSpecRollback{
+		(*appCR).Spec.Rollback = v1alpha1.AppSpecRollback{
 			Timeout: config.RollbackTimeout,
 		}
 	}
 	if config.UninstallTimeout != nil {
-		(*appCR).Spec.Uninstall = applicationv1alpha1.AppSpecUninstall{
+		(*appCR).Spec.Uninstall = v1alpha1.AppSpecUninstall{
 			Timeout: config.UninstallTimeout,
 		}
 	}
 	if config.UpgradeTimeout != nil {
-		(*appCR).Spec.Upgrade = applicationv1alpha1.AppSpecUpgrade{
+		(*appCR).Spec.Upgrade = v1alpha1.AppSpecUpgrade{
 			Timeout: config.UpgradeTimeout,
 		}
 	}

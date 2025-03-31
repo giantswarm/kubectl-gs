@@ -42,7 +42,7 @@ func (gf *GoldenFile) Update(data []byte) error {
 }
 
 func (gf *GoldenFile) readFile(path string) ([]byte, error) {
-	file, err := os.ReadFile(path)
+	file, err := os.ReadFile(path) // nolint:gosec
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -220,7 +220,8 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	hasNewContext := false
 	isContextAlreadySelected := config.CurrentContext == newContextName
 	authType := kubeconfig.GetAuthType(config, newContextName)
-	if authType == kubeconfig.AuthTypeAuthProvider {
+	switch authType {
+	case kubeconfig.AuthTypeAuthProvider:
 		authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
 		if !exists {
 			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
@@ -260,7 +261,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 			authProvider.Config[RefreshToken] = rToken
 			authProvider.Config[IDToken] = idToken
 		}
-	} else if authType == kubeconfig.AuthTypeUnknown {
+	case kubeconfig.AuthTypeUnknown:
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
 
