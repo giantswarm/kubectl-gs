@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- Add organisation namepsace to the gitops add command.
 - Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
 
 ### Removed

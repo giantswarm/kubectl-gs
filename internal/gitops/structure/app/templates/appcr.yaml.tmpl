@@ -3,6 +3,7 @@ apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
   name: {{ .WorkloadCluster}}-{{ .AppName }}
+  namespace: org-{{ .Organization }}
 spec:
   catalog: {{ .AppCatalog }}
 {{- if .AppInstallTimeout }}
