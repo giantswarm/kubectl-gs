@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -36,7 +37,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, outpu
 		}
 	}
 
-	err := templateClusterVSphere(ctx, client, output, config, appVersion)
+	err := templateClusterVSphere(output, config, appVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -57,7 +58,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, outpu
 	return nil
 }
 
-func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig, appVersion string) error {
+func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVersion string) error {
 	appName := config.Name
 	configMapName := common.UserConfigMapName(appName)
 
@@ -81,6 +82,9 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		if config.PreventDeletion {
+			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
+		}
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -109,6 +113,10 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 			UserConfigConfigMapName: configMapName,
 			UserConfigSecretName:    config.VSphere.CredentialsSecretName,
 			ExtraConfigs:            extraConfigs,
+			ExtraLabels:             map[string]string{},
+		}
+		if config.PreventDeletion {
+			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
 		}
 
 		var err error
@@ -128,7 +136,6 @@ func templateClusterVSphere(ctx context.Context, k8sClient k8sclient.Interface, 
 }
 
 func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
-	const className = "default"
 	cfg := capv.ClusterConfig{
 		Global: &capv.Global{
 			Connectivity: &capv.Connectivity{
@@ -157,14 +164,8 @@ func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},
-			NodeClasses: map[string]*capv.MachineTemplate{
-				className: getMachineTemplate(&config.VSphere.Worker, &config),
-			},
 			NodePools: map[string]*capv.NodePool{
-				"worker": {
-					Class:    className,
-					Replicas: config.VSphere.Worker.Replicas,
-				},
+				"worker": getNodePool(getMachineTemplate(&config.VSphere.Worker, &config), config.VSphere.Worker.Replicas),
 			},
 			Release: &capv.Release{
 				Version: config.ReleaseVersion,
@@ -194,6 +195,19 @@ func getMachineTemplate(machineTemplate *common.VSphereMachineTemplate, clusterC
 		NumCPUs:      machineTemplate.NumCPUs,
 		MemoryMiB:    machineTemplate.MemoryMiB,
 		ResourcePool: config.ResourcePool,
+	}
+}
+
+func getNodePool(machineTemplate *capv.MachineTemplate, replicas int) *capv.NodePool {
+	return &capv.NodePool{
+		Replicas:     replicas,
+		Network:      machineTemplate.Network,
+		CloneMode:    machineTemplate.CloneMode,
+		DiskGiB:      machineTemplate.DiskGiB,
+		NumCPUs:      machineTemplate.NumCPUs,
+		MemoryMiB:    machineTemplate.MemoryMiB,
+		ResourcePool: machineTemplate.ResourcePool,
+		Template:     machineTemplate.Template,
 	}
 }
 

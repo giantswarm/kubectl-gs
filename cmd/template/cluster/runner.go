@@ -113,6 +113,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	case key.ProviderCloudDirector:
+		err = provider.WriteCloudDirectorTemplate(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	default:
 		return microerror.Mask(templateFlagNotImplemented)
 	}
@@ -135,13 +140,14 @@ func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
 		ServicePriority:          r.flag.ServicePriority,
 		PreventDeletion:          r.flag.PreventDeletion,
 
-		App:       r.flag.App,
-		AWS:       r.flag.AWS,
-		Azure:     r.flag.Azure,
-		GCP:       r.flag.GCP,
-		OIDC:      r.flag.OIDC,
-		OpenStack: r.flag.OpenStack,
-		VSphere:   r.flag.VSphere,
+		App:           r.flag.App,
+		AWS:           r.flag.AWS,
+		Azure:         r.flag.Azure,
+		GCP:           r.flag.GCP,
+		OIDC:          r.flag.OIDC,
+		OpenStack:     r.flag.OpenStack,
+		VSphere:       r.flag.VSphere,
+		CloudDirector: r.flag.CloudDirector,
 	}
 
 	if r.flag.GenerateName {

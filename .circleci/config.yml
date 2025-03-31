@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@5.10.1
+  architect: giantswarm/architect@5.11.6
 
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2024.10
+      - image: cimg/base:2025.03
     steps:
       - checkout
       - run: |
@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: cimg/go:1.23.2
+      - image: cimg/go:1.24.1
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38
@@ -177,19 +177,9 @@ workflows:
               ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
-      - request-manual-approval:
-          type: approval
-          requires:
-            - debug-tag
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
       - update-krew-index:
           requires:
             - debug-tag
-            - request-manual-approval
           filters:
             branches:
               ignore: /.*/

@@ -27,7 +27,7 @@ func GetCommonClusterTable(clusterResource cluster.Resource) *metav1.Table {
 	table.ColumnDefinitions = []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
 		{Name: "Age", Type: "string", Format: "date-time"},
-		{Name: "Condition", Type: "string"},
+		{Name: "Phase", Type: "string"},
 		{Name: "Release", Type: "string"},
 		{Name: "Service Priority", Type: "string"},
 		{Name: "Organization", Type: "string"},
@@ -98,7 +98,7 @@ func getCommonClusterRow(c cluster.Cluster) metav1.TableRow {
 		Cells: []interface{}{
 			c.Cluster.GetName(),
 			output.TranslateTimestampSince(c.Cluster.CreationTimestamp),
-			getLatestCondition(c.Cluster.GetConditions()),
+			c.Cluster.Status.Phase,
 			c.Cluster.Labels[label.ReleaseVersion],
 			getClusterServicePriority(c.Cluster),
 			c.Cluster.Labels[label.Organization],

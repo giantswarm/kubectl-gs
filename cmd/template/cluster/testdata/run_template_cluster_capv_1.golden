@@ -32,8 +32,8 @@ data:
         description: yet another test cluster
         name: test1
         organization: test
-      nodeClasses:
-        default:
+      nodePools:
+        worker:
           cloneMode: linkedClone
           diskGiB: 43
           memoryMiB: 43000
@@ -42,11 +42,8 @@ data:
             - dhcp4: true
               networkName: foonet
           numCPUs: 7
-          resourcePool: foopool
-      nodePools:
-        worker:
-          class: default
           replicas: 4
+          resourcePool: foopool
       release:
         version: 27.0.0
 kind: ConfigMap

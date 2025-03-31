@@ -10,6 +10,49 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Add organisation namepsace to the gitops add command.
+- Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
+
+### Removed
+
+- Removed any code specific to KVM installations.
+
+## [4.7.0] - 2025-01-08
+
+### Changed
+
+- Add deletion prevention label also to templated cluster's `App` and `ConfigMap` if using the `kubectl gs template --prevent-deletion` parameter
+
+## [4.6.0] - 2024-11-28
+
+### Changed
+
+- Use Phase instead of Status field for Clusters and Nodepools. Affected commands:
+  - `kubectl gs get clusters`
+  - `kubectl gs get nodepools`
+
+### Fixed
+
+- Fix getting nodepools via `kubectl gs get nodepools`.
+- Remove node classes from vsphere template used in `kubectl gs template cluster` command.
+
+## [4.5.0] - 2024-11-15
+
+### Changed
+
+- Adjust columns for `kubectl gs get releases`.
+
+## [4.4.0] - 2024-11-13
+
+### Added
+
+- Cloud Director Provider.
+
+## [4.3.1] - 2024-11-04
+
+### Fixed
+
+- Fixed unique user tracking
+- Remove debug logging regarding telemetry
 
 ## [4.3.0] - 2024-10-28
 
@@ -1546,7 +1589,12 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...HEAD
+[4.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...v4.7.0
+[4.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.5.0...v4.6.0
+[4.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.4.0...v4.5.0
+[4.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.1...v4.4.0
+[4.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.0...v4.3.1
 [4.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...v4.1.0

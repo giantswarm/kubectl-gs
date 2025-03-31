@@ -575,11 +575,3 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 		}
 	}
 }
-
-func validateProvider(provider string) error {
-	if provider == key.ProviderKVM {
-		return microerror.Maskf(unsupportedProviderError, "Creating a client certificate for a workload cluster is not supported on provider %s.", provider)
-	}
-
-	return nil
-}

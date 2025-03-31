@@ -36,9 +36,11 @@ func (r *runner) printOutput(rResource release.Resource) error {
 				{Name: "Status", Type: "string"},
 				{Name: "Age", Type: "string", Format: "date-time"},
 				{Name: "Kubernetes", Type: "string"},
-				{Name: "Container Linux", Type: "string"},
+				{Name: "Flatcar", Type: "string"},
+				{Name: "Cilium", Type: "string"},
 				{Name: "CoreDNS", Type: "string"},
-				{Name: "Calico", Type: "string"},
+				{Name: "Observability Bundle", Type: "string"},
+				{Name: "Security Bundle", Type: "string"},
 			},
 		}
 
@@ -109,28 +111,33 @@ func getTableRow(release release.Release) metav1.TableRow {
 	status := getReleaseStatus(release.CR.Spec.State)
 
 	kubernetesVersion := naValue
-	containerLinuxVersion := naValue
+	flatcarVersion := naValue
 	coreDNSVersion := naValue
-	calicoVersion := naValue
+	ciliumVersion := naValue
+	securityBundleVersion := naValue
+	observabilityBundleVersion := naValue
 
 	for _, component := range release.CR.Spec.Components {
 		if component.Name == "kubernetes" {
 			kubernetesVersion = component.Version
 		}
-		if component.Name == "containerlinux" {
-			containerLinuxVersion = component.Version
-		}
-		if component.Name == "coredns" {
-			coreDNSVersion = component.Version
-		}
-		if component.Name == "calico" {
-			calicoVersion = component.Version
+		if component.Name == "flatcar" {
+			flatcarVersion = component.Version
 		}
 	}
 
 	for _, app := range release.CR.Spec.Apps {
 		if app.Name == "coredns" {
-			coreDNSVersion = app.ComponentVersion
+			coreDNSVersion = app.Version
+		}
+		if app.Name == "cilium" {
+			ciliumVersion = app.Version
+		}
+		if app.Name == "observability-bundle" {
+			observabilityBundleVersion = app.Version
+		}
+		if app.Name == "security-bundle" {
+			securityBundleVersion = app.Version
 		}
 	}
 
@@ -140,9 +147,11 @@ func getTableRow(release release.Release) metav1.TableRow {
 			status,
 			output.TranslateTimestampSince(release.CR.CreationTimestamp),
 			kubernetesVersion,
-			containerLinuxVersion,
+			flatcarVersion,
+			ciliumVersion,
 			coreDNSVersion,
-			calicoVersion,
+			observabilityBundleVersion,
+			securityBundleVersion,
 		},
 		Object: runtime.RawExtension{
 			Object: release.CR,

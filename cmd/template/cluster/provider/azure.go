@@ -106,7 +106,7 @@ func newAzureClusterCR(config common.ClusterConfig) *capz.AzureCluster {
 		Spec: capz.AzureClusterSpec{
 			ResourceGroup: config.Name,
 			NetworkSpec: capz.NetworkSpec{
-				APIServerLB: capz.LoadBalancerSpec{
+				APIServerLB: &capz.LoadBalancerSpec{
 					Name: fmt.Sprintf("%s-%s-%s", config.Name, "API", "PublicLoadBalancer"),
 					LoadBalancerClassSpec: capz.LoadBalancerClassSpec{
 						SKU:  "Standard",

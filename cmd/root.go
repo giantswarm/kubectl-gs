@@ -83,10 +83,7 @@ func New(config Config) (*cobra.Command, error) {
 				return
 			}
 
-			logger := log.New(os.Stdout, "", 0) // to bring telemetry errors to the surface
-			tdClient, err := telemetrydeck.NewClient(telemetrydeckAppID,
-				telemetrydeck.WithLogger(logger),
-			)
+			tdClient, err := telemetrydeck.NewClient(telemetrydeckAppID)
 			if err != nil {
 				log.Printf("error creating telemetrydeck client: %s", err)
 			} else {

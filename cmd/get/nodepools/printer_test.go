@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
 
@@ -123,91 +122,7 @@ func Test_printOutput(t *testing.T) {
 			expectedGoldenFile: "print_single_aws_nodepool_name_output.golden",
 		},
 		{
-			name: "case 8: print list of Azure nodepools, with table output",
-			np: newNodePoolCollection(
-				*newAzureNodePool("1sad2", "s921a", "13.0.0", "test nodepool 1", time.Now(), 1, 3, -1, -1),
-				*newAzureNodePool("2a03f", "3a0d1", "13.0.0", "test nodepool 2", time.Now(), 3, 10, -1, -1),
-				*newAzureNodePool("asd29", "s0a10", "13.2.0", "test nodepool 3", time.Now(), 10, 10, 10, 10),
-				*newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", time.Now(), 3, 3, -1, -1),
-				*newAzureNodePool("9f012", "29sa0", "13.2.0", "test nodepool 5", time.Now(), 0, 3, 1, 1),
-				*newAzureNodePool("2f0as", "s00sn", "13.1.0", "test nodepool 6", time.Now(), 2, 5, -1, -1),
-			),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeDefault,
-			expectedGoldenFile: "print_list_of_azure_nodepools_table_output.golden",
-		},
-		{
-			name: "case 9: print list of Azure nodepools, with JSON output",
-			np: newNodePoolCollection(
-				*newAzureNodePool("1sad2", "s921a", "13.0.0", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
-				*newAzureNodePool("2a03f", "3a0d1", "13.0.0", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
-				*newAzureNodePool("asd29", "s0a10", "13.2.0", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
-				*newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-				*newAzureNodePool("9f012", "29sa0", "13.2.0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
-				*newAzureNodePool("2f0as", "s00sn", "13.1.0", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
-			),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeJSON,
-			expectedGoldenFile: "print_list_of_azure_nodepools_json_output.golden",
-		},
-		{
-			name: "case 10: print list of Azure nodepools, with YAML output",
-			np: newNodePoolCollection(
-				*newAzureNodePool("1sad2", "s921a", "13.0.0", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
-				*newAzureNodePool("2a03f", "3a0d1", "13.0.0", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
-				*newAzureNodePool("asd29", "s0a10", "13.2.0", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
-				*newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-				*newAzureNodePool("9f012", "29sa0", "13.2.0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
-				*newAzureNodePool("2f0as", "s00sn", "13.1.0", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
-			),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeYAML,
-			expectedGoldenFile: "print_list_of_azure_nodepools_yaml_output.golden",
-		},
-		{
-			name: "case 11: print list of Azure nodepools, with name output",
-			np: newNodePoolCollection(
-				*newAzureNodePool("1sad2", "s921a", "13.0.0", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
-				*newAzureNodePool("2a03f", "3a0d1", "13.0.0", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
-				*newAzureNodePool("asd29", "s0a10", "13.2.0", "test nodepool 3", parseCreated("2021-01-02T15:04:32Z"), 10, 10, 10, 10),
-				*newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-				*newAzureNodePool("9f012", "29sa0", "13.2.0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
-				*newAzureNodePool("2f0as", "s00sn", "13.1.0", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
-			),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeName,
-			expectedGoldenFile: "print_list_of_azure_nodepools_name_output.golden",
-		},
-		{
-			name:               "case 12: print single Azure nodepool, with table output",
-			np:                 newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", time.Now(), 3, 3, -1, -1),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeDefault,
-			expectedGoldenFile: "print_single_azure_nodepool_table_output.golden",
-		},
-		{
-			name:               "case 13: print single Azure nodepool, with JSON output",
-			np:                 newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeJSON,
-			expectedGoldenFile: "print_single_azure_nodepool_json_output.golden",
-		},
-		{
-			name:               "case 14: print single Azure nodepool, with YAML output",
-			np:                 newAzureNodePool("f930q", "s921a", "13.0.0", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeYAML,
-			expectedGoldenFile: "print_single_azure_nodepool_yaml_output.golden",
-		},
-		{
-			name:               "case 15: print single Azure nodepool, with name output",
-			np:                 newAzureNodePool("f930q", "s921a", "13.2.0", "test nodepool 4", parseCreated("2021-01-02T15:04:32Z"), 3, 3, -1, -1),
-			provider:           key.ProviderAzure,
-			outputType:         output.TypeName,
-			expectedGoldenFile: "print_single_azure_nodepool_name_output.golden",
-		},
-		{
-			name: "case 16: print list of CAPA nodepools, with table output",
+			name: "case 8: print list of CAPA nodepools, with table output",
 			np: newNodePoolCollection(
 				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", time.Now(), 1, 3, -1, -1),
 				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", time.Now(), 3, 10, -1, -1),
@@ -216,12 +131,12 @@ func Test_printOutput(t *testing.T) {
 				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", time.Now(), 0, 3, 1, 1),
 				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", time.Now(), 2, 5, -1, -1),
 			),
-			provider:           key.ProviderCAPA,
+			provider:           key.ProviderDefault,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_capa_nodepools_table_output.golden",
 		},
 		{
-			name: "case 17: print list of CAPA nodepools, with JSON output",
+			name: "case 9: print list of CAPA nodepools, with JSON output",
 			np: newNodePoolCollection(
 				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
 				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
@@ -230,12 +145,12 @@ func Test_printOutput(t *testing.T) {
 				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
 				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
 			),
-			provider:           key.ProviderCAPA,
+			provider:           key.ProviderDefault,
 			outputType:         output.TypeJSON,
 			expectedGoldenFile: "print_list_of_capa_nodepools_json_output.golden",
 		},
 		{
-			name: "case 18: print list of CAPA nodepools, with YAML output",
+			name: "case 10: print list of CAPA nodepools, with YAML output",
 			np: newNodePoolCollection(
 				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
 				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
@@ -244,12 +159,12 @@ func Test_printOutput(t *testing.T) {
 				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
 				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
 			),
-			provider:           key.ProviderCAPA,
+			provider:           key.ProviderDefault,
 			outputType:         output.TypeYAML,
 			expectedGoldenFile: "print_list_of_capa_nodepools_yaml_output.golden",
 		},
 		{
-			name: "case 19: print list of CAPA nodepools, with name output",
+			name: "case 11: print list of CAPA nodepools, with name output",
 			np: newNodePoolCollection(
 				*newCAPANodePool("1sad2", "s921a", "test nodepool 1", parseCreated("2021-01-02T15:04:32Z"), 1, 3, -1, -1),
 				*newCAPANodePool("2a03f", "3a0d1", "test nodepool 2", parseCreated("2021-01-02T15:04:32Z"), 3, 10, -1, -1),
@@ -258,7 +173,7 @@ func Test_printOutput(t *testing.T) {
 				*newCAPANodePool("9f012", "29sa0", "test nodepool 5", parseCreated("2021-01-02T15:04:32Z"), 0, 3, 1, 1),
 				*newCAPANodePool("2f0as", "s00sn", "test nodepool 6", parseCreated("2021-01-02T15:04:32Z"), 2, 5, -1, -1),
 			),
-			provider:           key.ProviderCAPA,
+			provider:           key.ProviderDefault,
 			outputType:         output.TypeName,
 			expectedGoldenFile: "print_list_of_capa_nodepools_name_output.golden",
 		},
@@ -377,28 +292,6 @@ func newAWSNodePool(name, clusterName, release, description string, creationDate
 	return np
 }
 
-func newAzureMachinePool(name, clusterName, release string, creationDate time.Time) *capzexp.AzureMachinePool {
-	n := &capzexp.AzureMachinePool{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta1",
-			Kind:       "AzureMachinePool",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              name,
-			Namespace:         "org-giantswarm",
-			CreationTimestamp: metav1.NewTime(creationDate),
-			Labels: map[string]string{
-				label.MachinePool:     name,
-				label.ReleaseVersion:  release,
-				label.Organization:    "giantswarm",
-				capi.ClusterNameLabel: clusterName,
-			},
-		},
-	}
-
-	return n
-}
-
 func newCAPAexpMachinePool(name, clusterName, description string, creationDate time.Time) *capaexp.AWSMachinePool {
 	n := &capaexp.AWSMachinePool{
 		TypeMeta: metav1.TypeMeta{
@@ -459,17 +352,6 @@ func newCAPANodePool(name, clusterName, description string, creationDate time.Ti
 	np := &nodepool.Nodepool{
 		MachinePool:     mp,
 		CAPAMachinePool: capaMP,
-	}
-
-	return np
-}
-func newAzureNodePool(name, clusterName, release, description string, creationDate time.Time, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
-	azureMP := newAzureMachinePool(name, clusterName, release, creationDate)
-	mp := newCAPIexpMachinePool(name, clusterName, release, description, creationDate, nodesMin, nodesMax, nodesDesired, nodesReady)
-
-	np := &nodepool.Nodepool{
-		MachinePool:      mp,
-		AzureMachinePool: azureMP,
 	}
 
 	return np

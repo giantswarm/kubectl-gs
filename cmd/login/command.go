@@ -38,7 +38,7 @@ Use <arg1> <arg2> for
 Use this command to set up a kubectl context to work with:
   (1) a management cluster, using OIDC authentication
   (2) a workload cluster, using OIDC authentication
-  (3) a workload cluster, using client certificate auth. Not supported on kvm.
+  (3) a workload cluster, using client certificate auth.
 
 Note that (3) implies (1). When creating a workload cluster client certificate,
 management cluster access will be set up as well, if that is not yet done.
