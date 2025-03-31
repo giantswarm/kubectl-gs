@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Add organisation namepsace to the gitops add command.
+
 ## [4.3.0] - 2024-10-28
 
 ### Added
