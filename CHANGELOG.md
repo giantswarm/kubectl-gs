@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.7.1] - 2025-03-31
+
 ### Changed
 
 - Add organisation namepsace to the gitops add command.
@@ -1589,7 +1591,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...HEAD
+[4.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...v4.7.1
 [4.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...v4.7.0
 [4.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.5.0...v4.6.0
 [4.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.4.0...v4.5.0
