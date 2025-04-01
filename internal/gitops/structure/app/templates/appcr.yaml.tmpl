@@ -2,9 +2,12 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
-{{- if not .InCluster }}
+{{- if eq .InCluster "false" }}
   labels:
     giantswarm.io/cluster: {{ .WorkloadCluster}}
+{{- else if eq .InCluster "true" }}
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
 {{- end }}
   name: {{ .WorkloadCluster}}-{{ .AppName }}
   namespace: org-{{ .Organization }}
@@ -17,10 +20,10 @@ spec:
   name: {{ .App }}
   namespace: {{ .AppNamespace }}
   version: {{ .AppVersion }}
-{{- if .InCluster }}
+{{- if eq .InCluster "true" }}
   kubeConfig:
     inCluster: true
-{{- else }}
+{{- else if eq .InCluster "false" }}
   kubeConfig:
     context:
       name: {{ .WorkloadCluster}}

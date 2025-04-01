@@ -56,7 +56,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		AppName:           r.flag.Name,
 		AppNamespace:      targetNamespace,
 		AppVersion:        r.flag.Version,
-		InCluster:         r.flag.InCluster,
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
 		SkipMAPI:          r.flag.SkipMAPI,
@@ -67,6 +66,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if config.AppName == "" {
 		config.AppName = config.App
+	}
+
+	if cmd.Flags().Changed("inCluster") && r.flag.InCluster {
+		config.InCluster = "true"
+	} else if cmd.Flags().Changed("inCluster") && !r.flag.InCluster {
+		config.InCluster = "false"
+	} else {
+		config.InCluster = ""
 	}
 
 	if r.flag.UserValuesConfigMap != "" {

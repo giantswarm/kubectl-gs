@@ -29,7 +29,7 @@ type StructureConfig struct {
 	ClusterBase       string
 	Release           string
 	ClusterUserConfig string
-	InCluster         bool
+	InCluster         string
 
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
