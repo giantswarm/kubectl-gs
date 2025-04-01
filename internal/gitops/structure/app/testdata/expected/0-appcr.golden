@@ -1,6 +1,8 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
+  labels:
+    giantswarm.io/cluster: demowc
   name: demowc-hello-world
   namespace: org-demoorg
 spec:
@@ -8,3 +10,10 @@ spec:
   name: hello-world
   namespace: default
   version: 0.3.0
+  kubeConfig:
+    context:
+      name: demowc
+    inCluster: false
+    secret:
+      name: demowc-kubeconfig
+      namespace: org-demoorg
