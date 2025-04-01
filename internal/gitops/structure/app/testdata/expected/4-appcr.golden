@@ -1,0 +1,14 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: demowc-hello-world
+  namespace: org-demoorg
+spec:
+  catalog: giantswarm
+  name: hello-world
+  namespace: default
+  version: 0.3.0
+  kubeConfig:
+    inCluster: true
