@@ -56,7 +56,7 @@ func NewAppCR(config Config) ([]byte, error) {
 	userConfig := v1alpha1.AppSpecUserConfig{}
 	appLabels := map[string]string{}
 
-	// Accomodating all the label cases here:
+	// Accommodating all the label cases here:
 	// 1. In-cluster Apps get unique label
 	// 2. Org-namespaced Apps get cluster label
 	// 3. Cluster-namespaced Apps with defaulting enabled gets nothing

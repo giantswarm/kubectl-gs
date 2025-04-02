@@ -19,6 +19,7 @@ const (
 	flagApp                 = "app"
 	flagBase                = "base"
 	flagCatalog             = "catalog"
+	flagInCluster           = "in-cluster"
 	flagInstallTimeout      = "install-timeout"
 	flagNamespace           = "namespace"
 	flagRollbackTimeout     = "rollback-timeout"
@@ -41,6 +42,7 @@ type flag struct {
 	App                 string
 	Base                string
 	Catalog             string
+	InCluster           bool
 	InstallTimeout      time.Duration
 	Namespace           string
 	RollbackTimeout     time.Duration
@@ -63,6 +65,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.App, flagApp, "", "App name in the catalog.")
 	cmd.Flags().StringVar(&f.Base, flagBase, "", "Path to the base directory. It must be relative to the repository root.")
 	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog to install the app from.")
+	cmd.Flags().BoolVar(&f.InCluster, flagInCluster, false, "Use in-cluster configuration.")
 	cmd.Flags().DurationVar(&f.InstallTimeout, flagInstallTimeout, 0, "Timeout for the Helm install.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace to install app into.")
 	cmd.Flags().DurationVar(&f.RollbackTimeout, flagRollbackTimeout, 0, "Timeout for the Helm rollback.")
