@@ -135,28 +135,28 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 	contextName, contextExists, err := r.createClusterKubeconfig(ctx, client, provider)
 	if err != nil {
 		if IsClusterAPINotReady(err) {
-			fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known yet.\n", r.flag.WCName)
-			fmt.Fprintf(r.stdout, "If the cluster has been created recently, please wait for a few minutes and try again.\n")
+			_, _ = fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known yet.\n", r.flag.WCName)
+			_, _ = fmt.Fprintf(r.stdout, "If the cluster has been created recently, please wait for a few minutes and try again.\n")
 		} else if IsClusterAPINotKnown(err) {
-			fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known.\n", r.flag.WCName)
-			fmt.Fprintf(r.stdout, "Since the cluster has been created a while ago, this appears to be a problem with cluster creation. Please contact Giant Swarm's support.\n")
+			_, _ = fmt.Fprintf(r.stdout, "\nCould not create a context for workload cluster %s, as the cluster's API server endpoint is not known.\n", r.flag.WCName)
+			_, _ = fmt.Fprintf(r.stdout, "Since the cluster has been created a while ago, this appears to be a problem with cluster creation. Please contact Giant Swarm's support.\n")
 		}
 		return microerror.Mask(err)
 	}
 
 	if r.loginOptions.selfContainedWC {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
-		fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
+		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
 	} else if !r.loginOptions.switchToWCContext {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
-		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s'. To switch back to this context later, use this command:\n\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else if contextExists {
-		fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
-		fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
-		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "Switched to context '%s'.\n\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "To switch back to this context later, use this command:\n\n")
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	} else {
-		fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected. To switch back to this context later, use this command:\n\n", contextName)
-		fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected. To switch back to this context later, use this command:\n\n", contextName)
+		_, _ = fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
 
 	return nil
@@ -221,7 +221,7 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 	}
 
 	if c.Cluster.Spec.ControlPlaneEndpoint.Host == "" || c.Cluster.Spec.ControlPlaneEndpoint.Port == 0 {
-		if c.Cluster.ObjectMeta.CreationTimestamp.Time.Before(time.Now().Add(-newClusterMaxAge)) {
+		if c.Cluster.CreationTimestamp.Time.Before(time.Now().Add(-newClusterMaxAge)) {
 			return "", false, microerror.Maskf(clusterAPINotKnownError, "API for cluster '%s' is not known", r.flag.WCName)
 		}
 		return "", false, microerror.Maskf(clusterAPINotReadyError, "API for cluster '%s' is not ready yet", r.flag.WCName)
@@ -260,7 +260,7 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 		}
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
+	_, _ = fmt.Fprint(r.stdout, color.GreenString("\nCreated client certificate for workload cluster '%s'.\n", r.flag.WCName))
 
 	return contextName, contextExists, nil
 }
@@ -291,8 +291,8 @@ func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.In
 		return "", false, microerror.Mask(err)
 	}
 
-	fmt.Fprint(r.stdout, color.GreenString("\nCreated aws IAM based kubeconfig for EKS workload cluster '%s'.\n", r.flag.WCName))
-	fmt.Fprint(r.stdout, color.YellowString("\nRemember to have valid and active AWS credentials that have 'eks:GetToken' permissions on the EKS cluster resource in order to use the kubeconfig.\n\n"))
+	_, _ = fmt.Fprint(r.stdout, color.GreenString("\nCreated aws IAM based kubeconfig for EKS workload cluster '%s'.\n", r.flag.WCName))
+	_, _ = fmt.Fprint(r.stdout, color.YellowString("\nRemember to have valid and active AWS credentials that have 'eks:GetToken' permissions on the EKS cluster resource in order to use the kubeconfig.\n\n"))
 
 	return contextName, contextExists, nil
 }

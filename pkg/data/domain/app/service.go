@@ -12,7 +12,6 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
-	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -234,7 +233,7 @@ func (s *Service) findVersion(ctx context.Context, app *applicationv1alpha1.App,
 	if err != nil {
 		return microerror.Maskf(fetchError, "unable to get the app, http request failed: %s", err.Error())
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == 404 {
 		return microerror.Mask(noResourcesError)
@@ -292,7 +291,7 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 		apps := &applicationv1alpha1.AppList{}
 		{
 			err = s.client.List(ctx, apps, lo)
-			if apimeta.IsNoMatchError(err) {
+			if meta.IsNoMatchError(err) {
 				return nil, microerror.Mask(noMatchError)
 			} else if err != nil {
 				return nil, microerror.Mask(err)
@@ -324,7 +323,7 @@ func (s *Service) getByName(ctx context.Context, namespace, name string) (Resour
 		}, appCR)
 		if apierrors.IsNotFound(err) {
 			return nil, microerror.Mask(notFoundError)
-		} else if apimeta.IsNoMatchError(err) {
+		} else if meta.IsNoMatchError(err) {
 			return nil, microerror.Mask(noMatchError)
 		} else if err != nil {
 			return nil, microerror.Mask(err)

@@ -43,13 +43,13 @@ func (s *Service) getAllGCP(ctx context.Context, namespace string) (Resource, er
 	for _, app := range clusterAppList.Items {
 		clusterKey := runtimeClient.ObjectKey{
 			Namespace: app.Namespace,
-			Name:      app.ObjectMeta.Labels[label.Cluster],
+			Name:      app.Labels[label.Cluster],
 		}
 		app.TypeMeta = meta.TypeMeta{
 			APIVersion: "application.giantswarm.io/v1alpha1",
 			Kind:       "App",
 		}
-		switch app.ObjectMeta.Labels[label.AppKubernetesName] {
+		switch app.Labels[label.AppKubernetesName] {
 		case "default-apps-gcp":
 			defaultAppsAppMap[clusterKey] = app
 		case "cluster-gcp":

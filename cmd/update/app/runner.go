@@ -73,7 +73,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "App %q in namespace %q updated with %s\n", patchOptions.Name, patchOptions.Namespace, strings.Join(state, " "))
+	_, _ = fmt.Fprintf(r.stdout, "App %q in namespace %q updated with %s\n", patchOptions.Name, patchOptions.Namespace, strings.Join(state, " "))
 	return nil
 }
 

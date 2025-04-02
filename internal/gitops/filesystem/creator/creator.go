@@ -139,19 +139,19 @@ func (c *Creator) print() {
 	for n, v := range c.preValidators {
 		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
 		if err != nil {
-			fmt.Fprintf(c.stdout, "\n%s", err)
+			_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
 			return
 		}
 	}
 
-	fmt.Fprintf(c.stdout, "\n## CREATE ##\n")
+	_, _ = fmt.Fprintf(c.stdout, "\n## CREATE ##\n")
 
 	lines := ""
 	for _, o := range c.fsObjects {
 
 		// Print path to the directory to be created
 		if o.isDir() {
-			fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
+			_, _ = fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
 			lines = "\n\n"
 			continue
 		}
@@ -162,13 +162,13 @@ func (c *Creator) print() {
 		}
 
 		// Print path to the file, and then the file content
-		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
-		fmt.Fprintf(c.stdout, "%s\n\n", string(data))
+		_, _ = fmt.Fprintf(c.stdout, "%s/%s\n", c.path, o.RelativePath)
+		_, _ = fmt.Fprintf(c.stdout, "%s\n\n", string(data))
 		lines = "\n"
 	}
 
 	if len(c.postModifiers) != 0 {
-		fmt.Fprintf(c.stdout, "%s## MODIFY ##\n", lines)
+		_, _ = fmt.Fprintf(c.stdout, "%s## MODIFY ##\n", lines)
 	}
 
 	for n, m := range c.postModifiers {
@@ -182,7 +182,7 @@ func (c *Creator) print() {
 			// array. If not found there, return the original error.
 			rawYaml = c.findObject(n)
 			if rawYaml == nil {
-				fmt.Fprintln(c.stdout, err)
+				_, _ = fmt.Fprintln(c.stdout, err)
 				continue
 			}
 		}
@@ -192,8 +192,8 @@ func (c *Creator) print() {
 			return
 		}
 
-		fmt.Fprintf(c.stdout, "%s/%s\n", c.path, n)
-		fmt.Fprintln(c.stdout, string(edited))
+		_, _ = fmt.Fprintf(c.stdout, "%s/%s\n", c.path, n)
+		_, _ = fmt.Fprintln(c.stdout, string(edited))
 	}
 }
 
@@ -206,7 +206,7 @@ func (c *Creator) write() error {
 	for n, v := range c.preValidators {
 		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
 		if err != nil {
-			fmt.Fprintf(c.stdout, "\n%s", err)
+			_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
 			return microerror.Mask(err)
 		}
 	}

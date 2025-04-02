@@ -68,7 +68,7 @@ func (c *ClientImpl) ExecuteQuery(ctx context.Context, query string, variables m
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode != http.StatusOK {
 		return microerror.Mask(httpError)

@@ -53,9 +53,10 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 	}
 
 	hf := func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/auth" {
+		switch r.URL.Path {
+		case "/auth":
 			http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
-		} else if r.URL.Path == "/token" {
+		case "/token":
 			if s.tokenRecoverableFailures > 0 {
 				w.WriteHeader(http.StatusUnauthorized)
 				w.Header().Set("Content-Type", "application/json")
@@ -99,7 +100,7 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if r.URL.Path == "/keys" {
+		case "/keys":
 			webKey, err := getJSONWebKey(key)
 			if err != nil {
 				t.Fatal(err)
@@ -109,7 +110,7 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if r.URL.Path == "/device/code" {
+		case "/device/code":
 			w.Header().Set("Content-Type", "application/json")
 			body, err := getDeviceCodeResponseData(s.issuerURL)
 			if err != nil {
@@ -119,19 +120,19 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if r.URL.Path == "/graphql" {
+		case "/graphql":
 			w.Header().Set("Content-Type", "application/json")
 			_, err := io.WriteString(w, installationInfo(s.installationCodename, s.issuerURL))
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else if r.URL.Path == "/version" {
+		case "/version":
 			w.Header().Set("Content-Type", "application/json")
 			_, err := io.WriteString(w, "{}")
 			if err != nil {
 				t.Fatal(err)
 			}
-		} else {
+		default:
 			w.Header().Set("Content-Type", "application/json")
 			responseStr := strings.ReplaceAll(GetIssuerData(), "ISSUER", s.issuerURL)
 			_, err := io.WriteString(w, responseStr)

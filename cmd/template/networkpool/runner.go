@@ -71,7 +71,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 
 			output = f
 		}
