@@ -12,7 +12,7 @@ require (
 	github.com/ProtonMail/gopenpgp/v3 v3.1.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/blang/semver/v4 v4.0.0
-	github.com/coreos/go-oidc/v3 v3.13.0
+	github.com/coreos/go-oidc/v3 v3.14.1
 	github.com/fatih/color v1.18.0
 	github.com/getsops/sops/v3 v3.10.1
 	github.com/giantswarm/apiextensions-application v0.6.2
