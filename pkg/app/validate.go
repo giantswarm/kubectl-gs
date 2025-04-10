@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -13,7 +14,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
-	appdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/helmbinary"
 )
@@ -49,7 +49,7 @@ func (s *Service) Validate(ctx context.Context, options ValidateOptions) (Valida
 func (s *Service) validateByName(ctx context.Context, name, namespace string, customValuesSchema string) (ValidationResults, error) {
 	results := ValidationResults{}
 
-	options := appdata.GetOptions{
+	options := app.GetOptions{
 		Namespace: namespace,
 		Name:      name,
 	}
@@ -94,7 +94,7 @@ func (s *Service) validateMultiple(ctx context.Context, namespace string, labelS
 	var err error
 	results := ValidationResults{}
 
-	options := appdata.GetOptions{
+	options := app.GetOptions{
 		Namespace:     namespace,
 		LabelSelector: labelSelector,
 	}
@@ -188,6 +188,7 @@ func (s *Service) ValidateApp(ctx context.Context, app *applicationv1alpha1.App,
 		// 1. Chart values (the starting point, what is in the values.yaml file of
 		// the chart itself)
 		valuesFilePath := path.Join(tmpDir, app.Spec.Name, "values.yaml")
+		valuesFilePath = filepath.Clean(valuesFilePath)
 		chartValuesYamlFile, err := os.ReadFile(valuesFilePath)
 		if err != nil {
 			return "", nil, microerror.Maskf(ioError, "failed to read: %s", valuesFilePath)
@@ -247,7 +248,7 @@ func (s *Service) fetchValuesSchema(entries ChartVersions, version string) (stri
 		}
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -352,7 +353,7 @@ func (s *Service) fetchCatalogIndex(ctx context.Context, catalogName, catalogNam
 
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

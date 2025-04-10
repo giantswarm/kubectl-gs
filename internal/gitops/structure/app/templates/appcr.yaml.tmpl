@@ -2,7 +2,15 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
+{{- if eq .InCluster "false" }}
+  labels:
+    giantswarm.io/cluster: {{ .WorkloadCluster}}
+{{- else if eq .InCluster "true" }}
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+{{- end }}
   name: {{ .WorkloadCluster}}-{{ .AppName }}
+  namespace: org-{{ .Organization }}
 spec:
   catalog: {{ .AppCatalog }}
 {{- if .AppInstallTimeout }}
@@ -12,6 +20,18 @@ spec:
   name: {{ .App }}
   namespace: {{ .AppNamespace }}
   version: {{ .AppVersion }}
+{{- if eq .InCluster "true" }}
+  kubeConfig:
+    inCluster: true
+{{- else if eq .InCluster "false" }}
+  kubeConfig:
+    context:
+      name: {{ .WorkloadCluster}}
+    inCluster: false
+    secret:
+      name: {{ .WorkloadCluster}}-kubeconfig
+      namespace: org-{{ .Organization }}
+{{- end }}
 {{- if .AppRollbackTimeout }}
   rollback:
     timeout: {{ .AppRollbackTimeout.Duration }}

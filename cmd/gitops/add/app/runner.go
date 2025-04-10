@@ -68,6 +68,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config.AppName = config.App
 	}
 
+	if cmd.Flags().Changed(flagInCluster) && r.flag.InCluster {
+		config.InCluster = "true"
+	} else if cmd.Flags().Changed(flagInCluster) && !r.flag.InCluster {
+		config.InCluster = "false"
+	} else {
+		config.InCluster = ""
+	}
+
 	if r.flag.UserValuesConfigMap != "" {
 		config.AppUserValuesConfigMap, err = commonkey.ReadConfigMapYamlFromFile(
 			afero.NewOsFs(),

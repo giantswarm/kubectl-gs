@@ -241,7 +241,7 @@ func NewCapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectRefe
 	}
 
 	if val, ok := config.Labels[label.ServicePriority]; ok {
-		cluster.ObjectMeta.Labels[label.ServicePriority] = val
+		cluster.Labels[label.ServicePriority] = val
 	}
 
 	return cluster
