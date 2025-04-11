@@ -48,7 +48,7 @@ require (
 	k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e
 	sigs.k8s.io/cluster-api v1.9.6
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.2
-	sigs.k8s.io/cluster-api-provider-azure v1.19.1
+	sigs.k8s.io/cluster-api-provider-azure v1.19.2
 	sigs.k8s.io/controller-runtime v0.19.6
 	sigs.k8s.io/yaml v1.4.0
 )
