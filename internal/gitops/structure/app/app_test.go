@@ -286,6 +286,60 @@ topKey:
 				},
 			},
 		},
+		{
+			name: "flawless with in cluster",
+			config: common.StructureConfig{
+				App:               "hello-world",
+				AppCatalog:        "giantswarm",
+				ManagementCluster: "demomc",
+				AppName:           "hello-world",
+				AppNamespace:      "default",
+				Organization:      "demoorg",
+				AppVersion:        "0.3.0",
+				SkipMAPI:          true,
+				WorkloadCluster:   "demowc",
+				InCluster:         "true",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/4-appcr.golden",
+				},
+			},
+		},
+		{
+			name: "flawless with in cluster false",
+			config: common.StructureConfig{
+				App:               "hello-world",
+				AppCatalog:        "giantswarm",
+				ManagementCluster: "demomc",
+				AppName:           "hello-world",
+				AppNamespace:      "default",
+				Organization:      "demoorg",
+				AppVersion:        "0.3.0",
+				SkipMAPI:          true,
+				WorkloadCluster:   "demowc",
+				InCluster:         "false",
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
+					GoldenFile:   "testdata/expected/5-appcr.golden",
+				},
+			},
+		},
 	}
 
 	for i, tc := range testCases {

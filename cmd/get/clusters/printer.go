@@ -62,7 +62,7 @@ func (r *runner) printOutput(clusterResource cluster.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No clusters found.\n")
-	fmt.Fprintf(r.stdout, "To create a cluster, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template cluster --help\n")
+	_, _ = fmt.Fprintf(r.stdout, "No clusters found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "To create a cluster, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  kubectl gs template cluster --help\n")
 }

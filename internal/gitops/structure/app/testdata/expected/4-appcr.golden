@@ -1,18 +1,14 @@
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
   name: demowc-hello-world
   namespace: org-demoorg
 spec:
   catalog: giantswarm
-  install:
-    timeout: 6m0s
   name: hello-world
   namespace: default
   version: 0.3.0
-  rollback:
-    timeout: 7m0s
-  uninstall:
-    timeout: 8m0s
-  upgrade:
-    timeout: 9m0s
+  kubeConfig:
+    inCluster: true

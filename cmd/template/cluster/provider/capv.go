@@ -8,11 +8,9 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
-
-	"github.com/giantswarm/k8smetadata/pkg/label"
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 
@@ -81,7 +79,7 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 		}
 
 		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels[label.Cluster] = config.Name
 		if config.PreventDeletion {
 			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
@@ -237,7 +235,7 @@ func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interfa
 		}
 
 		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels[label.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -269,7 +267,7 @@ func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interfa
 			UserConfigConfigMapName: configMapName,
 			UseClusterValuesConfig:  true,
 			ExtraLabels: map[string]string{
-				k8smetadata.ManagedBy: "cluster",
+				label.ManagedBy: "cluster",
 			},
 		})
 		if err != nil {

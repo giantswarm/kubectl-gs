@@ -7,11 +7,9 @@ import (
 	"text/template"
 
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
-
-	"github.com/giantswarm/k8smetadata/pkg/label"
-	k8smetadata "github.com/giantswarm/k8smetadata/pkg/label"
 
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capa"
@@ -61,7 +59,7 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		}
 
 		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels[label.Cluster] = config.Name
 		if config.PreventDeletion {
 			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
@@ -152,7 +150,7 @@ func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, 
 		}
 
 		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[k8smetadata.Cluster] = config.Name
+		userConfigMap.Labels[label.Cluster] = config.Name
 
 		configMapYAML, err = yaml.Marshal(userConfigMap)
 		if err != nil {
@@ -184,7 +182,7 @@ func templateDefaultAppsEKS(ctx context.Context, k8sClient k8sclient.Interface, 
 			UserConfigConfigMapName: configMapName,
 			UseClusterValuesConfig:  true,
 			ExtraLabels: map[string]string{
-				k8smetadata.ManagedBy: "cluster",
+				label.ManagedBy: "cluster",
 			},
 		})
 		if err != nil {

@@ -150,7 +150,7 @@ query GetSomething {
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
-				r.Body.Close()
+				_ = r.Body.Close()
 
 				var expectedRequest []byte
 				{
@@ -176,7 +176,7 @@ query GetSomething {
 				}
 
 				w.WriteHeader(tc.responseStatusCode)
-				w.Write(expectedResponse) // nolint:errcheck
+				_, _ = w.Write(expectedResponse)
 			}))
 			defer ts.Close()
 
