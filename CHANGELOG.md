@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.8.0] - 2025-05-01
+
+### Changed
+
+- Align `template cluster` command `--name` argument validation with [Cluster naming](https://docs.giantswarm.io/overview/fleet-management/cluster-management/cluster-concepts/cluster-naming/).
+
 ## [4.7.1] - 2025-03-31
 
 ### Changed
@@ -1591,7 +1597,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...HEAD
+[4.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...v4.8.0
 [4.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...v4.7.1
 [4.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...v4.7.0
 [4.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.5.0...v4.6.0
