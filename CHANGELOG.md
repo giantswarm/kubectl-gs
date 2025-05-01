@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [4.8.0] - 2025-05-01
 
+### Changed
+
+- Align `template cluster` command `--name` argument validation with [Cluster naming](https://docs.giantswarm.io/overview/fleet-management/cluster-management/cluster-concepts/cluster-naming/).
+
 ## [4.7.1] - 2025-03-31
 
 ### Changed
