@@ -57,7 +57,7 @@ func NodeSSHDConfigEncoded() string {
 func ValidateName(name string) (bool, error) {
 	maxLength := NameLengthMax
 
-	pattern := fmt.Sprintf("^[a-z][a-z0-9]{0,%d}$", maxLength-1)
+	pattern := fmt.Sprintf("^[a-z]([-a-z0-9]{0,%d}[a-z0-9])?$", maxLength-2)
 	matched, err := regexp.MatchString(pattern, name)
 	return matched, microerror.Mask(err)
 }
