@@ -38,10 +38,6 @@ const (
 	envKeepContext = "KUBECTL_GS_LOGIN_KEEP_CONTEXT"
 )
 
-var (
-	keepContext bool
-)
-
 type flag struct {
 	CallbackServerHost string
 	CallbackServerPort int
@@ -78,7 +74,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 
 	viper.AutomaticEnv()
 	keepContextDefault := viper.GetBool(envKeepContext)
-	cmd.Flags().BoolVar(&keepContext, flagKeepContext, keepContextDefault, "Keep the current kubectl context. If not set/false, will set the current-context to the one representing the cluster to log in to.")
+	cmd.Flags().BoolVar(&f.KeepContext, flagKeepContext, keepContextDefault, "Keep the current kubectl context. If not set/false, will set the current-context to the one representing the cluster to log in to.")
 
 	cmd.Flags().StringVar(&f.WCName, flagWCName, "", "For client certificate creation. Specify the name of a workload cluster to work with. If omitted, a management cluster will be accessed.")
 	cmd.Flags().StringVar(&f.WCOrganization, flagWCOrganization, "", fmt.Sprintf("For client certificate creation. Organization that owns the workload cluster. Requires --%s.", flagWCName))
