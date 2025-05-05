@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Flag `keep-context` for login command is no longer ignored
+
 ## [4.8.0] - 2025-05-01
 
 ### Changed
