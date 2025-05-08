@@ -200,8 +200,8 @@ github.com/giantswarm/apiextensions-application v0.6.2 h1:XL86OrpprWl5Wp38EUvUXt
 github.com/giantswarm/apiextensions-application v0.6.2/go.mod h1:8ylqSmDSzFblCppRQTFo8v9s/F6MX6RTusVVoDDfWso=
 github.com/giantswarm/apiextensions/v6 v6.6.0 h1:qtsZuxsfigUB6xRd/UygQjh3Oaf54uXp+adbtgpCfiI=
 github.com/giantswarm/apiextensions/v6 v6.6.0/go.mod h1:Wgc2Rx8YAYF2HidjabEvhsj5ADL+RteIC86ofulY+YE=
-github.com/giantswarm/app/v7 v7.1.0 h1:Az26fpOTe8YzYEWepBmfQSxP8zk1owXBj/jBTNUmyx8=
-github.com/giantswarm/app/v7 v7.1.0/go.mod h1:vgv51aLIWIugQhIVaeP1f5qYxO+0tpnw4bXRFXzoDE8=
+github.com/giantswarm/app/v8 v8.0.0 h1:DPZij3FFnyZEcO3BvpsazSgKDZ3EUaUbH3AgfAJKJ3Q=
+github.com/giantswarm/app/v8 v8.0.0/go.mod h1:BVVqAArDGST9jdipivIu3B12XRDKrymhHbZzgYIu+sQ=
 github.com/giantswarm/appcatalog v1.0.0 h1:h2vNqd53ciYenoB04nrit4zruG4TeWiNT28t94l0wkw=
 github.com/giantswarm/appcatalog v1.0.0/go.mod h1:KmzfEU2sLoXldJ2OaAY6Pn/78h2wmfZqMwjRYQkudSo=
 github.com/giantswarm/backoff v1.0.1 h1:paqQhjUsibkf+wWFCHsk7VXAkcM1L3ssAe7V7i8twpM=
@@ -657,8 +657,8 @@ sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.2 h1:1RKzXkpnONouxBLxVa1xUtpYRfpG+E
 sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.2/go.mod h1:ubZXYyieYt+I4jQFJ47J9Hq4W3zPernTWXlIfIZnB3Y=
 sigs.k8s.io/cluster-api-provider-azure v1.19.2 h1:Su0xk55+/nfVskowhd9XISMCz2mgtj/0ganRGt5B5fk=
 sigs.k8s.io/cluster-api-provider-azure v1.19.2/go.mod h1:vgIOjI5i9W+yxCUNJx0Bu/jvBzFVNkfV/xUt4uX/oL0=
-sigs.k8s.io/controller-runtime v0.19.6 h1:fuq53qTLQ7aJTA7aNsklNnu7eQtSFqJUomOyM+phPLk=
-sigs.k8s.io/controller-runtime v0.19.6/go.mod h1:iRmWllt8IlaLjvTTDLhRBXIEtkCK6hwVBJJsYS9Ajf4=
+sigs.k8s.io/controller-runtime v0.20.4 h1:X3c+Odnxz+iPTRobG4tp092+CvBU9UK0t/bRf+n0DGU=
+sigs.k8s.io/controller-runtime v0.20.4/go.mod h1:xg2XB0K5ShQzAgsoujxuKN4LNXR2LfwwHsPj7Iaw+XY=
 sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 h1:/Rv+M11QRah1itp8VhT6HoVx1Ray9eB4DBr+K+/sCJ8=
 sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3/go.mod h1:18nIHnGi6636UCz6m8i4DhaJ65T6EruyzmoQqI2BVDo=
 sigs.k8s.io/kustomize/api v0.19.0 h1:F+2HB2mU1MSiR9Hp1NEgoU2q9ItNOaBJl0I4Dlus5SQ=

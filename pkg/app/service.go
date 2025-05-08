@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/giantswarm/app/v7/pkg/values"
+	"github.com/giantswarm/app/v8/pkg/values"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
