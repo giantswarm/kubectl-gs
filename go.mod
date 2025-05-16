@@ -17,7 +17,7 @@ require (
 	github.com/getsops/sops/v3 v3.10.2
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/apiextensions/v6 v6.6.0
-	github.com/giantswarm/app/v7 v7.1.0
+	github.com/giantswarm/app/v8 v8.0.0
 	github.com/giantswarm/appcatalog v1.0.0
 	github.com/giantswarm/backoff v1.0.1
 	github.com/giantswarm/k8sclient/v8 v8.0.0
@@ -49,7 +49,7 @@ require (
 	sigs.k8s.io/cluster-api v1.9.6
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.2
 	sigs.k8s.io/cluster-api-provider-azure v1.19.2
-	sigs.k8s.io/controller-runtime v0.19.6
+	sigs.k8s.io/controller-runtime v0.20.4
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -216,7 +216,6 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
