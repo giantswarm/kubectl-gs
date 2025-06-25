@@ -46,10 +46,10 @@ require (
 	k8s.io/cli-runtime v0.33.2
 	k8s.io/client-go v0.33.2
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
-	sigs.k8s.io/cluster-api v1.9.6
-	sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.2
-	sigs.k8s.io/cluster-api-provider-azure v1.19.2
-	sigs.k8s.io/controller-runtime v0.19.6
+	sigs.k8s.io/cluster-api v1.9.9
+	sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.3
+	sigs.k8s.io/cluster-api-provider-azure v1.19.4
+	sigs.k8s.io/controller-runtime v0.19.7
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -134,7 +134,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudflare/circl v1.6.0 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
@@ -248,7 +248,6 @@ replace (
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.20.0
-	github.com/opencontainers/runc v1.1.2 => github.com/opencontainers/runc v1.1.5
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.10.2
 	golang.org/x/crypto => golang.org/x/crypto v0.39.0
 	golang.org/x/text => golang.org/x/text v0.26.0
