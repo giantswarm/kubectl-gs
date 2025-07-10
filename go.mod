@@ -217,10 +217,10 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
-	golang.org/x/net v0.40.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
@@ -252,5 +252,5 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.20.0
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.10.2
 	golang.org/x/crypto => golang.org/x/crypto v0.39.0
-	golang.org/x/text => golang.org/x/text v0.26.0
+	golang.org/x/text => golang.org/x/text v0.27.0
 )
