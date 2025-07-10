@@ -246,7 +246,7 @@ require (
 
 replace (
 	github.com/Azure/azure-service-operator/v2 => github.com/Azure/azure-service-operator/v2 v2.9.0 // fix checksum problem with v2.8.0
-	github.com/docker/docker => github.com/moby/moby v28.3.1+incompatible
+	github.com/docker/docker => github.com/moby/moby v28.3.2+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.20.0
