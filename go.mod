@@ -50,7 +50,7 @@ require (
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.8.3
 	sigs.k8s.io/cluster-api-provider-azure v1.19.4
 	sigs.k8s.io/controller-runtime v0.19.7
-	sigs.k8s.io/yaml v1.5.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
