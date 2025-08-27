@@ -1,8 +1,7 @@
 package feature
 
 const (
-	ProviderAWS       = "aws"
-	ProviderAzure     = "azure"
-	ProviderOpenStack = "openstack"
-	ProviderCAPA      = "capa"
+	ProviderAWS   = "aws"
+	ProviderAzure = "azure"
+	ProviderCAPA  = "capa"
 )
