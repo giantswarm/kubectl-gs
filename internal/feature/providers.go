@@ -5,5 +5,4 @@ const (
 	ProviderAzure     = "azure"
 	ProviderOpenStack = "openstack"
 	ProviderCAPA      = "capa"
-	ProviderCAPZ      = "capz"
 )
