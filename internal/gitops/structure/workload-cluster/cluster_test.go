@@ -65,7 +65,7 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		{
 			name: "flawless with definition",
 			config: common.StructureConfig{
-				ClusterBase:       "bases/cluster/capo",
+				ClusterBase:       "bases/cluster/capa",
 				Release:           "0.13.0",
 				ManagementCluster: "demomc",
 				WorkloadCluster:   "demowc",
@@ -111,7 +111,7 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		{
 			name: "flawless with definition and configuration",
 			config: common.StructureConfig{
-				ClusterBase: "bases/cluster/capo",
+				ClusterBase: "bases/cluster/capa",
 				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
@@ -168,7 +168,7 @@ topKey:
 		{
 			name: "flawless with definition and full configuration",
 			config: common.StructureConfig{
-				ClusterBase: "bases/cluster/capo",
+				ClusterBase: "bases/cluster/capa",
 				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
@@ -225,7 +225,7 @@ topKey:
 		{
 			name: "flawless MAPI with definition and full configuration",
 			config: common.StructureConfig{
-				ClusterBase: "bases/cluster/capo",
+				ClusterBase: "bases/cluster/capa",
 				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:

@@ -5,5 +5,5 @@ kind: Kustomization
 patchesStrategicMerge:
   - patch_cluster_userconfig.yaml
 resources:
-  - ../../../../../../../bases/cluster/capo
+  - ../../../../../../../bases/cluster/capa
   - cluster_userconfig.yaml

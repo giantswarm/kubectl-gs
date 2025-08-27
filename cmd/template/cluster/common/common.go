@@ -125,24 +125,6 @@ type MachineConfig struct {
 	Image          string
 }
 
-type OpenStackConfig struct {
-	Cloud          string
-	CloudConfig    string
-	DNSNameservers []string
-
-	ExternalNetworkID string
-	NodeCIDR          string
-	NetworkName       string
-	SubnetName        string
-
-	Bastion      MachineConfig
-	ControlPlane MachineConfig
-	Worker       MachineConfig
-
-	WorkerFailureDomain string
-	WorkerReplicas      int
-}
-
 type AppConfig struct {
 	ClusterCatalog     string
 	ClusterVersion     string
@@ -177,7 +159,6 @@ type ClusterConfig struct {
 	Azure         AzureConfig
 	VSphere       VSphereConfig
 	CloudDirector CloudDirectorConfig
-	OpenStack     OpenStackConfig
 }
 
 type OIDC struct {
