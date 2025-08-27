@@ -90,13 +90,6 @@ type CloudDirectorMachineTemplate struct {
 	Replicas     int
 }
 
-type GCPConfig struct {
-	Project           string
-	FailureDomains    []string
-	ControlPlane      GCPControlPlane
-	MachineDeployment GCPMachineDeployment
-}
-
 type VSphereConfig struct {
 	ControlPlane            VSphereControlPlane
 	CredentialsSecretName   string
@@ -120,23 +113,9 @@ type VSphereControlPlane struct {
 	VSphereMachineTemplate
 }
 
-type GCPControlPlane struct {
-	ServiceAccount ServiceAccount
-}
-
 type ServiceAccount struct {
 	Email  string
 	Scopes []string
-}
-
-type GCPMachineDeployment struct {
-	Name             string
-	FailureDomain    string
-	InstanceType     string
-	Replicas         int
-	RootVolumeSizeGB int
-	CustomNodeLabels []string
-	ServiceAccount   ServiceAccount
 }
 
 type MachineConfig struct {
@@ -198,7 +177,6 @@ type ClusterConfig struct {
 	Azure         AzureConfig
 	VSphere       VSphereConfig
 	CloudDirector CloudDirectorConfig
-	GCP           GCPConfig
 	OpenStack     OpenStackConfig
 }
 

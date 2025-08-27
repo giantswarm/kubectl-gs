@@ -48,12 +48,6 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace strin
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderGCP:
-			cluster, err = s.getByNameGCP(ctx, name, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
 		case key.ProviderOpenStack, key.ProviderCAPA, key.ProviderVSphere, key.ProviderCloudDirector:
 			cluster, err = s.getByNameCommonCapi(ctx, name, namespace)
 			if err != nil {
@@ -89,12 +83,6 @@ func (s *Service) getAll(ctx context.Context, provider, namespace string, fallba
 
 		case key.ProviderAzure:
 			clusterCollection, err = s.getAllAzure(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderGCP:
-			clusterCollection, err = s.getAllGCP(ctx, namespace)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

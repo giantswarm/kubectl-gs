@@ -28,9 +28,6 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
 	examples = `  # Add a CAPA base to your GitOps directory structure
   kubectl gs gitops add base --provider capa
 
-  # Add a CAPG base to your GitOps directory structure
-  kubectl gs gitops add base --provider gcp
-
   # Add a CAPO base to your GitOps directory structure
   kubectl gs gitops add base --provider openstack`
 )

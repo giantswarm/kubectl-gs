@@ -52,19 +52,6 @@ const (
 	// Azure only
 	flagAzureSubscriptionID = "azure-subscription-id"
 
-	// GCP only.
-	flagGCPProject                               = "gcp-project"
-	flagGCPFailureDomains                        = "gcp-failure-domains"
-	flagGCPControlPlaneServiceAccountEmail       = "gcp-control-plane-sa-email"
-	flagGCPControlPlaneServiceAccountScopes      = "gcp-control-plane-sa-scopes"
-	flagGCPMachineDeploymentName                 = "gcp-machine-deployment-name"
-	flagGCPMachineDeploymentInstanceType         = "gcp-machine-deployment-instance-type"
-	flagGCPMachineDeploymentFailureDomain        = "gcp-machine-deployment-failure-domain"
-	flagGCPMachineDeploymentReplicas             = "gcp-machine-deployment-replicas"
-	flagGCPMachineDeploymentRootDiskSize         = "gcp-machine-deployment-disk-size"
-	flagGCPMachineDeploymentServiceAccountEmail  = "gcp-machine-deployment-sa-email"
-	flagGCPMachineDeploymentServiceAccountScopes = "gcp-machine-deployment-sa-scopes"
-
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
 	flagClusterVersion     = "cluster-version"
@@ -184,7 +171,6 @@ type Flag struct {
 	// Provider-specific
 	AWS           common.AWSConfig
 	Azure         common.AzureConfig
-	GCP           common.GCPConfig
 	OpenStack     common.OpenStackConfig
 	VSphere       common.VSphereConfig
 	CloudDirector common.CloudDirectorConfig
@@ -230,21 +216,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 
 	// Azure only
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
-
-	// GCP only.
-	cmd.Flags().StringVar(&f.GCP.Project, flagGCPProject, "", "Google Cloud Platform project name")
-	cmd.Flags().StringSliceVar(&f.GCP.FailureDomains, flagGCPFailureDomains, nil, "Google Cloud Platform cluster failure domains")
-
-	cmd.Flags().StringVar(&f.GCP.ControlPlane.ServiceAccount.Email, flagGCPControlPlaneServiceAccountEmail, "default", "Google Cloud Platform Service Account used by the control plane")
-	cmd.Flags().StringSliceVar(&f.GCP.ControlPlane.ServiceAccount.Scopes, flagGCPControlPlaneServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the control plane's Google Cloud Platform Service Account")
-
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.Name, flagGCPMachineDeploymentName, "worker0", "Google Cloud Platform project name")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.InstanceType, flagGCPMachineDeploymentInstanceType, "n1-standard-4", "Google Cloud Platform worker instance type")
-	cmd.Flags().IntVar(&f.GCP.MachineDeployment.Replicas, flagGCPMachineDeploymentReplicas, 3, "Google Cloud Platform worker replicas")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.FailureDomain, flagGCPMachineDeploymentFailureDomain, "europe-west6-a", "Google Cloud Platform worker failure domain")
-	cmd.Flags().IntVar(&f.GCP.MachineDeployment.RootVolumeSizeGB, flagGCPMachineDeploymentRootDiskSize, 100, "Google Cloud Platform worker root disk size")
-	cmd.Flags().StringVar(&f.GCP.MachineDeployment.ServiceAccount.Email, flagGCPMachineDeploymentServiceAccountEmail, "default", "Google Cloud Platform Service Account used by the worker nodes")
-	cmd.Flags().StringSliceVar(&f.GCP.MachineDeployment.ServiceAccount.Scopes, flagGCPMachineDeploymentServiceAccountScopes, []string{"https://www.googleapis.com/auth/compute"}, "Scope of the worker nodes' Google Cloud Platform Service Account")
 
 	// OpenStack only.
 	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
@@ -356,14 +327,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagAWSPrefixListID)
 	_ = cmd.Flags().MarkHidden(flagAWSTransitGatewayID)
 
-	_ = cmd.Flags().MarkHidden(flagGCPProject)
-	_ = cmd.Flags().MarkHidden(flagGCPFailureDomains)
-	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentName)
-	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentFailureDomain)
-	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentRootDiskSize)
-	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentReplicas)
-	_ = cmd.Flags().MarkHidden(flagGCPMachineDeploymentInstanceType)
-
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
 	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
@@ -387,7 +350,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
 	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
 	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, label.ServicePriorityHighest, fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure/GCP region where cluster will be created")
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure region where cluster will be created")
 	// bastion
 	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
 	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
@@ -408,7 +371,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
 		key.ProviderEKS,
-		key.ProviderGCP,
 		key.ProviderOpenStack,
 		key.ProviderVSphere,
 		key.ProviderCloudDirector,
@@ -480,16 +442,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 				if err == nil && !matchedSubnet {
 					return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
 				}
-			}
-		case key.ProviderGCP:
-			if f.Region == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagRegion)
-			}
-			if f.GCP.Project == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPProject)
-			}
-			if f.GCP.FailureDomains == nil {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagGCPFailureDomains)
 			}
 		case key.ProviderAzure:
 			if len(f.ControlPlaneAZ) > 1 {

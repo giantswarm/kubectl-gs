@@ -18,7 +18,6 @@ import (
 
 	providers "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capa"
-	capg "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/gcp"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -98,8 +97,6 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 		return generateCapAClusterBaseTemplates(config)
 	case key.ProviderCAPZ:
 		return generateCapZClusterBaseTemplates(config)
-	case key.ProviderGCP:
-		return generateCapGClusterBaseTemplates(config)
 	case key.ProviderOpenStack:
 		return generateCapOClusterBaseTemplates(config)
 	case key.ProviderVSphere:
@@ -147,36 +144,6 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		ReleaseVersion: "${release}",
 	})
 	clusterValues, err := capa.GenerateClusterValues(clusterConfig)
-
-	if err != nil {
-		return clusterBaseTemplates, err
-	}
-
-	clusterBaseTemplates.ClusterAppCr = clusterAppCr
-	clusterBaseTemplates.ClusterValues = clusterValues
-
-	return clusterBaseTemplates, nil
-}
-
-func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
-	clusterBaseTemplates := common.ClusterBaseTemplates{}
-
-	clusterAppCr, err := generateClusterAppCrTemplate("cluster-gcp")
-
-	if err != nil {
-		return clusterBaseTemplates, err
-	}
-
-	clusterConfig := providers.BuildCapgClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
-		GCP: clustercommon.GCPConfig{
-			MachineDeployment: clustercommon.GCPMachineDeployment{
-				Name: "machine-pool0",
-			},
-		},
-	})
-	clusterValues, err := capg.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err

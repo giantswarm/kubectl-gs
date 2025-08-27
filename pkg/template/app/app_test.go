@@ -137,7 +137,7 @@ func Test_NewAppCR(t *testing.T) {
 				Cluster:                "eggs2",
 				DefaultingEnabled:      false,
 				InCluster:              true,
-				Name:                   "default-apps-gcp",
+				Name:                   "default-apps-myprovider",
 				Namespace:              "org-giantswarm",
 				Version:                "0.13.0",
 				UseClusterValuesConfig: true,

@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove CAPG (GCP) support from all commands
+
 ### Fixed
 
 - Flag `keep-context` for login command is no longer ignored
