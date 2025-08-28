@@ -58,29 +58,6 @@ const (
 	flagDefaultAppsCatalog = "default-apps-catalog"
 	flagDefaultAppsVersion = "default-apps-version"
 
-	// OpenStack only.
-	flagOpenStackCloud                      = "cloud"
-	flagOpenStackCloudConfig                = "cloud-config"
-	flagOpenStackDNSNameservers             = "dns-nameservers"
-	flagOpenStackExternalNetworkID          = "external-network-id"
-	flagOpenStackNodeCIDR                   = "node-cidr"
-	flagOpenStackBastionBootFromVolume      = "bastion-boot-from-volume" //nolint:gosec
-	flagOpenStackNetworkName                = "network-name"
-	flagOpenStackSubnetName                 = "subnet-name"
-	flagOpenStackBastionDiskSize            = "bastion-disk-size"
-	flagOpenStackBastionImage               = "bastion-image"
-	flagOpenStackBastionMachineFlavor       = "bastion-machine-flavor"
-	flagOpenStackControlPlaneBootFromVolume = "control-plane-boot-from-volume"
-	flagOpenStackControlPlaneDiskSize       = "control-plane-disk-size"
-	flagOpenStackControlPlaneImage          = "control-plane-image"
-	flagOpenStackControlPlaneMachineFlavor  = "control-plane-machine-flavor"
-	flagOpenStackWorkerBootFromVolume       = "worker-boot-from-volume"
-	flagOpenStackWorkerDiskSize             = "worker-disk-size"
-	flagOpenStackWorkerFailureDomain        = "worker-failure-domain"
-	flagOpenStackWorkerImage                = "worker-image"
-	flagOpenStackWorkerMachineFlavor        = "worker-machine-flavor"
-	flagOpenStackWorkerReplicas             = "worker-replicas"
-
 	// VSphere only.
 	flagVSphereControlPlaneIP          = "vsphere-control-plane-ip"
 	flagVSphereServiceLoadBalancerCIDR = "vsphere-service-load-balancer-cidr"
@@ -171,7 +148,6 @@ type Flag struct {
 	// Provider-specific
 	AWS           common.AWSConfig
 	Azure         common.AzureConfig
-	OpenStack     common.OpenStackConfig
 	VSphere       common.VSphereConfig
 	CloudDirector common.CloudDirectorConfig
 	App           common.AppConfig
@@ -217,32 +193,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	// Azure only
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
 
-	// OpenStack only.
-	cmd.Flags().StringVar(&f.OpenStack.Cloud, flagOpenStackCloud, "", "Name of cloud (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.CloudConfig, flagOpenStackCloudConfig, "", "Name of cloud config (OpenStack only).")
-	cmd.Flags().StringSliceVar(&f.OpenStack.DNSNameservers, flagOpenStackDNSNameservers, nil, "DNS nameservers (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ExternalNetworkID, flagOpenStackExternalNetworkID, "", "External network ID (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.NodeCIDR, flagOpenStackNodeCIDR, "", "CIDR used for the nodes (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.NetworkName, flagOpenStackNetworkName, "", "Existing network name. Used when CIDR for nodes are not set (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.SubnetName, flagOpenStackSubnetName, "", "Existing subnet name. Used when CIDR for nodes are not set (OpenStack only).")
-	// bastion
-	cmd.Flags().BoolVar(&f.OpenStack.Bastion.BootFromVolume, flagOpenStackBastionBootFromVolume, false, "Bastion boot from volume (OpenStack only).")
-	cmd.Flags().IntVar(&f.OpenStack.Bastion.DiskSize, flagOpenStackBastionDiskSize, 10, "Bastion machine root volume disk size (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.Bastion.Image, flagOpenStackBastionImage, "", "Bastion machine image (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.Bastion.Flavor, flagOpenStackBastionMachineFlavor, "", "Bastion machine flavor (OpenStack only).")
-	// control plane
-	cmd.Flags().BoolVar(&f.OpenStack.ControlPlane.BootFromVolume, flagOpenStackControlPlaneBootFromVolume, false, "Control plane boot from volume (OpenStack only).")
-	cmd.Flags().IntVar(&f.OpenStack.ControlPlane.DiskSize, flagOpenStackControlPlaneDiskSize, 0, "Control plane machine root volume disk size (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ControlPlane.Image, flagOpenStackControlPlaneImage, "", "Control plane machine image (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.ControlPlane.Flavor, flagOpenStackControlPlaneMachineFlavor, "", "Control plane machine flavor (OpenStack only).")
-	// workers
-	cmd.Flags().BoolVar(&f.OpenStack.Worker.BootFromVolume, flagOpenStackWorkerBootFromVolume, false, "Default worker node pool boot from volume (OpenStack only).")
-	cmd.Flags().IntVar(&f.OpenStack.Worker.DiskSize, flagOpenStackWorkerDiskSize, 0, "Default worker node pool machine root volume disk size (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.WorkerFailureDomain, flagOpenStackWorkerFailureDomain, "", "Default worker node pool failure domain (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.Worker.Image, flagOpenStackWorkerImage, "", "Default worker node pool machine image name (OpenStack only).")
-	cmd.Flags().StringVar(&f.OpenStack.Worker.Flavor, flagOpenStackWorkerMachineFlavor, "", "Default worker node pool machine flavor (OpenStack only).")
-	cmd.Flags().IntVar(&f.OpenStack.WorkerReplicas, flagOpenStackWorkerReplicas, 0, "Default worker node pool replicas (OpenStack only).")
-
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
 	cmd.Flags().StringVar(&f.VSphere.ServiceLoadBalancerCIDR, flagVSphereServiceLoadBalancerCIDR, "", "CIDR for Service LB for new cluster")
@@ -283,26 +233,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app.")
 	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created.")
 
-	// TODO: Make these flags visible once we have a better method for displaying provider-specific flags.
-	_ = cmd.Flags().MarkHidden(flagOpenStackCloud)
-	_ = cmd.Flags().MarkHidden(flagOpenStackCloudConfig)
-	_ = cmd.Flags().MarkHidden(flagOpenStackDNSNameservers)
-	_ = cmd.Flags().MarkHidden(flagOpenStackExternalNetworkID)
-	_ = cmd.Flags().MarkHidden(flagOpenStackNodeCIDR)
-	_ = cmd.Flags().MarkHidden(flagOpenStackNetworkName)
-	_ = cmd.Flags().MarkHidden(flagOpenStackSubnetName)
-	_ = cmd.Flags().MarkHidden(flagOpenStackBastionMachineFlavor)
-	_ = cmd.Flags().MarkHidden(flagOpenStackBastionDiskSize)
-	_ = cmd.Flags().MarkHidden(flagOpenStackBastionImage)
-	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneDiskSize)
-	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneImage)
-	_ = cmd.Flags().MarkHidden(flagOpenStackControlPlaneMachineFlavor)
-	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerDiskSize)
-	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerFailureDomain)
-	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerImage)
-	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerMachineFlavor)
-	_ = cmd.Flags().MarkHidden(flagOpenStackWorkerReplicas)
-
 	_ = cmd.Flags().MarkHidden(flagRegion)
 	_ = cmd.Flags().MarkHidden(flagAWSClusterRoleIdentityName)
 	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
@@ -340,7 +270,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
 	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
-	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional, OpenStack only).")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional).")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
 	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
 	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
@@ -371,7 +301,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
 		key.ProviderEKS,
-		key.ProviderOpenStack,
 		key.ProviderVSphere,
 		key.ProviderCloudDirector,
 	}
@@ -468,83 +397,7 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			if (f.CloudDirector.VipSubnet == "") || (f.CloudDirector.VipSubnet != "" && !validateCIDR(f.CloudDirector.VipSubnet)) {
 				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagCloudDirectorVipSubnet)
 			}
-		case key.ProviderOpenStack:
-			if f.OpenStack.Cloud == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloud)
-			}
-			if f.OpenStack.CloudConfig == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackCloudConfig)
-			}
-			if f.OpenStack.ExternalNetworkID == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackExternalNetworkID)
-			}
-			if f.OpenStack.NodeCIDR != "" {
-				if f.OpenStack.NetworkName != "" || f.OpenStack.SubnetName != "" {
-					return microerror.Maskf(invalidFlagError, "--%s and --%s must be empty when --%s is used",
-						flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
-				}
-				if !validateCIDR(f.OpenStack.NodeCIDR) {
-					return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagOpenStackNodeCIDR)
-				}
-			} else {
-				if f.OpenStack.NetworkName == "" || f.OpenStack.SubnetName == "" {
-					return microerror.Maskf(invalidFlagError, "--%s and --%s must be set when --%s is empty",
-						flagOpenStackNetworkName, flagOpenStackSubnetName, flagOpenStackNodeCIDR)
-				}
-			}
-			// bastion
-			if f.OpenStack.Bastion.BootFromVolume && f.OpenStack.Bastion.DiskSize < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackBastionDiskSize, flagOpenStackBastionBootFromVolume)
-			}
-			if f.OpenStack.Bastion.Flavor == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionMachineFlavor)
-			}
-			if f.OpenStack.Bastion.Image == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackBastionImage)
-			}
-			// control plane
-			if f.OpenStack.ControlPlane.BootFromVolume && f.OpenStack.ControlPlane.DiskSize < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackControlPlaneDiskSize, flagOpenStackControlPlaneBootFromVolume)
-			}
-			if f.OpenStack.ControlPlane.Flavor == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneMachineFlavor)
-			}
-			if f.OpenStack.ControlPlane.Image == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackControlPlaneImage)
-			}
-			// worker
-			if f.OpenStack.WorkerReplicas < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagOpenStackWorkerReplicas)
-			}
-			if f.OpenStack.WorkerFailureDomain == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerFailureDomain)
-			}
-			if len(f.ControlPlaneAZ) != 0 {
-				if len(f.ControlPlaneAZ)%2 != 1 {
-					return microerror.Maskf(invalidFlagError, "--%s must be an odd number number of values (usually 1 or 3 for non-HA and HA respectively)", flagControlPlaneAZ)
-				}
 
-				var validFailureDomain bool
-				for _, az := range f.ControlPlaneAZ {
-					if f.OpenStack.WorkerFailureDomain == az {
-						validFailureDomain = true
-						break
-					}
-				}
-
-				if !validFailureDomain {
-					return microerror.Maskf(invalidFlagError, "--%s must be among the AZs specified with --%s", flagOpenStackWorkerFailureDomain, flagControlPlaneAZ)
-				}
-			}
-			if f.OpenStack.Worker.BootFromVolume && f.OpenStack.Worker.DiskSize < 1 {
-				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0 when --%s is specified", flagOpenStackWorkerDiskSize, flagOpenStackWorkerBootFromVolume)
-			}
-			if f.OpenStack.Worker.Flavor == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerMachineFlavor)
-			}
-			if f.OpenStack.Worker.Image == "" {
-				return microerror.Maskf(invalidFlagError, "--%s is required", flagOpenStackWorkerImage)
-			}
 		case key.ProviderCAPA:
 			if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
 				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagAWSHttpsProxy, flagNetworkVPCCidr)

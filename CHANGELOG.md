@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Removed
 
 - Remove CAPG (GCP) support from all commands
+- Remove CAPO (OpenStack) support from all commands
 
 ### Fixed
 

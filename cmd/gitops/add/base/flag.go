@@ -26,7 +26,6 @@ func supportedProviders() []string {
 	return []string{
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
-		key.ProviderOpenStack,
 		key.ProviderVSphere,
 	}
 }
