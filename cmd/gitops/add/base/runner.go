@@ -10,7 +10,6 @@ import (
 	clustercommon "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capv"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capz"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/openstack"
 	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/base"
 	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
@@ -18,7 +17,6 @@ import (
 
 	providers "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capa"
-	capg "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/gcp"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -98,10 +96,6 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 		return generateCapAClusterBaseTemplates(config)
 	case key.ProviderCAPZ:
 		return generateCapZClusterBaseTemplates(config)
-	case key.ProviderGCP:
-		return generateCapGClusterBaseTemplates(config)
-	case key.ProviderOpenStack:
-		return generateCapOClusterBaseTemplates(config)
 	case key.ProviderVSphere:
 		return generateCapVClusterBaseTemplates(config)
 	}
@@ -147,61 +141,6 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		ReleaseVersion: "${release}",
 	})
 	clusterValues, err := capa.GenerateClusterValues(clusterConfig)
-
-	if err != nil {
-		return clusterBaseTemplates, err
-	}
-
-	clusterBaseTemplates.ClusterAppCr = clusterAppCr
-	clusterBaseTemplates.ClusterValues = clusterValues
-
-	return clusterBaseTemplates, nil
-}
-
-func generateCapGClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
-	clusterBaseTemplates := common.ClusterBaseTemplates{}
-
-	clusterAppCr, err := generateClusterAppCrTemplate("cluster-gcp")
-
-	if err != nil {
-		return clusterBaseTemplates, err
-	}
-
-	clusterConfig := providers.BuildCapgClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
-		GCP: clustercommon.GCPConfig{
-			MachineDeployment: clustercommon.GCPMachineDeployment{
-				Name: "machine-pool0",
-			},
-		},
-	})
-	clusterValues, err := capg.GenerateClusterValues(clusterConfig)
-
-	if err != nil {
-		return clusterBaseTemplates, err
-	}
-
-	clusterBaseTemplates.ClusterAppCr = clusterAppCr
-	clusterBaseTemplates.ClusterValues = clusterValues
-
-	return clusterBaseTemplates, nil
-}
-
-func generateCapOClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
-	clusterBaseTemplates := common.ClusterBaseTemplates{}
-
-	clusterAppCr, err := generateClusterAppCrTemplate("cluster-openstack")
-
-	if err != nil {
-		return clusterBaseTemplates, err
-	}
-
-	clusterConfig := providers.BuildCapoClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
-	}, 1)
-	clusterValues, err := openstack.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err

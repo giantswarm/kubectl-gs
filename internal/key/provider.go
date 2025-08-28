@@ -6,8 +6,6 @@ const (
 	ProviderCAPA          = "capa"
 	ProviderCAPZ          = "capz"
 	ProviderEKS           = "eks"
-	ProviderGCP           = "gcp"
-	ProviderOpenStack     = "openstack"
 	ProviderVSphere       = "vsphere"
 	ProviderCloudDirector = "cloud-director"
 	ProviderDefault       = "default"
@@ -35,9 +33,7 @@ func PureCAPIProviders() []string {
 		ProviderCAPA,
 		ProviderCAPZ,
 		ProviderEKS,
-		ProviderGCP,
 		ProviderVSphere,
-		ProviderOpenStack,
 		ProviderCloudDirector,
 	}
 }

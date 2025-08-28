@@ -22,6 +22,6 @@ spec:
     secret:
       name: ""
       namespace: ""
-  name: default-apps-gcp
+  name: default-apps-myprovider
   namespace: org-giantswarm
   version: 0.13.0
