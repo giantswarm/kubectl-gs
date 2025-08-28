@@ -98,16 +98,6 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case key.ProviderGCP:
-		err = provider.WriteGCPTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	case key.ProviderVSphere:
 		err = provider.WriteVSphereTemplate(ctx, client, output, config)
 		if err != nil {
@@ -143,9 +133,7 @@ func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
 		App:           r.flag.App,
 		AWS:           r.flag.AWS,
 		Azure:         r.flag.Azure,
-		GCP:           r.flag.GCP,
 		OIDC:          r.flag.OIDC,
-		OpenStack:     r.flag.OpenStack,
 		VSphere:       r.flag.VSphere,
 		CloudDirector: r.flag.CloudDirector,
 	}

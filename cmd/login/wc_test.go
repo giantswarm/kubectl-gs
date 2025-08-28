@@ -196,26 +196,6 @@ func TestWCClientCert(t *testing.T) {
 			provider: "azure",
 			isAdmin:  true,
 		},
-		// Trying to log into a cluster on openstack
-		{
-			name:                 "case 10",
-			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
-			controlPlaneEndpoint: "https://localhost:6443",
-			flags: &flag{
-				WCName:    "cluster",
-				WCCertTTL: "8h",
-			},
-			provider: "openstack",
-			capi:     true,
-			permittedResources: []v1.ResourceRule{
-				{
-					Verbs:         []string{"get"},
-					Resources:     []string{"organizations"},
-					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
-					ResourceNames: []string{"organization"},
-				},
-			},
-		},
 		// Logging into WC using cn prefix flag
 		{
 			name:                 "case 11",
@@ -227,20 +207,6 @@ func TestWCClientCert(t *testing.T) {
 				WCCertCNPrefix: "some-prefix",
 			},
 			provider: "aws",
-			isAdmin:  true,
-		},
-		// Logging into WC using cn prefix flag in capi
-		{
-			name:                 "case 12",
-			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
-			controlPlaneEndpoint: "https://localhost:6443",
-			flags: &flag{
-				WCName:         "cluster",
-				WCCertTTL:      "8h",
-				WCCertCNPrefix: "some-prefix",
-			},
-			provider: "openstack",
-			capi:     true,
 			isAdmin:  true,
 		},
 		// Logging into WC with empty control plane endpoint

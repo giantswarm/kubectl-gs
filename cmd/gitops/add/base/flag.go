@@ -26,15 +26,13 @@ func supportedProviders() []string {
 	return []string{
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
-		key.ProviderGCP,
-		key.ProviderOpenStack,
 		key.ProviderVSphere,
 	}
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", fmt.Sprintf("Installation infrastructure provider, supported values: %s", strings.Join(supportedProviders(), ", ")))
-	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure/GCP region where cluster will be created")
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure region where cluster will be created")
 
 	// Azure only
 	cmd.Flags().StringVar(&f.AzureSubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")

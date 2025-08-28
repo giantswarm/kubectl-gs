@@ -53,45 +53,6 @@ func Test_run(t *testing.T) {
 		errorMatcher       func(error) bool
 	}{
 		{
-			name: "case 0: template cluster gcp",
-			flags: &flags.Flag{
-				Name:         "test1",
-				Provider:     "gcp",
-				Description:  "just a test cluster",
-				Region:       "the-region",
-				Organization: "test",
-				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
-				},
-				GCP: common.GCPConfig{
-					Project:        "the-project",
-					FailureDomains: []string{"failure-domain1-a", "failure-domain1-b"},
-					ControlPlane: common.GCPControlPlane{
-						ServiceAccount: common.ServiceAccount{
-							Email:  "service-account@email",
-							Scopes: []string{"scope1", "scope2"},
-						},
-					},
-					MachineDeployment: common.GCPMachineDeployment{
-						Name:             "worker1",
-						FailureDomain:    "failure-domain2-b",
-						InstanceType:     "very-large",
-						Replicas:         7,
-						RootVolumeSizeGB: 5,
-						ServiceAccount: common.ServiceAccount{
-							Email:  "service-account@email",
-							Scopes: []string{"scope1", "scope2"},
-						},
-					},
-				},
-			},
-			args:               nil,
-			expectedGoldenFile: "run_template_cluster_gcp.golden",
-		},
-		{
 			name: "case 1: template cluster capa",
 			flags: &flags.Flag{
 				Name:                     "test1",
