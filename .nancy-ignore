@@ -1,1 +1,1 @@
-CVE-2025-4673 until=2025-07-13 # golang.org/x/net@v0.40.0
+CVE-2025-58058 until=2025-09-28 # github.com/ulikunitz/xz@v0.5.9
