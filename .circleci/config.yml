@@ -74,7 +74,7 @@ jobs:
 
   go-build-arm64:
     executor: architect/architect
-    resource_class: "arm.medium"
+    resource_class: "medium+" # Can't use "arm.medium" as long as architect doesn't support it
     steps:
       - checkout
       - architect/tools-info
