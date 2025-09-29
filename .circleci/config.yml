@@ -79,7 +79,7 @@ jobs:
       - checkout
       - architect/tools-info
       - architect/go-cache-restore
-      - architect/go-test
+      # - architect/go-test # Only would make sense if resource_class: "arm.medium" is used
       - run:
          name: Build binary (linux/arm64)
          command: |
