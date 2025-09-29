@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@6.6.1
+  architect: giantswarm/architect@dev:b49cfa87c2d250563d50a3383d570bc7019a5c5c
 
 jobs:
   debug-tag:
@@ -74,12 +74,12 @@ jobs:
 
   go-build-arm64:
     executor: architect/architect
-    resource_class: "medium+" # Can't use "arm.medium" as long as architect doesn't support it
+    resource_class: "arm.medium"
     steps:
       - checkout
       - architect/tools-info
       - architect/go-cache-restore
-      # - architect/go-test # Only would make sense if resource_class: "arm.medium" is used
+      - architect/go-test
       - run:
          name: Build binary (linux/arm64)
          command: |
