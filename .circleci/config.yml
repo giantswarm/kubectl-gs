@@ -52,10 +52,10 @@ jobs:
           name: Build binary (linux/386)
           command: |
             CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
-      #- run:
-      #    name: Build binary (linux/arm64)
-      #    command: |
-      #      CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
+      - run:
+         name: Build binary (linux/arm64)
+         command: |
+           CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
       #- run:
       #    name: Build binary (linux/ppc64le)
       #    command: |
