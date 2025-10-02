@@ -1,8 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@dev:3c7435a90cdf36c177226806f9fbdb94226c06cb
-
+  architect: giantswarm/architect@6.7.0
 jobs:
   debug-tag:
     docker:
