@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- The container image now also supports arm64.
+
 ### Removed
 
 - Remove CAPG (GCP) support from all commands

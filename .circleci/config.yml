@@ -36,7 +36,25 @@ jobs:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
 
-  go-build-multiarch:
+  go-build-386:
+    executor: architect/architect
+    resource_class: "medium+"
+    steps:
+      - checkout
+      - architect/tools-info
+      - architect/go-cache-restore
+      # We don't test for 386 specifically
+      - run:
+          name: Build binary (linux/386)
+          command: |
+            CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
+      - architect/go-cache-save
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./kubectl-gs-386
+
+  go-build-amd64:
     executor: architect/architect
     resource_class: "medium+"
     steps:
@@ -48,32 +66,63 @@ jobs:
           name: Build binary (linux/amd64)
           command: |
             CGO_ENABLED=0 GOOS="linux" GOARCH=amd64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-amd64 .
-      - run:
-          name: Build binary (linux/386)
-          command: |
-            CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
-      #- run:
-      #    name: Build binary (linux/arm64)
-      #    command: |
-      #      CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
-      #- run:
-      #    name: Build binary (linux/ppc64le)
-      #    command: |
-      #      CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
-      #- run:
-      #    name: Build binary (linux/s390x)
-      #    command: |
-      #      CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
       - architect/go-cache-save
       - persist_to_workspace:
           root: .
           paths:
             - ./kubectl-gs-amd64
-            - ./kubectl-gs-386
-            #- ./kubectl-gs-arm64
-            #- ./kubectl-gs-ppc64le
-            #- ./kubectl-gs-s390x
-            #- ./kubectl-gs-386
+
+  go-build-arm64:
+    executor: architect/architect
+    resource_class: "arm.medium"
+    steps:
+      - checkout
+      - architect/tools-info
+      - architect/go-cache-restore
+      - architect/go-test
+      - run:
+         name: Build binary (linux/arm64)
+         command: |
+           CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
+      - architect/go-cache-save
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./kubectl-gs-arm64
+
+  # go-build-ppc64le:
+  #   executor: architect/architect
+  #   resource_class: "medium+"
+  #   steps:
+  #     - checkout
+  #     - architect/tools-info
+  #     - architect/go-cache-restore
+  #     - run:
+  #        name: Build binary (linux/ppc64le)
+  #        command: |
+  #          CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
+  #     - architect/go-cache-save
+  #     - persist_to_workspace:
+  #         root: .
+  #         paths:
+  #           - ./kubectl-gs-ppc64le
+
+  # go-build-s390x:
+  #   executor: architect/architect
+  #   resource_class: "medium+"
+  #   steps:
+  #     - checkout
+  #     - architect/tools-info
+  #     - architect/go-cache-restore
+  #     - run:
+  #        name: Build binary (linux/s390x)
+  #        command: |
+  #          CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
+  #     - architect/go-cache-save
+  #     - persist_to_workspace:
+  #         root: .
+  #         paths:
+  #           - ./kubectl-gs-s390x
 
   push-to-registries-multiarch:
     executor: architect/architect
@@ -94,7 +143,7 @@ jobs:
           command: |
             IMAGE_ACCESS=public
             #PLATFORMS=linux/amd64,linux/386,linux/arm64,linux/ppc64le,linux/s390x
-            PLATFORMS=linux/amd64,linux/386
+            PLATFORMS=linux/amd64,linux/arm64,linux/386
 
             if ! [[ "${REGISTRIES_DATA_BASE64}" ]]; then
               echo "Environment variable REGISTRIES_DATA_BASE64 is not set properly in circleci's context."
@@ -150,9 +199,21 @@ jobs:
 workflows:
   go-build-multiarch:
     jobs:
-      - go-build-multiarch:
+      - go-build-amd64:
           context: architect
-          name: go-build-multiarch
+          name: go-build-amd64
+          filters:
+            tags:
+              only: /^v.*/
+      - go-build-arm64:
+          context: architect
+          name: go-build-arm64
+          filters:
+            tags:
+              only: /^v.*/
+      - go-build-386:
+          context: architect
+          name: go-build-386
           filters:
             tags:
               only: /^v.*/
@@ -160,7 +221,11 @@ workflows:
           context: architect
           name: push-to-registries-multiarch
           requires:
-            - go-build-multiarch
+            - go-build-amd64
+            - go-build-arm64
+            - go-build-386
+            # - go-build-ppc64le
+            # - go-build-s390x
           filters:
             branches:
               ignore:
