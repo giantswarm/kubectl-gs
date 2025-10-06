@@ -47,7 +47,7 @@ func (s *Service) getByName(ctx context.Context, name, namespace string, activeO
 			return nil, microerror.Mask(err)
 		}
 
-		if activeOnly && !rel.Status.Ready {
+		if activeOnly && rel.Spec.State != releasev1alpha1.StateActive {
 			return nil, microerror.Mask(noMatchError)
 		}
 
@@ -82,7 +82,7 @@ func (s *Service) getAll(ctx context.Context, namespace string, activeOnly bool)
 		}
 
 		for _, rel := range releases.Items {
-			if activeOnly && !rel.Status.Ready {
+			if activeOnly && rel.Spec.State != releasev1alpha1.StateActive {
 				continue
 			}
 
