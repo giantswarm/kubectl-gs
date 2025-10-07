@@ -78,7 +78,7 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 	var err error
 
 	labelSelector := runtimeClient.MatchingLabels{
-		capi.ClusterLabelName: name,
+		capi.ClusterNameLabel: name,
 	}
 	inNamespace := runtimeClient.InNamespace(namespace)
 

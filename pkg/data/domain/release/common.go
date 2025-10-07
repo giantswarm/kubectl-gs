@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -47,7 +47,7 @@ func (s *Service) getByName(ctx context.Context, name, namespace string, activeO
 			return nil, microerror.Mask(err)
 		}
 
-		if activeOnly && !rel.Status.Ready {
+		if activeOnly && rel.Spec.State != releasev1alpha1.StateActive {
 			return nil, microerror.Mask(noMatchError)
 		}
 
@@ -82,7 +82,7 @@ func (s *Service) getAll(ctx context.Context, namespace string, activeOnly bool)
 		}
 
 		for _, rel := range releases.Items {
-			if activeOnly && !rel.Status.Ready {
+			if activeOnly && rel.Spec.State != releasev1alpha1.StateActive {
 				continue
 			}
 

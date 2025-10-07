@@ -13,23 +13,23 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/giantswarm/microerror"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/normalize"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/normalize"
 )
 
 const (
 	// NameChars represents the character set used to generate resource names.
 	// (does not contain 1 and l, to avoid confusion)
 	NameChars = "023456789abcdefghijkmnopqrstuvwxyz"
-	// NameLengthLong represents the number of characters used to create a resource name when --enable-long-names feature flag is used.
-	NameLengthLong = 10
-	// NameLengthShort represents the number of characters used to create a resource name.
-	NameLengthShort = 5
+	// NameLengthMax represents the maximum number of characters that can be used to create a resource.
+	NameLengthMax = 20
+	// NameLengthDefault represents the number of characters used to randomly generated names
+	NameLengthDefault = 10
 
 	organizationNamespaceFormat = "org-%s"
 )
@@ -44,7 +44,6 @@ const (
 const (
 	// FirstAWSOrgNamespaceRelease is the first GS release that creates Clusters in Org Namespaces by default
 	FirstAWSOrgNamespaceRelease = "16.0.0"
-	FirstCAPIRelease            = "20.0.0-alpha1"
 )
 
 func BastionSSHDConfigEncoded() string {
@@ -55,33 +54,28 @@ func NodeSSHDConfigEncoded() string {
 	return base64.StdEncoding.EncodeToString([]byte(nodeSSHDConfig))
 }
 
-func ValidateName(name string, enableLongNames bool) (bool, error) {
-	maxLength := NameLengthShort
-	if enableLongNames {
-		maxLength = NameLengthLong
-	}
+func ValidateName(name string) (bool, error) {
+	maxLength := NameLengthMax
 
-	pattern := fmt.Sprintf("^[a-z][a-z0-9]{0,%d}$", maxLength-1)
+	pattern := fmt.Sprintf("^[a-z]([-a-z0-9]{0,%d}[a-z0-9])?$", maxLength-2)
 	matched, err := regexp.MatchString(pattern, name)
 	return matched, microerror.Mask(err)
 }
 
-func GenerateName(enableLongNames bool) (string, error) {
+func GenerateName() (string, error) {
 	for {
 		letterRunes := []rune(NameChars)
-		length := NameLengthShort
-		if enableLongNames {
-			length = NameLengthLong
-		}
+		length := NameLengthDefault
+
 		characters := make([]rune, length)
-		rand.Seed(time.Now().UnixNano())
+		r := rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 		for i := range characters {
-			characters[i] = letterRunes[rand.Intn(len(letterRunes))] //nolint:gosec
+			characters[i] = letterRunes[r.Intn(len(letterRunes))] //nolint:gosec
 		}
 
 		generatedName := string(characters)
 
-		if valid, err := ValidateName(generatedName, enableLongNames); err != nil {
+		if valid, err := ValidateName(generatedName); err != nil {
 			return "", microerror.Mask(err)
 		} else if !valid {
 			continue
@@ -95,24 +89,14 @@ func GenerateAssetName(values ...string) string {
 	return strings.Join(values, "-")
 }
 
-// IsCAPIVersion returns whether a given GS Release Version uses the CAPI projects
-func IsCAPIVersion(version string) (bool, error) {
-	capiVersion, err := semver.New(FirstCAPIRelease)
-	if err != nil {
-		return false, microerror.Maskf(parsingReleaseError, err.Error())
-	}
-
-	releaseVersion, err := semver.New(version)
-	if err != nil {
-		return false, microerror.Maskf(parsingReleaseError, err.Error())
-	}
-
-	return releaseVersion.GE(*capiVersion), nil
-}
-
 // IsPureCAPIProvider returns whether a given provider is purely based on or fully migrated to CAPI
 func IsPureCAPIProvider(provider string) bool {
 	return contains(PureCAPIProviders(), provider)
+}
+
+// IsCAPIProviderUsingReleases returns whether a given provider is a CAPI provider that uses new releases.
+func IsCAPIProviderUsingReleases(provider string) bool {
+	return contains(CAPIProvidersUsingReleases(), provider)
 }
 
 func contains(s []string, str string) bool {
@@ -149,10 +133,26 @@ func ReadConfigMapYamlFromFile(fs afero.Fs, path string) (string, error) {
 	rawMap := map[string]interface{}{}
 	err = yaml.Unmarshal(data, &rawMap)
 	if err != nil {
-		return "", microerror.Maskf(unmashalToMapFailedError, err.Error())
+		return "", microerror.Maskf(unmashalToMapFailedError, "%s", err.Error())
 	}
 
-	return string(data), nil
+	return sanitize(string(data)), nil
+}
+
+// Sanitize input yaml files
+//
+// Trim spaces from end of lines, because sig.k8s.io/yaml@v1.3.0 outputs the whole file content
+// as a raw, single line string if there are empty spaces at end of lines.
+func sanitize(content string) string {
+	var sanitizedContent []string
+
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		sanitizedLine := strings.TrimRight(line, " ")
+		sanitizedContent = append(sanitizedContent, sanitizedLine)
+	}
+
+	return strings.Join(sanitizedContent, "\n")
 }
 
 // ReadSecretYamlFromFile reads a configmap from a YAML file.
@@ -164,7 +164,7 @@ func ReadSecretYamlFromFile(fs afero.Fs, path string) ([]byte, error) {
 
 	err = yaml.Unmarshal(data, &map[string]interface{}{})
 	if err != nil {
-		return nil, microerror.Maskf(unmashalToMapFailedError, err.Error())
+		return nil, microerror.Maskf(unmashalToMapFailedError, "%s", err.Error())
 	}
 
 	return data, nil

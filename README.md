@@ -9,7 +9,7 @@ kubectl krew install gs
 kubectl gs
 ```
 
-Check the [installation docs](https://docs.giantswarm.io/use-the-api/kubectl-gs/installation/) for details on installation with and without Krew.
+Check the [installation docs](https://docs.giantswarm.io/vintage/use-the-api/kubectl-gs/installation/) for details on installation with and without Krew.
 
 ## Features
 
@@ -25,7 +25,7 @@ Check the [installation docs](https://docs.giantswarm.io/use-the-api/kubectl-gs/
 
 ## Documentation
 
-Find the [kubectl gs reference](https://docs.giantswarm.io/use-the-api/kubectl-gs/) in our documentation site.
+Find the [kubectl gs reference](https://docs.giantswarm.io/vintage/use-the-api/kubectl-gs/) in our documentation site.
 
 ## Publishing a release
 

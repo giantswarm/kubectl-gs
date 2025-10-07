@@ -10,8 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	catalogdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 func (r *runner) printOutput(catalogResource catalogdata.Resource, maxColWidth uint) error {
@@ -52,14 +52,14 @@ func (r *runner) printOutput(catalogResource catalogdata.Resource, maxColWidth u
 }
 
 func (r *runner) printNoMatchOutput() {
-	fmt.Fprintf(r.stdout, "No Catalog CRD found.\n")
-	fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "No Catalog CRD found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "Please check you are accessing a management cluster\n\n")
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No catalogs found.\n")
-	fmt.Fprintf(r.stdout, "To create a catalog, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
+	_, _ = fmt.Fprintf(r.stdout, "No catalogs found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "To create a catalog, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  kubectl gs template catalog --help\n")
 }
 
 func getAppCatalogEntryDescription(description string, maxColWidth uint) string {

@@ -7,10 +7,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/get/clusters/provider"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/get/clusters/provider"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 func (r *runner) printOutput(clusterResource cluster.Resource) error {
@@ -25,10 +25,8 @@ func (r *runner) printOutput(clusterResource cluster.Resource) error {
 		switch r.provider {
 		case key.ProviderAWS:
 			resource = provider.GetAWSTable(clusterResource)
-		case key.ProviderAzure:
-			resource = provider.GetAzureTable(clusterResource)
-		case key.ProviderOpenStack:
-			resource = provider.GetOpenStackTable(clusterResource)
+		default:
+			resource = provider.GetCommonClusterTable(clusterResource)
 		}
 
 		printOptions := printers.PrintOptions{
@@ -62,7 +60,7 @@ func (r *runner) printOutput(clusterResource cluster.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No clusters found.\n")
-	fmt.Fprintf(r.stdout, "To create a cluster, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template cluster --help\n")
+	_, _ = fmt.Fprintf(r.stdout, "No clusters found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "To create a cluster, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  kubectl gs template cluster --help\n")
 }

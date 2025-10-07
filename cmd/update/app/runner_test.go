@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
@@ -20,11 +20,11 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/app"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
 )
 
 const (
@@ -49,7 +49,7 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.1.0", "fake-catalog", "true"),
 			},
 			flags:   flag{Name: "fake-app", Version: "0.1.0"},
-			message: "App 'fake-app' updated to version '0.1.0'\n",
+			message: "App \"fake-app\" in namespace \"default\" updated with version=0.1.0\n",
 		},
 		{
 			name: "patch app with the AppCatalogEntry CR (not latest)",
@@ -61,7 +61,7 @@ func Test_run(t *testing.T) {
 				newAppCatalogEntry("fake-app", "0.2.0", "fake-catalog", "true"),
 			},
 			flags:   flag{Name: "fake-app", Version: "0.1.0"},
-			message: "App 'fake-app' updated to version '0.1.0'\n",
+			message: "App \"fake-app\" in namespace \"default\" updated with version=0.1.0\n",
 		},
 		{
 			name: "patch app without AppCatalogEntry CR, but available in catalog",
@@ -76,7 +76,7 @@ func Test_run(t *testing.T) {
 			},
 			flags:             flag{Name: "fake-app", Version: "0.0.1"},
 			chartResponseCode: 200,
-			message:           "App 'fake-app' updated to version '0.0.1'\n",
+			message:           "App \"fake-app\" in namespace \"default\" updated with version=0.0.1\n",
 		},
 		{
 			name: "patch app with nonexisting version",
@@ -98,6 +98,7 @@ func Test_run(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
+		tc := tc
 		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
 			var err error
 
@@ -111,7 +112,7 @@ func Test_run(t *testing.T) {
 				if err != nil {
 					panic(fmt.Sprintf("httptest: failed to listen on a port: %v", err))
 				}
-				server.Listener.Close()
+				_ = server.Listener.Close()
 				server.Listener = l
 				server.Start()
 			}

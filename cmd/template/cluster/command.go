@@ -9,9 +9,10 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware/renewtoken"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware/renewtoken"
 )
 
 const (
@@ -41,7 +42,7 @@ func New(config Config) (*cobra.Command, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ConfigFlags must not be empty", config)
 	}
 
-	f := &flag{}
+	f := &flags.Flag{}
 
 	r := &runner{
 		commonConfig: &commonconfig.CommonConfig{
@@ -57,6 +58,7 @@ func New(config Config) (*cobra.Command, error) {
 		Use:   name,
 		Short: description,
 		Long:  description,
+		Args:  cobra.NoArgs,
 		RunE:  r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(*config.ConfigFlags),

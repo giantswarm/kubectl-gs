@@ -2,7 +2,6 @@ package nodepools
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"strings"
 
@@ -12,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 type runner struct {
@@ -51,7 +50,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	{
 		if r.provider == "" {
-			r.provider, err = r.commonConfig.GetProvider()
+			r.provider, err = r.commonConfig.GetProviderFromConfig(ctx, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -86,7 +85,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		resource, err = r.service.Get(ctx, options)
 		if nodepool.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A node pool with name '%s' cannot be found.\n", options.Name))
+			return microerror.Maskf(notFoundError, "A node pool with name '%s' cannot be found.\n", options.Name)
 		} else if nodepool.IsNoResources(err) && output.IsOutputDefault(r.flag.print.OutputFormat) {
 			r.printNoResourcesOutput()
 

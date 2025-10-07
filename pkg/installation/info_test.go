@@ -10,7 +10,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/graphql"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/graphql"
 )
 
 func Test_getInstallationInfo(t *testing.T) {
@@ -54,7 +54,7 @@ func Test_getInstallationInfo(t *testing.T) {
 
 			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tc.httpResponseStatusCode)
-				w.Write(res) // nolint:errcheck
+				_, _ = w.Write(res)
 			}))
 			defer ts.Close()
 

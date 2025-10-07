@@ -6,6 +6,7 @@ import (
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
@@ -32,8 +33,10 @@ type Nodepool struct {
 	MachineDeployment *capi.MachineDeployment
 	MachinePool       *capiexp.MachinePool
 
-	AWSMachineDeployment *infrastructurev1alpha3.AWSMachineDeployment
-	AzureMachinePool     *capzexp.AzureMachinePool
+	AWSMachineDeployment  *infrastructurev1alpha3.AWSMachineDeployment
+	AzureMachinePool      *capzexp.AzureMachinePool
+	CAPAMachinePool       *capaexp.AWSMachinePool
+	EKSManagedMachinePool *capaexp.AWSManagedMachinePool
 }
 
 func (n *Nodepool) Object() runtime.Object {

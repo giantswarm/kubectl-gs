@@ -7,11 +7,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/get/nodepools/provider"
-	"github.com/giantswarm/kubectl-gs/v2/internal/feature"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/nodepool"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/get/nodepools/provider"
+	"github.com/giantswarm/kubectl-gs/v5/internal/feature"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 type PrintOptions struct {
@@ -29,9 +29,8 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 		case key.ProviderAWS:
 			capabilities := feature.New(feature.ProviderAWS)
 			resource = provider.GetAWSTable(npResource, capabilities)
-		case key.ProviderAzure:
-			capabilities := feature.New(feature.ProviderAzure)
-			resource = provider.GetAzureTable(npResource, capabilities)
+		case key.ProviderDefault:
+			resource = provider.GetCAPITable(npResource)
 		}
 
 		printOptions := printers.PrintOptions{
@@ -65,7 +64,7 @@ func (r *runner) printOutput(npResource nodepool.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No node pools found.\n")
-	fmt.Fprintf(r.stdout, "To create a node pool, please check\n\n")
-	fmt.Fprintf(r.stdout, "  kubectl gs template nodepool --help\n")
+	_, _ = fmt.Fprintf(r.stdout, "No node pools found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "To create a node pool, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  kubectl gs template nodepool --help\n")
 }

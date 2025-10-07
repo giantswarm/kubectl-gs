@@ -2,26 +2,29 @@ package cluster
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"sort"
 	"strings"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/labels"
 )
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
-	flag         *flag
+	flag         *flags.Flag
 	logger       micrologger.Logger
 	stdout       io.Writer
 	stderr       io.Writer
@@ -35,7 +38,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.flag.ControlPlaneAZ[i] < r.flag.ControlPlaneAZ[j]
 	})
 
-	err := r.flag.Validate()
+	err := r.flag.Validate(cmd)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -53,11 +56,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
-	config, err := r.getClusterConfig()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	output := r.stdout
 	if r.flag.Output != "" {
 		outFile, err := os.Create(r.flag.Output)
@@ -65,8 +63,13 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 			return microerror.Mask(err)
 		}
 
-		defer outFile.Close()
+		defer func() { _ = outFile.Close() }()
 		output = outFile
+	}
+
+	config, err := r.getClusterConfig()
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	switch r.flag.Provider {
@@ -85,13 +88,13 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case key.ProviderGCP:
-		err = provider.WriteGCPTemplate(ctx, client, output, config)
+	case key.ProviderCAPZ:
+		err = provider.WriteCAPZTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case key.ProviderOpenStack:
-		err = provider.WriteOpenStackTemplate(ctx, client, output, config)
+	case key.ProviderEKS:
+		err = provider.WriteEKSTemplate(ctx, client, output, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -100,39 +103,54 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	case key.ProviderCloudDirector:
+		err = provider.WriteCloudDirectorTemplate(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	default:
+		return microerror.Mask(templateFlagNotImplemented)
 	}
 
 	return nil
 }
 
-func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
-	config := provider.ClusterConfig{
+func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
+	config := common.ClusterConfig{
 		ControlPlaneAZ:           r.flag.ControlPlaneAZ,
 		ControlPlaneInstanceType: r.flag.ControlPlaneInstanceType,
 		Description:              r.flag.Description,
 		KubernetesVersion:        r.flag.KubernetesVersion,
-		Name:                     r.flag.Name,
+		ManagementCluster:        r.flag.ManagementCluster,
 		Organization:             r.flag.Organization,
 		PodsCIDR:                 r.flag.PodsCIDR,
 		ReleaseVersion:           r.flag.Release,
 		Namespace:                metav1.NamespaceDefault,
 		Region:                   r.flag.Region,
 		ServicePriority:          r.flag.ServicePriority,
+		PreventDeletion:          r.flag.PreventDeletion,
 
-		App:       r.flag.App,
-		AWS:       r.flag.AWS,
-		GCP:       r.flag.GCP,
-		OIDC:      r.flag.OIDC,
-		OpenStack: r.flag.OpenStack,
+		App:           r.flag.App,
+		AWS:           r.flag.AWS,
+		Azure:         r.flag.Azure,
+		OIDC:          r.flag.OIDC,
+		VSphere:       r.flag.VSphere,
+		CloudDirector: r.flag.CloudDirector,
 	}
 
-	if config.Name == "" {
-		generatedName, err := key.GenerateName(true)
+	if r.flag.GenerateName {
+		generatedName, err := key.GenerateName()
 		if err != nil {
-			return provider.ClusterConfig{}, microerror.Mask(err)
+			return common.ClusterConfig{}, microerror.Mask(err)
 		}
 
 		config.Name = generatedName
+	} else {
+		config.Name = r.flag.Name
+	}
+
+	if config.Name == "" {
+		return common.ClusterConfig{}, errors.New("logic error in name assignment")
 	}
 
 	// Remove leading 'v' from release flag input.
@@ -141,7 +159,7 @@ func (r *runner) getClusterConfig() (provider.ClusterConfig, error) {
 	var err error
 	config.Labels, err = labels.Parse(r.flag.Label)
 	if err != nil {
-		return provider.ClusterConfig{}, microerror.Mask(err)
+		return common.ClusterConfig{}, microerror.Mask(err)
 	}
 
 	if r.flag.Provider != key.ProviderAWS {

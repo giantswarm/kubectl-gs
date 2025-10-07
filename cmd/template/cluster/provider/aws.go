@@ -5,16 +5,17 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster/provider/templates/aws"
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/aws"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
-func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
+func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {
 	err := WriteGSAWSTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -23,7 +24,7 @@ func WriteAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Wr
 	return nil
 }
 
-func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
+func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {
 	var err error
 
 	crsConfig := aws.ClusterCRsConfig{

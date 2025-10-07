@@ -1,0 +1,451 @@
+package flags
+
+import (
+	"fmt"
+	"net"
+	"regexp"
+	"strings"
+
+	"github.com/giantswarm/k8smetadata/pkg/label"
+	"github.com/giantswarm/microerror"
+	"github.com/spf13/cobra"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/labels"
+)
+
+const (
+	flagProvider          = "provider"
+	flagManagementCluster = "management-cluster"
+	flagPreventDeletion   = "prevent-deletion"
+
+	// AWS only.
+	flagAWSExternalSNAT       = "external-snat"
+	flagAWSControlPlaneSubnet = "control-plane-subnet"
+
+	flagAWSClusterRoleIdentityName                       = "aws-cluster-role-identity-name"
+	flagNetworkAZUsageLimit                              = "az-usage-limit"
+	flagNetworkVPCCidr                                   = "vpc-cidr"
+	flagAWSClusterType                                   = "cluster-type"
+	flagAWSHttpsProxy                                    = "https-proxy"
+	flagAWSHttpProxy                                     = "http-proxy"
+	flagAWSNoProxy                                       = "no-proxy"
+	flagAWSAPIMode                                       = "api-mode"
+	flagAWSVPCMode                                       = "vpc-mode"
+	flagAWSTopologyMode                                  = "topology-mode"
+	flagAWSPrefixListID                                  = "aws-prefix-list-id"
+	flagAWSTransitGatewayID                              = "aws-transit-gateway-id"
+	flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock = "control-plane-load-balancer-ingress-allow-cidr-block"
+	flagAWSPublicSubnetMask                              = "public-subnet-size"
+	FlagAWSPrivateSubnetMask                             = "private-subnet-size"
+
+	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
+	flagAWSMachinePoolMaxSize          = "machine-pool-max-size"
+	flagAWSMachinePoolName             = "machine-pool-name"
+	flagAWSMachinePoolAZs              = "machine-pool-azs"
+	flagAWSMachinePoolInstanceType     = "machine-pool-instance-type"
+	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
+	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
+
+	// Azure only
+	flagAzureSubscriptionID = "azure-subscription-id"
+
+	// App-based clusters only.
+	flagClusterCatalog     = "cluster-catalog"
+	flagClusterVersion     = "cluster-version"
+	flagDefaultAppsCatalog = "default-apps-catalog"
+	flagDefaultAppsVersion = "default-apps-version"
+
+	// VSphere only.
+	flagVSphereControlPlaneIP          = "vsphere-control-plane-ip"
+	flagVSphereServiceLoadBalancerCIDR = "vsphere-service-load-balancer-cidr"
+	flagVSphereNetworkName             = "vsphere-network-name"
+	flagVSphereSvcLbIpPool             = "vsphere-service-lb-pool"
+	flagVSphereControlPlaneDiskGiB     = "vsphere-control-plane-disk-gib"
+	flagVSphereControlPlaneIpPool      = "vsphere-control-plane-ip-pool"
+	flagVSphereControlPlaneMemoryMiB   = "vsphere-control-plane-memory-mib"
+	flagVSphereControlPlaneNumCPUs     = "vsphere-control-plane-num-cpus"
+	flagVSphereControlPlaneReplicas    = "vsphere-control-plane-replicas"
+	flagVSphereWorkerDiskGiB           = "vsphere-worker-disk-gib"
+	flagVSphereWorkerMemoryMiB         = "vsphere-worker-memory-mib"
+	flagVSphereWorkerNumCPUs           = "vsphere-worker-num-cpus"
+	flagVSphereWorkerReplicas          = "vsphere-worker-replicas"
+	flagVSphereResourcePool            = "vsphere-resource-pool"
+	flagVSphereCredentialsSecretName   = "vsphere-credentials-secret-name" // #nosec G101
+
+	// Cloud Director only.
+	flagCloudDirectorControlPlaneReplicas     = "cloud-director-control-plane-replicas"
+	flagCloudDirectorControlPlaneDiskSizeGB   = "cloud-director-control-plane-disk-size-gb"
+	flagCloudDirectorControlPlaneSizingPolicy = "cloud-director-control-plane-sizing-policy"
+	flagCloudDirectorWorkerDiskSizeGb         = "cloud-director-worker-disk-size-gb"
+	flagCloudDirectorWorkerSizingPolicy       = "cloud-director-worker-sizing-policy"
+	flagCloudDirectorWorkerReplicas           = "cloud-director-worker-replicas"
+	flagCloudDirectorCredentialsSecretName    = "cloud-director-credentials-secret-name" // #nosec G101
+	flagCloudDirectorVipSubnet                = "cloud-director-vip-subnet"
+	flagCloudDirectorHttpsProxy               = "cloud-director-https-proxy"
+	flagCloudDirectorHttpProxy                = "cloud-director-http-proxy"
+	flagCloudDirectorNoProxy                  = "cloud-director-no-proxy"
+	flagCloudDirectorOrg                      = "cloud-director-org"
+	flagCloudDirectorOvdc                     = "cloud-director-ovdc"
+	flagCloudDirectorOvdcNetwork              = "cloud-director-ovdc-network"
+	flagCloudDirectorSite                     = "cloud-director-site"
+
+	// Common.
+	flagRegion                   = "region"
+	flagBastionInstanceType      = "bastion-instance-type"
+	flagBastionReplicas          = "bastion-replicas"
+	flagControlPlaneInstanceType = "control-plane-instance-type"
+	flagControlPlaneAZ           = "control-plane-az"
+	flagDescription              = "description"
+	flagGenerateName             = "generate-name"
+	flagKubernetesVersion        = "kubernetes-version"
+	flagName                     = "name"
+	flagOIDCIssuerURL            = "oidc-issuer-url"
+	flagOIDCCAFile               = "oidc-ca-file"
+	flagOIDCClientID             = "oidc-client-id"
+	flagOIDCUsernameClaim        = "oidc-username-claim"
+	flagOIDCGroupsClaim          = "oidc-groups-claim"
+	flagOutput                   = "output"
+	flagOrganization             = "organization"
+	flagPodsCIDR                 = "pods-cidr"
+	flagRelease                  = "release"
+	flagLabel                    = "label"
+	flagServicePriority          = "service-priority"
+
+	// defaults
+	defaultKubernetesVersion        = "v1.20.9"
+	defaultVSphereKubernetesVersion = "v1.24.12"
+)
+
+var invalidFlagError = &microerror.Error{
+	Kind: "invalidFlagError",
+}
+
+type Flag struct {
+	Provider          string
+	ManagementCluster string
+	PreventDeletion   bool
+
+	// Common.
+	ControlPlaneAZ           []string
+	Description              string
+	GenerateName             bool
+	KubernetesVersion        string
+	Name                     string
+	Output                   string
+	Organization             string
+	PodsCIDR                 string
+	Release                  string
+	Label                    []string
+	Region                   string
+	BastionInstanceType      string
+	BastionReplicas          int
+	ControlPlaneInstanceType string
+	ServicePriority          string
+
+	// Provider-specific
+	AWS           common.AWSConfig
+	Azure         common.AzureConfig
+	VSphere       common.VSphereConfig
+	CloudDirector common.CloudDirectorConfig
+	App           common.AppConfig
+	OIDC          common.OIDC
+
+	Print *genericclioptions.PrintFlags
+}
+
+func (f *Flag) Init(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&f.Provider, flagProvider, "", "Installation infrastructure provider.")
+	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
+	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted (see https://docs.giantswarm.io/tutorials/fleet-management/deletion-prevention/)")
+
+	// AWS only.
+	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
+	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
+	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
+	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
+	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
+	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagAWSHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster, if not set, --https-proxy value will be used instead")
+	cmd.Flags().StringVar(&f.AWS.NoProxy, flagAWSNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.AWS.APIMode, flagAWSAPIMode, "", "API mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.VPCMode, flagAWSVPCMode, "", "VPC mode of the network (public,private)")
+	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
+	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
+	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
+	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
+	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, FlagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
+
+	// aws control plane
+	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
+	cmd.Flags().StringArrayVar(&f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, nil, fmt.Sprintf("IPv4 address ranges that are allowed to connect to the control plane load balancer, in CIDR notation. When setting this flag, kubectl-gs automatically adds the NAT Gateway IPs of the management cluster so that the workload cluster can still be managed. If only the management cluster's IP ranges should be allowed, specify one empty value instead of an IP range ('--%s \"\"'). Supported for CAPA. You also need to specify --%s.", flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, flagManagementCluster))
+	// aws machine pool
+	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "nodepool0", "AWS Machine pool name")
+	cmd.Flags().StringVar(&f.AWS.MachinePool.InstanceType, flagAWSMachinePoolInstanceType, "m5.xlarge", "AWS Machine pool instance type")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.MinSize, flagAWSMachinePoolMinSize, 3, "AWS Machine pool min size")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.MaxSize, flagAWSMachinePoolMaxSize, 10, "AWS Machine pool max size")
+	cmd.Flags().IntVar(&f.AWS.MachinePool.RootVolumeSizeGB, flagAWSMachinePoolRootVolumeSizeGB, 8, "AWS Machine pool disk size")
+	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
+	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
+
+	// Azure only
+	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
+
+	// VSphere only
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
+	cmd.Flags().StringVar(&f.VSphere.ServiceLoadBalancerCIDR, flagVSphereServiceLoadBalancerCIDR, "", "CIDR for Service LB for new cluster")
+	cmd.Flags().StringVar(&f.VSphere.NetworkName, flagVSphereNetworkName, "", "Network name in vcenter that should be used for the new VMs")
+	cmd.Flags().StringVar(&f.VSphere.SvcLbIpPoolName, flagVSphereSvcLbIpPool, "svc-lb-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for Service LB (kubevip) is taken")
+	cmd.Flags().StringVar(&f.VSphere.ControlPlane.IpPoolName, flagVSphereControlPlaneIpPool, "wc-cp-ips", "Name of `GlobalInClusterIpPool` CR from which the IP for CP is taken")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.DiskGiB, flagVSphereControlPlaneDiskGiB, 50, "Disk size in GiB for control individual plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.MemoryMiB, flagVSphereControlPlaneMemoryMiB, 8192, "Memory size in MiB for individual control plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.NumCPUs, flagVSphereControlPlaneNumCPUs, 4, "Number of CPUs for individual control plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.ControlPlane.Replicas, flagVSphereControlPlaneReplicas, 3, "Number of control plane replicas (use odd number)")
+	cmd.Flags().IntVar(&f.VSphere.Worker.DiskGiB, flagVSphereWorkerDiskGiB, 50, "Disk size in GiB for control individual worker nodes")
+	cmd.Flags().IntVar(&f.VSphere.Worker.MemoryMiB, flagVSphereWorkerMemoryMiB, 14144, "Memory size in MiB for individual worker plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.Worker.NumCPUs, flagVSphereWorkerNumCPUs, 6, "Number of CPUs for individual worker plane nodes")
+	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
+	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "*/Resources", "What resource pool in vsphere should be used")
+	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
+
+	// Cloud Director only
+	cmd.Flags().IntVar(&f.CloudDirector.ControlPlane.Replicas, flagCloudDirectorControlPlaneReplicas, 3, "Number of control plane replicas (use odd number)")
+	cmd.Flags().StringVar(&f.CloudDirector.ControlPlane.MachineTemplate.SizingPolicy, flagCloudDirectorControlPlaneSizingPolicy, "m1.medium", "Sizing policy for control plane nodes")
+	cmd.Flags().IntVar(&f.CloudDirector.ControlPlane.MachineTemplate.DiskSizeGB, flagCloudDirectorControlPlaneDiskSizeGB, 30, "Disk size in GB for control plane nodes")
+	cmd.Flags().IntVar(&f.CloudDirector.Worker.Replicas, flagCloudDirectorWorkerReplicas, 3, "Number of worker plane replicas")
+	cmd.Flags().IntVar(&f.CloudDirector.Worker.DiskSizeGB, flagCloudDirectorWorkerDiskSizeGb, 30, "Disk size in GB for worker nodes")
+	cmd.Flags().StringVar(&f.CloudDirector.Worker.SizingPolicy, flagCloudDirectorWorkerSizingPolicy, "m1.medium", "Sizing policy for worker nodes")
+	cmd.Flags().StringVar(&f.CloudDirector.CredentialsSecretName, flagCloudDirectorCredentialsSecretName, "vcd-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namespace and should contain the credentials for vsphere.")
+	cmd.Flags().StringVar(&f.CloudDirector.VipSubnet, flagCloudDirectorVipSubnet, "", "VIP Subnet for the Loadbalancers of the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.HttpsProxy, flagCloudDirectorHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.HttpProxy, flagCloudDirectorHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.NoProxy, flagCloudDirectorNoProxy, "", "'NO_PROXY' env value configuration for the cluster")
+	cmd.Flags().StringVar(&f.CloudDirector.Org, flagCloudDirectorOrg, "", "Organization name in Cloud Director")
+	cmd.Flags().StringVar(&f.CloudDirector.Ovdc, flagCloudDirectorOvdc, "", "Organization VDC name in Cloud Director")
+	cmd.Flags().StringVar(&f.CloudDirector.OvdcNetwork, flagCloudDirectorOvdcNetwork, "", "Organization VDC network name in Cloud Director")
+	cmd.Flags().StringVar(&f.CloudDirector.Site, flagCloudDirectorSite, "", "Site name")
+
+	// App-based clusters only.
+	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
+	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created.")
+	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app.")
+	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created.")
+
+	_ = cmd.Flags().MarkHidden(flagRegion)
+	_ = cmd.Flags().MarkHidden(flagAWSClusterRoleIdentityName)
+	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
+	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
+	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
+	_ = cmd.Flags().MarkHidden(flagNetworkAZUsageLimit)
+	_ = cmd.Flags().MarkHidden(flagControlPlaneInstanceType)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolName)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolInstanceType)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolAZs)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolCustomNodeLabels)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolRootVolumeSizeGB)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMinSize)
+	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolMaxSize)
+	_ = cmd.Flags().MarkHidden(flagAWSClusterType)
+	_ = cmd.Flags().MarkHidden(flagAWSHttpsProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSHttpProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSNoProxy)
+	_ = cmd.Flags().MarkHidden(flagAWSAPIMode)
+	_ = cmd.Flags().MarkHidden(flagAWSVPCMode)
+	_ = cmd.Flags().MarkHidden(flagAWSTopologyMode)
+	_ = cmd.Flags().MarkHidden(flagAWSPrefixListID)
+	_ = cmd.Flags().MarkHidden(flagAWSTransitGatewayID)
+
+	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
+	_ = cmd.Flags().MarkHidden(flagClusterVersion)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
+	_ = cmd.Flags().MarkHidden(flagDefaultAppsVersion)
+
+	// Common.
+	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes. Azure only supports one.")
+	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
+	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
+	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
+	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
+	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
+	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional).")
+	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
+	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
+	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
+	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
+	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
+	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release.")
+	cmd.Flags().StringSliceVar(&f.Label, flagLabel, nil, "Workload cluster label.")
+	cmd.Flags().StringVar(&f.ServicePriority, flagServicePriority, label.ServicePriorityHighest, fmt.Sprintf("Service priority of the cluster. Must be one of %v", getServicePriorities()))
+	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure region where cluster will be created")
+	// bastion
+	cmd.Flags().StringVar(&f.BastionInstanceType, flagBastionInstanceType, "", "Instance type used for the bastion node.")
+	cmd.Flags().IntVar(&f.BastionReplicas, flagBastionReplicas, 1, "Replica count for the bastion node")
+
+	f.Print = genericclioptions.NewPrintFlags("")
+	f.Print.OutputFormat = nil
+
+	// Merging current command flags and config flags,
+	// to be able to override kubectl-specific ones.
+	f.Print.AddFlags(cmd)
+}
+
+func (f *Flag) Validate(cmd *cobra.Command) error {
+	var err error
+	validProviders := []string{
+		key.ProviderAWS,
+		key.ProviderAzure,
+		key.ProviderCAPA,
+		key.ProviderCAPZ,
+		key.ProviderEKS,
+		key.ProviderVSphere,
+		key.ProviderCloudDirector,
+	}
+	isValidProvider := false
+	for _, p := range validProviders {
+		if f.Provider == p {
+			isValidProvider = true
+			break
+		}
+	}
+	if !isValidProvider {
+		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
+	}
+
+	// For vintage, don't break CLI parameter compatibility. But for CAPI or newer implementations, we want to enforce
+	// an explicit choice for a specified name (`--name`) or randomly generated name (`--generate-name`).
+	requireEitherNameOrGenerateNameFlag := key.IsPureCAPIProvider(f.Provider)
+
+	if f.Name != "" {
+		if f.GenerateName {
+			return microerror.Maskf(
+				invalidFlagError,
+				"--%s and --%s are mutually exclusive. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		}
+
+		valid, err := key.ValidateName(f.Name)
+		if err != nil {
+			return microerror.Mask(err)
+		} else if !valid {
+			message := fmt.Sprintf("--%s must only contain alphanumeric characters, start with a letter", flagName)
+			maxLength := key.NameLengthMax
+			message += fmt.Sprintf(", and be no longer than %d characters in length", maxLength)
+			return microerror.Maskf(invalidFlagError, "%s", message)
+		}
+	} else if !f.GenerateName {
+		if requireEitherNameOrGenerateNameFlag {
+			return microerror.Maskf(
+				invalidFlagError,
+				"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		} else {
+			// Keep supporting this old default for vintage (= no naming parameter given means to randomly
+			// generate a cluster name)
+			f.GenerateName = true
+		}
+	}
+
+	if f.PodsCIDR != "" {
+		if !validateCIDR(f.PodsCIDR) {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagPodsCIDR)
+		}
+	}
+
+	if f.Organization == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+	}
+
+	{
+		// Validate Master AZs.
+		switch f.Provider {
+		case key.ProviderAWS:
+			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
+				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
+			}
+			if f.AWS.ControlPlaneSubnet != "" {
+				matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
+				if err == nil && !matchedSubnet {
+					return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
+				}
+			}
+		case key.ProviderAzure:
+			if len(f.ControlPlaneAZ) > 1 {
+				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
+			}
+		case key.ProviderVSphere:
+			if f.VSphere.NetworkName == "" {
+				return microerror.Maskf(invalidFlagError, "Provide the network name in vcenter (required) (--%s)", flagVSphereNetworkName)
+			}
+			if f.VSphere.ServiceLoadBalancerCIDR != "" && !validateCIDR(f.VSphere.ServiceLoadBalancerCIDR) {
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagVSphereServiceLoadBalancerCIDR)
+			}
+			if !cmd.Flags().Changed(flagKubernetesVersion) {
+				f.KubernetesVersion = defaultVSphereKubernetesVersion
+			}
+
+			if f.VSphere.Worker.Replicas < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereWorkerReplicas)
+			}
+			if f.VSphere.ControlPlane.Replicas < 1 {
+				return microerror.Maskf(invalidFlagError, "--%s must be greater than 0", flagVSphereControlPlaneReplicas)
+			}
+		case key.ProviderCloudDirector:
+			if (f.CloudDirector.VipSubnet == "") || (f.CloudDirector.VipSubnet != "" && !validateCIDR(f.CloudDirector.VipSubnet)) {
+				return microerror.Maskf(invalidFlagError, "--%s must be a valid CIDR", flagCloudDirectorVipSubnet)
+			}
+
+		case key.ProviderCAPA:
+			if f.AWS.ClusterType == "proxy-private" && (f.AWS.HttpsProxy == "" || f.AWS.NetworkVPCCIDR == "") {
+				return microerror.Maskf(invalidFlagError, "--%s and --%s are required when proxy-private is selected", flagAWSHttpsProxy, flagNetworkVPCCidr)
+			}
+
+			if len(f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 && f.ManagementCluster == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty when specifying --%s", flagManagementCluster, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock)
+			}
+		}
+
+		if f.Release == "" {
+			if key.IsPureCAPIProvider(f.Provider) && !key.IsCAPIProviderUsingReleases(f.Provider) {
+				// skip release validation
+			} else {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagRelease)
+			}
+		}
+
+		_, err = labels.Parse(f.Label)
+		if err != nil {
+			return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
+		}
+
+		if !isValidServicePriority(f.ServicePriority) {
+			return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
+		}
+
+	}
+
+	return nil
+}
+
+func validateCIDR(cidr string) bool {
+	_, _, err := net.ParseCIDR(cidr)
+
+	return err == nil
+}
+
+func isValidServicePriority(servicePriority string) bool {
+	validServicePriorities := getServicePriorities()
+	for _, p := range validServicePriorities {
+		if servicePriority == p {
+			return true
+		}
+	}
+	return false
+}
+
+func getServicePriorities() []string {
+	return []string{label.ServicePriorityHighest, label.ServicePriorityMedium, label.ServicePriorityLowest}
+}

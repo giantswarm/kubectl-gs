@@ -1,17 +1,19 @@
 package commonconfig
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
 )
 
 const (
@@ -19,7 +21,8 @@ const (
 )
 
 type CommonConfig struct {
-	ConfigFlags *genericclioptions.RESTClientGetter
+	ConfigFlags  *genericclioptions.RESTClientGetter
+	installation *installation.Installation
 }
 
 func New(cf genericclioptions.RESTClientGetter) *CommonConfig {
@@ -34,25 +37,49 @@ func (cc *CommonConfig) GetConfigFlags() genericclioptions.RESTClientGetter {
 	return *cc.ConfigFlags
 }
 
-func (cc *CommonConfig) GetProvider() (string, error) {
+func (cc *CommonConfig) GetInstallation(ctx context.Context, path, athenaUrl string) (*installation.Installation, error) {
+	if path == "" {
+		config, err := cc.GetConfigFlags().ToRESTConfig()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		path = config.Host
+	}
+	if cc.installation == nil || cc.installation.SourcePath != path {
+		i, err := installation.New(ctx, path, athenaUrl)
+		cc.installation = i
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+	return cc.installation, nil
+}
+
+func (cc *CommonConfig) GetProviderFromConfig(ctx context.Context, athenaUrl string) (string, error) {
 	config, err := cc.GetConfigFlags().ToRESTConfig()
 	if err != nil {
-		return "", microerror.Mask(err)
+		return "", err
+	}
+
+	i, err := cc.GetInstallation(ctx, config.Host, athenaUrl)
+	if err == nil {
+		return i.Provider, nil
 	}
 
 	awsRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderAWS))
 	azureRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderAzure))
+	capaRegexp := regexp.MustCompile(fmt.Sprintf(providerRegexpPattern, key.ProviderCAPA))
 
 	var provider string
 	switch {
 	case awsRegexp.MatchString(config.Host):
 		provider = key.ProviderAWS
-
 	case azureRegexp.MatchString(config.Host):
 		provider = key.ProviderAzure
-
+	case capaRegexp.MatchString(config.Host):
+		provider = key.ProviderCAPA
 	default:
-		provider = key.ProviderOpenStack
+		provider = key.ProviderDefault
 	}
 
 	return provider, nil

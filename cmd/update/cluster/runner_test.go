@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclienttest"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,12 +15,12 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/label"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/internal/label"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
 )
 
 func Test_run(t *testing.T) {
@@ -42,6 +42,7 @@ func Test_run(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
+		tc := tc
 		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
 			var err error
 
@@ -78,7 +79,7 @@ func newCluster(name, namespace, targetRelease string) *capi.Cluster {
 			Name:      name,
 			Namespace: namespace,
 			Labels: map[string]string{
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.ReleaseVersion:  "16.0.1",
 			},
 			Annotations: map[string]string{

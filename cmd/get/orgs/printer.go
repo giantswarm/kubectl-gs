@@ -7,13 +7,13 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/organization"
 )
 
 type PrintOptions struct {
@@ -94,9 +94,9 @@ func (r *runner) printOutput(orgResource organization.Resource) error {
 }
 
 func (r *runner) printNoResourcesOutput() {
-	fmt.Fprintf(r.stdout, "No organizations found.\n")
-	fmt.Fprintf(r.stdout, "No resources of type organizations.security.giantswarm.io available. To create one, please check\n\n")
-	fmt.Fprintf(r.stdout, "  https://docs.giantswarm.io/use-the-api/management-api/crd/organizations.security.giantswarm.io/\n")
+	_, _ = fmt.Fprintf(r.stdout, "No organizations found.\n")
+	_, _ = fmt.Fprintf(r.stdout, "No resources of type organizations.security.giantswarm.io available. To create one, please check\n\n")
+	_, _ = fmt.Fprintf(r.stdout, "  https://docs.giantswarm.io/use-the-api/management-api/crd/organizations.security.giantswarm.io/\n")
 }
 
 func getTableRow(org organization.Organization) metav1.TableRow {

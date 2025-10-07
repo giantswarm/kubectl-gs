@@ -11,10 +11,10 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	structure "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/workload-cluster"
-	commonkey "github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/workload-cluster"
+	commonkey "github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 type runner struct {
@@ -44,14 +44,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	config := common.StructureConfig{
-		ClusterBase:        r.flag.Base,
-		ClusterRelease:     r.flag.ClusterRelease,
-		DefaultAppsRelease: r.flag.DefaultAppsRelease,
-		ManagementCluster:  r.flag.ManagementCluster,
-		WorkloadCluster:    r.flag.Name,
-		Organization:       r.flag.Organization,
-		SkipMAPI:           r.flag.SkipMAPI,
-		RepositoryName:     r.flag.RepositoryName,
+		ClusterBase:       r.flag.Base,
+		Release:           r.flag.Release,
+		ManagementCluster: r.flag.ManagementCluster,
+		WorkloadCluster:   r.flag.Name,
+		Organization:      r.flag.Organization,
+		SkipMAPI:          r.flag.SkipMAPI,
+		RepositoryName:    r.flag.RepositoryName,
 	}
 
 	if r.flag.ClusterUserConfig != "" {
@@ -64,17 +63,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 
 		config.ClusterUserConfig = strings.TrimSpace(config.ClusterUserConfig)
-	}
-	if r.flag.DefaultAppsUserConfig != "" {
-		config.DefaultAppsUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
-			r.flag.DefaultAppsUserConfig,
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.DefaultAppsUserConfig = strings.TrimSpace(config.DefaultAppsUserConfig)
 	}
 
 	creatorConfig, err := structure.NewWorkloadCluster(config)

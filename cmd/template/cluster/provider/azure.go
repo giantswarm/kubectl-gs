@@ -6,50 +6,37 @@ import (
 	"io"
 	"text/template"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/reference"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
 )
 
 const (
 	defaultMasterVMSize = "Standard_D4s_v3"
 )
 
-func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
-	var err error
-
-	isCapiVersion, err := key.IsCAPIVersion(config.ReleaseVersion)
+func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {
+	err := WriteGSAzureTemplate(ctx, client, out, config)
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	if isCapiVersion {
-		err = WriteCAPZTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	} else {
-		err = WriteGSAzureTemplate(ctx, client, out, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil
 }
 
-func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config ClusterConfig) error {
+func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config common.ClusterConfig) error {
 	var err error
 
 	config.ReleaseComponents, err = key.GetReleaseComponents(ctx, client.CtrlClient(), config.ReleaseVersion)
@@ -67,7 +54,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 
 		infrastructureRef := newCAPZClusterInfraRef(azureClusterCR)
 
-		clusterCR := newcapiClusterCR(config, infrastructureRef)
+		clusterCR := common.NewCapiClusterCR(config, infrastructureRef)
 		clusterCRYaml, err = yaml.Marshal(clusterCR)
 		if err != nil {
 			return microerror.Mask(err)
@@ -99,7 +86,7 @@ func WriteGSAzureTemplate(ctx context.Context, client k8sclient.Interface, out i
 	return nil
 }
 
-func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
+func newAzureClusterCR(config common.ClusterConfig) *capz.AzureCluster {
 	cr := &capz.AzureCluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureCluster",
@@ -110,7 +97,7 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 			Namespace: config.Namespace,
 			Labels: map[string]string{
 				label.Cluster:              config.Name,
-				capi.ClusterLabelName:      config.Name,
+				capi.ClusterNameLabel:      config.Name,
 				label.Organization:         config.Organization,
 				label.ReleaseVersion:       config.ReleaseVersion,
 				label.AzureOperatorVersion: config.ReleaseComponents["azure-operator"],
@@ -119,7 +106,7 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 		Spec: capz.AzureClusterSpec{
 			ResourceGroup: config.Name,
 			NetworkSpec: capz.NetworkSpec{
-				APIServerLB: capz.LoadBalancerSpec{
+				APIServerLB: &capz.LoadBalancerSpec{
 					Name: fmt.Sprintf("%s-%s-%s", config.Name, "API", "PublicLoadBalancer"),
 					LoadBalancerClassSpec: capz.LoadBalancerClassSpec{
 						SKU:  "Standard",
@@ -138,7 +125,7 @@ func newAzureClusterCR(config ClusterConfig) *capz.AzureCluster {
 	return cr
 }
 
-func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
+func newAzureMasterMachineCR(config common.ClusterConfig) *capz.AzureMachine {
 	var failureDomain *string
 	if len(config.ControlPlaneAZ) > 0 {
 		failureDomain = &config.ControlPlaneAZ[0]
@@ -153,12 +140,12 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			Name:      fmt.Sprintf("%s-master-%d", config.Name, 0),
 			Namespace: config.Namespace,
 			Labels: map[string]string{
-				label.Cluster:                     config.Name,
-				capi.ClusterLabelName:             config.Name,
-				capi.MachineControlPlaneLabelName: "true",
-				label.Organization:                config.Organization,
-				label.ReleaseVersion:              config.ReleaseVersion,
-				label.AzureOperatorVersion:        config.ReleaseComponents["azure-operator"],
+				label.Cluster:                 config.Name,
+				capi.ClusterNameLabel:         config.Name,
+				capi.MachineControlPlaneLabel: "true",
+				label.Organization:            config.Organization,
+				label.ReleaseVersion:          config.ReleaseVersion,
+				label.AzureOperatorVersion:    config.ReleaseComponents["azure-operator"],
 			},
 		},
 		Spec: capz.AzureMachineSpec{
@@ -166,16 +153,18 @@ func newAzureMasterMachineCR(config ClusterConfig) *capz.AzureMachine {
 			FailureDomain: failureDomain,
 			Image: &capz.Image{
 				Marketplace: &capz.AzureMarketplaceImage{
-					Publisher: "kinvolk",
-					Offer:     "flatcar-container-linux-free",
-					SKU:       "stable",
-					Version:   config.ReleaseComponents["containerlinux"],
+					ImagePlan: capz.ImagePlan{
+						Publisher: "kinvolk",
+						Offer:     "flatcar-container-linux-free",
+						SKU:       "stable",
+					},
+					Version: config.ReleaseComponents["containerlinux"],
 				},
 			},
 			OSDisk: capz.OSDisk{
 				OSType:      "Linux",
 				CachingType: "ReadWrite",
-				DiskSizeGB:  pointer.Int32(50),
+				DiskSizeGB:  ptr.To[int32](50),
 				ManagedDisk: &capz.ManagedDiskParameters{
 					StorageAccountType: "Premium_LRS",
 				},

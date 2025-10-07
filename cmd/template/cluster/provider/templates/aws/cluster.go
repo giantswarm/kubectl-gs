@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 const (
@@ -26,7 +26,6 @@ type ClusterCRsConfig struct {
 	ControlPlaneName         string
 	Credential               string
 	Domain                   string
-	EnableLongNames          bool
 	ExternalSNAT             bool
 	ControlPlaneAZ           []string
 	ControlPlaneInstanceType string
@@ -55,7 +54,7 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 	// the workload cluster name may be provided by the user.
 	{
 		if config.ClusterName == "" {
-			generatedName, err := key.GenerateName(true)
+			generatedName, err := key.GenerateName()
 			if err != nil {
 				return ClusterCRs{}, microerror.Mask(err)
 			}
@@ -64,7 +63,7 @@ func NewClusterCRs(config ClusterCRsConfig) (ClusterCRs, error) {
 		}
 
 		if config.ControlPlaneName == "" {
-			generatedName, err := key.GenerateName(true)
+			generatedName, err := key.GenerateName()
 			if err != nil {
 				return ClusterCRs{}, microerror.Mask(err)
 			}
@@ -109,7 +108,7 @@ func newAWSClusterCR(c ClusterCRsConfig) *v1alpha3.AWSCluster {
 				label.Cluster:            c.ClusterName,
 				label.Organization:       c.Owner,
 				label.ReleaseVersion:     c.ReleaseVersion,
-				capi.ClusterLabelName:    c.ClusterName,
+				capi.ClusterNameLabel:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSClusterSpec{
@@ -166,7 +165,7 @@ func newAWSControlPlaneCR(c ClusterCRsConfig) *v1alpha3.AWSControlPlane {
 				label.ControlPlane:       c.ControlPlaneName,
 				label.Organization:       c.Owner,
 				label.ReleaseVersion:     c.ReleaseVersion,
-				capi.ClusterLabelName:    c.ClusterName,
+				capi.ClusterNameLabel:    c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.AWSControlPlaneSpec{
@@ -186,7 +185,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 		gsLabels := map[string]string{
 			label.ClusterOperatorVersion: c.ReleaseComponents["cluster-operator"],
 			label.Cluster:                c.ClusterName,
-			capi.ClusterLabelName:        c.ClusterName,
+			capi.ClusterNameLabel:        c.ClusterName,
 			label.Organization:           c.Owner,
 			label.ReleaseVersion:         c.ReleaseVersion,
 
@@ -215,8 +214,8 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 		},
 		Spec: capi.ClusterSpec{
 			InfrastructureRef: &corev1.ObjectReference{
-				APIVersion: obj.TypeMeta.APIVersion,
-				Kind:       obj.TypeMeta.Kind,
+				APIVersion: obj.APIVersion,
+				Kind:       obj.Kind,
 				Name:       obj.GetName(),
 				Namespace:  obj.GetNamespace(),
 			},
@@ -224,7 +223,7 @@ func newClusterCR(obj *v1alpha3.AWSCluster, c ClusterCRsConfig) *capi.Cluster {
 	}
 
 	if val, ok := c.Labels[label.ServicePriority]; ok {
-		clusterCR.ObjectMeta.Labels[label.ServicePriority] = val
+		clusterCR.Labels[label.ServicePriority] = val
 	}
 
 	return clusterCR
@@ -248,14 +247,14 @@ func newG8sControlPlaneCR(obj *v1alpha3.AWSControlPlane, c ClusterCRsConfig) *v1
 				label.ControlPlane:           c.ControlPlaneName,
 				label.Organization:           c.Owner,
 				label.ReleaseVersion:         c.ReleaseVersion,
-				capi.ClusterLabelName:        c.ClusterName,
+				capi.ClusterNameLabel:        c.ClusterName,
 			},
 		},
 		Spec: v1alpha3.G8sControlPlaneSpec{
 			Replicas: len(c.ControlPlaneAZ),
 			InfrastructureRef: corev1.ObjectReference{
-				APIVersion: obj.TypeMeta.APIVersion,
-				Kind:       obj.TypeMeta.Kind,
+				APIVersion: obj.APIVersion,
+				Kind:       obj.Kind,
 				Name:       obj.GetName(),
 				Namespace:  obj.GetNamespace(),
 			},

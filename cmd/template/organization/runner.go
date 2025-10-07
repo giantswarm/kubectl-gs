@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
 
-	template "github.com/giantswarm/kubectl-gs/v2/pkg/template/organization"
+	template "github.com/giantswarm/kubectl-gs/v5/pkg/template/organization"
 )
 
 type runner struct {
@@ -50,7 +50,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 
 			outputWriter = f
 		}

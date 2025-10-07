@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/selfupdate"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/selfupdate"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/project"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/project"
 )
 
 type runner struct {
@@ -58,13 +58,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if selfupdate.IsHasNewVersion(err) {
 		if r.flag.DryRun {
 			_, _ = color.New(color.Bold, color.FgYellow).Fprintln(r.stdout, "There's a new version available!")
-			fmt.Fprintln(r.stdout, "Please update by running \"kubectl gs selfupdate\".")
+			_, _ = fmt.Fprintln(r.stdout, "Please update by running \"kubectl gs selfupdate\".")
 
 			return nil
 		}
 
-		fmt.Fprintf(r.stdout, "Update to %s has been started.\n", latestVersion)
-		fmt.Fprintln(r.stdout, "Fetching latest built binary...")
+		_, _ = fmt.Fprintf(r.stdout, "Update to %s has been started.\n", latestVersion)
+		_, _ = fmt.Fprintln(r.stdout, "Fetching latest built binary...")
 
 		err = updaterService.InstallLatest()
 		if err != nil {
@@ -80,7 +80,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintln(r.stdout, "You are already using the latest version.")
+	_, _ = fmt.Fprintln(r.stdout, "You are already using the latest version.")
 
 	return nil
 }

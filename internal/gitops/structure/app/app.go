@@ -6,12 +6,12 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier"
-	sigskusmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/sigs-kustomization"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
-	apptmpl "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/app/templates"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/modifier"
+	sigskusmod "github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/modifier/sigs-kustomization"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/key"
+	apptmpl "github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/app/templates"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
 )
 
 const (
@@ -39,7 +39,7 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 
 	// We start from the `apps` directory despite the fact this directory
 	// should already exist at this point. We then create the `APP_NAME` directory
-	// and add bunch of files there, depending on the configuration provided.
+	// and add a bunch of files there, depending on the configuration provided.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(appsDir, nil, 0),
 		creator.NewFsObject(appDir, nil, 0),

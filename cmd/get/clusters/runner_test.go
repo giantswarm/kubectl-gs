@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclienttest"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclienttest"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
@@ -15,13 +15,13 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/scheme"
-	"github.com/giantswarm/kubectl-gs/v2/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v5/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
 )
 
 // Test_run uses golden files.

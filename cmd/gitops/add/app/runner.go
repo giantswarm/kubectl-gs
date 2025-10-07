@@ -12,10 +12,10 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	structure "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/app"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	commonkey "github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
+	structure "github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/app"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
+	commonkey "github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 type runner struct {
@@ -66,6 +66,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if config.AppName == "" {
 		config.AppName = config.App
+	}
+
+	if cmd.Flags().Changed(flagInCluster) && r.flag.InCluster {
+		config.InCluster = "true"
+	} else if cmd.Flags().Changed(flagInCluster) && !r.flag.InCluster {
+		config.InCluster = "false"
+	} else {
+		config.InCluster = ""
 	}
 
 	if r.flag.UserValuesConfigMap != "" {

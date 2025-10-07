@@ -1,15 +1,27 @@
 package capa
 
+type Global struct {
+	Connectivity     *Connectivity           `json:"connectivity,omitempty"`
+	ControlPlane     *ControlPlane           `json:"controlPlane,omitempty"`
+	Metadata         *Metadata               `json:"metadata,omitempty"`
+	NodePools        *map[string]MachinePool `json:"nodePools,omitempty"`
+	ProviderSpecific *ProviderSpecific       `json:"providerSpecific,omitempty"`
+	Release          *Release                `json:"release,omitempty"`
+}
+
 type ClusterConfig struct {
-	ClusterDescription string         `json:"clusterDescription,omitempty"`
-	ClusterName        string         `json:"clusterName,omitempty"`
-	Organization       string         `json:"organization,omitempty"`
-	AWS                *AWS           `json:"aws,omitempty"`
-	Network            *Network       `json:"network,omitempty"`
-	Bastion            *Bastion       `json:"bastion,omitempty"`
-	ControlPlane       *ControlPlane  `json:"controlPlane,omitempty"`
-	MachinePools       *[]MachinePool `json:"machinePools,omitempty"`
-	FlatcarAWSAccount  string         `json:"flatcarAWSAccount,omitempty"`
+	Global *Global `json:"global,omitempty"`
+}
+
+type Metadata struct {
+	Description     string `json:"description,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Organization    string `json:"organization,omitempty"`
+	PreventDeletion bool   `json:"preventDeletion,omitempty"`
+}
+
+type Release struct {
+	Version string `json:"version,omitempty"`
 }
 
 type DefaultAppsConfig struct {
@@ -17,29 +29,57 @@ type DefaultAppsConfig struct {
 	Organization string `json:"organization,omitempty"`
 }
 
-type AWS struct {
-	Region string `json:"region,omitempty"`
-	Role   string `json:"awsClusterRole,omitempty"`
+type ProviderSpecific struct {
+	AMI                        string `json:"ami,omitempty"`
+	AWSClusterRoleIdentityName string `json:"awsClusterRoleIdentityName,omitempty"`
+	FlatcarAWSAccount          string `json:"flatcarAwsAccount,omitempty"`
+	Region                     string `json:"region,omitempty"`
+}
+
+type Connectivity struct {
+	AvailabilityZoneUsageLimit int       `json:"availabilityZoneUsageLimit,omitempty"`
+	Bastion                    *Bastion  `json:"bastion,omitempty"`
+	Network                    *Network  `json:"network,omitempty"`
+	Proxy                      *Proxy    `json:"proxy,omitempty"`
+	Subnets                    []Subnet  `json:"subnets,omitempty"`
+	Topology                   *Topology `json:"topology,omitempty"`
+	VPCMode                    string    `json:"vpcMode,omitempty"`
 }
 
 type Network struct {
-	AvailabilityZoneUsageLimit int    `json:"availabilityZoneUsageLimit,omitempty"`
-	VPCCIDR                    string `json:"vpcCIDR,omitempty"`
+	VPCCIDR string `json:"vpcCidr,omitempty"`
+}
+
+type Topology struct {
+	Mode             string `json:"mode,omitempty"`
+	PrefixListID     string `json:"prefixListId,omitempty"`
+	TransitGatewayID string `json:"transitGatewayId,omitempty"`
+}
+type Subnet struct {
+	CidrBlocks []CIDRBlock `json:"cidrBlocks"`
+	IsPublic   bool        `json:"isPublic"`
+}
+
+type CIDRBlock struct {
+	CIDR             string `json:"cidr"`
+	AvailabilityZone string `json:"availabilityZone"`
 }
 
 type Bastion struct {
+	Enabled      bool   `json:"enabled,omitempty"`
 	InstanceType string `json:"instanceType,omitempty"`
 	Replicas     int    `json:"replicas,omitempty"`
 }
 
 type ControlPlane struct {
-	InstanceType           string   `json:"instanceType,omitempty"`
-	Replicas               int      `json:"replicas,omitempty"`
-	RootVolumeSizeGB       int      `json:"rootVolumeSizeGB,omitempty"`
-	EtcdVolumeSizeGB       int      `json:"etcdVolumeSizeGB,omitempty"`
-	ContainerdVolumeSizeGB int      `json:"containerdVolumeSizeGB,omitempty"`
-	KubeletVolumeSizeGB    int      `json:"kubeletVolumeSizeGB,omitempty"`
-	AvailabilityZones      []string `json:"availabilityZones,omitempty"`
+	APIMode                            string   `json:"apiMode,omitempty"`
+	InstanceType                       string   `json:"instanceType,omitempty"`
+	RootVolumeSizeGB                   int      `json:"rootVolumeSizeGB,omitempty"`
+	EtcdVolumeSizeGB                   int      `json:"etcdVolumeSizeGB,omitempty"`
+	ContainerdVolumeSizeGB             int      `json:"containerdVolumeSizeGB,omitempty"`
+	KubeletVolumeSizeGB                int      `json:"kubeletVolumeSizeGB,omitempty"`
+	AvailabilityZones                  []string `json:"availabilityZones,omitempty"`
+	LoadBalancerIngressAllowCIDRBlocks []string `json:"loadBalancerIngressAllowCidrBlocks,omitempty"`
 }
 
 type MachinePool struct {
@@ -50,4 +90,11 @@ type MachinePool struct {
 	MaxSize           int      `json:"maxSize,omitempty"`
 	RootVolumeSizeGB  int      `json:"rootVolumeSizeGB,omitempty"`
 	CustomNodeLabels  []string `json:"customNodeLabels,omitempty"`
+}
+
+type Proxy struct {
+	Enabled    bool   `json:"enabled,omitempty"`
+	HttpsProxy string `json:"httpsProxy,omitempty"`
+	HttpProxy  string `json:"httpProxy,omitempty"`
+	NoProxy    string `json:"noProxy,omitempty"`
 }

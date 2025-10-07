@@ -14,10 +14,10 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/login/template"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/callbackserver"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/login/template"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/callbackserver"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 )
 
 const (
@@ -26,10 +26,9 @@ const (
 	oidcCallbackURL  = "http://localhost"
 	oidcCallbackPath = "/oauth/callback"
 
-	customerConnectorID   = "customer"
-	giantswarmConnectorID = "giantswarm"
+	customerConnectorType   = "customer"
+	giantswarmConnectorType = "giantswarm"
 
-	oidcResultTimeout     = 1 * time.Minute
 	oidcReadHeaderTimeout = 1 * time.Minute
 )
 
@@ -38,7 +37,7 @@ var (
 )
 
 // handleOIDC executes the OIDC authentication against an installation's authentication provider.
-func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, clusterAdmin bool, port int) (authInfo, error) {
+func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *installation.Installation, connectorID string, clusterAdmin bool, internalAPI bool, host string, port int, oidcResultTimeout time.Duration) (authInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, oidcResultTimeout)
 	defer cancel()
 
@@ -46,6 +45,7 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 	var authProxy *callbackserver.CallbackServer
 	{
 		config := callbackserver.Config{
+			Host:              host,
 			Port:              port,
 			RedirectURI:       oidcCallbackPath,
 			ReadHeaderTimeout: oidcReadHeaderTimeout,
@@ -67,26 +67,23 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		return authInfo{}, microerror.Mask(err)
 	}
 
-	// select dex connector_id based on clusterAdmin value
-	var connectorID string
-	{
-		if clusterAdmin {
-			connectorID = giantswarmConnectorID
-		} else {
-			connectorID = customerConnectorID
-		}
+	var authURL string
+	if connectorID != "" {
+		authURL = auther.GetAuthURL(connectorID)
+	} else if clusterAdmin { // select dex connector_type based on clusterAdmin value
+		authURL = auther.GetAuthSelectionURL(giantswarmConnectorType)
+	} else {
+		authURL = auther.GetAuthSelectionURL(customerConnectorType)
 	}
 
-	authURL := auther.GetAuthURL(connectorID)
-
-	fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
-	fmt.Fprintf(out, "%s\n\n", authURL)
+	_, _ = fmt.Fprintf(out, "\n%s\n", color.YellowString("Your browser should now be opening this URL:"))
+	_, _ = fmt.Fprintf(out, "%s\n\n", authURL)
 
 	// Open the authorization url in the user's browser, which will eventually
 	// redirect the user to the local web server we'll create next.
 	err = open.Start(authURL)
 	if err != nil {
-		fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
+		_, _ = fmt.Fprintf(errOut, "%s\n\n", color.YellowString("Couldn't open the default browser. Please access the URL above to continue logging in."))
 	}
 
 	// Create a local web server, for fetching all the authentication data from
@@ -111,6 +108,60 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 		authResult.clientID = clientID
 	}
 
+	var apiServerURL string
+	{
+		if internalAPI {
+			apiServerURL = i.K8sInternalApiURL
+		} else {
+			apiServerURL = i.K8sApiURL
+		}
+	}
+
+	caData := []byte(i.CACert)
+	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+	if err != nil {
+		_, _ = fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error %s.", err.Error()))
+	}
+	return authResult, nil
+}
+
+// handleDeviceFlowOIDC executes the OIDC device authentication flow against an installation's authentication provider.
+func handleDeviceFlowOIDC(out io.Writer, errOut io.Writer, i *installation.Installation, internalAPI bool) (authInfo, error) {
+	auther := oidc.NewDeviceAuthenticator(clientID, i)
+
+	deviceCodeData, err := auther.LoadDeviceCode()
+	if err != nil {
+		return authInfo{}, microerror.Mask(err)
+	}
+
+	_, _ = fmt.Fprintf(out, "Open this URL in the browser to log in:\n%s\n\nThe process will continue automatically once the in-browser login is completed\n", deviceCodeData.VerificationUriComplete)
+
+	deviceTokenData, userName, err := auther.LoadDeviceToken(deviceCodeData)
+	if err != nil {
+		return authInfo{}, microerror.Maskf(deviceAuthError, "%s", err.Error())
+	}
+
+	authResult := authInfo{
+		username:     fmt.Sprintf("%s-device", userName),
+		token:        deviceTokenData.IdToken,
+		refreshToken: deviceTokenData.RefreshToken,
+		clientID:     clientID,
+	}
+	var apiServerURL string
+	{
+		if internalAPI {
+			apiServerURL = i.K8sInternalApiURL
+		} else {
+			apiServerURL = i.K8sApiURL
+		}
+	}
+
+	caData := []byte(i.CACert)
+
+	err = VerifyIDTokenWithKubernetesAPI(authResult.token, apiServerURL, caData)
+	if err != nil {
+		_, _ = fmt.Fprintf(errOut, "%s\n", color.YellowString("OIDC device flow succeeded but token verification returned error %s.", err.Error()))
+	}
 	return authResult, nil
 }
 
@@ -118,6 +169,13 @@ func handleOIDC(ctx context.Context, out io.Writer, errOut io.Writer, i *install
 // received from the authentication provider.
 func handleOIDCCallback(ctx context.Context, a *oidc.Authenticator) func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
 	return func(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+		// Handle any additional requests the browser makes (e.g. OPTIONS), otherwise the authentication process will fail
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			return callbackserver.FallthroughResult{Method: r.Method}, nil
+		}
+
+		// Handle GET request with the token
 		res, err := a.HandleIssuerResponse(ctx, r.URL.Query().Get("state"), r.URL.Query().Get("code"))
 		if err != nil {
 			failureTemplate, tErr := template.GetFailedHTMLTemplateReader()

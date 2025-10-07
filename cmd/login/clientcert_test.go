@@ -10,9 +10,9 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 func Test_ClientCert_SelfContainedFiles(t *testing.T) {
@@ -20,13 +20,13 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 		name             string
 		fileName         string
 		sourceConfig     *clientcmdapi.Config
-		credentialConfig credentialConfig
+		credentialConfig clientCertCredentialConfig
 		expectedConfig   clientcmdapi.Config
 	}{
 		{
 			name:     "case 0: Create a new self-contained file",
 			fileName: "cluster.yaml",
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("CertCRT"),
 				certKey:       []byte("CertKey"),
@@ -79,7 +79,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 				},
 				CurrentContext: "initial-context",
 			},
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("CertCRT"),
 				certKey:       []byte("CertKey"),
@@ -156,7 +156,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 				},
 				CurrentContext: "gs-codename-cluster-clientcert",
 			},
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("NewCertCRT"),
 				certKey:       []byte("NewCertKey"),
@@ -221,7 +221,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 				},
 				CurrentContext: "gs-codename-cluster-clientcert",
 			},
-			credentialConfig: credentialConfig{
+			credentialConfig: clientCertCredentialConfig{
 				clusterID:     "cluster",
 				certCRT:       []byte("NewCertCRT"),
 				certKey:       []byte("NewCertKey"),
@@ -293,7 +293,7 @@ func Test_ClientCert_SelfContainedFiles(t *testing.T) {
 
 func readConfigFile(filePath string) clientcmd.ConfigAccess {
 	cf := genericclioptions.NewConfigFlags(true)
-	cf.KubeConfig = pointer.String(filePath)
+	cf.KubeConfig = ptr.To[string](filePath)
 	commonConfig := commonconfig.New(cf)
 	return commonConfig.GetConfigAccess()
 }

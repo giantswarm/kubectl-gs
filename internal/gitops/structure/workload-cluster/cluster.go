@@ -5,13 +5,13 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier"
-	fluxkusmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/flux-kustomization"
-	sigskusmod "github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/modifier/sigs-kustomization"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	wctmpl "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/workload-cluster/templates"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/modifier"
+	fluxkusmod "github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/modifier/flux-kustomization"
+	sigskusmod "github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/modifier/sigs-kustomization"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
+	wctmpl "github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/workload-cluster/templates"
 )
 
 // NewWorkloadCluster creates a new Workload Cluster directory
@@ -133,8 +133,7 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	if config.ClusterBase != "" {
 		fsModifiers[wcFile] = fluxkusmod.KustomizationModifier{
 			PostBuildEnvs: map[string]string{
-				"cluster_release":      config.ClusterRelease,
-				"default_apps_release": config.DefaultAppsRelease,
+				"release": config.Release,
 			},
 		}
 	}

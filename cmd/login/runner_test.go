@@ -3,45 +3,38 @@ package login
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"os"
 	"reflect"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"gopkg.in/square/go-jose.v2"
+	"k8s.io/utils/ptr"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
 )
 
 func TestLogin(t *testing.T) {
 	testCases := []struct {
-		name            string
-		startConfig     *clientcmdapi.Config
-		mcArg           []string
-		flags           *flag
-		contextOverride string
-		expectError     *microerror.Error
+		name               string
+		startConfig        *clientcmdapi.Config
+		startConfigCreator func(issuer string) *clientcmdapi.Config
+		mcArg              []string
+		flags              *flag
+		contextOverride    string
+		mockOidcConfig     *testoidc.MockOidcServerConfig
+		expectError        *microerror.Error
 	}{
 		// Empty starting config, logging into MC using codename
 		{
@@ -205,7 +198,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("gs-anothercodename"),
+			contextOverride: *ptr.To[string]("gs-anothercodename"),
 		},
 		// Logging in without argument using context flag but context does not exist
 		{
@@ -214,7 +207,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("gs-anothercodename"),
+			contextOverride: *ptr.To[string]("gs-anothercodename"),
 			expectError:     contextDoesNotExistError,
 		},
 		// Logging in with argument using context flag
@@ -225,7 +218,7 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("gs-anothercodename"),
+			contextOverride: *ptr.To[string]("gs-anothercodename"),
 		},
 		// Existing WC context
 		{
@@ -303,18 +296,41 @@ func TestLogin(t *testing.T) {
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			contextOverride: *pointer.String("arbitraryname"),
+			contextOverride: *ptr.To[string]("arbitraryname"),
+		},
+		// Re-logging in using device auth flow
+		{
+			name:  "case 29",
+			flags: &flag{},
+			mcArg: []string{"gs-codename"},
+			mockOidcConfig: &testoidc.MockOidcServerConfig{
+				ClientID:                 clientID,
+				InstallationCodename:     "codename",
+				TokenRecoverableFailures: 2,
+			},
+			startConfigCreator: func(issuer string) *clientcmdapi.Config {
+				return kubeconfig.CreateProviderTestConfig(
+					"codename",
+					"gs-codename",
+					"gs-codename-user-device",
+					issuer,
+					clientID,
+					"id-token",
+					issuer,
+					"refresh-token")
+			},
 		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			configDir, err := os.MkdirTemp("", "loginTest")
 			if err != nil {
 				t.Fatal(err)
 			}
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			if tc.contextOverride != "" {
 				cf.Context = &tc.contextOverride
 			}
@@ -322,6 +338,29 @@ func TestLogin(t *testing.T) {
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
+
+			var s *testoidc.MockOidcServer
+			var issuer string
+
+			startConfig := tc.startConfig
+			if tc.mockOidcConfig != nil {
+				s = testoidc.NewServer(*tc.mockOidcConfig)
+				err = s.Start(t)
+				if err != nil {
+					t.Fatal(err)
+				}
+				issuer = s.Issuer()
+			}
+			if startConfig == nil && tc.startConfigCreator != nil {
+				startConfig = tc.startConfigCreator(issuer)
+			}
+
+			defer func() {
+				if s != nil {
+					s.Stop()
+				}
+			}()
+
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				stdout:       new(bytes.Buffer),
@@ -329,7 +368,7 @@ func TestLogin(t *testing.T) {
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
 			k8sConfigAccess := r.commonConfig.GetConfigAccess()
-			err = clientcmd.ModifyConfig(k8sConfigAccess, *tc.startConfig, false)
+			err = clientcmd.ModifyConfig(k8sConfigAccess, *startConfig, false)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -351,19 +390,22 @@ func TestMCLoginWithInstallation(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		startConfig *clientcmdapi.Config
-		flags       *flag
-		token       string
-		skipInCI    bool
+		startConfig  *clientcmdapi.Config
+		serverConfig testoidc.MockOidcServerConfig
+		flags        *flag
+		token        string
+		skipInCI     bool
 
-		expectError *microerror.Error
+		expectError    *microerror.Error
+		expectedOutput string
 	}{
 		// empty start config
 		{
-			name:        "case 0",
-			startConfig: &clientcmdapi.Config{},
-			flags:       &flag{},
-			token:       "token",
+			name:         "case 0",
+			startConfig:  &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
+			flags:        &flag{},
+			token:        "token",
 		},
 		// filled start config
 		{
@@ -374,8 +416,9 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		},
 		// self contained file
 		{
-			name:        "case 2",
-			startConfig: createValidTestConfig("", false),
+			name:         "case 2",
+			startConfig:  createValidTestConfig("", false),
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
 			flags: &flag{
 				SelfContained: "/codename.yaml",
 			},
@@ -383,8 +426,9 @@ func TestMCLoginWithInstallation(t *testing.T) {
 		},
 		// keeping WC context
 		{
-			name:        "case 3",
-			startConfig: createValidTestConfig("-cluster", false),
+			name:         "case 3",
+			startConfig:  createValidTestConfig("-cluster", false),
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
 			flags: &flag{
 				KeepContext: true,
 			},
@@ -398,14 +442,71 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			flags: &flag{
 				ClusterAdmin:       false,
 				CallbackServerPort: 8080,
+				LoginTimeout:       60 * time.Second,
+			},
+			startConfig:  &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
+			skipInCI:     true,
+		},
+		// Fail in case the OIDC flow does not finish within time period specified in the flag
+		{
+			name: "case 5",
+			flags: &flag{
+				ClusterAdmin:       false,
+				CallbackServerPort: 8080,
+				LoginTimeout:       500 * time.Microsecond,
+			},
+			startConfig:    &clientcmdapi.Config{},
+			serverConfig:   testoidc.MockOidcServerConfig{ClientID: clientID},
+			expectError:    authResponseTimedOutError,
+			expectedOutput: "\nYour authentication flow timed out after 500µs. Please execute the same command again.\nYou can use the --login-timeout flag to configure a longer timeout interval, for example --login-timeout=0s.\n",
+		},
+		// Device auth flow
+		{
+			name: "case 6",
+			flags: &flag{
+				ClusterAdmin: false,
+				DeviceAuth:   true,
+				LoginTimeout: 60 * time.Second,
+			},
+			startConfig:    &clientcmdapi.Config{},
+			serverConfig:   testoidc.MockOidcServerConfig{ClientID: clientID},
+			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as 'user-device' on cluster 'codename'.\n\n",
+		},
+		// Device auth flow - log in successfully after several attempts
+		{
+			name: "case 7",
+			flags: &flag{
+				ClusterAdmin: false,
+				DeviceAuth:   true,
+				LoginTimeout: 60 * time.Second,
 			},
 			startConfig: &clientcmdapi.Config{},
-			skipInCI:    true,
+			serverConfig: testoidc.MockOidcServerConfig{
+				ClientID:                 clientID,
+				TokenRecoverableFailures: 1,
+			},
+			expectedOutput: "The process will continue automatically once the in-browser login is completed\nLogged in successfully as 'user-device' on cluster 'codename'.\n\n",
+		},
+		// Device auth flow error
+		{
+			name: "case 8",
+			flags: &flag{
+				ClusterAdmin: false,
+				DeviceAuth:   true,
+				LoginTimeout: 60 * time.Second,
+			},
+			startConfig: &clientcmdapi.Config{},
+			serverConfig: testoidc.MockOidcServerConfig{
+				ClientID:           clientID,
+				TokenFatalFailures: 1,
+			},
+			expectError: deviceAuthError,
 		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			if _, ok := os.LookupEnv("CI"); ok {
 				if tc.skipInCI {
 					t.Skip()
@@ -418,16 +519,19 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				t.Fatal(err)
 			}
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
 			}
+
+			out := new(bytes.Buffer)
+
 			r := runner{
 				commonConfig: commonconfig.New(cf),
 				flag:         tc.flags,
-				stdout:       new(bytes.Buffer),
-				stderr:       new(bytes.Buffer),
+				stdout:       out,
+				stderr:       out,
 				fs:           afero.NewBasePathFs(fs, configDir),
 			}
 			k8sConfigAccess := r.commonConfig.GetConfigAccess()
@@ -443,53 +547,16 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			// generate a key
-			key, err := getKey()
+			s := testoidc.NewServer(tc.serverConfig)
+			err = s.Start(t)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			// mock the OIDC issuer
-			var issuer string
-			hf := func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path == "/auth" {
-					http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
-				} else if r.URL.Path == "/token" {
-					token, err := generateAndGetToken(issuer, key)
-					if err != nil {
-						t.Fatal(err)
-					}
-					w.Header().Set("Content-Type", "text/plain")
-					_, err = io.WriteString(w, token)
-					if err != nil {
-						t.Fatal(err)
-					}
-				} else if r.URL.Path == "/keys" {
-					webKey, err := getJSONWebKey(key)
-					if err != nil {
-						t.Fatal(err)
-					}
-					w.Header().Set("Content-Type", "application/json")
-					_, err = io.WriteString(w, webKey)
-					if err != nil {
-						t.Fatal(err)
-					}
-				} else {
-					w.Header().Set("Content-Type", "application/json")
-					_, err = io.WriteString(w, strings.ReplaceAll(getIssuerData(), "ISSUER", issuer))
-					if err != nil {
-						t.Fatal(err)
-					}
-				}
-			}
-			s := httptest.NewServer(http.HandlerFunc(hf))
-			defer s.Close()
-
-			issuer = s.URL
+			defer s.Stop()
 
 			r.setLoginOptions(ctx, &[]string{"codename"})
 
-			err = r.loginWithInstallation(ctx, tc.token, CreateTestInstallationWithIssuer(issuer))
+			err = r.loginWithInstallation(ctx, tc.token, CreateTestInstallationWithIssuer(s.Issuer()))
 
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
@@ -515,6 +582,12 @@ func TestMCLoginWithInstallation(t *testing.T) {
 				}
 			}
 
+			if tc.expectedOutput != "" {
+				outStr := out.String()
+				if !strings.Contains(outStr, tc.expectedOutput) {
+					t.Fatalf("output does not contain expected string:\nvalue: %s\nexpected string: %s\n", outStr, tc.expectedOutput)
+				}
+			}
 		})
 	}
 }
@@ -528,17 +601,19 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 	)
 	clustername := "codename" + wcSuffix
 
+	clusterKey := "gs-" + clustername
+	userKey := "gs-user-" + clustername
 	config := clientcmdapi.NewConfig()
-	config.Clusters["gs-"+clustername] = &clientcmdapi.Cluster{
+	config.Clusters[clusterKey] = &clientcmdapi.Cluster{
 		Server: server,
 	}
-	config.Contexts["gs-"+clustername] = &clientcmdapi.Context{
-		Cluster:  "gs-" + clustername,
-		AuthInfo: "gs-user-" + clustername,
+	config.Contexts[clusterKey] = &clientcmdapi.Context{
+		Cluster:  clusterKey,
+		AuthInfo: userKey,
 	}
-	config.CurrentContext = "gs-" + clustername
+	config.CurrentContext = clusterKey
 	if authProvider {
-		config.AuthInfos["gs-user-"+clustername] = &clientcmdapi.AuthInfo{
+		config.AuthInfos[userKey] = &clientcmdapi.AuthInfo{
 			AuthProvider: &clientcmdapi.AuthProviderConfig{
 				Config: map[string]string{ClientID: clientid,
 					Issuer:       server,
@@ -548,7 +623,7 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 			},
 		}
 	} else {
-		config.AuthInfos["gs-user-"+clustername] = &clientcmdapi.AuthInfo{
+		config.AuthInfos[userKey] = &clientcmdapi.AuthInfo{
 			Token: token,
 		}
 	}
@@ -556,108 +631,13 @@ func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Con
 	return config
 }
 
-func generateAndGetToken(issuer string, key *rsa.PrivateKey) (string, error) {
-	idToken, err := getRawToken(issuer, key)
-	if err != nil {
-		return "", err
-	}
-	return getToken(idToken, ""), nil
-}
-
-func getToken(idToken string, refreshToken string) string {
-	params := url.Values{}
-	params.Add("id_token", idToken)
-	params.Add("access_token", "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9")
-	if refreshToken != "" {
-		params.Add("refresh_token", refreshToken)
-	}
-	return params.Encode()
-}
-
 func CreateTestInstallationWithIssuer(issuer string) *installation.Installation {
 	return &installation.Installation{
-		K8sApiURL:         "https://g8s.codename.eu-west-1.aws.gigantic.io",
+		K8sApiURL:         issuer,
 		K8sInternalApiURL: "https://g8s.codename.internal.eu-west-1.aws.gigantic.io",
 		AuthURL:           issuer,
 		Provider:          "aws",
 		Codename:          "codename",
-		CACert:            "-----BEGIN CERTIFICATE-----\nsomething\notherthing\nlastthing\n-----END CERTIFICATE-----",
+		CACert:            "",
 	}
-}
-
-func getRawToken(issuer string, key *rsa.PrivateKey) (string, error) {
-	token := jwt.New(jwt.SigningMethodRS256)
-	claims := make(jwt.MapClaims)
-	claims["iss"] = issuer
-	claims["aud"] = clientID
-	claims["exp"] = time.Now().Add(time.Hour).Unix()
-	token.Claims = claims
-	tokenString, err := token.SignedString(key)
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func getIssuerData() string {
-	return `{
-		"issuer": "ISSUER",
-		"authorization_endpoint": "ISSUER/auth",
-		"token_endpoint": "ISSUER/token",
-		"jwks_uri": "ISSUER/keys",
-		"userinfo_endpoint": "ISSUER/userinfo",
-		"response_types_supported": [
-		  "code"
-		],
-		"subject_types_supported": [
-		  "public"
-		],
-		"id_token_signing_alg_values_supported": [
-		  "RS256"
-		],
-		"scopes_supported": [
-		  "openid",
-		  "email",
-		  "groups",
-		  "profile",
-		  "offline_access"
-		],
-		"token_endpoint_auth_methods_supported": [
-		  "client_secret_basic"
-		],
-		"claims_supported": [
-		  "aud",
-		  "email",
-		  "email_verified",
-		  "exp",
-		  "iat",
-		  "iss",
-		  "locale",
-		  "name",
-		  "sub"
-		]
-	}`
-}
-
-func getKey() (*rsa.PrivateKey, error) {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, err
-	}
-	return key, nil
-}
-
-func getJSONWebKey(key *rsa.PrivateKey) (string, error) {
-	jwk := jose.JSONWebKeySet{
-		Keys: []jose.JSONWebKey{
-			{
-				Key:       &key.PublicKey,
-				Algorithm: "RS256",
-			},
-		}}
-	json, err := json.Marshal(jwk)
-	if err != nil {
-		return "", err
-	}
-	return string(json), nil
 }

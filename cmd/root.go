@@ -1,36 +1,37 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/telemetrydeck-go"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/get"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/gitops"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/login"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/selfupdate"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/update"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/validate"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/project"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/get"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/gitops"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/login"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/selfupdate"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/update"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/validate"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/project"
 )
 
 const (
-	// Hack to set base command name as 'kubectl gs', since
-	// cobra splits all the words in the 'usage' field and
-	// only prints the first word. The splitting is done by
-	// space characters (' '), and we trick it by using a
-	// NBSP character (NBSP) between the 2 words.
-	name        = "kubectl\u00a0gs"
+	name        = "kubectl-gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
 Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
 `
+	telemetrydeckAppID = "4539763B-A291-4835-B832-9BEB80CA7039"
+
+	telemetryOptOutVariable = "KUBECTL_GS_TELEMETRY_OPTOUT"
 )
 
 type Config struct {
@@ -39,6 +40,7 @@ type Config struct {
 
 	Stderr io.Writer
 	Stdout io.Writer
+	Stdin  *os.File
 }
 
 func New(config Config) (*cobra.Command, error) {
@@ -54,6 +56,9 @@ func New(config Config) (*cobra.Command, error) {
 	if config.Stdout == nil {
 		config.Stdout = os.Stdout
 	}
+	if config.Stdin == nil {
+		config.Stdin = os.Stdin
+	}
 
 	var err error
 
@@ -67,9 +72,31 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:                name,
-		Short:              description,
-		Long:               description,
+		Use:   name,
+		Short: description,
+		Long:  description,
+
+		// Called for every subcommand execution
+		// to track command usage.
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if os.Getenv(telemetryOptOutVariable) != "" {
+				return
+			}
+
+			tdClient, err := telemetrydeck.NewClient(telemetrydeckAppID)
+			if err != nil {
+				log.Printf("error creating telemetrydeck client: %s", err)
+			} else {
+				err = tdClient.SendSignal(context.Background(), "GiantSwarm.command", map[string]interface{}{
+					"appVersion": project.Version(),
+					"command":    cmd.CommandPath(),
+				})
+				if err != nil {
+					log.Printf("error sending telemetrydeck signal: %s", err)
+				}
+			}
+		},
+
 		RunE:               r.Run,
 		PersistentPostRunE: r.PersistentPostRun,
 		SilenceUsage:       true,
@@ -80,6 +107,9 @@ func New(config Config) (*cobra.Command, error) {
 				return fmt.Errorf("unknown command %q for %s", args[0], cmd.CommandPath())
 			}
 			return nil
+		},
+		Annotations: map[string]string{
+			cobra.CommandDisplayNameAnnotation: "kubectl gs",
 		},
 	}
 	f.Init(c)
@@ -142,6 +172,8 @@ func New(config Config) (*cobra.Command, error) {
 		c := gitops.Config{
 			Logger:     config.Logger,
 			FileSystem: config.FileSystem,
+
+			ConfigFlags: &f.config,
 
 			Stderr: config.Stderr,
 			Stdout: config.Stdout,

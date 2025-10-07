@@ -14,15 +14,22 @@ import (
 type CallbackFunc func(http.ResponseWriter, *http.Request) (interface{}, error)
 
 type Config struct {
+	Host              string // empty to listen on all network interfaces
 	Port              int
 	RedirectURI       string
 	ReadHeaderTimeout time.Duration
 }
 
 type CallbackServer struct {
+	host              string
 	port              int
 	redirectURI       string
 	readHeaderTimeout time.Duration
+}
+
+// FallthroughResult is an intermediate result returned by the callback function that should be skipped
+type FallthroughResult struct {
+	Method string
 }
 
 func New(config Config) (*CallbackServer, error) {
@@ -40,6 +47,7 @@ func New(config Config) (*CallbackServer, error) {
 	}
 
 	cs := &CallbackServer{
+		host:              config.Host,
 		port:              config.Port,
 		redirectURI:       config.RedirectURI,
 		readHeaderTimeout: config.ReadHeaderTimeout,
@@ -68,11 +76,15 @@ func (cs *CallbackServer) Run(ctx context.Context, callback CallbackFunc) (inter
 				return
 			}
 
+			if _, ok := result.(FallthroughResult); ok {
+				return
+			}
+
 			resultCh <- result
 		})
 
 		server = &http.Server{
-			Addr:              fmt.Sprintf(":%d", cs.port),
+			Addr:              fmt.Sprintf("%s:%d", cs.host, cs.port),
 			Handler:           mux,
 			ReadHeaderTimeout: cs.readHeaderTimeout,
 		}
@@ -125,7 +137,7 @@ func findAvailablePort() (int, error) {
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
-	defer ln.Close()
+	defer func() { _ = ln.Close() }()
 
 	port := ln.Addr().(*net.TCPAddr).Port
 

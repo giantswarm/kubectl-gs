@@ -171,13 +171,13 @@ func Test_Create(t *testing.T) {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
-				err = os.Mkdir(tmpDir+"/management-clusters", 0755)
+				err = os.Mkdir(tmpDir+"/management-clusters", 0750)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
 				tc.creator.path = fmt.Sprintf("%s/%s", tmpDir, tc.creator.path)
-				defer os.RemoveAll(tmpDir)
+				defer func() { _ = os.RemoveAll(tmpDir) }()
 			}
 
 			out := new(bytes.Buffer)
@@ -220,7 +220,7 @@ func Test_Create(t *testing.T) {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}
 
-				expected, err := os.ReadFile(c)
+				expected, err := os.ReadFile(c) //nolint:gosec
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
 				}

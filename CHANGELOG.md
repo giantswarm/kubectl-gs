@@ -7,6 +7,474 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.8.1] - 2025-10-07
+
+### Added
+
+- The container image now also supports arm64.
+
+### Removed
+
+- Remove CAPG (GCP) support from all commands
+- Remove CAPO (OpenStack) support from all commands
+
+### Fixed
+
+- Flag `keep-context` for login command is no longer ignored
+- Flag `active-only` now works as expected
+
+## [4.8.0] - 2025-05-01
+
+### Changed
+
+- Align `template cluster` command `--name` argument validation with [Cluster naming](https://docs.giantswarm.io/overview/fleet-management/cluster-management/cluster-concepts/cluster-naming/).
+
+## [4.7.1] - 2025-03-31
+
+### Changed
+
+- Add organisation namepsace to the gitops add command.
+- Update `github.com/getsops/sops/v3` from v3.9.2 to v3.9.3.
+
+### Removed
+
+- Removed any code specific to KVM installations.
+
+## [4.7.0] - 2025-01-08
+
+### Changed
+
+- Add deletion prevention label also to templated cluster's `App` and `ConfigMap` if using the `kubectl gs template --prevent-deletion` parameter
+
+## [4.6.0] - 2024-11-28
+
+### Changed
+
+- Use Phase instead of Status field for Clusters and Nodepools. Affected commands:
+  - `kubectl gs get clusters`
+  - `kubectl gs get nodepools`
+
+### Fixed
+
+- Fix getting nodepools via `kubectl gs get nodepools`.
+- Remove node classes from vsphere template used in `kubectl gs template cluster` command.
+
+## [4.5.0] - 2024-11-15
+
+### Changed
+
+- Adjust columns for `kubectl gs get releases`.
+
+## [4.4.0] - 2024-11-13
+
+### Added
+
+- Cloud Director Provider.
+
+## [4.3.1] - 2024-11-04
+
+### Fixed
+
+- Fixed unique user tracking
+- Remove debug logging regarding telemetry
+
+## [4.3.0] - 2024-10-28
+
+### Added
+
+- Basic usage tracking data is now collected for every command execution. This should help us maintain and develop the tool. Set the `KUBECTL_GS_TELEMETRY_OPTOUT` environment variable to an arbitrary value to disable this. Data is submitted to [TelemetryDeck](https://telemetrydeck.com/) in the EU. More details are available in our [docs](https://docs.giantswarm.io/vintage/use-the-api/kubectl-gs/telemetry/).
+
+## [4.2.0] - 2024-10-15
+
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPV clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-vsphere version via `--cluster-version`.
+
+## [4.1.0] - 2024-09-04
+
+### Added
+
+- Add support for unified cluster-vsphere app. With cluster-vsphere v0.61.0 and newer, default apps are deployed with cluster-vsphere, and default-apps-vsphere app is not deployed anymore.
+
+## [4.0.0] - 2024-08-22
+
+### Changed
+
+- The way to specify a release in `kubectl gs gitops add workload-cluster` has changed. The flag `--cluster-release` has been replaced by `--release`.
+
+### Removed
+
+- `kubectl gs gitops add workload-cluster`:
+  - The flag `--default-apps-user-config` has been removed
+  - The flag `--default-apps-release` has been removed
+  - The flag `--cluster-release` has been removed
+
+## [3.2.0] - 2024-08-12
+
+### Changed
+
+- Use more portable, Bash specific shebang for GitOps pre-commit script template
+- Schedule cluster upgrades for CAPI clusters.
+- Print Release information in `get cluster` command.
+
+## [3.1.0] - 2024-07-23
+
+### Added
+
+- Add `--prevent-deletion` flag to cluster template command for capv clusters
+- Helpful error messages for invalid subnet split parameters of CAPA private clusters
+
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPZ clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag, instead setting cluster-azure version via `--cluster-version`.
+
+## [3.0.0] - 2024-06-27
+
+### Removed
+
+- **BREAKING** Remove deprecated `--enable-long-name` flag (affected commands: kubectl gs template cluster/nodepool/networkpool/catalog)
+
+### Changed
+
+- **BREAKING** When templating cluster manifests for CAPA clusters with `kubectl gs template cluster` command, now we set the workload cluster release version via the `--release` flag (like for vintage AWS), instead setting cluster-aws version via `--cluster-version`.
+- Update module version to v3.
+
+## [2.57.0] - 2024-06-21
+
+### Added
+
+- Support unified cluster-azure app. With cluster-azure v0.14.0 and newer, default apps are deployed with cluster-azure and default-apps-azure app is not deployed anymore.
+- Added `--prevent-deletion` flag to cluster template command for capa, capa-eks, capz clusters
+
+## [2.56.0] - 2024-06-10
+
+### Added
+
+- Allow `kubectl gs update app` to update App CR to any version from any catalog.
+- Also add `--suspend` flag to manage Flux App reconciliation.
+
+### Changed
+
+- **BREAKING** `kubectl gs template cluster` for Cluster API provider vSphere has been adapted to work with the values schema of `cluster-vsphere` v0.52.0.
+
+## [2.55.0] - 2024-05-14
+
+### Added
+
+- Support unified cluster-aws app. With cluster-aws v0.76.0 and newer, default apps are deployed with cluster-aws and default-apps-aws app is not deployed anymore.
+
+## [2.54.0] - 2024-05-09
+
+### Changed
+
+- Default value for CAPA Node Pool `rootVolumeSizeGB` was decreased from `300` to `8`.
+
+## [2.53.0] - 2024-04-23
+
+### Changed
+
+- **BREAKING** `kubectl gs template cluster` for Cluster API provider Azure has been adapted to work with the values schema of `cluster-azure` v0.7.0.
+
+## [2.52.3] - 2024-04-23
+
+### Changed
+
+- Make error message actionable in case `kubectl gs template cluster` fails because the user did not log into, or point to, the management cluster
+- Support internal api URLs in `kubectl gs login` id token verification
+- Print a warning in case `kubectl gs login` id token verification fails but don't fail the command
+
+## [2.52.2] - 2024-03-26
+
+### Added
+
+- Add `kubectl gs get nodepools` for CAPA,CAPZ,CAPV,EKS and CAPVCD.
+- Add validation of ID token retrieved from OIDC provider during `kubectl gs login`
+
+### Changed
+
+- Errors during update checks no longer interrupt the command execution.
+- Fix authentication failure in case the browser sends multiple requests to the callback server during the `login` command execution
+
+## [2.52.1] - 2024-02-01
+
+No significant changes compared to v2.52.0. This release was made to ensure the proper distribution to all channels, which failed with the last release.
+
+## [2.52.0] - 2024-01-25
+
+### Added
+
+- Allow subnet generation customization for CAPA clusters.
+
+## [2.51.0] - 2024-01-10
+
+### Changed
+
+- Remove bastion section for generating CAPA cluster manifests.
+
+## [2.50.1] - 2023-12-13
+
+### Changed
+
+- Update values schema for generating EKS cluster.
+
+## [2.50.0] - 2023-12-12
+
+### Breaking changes
+
+- `kubectl gs template cluster`: Either `--name` or new `--generated-name` parameter is now required for CAPI cluster names. We kept the CLI backward-compatible for vintage, so if none of these parameters is specified, the old default of generating a random name still applies and no error is thrown.
+
+## [2.49.1] - 2023-12-06
+
+## [2.49.0] - 2023-12-05
+
+### Changed
+
+- **BREAKING** All values of cluster userconfig for `CAPA` are moving under `global`.
+
+## [2.48.1] - 2023-11-30
+
+### Changed
+
+- Changed the length of randomly-generated cluster names to 10
+
+## [2.48.0] - 2023-11-29
+
+### Added
+
+- Add support for device authentication flow in the `login` command and a new `--device-auth` flag to activate it.
+
+### Fixed
+
+- Fix storage of separate kubeconfig file (`--self-contained`) for EKS workload clusters
+
+## [2.47.1] - 2023-11-15
+
+### Changed
+
+- Increase the cluster name length to 20 characters.
+- Change how `login` works to use our DNS record for the k8s API when using non-vintage providers, rather than the value found in the CAPI CRs.
+- Defaults for `cluster template --provider vsphere` since it was migrated to flatcar os.
+
+## [2.47.0] - 2023-11-13
+
+### Changed
+
+- Change default volume Docker size to 10Gb on AWS vintage NodePools.
+
+## [2.46.0] - 2023-11-08
+
+### Added
+
+- Add CAPA cluster templating parameter `--control-plane-load-balancer-ingress-allow-cidr-block` which automatically adds NAT Gateway IPs of the MC to the allowlist
+
+## [2.45.4] - 2023-11-08
+
+### Added
+
+- Added a bash script to generate self-contained kubeconfig files with client certificate for workload clusters in Vintage installations using device auth flow in Dex
+
+## [2.45.3] - 2023-10-26
+
+## [2.45.3] - 2023-10-26
+
+## [2.45.2] - 2023-10-26
+
+## [2.45.1] - 2023-10-26
+
+### Changed
+
+- Upgrade K8s dependencies ([#1149](https://github.com/giantswarm/kubectl-gs/pull/1149)).
+  - Upgrade giantswarm/k8sclient to 7.1.0.
+  - Upgrade sigs.k8s.io/cluster-api to v1.5.2.
+  - Migrate sigs.k8s.io/cluster-api-provider-aws to v2 (2.2.4).
+  - Upgrade sigs.k8s.io/cluster-api-provider-azure to v1.11.4.
+  - Upgrade sigs.k8s.io/controller-runtime to v0.16.3.
+  - Upgrade github.com/coreos/go-oidc/v3 to v3.6.0.
+  - Upgrade other dependencies.
+  - Replace capi.ClusterLabelName with capi.ClusterNameLabel.
+
+## [2.45.0] - 2023-10-25
+
+### Added
+
+- `cluster template` for up-to-date vsphere cluster app.
+
+## [2.44.0] - 2023-10-16
+
+### Changed
+
+- Make the `--organization` flag visible when templating App CR.
+
+### Fixed
+
+- `kubectl-gs login`: listen only on localhost for callbacks
+
+## [2.43.0] - 2023-10-11
+
+### Added
+
+- Support deletion prevention for `kubectl gs template app` command
+
+## [2.42.0] - 2023-10-06
+
+### Fixed
+
+- Removed `controlPlane.replicas` value for CAPA since it is not supported anymore
+
+### Removed
+
+- Removed support for private DNS mode for proxy based CAPA clusters
+
+## [2.41.1] - 2023-09-19
+
+### Changed
+
+- Change how `login` works on CAPA and `gcp` to use our DNS record for the k8s API when using these providers, rather than the value found in the CAPI CRs.
+
+## [2.41.0] - 2023-08-16
+
+### Added
+
+- Adding `opsctl login` support for EKS clusters.
+
+## [2.40.0] - 2023-08-09
+
+### Added
+
+- Add `--login-timeout` flag to control the time period of OIDC login timeout
+- Add experimental support for templating `cluster-eks` with provider `eks`.
+
+### Changed
+
+- Graceful failure of the `login` command in case workload cluster API is not known
+- Improved error message after login timeout
+- Adjusted description of the `--cluster-admin` flag in the `login` command
+
+## [2.39.0] - 2023-06-22
+
+### Breaking changes
+
+- Add minimal support for templating CAPZ clusters by command line parameters. This removes `--cluster-config` and `--default-app-config` parameters which required handcrafted YAML input. It leaves one consistent templating option for CAPI products (`kubectl gs template cluster --provider ... --other-params`).
+
+## [2.38.0] - 2023-06-14
+
+### Changed
+
+- App: Rename `nginx-ingress-controller-app` to `ingress-nginx`. ([#1077](https://github.com/giantswarm/kubectl-gs/pull/1077))
+- vSphere: Fix templating. ([#1079](https://github.com/giantswarm/kubectl-gs/pull/1079))
+
+### Fixed
+
+- Sanitize file passed as inputs data for config maps by stripping spaces from the right end of the lines.
+  - This makes the output to use proper multi-line strings for the embedded YAML content by working around a bug in `sig.k8s.io/yam@v1.3.0`
+
+## [2.37.0] - 2023-05-17
+
+### Changed
+
+- Use non-exp apiVersion for azure machine pool types in `template nodepool`.
+
+## [2.36.1] - 2023-05-17
+
+### Fixed
+
+- Setting `spec.config.configMap` in `app/<cluster-name>-default-apps` for `CAPZ` clusters.
+
+## [2.36.0] - 2023-05-04
+
+### Changed
+
+- Add support for `--proxy` and `--proxy-port` flags to `login cmd` to enable `proxy-url: socks5://localhost:9000` in the cluster section of the configuration added to kubeconfig
+  - This is only supported for `clientcert` Workload Clusters
+
+## [2.35.0] - 2023-04-17
+
+### Changed
+
+- Stop using old `v1alpha3` version when using CAPI CRDs.
+
+## [2.34.1] - 2023-03-30
+
+### Fixed
+
+- `kubectl gs template cluster` now by default creates a node pool with the name `nodepool0`, instead of `machine-pool0`, as the latter is no longer valid according to the cluster-aws schema as of v0.24.0.
+
+## [2.34.0] - 2023-03-23
+
+### Added
+
+- `cluster template` supports a generic way to template `CAPI` based clusters where all the input parameters are given as `values.yaml` from the corresponding `cluster` and `default-apps` chart.
+- CAPZ: removed unmaintained `CAPZ` implementation and switched to the generic templating implementation.
+
+### Changed
+
+- `kubectl gs template cluster` for Cluster API provider AWS has been adapted to work with the values schema of cluster-aws v0.28.0.
+
+## [2.33.0] - 2023-03-08
+
+### Added
+
+- Add workload cluster login support for `CAPZ` based clusters
+- CAPA: Add hidden flags `--aws-prefix-list-id` and `--aws-transit-gateway-id` for private clusters
+
+### Changed
+
+- CAPA: Renamed hidden parameter `--role` to `--aws-cluster-role-identity-name` and adapted manifest output to the new name `awsClusterRoleIdentityName` (see [cluster-aws](https://github.com/giantswarm/cluster-aws/pull/192) change)
+
+## [2.32.0] - 2023-02-02
+
+As part of our automatic upgrades journey, we have learnt that cluster chart should structure in such a way that allows overwriting all sections in different levels
+
+**Warning:** This results in a **breaking change** in the template output of a `capa` clusters machine pools.
+
+### Changed
+
+- Breaking: Update `capa` machine pools to template usings an object instead of arrays as of cluster-aws `v0.24.0`
+
+## [2.31.2] - 2023-02-02
+
+### Fixed
+
+- Fixed creating client certificates for workload clusters in `capvcd` installations.
+
+## [2.31.1] - 2023-01-19
+
+### Changed
+
+- Updated CAPA template output to support new subnet layout as of cluster-aws v0.21.0
+- Change default folder for cluster base templates generated by `gitops add base` from `bases/clusters/<PROVIDER>` to `bases/clusters/<PROVIDER>/template`
+
+### Added
+
+- Add default machine pool name for `gitops add base` generated templates to `capa` and `gcp` (CAPG) providers with value: `machine-pool0`
+
+## [2.31.0] - 2023-01-18
+
+### Changed
+
+- Adjusted communication with Dex in the `login` command to provide an option to choose from multiple connectors
+- Modified detection of installation providers - downloading the provider information from Athena with a fallback to the old detection from API URLs
+- Added a new provider - `cloud-director`
+
+### Added
+
+- Introduced a new `--connector-id` flag in the `login` command to specify a Dex connector to use and skip the selection step
+- Ensured that ID tokens needed for OIDC authentication are renewed only when they expire
+
+## [2.30.0] - 2023-01-12
+
+### Added
+
+- Add flags `--cluster-type`, `--https-proxy`, `--http-proxy`, `--no-proxy`, `--api-mode`, `--dns-mode`, `--vpc-mode` and `--topol
+- ogy-mode` to `template cluster` that specify `capa` as provider.
+- Add `gitops add base` command to generate CAP[A,G,O] bases. The values for `--provider` flag is compatible with the `template cluster` command (A: capa, G: gcp, O: openstack).
+
+## [2.29.5] - 2022-12-20
+
+### Changed
+
+- Extended detection of providers in the login command to take the provider value primarily from Athena with fallback to the original way of inspecting the API URL
+
 ## [2.29.4] - 2022-12-15
 
 ### Fixed
@@ -1145,7 +1613,72 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
+<<<<<<< HEAD
 [Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...HEAD
+=======
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...HEAD
+[4.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...v4.8.1
+[4.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...v4.8.0
+[4.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...v4.7.1
+[4.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...v4.7.0
+[4.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.5.0...v4.6.0
+[4.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.4.0...v4.5.0
+[4.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.1...v4.4.0
+[4.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.3.0...v4.3.1
+[4.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.2.0...v4.3.0
+[4.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.1.0...v4.2.0
+[4.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.0.0...v4.1.0
+[4.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.2.0...v4.0.0
+[3.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.1.0...v3.2.0
+[3.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.57.0...v3.0.0
+[2.57.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.56.0...v2.57.0
+[2.56.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.55.0...v2.56.0
+[2.55.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.54.0...v2.55.0
+[2.54.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.53.0...v2.54.0
+[2.53.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.3...v2.53.0
+[2.52.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.2...v2.52.3
+[2.52.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.1...v2.52.2
+[2.52.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.52.0...v2.52.1
+[2.52.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.51.0...v2.52.0
+[2.51.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.1...v2.51.0
+[2.50.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.50.0...v2.50.1
+[2.50.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.1...v2.50.0
+[2.49.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.49.0...v2.49.1
+[2.49.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.1...v2.49.0
+[2.48.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.48.0...v2.48.1
+[2.48.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.1...v2.48.0
+[2.47.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.47.0...v2.47.1
+[2.47.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.46.0...v2.47.0
+[2.46.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.4...v2.46.0
+[2.45.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.4
+[2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.3...v2.45.3
+[2.45.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.2...v2.45.3
+[2.45.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.1...v2.45.2
+[2.45.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.45.0...v2.45.1
+[2.45.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.44.0...v2.45.0
+[2.44.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.43.0...v2.44.0
+[2.43.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.42.0...v2.43.0
+[2.42.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.1...v2.42.0
+[2.41.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.41.0...v2.41.1
+[2.41.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.40.0...v2.41.0
+[2.40.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.39.0...v2.40.0
+[2.39.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.38.0...v2.39.0
+[2.38.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.37.0...v2.38.0
+[2.37.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.1...v2.37.0
+[2.36.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.36.0...v2.36.1
+[2.36.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.35.0...v2.36.0
+[2.35.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.1...v2.35.0
+[2.34.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.34.0...v2.34.1
+[2.34.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.33.0...v2.34.0
+[2.33.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.32.0...v2.33.0
+[2.32.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.2...v2.32.0
+[2.31.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.1...v2.31.2
+[2.31.1]: https://github.com/giantswarm/kubectl-gs/compare/v2.31.0...v2.31.1
+[2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
+[2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0
+[2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
+>>>>>>> 6db3ec168ee4518aa472b58f232bcbb60e4490e8
 [2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
 [2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
 [2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2

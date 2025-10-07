@@ -24,6 +24,10 @@ func New(provider string) *Service {
 	return s
 }
 
+func (s *Service) Provider() string {
+	return s.provider
+}
+
 // Supports checks if a certain feature is supported or not on a given
 // workload cluster release version.
 func (s *Service) Supports(featureName string, releaseVersion string) bool {

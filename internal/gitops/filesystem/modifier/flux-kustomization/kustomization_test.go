@@ -155,8 +155,7 @@ spec:
   path: ./management-clusters/demomc
   postBuild:
     substitute:
-      cluster_release: 1.0.0
-      default_apps_release: 1.0.0
+      release: 1.0.0
   prune: true
   serviceAccountName: automation
   sourceRef:
@@ -181,8 +180,7 @@ spec:
 `),
 			modifier: KustomizationModifier{
 				PostBuildEnvs: map[string]string{
-					"cluster_release":      "1.0.0",
-					"default_apps_release": "1.0.0",
+					"release": "1.0.0",
 				},
 			},
 		},

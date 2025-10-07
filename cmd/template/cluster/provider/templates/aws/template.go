@@ -11,7 +11,7 @@ var clusterEKS string
 var awsManagedControlPlane string
 
 //go:embed aws_cluster_role_identity.yaml.tmpl
-var awsClusterRoleIdentity string
+var awsClusterRoleIdentityName string
 
 type Template struct {
 	Name string
@@ -25,6 +25,6 @@ func GetEKSTemplates() []Template {
 	return []Template{
 		{Name: "cluster_eks.yaml.tmpl", Data: clusterEKS},
 		{Name: "aws_managed_control_plane.yaml.tmpl", Data: awsManagedControlPlane},
-		{Name: "aws_cluster_role_identity.yaml.tmpl", Data: awsClusterRoleIdentity},
+		{Name: "aws_cluster_role_identity.yaml.tmpl", Data: awsClusterRoleIdentityName},
 	}
 }

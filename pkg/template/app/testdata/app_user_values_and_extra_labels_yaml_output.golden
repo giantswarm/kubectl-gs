@@ -1,0 +1,18 @@
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    giantswarm.io/prevent-deletion: "true"
+  name: ingress-nginx
+  namespace: eggs2
+spec:
+  catalog: giantswarm
+  kubeConfig:
+    inCluster: false
+  name: ingress-nginx
+  namespace: kube-system
+  userConfig:
+    configMap:
+      name: ingress-nginx-user-values
+      namespace: eggs2
+  version: 3.0.0

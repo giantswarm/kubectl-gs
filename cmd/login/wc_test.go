@@ -7,35 +7,38 @@ import (
 	"crypto/x509"
 	"fmt"
 	"math/big"
+	"net/url"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	v1 "k8s.io/api/authorization/v1"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	securityv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/release-operator/v3/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	//nolint:staticcheck
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/internal/label"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/test/kubeclient"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/label"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/test/kubeclient"
+	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
 )
 
 func TestWCClientCert(t *testing.T) {
@@ -43,6 +46,8 @@ func TestWCClientCert(t *testing.T) {
 		name                 string
 		flags                *flag
 		provider             string
+		controlPlaneEndpoint string
+		creationTimestamp    time.Time
 		capi                 bool
 		clustersInNamespaces map[string]string
 		isAdmin              bool
@@ -53,6 +58,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 0",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -64,6 +70,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 1",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "anothercluster",
 				WCCertTTL: "8h",
@@ -76,6 +83,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 2",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:        "cluster",
 				WCCertTTL:     "8h",
@@ -95,6 +103,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 3",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:      "cluster",
 				WCCertTTL:   "8h",
@@ -114,6 +123,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 4",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:         "cluster",
 				WCCertTTL:      "8h",
@@ -126,6 +136,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 5",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization", "anothercluster": "default"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -137,6 +148,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 6",
 			clustersInNamespaces: map[string]string{"cluster": "default"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -156,6 +168,7 @@ func TestWCClientCert(t *testing.T) {
 		{
 			name:                 "case 7",
 			clustersInNamespaces: map[string]string{"cluster": "default"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:              "cluster",
 				WCCertTTL:           "8h",
@@ -171,22 +184,11 @@ func TestWCClientCert(t *testing.T) {
 				},
 			},
 		},
-		// Trying to log into a cluster on kvm
-		{
-			name:                 "case 8",
-			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
-			flags: &flag{
-				WCName:    "cluster",
-				WCCertTTL: "8h",
-			},
-			provider:    "kvm",
-			isAdmin:     true,
-			expectError: unsupportedProviderError,
-		},
 		// Trying to log into a cluster on azure
 		{
 			name:                 "case 9",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:    "cluster",
 				WCCertTTL: "8h",
@@ -194,29 +196,11 @@ func TestWCClientCert(t *testing.T) {
 			provider: "azure",
 			isAdmin:  true,
 		},
-		// Trying to log into a cluster on openstack
-		{
-			name:                 "case 10",
-			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
-			flags: &flag{
-				WCName:    "cluster",
-				WCCertTTL: "8h",
-			},
-			provider: "openstack",
-			capi:     true,
-			permittedResources: []v1.ResourceRule{
-				{
-					Verbs:         []string{"get"},
-					Resources:     []string{"organizations"},
-					APIGroups:     []string{"security.giantswarm.io/v1alpha1"},
-					ResourceNames: []string{"organization"},
-				},
-			},
-		},
 		// Logging into WC using cn prefix flag
 		{
 			name:                 "case 11",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			controlPlaneEndpoint: "https://localhost:6443",
 			flags: &flag{
 				WCName:         "cluster",
 				WCCertTTL:      "8h",
@@ -225,29 +209,42 @@ func TestWCClientCert(t *testing.T) {
 			provider: "aws",
 			isAdmin:  true,
 		},
-		// Logging into WC using cn prefix flag in capi
+		// Logging into WC with empty control plane endpoint
 		{
-			name:                 "case 12",
+			name:                 "case 13",
 			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
 			flags: &flag{
-				WCName:         "cluster",
-				WCCertTTL:      "8h",
-				WCCertCNPrefix: "some-prefix",
+				WCName:    "cluster",
+				WCCertTTL: "8h",
 			},
-			provider: "openstack",
-			capi:     true,
-			isAdmin:  true,
+			provider:    "aws",
+			isAdmin:     true,
+			expectError: clusterAPINotKnownError,
+		},
+		// Logging into newly created WC with empty control plane endpoint
+		{
+			name:                 "case 14",
+			clustersInNamespaces: map[string]string{"cluster": "org-organization"},
+			creationTimestamp:    time.Now().Add(-15 * time.Minute),
+			flags: &flag{
+				WCName:    "cluster",
+				WCCertTTL: "8h",
+			},
+			provider:    "capa",
+			capi:        true,
+			isAdmin:     true,
+			expectError: clusterAPINotReadyError,
 		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			configDir, err := os.MkdirTemp("", "loginTest")
 			if err != nil {
 				t.Fatal(err)
 			}
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(fmt.Sprintf("%s/config.yaml", configDir))
+			cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", configDir))
 			fs := afero.NewOsFs()
 			if len(tc.flags.SelfContained) > 0 {
 				tc.flags.SelfContained = configDir + tc.flags.SelfContained
@@ -285,7 +282,7 @@ func TestWCClientCert(t *testing.T) {
 					}
 				}
 				for wcName, wcNamespace := range tc.clustersInNamespaces {
-					err = client.CtrlClient().Create(ctx, getCluster(wcName, wcNamespace))
+					err = client.CtrlClient().Create(ctx, getCluster(wcName, wcNamespace, tc.controlPlaneEndpoint, tc.creationTimestamp))
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -317,7 +314,7 @@ func TestWCClientCert(t *testing.T) {
 				go createSecret(ctx, client, tc.provider)
 			}
 
-			_, _, err = r.createClusterClientCert(ctx, client, tc.provider)
+			_, _, err = r.createClusterKubeconfig(ctx, client, tc.provider)
 			if err != nil {
 				if microerror.Cause(err) != tc.expectError {
 					t.Fatalf("unexpected error: %s", err.Error())
@@ -498,7 +495,8 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster(name string, namespace string) *capi.Cluster {
+func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp time.Time) *capi.Cluster {
+	controlPlaneURL, _ := url.Parse(controlPlaneEndpoint)
 	cluster := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Cluster",
@@ -509,12 +507,26 @@ func getCluster(name string, namespace string) *capi.Cluster {
 			Namespace: namespace,
 			Labels: map[string]string{
 				label.Cluster:         name,
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.Organization:    "organization",
 				label.ReleaseVersion:  "20.0.0",
 			},
 		},
 		Spec: capi.ClusterSpec{},
+	}
+
+	if controlPlaneURL != nil {
+		port, err := strconv.ParseInt(controlPlaneURL.Port(), 10, 32)
+		if err == nil {
+			cluster.Spec.ControlPlaneEndpoint = capi.APIEndpoint{
+				Host: controlPlaneURL.Host,
+				Port: int32(port), //nolint:gosec
+			}
+		}
+	}
+
+	if !creationTimestamp.IsZero() {
+		cluster.CreationTimestamp = metav1.NewTime(creationTimestamp)
 	}
 
 	return cluster
@@ -531,7 +543,7 @@ func getAzureCluster(name string, namespace string) *capz.AzureCluster {
 			Namespace: namespace,
 			Labels: map[string]string{
 				label.Cluster:         name,
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.Organization:    "organization",
 				label.ReleaseVersion:  "20.0.0",
 			},
@@ -553,7 +565,7 @@ func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSClu
 			Namespace: namespace,
 			Labels: map[string]string{
 				label.Cluster:         name,
-				capi.ClusterLabelName: name,
+				capi.ClusterNameLabel: name,
 				label.Organization:    "organization",
 				label.ReleaseVersion:  "20.0.0",
 			},
@@ -595,14 +607,14 @@ func getSecret(name string, namespace string, data map[string][]byte) *corev1.Se
 }
 
 func getCAdata() map[string][]byte {
-	key, _ := getKey()
+	privateKey, _ := testoidc.GetKey()
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(5),
 		IsCA:         true,
 	}
-	ca, _ := x509.CreateCertificate(rand.Reader, cert, cert, &key.PublicKey, key)
+	ca, _ := x509.CreateCertificate(rand.Reader, cert, cert, &privateKey.PublicKey, privateKey)
 	return map[string][]byte{
-		"tls.key": getPrivKeyPEM(key),
+		"tls.key": getPrivKeyPEM(privateKey),
 		"tls.crt": getCertPEM(ca),
 	}
 }

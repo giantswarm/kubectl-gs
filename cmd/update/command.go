@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/update/app"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/update/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/update/app"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/update/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 const (
@@ -90,10 +90,11 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  description,
-		RunE:  r.Run,
+		Use:     name,
+		Aliases: []string{"upgrade"},
+		Short:   description,
+		Long:    description,
+		RunE:    r.Run,
 	}
 
 	f.Init(c)

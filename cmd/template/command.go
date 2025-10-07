@@ -9,13 +9,13 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/app"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/catalog"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/cluster"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/networkpool"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/nodepool"
-	"github.com/giantswarm/kubectl-gs/v2/cmd/template/organization"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/app"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/networkpool"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/nodepool"
+	"github.com/giantswarm/kubectl-gs/v5/cmd/template/organization"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 const (
@@ -149,6 +149,7 @@ func New(config Config) (*cobra.Command, error) {
 		Use:   name,
 		Short: description,
 		Long:  description,
+		Args:  cobra.NoArgs,
 		RunE:  r.Run,
 	}
 

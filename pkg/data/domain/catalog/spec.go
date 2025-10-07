@@ -38,6 +38,7 @@ type Resource interface {
 // service in tests much simpler.
 type Interface interface {
 	Get(context.Context, GetOptions) (Resource, error)
+	GetEntries(context.Context, string) (*applicationv1alpha1.AppCatalogEntryList, error)
 }
 
 func (a *Catalog) Object() runtime.Object {

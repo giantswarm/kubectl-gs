@@ -4,14 +4,15 @@ import (
 	"context"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/app"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/app"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 const (
@@ -43,7 +44,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+func (r *runner) run(ctx context.Context, _ *cobra.Command, args []string) error {
 	var err error
 
 	namespace, _, err := r.commonConfig.GetNamespace()
@@ -64,7 +65,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	labelSelector := r.flag.LabelSelector
 
-	valuesSchemaFilePath := r.flag.ValuesSchemaFile
+	valuesSchemaFilePath := filepath.Clean(r.flag.ValuesSchemaFile)
 
 	var valuesSchema string
 	if valuesSchemaFilePath != "" {

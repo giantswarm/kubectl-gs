@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
@@ -16,15 +16,14 @@ import (
 	"k8s.io/cli-runtime/pkg/printers"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 const (
-	providerAll       = "All"
-	providerAWS       = "AWS"
-	providerAzure     = "Azure"
-	providerOpenStack = "OpenStack"
-	providerVSphere   = "vSphere"
+	providerAll     = "All"
+	providerAWS     = "AWS"
+	providerAzure   = "Azure"
+	providerVSphere = "vSphere"
 )
 
 type runner struct {
@@ -148,22 +147,6 @@ var (
 			Name:        "azuremachinetemplates.infrastructure.cluster.x-k8s.io",
 			Provider:    providerAzure,
 		},
-		// Open Stack
-		{
-			DisplayName: "OpenStack Cluster",
-			Name:        "openstackclusters.infrastructure.cluster.x-k8s.io",
-			Provider:    providerOpenStack,
-		},
-		{
-			DisplayName: "OpenStack Machine",
-			Name:        "openstackmachines.infrastructure.cluster.x-k8s.io",
-			Provider:    providerOpenStack,
-		},
-		{
-			DisplayName: "OpenStack Machine Template",
-			Name:        "openstackmachinetemplates.infrastructure.cluster.x-k8s.io",
-			Provider:    providerOpenStack,
-		},
 		// vSphere
 		{
 			DisplayName: "vSphere Cluster",
@@ -222,12 +205,6 @@ var (
 			LabelSelector: "app.kubernetes.io/name=cluster-api-provider-azure",
 			ContainerName: "manager",
 			Provider:      providerAzure,
-		},
-		{
-			DisplayName:   "OpenStack Provider",
-			LabelSelector: "cluster.x-k8s.io/provider=infrastructure-openstack,control-plane=capo-controller-manager",
-			ContainerName: "manager",
-			Provider:      providerOpenStack,
 		},
 		{
 			DisplayName:   "vSphere Provider",

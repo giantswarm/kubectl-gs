@@ -10,9 +10,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/project"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/selfupdate"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/project"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/selfupdate"
 )
 
 type runner struct {
@@ -71,8 +71,7 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 	}
 
 	if r.flag.disableVersionCheck {
-		// User wants to risk their life and use an older version.
-		// Not my problem anymore.
+		// User disabled the update check.
 		return nil
 	}
 
@@ -99,15 +98,16 @@ func (r *runner) persistentPostRun(ctx context.Context, cmd *cobra.Command, args
 	latestVersion, err := updaterService.GetLatest()
 	if selfupdate.IsHasNewVersion(err) {
 		if key.IsTTY() {
-			fmt.Fprintf(r.stderr, "\n")
+			_, _ = fmt.Fprintf(r.stderr, "\n")
 		}
 
 		_, _ = color.New(color.Bold, color.FgYellow).Fprintf(r.stderr, "You are running an outdated version of %s. The latest version is %s.\n", project.Name(), latestVersion)
-		fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate\".")
+		_, _ = fmt.Fprintln(r.stderr, "Please update by running \"kubectl gs selfupdate\".")
 
 		return nil
 	} else if err != nil {
-		return microerror.Mask(err)
+		// Print, but do no quit. We don't want to get into the way of the user.
+		_, _ = fmt.Fprintf(r.stderr, "Error while checking for a new version of %s: %s\n\n", project.Name(), microerror.Mask(err))
 	}
 
 	return nil

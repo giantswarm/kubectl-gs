@@ -5,7 +5,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/encryption"
 )
 
 type StructureConfig struct {
@@ -23,11 +23,13 @@ type StructureConfig struct {
 	AppVersion             string
 	AppVersionRepository   string
 
-	ClusterBase           string
-	ClusterRelease        string
-	ClusterUserConfig     string
-	DefaultAppsRelease    string
-	DefaultAppsUserConfig string
+	Provider             string
+	ClusterBaseTemplates ClusterBaseTemplates
+
+	ClusterBase       string
+	Release           string
+	ClusterUserConfig string
+	InCluster         string
 
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
@@ -37,6 +39,16 @@ type StructureConfig struct {
 	RepositoryName    string
 	SkipMAPI          bool
 	WorkloadCluster   string
+
+	Region string
+
+	// Azure only
+	AzureSubscriptionID string
+}
+
+type ClusterBaseTemplates struct {
+	ClusterAppCr  string
+	ClusterValues string
 }
 
 type Template struct {

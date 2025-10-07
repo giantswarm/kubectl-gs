@@ -52,6 +52,7 @@ func (c *cache) Persist(cacheDir string) error {
 func (c *cache) Restore(fromPath string) error {
 	in := filepath.Join(fromPath, cacheFileName)
 
+	in = filepath.Clean(in)
 	serialized, err := os.ReadFile(in)
 	if err != nil {
 		return microerror.Mask(err)

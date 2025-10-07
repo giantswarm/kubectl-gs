@@ -13,9 +13,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	catalogdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 type runner struct {
@@ -95,7 +95,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		catalogResource, err = r.service.Get(ctx, options)
 		if catalogdata.IsNotFound(err) {
-			return microerror.Maskf(notFoundError, fmt.Sprintf("A catalog '%s/%s' cannot be found.\n", options.Namespace, options.Name))
+			return microerror.Maskf(notFoundError, "A catalog '%s/%s' cannot be found.\n", options.Namespace, options.Name)
 		} else if catalogdata.IsNoMatch(err) {
 			r.printNoMatchOutput()
 			return nil

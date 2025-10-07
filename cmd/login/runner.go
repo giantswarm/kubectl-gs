@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
 )
 
 type runner struct {
@@ -29,13 +29,13 @@ type runner struct {
 }
 
 type LoginOptions struct {
-	isWCClientCert            bool
-	selfContained             bool
-	selfContainedClientCert   bool
-	switchToContext           bool
-	switchToClientCertContext bool
-	originContext             string
-	contextOverride           string
+	selfContained     bool
+	selfContainedWC   bool // used only if both MC and WC are specified on command line
+	isWC              bool // used only if both MC and WC are specified on command line
+	switchToContext   bool
+	switchToWCContext bool // used only if both MC and WC are specified on command line
+	originContext     string
+	contextOverride   string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -69,7 +69,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		foundContext, err := r.findContext(ctx, installationIdentifier)
 		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
 			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
-			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+			_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
 			foundContext, err = r.findContext(ctx, clientCertContext)
 		}
 		if err != nil {
@@ -87,7 +87,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		foundContext, err := r.findContext(ctx, installationIdentifier)
 		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
 			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
-			fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+			_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
 			foundContext, err = r.findContext(ctx, clientCertContext)
 		}
 		if err != nil {
@@ -100,9 +100,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 	}
 
-	// Clientcert creation if desired
-	if r.loginOptions.isWCClientCert {
-		return r.handleWCClientCert(ctx)
+	// used only if both MC and WC are specified on command line
+	if r.loginOptions.isWC {
+		err := r.handleWCKubeconfig(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
@@ -123,7 +126,7 @@ func (r *runner) tryToGetCurrentContexts(ctx context.Context) (string, string, e
 func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	originContext, contextOverride, err := r.tryToGetCurrentContexts(ctx)
 	if err != nil {
-		fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
+		_, _ = fmt.Fprintln(r.stdout, color.YellowString("Failed trying to determine current context. %s", err))
 	}
 
 	hasWCNameFlag := r.flag.WCName != ""
@@ -131,19 +134,19 @@ func (r *runner) setLoginOptions(ctx context.Context, args *[]string) {
 	hasContextOverride := contextOverride != ""
 
 	// indicates whether it is desired to update current context in the kubeconfig file
-	shouldSwitchContextInConfig := !hasContextOverride && (hasWCNameFlag || !(hasSelfContainedFlag || r.flag.KeepContext))
+	shouldSwitchContextInConfig := !hasContextOverride && (hasWCNameFlag || (!hasSelfContainedFlag && !r.flag.KeepContext))
 
 	// indicates whether it is desired to update current context in the kubeconfig file to the wc client context
-	shouldSwitchToWCContextInConfig := hasWCNameFlag && !(hasSelfContainedFlag || r.flag.KeepContext)
+	shouldSwitchToWCContextInConfig := hasWCNameFlag && (!hasSelfContainedFlag && !r.flag.KeepContext)
 
 	r.loginOptions = LoginOptions{
-		originContext:             originContext,
-		contextOverride:           contextOverride,
-		isWCClientCert:            hasWCNameFlag,
-		selfContained:             hasSelfContainedFlag && !hasWCNameFlag,
-		selfContainedClientCert:   hasSelfContainedFlag && hasWCNameFlag,
-		switchToContext:           shouldSwitchContextInConfig,
-		switchToClientCertContext: shouldSwitchToWCContextInConfig,
+		originContext:     originContext,
+		contextOverride:   contextOverride,
+		isWC:              hasWCNameFlag,
+		selfContained:     hasSelfContainedFlag && !hasWCNameFlag,
+		selfContainedWC:   hasSelfContainedFlag && hasWCNameFlag,
+		switchToContext:   shouldSwitchContextInConfig,
+		switchToWCContext: shouldSwitchToWCContextInConfig,
 	}
 }
 

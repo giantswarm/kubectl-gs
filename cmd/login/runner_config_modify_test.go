@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"dario.cat/mergo"
 	"github.com/giantswarm/micrologger"
 	securityv1alpha "github.com/giantswarm/organization-operator/api/v1alpha1"
-	"github.com/imdario/mergo"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -30,10 +30,11 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-api/api/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
 )
 
 func TestKubeConfigModification(t *testing.T) {
@@ -268,6 +269,7 @@ func TestKubeConfigModification(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			configDir, err := os.MkdirTemp("", "loginTest")
 			if err != nil {
@@ -276,7 +278,7 @@ func TestKubeConfigModification(t *testing.T) {
 
 			configPath := path.Join(configDir, "config.yaml")
 			cf := genericclioptions.NewConfigFlags(true)
-			cf.KubeConfig = pointer.String(configPath)
+			cf.KubeConfig = ptr.To[string](configPath)
 			if tc.contextOverride != "" {
 				cf.Context = &tc.contextOverride
 			}
@@ -394,6 +396,8 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 		var responseData interface{}
 
 		switch r.URL.Path {
+		case "/graphql":
+			responseData = createAthenaGraphQL("", issuer)
 		case "/api":
 			responseData = apiVersions
 		case "/apis":
@@ -428,9 +432,9 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 	routeAuth := func(r *http.Request) (string, string) {
 		switch r.URL.Path {
 		case "/token":
-			return "text/plain", getToken(idToken, refreshToken)
+			return "text/plain", testoidc.GetToken(idToken, refreshToken)
 		case "/.well-known/openid-configuration":
-			return "application/json", strings.ReplaceAll(getIssuerData(), "ISSUER", issuer)
+			return "application/json", strings.ReplaceAll(testoidc.GetIssuerData(), "ISSUER", issuer)
 		}
 		return "", ""
 	}
@@ -463,7 +467,7 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 }
 
 func createCertificate() (certPem []byte, keyPem []byte, err error) {
-	key, err := getKey()
+	key, err := testoidc.GetKey()
 	if err != nil {
 		return
 	}
@@ -591,8 +595,13 @@ func createCluster(name string, namespace string) v1beta1.Cluster {
 	return v1beta1.Cluster{
 		TypeMeta:   v1.TypeMeta{Kind: "Cluster", APIVersion: "cluster.x-k8s.io/v1beta1"},
 		ObjectMeta: v1.ObjectMeta{Name: name, Namespace: namespace},
-		Spec:       v1beta1.ClusterSpec{},
-		Status:     v1beta1.ClusterStatus{},
+		Spec: v1beta1.ClusterSpec{
+			ControlPlaneEndpoint: v1beta1.APIEndpoint{
+				Host: "localhost",
+				Port: 6443,
+			},
+		},
+		Status: v1beta1.ClusterStatus{},
 	}
 }
 
@@ -610,6 +619,42 @@ func createApiVersions() v1.APIVersions {
 		Versions: []string{"v1"},
 		ServerAddressByClientCIDRs: []v1.ServerAddressByClientCIDR{
 			{ServerAddress: "127.0.0.1:8000"},
+		},
+	}
+}
+
+type athenaIdentity struct {
+	Provider string `json:"provider"`
+	Codename string `json:"codename"`
+}
+
+type athenaKubernetes struct {
+	ApiUrl  string `json:"apiUrl"`
+	AuthUrl string `json:"authUrl"`
+	CaCert  string `json:"caCert"`
+}
+
+type athenaData struct {
+	Identity   athenaIdentity   `json:"identity"`
+	Kubernetes athenaKubernetes `json:"kubernetes"`
+}
+
+type athenaContent struct {
+	Data athenaData `json:"data"`
+}
+
+func createAthenaGraphQL(codename string, url string) athenaContent {
+	return athenaContent{
+		Data: athenaData{
+			Identity: athenaIdentity{
+				Provider: "capa",
+				Codename: codename,
+			},
+			Kubernetes: athenaKubernetes{
+				ApiUrl:  url,
+				AuthUrl: url,
+				CaCert:  "-----BEGIN CERTIFICATE-----\\n\\n-----END CERTIFICATE-----",
+			},
 		},
 	}
 }

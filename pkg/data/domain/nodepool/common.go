@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
 func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error) {
@@ -38,8 +38,8 @@ func (s *Service) getByName(ctx context.Context, provider, name, namespace, clus
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
-		case key.ProviderAzure:
-			np, err = s.getByIdAzure(ctx, name, namespace, clusterName)
+		case key.ProviderDefault:
+			np, err = s.getByIdCAPI(ctx, name, namespace, clusterName)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -64,8 +64,8 @@ func (s *Service) getAll(ctx context.Context, provider, namespace, clusterID str
 				return nil, microerror.Mask(err)
 			}
 
-		case key.ProviderAzure:
-			npCollection, err = s.getAllAzure(ctx, namespace, clusterID)
+		case key.ProviderDefault:
+			npCollection, err = s.getAllCAPI(ctx, namespace, clusterID)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}

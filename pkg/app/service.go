@@ -1,15 +1,15 @@
 package app
 
 import (
-	"github.com/giantswarm/app/v6/pkg/values"
-	"github.com/giantswarm/k8sclient/v7/pkg/k8sclient"
+	"github.com/giantswarm/app/v7/pkg/values"
+	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	appdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/app"
-	catalogdata "github.com/giantswarm/kubectl-gs/v2/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/helmbinary"
+	appdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
+	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/helmbinary"
 )
 
 var _ Interface = &Service{}
@@ -22,14 +22,14 @@ type Config struct {
 
 // Service represents an instance of the App service.
 type Service struct {
-	client             client.Client
-	appDataService     appdata.Interface
-	catalogDataService catalogdata.Interface
-	helmbinaryService  helmbinary.Interface
-	valuesService      *values.Values
+	Client             client.Client
+	AppDataService     appdata.Interface
+	CatalogDataService catalogdata.Interface
+	HelmbinaryService  helmbinary.Interface
+	ValuesService      *values.Values
 
-	catalogFetchResults map[string]CatalogFetchResult
-	schemaFetchResults  map[string]SchemaFetchResult
+	CatalogFetchResults map[string]CatalogFetchResult
+	SchemaFetchResults  map[string]SchemaFetchResult
 }
 
 // New returns an app service given a certain Config.
@@ -94,13 +94,13 @@ func New(config Config) (Interface, error) {
 	}
 
 	s := &Service{
-		client:              config.Client.CtrlClient(),
-		appDataService:      appDataService,
-		catalogDataService:  catalogDataService,
-		helmbinaryService:   helmbinaryService,
-		valuesService:       valuesService,
-		catalogFetchResults: make(map[string]CatalogFetchResult),
-		schemaFetchResults:  make(map[string]SchemaFetchResult),
+		Client:              config.Client.CtrlClient(),
+		AppDataService:      appDataService,
+		CatalogDataService:  catalogDataService,
+		HelmbinaryService:   helmbinaryService,
+		ValuesService:       valuesService,
+		CatalogFetchResults: make(map[string]CatalogFetchResult),
+		SchemaFetchResults:  make(map[string]SchemaFetchResult),
 	}
 
 	return s, nil

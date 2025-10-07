@@ -8,7 +8,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/graphql"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/graphql"
 )
 
 const (
@@ -22,10 +22,11 @@ type Installation struct {
 	Provider          string
 	Codename          string
 	CACert            string
+	SourcePath        string
 }
 
-func New(ctx context.Context, fromUrl string) (*Installation, error) {
-	basePath, internalApiPath, err := GetBaseAndInternalPath(fromUrl)
+func New(ctx context.Context, fromUrl, customAthenaUrl string) (*Installation, error) {
+	_, internalApiPath, athenaUrl, err := GetBaseAndInternalPath(fromUrl)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -35,7 +36,9 @@ func New(ctx context.Context, fromUrl string) (*Installation, error) {
 		httpClient := http.DefaultClient
 		httpClient.Timeout = requestTimeout
 
-		athenaUrl := getAthenaUrl(basePath)
+		if customAthenaUrl != "" {
+			athenaUrl = customAthenaUrl
+		}
 		config := graphql.ClientImplConfig{
 			HttpClient: httpClient,
 			Url:        fmt.Sprintf("%s/graphql", athenaUrl),
@@ -59,6 +62,7 @@ func New(ctx context.Context, fromUrl string) (*Installation, error) {
 		Provider:          info.Identity.Provider,
 		Codename:          info.Identity.Codename,
 		CACert:            info.Kubernetes.CaCert,
+		SourcePath:        fromUrl,
 	}
 
 	return i, nil

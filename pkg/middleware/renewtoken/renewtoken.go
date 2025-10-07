@@ -1,13 +1,18 @@
 package renewtoken
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"strings"
+	"time"
+
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 )
 
 const (
@@ -31,6 +36,10 @@ func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware
 
 		authProvider, exists := kubeconfig.GetAuthProvider(config, config.CurrentContext)
 		if !exists {
+			return nil
+		}
+
+		if isValidIdToken(authProvider.Config["id-token"]) {
 			return nil
 		}
 
@@ -60,4 +69,36 @@ func Middleware(config genericclioptions.RESTClientGetter) middleware.Middleware
 
 		return nil
 	}
+}
+
+func isValidIdToken(idToken string) bool {
+	idTokenParts := strings.Split(idToken, ".")
+	if len(idTokenParts) != 3 {
+		return false
+	}
+
+	rawIdTokenBody, err := base64.RawStdEncoding.DecodeString(idTokenParts[1])
+	if err != nil {
+		return false
+	}
+
+	var bodyMap map[string]json.RawMessage
+	err = json.Unmarshal(rawIdTokenBody, &bodyMap)
+	if err != nil {
+		return false
+	}
+
+	var expTimestamp int64
+	err = json.Unmarshal(bodyMap["exp"], &expTimestamp)
+	if err != nil {
+		return false
+	}
+
+	if expTimestamp == 0 {
+		return false
+	}
+
+	expTime := time.Unix(expTimestamp, 0)
+
+	return expTime.After(time.Now())
 }

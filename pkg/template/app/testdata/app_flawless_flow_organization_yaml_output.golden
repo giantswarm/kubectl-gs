@@ -3,12 +3,12 @@ kind: App
 metadata:
   labels:
     giantswarm.io/cluster: eggs2
-  name: nginx-ingress-controller-app
+  name: ingress-nginx
   namespace: org-giantswarm
 spec:
   catalog: giantswarm
   kubeConfig:
     inCluster: false
-  name: nginx-ingress-controller-app
+  name: ingress-nginx
   namespace: kube-system
-  version: 1.17.0
+  version: 3.0.0

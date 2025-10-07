@@ -6,12 +6,16 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/v2/pkg/installation"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/kubeconfig"
-	"github.com/giantswarm/kubectl-gs/v2/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 )
 
 type authInfo struct {
@@ -107,6 +111,33 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	return nil
 }
 
+func VerifyIDTokenWithKubernetesAPI(idToken, apiServerURL string, caData []byte) error {
+	config := &rest.Config{
+		Host:        apiServerURL,
+		BearerToken: idToken,
+	}
+
+	if len(caData) > 0 {
+		config.TLSClientConfig = rest.TLSClientConfig{CAData: caData}
+	}
+
+	clientset, err := discovery.NewDiscoveryClientForConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to create Kubernetes discovery client: %w", err)
+	}
+	// Attempt to retrieve server version as a verification step
+	_, err = clientset.ServerVersion()
+	if err != nil {
+		// Distinguish between Unauthorized and other errors
+		if errors.IsUnauthorized(err) {
+			return fmt.Errorf("token verification failed: unauthorized")
+		}
+		return fmt.Errorf("token verification process failed: %w", err)
+	}
+	// If no error, the token is considered valid
+	return nil
+}
+
 // printMCCredentials saves the installation's CA certificate, and
 // writes the configuration for the k8s api access into a separate file.
 func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.Installation, authResult authInfo, fs afero.Fs, internalAPI bool, filePath string) error {
@@ -189,7 +220,8 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	hasNewContext := false
 	isContextAlreadySelected := config.CurrentContext == newContextName
 	authType := kubeconfig.GetAuthType(config, newContextName)
-	if authType == kubeconfig.AuthTypeAuthProvider {
+	switch authType {
+	case kubeconfig.AuthTypeAuthProvider:
 		authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
 		if !exists {
 			return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
@@ -229,7 +261,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 			authProvider.Config[RefreshToken] = rToken
 			authProvider.Config[IDToken] = idToken
 		}
-	} else if authType == kubeconfig.AuthTypeUnknown {
+	case kubeconfig.AuthTypeUnknown:
 		return microerror.Maskf(incorrectConfigurationError, "There is no authentication configuration for the '%s' context", newContextName)
 	}
 

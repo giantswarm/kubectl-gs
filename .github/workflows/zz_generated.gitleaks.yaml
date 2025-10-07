@@ -1,17 +1,14 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@5.14.0
+#    devctl
+#
+#    https://github.com/giantswarm/devctl/blob/ad0a25fbf301b2513e169ec964a8785d28f75be4/pkg/gen/input/workflows/internal/file/gitleaks.yaml.template
 #
 name: gitleaks
 
-on: [pull_request]
+on:
+  - pull_request
 
 jobs:
-  gitleaks:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: '0'
-    - name: gitleaks-action
-      uses: zricethezav/gitleaks-action@v1.6.0
+  publish:
+    uses: giantswarm/github-workflows/.github/workflows/gitleaks.yaml@main

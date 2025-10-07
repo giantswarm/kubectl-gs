@@ -10,11 +10,11 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/filesystem/creator"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/key"
-	"github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/common"
-	structure "github.com/giantswarm/kubectl-gs/v2/internal/gitops/structure/encryption"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/common"
+	structure "github.com/giantswarm/kubectl-gs/v5/internal/gitops/structure/encryption"
 )
 
 type runner struct {
@@ -109,7 +109,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	pubKeyName := key.SopsKeyName(pubKeyPrefix, config.EncryptionKeyPair.Fingerprint)
 	pubKeyPath = key.ResourcePath(pubKeyPath, pubKeyName)
 
-	fmt.Fprintf(
+	_, _ = fmt.Fprintf(
 		creatorConfig.Stdout,
 		"\nPlease run \n\ngpg --import %s/%s\n\nto load the public key into the keychain for SOPS to work.\n",
 		creatorConfig.Path,

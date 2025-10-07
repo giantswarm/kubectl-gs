@@ -9,8 +9,7 @@ spec:
   postBuild:
     substitute:
       cluster_name: demowc
-      cluster_release: 0.13.0
-      default_apps_release: 0.6.0
+      release: 0.13.0
       organization: demoorg
   prune: false
   serviceAccountName: automation
