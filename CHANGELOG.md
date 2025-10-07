@@ -21,6 +21,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - Flag `keep-context` for login command is no longer ignored
+- Flag `active-only` now works as expected
 
 ## [4.8.0] - 2025-05-01
 
