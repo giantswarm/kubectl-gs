@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.8.1] - 2025-10-07
+
 ### Added
 
 - The container image now also supports arm64.
@@ -1610,7 +1612,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...HEAD
+[4.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...v4.8.1
 [4.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...v4.8.0
 [4.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...v4.7.1
 [4.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.6.0...v4.7.0
