@@ -132,7 +132,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			privateSubnetCount := 0
 			// loop over the private subnet splits in order to generate the required amount of private subnets
 			for j := privateCidrSplitStart; j < 4 && privateSubnetCount < subnetCount; j++ {
-				ones, _ := cidrSplit[j].MaskSize()
+				ones, _ := cidrSplit[j].Mask().Size()
 
 				if config.AWS.PrivateSubnetMask < ones {
 					return fmt.Errorf("failed to split VPC CIDR %q into subnets because subsplit of private subnet %q failed: you must specify a smaller private subnet size than `/%d` i.e. larger value for --%s)", config.AWS.NetworkVPCCIDR, cidrSplit[j].CIDR(), config.AWS.PrivateSubnetMask, flags.FlagAWSPrivateSubnetMask)
@@ -163,7 +163,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				})
 
 				//always use the first split for public subnets
-				ones, _ := cidrSplit[0].MaskSize()
+				ones, _ := cidrSplit[0].Mask().Size()
 
 				//divide the current split in blocks with the size of the public subnet mask
 				availablePublicSubnets, err := cidrSplit[0].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PublicSubnetMask-ones))))
