@@ -6,7 +6,7 @@ toolchain go1.25.3
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/3th1nk/cidr v0.2.0
+	github.com/3th1nk/cidr v0.3.0
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/ProtonMail/gopenpgp/v3 v3.3.0
