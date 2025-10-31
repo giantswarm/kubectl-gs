@@ -2,7 +2,7 @@
 <!--
 DO NOT EDIT. Generated with devctl.
 This file is maintained at:
-https://github.com/giantswarm/devctl/blob/82a37c0d4bf0dd757c446693f4509ffad471f0e5/pkg/gen/input/llm/internal/file/base_llm_rules.mdc.template
+https://github.com/giantswarm/devctl/blob/7b040ba0e4e8f71d366e1bc28bfaa0edfd9bf9c0/pkg/gen/input/llm/internal/file/base_llm_rules.mdc.template
 Manual changes will be overwritten.
 -->
 ---
@@ -31,7 +31,8 @@ You are an AI assistant acting as an expert software developer and platform engi
 - Prioritize readability, maintainability, and security.
 - Write comprehensive tests and documentation.
 
-### Release Management  
+### Release Management
+
 - Follow the changelog and release guidelines from @https://github.com/giantswarm/fmt/tree/main/releases
 - Use semantic versioning and conventional commits
 
@@ -41,11 +42,13 @@ Additional language-specific rules can be found in the general style guide and i
 
 
 ### Go Development
+
 - Go code must always adhere to the Go language-specific development guidelines and patterns rules in this repository.
 
 ### Go Application Security
+
 - Ensure all Go dependencies are up to date.
 - Follow best security practices for Go applications.
 
 ---
-For detailed guidelines and examples, always refer to: **https://github.com/giantswarm/fmt/** 
+For detailed guidelines and examples, always refer to: **https://github.com/giantswarm/fmt/**
