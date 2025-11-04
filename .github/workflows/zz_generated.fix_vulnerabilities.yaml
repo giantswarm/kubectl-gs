@@ -25,3 +25,5 @@ jobs:
     secrets:
       HERALD_APP_ID: ${{ secrets.HERALD_APP_ID }}
       HERALD_APP_KEY: ${{ secrets.HERALD_APP_KEY }}
+      NANCY_USER: ${{ secrets.NANCY_USER }}
+      NANCY_TOKEN: ${{ secrets.NANCY_TOKEN }}
