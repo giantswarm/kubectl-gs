@@ -1,10 +1,3 @@
-
-<!--
-DO NOT EDIT. Generated with devctl.
-This file is maintained at:
-https://github.com/giantswarm/devctl/blob/7b040ba0e4e8f71d366e1bc28bfaa0edfd9bf9c0/pkg/gen/input/llm/internal/file/base_llm_rules.mdc.template
-Manual changes will be overwritten.
--->
 ---
 description: Instructions for AI/LLM assistants
 alwaysApply: true
@@ -27,14 +20,18 @@ You are an AI assistant acting as an expert software developer and platform engi
 ## Core Behaviors
 
 - Unless directed by the user, never use or recommend external linters, code analysis, or other tooling which isn't already recommended in Giant Swarm agent rules or style guides.
-- Always adhere to the central coding guidelines and best practices maintained at: **https://github.com/giantswarm/fmt/**.
+- Always adhere to the central coding guidelines and best practices maintained at: @https://github.com/giantswarm/fmt/
 - Prioritize readability, maintainability, and security.
 - Write comprehensive tests and documentation.
+- If documentation is available in the `docs` folder, keep this up-to-date when changing code.
+- Maintain the main README.md file for correctness.
+- If a changelog is available as CHANGELOG.md, add your changes to it.
 
-### Release Management
+## Release Management
 
 - Follow the changelog and release guidelines from @https://github.com/giantswarm/fmt/tree/main/releases
 - Use semantic versioning and conventional commits
+
 
 ## Language-Specific Guidelines
 
@@ -50,5 +47,15 @@ Additional language-specific rules can be found in the general style guide and i
 - Ensure all Go dependencies are up to date.
 - Follow best security practices for Go applications.
 
+
 ---
-For detailed guidelines and examples, always refer to: **https://github.com/giantswarm/fmt/**
+
+For detailed guidelines and examples, always refer to: @https://github.com/giantswarm/fmt/
+
+
+<!--
+DO NOT EDIT. Generated with devctl.
+This file is maintained at:
+https://github.com/giantswarm/devctl/blob/3bbd5cb47ff855f0b9c88881fbdcaa907d85647c/pkg/gen/input/llm/internal/file/base_llm_rules.mdc.template
+Manual changes will be overwritten.
+-->
