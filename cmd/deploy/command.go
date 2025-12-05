@@ -38,6 +38,24 @@ deployments.`
   # Show status of all resources on the cluster
   kubectl gs deploy -s
 
+  # List all apps in the default namespace
+  kubectl gs deploy -l apps
+
+  # List all apps in a specific namespace
+  kubectl gs deploy -l apps -n my-namespace
+
+  # List all versions for a specific app
+  kubectl gs deploy -l versions my-app
+
+  # List all config repositories
+  kubectl gs deploy -l configs
+
+  # List all config repositories in a specific namespace
+  kubectl gs deploy -t config -l configs -n flux-giantswarm
+
+  # List all available catalogs
+  kubectl gs deploy -l catalogs
+
   # Deploy to a specific namespace
   kubectl gs deploy -d my-app@1.0.0 -n my-namespace
 

@@ -16,6 +16,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
 )
 
 type runner struct {
@@ -65,6 +66,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return r.handleUndeploy(ctx, args)
 	case "status":
 		return r.handleStatus(ctx)
+	case "list":
+		return r.handleList(ctx, args)
 	default:
 		return fmt.Errorf("%w: unknown action: %s", ErrInvalidFlag, action)
 	}
@@ -629,4 +632,173 @@ func (r *runner) checkGitRepositories(ctx context.Context, ctrlClient client.Cli
 	}
 
 	return suspendedRepos, nil
+}
+
+func (r *runner) handleList(ctx context.Context, args []string) error {
+	k8sClient, err := r.commonConfig.GetClient(r.logger)
+	if err != nil {
+		return err
+	}
+
+	ctrlClient := k8sClient.CtrlClient()
+
+	switch r.flag.List {
+	case "apps":
+		return r.listApps(ctx, ctrlClient)
+	case "versions":
+		if len(args) == 0 {
+			return fmt.Errorf("%w: app name is required for listing versions", ErrInvalidArgument)
+		}
+		return r.listVersions(ctx, ctrlClient, args[0])
+	case "configs":
+		return r.listConfigs(ctx, ctrlClient)
+	case "catalogs":
+		return r.listCatalogs(ctx, ctrlClient)
+	default:
+		return fmt.Errorf("%w: unknown list type: %s", ErrInvalidFlag, r.flag.List)
+	}
+}
+
+func (r *runner) listApps(ctx context.Context, ctrlClient client.Client) error {
+	// Initialize the app service
+	err := r.getAppService()
+	if err != nil {
+		return err
+	}
+
+	var apps *applicationv1alpha1.AppList
+	err = RunWithSpinner("Listing apps", func() error {
+		var listErr error
+		apps, listErr = r.appService.ListApps(ctx, r.flag.Namespace)
+		return listErr
+	})
+
+	if app.IsNoResources(err) {
+		fmt.Fprintf(r.stdout, "No apps found in namespace %s\n", r.flag.Namespace)
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	output := ListAppsOutput(apps, r.flag.Namespace)
+	fmt.Fprint(r.stdout, output)
+	return nil
+}
+
+func (r *runner) listVersions(ctx context.Context, ctrlClient client.Client, appName string) error {
+	// Initialize the app service
+	err := r.getAppService()
+	if err != nil {
+		return err
+	}
+
+	var entries *applicationv1alpha1.AppCatalogEntryList
+	var deployedVersion string
+	var deployedCatalog string
+	err = RunWithSpinner(fmt.Sprintf("Listing versions for %s", appName), func() error {
+		// Get catalog data service
+		catalogDataService, serviceErr := r.getCatalogService(ctrlClient)
+		if serviceErr != nil {
+			return serviceErr
+		}
+
+		// List all entries for this app name
+		selector := fmt.Sprintf("app.kubernetes.io/name=%s", appName)
+		var listErr error
+		entries, listErr = catalogDataService.GetEntries(ctx, selector)
+		if listErr != nil {
+			return listErr
+		}
+
+		// Try to get the currently deployed app version and catalog
+		existingApp := &applicationv1alpha1.App{}
+		getErr := ctrlClient.Get(ctx, client.ObjectKey{
+			Name:      appName,
+			Namespace: r.flag.Namespace,
+		}, existingApp)
+		if getErr == nil {
+			deployedVersion = existingApp.Spec.Version
+			deployedCatalog = existingApp.Spec.Catalog
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to list versions for app %s: %w", appName, err)
+	}
+
+	output := ListVersionsOutput(appName, entries, deployedVersion, deployedCatalog)
+	fmt.Fprint(r.stdout, output)
+	return nil
+}
+
+func (r *runner) listConfigs(ctx context.Context, ctrlClient client.Client) error {
+	var gitRepoList *unstructured.UnstructuredList
+
+	err := RunWithSpinner("Listing config repositories", func() error {
+		gvk := schema.GroupVersionKind{
+			Group:   "source.toolkit.fluxcd.io",
+			Version: "v1",
+			Kind:    "GitRepository",
+		}
+
+		gitRepoList = &unstructured.UnstructuredList{}
+		gitRepoList.SetGroupVersionKind(gvk)
+
+		listOptions := &client.ListOptions{
+			Namespace: r.flag.Namespace,
+		}
+
+		return ctrlClient.List(ctx, gitRepoList, listOptions)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if len(gitRepoList.Items) == 0 {
+		fmt.Fprintf(r.stdout, "No config repositories found in namespace %s\n", r.flag.Namespace)
+		return nil
+	}
+
+	output := ListConfigsOutput(gitRepoList, r.flag.Namespace)
+	fmt.Fprint(r.stdout, output)
+	return nil
+}
+
+func (r *runner) listCatalogs(ctx context.Context, ctrlClient client.Client) error {
+	var catalogs *applicationv1alpha1.CatalogList
+
+	err := RunWithSpinner("Listing catalogs", func() error {
+		catalogs = &applicationv1alpha1.CatalogList{}
+		// List catalogs in both default and giantswarm namespaces
+		return ctrlClient.List(ctx, catalogs, &client.ListOptions{})
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if len(catalogs.Items) == 0 {
+		fmt.Fprintf(r.stdout, "No catalogs found\n")
+		return nil
+	}
+
+	output := ListCatalogsOutput(catalogs)
+	fmt.Fprint(r.stdout, output)
+	return nil
+}
+
+func (r *runner) getCatalogService(ctrlClient client.Client) (catalog.Interface, error) {
+	// Create a new catalog data service instance
+	catalogConfig := catalog.Config{
+		Client: ctrlClient,
+	}
+	catalogDataService, err := catalog.New(catalogConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return catalogDataService, nil
 }

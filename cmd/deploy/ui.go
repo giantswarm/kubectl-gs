@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/charmbracelet/lipgloss"
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -264,35 +264,69 @@ func ListAppsOutput(apps *applicationv1alpha1.AppList, namespace string) string 
 		return sortedApps[i].Name < sortedApps[j].Name
 	})
 
-	// Display apps
+	// Calculate max widths for columns
+	maxNameLen := 4    // "NAME"
+	maxVersionLen := 7 // "VERSION"
+	maxCatalogLen := 7 // "CATALOG"
+	maxStatusLen := 6  // "STATUS"
+
+	for _, app := range sortedApps {
+		if len(app.Name) > maxNameLen {
+			maxNameLen = len(app.Name)
+		}
+		if len(app.Spec.Version) > maxVersionLen {
+			maxVersionLen = len(app.Spec.Version)
+		}
+		if len(app.Spec.Catalog) > maxCatalogLen {
+			maxCatalogLen = len(app.Spec.Catalog)
+		}
+		status := getAppStatus(&app)
+		if len(status) > maxStatusLen {
+			maxStatusLen = len(status)
+		}
+	}
+
+	// Table header
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+	header := fmt.Sprintf("%-*s  %-*s  %-*s  %-*s",
+		maxNameLen, "NAME",
+		maxVersionLen, "VERSION",
+		maxCatalogLen, "CATALOG",
+		maxStatusLen, "STATUS",
+	)
+	b.WriteString(headerStyle.Render(header) + "\n")
+
+	// Separator line
+	b.WriteString(mutedStyle.Render(strings.Repeat("─", maxNameLen+maxVersionLen+maxCatalogLen+maxStatusLen+6)) + "\n")
+
+	// Display apps in table format
 	for _, app := range sortedApps {
 		version := app.Spec.Version
 		if version == "" {
-			version = mutedStyle.Render("(no version)")
+			version = "-"
 		}
 		catalog := app.Spec.Catalog
 		if catalog == "" {
-			catalog = mutedStyle.Render("(no catalog)")
+			catalog = "-"
 		}
+		status := getAppStatus(&app)
+		statusColored := colorizeStatus(status)
 
-		appInfo := fmt.Sprintf(
-			"%s %s\n  %s %s\n  %s %s",
-			infoStyle.Render("•"),
-			successStyle.Render(app.Name),
-			mutedStyle.Render("Version:"),
-			version,
-			mutedStyle.Render("Catalog:"),
-			catalog,
+		row := fmt.Sprintf("%-*s  %-*s  %-*s  %s",
+			maxNameLen, app.Name,
+			maxVersionLen, version,
+			maxCatalogLen, catalog,
+			statusColored,
 		)
-		b.WriteString(appInfo + "\n\n")
+		b.WriteString(row + "\n")
 	}
 
-	b.WriteString(mutedStyle.Render(fmt.Sprintf("Total: %d apps", len(apps.Items))) + "\n")
+	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d apps", len(apps.Items))) + "\n")
 	return b.String()
 }
 
 // ListVersionsOutput renders a formatted list of application versions
-func ListVersionsOutput(appName string, entries *applicationv1alpha1.AppCatalogEntryList) string {
+func ListVersionsOutput(appName string, entries *applicationv1alpha1.AppCatalogEntryList, deployedVersion string, deployedCatalog string) string {
 	var b strings.Builder
 
 	// Header
@@ -303,10 +337,15 @@ func ListVersionsOutput(appName string, entries *applicationv1alpha1.AppCatalogE
 		return b.String()
 	}
 
-	// Sort versions (most recent first, assuming semver)
+	// Sort versions first by catalog (alphabetically), then by version (most recent first)
 	sortedEntries := make([]applicationv1alpha1.AppCatalogEntry, len(entries.Items))
 	copy(sortedEntries, entries.Items)
 	sort.Slice(sortedEntries, func(i, j int) bool {
+		// First sort by catalog name (ascending)
+		if sortedEntries[i].Spec.Catalog.Name != sortedEntries[j].Spec.Catalog.Name {
+			return sortedEntries[i].Spec.Catalog.Name < sortedEntries[j].Spec.Catalog.Name
+		}
+		// Then sort by version (descending)
 		return sortedEntries[i].Spec.Version > sortedEntries[j].Spec.Version
 	})
 
@@ -321,6 +360,12 @@ func ListVersionsOutput(appName string, entries *applicationv1alpha1.AppCatalogE
 		// Mark the latest version
 		if i == 0 {
 			versionInfo += " " + successStyle.Render("(latest)")
+		}
+
+		// Mark the deployed version (match both version and catalog)
+		if deployedVersion != "" && entry.Spec.Version == deployedVersion &&
+			deployedCatalog != "" && entry.Spec.Catalog.Name == deployedCatalog {
+			versionInfo += " " + warningStyle.Render("(deployed)")
 		}
 
 		// Add catalog info if available
@@ -357,28 +402,210 @@ func ListConfigsOutput(gitRepoList *unstructured.UnstructuredList, namespace str
 		return nameI < nameJ
 	})
 
-	// Display repos
+	// Calculate max widths for columns
+	maxNameLen := 4   // "NAME"
+	maxBranchLen := 6 // "BRANCH"
+	maxURLLen := 3    // "URL"
+	maxStatusLen := 6 // "STATUS"
+
+	for _, repo := range sortedRepos {
+		name, _, _ := unstructured.NestedString(repo.Object, "metadata", "name")
+		url, _, _ := unstructured.NestedString(repo.Object, "spec", "url")
+		branch, _, _ := unstructured.NestedString(repo.Object, "spec", "ref", "branch")
+
+		if len(name) > maxNameLen {
+			maxNameLen = len(name)
+		}
+		if len(branch) > maxBranchLen {
+			maxBranchLen = len(branch)
+		}
+		if len(url) > maxURLLen {
+			maxURLLen = len(url)
+		}
+		status := getGitRepoStatus(&repo)
+		if len(status) > maxStatusLen {
+			maxStatusLen = len(status)
+		}
+	}
+
+	// Table header
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+	header := fmt.Sprintf("%-*s  %-*s  %-*s  %-*s",
+		maxNameLen, "NAME",
+		maxBranchLen, "BRANCH",
+		maxURLLen, "URL",
+		maxStatusLen, "STATUS",
+	)
+	b.WriteString(headerStyle.Render(header) + "\n")
+
+	// Separator line
+	b.WriteString(mutedStyle.Render(strings.Repeat("─", maxNameLen+maxBranchLen+maxURLLen+maxStatusLen+6)) + "\n")
+
+	// Display repos in table format
 	for _, repo := range sortedRepos {
 		name, _, _ := unstructured.NestedString(repo.Object, "metadata", "name")
 		url, _, _ := unstructured.NestedString(repo.Object, "spec", "url")
 		branch, _, _ := unstructured.NestedString(repo.Object, "spec", "ref", "branch")
 
 		if branch == "" {
-			branch = mutedStyle.Render("(no branch)")
+			branch = "-"
 		}
 
-		repoInfo := fmt.Sprintf(
-			"%s %s\n  %s %s\n  %s %s",
-			infoStyle.Render("•"),
-			successStyle.Render(name),
-			mutedStyle.Render("URL:"),
-			url,
-			mutedStyle.Render("Branch:"),
-			branch,
+		status := getGitRepoStatus(&repo)
+		statusColored := colorizeStatus(status)
+
+		row := fmt.Sprintf("%-*s  %-*s  %-*s  %s",
+			maxNameLen, name,
+			maxBranchLen, branch,
+			maxURLLen, url,
+			statusColored,
 		)
-		b.WriteString(repoInfo + "\n\n")
+		b.WriteString(row + "\n")
 	}
 
-	b.WriteString(mutedStyle.Render(fmt.Sprintf("Total: %d repositories", len(gitRepoList.Items))) + "\n")
+	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d repositories", len(gitRepoList.Items))) + "\n")
 	return b.String()
+}
+
+// ListCatalogsOutput renders a formatted list of catalogs
+func ListCatalogsOutput(catalogList *applicationv1alpha1.CatalogList) string {
+	var b strings.Builder
+
+	// Header
+	b.WriteString(titleStyle.Render("📚 Catalogs") + "\n\n")
+
+	if len(catalogList.Items) == 0 {
+		b.WriteString(warningStyle.Render("No catalogs found") + "\n")
+		return b.String()
+	}
+
+	// Sort by name
+	sortedCatalogs := make([]applicationv1alpha1.Catalog, len(catalogList.Items))
+	copy(sortedCatalogs, catalogList.Items)
+	sort.Slice(sortedCatalogs, func(i, j int) bool {
+		return sortedCatalogs[i].Name < sortedCatalogs[j].Name
+	})
+
+	// Calculate max widths for columns
+	maxNameLen := 4      // "NAME"
+	maxNamespaceLen := 9 // "NAMESPACE"
+	maxURLLen := 3       // "URL"
+
+	for _, cat := range sortedCatalogs {
+		if len(cat.Name) > maxNameLen {
+			maxNameLen = len(cat.Name)
+		}
+		if len(cat.Namespace) > maxNamespaceLen {
+			maxNamespaceLen = len(cat.Namespace)
+		}
+
+		url := getCatalogURL(&cat)
+		if len(url) > maxURLLen {
+			maxURLLen = len(url)
+		}
+	}
+
+	// Table header
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+	header := fmt.Sprintf("%-*s  %-*s  %-*s",
+		maxNameLen, "NAME",
+		maxNamespaceLen, "NAMESPACE",
+		maxURLLen, "URL",
+	)
+	b.WriteString(headerStyle.Render(header) + "\n")
+
+	// Separator line
+	b.WriteString(mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+maxURLLen+4)) + "\n")
+
+	// Display catalogs in table format
+	for _, cat := range sortedCatalogs {
+		url := getCatalogURL(&cat)
+
+		row := fmt.Sprintf("%-*s  %-*s  %-*s",
+			maxNameLen, cat.Name,
+			maxNamespaceLen, cat.Namespace,
+			maxURLLen, url,
+		)
+		b.WriteString(row + "\n")
+	}
+
+	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d catalogs", len(catalogList.Items))) + "\n")
+	return b.String()
+}
+
+// getCatalogURL extracts the URL from a Catalog CR
+func getCatalogURL(cat *applicationv1alpha1.Catalog) string {
+	// Try the new way first (repositories)
+	if len(cat.Spec.Repositories) > 0 {
+		return cat.Spec.Repositories[0].URL
+	}
+	// Fall back to the legacy way
+	if cat.Spec.Storage.URL != "" {
+		return cat.Spec.Storage.URL
+	}
+	return "-"
+}
+
+// getAppStatus extracts the status from an App CR
+func getAppStatus(app *applicationv1alpha1.App) string {
+	// Check if app has release status
+	status := app.Status.Release.Status
+	if status == "" {
+		return "Unknown"
+	}
+
+	return status
+}
+
+// getGitRepoStatus extracts the status from a GitRepository CR
+func getGitRepoStatus(repo *unstructured.Unstructured) string {
+	// Check for Ready condition in status
+	conditions, found, _ := unstructured.NestedSlice(repo.Object, "status", "conditions")
+	if !found {
+		return "Unknown"
+	}
+
+	for _, cond := range conditions {
+		condMap, ok := cond.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		condType, _, _ := unstructured.NestedString(condMap, "type")
+		if condType == "Ready" {
+			status, _, _ := unstructured.NestedString(condMap, "status")
+			if status == "True" {
+				return "Ready"
+			}
+			// Not ready - show the reason
+			reason, _, _ := unstructured.NestedString(condMap, "reason")
+			if reason != "" {
+				return reason
+			}
+			message, _, _ := unstructured.NestedString(condMap, "message")
+			if message != "" {
+				return message
+			}
+			return "Not Ready"
+		}
+	}
+
+	return "Unknown"
+}
+
+// colorizeStatus applies color to status text based on the status value
+func colorizeStatus(status string) string {
+	// Success statuses
+	if status == "deployed" || status == "Ready" {
+		return successStyle.Render(status)
+	}
+
+	// Warning statuses
+	statusLower := strings.ToLower(status)
+	if status == "Unknown" || strings.Contains(statusLower, "pending") || strings.Contains(statusLower, "progressing") {
+		return warningStyle.Render(status)
+	}
+
+	// Everything else is treated as an error
+	return errorStyle.Render(status)
 }

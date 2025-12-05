@@ -13,6 +13,7 @@ const (
 	flagDeploy    = "deploy"
 	flagUndeploy  = "undeploy"
 	flagStatus    = "status"
+	flagList      = "list"
 	flagNamespace = "namespace"
 	flagType      = "type"
 	flagCatalog   = "catalog"
@@ -20,6 +21,12 @@ const (
 	// Resource types
 	resourceTypeApp    = "app"
 	resourceTypeConfig = "config"
+
+	// List types
+	listTypeApps     = "apps"
+	listTypeVersions = "versions"
+	listTypeConfigs  = "configs"
+	listTypeCatalogs = "catalogs"
 
 	// Default values
 	defaultAppNamespace    = "giantswarm"
@@ -32,6 +39,7 @@ type flag struct {
 	Deploy   bool
 	Undeploy bool
 	Status   bool
+	List     string
 
 	// Option flags
 	Namespace string
@@ -47,6 +55,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.Deploy, flagDeploy, "d", false, "Deploy a resource onto a cluster")
 	cmd.Flags().BoolVarP(&f.Undeploy, flagUndeploy, "u", false, "Undeploy a resource from a cluster")
 	cmd.Flags().BoolVar(&f.Status, flagStatus, false, "Show status of all kustomizations, config repositories, and apps of the cluster")
+	cmd.Flags().StringVarP(&f.List, flagList, "l", "", "List resources. Valid values: apps, versions, configs, catalogs")
 
 	// Option flags
 	cmd.Flags().StringVarP(&f.Namespace, flagNamespace, "n", "", "Namespace where the resource lives (default for app: giantswarm, default for config: flux-giantswarm)")
@@ -70,12 +79,23 @@ func (f *flag) Validate() error {
 	if f.Status {
 		actionCount++
 	}
+	if f.List != "" {
+		actionCount++
+	}
 
 	if actionCount == 0 {
-		return fmt.Errorf("%w: must specify one action: -d (deploy), -u (undeploy), or -s (status)", ErrInvalidFlag)
+		return fmt.Errorf("%w: must specify one action: -d (deploy), -u (undeploy), -s (status), or -l (list)", ErrInvalidFlag)
 	}
 	if actionCount > 1 {
 		return fmt.Errorf("%w: can only specify one action at a time", ErrInvalidFlag)
+	}
+
+	// Validate list type if specified
+	if f.List != "" {
+		validListTypes := []string{listTypeApps, listTypeVersions, listTypeConfigs, listTypeCatalogs}
+		if !slices.Contains(validListTypes, f.List) {
+			return fmt.Errorf("%w: --%s must be one of: %s", ErrInvalidFlag, flagList, strings.Join(validListTypes, ", "))
+		}
 	}
 
 	// Validate resource type
@@ -84,9 +104,12 @@ func (f *flag) Validate() error {
 		return fmt.Errorf("%w: --%s must be one of: %s", ErrInvalidFlag, flagType, strings.Join(validTypes, ", "))
 	}
 
-	// Set default namespace based on resource type if not specified
+	// Set default namespace based on resource type or list type if not specified
 	if f.Namespace == "" {
-		if f.Type == resourceTypeApp {
+		// If listing configs, use config namespace
+		if f.List == listTypeConfigs {
+			f.Namespace = defaultConfigNamespace
+		} else if f.Type == resourceTypeApp {
 			f.Namespace = defaultAppNamespace
 		} else if f.Type == resourceTypeConfig {
 			f.Namespace = defaultConfigNamespace
@@ -105,6 +128,9 @@ func (f *flag) GetAction() string {
 	}
 	if f.Status {
 		return "status"
+	}
+	if f.List != "" {
+		return "list"
 	}
 	return ""
 }
