@@ -10,6 +10,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
@@ -29,6 +31,12 @@ type runner struct {
 type resourceSpec struct {
 	name    string
 	version string
+}
+
+type resourceInfo struct {
+	name      string
+	namespace string
+	reason    string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -124,24 +132,55 @@ func (r *runner) handleStatus(ctx context.Context) error {
 
 	ctrlClient := k8sClient.CtrlClient()
 
-	fmt.Fprintf(r.stdout, "Cluster Status:\n\n")
-
-	// List all apps
-	err = r.listApps(ctx, ctrlClient)
+	// Check kustomizations
+	kustomizationsReady, kustomizationsSuspended, notReadyKustomizations, err := r.checkKustomizations(ctx, ctrlClient)
 	if err != nil {
-		fmt.Fprintf(r.stderr, "Error listing apps: %v\n", err)
+		fmt.Fprintf(r.stderr, "Error checking kustomizations: %v\n", err)
 	}
 
-	// List kustomizations (Flux resources)
-	err = r.listKustomizations(ctx, ctrlClient)
+	// Check apps
+	suspendedApps, err := r.checkApps(ctx, ctrlClient)
 	if err != nil {
-		fmt.Fprintf(r.stderr, "Error listing kustomizations: %v\n", err)
+		fmt.Fprintf(r.stderr, "Error checking apps: %v\n", err)
 	}
 
-	// List config repositories (GitRepository resources)
-	err = r.listGitRepositories(ctx, ctrlClient)
+	// Check config repositories (GitRepositories)
+	suspendedGitRepos, err := r.checkGitRepositories(ctx, ctrlClient)
 	if err != nil {
-		fmt.Fprintf(r.stderr, "Error listing git repositories: %v\n", err)
+		fmt.Fprintf(r.stderr, "Error checking git repositories: %v\n", err)
+	}
+
+	// Display status
+	if kustomizationsReady && !kustomizationsSuspended && len(suspendedApps) == 0 && len(suspendedGitRepos) == 0 {
+		fmt.Fprintf(r.stderr, "Kustomisations, config repositories, and apps are healthy\n")
+	} else {
+		fmt.Fprintf(r.stderr, "Some elements are not healthy\n")
+
+		if !kustomizationsReady {
+			fmt.Fprintf(r.stderr, "\nNot ready kustomizations:\n")
+			for _, kustomization := range notReadyKustomizations {
+				fmt.Fprintf(r.stderr, "  - %s/%s (reason: %s)\n",
+					kustomization.namespace, kustomization.name, kustomization.reason)
+			}
+		}
+
+		if kustomizationsSuspended {
+			fmt.Fprintf(r.stderr, "\nWarning: Some kustomizations are suspended\n")
+		}
+
+		if len(suspendedApps) > 0 {
+			fmt.Fprintf(r.stderr, "\nSuspended apps:\n")
+			for _, app := range suspendedApps {
+				fmt.Fprintf(r.stderr, "  - %s/%s\n", app.namespace, app.name)
+			}
+		}
+
+		if len(suspendedGitRepos) > 0 {
+			fmt.Fprintf(r.stderr, "\nSuspended git repositories:\n")
+			for _, repo := range suspendedGitRepos {
+				fmt.Fprintf(r.stderr, "  - %s/%s\n", repo.namespace, repo.name)
+			}
+		}
 	}
 
 	return nil
@@ -200,17 +239,20 @@ func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *
 				return err
 			}
 			fmt.Fprintf(r.stdout, "App %s@%s deployed successfully to namespace %s\n", spec.name, spec.version, r.flag.Namespace)
+			fmt.Fprintf(r.stderr, "\n/!\\ Reminder: don't forget to undeploy your changes after testing, with:\n")
+			fmt.Fprintf(r.stderr, "kubectl gs deploy -u %s\n", spec.name)
 			return nil
 		}
 		return err
 	}
 
 	// App exists, use the app service to patch it with version validation
+	// Set SuspendReconciliation to true to prevent Flux from overriding the changes
 	patchOptions := app.PatchOptions{
 		Namespace:             r.flag.Namespace,
 		Name:                  spec.name,
 		Version:               spec.version,
-		SuspendReconciliation: false,
+		SuspendReconciliation: true,
 	}
 
 	state, err := r.appService.Patch(ctx, patchOptions)
@@ -223,68 +265,116 @@ func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *
 	}
 
 	fmt.Fprintf(r.stdout, "App %s in namespace %s updated with %s\n", spec.name, r.flag.Namespace, strings.Join(state, " "))
+	fmt.Fprintf(r.stderr, "\n/!\\ Reminder: don't forget to undeploy your changes after testing, with:\n")
+	fmt.Fprintf(r.stderr, "kubectl gs deploy -u %s\n", spec.name)
 	return nil
 }
 
 func (r *runner) deployConfig(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
-	// Config repositories are typically GitRepository CRs managed by Flux
-	// This is a placeholder implementation
-	fmt.Fprintf(r.stdout, "Deploying config repository %s@%s to namespace %s\n", spec.name, spec.version, r.flag.Namespace)
-	fmt.Fprintf(r.stderr, "Config repository deployment is not yet fully implemented\n")
+	// Find the GitRepository by matching its URL against the config repo name
+	gitRepo, err := r.findGitRepository(ctx, ctrlClient, spec.name, r.flag.Namespace)
+	if err != nil {
+		return fmt.Errorf("failed to find GitRepository for %s: %w", spec.name, err)
+	}
+
+	// Get the resource name and namespace
+	resourceName, _, _ := unstructured.NestedString(gitRepo.Object, "metadata", "name")
+	resourceNamespace, _, _ := unstructured.NestedString(gitRepo.Object, "metadata", "namespace")
+
+	// Create a patch to set the reconcile annotation and update the branch
+	patch := client.MergeFrom(gitRepo.DeepCopy())
+
+	// Add the Flux reconcile annotation to suspend reconciliation
+	annotations := gitRepo.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	annotations["kustomize.toolkit.fluxcd.io/reconcile"] = "disabled"
+	gitRepo.SetAnnotations(annotations)
+
+	// Update the spec.ref.branch to the desired version (branch)
+	err = unstructured.SetNestedField(gitRepo.Object, spec.version, "spec", "ref", "branch")
+	if err != nil {
+		return fmt.Errorf("failed to set branch: %w", err)
+	}
+
+	// Apply the patch
+	err = ctrlClient.Patch(ctx, gitRepo, patch)
+	if err != nil {
+		return fmt.Errorf("failed to patch GitRepository: %w", err)
+	}
+
+	fmt.Fprintf(r.stdout, "Config repository %s in namespace %s deployed with branch %s\n", resourceName, resourceNamespace, spec.version)
+	fmt.Fprintf(r.stderr, "\n/!\\ Reminder: don't forget to undeploy your changes after testing, with:\n")
+	fmt.Fprintf(r.stderr, "kubectl gs deploy -t config -u %s\n", spec.name)
 	return nil
 }
 
 func (r *runner) undeployApp(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
-	// TODO: Implement undeploy
-	return fmt.Errorf("undeploy not yet implemented")
-}
-
-func (r *runner) undeployConfig(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
-	// Config repository undeployment placeholder
-	fmt.Fprintf(r.stdout, "Undeploying config repository %s from namespace %s\n", spec.name, r.flag.Namespace)
-	fmt.Fprintf(r.stderr, "Config repository undeployment is not yet fully implemented\n")
-	return nil
-}
-
-func (r *runner) listApps(ctx context.Context, ctrlClient client.Client) error {
-	apps := &applicationv1alpha1.AppList{}
-	err := ctrlClient.List(ctx, apps, &client.ListOptions{
-		Namespace: r.flag.Namespace,
-	})
+	// Initialize the app service
+	err := r.getAppService()
 	if err != nil {
 		return err
 	}
 
-	if len(apps.Items) == 0 {
-		fmt.Fprintf(r.stdout, "No apps found in namespace %s\n", r.flag.Namespace)
-		return nil
+	// Use the app service to patch the app and remove the Flux reconciliation annotation
+	// This allows Flux to manage the resource again
+	patchOptions := app.PatchOptions{
+		Namespace:             r.flag.Namespace,
+		Name:                  spec.name,
+		Version:               "", // Don't change the version during undeploy
+		SuspendReconciliation: false,
 	}
 
-	fmt.Fprintf(r.stdout, "Apps in namespace %s:\n", r.flag.Namespace)
-	for _, app := range apps.Items {
-		status := "Unknown"
-		if app.Status.Release.Status != "" {
-			status = app.Status.Release.Status
-		}
-		fmt.Fprintf(r.stdout, "  - %s (version: %s, status: %s)\n", app.Name, app.Spec.Version, status)
+	state, err := r.appService.Patch(ctx, patchOptions)
+	if app.IsNotFound(err) {
+		return fmt.Errorf("app %s not found in namespace %s", spec.name, r.flag.Namespace)
+	} else if err != nil {
+		return err
 	}
-	fmt.Fprintf(r.stdout, "\n")
 
+	fmt.Fprintf(r.stdout, "App %s in namespace %s undeployed successfully\n", spec.name, r.flag.Namespace)
+	if len(state) > 0 {
+		fmt.Fprintf(r.stdout, "Changes: %s\n", strings.Join(state, " "))
+	}
 	return nil
 }
 
-func (r *runner) listKustomizations(ctx context.Context, ctrlClient client.Client) error {
-	// Kustomizations are Flux resources
-	// This would require importing flux types, which may not be available
-	// For now, we'll skip this or use unstructured types
-	fmt.Fprintf(r.stdout, "Kustomizations: (listing not yet implemented)\n\n")
-	return nil
-}
+func (r *runner) undeployConfig(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
+	// Find the GitRepository by matching its URL against the config repo name
+	gitRepo, err := r.findGitRepository(ctx, ctrlClient, spec.name, r.flag.Namespace)
+	if err != nil {
+		return fmt.Errorf("failed to find GitRepository for %s: %w", spec.name, err)
+	}
 
-func (r *runner) listGitRepositories(ctx context.Context, ctrlClient client.Client) error {
-	// GitRepository resources from Flux
-	// Similar to kustomizations, this requires flux types
-	fmt.Fprintf(r.stdout, "Config Repositories: (listing not yet implemented)\n\n")
+	// Get the resource name and namespace
+	resourceName, _, _ := unstructured.NestedString(gitRepo.Object, "metadata", "name")
+	resourceNamespace, _, _ := unstructured.NestedString(gitRepo.Object, "metadata", "namespace")
+
+	// Create a patch to remove the reconcile annotation and label
+	patch := client.MergeFrom(gitRepo.DeepCopy())
+
+	// Remove the Flux reconcile annotation
+	annotations := gitRepo.GetAnnotations()
+	if annotations != nil {
+		delete(annotations, "kustomize.toolkit.fluxcd.io/reconcile")
+		gitRepo.SetAnnotations(annotations)
+	}
+
+	// Remove the Flux reconcile label if present
+	labels := gitRepo.GetLabels()
+	if labels != nil {
+		delete(labels, "kustomize.toolkit.fluxcd.io/reconcile")
+		gitRepo.SetLabels(labels)
+	}
+
+	// Apply the patch
+	err = ctrlClient.Patch(ctx, gitRepo, patch)
+	if err != nil {
+		return fmt.Errorf("failed to patch GitRepository: %w", err)
+	}
+
+	fmt.Fprintf(r.stdout, "Config repository %s in namespace %s undeployed successfully\n", resourceName, resourceNamespace)
 	return nil
 }
 
@@ -314,4 +404,196 @@ func (r *runner) parseResourceSpec(arg string, requireVersion bool) (*resourceSp
 	}
 
 	return nil, fmt.Errorf("%w: invalid resource format, expected: resource@version", ErrInvalidArgument)
+}
+
+// findGitRepository finds a GitRepository CR by matching the config repo name in its URL
+func (r *runner) findGitRepository(ctx context.Context, ctrlClient client.Client, configRepoName, namespace string) (*unstructured.Unstructured, error) {
+	// Define the GitRepository GVK
+	gvk := schema.GroupVersionKind{
+		Group:   "source.toolkit.fluxcd.io",
+		Version: "v1",
+		Kind:    "GitRepository",
+	}
+
+	// List all GitRepository resources in the namespace
+	gitRepoList := &unstructured.UnstructuredList{}
+	gitRepoList.SetGroupVersionKind(gvk)
+
+	listOptions := &client.ListOptions{
+		Namespace: namespace,
+	}
+
+	err := ctrlClient.List(ctx, gitRepoList, listOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list GitRepositories: %w", err)
+	}
+
+	// Find the GitRepository that matches the config repo name in its URL
+	for _, item := range gitRepoList.Items {
+		url, found, err := unstructured.NestedString(item.Object, "spec", "url")
+		if err != nil || !found {
+			continue
+		}
+
+		// Check if the URL contains the config repo name
+		// The URL format is typically: https://github.com/giantswarm/{configRepoName}
+		if strings.Contains(url, fmt.Sprintf("giantswarm/%s", configRepoName)) {
+			return &item, nil
+		}
+	}
+
+	return nil, fmt.Errorf("%w: GitRepository for config repo %s not found in namespace %s", ErrResourceNotFound, configRepoName, namespace)
+}
+
+// checkKustomizations checks the health of all Kustomization resources
+func (r *runner) checkKustomizations(ctx context.Context, ctrlClient client.Client) (allReady bool, anySuspended bool, notReady []resourceInfo, err error) {
+	gvk := schema.GroupVersionKind{
+		Group:   "kustomize.toolkit.fluxcd.io",
+		Version: "v1",
+		Kind:    "Kustomization",
+	}
+
+	kustomizationList := &unstructured.UnstructuredList{}
+	kustomizationList.SetGroupVersionKind(gvk)
+
+	err = ctrlClient.List(ctx, kustomizationList)
+	if err != nil {
+		return false, false, nil, err
+	}
+
+	allReady = true
+	anySuspended = false
+	notReady = []resourceInfo{}
+
+	for _, item := range kustomizationList.Items {
+		// Check if suspended
+		suspended, _, _ := unstructured.NestedBool(item.Object, "spec", "suspend")
+		if suspended {
+			anySuspended = true
+		}
+
+		// Check ready condition
+		conditions, found, _ := unstructured.NestedSlice(item.Object, "status", "conditions")
+		if !found {
+			allReady = false
+			continue
+		}
+
+		ready := false
+		reason := ""
+		for _, cond := range conditions {
+			condMap, ok := cond.(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			condType, _, _ := unstructured.NestedString(condMap, "type")
+			if condType == "Ready" {
+				status, _, _ := unstructured.NestedString(condMap, "status")
+				ready = (status == "True")
+				if !ready {
+					reason, _, _ = unstructured.NestedString(condMap, "reason")
+				}
+				break
+			}
+		}
+
+		if !ready {
+			allReady = false
+			name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
+			namespace, _, _ := unstructured.NestedString(item.Object, "metadata", "namespace")
+			notReady = append(notReady, resourceInfo{
+				name:      name,
+				namespace: namespace,
+				reason:    reason,
+			})
+		}
+	}
+
+	return allReady, anySuspended, notReady, nil
+}
+
+// checkApps checks if any apps have Flux reconciliation suspended
+func (r *runner) checkApps(ctx context.Context, ctrlClient client.Client) ([]resourceInfo, error) {
+	apps := &applicationv1alpha1.AppList{}
+	err := ctrlClient.List(ctx, apps, &client.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	suspendedApps := []resourceInfo{}
+
+	for _, app := range apps.Items {
+		// Check if the app has the Flux reconcile annotation or label set to disabled
+		annotations := app.GetAnnotations()
+		labels := app.GetLabels()
+
+		isSuspended := false
+		if annotations != nil {
+			if val, ok := annotations["kustomize.toolkit.fluxcd.io/reconcile"]; ok && val == "disabled" {
+				isSuspended = true
+			}
+		}
+		if labels != nil {
+			if val, ok := labels["kustomize.toolkit.fluxcd.io/reconcile"]; ok && val == "disabled" {
+				isSuspended = true
+			}
+		}
+
+		if isSuspended {
+			suspendedApps = append(suspendedApps, resourceInfo{
+				name:      app.Name,
+				namespace: app.Namespace,
+			})
+		}
+	}
+
+	return suspendedApps, nil
+}
+
+// checkGitRepositories checks if any GitRepository resources have Flux reconciliation suspended
+func (r *runner) checkGitRepositories(ctx context.Context, ctrlClient client.Client) ([]resourceInfo, error) {
+	gvk := schema.GroupVersionKind{
+		Group:   "source.toolkit.fluxcd.io",
+		Version: "v1",
+		Kind:    "GitRepository",
+	}
+
+	gitRepoList := &unstructured.UnstructuredList{}
+	gitRepoList.SetGroupVersionKind(gvk)
+
+	err := ctrlClient.List(ctx, gitRepoList)
+	if err != nil {
+		return nil, err
+	}
+
+	suspendedRepos := []resourceInfo{}
+
+	for _, item := range gitRepoList.Items {
+		annotations := item.GetAnnotations()
+		labels := item.GetLabels()
+
+		isSuspended := false
+		if annotations != nil {
+			if val, ok := annotations["kustomize.toolkit.fluxcd.io/reconcile"]; ok && val == "disabled" {
+				isSuspended = true
+			}
+		}
+		if labels != nil {
+			if val, ok := labels["kustomize.toolkit.fluxcd.io/reconcile"]; ok && val == "disabled" {
+				isSuspended = true
+			}
+		}
+
+		if isSuspended {
+			name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
+			namespace, _, _ := unstructured.NestedString(item.Object, "metadata", "namespace")
+			suspendedRepos = append(suspendedRepos, resourceInfo{
+				name:      name,
+				namespace: namespace,
+			})
+		}
+	}
+
+	return suspendedRepos, nil
 }

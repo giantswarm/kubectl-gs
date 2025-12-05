@@ -14,6 +14,8 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/fatih/color v1.18.0
+	github.com/fluxcd/kustomize-controller/api v1.3.0
+	github.com/fluxcd/source-controller/api v1.3.0
 	github.com/getsops/sops/v3 v3.11.0
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/apiextensions/v6 v6.6.0
@@ -77,6 +79,9 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.32.4 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/fluxcd/pkg/apis/acl v0.3.0 // indirect
+	github.com/fluxcd/pkg/apis/kustomize v1.5.0 // indirect
+	github.com/fluxcd/pkg/apis/meta v1.5.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect

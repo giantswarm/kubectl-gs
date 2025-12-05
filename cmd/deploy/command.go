@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	name  = "deploy"
+	name             = "deploy"
 	shortDescription = "Manage GiantSwarm deployments (apps and config repositories)"
 	longDescription  = `Manage GiantSwarm deployment of apps and config repositories to clusters.
 

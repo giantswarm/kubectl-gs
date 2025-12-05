@@ -1,6 +1,8 @@
 package scheme
 
 import (
+	kustomizev1 "github.com/fluxcd/kustomize-controller/api/v1"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	gscore "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
 	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
@@ -37,6 +39,8 @@ func NewSchemeBuilder() []func(*runtime.Scheme) error {
 		release.AddToScheme,          // Release
 		securityv1alpha1.AddToScheme, // Organizations
 		capainfrav1.AddToScheme,      // AWSCluster (CAPA)
+		kustomizev1.AddToScheme,      // Flux Kustomization
+		sourcev1.AddToScheme,         // Flux GitRepository, HelmRepository, etc.
 	}
 }
 
