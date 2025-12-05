@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/sahilm/fuzzy"
 )
 
 var (
@@ -22,9 +23,18 @@ type item struct {
 	title string
 }
 
+func (i item) String() string {
+	return i.title
+}
+
+type itemMatch struct {
+	item      item
+	positions []int
+}
+
 type model struct {
 	items         []item
-	filtered      []item
+	filtered      []itemMatch
 	cursor        int
 	filter        textinput.Model
 	width         int
@@ -36,14 +46,20 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m *model) filterItems() {
-	if m.filter.Value() == "" {
-		m.filtered = m.items
+	query := m.filter.Value()
+	if query == "" {
+		m.filtered = make([]itemMatch, len(m.items))
+		for i, item := range m.items {
+			m.filtered[i] = itemMatch{item: item, positions: nil}
+		}
 	} else {
-		m.filtered = []item{}
-		query := strings.ToLower(m.filter.Value())
-		for _, item := range m.items {
-			if strings.Contains(strings.ToLower(item.title), query) {
-				m.filtered = append(m.filtered, item)
+		// Use fuzzy matching library
+		matches := fuzzy.FindFrom(query, itemSource(m.items))
+		m.filtered = make([]itemMatch, len(matches))
+		for i, match := range matches {
+			m.filtered[i] = itemMatch{
+				item:      m.items[match.Index],
+				positions: match.MatchedIndexes,
 			}
 		}
 	}
@@ -56,6 +72,17 @@ func (m *model) filterItems() {
 	}
 }
 
+// itemSource implements fuzzy.Source interface
+type itemSource []item
+
+func (s itemSource) String(i int) string {
+	return s[i].title
+}
+
+func (s itemSource) Len() int {
+	return len(s)
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -66,7 +93,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			if len(m.filtered) > 0 && m.cursor >= 0 && m.cursor < len(m.filtered) {
-				fmt.Println(m.filtered[m.cursor].title)
+				fmt.Println(m.filtered[m.cursor].item.title)
 			}
 			return m, tea.Quit
 		case "up", "ctrl+k":
@@ -94,41 +121,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// highlightMatches highlights the matching portion of the text
-func highlightMatches(text, query string, isSelected bool) string {
-	if query == "" {
+// highlightMatches highlights the matching characters at given positions
+func highlightMatches(text string, positions []int, isSelected bool) string {
+	if len(positions) == 0 {
 		if isSelected {
 			return selectedItemStyle.Render(text)
 		}
 		return normalItemStyle.Render(text)
 	}
 
-	lowerText := strings.ToLower(text)
-	lowerQuery := strings.ToLower(query)
-
-	idx := strings.Index(lowerText, lowerQuery)
-	if idx == -1 {
-		if isSelected {
-			return selectedItemStyle.Render(text)
-		}
-		return normalItemStyle.Render(text)
+	// Create a set of matched positions for quick lookup
+	matchedPos := make(map[int]bool)
+	for _, pos := range positions {
+		matchedPos[pos] = true
 	}
-
-	// Split the text into parts: before, match, after
-	before := text[:idx]
-	match := text[idx : idx+len(query)]
-	after := text[idx+len(query):]
 
 	var result strings.Builder
+	textRunes := []rune(text)
 
-	if isSelected {
-		result.WriteString(selectedItemStyle.Render(before))
-		result.WriteString(selectedMatchStyle.Render(match))
-		result.WriteString(selectedItemStyle.Render(after))
-	} else {
-		result.WriteString(normalItemStyle.Render(before))
-		result.WriteString(matchStyle.Render(match))
-		result.WriteString(normalItemStyle.Render(after))
+	for i, char := range textRunes {
+		if matchedPos[i] {
+			if isSelected {
+				result.WriteString(selectedMatchStyle.Render(string(char)))
+			} else {
+				result.WriteString(matchStyle.Render(string(char)))
+			}
+		} else {
+			if isSelected {
+				result.WriteString(selectedItemStyle.Render(string(char)))
+			} else {
+				result.WriteString(normalItemStyle.Render(string(char)))
+			}
+		}
 	}
 
 	return result.String()
@@ -167,9 +191,8 @@ func (m model) View() string {
 	}
 
 	// Render items in reverse order (bottom-up, with first item closest to prompt)
-	query := m.filter.Value()
 	for i := end - 1; i >= start; i-- {
-		s.WriteString(highlightMatches(m.filtered[i].title, query, i == m.cursor))
+		s.WriteString(highlightMatches(m.filtered[i].item.title, m.filtered[i].positions, i == m.cursor))
 		s.WriteString("\n")
 	}
 
@@ -214,9 +237,15 @@ func main() {
 	ti.CharLimit = 156
 	ti.Width = 50
 
+	// Initialize filtered list
+	filtered := make([]itemMatch, len(items))
+	for i, item := range items {
+		filtered[i] = itemMatch{item: item, positions: nil}
+	}
+
 	m := model{
 		items:    items,
-		filtered: items,
+		filtered: filtered,
 		cursor:   0,
 		filter:   ti,
 	}
