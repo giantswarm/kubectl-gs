@@ -163,8 +163,8 @@ func UndeployOutput(resourceType, name, namespace string, changes []string) stri
 // StatusOutput renders a formatted status display
 func StatusOutput(
 	kustomizationsReady bool,
-	kustomizationsSuspended bool,
 	notReadyKustomizations []resourceInfo,
+	suspendedKustomizations []resourceInfo,
 	suspendedApps []resourceInfo,
 	suspendedGitRepos []resourceInfo,
 ) string {
@@ -174,7 +174,7 @@ func StatusOutput(
 	b.WriteString(titleStyle.Render("📊 Deployment Status") + "\n\n")
 
 	// Overall health check
-	allHealthy := kustomizationsReady && !kustomizationsSuspended &&
+	allHealthy := kustomizationsReady && len(suspendedKustomizations) == 0 &&
 		len(suspendedApps) == 0 && len(suspendedGitRepos) == 0
 
 	if allHealthy {
@@ -199,27 +199,181 @@ func StatusOutput(
 		b.WriteString("\n")
 	}
 
-	// Suspended kustomizations warning
-	if kustomizationsSuspended {
-		b.WriteString(warningStyle.Render("⚠ Some Kustomizations are Suspended") + "\n\n")
+	// Suspended kustomizations
+	if len(suspendedKustomizations) > 0 {
+		b.WriteString(warningStyle.Render("⚠ Suspended Kustomizations:") + "\n\n")
+		
+		// Calculate max widths for columns
+		maxNameLen := 4      // "NAME"
+		maxNamespaceLen := 9 // "NAMESPACE"
+
+		for _, kust := range suspendedKustomizations {
+			if len(kust.name) > maxNameLen {
+				maxNameLen = len(kust.name)
+			}
+			if len(kust.namespace) > maxNamespaceLen {
+				maxNamespaceLen = len(kust.namespace)
+			}
+		}
+
+		// Table header
+		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+		header := fmt.Sprintf("  %-*s  %-*s",
+			maxNameLen, "NAME",
+			maxNamespaceLen, "NAMESPACE",
+		)
+		b.WriteString(headerStyle.Render(header) + "\n")
+
+		// Separator line
+		b.WriteString("  " + mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+2)) + "\n")
+
+		// Display kustomizations in table format
+		for _, kust := range suspendedKustomizations {
+			row := fmt.Sprintf("  %-*s  %-*s",
+				maxNameLen, kust.name,
+				maxNamespaceLen, kust.namespace,
+			)
+			b.WriteString(row + "\n")
+		}
+		b.WriteString("\n")
 	}
 
 	// Suspended apps
 	if len(suspendedApps) > 0 {
-		b.WriteString(warningStyle.Render("⚠ Suspended Apps:") + "\n")
+		b.WriteString(warningStyle.Render("⚠ Suspended Apps:") + "\n\n")
+
+		// Calculate max widths for columns
+		maxNameLen := 4      // "NAME"
+		maxNamespaceLen := 9 // "NAMESPACE"
+		maxVersionLen := 7   // "VERSION"
+		maxCatalogLen := 7   // "CATALOG"
+		maxStatusLen := 6    // "STATUS"
+
 		for _, app := range suspendedApps {
-			item := fmt.Sprintf("• %s/%s", app.namespace, app.name)
-			b.WriteString(listItemStyle.Render(item) + "\n")
+			if len(app.name) > maxNameLen {
+				maxNameLen = len(app.name)
+			}
+			if len(app.namespace) > maxNamespaceLen {
+				maxNamespaceLen = len(app.namespace)
+			}
+			if len(app.version) > maxVersionLen {
+				maxVersionLen = len(app.version)
+			}
+			if len(app.catalog) > maxCatalogLen {
+				maxCatalogLen = len(app.catalog)
+			}
+			if len(app.status) > maxStatusLen {
+				maxStatusLen = len(app.status)
+			}
+		}
+
+		// Table header
+		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+		header := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  %-*s",
+			maxNameLen, "NAME",
+			maxNamespaceLen, "NAMESPACE",
+			maxVersionLen, "VERSION",
+			maxCatalogLen, "CATALOG",
+			maxStatusLen, "STATUS",
+		)
+		b.WriteString(headerStyle.Render(header) + "\n")
+
+		// Separator line
+		b.WriteString("  " + mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+maxVersionLen+maxCatalogLen+maxStatusLen+8)) + "\n")
+
+		// Display apps in table format
+		for _, app := range suspendedApps {
+			version := app.version
+			if version == "" {
+				version = "-"
+			}
+			catalog := app.catalog
+			if catalog == "" {
+				catalog = "-"
+			}
+			status := app.status
+			if status == "" {
+				status = "Unknown"
+			}
+			statusColored := colorizeStatus(status)
+
+			row := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  ",
+				maxNameLen, app.name,
+				maxNamespaceLen, app.namespace,
+				maxVersionLen, version,
+				maxCatalogLen, catalog,
+			)
+			b.WriteString(row + statusColored + "\n")
 		}
 		b.WriteString("\n")
 	}
 
 	// Suspended git repositories
 	if len(suspendedGitRepos) > 0 {
-		b.WriteString(warningStyle.Render("⚠ Suspended Git Repositories:") + "\n")
+		b.WriteString(warningStyle.Render("⚠ Suspended Git Repositories:") + "\n\n")
+
+		// Calculate max widths for columns
+		maxNameLen := 4      // "NAME"
+		maxNamespaceLen := 9 // "NAMESPACE"
+		maxBranchLen := 6    // "BRANCH"
+		maxURLLen := 3       // "URL"
+		maxStatusLen := 6    // "STATUS"
+
 		for _, repo := range suspendedGitRepos {
-			item := fmt.Sprintf("• %s/%s", repo.namespace, repo.name)
-			b.WriteString(listItemStyle.Render(item) + "\n")
+			if len(repo.name) > maxNameLen {
+				maxNameLen = len(repo.name)
+			}
+			if len(repo.namespace) > maxNamespaceLen {
+				maxNamespaceLen = len(repo.namespace)
+			}
+			if len(repo.branch) > maxBranchLen {
+				maxBranchLen = len(repo.branch)
+			}
+			if len(repo.url) > maxURLLen {
+				maxURLLen = len(repo.url)
+			}
+			if len(repo.status) > maxStatusLen {
+				maxStatusLen = len(repo.status)
+			}
+		}
+
+		// Table header
+		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+		header := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  %-*s",
+			maxNameLen, "NAME",
+			maxNamespaceLen, "NAMESPACE",
+			maxBranchLen, "BRANCH",
+			maxURLLen, "URL",
+			maxStatusLen, "STATUS",
+		)
+		b.WriteString(headerStyle.Render(header) + "\n")
+
+		// Separator line
+		b.WriteString("  " + mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+maxBranchLen+maxURLLen+maxStatusLen+8)) + "\n")
+
+		// Display repos in table format
+		for _, repo := range suspendedGitRepos {
+			branch := repo.branch
+			if branch == "" {
+				branch = "-"
+			}
+			url := repo.url
+			if url == "" {
+				url = "-"
+			}
+			status := repo.status
+			if status == "" {
+				status = "Unknown"
+			}
+			statusColored := colorizeStatus(status)
+
+			row := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  ",
+				maxNameLen, repo.name,
+				maxNamespaceLen, repo.namespace,
+				maxBranchLen, branch,
+				maxURLLen, url,
+			)
+			b.WriteString(row + statusColored + "\n")
 		}
 		b.WriteString("\n")
 	}

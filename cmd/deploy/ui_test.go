@@ -282,3 +282,167 @@ func TestListVersionsOutput_MarksDeployedVersion(t *testing.T) {
 		t.Errorf("Expected output to mark deployed version, got: %s", output)
 	}
 }
+
+func TestStatusOutput_WithVersionInfo(t *testing.T) {
+	testCases := []struct {
+		name                     string
+		kustomizationsReady      bool
+		notReadyKustomizations   []resourceInfo
+		suspendedKustomizations  []resourceInfo
+		suspendedApps            []resourceInfo
+		suspendedGitRepos        []resourceInfo
+		expectedContains         []string
+	}{
+		{
+			name:                    "all healthy",
+			kustomizationsReady:     true,
+			notReadyKustomizations:  []resourceInfo{},
+			suspendedKustomizations: []resourceInfo{},
+			suspendedApps:           []resourceInfo{},
+			suspendedGitRepos:       []resourceInfo{},
+			expectedContains:        []string{"All Systems Healthy"},
+		},
+		{
+			name:                    "suspended apps with version info",
+			kustomizationsReady:     true,
+			notReadyKustomizations:  []resourceInfo{},
+			suspendedKustomizations: []resourceInfo{},
+			suspendedApps: []resourceInfo{
+				{
+					name:      "my-app",
+					namespace: "default",
+					version:   "1.2.3",
+					catalog:   "giantswarm",
+					status:    "deployed",
+				},
+				{
+					name:      "another-app",
+					namespace: "org-example",
+					version:   "2.0.0",
+					catalog:   "control-plane-catalog",
+					status:    "deployed",
+				},
+			},
+			suspendedGitRepos: []resourceInfo{},
+			expectedContains: []string{
+				"Suspended Apps",
+				"my-app",
+				"1.2.3",
+				"giantswarm",
+				"deployed",
+				"another-app",
+				"2.0.0",
+				"control-plane-catalog",
+				"NAME",
+				"NAMESPACE",
+				"VERSION",
+				"CATALOG",
+				"STATUS",
+			},
+		},
+		{
+			name:                    "suspended git repos with branch info",
+			kustomizationsReady:     true,
+			notReadyKustomizations:  []resourceInfo{},
+			suspendedKustomizations: []resourceInfo{},
+			suspendedApps:           []resourceInfo{},
+			suspendedGitRepos: []resourceInfo{
+				{
+					name:      "config-repo",
+					namespace: "default",
+					branch:    "main",
+					url:       "https://github.com/giantswarm/config-repo",
+					status:    "Ready",
+				},
+				{
+					name:      "another-config",
+					namespace: "org-example",
+					branch:    "v1.0.0",
+					url:       "https://github.com/giantswarm/another-config",
+					status:    "Ready",
+				},
+			},
+			expectedContains: []string{
+				"Suspended Git Repositories",
+				"config-repo",
+				"main",
+				"https://github.com/giantswarm/config-repo",
+				"Ready",
+				"another-config",
+				"v1.0.0",
+				"https://github.com/giantswarm/another-config",
+				"NAME",
+				"NAMESPACE",
+				"BRANCH",
+				"URL",
+				"STATUS",
+			},
+		},
+		{
+			name:                    "apps without version info",
+			kustomizationsReady:     true,
+			notReadyKustomizations:  []resourceInfo{},
+			suspendedKustomizations: []resourceInfo{},
+			suspendedApps: []resourceInfo{
+				{
+					name:      "app-no-version",
+					namespace: "default",
+					version:   "",
+					catalog:   "",
+					status:    "Unknown",
+				},
+			},
+			suspendedGitRepos: []resourceInfo{},
+			expectedContains: []string{
+				"Suspended Apps",
+				"app-no-version",
+				"-", // Should show dash for empty values
+			},
+		},
+		{
+			name:                    "suspended kustomizations",
+			kustomizationsReady:     true,
+			notReadyKustomizations:  []resourceInfo{},
+			suspendedKustomizations: []resourceInfo{
+				{
+					name:      "flux-system",
+					namespace: "flux-system",
+				},
+				{
+					name:      "my-app-kustomization",
+					namespace: "default",
+				},
+			},
+			suspendedApps:     []resourceInfo{},
+			suspendedGitRepos: []resourceInfo{},
+			expectedContains: []string{
+				"Suspended Kustomizations",
+				"flux-system",
+				"my-app-kustomization",
+				"NAME",
+				"NAMESPACE",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output := StatusOutput(
+				tc.kustomizationsReady,
+				tc.notReadyKustomizations,
+				tc.suspendedKustomizations,
+				tc.suspendedApps,
+				tc.suspendedGitRepos,
+			)
+
+			// Remove ANSI codes for easier testing
+			cleanOutput := removeANSICodes(output)
+
+			for _, expected := range tc.expectedContains {
+				if !strings.Contains(cleanOutput, expected) {
+					t.Errorf("Expected output to contain %q, but it didn't.\nOutput:\n%s", expected, cleanOutput)
+				}
+			}
+		})
+	}
+}

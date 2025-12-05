@@ -38,6 +38,11 @@ type resourceInfo struct {
 	name      string
 	namespace string
 	reason    string
+	version   string
+	catalog   string
+	branch    string
+	url       string
+	status    string
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -136,17 +141,17 @@ func (r *runner) handleStatus(ctx context.Context) error {
 	ctrlClient := k8sClient.CtrlClient()
 
 	var (
-		kustomizationsReady     bool
-		kustomizationsSuspended bool
-		notReadyKustomizations  []resourceInfo
-		suspendedApps           []resourceInfo
-		suspendedGitRepos       []resourceInfo
+		kustomizationsReady      bool
+		notReadyKustomizations   []resourceInfo
+		suspendedKustomizations  []resourceInfo
+		suspendedApps            []resourceInfo
+		suspendedGitRepos        []resourceInfo
 	)
 
 	// Check kustomizations with spinner
 	err = RunWithSpinner("Checking kustomizations", func() error {
 		var checkErr error
-		kustomizationsReady, kustomizationsSuspended, notReadyKustomizations, checkErr = r.checkKustomizations(ctx, ctrlClient)
+		kustomizationsReady, notReadyKustomizations, suspendedKustomizations, checkErr = r.checkKustomizations(ctx, ctrlClient)
 		return checkErr
 	})
 	if err != nil {
@@ -176,8 +181,8 @@ func (r *runner) handleStatus(ctx context.Context) error {
 	// Display formatted status
 	output := StatusOutput(
 		kustomizationsReady,
-		kustomizationsSuspended,
 		notReadyKustomizations,
+		suspendedKustomizations,
 		suspendedApps,
 		suspendedGitRepos,
 	)
@@ -482,7 +487,7 @@ func (r *runner) findGitRepository(ctx context.Context, ctrlClient client.Client
 }
 
 // checkKustomizations checks the health of all Kustomization resources
-func (r *runner) checkKustomizations(ctx context.Context, ctrlClient client.Client) (allReady bool, anySuspended bool, notReady []resourceInfo, err error) {
+func (r *runner) checkKustomizations(ctx context.Context, ctrlClient client.Client) (allReady bool, notReady []resourceInfo, suspended []resourceInfo, err error) {
 	gvk := schema.GroupVersionKind{
 		Group:   "kustomize.toolkit.fluxcd.io",
 		Version: "v1",
@@ -494,18 +499,26 @@ func (r *runner) checkKustomizations(ctx context.Context, ctrlClient client.Clie
 
 	err = ctrlClient.List(ctx, kustomizationList)
 	if err != nil {
-		return false, false, nil, err
+		return false, nil, nil, err
 	}
 
 	allReady = true
-	anySuspended = false
 	notReady = []resourceInfo{}
+	suspended = []resourceInfo{}
 
 	for _, item := range kustomizationList.Items {
+		name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
+		namespace, _, _ := unstructured.NestedString(item.Object, "metadata", "namespace")
+
 		// Check if suspended
-		suspended, _, _ := unstructured.NestedBool(item.Object, "spec", "suspend")
-		if suspended {
-			anySuspended = true
+		isSuspended, _, _ := unstructured.NestedBool(item.Object, "spec", "suspend")
+		if isSuspended {
+			suspended = append(suspended, resourceInfo{
+				name:      name,
+				namespace: namespace,
+			})
+			// Skip ready check for suspended kustomizations
+			continue
 		}
 
 		// Check ready condition
@@ -536,8 +549,6 @@ func (r *runner) checkKustomizations(ctx context.Context, ctrlClient client.Clie
 
 		if !ready {
 			allReady = false
-			name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
-			namespace, _, _ := unstructured.NestedString(item.Object, "metadata", "namespace")
 			notReady = append(notReady, resourceInfo{
 				name:      name,
 				namespace: namespace,
@@ -546,7 +557,7 @@ func (r *runner) checkKustomizations(ctx context.Context, ctrlClient client.Clie
 		}
 	}
 
-	return allReady, anySuspended, notReady, nil
+	return allReady, notReady, suspended, nil
 }
 
 // checkApps checks if any apps have Flux reconciliation suspended
@@ -577,9 +588,16 @@ func (r *runner) checkApps(ctx context.Context, ctrlClient client.Client) ([]res
 		}
 
 		if isSuspended {
+			status := app.Status.Release.Status
+			if status == "" {
+				status = "Unknown"
+			}
 			suspendedApps = append(suspendedApps, resourceInfo{
 				name:      app.Name,
 				namespace: app.Namespace,
+				version:   app.Spec.Version,
+				catalog:   app.Spec.Catalog,
+				status:    status,
 			})
 		}
 	}
@@ -624,9 +642,42 @@ func (r *runner) checkGitRepositories(ctx context.Context, ctrlClient client.Cli
 		if isSuspended {
 			name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
 			namespace, _, _ := unstructured.NestedString(item.Object, "metadata", "namespace")
+			branch, _, _ := unstructured.NestedString(item.Object, "spec", "ref", "branch")
+			url, _, _ := unstructured.NestedString(item.Object, "spec", "url")
+
+			// Get status from Ready condition
+			status := "Unknown"
+			conditions, found, _ := unstructured.NestedSlice(item.Object, "status", "conditions")
+			if found {
+				for _, cond := range conditions {
+					condMap, ok := cond.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					condType, _, _ := unstructured.NestedString(condMap, "type")
+					if condType == "Ready" {
+						condStatus, _, _ := unstructured.NestedString(condMap, "status")
+						if condStatus == "True" {
+							status = "Ready"
+						} else {
+							reason, _, _ := unstructured.NestedString(condMap, "reason")
+							if reason != "" {
+								status = reason
+							} else {
+								status = "Not Ready"
+							}
+						}
+						break
+					}
+				}
+			}
+
 			suspendedRepos = append(suspendedRepos, resourceInfo{
 				name:      name,
 				namespace: namespace,
+				branch:    branch,
+				url:       url,
+				status:    status,
 			})
 		}
 	}
