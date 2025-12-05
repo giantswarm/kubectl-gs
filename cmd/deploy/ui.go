@@ -6,8 +6,9 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -57,7 +58,79 @@ var (
 			Foreground(colorWarning).
 			Bold(true).
 			MarginTop(1)
+
+	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
 )
+
+// tableBuilder helps build formatted tables
+type tableBuilder struct {
+	headers []string
+	rows    [][]string
+	indent  string
+}
+
+func newTable(headers ...string) *tableBuilder {
+	return &tableBuilder{
+		headers: headers,
+		rows:    [][]string{},
+		indent:  "  ",
+	}
+}
+
+func (t *tableBuilder) addRow(values ...string) {
+	t.rows = append(t.rows, values)
+}
+
+func (t *tableBuilder) render() string {
+	if len(t.rows) == 0 {
+		return ""
+	}
+
+	// Calculate max widths for each column
+	colWidths := make([]int, len(t.headers))
+	for i, header := range t.headers {
+		colWidths[i] = len(header)
+	}
+	for _, row := range t.rows {
+		for i, cell := range row {
+			if i < len(colWidths) && len(cell) > colWidths[i] {
+				colWidths[i] = len(cell)
+			}
+		}
+	}
+
+	var b strings.Builder
+
+	// Render header
+	headerParts := make([]string, len(t.headers))
+	for i, header := range t.headers {
+		headerParts[i] = fmt.Sprintf("%-*s", colWidths[i], header)
+	}
+	b.WriteString(t.indent + headerStyle.Render(strings.Join(headerParts, "  ")) + "\n")
+
+	// Render separator
+	totalWidth := 0
+	for i, width := range colWidths {
+		totalWidth += width
+		if i < len(colWidths)-1 {
+			totalWidth += 2 // for "  " spacing
+		}
+	}
+	b.WriteString(t.indent + mutedStyle.Render(strings.Repeat("─", totalWidth)) + "\n")
+
+	// Render rows
+	for _, row := range t.rows {
+		rowParts := make([]string, len(row))
+		for i, cell := range row {
+			if i < len(colWidths) {
+				rowParts[i] = fmt.Sprintf("%-*s", colWidths[i], cell)
+			}
+		}
+		b.WriteString(t.indent + strings.Join(rowParts, "  ") + "\n")
+	}
+
+	return b.String()
+}
 
 // DeployOutput renders a formatted deploy success message
 func DeployOutput(resourceType, name, version, namespace string) string {
@@ -202,86 +275,17 @@ func StatusOutput(
 	// Suspended kustomizations
 	if len(suspendedKustomizations) > 0 {
 		b.WriteString(warningStyle.Render("⚠ Suspended Kustomizations:") + "\n\n")
-		
-		// Calculate max widths for columns
-		maxNameLen := 4      // "NAME"
-		maxNamespaceLen := 9 // "NAMESPACE"
-
+		table := newTable("NAME", "NAMESPACE")
 		for _, kust := range suspendedKustomizations {
-			if len(kust.name) > maxNameLen {
-				maxNameLen = len(kust.name)
-			}
-			if len(kust.namespace) > maxNamespaceLen {
-				maxNamespaceLen = len(kust.namespace)
-			}
+			table.addRow(kust.name, kust.namespace)
 		}
-
-		// Table header
-		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
-		header := fmt.Sprintf("  %-*s  %-*s",
-			maxNameLen, "NAME",
-			maxNamespaceLen, "NAMESPACE",
-		)
-		b.WriteString(headerStyle.Render(header) + "\n")
-
-		// Separator line
-		b.WriteString("  " + mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+2)) + "\n")
-
-		// Display kustomizations in table format
-		for _, kust := range suspendedKustomizations {
-			row := fmt.Sprintf("  %-*s  %-*s",
-				maxNameLen, kust.name,
-				maxNamespaceLen, kust.namespace,
-			)
-			b.WriteString(row + "\n")
-		}
-		b.WriteString("\n")
+		b.WriteString(table.render() + "\n")
 	}
 
 	// Suspended apps
 	if len(suspendedApps) > 0 {
 		b.WriteString(warningStyle.Render("⚠ Suspended Apps:") + "\n\n")
-
-		// Calculate max widths for columns
-		maxNameLen := 4      // "NAME"
-		maxNamespaceLen := 9 // "NAMESPACE"
-		maxVersionLen := 7   // "VERSION"
-		maxCatalogLen := 7   // "CATALOG"
-		maxStatusLen := 6    // "STATUS"
-
-		for _, app := range suspendedApps {
-			if len(app.name) > maxNameLen {
-				maxNameLen = len(app.name)
-			}
-			if len(app.namespace) > maxNamespaceLen {
-				maxNamespaceLen = len(app.namespace)
-			}
-			if len(app.version) > maxVersionLen {
-				maxVersionLen = len(app.version)
-			}
-			if len(app.catalog) > maxCatalogLen {
-				maxCatalogLen = len(app.catalog)
-			}
-			if len(app.status) > maxStatusLen {
-				maxStatusLen = len(app.status)
-			}
-		}
-
-		// Table header
-		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
-		header := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  %-*s",
-			maxNameLen, "NAME",
-			maxNamespaceLen, "NAMESPACE",
-			maxVersionLen, "VERSION",
-			maxCatalogLen, "CATALOG",
-			maxStatusLen, "STATUS",
-		)
-		b.WriteString(headerStyle.Render(header) + "\n")
-
-		// Separator line
-		b.WriteString("  " + mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+maxVersionLen+maxCatalogLen+maxStatusLen+8)) + "\n")
-
-		// Display apps in table format
+		table := newTable("NAME", "NAMESPACE", "VERSION", "CATALOG", "STATUS")
 		for _, app := range suspendedApps {
 			version := app.version
 			if version == "" {
@@ -295,63 +299,15 @@ func StatusOutput(
 			if status == "" {
 				status = "Unknown"
 			}
-			statusColored := colorizeStatus(status)
-
-			row := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  ",
-				maxNameLen, app.name,
-				maxNamespaceLen, app.namespace,
-				maxVersionLen, version,
-				maxCatalogLen, catalog,
-			)
-			b.WriteString(row + statusColored + "\n")
+			table.addRow(app.name, app.namespace, version, catalog, colorizeStatus(status))
 		}
-		b.WriteString("\n")
+		b.WriteString(table.render() + "\n")
 	}
 
 	// Suspended git repositories
 	if len(suspendedGitRepos) > 0 {
 		b.WriteString(warningStyle.Render("⚠ Suspended Git Repositories:") + "\n\n")
-
-		// Calculate max widths for columns
-		maxNameLen := 4      // "NAME"
-		maxNamespaceLen := 9 // "NAMESPACE"
-		maxBranchLen := 6    // "BRANCH"
-		maxURLLen := 3       // "URL"
-		maxStatusLen := 6    // "STATUS"
-
-		for _, repo := range suspendedGitRepos {
-			if len(repo.name) > maxNameLen {
-				maxNameLen = len(repo.name)
-			}
-			if len(repo.namespace) > maxNamespaceLen {
-				maxNamespaceLen = len(repo.namespace)
-			}
-			if len(repo.branch) > maxBranchLen {
-				maxBranchLen = len(repo.branch)
-			}
-			if len(repo.url) > maxURLLen {
-				maxURLLen = len(repo.url)
-			}
-			if len(repo.status) > maxStatusLen {
-				maxStatusLen = len(repo.status)
-			}
-		}
-
-		// Table header
-		headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
-		header := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  %-*s",
-			maxNameLen, "NAME",
-			maxNamespaceLen, "NAMESPACE",
-			maxBranchLen, "BRANCH",
-			maxURLLen, "URL",
-			maxStatusLen, "STATUS",
-		)
-		b.WriteString(headerStyle.Render(header) + "\n")
-
-		// Separator line
-		b.WriteString("  " + mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+maxBranchLen+maxURLLen+maxStatusLen+8)) + "\n")
-
-		// Display repos in table format
+		table := newTable("NAME", "NAMESPACE", "BRANCH", "URL", "STATUS")
 		for _, repo := range suspendedGitRepos {
 			branch := repo.branch
 			if branch == "" {
@@ -365,17 +321,9 @@ func StatusOutput(
 			if status == "" {
 				status = "Unknown"
 			}
-			statusColored := colorizeStatus(status)
-
-			row := fmt.Sprintf("  %-*s  %-*s  %-*s  %-*s  ",
-				maxNameLen, repo.name,
-				maxNamespaceLen, repo.namespace,
-				maxBranchLen, branch,
-				maxURLLen, url,
-			)
-			b.WriteString(row + statusColored + "\n")
+			table.addRow(repo.name, repo.namespace, branch, url, colorizeStatus(status))
 		}
-		b.WriteString("\n")
+		b.WriteString(table.render() + "\n")
 	}
 
 	return b.String()
@@ -402,7 +350,6 @@ func InfoOutput(message string) string {
 func ListAppsOutput(apps *applicationv1alpha1.AppList, namespace string) string {
 	var b strings.Builder
 
-	// Header
 	b.WriteString(titleStyle.Render("📦 Applications") + "\n")
 	b.WriteString(mutedStyle.Render(fmt.Sprintf("Namespace: %s", namespace)) + "\n\n")
 
@@ -418,42 +365,8 @@ func ListAppsOutput(apps *applicationv1alpha1.AppList, namespace string) string 
 		return sortedApps[i].Name < sortedApps[j].Name
 	})
 
-	// Calculate max widths for columns
-	maxNameLen := 4    // "NAME"
-	maxVersionLen := 7 // "VERSION"
-	maxCatalogLen := 7 // "CATALOG"
-	maxStatusLen := 6  // "STATUS"
-
-	for _, app := range sortedApps {
-		if len(app.Name) > maxNameLen {
-			maxNameLen = len(app.Name)
-		}
-		if len(app.Spec.Version) > maxVersionLen {
-			maxVersionLen = len(app.Spec.Version)
-		}
-		if len(app.Spec.Catalog) > maxCatalogLen {
-			maxCatalogLen = len(app.Spec.Catalog)
-		}
-		status := getAppStatus(&app)
-		if len(status) > maxStatusLen {
-			maxStatusLen = len(status)
-		}
-	}
-
-	// Table header
-	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
-	header := fmt.Sprintf("%-*s  %-*s  %-*s  %-*s",
-		maxNameLen, "NAME",
-		maxVersionLen, "VERSION",
-		maxCatalogLen, "CATALOG",
-		maxStatusLen, "STATUS",
-	)
-	b.WriteString(headerStyle.Render(header) + "\n")
-
-	// Separator line
-	b.WriteString(mutedStyle.Render(strings.Repeat("─", maxNameLen+maxVersionLen+maxCatalogLen+maxStatusLen+6)) + "\n")
-
-	// Display apps in table format
+	// Build table
+	table := newTable("NAME", "VERSION", "CATALOG", "STATUS")
 	for _, app := range sortedApps {
 		version := app.Spec.Version
 		if version == "" {
@@ -463,18 +376,11 @@ func ListAppsOutput(apps *applicationv1alpha1.AppList, namespace string) string 
 		if catalog == "" {
 			catalog = "-"
 		}
-		status := getAppStatus(&app)
-		statusColored := colorizeStatus(status)
-
-		row := fmt.Sprintf("%-*s  %-*s  %-*s  %s",
-			maxNameLen, app.Name,
-			maxVersionLen, version,
-			maxCatalogLen, catalog,
-			statusColored,
-		)
-		b.WriteString(row + "\n")
+		status := colorizeStatus(getAppStatus(&app))
+		table.addRow(app.Name, version, catalog, status)
 	}
 
+	b.WriteString(table.render())
 	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d apps", len(apps.Items))) + "\n")
 	return b.String()
 }
@@ -535,10 +441,9 @@ func ListVersionsOutput(appName string, entries *applicationv1alpha1.AppCatalogE
 }
 
 // ListConfigsOutput renders a formatted list of config repositories
-func ListConfigsOutput(gitRepoList *unstructured.UnstructuredList, namespace string) string {
+func ListConfigsOutput(gitRepoList *sourcev1.GitRepositoryList, namespace string) string {
 	var b strings.Builder
 
-	// Header
 	b.WriteString(titleStyle.Render("⚙️  Config Repositories") + "\n")
 	b.WriteString(mutedStyle.Render(fmt.Sprintf("Namespace: %s", namespace)) + "\n\n")
 
@@ -548,75 +453,28 @@ func ListConfigsOutput(gitRepoList *unstructured.UnstructuredList, namespace str
 	}
 
 	// Sort by name
-	sortedRepos := make([]unstructured.Unstructured, len(gitRepoList.Items))
+	sortedRepos := make([]sourcev1.GitRepository, len(gitRepoList.Items))
 	copy(sortedRepos, gitRepoList.Items)
 	sort.Slice(sortedRepos, func(i, j int) bool {
-		nameI, _, _ := unstructured.NestedString(sortedRepos[i].Object, "metadata", "name")
-		nameJ, _, _ := unstructured.NestedString(sortedRepos[j].Object, "metadata", "name")
-		return nameI < nameJ
+		return sortedRepos[i].Name < sortedRepos[j].Name
 	})
 
-	// Calculate max widths for columns
-	maxNameLen := 4   // "NAME"
-	maxBranchLen := 6 // "BRANCH"
-	maxURLLen := 3    // "URL"
-	maxStatusLen := 6 // "STATUS"
-
-	for _, repo := range sortedRepos {
-		name, _, _ := unstructured.NestedString(repo.Object, "metadata", "name")
-		url, _, _ := unstructured.NestedString(repo.Object, "spec", "url")
-		branch, _, _ := unstructured.NestedString(repo.Object, "spec", "ref", "branch")
-
-		if len(name) > maxNameLen {
-			maxNameLen = len(name)
+	// Build table
+	table := newTable("NAME", "BRANCH", "URL", "STATUS")
+	for i := range sortedRepos {
+		repo := &sortedRepos[i]
+		branch := ""
+		if repo.Spec.Reference != nil {
+			branch = repo.Spec.Reference.Branch
 		}
-		if len(branch) > maxBranchLen {
-			maxBranchLen = len(branch)
-		}
-		if len(url) > maxURLLen {
-			maxURLLen = len(url)
-		}
-		status := getGitRepoStatus(&repo)
-		if len(status) > maxStatusLen {
-			maxStatusLen = len(status)
-		}
-	}
-
-	// Table header
-	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
-	header := fmt.Sprintf("%-*s  %-*s  %-*s  %-*s",
-		maxNameLen, "NAME",
-		maxBranchLen, "BRANCH",
-		maxURLLen, "URL",
-		maxStatusLen, "STATUS",
-	)
-	b.WriteString(headerStyle.Render(header) + "\n")
-
-	// Separator line
-	b.WriteString(mutedStyle.Render(strings.Repeat("─", maxNameLen+maxBranchLen+maxURLLen+maxStatusLen+6)) + "\n")
-
-	// Display repos in table format
-	for _, repo := range sortedRepos {
-		name, _, _ := unstructured.NestedString(repo.Object, "metadata", "name")
-		url, _, _ := unstructured.NestedString(repo.Object, "spec", "url")
-		branch, _, _ := unstructured.NestedString(repo.Object, "spec", "ref", "branch")
-
 		if branch == "" {
 			branch = "-"
 		}
-
-		status := getGitRepoStatus(&repo)
-		statusColored := colorizeStatus(status)
-
-		row := fmt.Sprintf("%-*s  %-*s  %-*s  %s",
-			maxNameLen, name,
-			maxBranchLen, branch,
-			maxURLLen, url,
-			statusColored,
-		)
-		b.WriteString(row + "\n")
+		status := colorizeStatus(getGitRepoStatus(repo))
+		table.addRow(repo.Name, branch, repo.Spec.URL, status)
 	}
 
+	b.WriteString(table.render())
 	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d repositories", len(gitRepoList.Items))) + "\n")
 	return b.String()
 }
@@ -625,7 +483,6 @@ func ListConfigsOutput(gitRepoList *unstructured.UnstructuredList, namespace str
 func ListCatalogsOutput(catalogList *applicationv1alpha1.CatalogList) string {
 	var b strings.Builder
 
-	// Header
 	b.WriteString(titleStyle.Render("📚 Catalogs") + "\n\n")
 
 	if len(catalogList.Items) == 0 {
@@ -640,49 +497,14 @@ func ListCatalogsOutput(catalogList *applicationv1alpha1.CatalogList) string {
 		return sortedCatalogs[i].Name < sortedCatalogs[j].Name
 	})
 
-	// Calculate max widths for columns
-	maxNameLen := 4      // "NAME"
-	maxNamespaceLen := 9 // "NAMESPACE"
-	maxURLLen := 3       // "URL"
-
-	for _, cat := range sortedCatalogs {
-		if len(cat.Name) > maxNameLen {
-			maxNameLen = len(cat.Name)
-		}
-		if len(cat.Namespace) > maxNamespaceLen {
-			maxNamespaceLen = len(cat.Namespace)
-		}
-
-		url := getCatalogURL(&cat)
-		if len(url) > maxURLLen {
-			maxURLLen = len(url)
-		}
-	}
-
-	// Table header
-	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
-	header := fmt.Sprintf("%-*s  %-*s  %-*s",
-		maxNameLen, "NAME",
-		maxNamespaceLen, "NAMESPACE",
-		maxURLLen, "URL",
-	)
-	b.WriteString(headerStyle.Render(header) + "\n")
-
-	// Separator line
-	b.WriteString(mutedStyle.Render(strings.Repeat("─", maxNameLen+maxNamespaceLen+maxURLLen+4)) + "\n")
-
-	// Display catalogs in table format
+	// Build table
+	table := newTable("NAME", "NAMESPACE", "URL")
 	for _, cat := range sortedCatalogs {
 		url := getCatalogURL(&cat)
-
-		row := fmt.Sprintf("%-*s  %-*s  %-*s",
-			maxNameLen, cat.Name,
-			maxNamespaceLen, cat.Namespace,
-			maxURLLen, url,
-		)
-		b.WriteString(row + "\n")
+		table.addRow(cat.Name, cat.Namespace, url)
 	}
 
+	b.WriteString(table.render())
 	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d catalogs", len(catalogList.Items))) + "\n")
 	return b.String()
 }
@@ -712,38 +534,22 @@ func getAppStatus(app *applicationv1alpha1.App) string {
 }
 
 // getGitRepoStatus extracts the status from a GitRepository CR
-func getGitRepoStatus(repo *unstructured.Unstructured) string {
-	// Check for Ready condition in status
-	conditions, found, _ := unstructured.NestedSlice(repo.Object, "status", "conditions")
-	if !found {
-		return "Unknown"
-	}
-
-	for _, cond := range conditions {
-		condMap, ok := cond.(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		condType, _, _ := unstructured.NestedString(condMap, "type")
-		if condType == "Ready" {
-			status, _, _ := unstructured.NestedString(condMap, "status")
-			if status == "True" {
+func getGitRepoStatus(repo *sourcev1.GitRepository) string {
+	for _, cond := range repo.Status.Conditions {
+		if cond.Type == "Ready" {
+			if cond.Status == metav1.ConditionTrue {
 				return "Ready"
 			}
 			// Not ready - show the reason
-			reason, _, _ := unstructured.NestedString(condMap, "reason")
-			if reason != "" {
-				return reason
+			if cond.Reason != "" {
+				return cond.Reason
 			}
-			message, _, _ := unstructured.NestedString(condMap, "message")
-			if message != "" {
-				return message
+			if cond.Message != "" {
+				return cond.Message
 			}
 			return "Not Ready"
 		}
 	}
-
 	return "Unknown"
 }
 

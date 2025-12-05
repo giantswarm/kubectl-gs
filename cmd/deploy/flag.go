@@ -120,17 +120,16 @@ func (f *flag) Validate() error {
 }
 
 func (f *flag) GetAction() string {
-	if f.Deploy {
+	switch {
+	case f.Deploy:
 		return "deploy"
-	}
-	if f.Undeploy {
+	case f.Undeploy:
 		return "undeploy"
-	}
-	if f.Status {
+	case f.Status:
 		return "status"
-	}
-	if f.List != "" {
+	case f.List != "":
 		return "list"
+	default:
+		return ""
 	}
-	return ""
 }
