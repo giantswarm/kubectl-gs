@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	selectedItemStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("170"))
-	normalItemStyle   = lipgloss.NewStyle()
-	promptStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	matchStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("211")).Underline(true)
+	selectedItemStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("170"))
+	normalItemStyle    = lipgloss.NewStyle()
+	promptStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	matchStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("211")).Underline(true)
 	selectedMatchStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("211")).Underline(true)
 )
 
@@ -33,12 +33,12 @@ type itemMatch struct {
 }
 
 type model struct {
-	items         []item
-	filtered      []itemMatch
-	cursor        int
-	filter        textinput.Model
-	width         int
-	height        int
+	items    []item
+	filtered []itemMatch
+	cursor   int
+	filter   textinput.Model
+	width    int
+	height   int
 }
 
 func (m model) Init() tea.Cmd {
