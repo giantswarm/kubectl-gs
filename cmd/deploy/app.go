@@ -34,7 +34,7 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 				return err
 			}
 
-			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace)
+			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace, !r.flag.UndeployOnExit)
 			fmt.Fprint(r.stdout, output)
 			return nil
 		}
@@ -64,7 +64,7 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := UpdateOutput(spec.name, r.flag.Namespace, state)
+	output := UpdateOutput(spec.name, r.flag.Namespace, state, !r.flag.UndeployOnExit)
 	fmt.Fprint(r.stdout, output)
 	return nil
 }

@@ -111,14 +111,44 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 		}
 	}
 
-	switch r.flag.Type {
-	case "app":
-		return r.deployApp(ctx, spec)
-	case "config":
-		return r.deployConfig(ctx, spec)
+	// Capture state before deployment if undeploy-on-exit is enabled
+	var savedState interface{}
+	if r.flag.UndeployOnExit {
+		var captureErr error
+		switch r.flag.Type {
+		case "app":
+			savedState, captureErr = r.captureAppState(ctx, spec.name, r.flag.Namespace)
+		case "config":
+			savedState, captureErr = r.captureConfigState(ctx, spec.name, r.flag.Namespace)
+		default:
+			return fmt.Errorf("%w: unsupported resource type: %s", ErrInvalidFlag, r.flag.Type)
+		}
+		if captureErr != nil {
+			fmt.Fprintf(r.stderr, "Warning: failed to capture state for restore: %v\n", captureErr)
+		}
 	}
 
-	return fmt.Errorf("%w: unsupported resource type: %s", ErrInvalidFlag, r.flag.Type)
+	// Perform the deployment
+	var deployErr error
+	switch r.flag.Type {
+	case "app":
+		deployErr = r.deployApp(ctx, spec)
+	case "config":
+		deployErr = r.deployConfig(ctx, spec)
+	default:
+		return fmt.Errorf("%w: unsupported resource type: %s", ErrInvalidFlag, r.flag.Type)
+	}
+
+	if deployErr != nil {
+		return deployErr
+	}
+
+	// If undeploy-on-exit is enabled, wait for interrupt and restore
+	if r.flag.UndeployOnExit {
+		return r.waitForInterruptAndRestore(ctx, r.flag.Type, savedState)
+	}
+
+	return nil
 }
 
 func (r *runner) handleInteractiveMode(ctx context.Context, cmd *cobra.Command, args []string) (*resourceSpec, error) {

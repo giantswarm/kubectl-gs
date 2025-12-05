@@ -10,14 +10,15 @@ import (
 )
 
 const (
-	flagDeploy      = "deploy"
-	flagUndeploy    = "undeploy"
-	flagStatus      = "status"
-	flagList        = "list"
-	flagNamespace   = "namespace"
-	flagType        = "type"
-	flagCatalog     = "catalog"
-	flagInteractive = "interactive"
+	flagDeploy        = "deploy"
+	flagUndeploy      = "undeploy"
+	flagStatus        = "status"
+	flagList          = "list"
+	flagNamespace     = "namespace"
+	flagType          = "type"
+	flagCatalog       = "catalog"
+	flagInteractive   = "interactive"
+	flagUndeployOnExit = "undeploy-on-exit"
 
 	// Resource types
 	resourceTypeApp    = "app"
@@ -43,10 +44,11 @@ type flag struct {
 	List     string
 
 	// Option flags
-	Namespace   string
-	Type        string
-	Catalog     string
-	Interactive bool
+	Namespace     string
+	Type          string
+	Catalog       string
+	Interactive   bool
+	UndeployOnExit bool
 
 	// Print flags
 	print *genericclioptions.PrintFlags
@@ -64,6 +66,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.Type, flagType, "t", resourceTypeApp, "Resource type to handle either 'app' or 'config'")
 	cmd.Flags().StringVarP(&f.Catalog, flagCatalog, "c", defaultCatalog, "Catalog to use for the app deployment (only for app type)")
 	cmd.Flags().BoolVarP(&f.Interactive, flagInteractive, "i", false, "Interactive mode: select app and version interactively from catalog entries")
+	cmd.Flags().BoolVarP(&f.UndeployOnExit, flagUndeployOnExit, "r", false, "Wait for interrupt signal and undeploy on exit")
 
 	// Print flags for output formatting
 	f.print = genericclioptions.NewPrintFlags("")
@@ -114,6 +117,13 @@ func (f *flag) Validate() error {
 		}
 		if f.Type != resourceTypeApp {
 			return fmt.Errorf("%w: --%s is only supported for app deployments", ErrInvalidFlag, flagInteractive)
+		}
+	}
+
+	// Validate undeploy-on-exit flag
+	if f.UndeployOnExit {
+		if !f.Deploy {
+			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagUndeployOnExit, flagDeploy)
 		}
 	}
 

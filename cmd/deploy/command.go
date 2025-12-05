@@ -26,6 +26,9 @@ deployments.`
 	examples = `  # Deploy an app with a specific version
   kubectl gs deploy -d my-app@1.0.0-commit
 
+  # Deploy and undeploy on exit (Ctrl+C to undeploy)
+  kubectl gs deploy -d -r my-app@1.0.0-commit
+
   # Deploy interactively (select app and version from catalog)
   kubectl gs deploy -d -i
 
@@ -35,8 +38,14 @@ deployments.`
   # Deploy interactively and choose catalog first (pass empty string to catalog)
   kubectl gs deploy -d -i -c ""
 
+  # Deploy interactively with undeploy-on-exit
+  kubectl gs deploy -d -i -r
+
   # Deploy a config repository
   kubectl gs deploy -t config -d config-repo@branch-ref
+
+  # Deploy a config repository with undeploy-on-exit
+  kubectl gs deploy -t config -d -r config-repo@branch-ref
 
   # Undeploy an app
   kubectl gs deploy -u my-app

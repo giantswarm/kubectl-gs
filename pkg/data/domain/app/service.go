@@ -9,7 +9,6 @@ import (
 	gsapp "github.com/giantswarm/app/v7/pkg/app"
 	"github.com/giantswarm/appcatalog"
 	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
-	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -229,26 +228,28 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	if labels == nil {
 		labels = make(map[string]string)
 	}
-	// Only handle flux reconcile annotation if the app is managed by Flux.
-	_, fluxLabelExists := labels[k8smetadataLabel.FluxKustomizeName]
-	if fluxLabelExists {
-		annotations := accessor.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
-		if suspendReconciliation {
-			annotations[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
-			state = append(state, fmt.Sprintf("added annotations[\"%s\"]=%s", k8smetadataAnnotation.FluxKustomizeReconcile, "disabled"))
-		} else {
-
-			_, exists := annotations[k8smetadataAnnotation.FluxKustomizeReconcile]
-			if exists {
-				delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
-				state = append(state, fmt.Sprintf("removed annotations[\"%s\"]", k8smetadataAnnotation.FluxKustomizeReconcile))
-			}
-		}
-		accessor.SetAnnotations(annotations)
+	annotations := accessor.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
 	}
+
+	if suspendReconciliation {
+		labels[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
+		state = append(state, fmt.Sprintf(`added annotations["%s"]=%s`, k8smetadataAnnotation.FluxKustomizeReconcile, "disabled"))
+	} else {
+		// Only report removal if the annotation or label was actually present
+		_, hadLabel := labels[k8smetadataAnnotation.FluxKustomizeReconcile]
+		_, hadAnnotation := annotations[k8smetadataAnnotation.FluxKustomizeReconcile]
+
+		delete(labels, k8smetadataAnnotation.FluxKustomizeReconcile)
+		delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
+
+		if hadLabel || hadAnnotation {
+			state = append(state, fmt.Sprintf(`removed annotations["%s"]`, k8smetadataAnnotation.FluxKustomizeReconcile))
+		}
+	}
+	accessor.SetLabels(labels)
+	accessor.SetAnnotations(annotations)
 
 	err = s.client.Patch(ctx, appCR, patch)
 	if err != nil {

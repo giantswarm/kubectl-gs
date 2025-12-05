@@ -133,7 +133,7 @@ func (t *tableBuilder) render() string {
 }
 
 // DeployOutput renders a formatted deploy success message
-func DeployOutput(resourceType, name, version, namespace string) string {
+func DeployOutput(resourceType, name, version, namespace string, showReminder bool) string {
 	var b strings.Builder
 
 	// Header
@@ -151,26 +151,28 @@ func DeployOutput(resourceType, name, version, namespace string) string {
 	)
 	b.WriteString(boxStyle.Render(details) + "\n")
 
-	// Reminder
-	var undeployCmd string
-	if resourceType == "config" {
-		undeployCmd = fmt.Sprintf("kubectl gs deploy -t config -u %s", name)
-	} else {
-		undeployCmd = fmt.Sprintf("kubectl gs deploy -u %s", name)
-	}
+	// Reminder (only show if not using --undeploy-on-exit)
+	if showReminder {
+		var undeployCmd string
+		if resourceType == "config" {
+			undeployCmd = fmt.Sprintf("kubectl gs deploy -t config -u %s", name)
+		} else {
+			undeployCmd = fmt.Sprintf("kubectl gs deploy -u %s", name)
+		}
 
-	reminder := fmt.Sprintf(
-		"%s Don't forget to undeploy after testing:\n  %s",
-		warningStyle.Render("⚠"),
-		mutedStyle.Render(undeployCmd),
-	)
-	b.WriteString(reminderStyle.Render(reminder) + "\n")
+		reminder := fmt.Sprintf(
+			"%s Don't forget to undeploy after testing:\n  %s",
+			warningStyle.Render("⚠"),
+			mutedStyle.Render(undeployCmd),
+		)
+		b.WriteString(reminderStyle.Render(reminder) + "\n")
+	}
 
 	return b.String()
 }
 
 // UpdateOutput renders a formatted update success message
-func UpdateOutput(name, namespace string, changes []string) string {
+func UpdateOutput(name, namespace string, changes []string, showReminder bool) string {
 	var b strings.Builder
 
 	// Header
@@ -194,13 +196,15 @@ func UpdateOutput(name, namespace string, changes []string) string {
 
 	b.WriteString(boxStyle.Render(details) + "\n")
 
-	// Reminder
-	reminder := fmt.Sprintf(
-		"%s Don't forget to undeploy after testing:\n  %s",
-		warningStyle.Render("⚠"),
-		mutedStyle.Render(fmt.Sprintf("kubectl gs deploy -u %s", name)),
-	)
-	b.WriteString(reminderStyle.Render(reminder) + "\n")
+	// Reminder (only show if not using --undeploy-on-exit)
+	if showReminder {
+		reminder := fmt.Sprintf(
+			"%s Don't forget to undeploy after testing:\n  %s",
+			warningStyle.Render("⚠"),
+			mutedStyle.Render(fmt.Sprintf("kubectl gs deploy -u %s", name)),
+		)
+		b.WriteString(reminderStyle.Render(reminder) + "\n")
+	}
 
 	return b.String()
 }

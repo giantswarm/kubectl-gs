@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
+	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -14,13 +15,13 @@ import (
 func isSuspended(obj metav1.Object) bool {
 	annotations := obj.GetAnnotations()
 	if annotations != nil {
-		if val, ok := annotations["kustomize.toolkit.fluxcd.io/reconcile"]; ok && val == "disabled" {
+		if val, ok := annotations[k8smetadataAnnotation.FluxKustomizeReconcile]; ok && val == "disabled" {
 			return true
 		}
 	}
 	labels := obj.GetLabels()
 	if labels != nil {
-		if val, ok := labels["kustomize.toolkit.fluxcd.io/reconcile"]; ok && val == "disabled" {
+		if val, ok := labels[k8smetadataAnnotation.FluxKustomizeReconcile]; ok && val == "disabled" {
 			return true
 		}
 	}
@@ -51,7 +52,7 @@ func (r *runner) deployConfig(ctx context.Context, spec *resourceSpec) error {
 		if annotations == nil {
 			annotations = make(map[string]string)
 		}
-		annotations["kustomize.toolkit.fluxcd.io/reconcile"] = "disabled"
+		annotations[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
 		gitRepo.SetAnnotations(annotations)
 
 		// Update the spec.ref.branch to the desired version (branch)
@@ -73,7 +74,7 @@ func (r *runner) deployConfig(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := DeployOutput("config", resourceName, spec.version, resourceNamespace)
+	output := DeployOutput("config", resourceName, spec.version, resourceNamespace, !r.flag.UndeployOnExit)
 	fmt.Fprint(r.stdout, output)
 	return nil
 }
@@ -98,14 +99,14 @@ func (r *runner) undeployConfig(ctx context.Context, spec *resourceSpec) error {
 		// Remove the Flux reconcile annotation
 		annotations := gitRepo.GetAnnotations()
 		if annotations != nil {
-			delete(annotations, "kustomize.toolkit.fluxcd.io/reconcile")
+			delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
 			gitRepo.SetAnnotations(annotations)
 		}
 
 		// Remove the Flux reconcile label if present
 		labels := gitRepo.GetLabels()
 		if labels != nil {
-			delete(labels, "kustomize.toolkit.fluxcd.io/reconcile")
+			delete(labels, k8smetadataAnnotation.FluxKustomizeReconcile)
 			gitRepo.SetLabels(labels)
 		}
 
