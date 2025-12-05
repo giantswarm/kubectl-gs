@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 )
 
 type runner struct {
@@ -21,6 +22,7 @@ type runner struct {
 	flag         *flag
 	logger       micrologger.Logger
 	fs           afero.Fs
+	service      app.Interface
 	stderr       io.Writer
 	stdout       io.Writer
 }
@@ -146,35 +148,57 @@ func (r *runner) handleStatus(ctx context.Context) error {
 	return nil
 }
 
+func (r *runner) getService() error {
+	if r.service != nil {
+		return nil
+	}
+
+	client, err := r.commonConfig.GetClient(r.logger)
+	if err != nil {
+		return err
+	}
+
+	serviceConfig := app.Config{
+		Client: client.CtrlClient(),
+	}
+	r.service, err = app.New(serviceConfig)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
-	app := &applicationv1alpha1.App{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "application.giantswarm.io/v1alpha1",
-			Kind:       "App",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      spec.name,
-			Namespace: r.flag.Namespace,
-		},
-		Spec: applicationv1alpha1.AppSpec{
-			Name:      spec.name,
-			Namespace: r.flag.Namespace,
-			Version:   spec.version,
-			Catalog:   r.flag.Catalog,
-		},
+	// Initialize the app service
+	err := r.getService()
+	if err != nil {
+		return err
 	}
 
 	// Try to get existing app
 	existingApp := &applicationv1alpha1.App{}
-	err := ctrlClient.Get(ctx, client.ObjectKey{
+	err = ctrlClient.Get(ctx, client.ObjectKey{
 		Name:      spec.name,
 		Namespace: r.flag.Namespace,
 	}, existingApp)
+
 	if err != nil {
-		// App doesn't exist, create it
+		// App doesn't exist, create it using the app service
 		if client.IgnoreNotFound(err) == nil {
-			err = ctrlClient.Create(ctx, app)
-			if err != nil {
+			createOptions := app.CreateOptions{
+				Name:         spec.name,
+				Namespace:    r.flag.Namespace,
+				AppName:      spec.name,
+				AppNamespace: r.flag.Namespace,
+				AppCatalog:   r.flag.Catalog,
+				AppVersion:   spec.version,
+			}
+
+			_, err = r.service.Create(ctx, createOptions)
+			if app.IsNoResources(err) {
+				return fmt.Errorf("no app with the name %s and the version %s found in the catalog", spec.name, spec.version)
+			} else if err != nil {
 				return err
 			}
 			fmt.Fprintf(r.stdout, "App %s@%s deployed successfully to namespace %s\n", spec.name, spec.version, r.flag.Namespace)
@@ -183,15 +207,24 @@ func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *
 		return err
 	}
 
-	// App exists, update it
-	existingApp.Spec.Version = spec.version
-	existingApp.Spec.Catalog = r.flag.Catalog
-	err = ctrlClient.Update(ctx, existingApp)
-	if err != nil {
+	// App exists, use the app service to patch it with version validation
+	patchOptions := app.PatchOptions{
+		Namespace:             r.flag.Namespace,
+		Name:                  spec.name,
+		Version:               spec.version,
+		SuspendReconciliation: false,
+	}
+
+	state, err := r.service.Patch(ctx, patchOptions)
+	if app.IsNotFound(err) {
+		return fmt.Errorf("app %s not found in namespace %s", spec.name, r.flag.Namespace)
+	} else if app.IsNoResources(err) {
+		return fmt.Errorf("no app with the name %s and the version %s found in the catalog", spec.name, spec.version)
+	} else if err != nil {
 		return err
 	}
-	fmt.Fprintf(r.stdout, "App %s updated to version %s in namespace %s\n", spec.name, spec.version, r.flag.Namespace)
 
+	fmt.Fprintf(r.stdout, "App %s in namespace %s updated with %s\n", spec.name, r.flag.Namespace, strings.Join(state, " "))
 	return nil
 }
 

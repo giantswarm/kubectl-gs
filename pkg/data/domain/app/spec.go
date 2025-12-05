@@ -34,6 +34,20 @@ type PatchOptions struct {
 	Version               string
 }
 
+// CreateOptions are the parameters that the Create method takes.
+type CreateOptions struct {
+	Name                string
+	Namespace           string
+	AppName             string
+	AppNamespace        string
+	AppCatalog          string
+	AppVersion          string
+	ConfigVersion       string
+	DisableForceUpgrade bool
+	UserConfigMapName   string
+	UserSecretName      string
+}
+
 type Resource interface {
 	Object() runtime.Object
 }
@@ -42,6 +56,7 @@ type Resource interface {
 // Using this instead of a regular 'struct' makes mocking the
 // service in tests much simpler.
 type Interface interface {
+	Create(context.Context, CreateOptions) (*applicationv1alpha1.App, error)
 	Get(context.Context, GetOptions) (Resource, error)
 	Patch(context.Context, PatchOptions) ([]string, error)
 }

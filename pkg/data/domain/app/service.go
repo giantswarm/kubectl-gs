@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	gsapp "github.com/giantswarm/app/v7/pkg/app"
 	"github.com/giantswarm/appcatalog"
 	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
@@ -81,6 +82,41 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	}
 
 	return resource, nil
+}
+
+// Create creates a new app CR using the same approach as architect.
+func (s *Service) Create(ctx context.Context, options CreateOptions) (*applicationv1alpha1.App, error) {
+	// Use the giantswarm/app package to create the App CR with proper defaults
+	config := gsapp.Config{
+		Name:                options.Name,
+		Namespace:           options.Namespace,
+		AppName:             options.AppName,
+		AppNamespace:        options.AppNamespace,
+		AppCatalog:          options.AppCatalog,
+		AppVersion:          options.AppVersion,
+		ConfigVersion:       options.ConfigVersion,
+		DisableForceUpgrade: options.DisableForceUpgrade,
+		UserConfigMapName:   options.UserConfigMapName,
+		UserSecretName:      options.UserSecretName,
+	}
+
+	appCR := gsapp.NewCR(config)
+
+	// Validate that the version exists in the catalog
+	if options.AppVersion != "" {
+		err := s.findVersion(ctx, appCR, options.AppVersion, options.AppCatalog, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	// Create the App CR in the cluster
+	err := s.client.Create(ctx, appCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return appCR, nil
 }
 
 // Patch patches an app CR given its name and namespace.
