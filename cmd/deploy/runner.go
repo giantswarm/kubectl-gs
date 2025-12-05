@@ -20,13 +20,13 @@ type runner struct {
 	flag         *flag
 	logger       micrologger.Logger
 	fs           afero.Fs
-	
+
 	// Service dependencies
-	appService   app.Interface
-	ctrlClient   client.Client
-	
-	stderr       io.Writer
-	stdout       io.Writer
+	appService app.Interface
+	ctrlClient client.Client
+
+	stderr io.Writer
+	stdout io.Writer
 }
 
 type resourceSpec struct {
@@ -76,7 +76,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	switch action {
 	case "deploy":
-		return r.handleDeploy(ctx, args)
+		return r.handleDeploy(ctx, cmd, args)
 	case "undeploy":
 		return r.handleUndeploy(ctx, args)
 	case "status":
@@ -88,14 +88,27 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 }
 
-func (r *runner) handleDeploy(ctx context.Context, args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("%w: resource@version argument is required for deploy action", ErrInvalidArgument)
-	}
+func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []string) error {
+	var spec *resourceSpec
+	var err error
 
-	spec, err := r.parseResourceSpec(args[0], true)
-	if err != nil {
-		return err
+	// Handle interactive mode
+	if r.flag.Interactive {
+		// Interactive mode: select app and version from catalog entries
+		spec, err = r.handleInteractiveMode(ctx, cmd, args)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Non-interactive mode: parse from args
+		if len(args) == 0 {
+			return fmt.Errorf("%w: resource@version argument is required for deploy action", ErrInvalidArgument)
+		}
+
+		spec, err = r.parseResourceSpec(args[0], true)
+		if err != nil {
+			return err
+		}
 	}
 
 	switch r.flag.Type {
@@ -106,6 +119,49 @@ func (r *runner) handleDeploy(ctx context.Context, args []string) error {
 	}
 
 	return fmt.Errorf("%w: unsupported resource type: %s", ErrInvalidFlag, r.flag.Type)
+}
+
+func (r *runner) handleInteractiveMode(ctx context.Context, cmd *cobra.Command, args []string) (*resourceSpec, error) {
+	// Extract app name filter from args if provided
+	appNameFilter := ""
+	if len(args) > 0 {
+		// Parse args[0] to extract app name (before @)
+		parts := strings.Split(args[0], "@")
+		appNameFilter = parts[0]
+	}
+
+	// Check if catalog flag was explicitly set to empty string (to trigger catalog selection)
+	catalogFilter := r.flag.Catalog
+	catalogChanged := cmd.Flags().Changed("catalog")
+
+	// If catalog was explicitly set to empty string, let user select it
+	if catalogChanged && catalogFilter == "" {
+		selectedCatalog, err := r.selectCatalog(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to select catalog: %w", err)
+		}
+		catalogFilter = selectedCatalog
+		// Update the flag so deployment uses the selected catalog
+		r.flag.Catalog = selectedCatalog
+	}
+
+	// Select app catalog entry
+	result, err := r.selectCatalogEntry(ctx, appNameFilter, catalogFilter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select catalog entry: %w", err)
+	}
+
+	if result.Canceled {
+		return nil, fmt.Errorf("selection canceled")
+	}
+
+	// Update catalog flag to match the selected entry's catalog
+	r.flag.Catalog = result.Catalog
+
+	return &resourceSpec{
+		name:    result.AppName,
+		version: result.Version,
+	}, nil
 }
 
 func (r *runner) handleUndeploy(ctx context.Context, args []string) error {

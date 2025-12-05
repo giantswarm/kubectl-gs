@@ -26,6 +26,15 @@ deployments.`
 	examples = `  # Deploy an app with a specific version
   kubectl gs deploy -d my-app@1.0.0-commit
 
+  # Deploy interactively (select app and version from catalog)
+  kubectl gs deploy -d -i
+
+  # Deploy interactively with a specific app name filter
+  kubectl gs deploy -d -i my-app
+
+  # Deploy interactively and choose catalog first (pass empty string to catalog)
+  kubectl gs deploy -d -i -c ""
+
   # Deploy a config repository
   kubectl gs deploy -t config -d config-repo@branch-ref
 

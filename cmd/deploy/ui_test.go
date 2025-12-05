@@ -285,13 +285,13 @@ func TestListVersionsOutput_MarksDeployedVersion(t *testing.T) {
 
 func TestStatusOutput_WithVersionInfo(t *testing.T) {
 	testCases := []struct {
-		name                     string
-		kustomizationsReady      bool
-		notReadyKustomizations   []resourceInfo
-		suspendedKustomizations  []resourceInfo
-		suspendedApps            []resourceInfo
-		suspendedGitRepos        []resourceInfo
-		expectedContains         []string
+		name                    string
+		kustomizationsReady     bool
+		notReadyKustomizations  []resourceInfo
+		suspendedKustomizations []resourceInfo
+		suspendedApps           []resourceInfo
+		suspendedGitRepos       []resourceInfo
+		expectedContains        []string
 	}{
 		{
 			name:                    "all healthy",
@@ -400,9 +400,9 @@ func TestStatusOutput_WithVersionInfo(t *testing.T) {
 			},
 		},
 		{
-			name:                    "suspended kustomizations",
-			kustomizationsReady:     true,
-			notReadyKustomizations:  []resourceInfo{},
+			name:                   "suspended kustomizations",
+			kustomizationsReady:    true,
+			notReadyKustomizations: []resourceInfo{},
 			suspendedKustomizations: []resourceInfo{
 				{
 					name:      "flux-system",

@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	flagDeploy    = "deploy"
-	flagUndeploy  = "undeploy"
-	flagStatus    = "status"
-	flagList      = "list"
-	flagNamespace = "namespace"
-	flagType      = "type"
-	flagCatalog   = "catalog"
+	flagDeploy      = "deploy"
+	flagUndeploy    = "undeploy"
+	flagStatus      = "status"
+	flagList        = "list"
+	flagNamespace   = "namespace"
+	flagType        = "type"
+	flagCatalog     = "catalog"
+	flagInteractive = "interactive"
 
 	// Resource types
 	resourceTypeApp    = "app"
@@ -42,9 +43,10 @@ type flag struct {
 	List     string
 
 	// Option flags
-	Namespace string
-	Type      string
-	Catalog   string
+	Namespace   string
+	Type        string
+	Catalog     string
+	Interactive bool
 
 	// Print flags
 	print *genericclioptions.PrintFlags
@@ -61,6 +63,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.Namespace, flagNamespace, "n", "", "Namespace where the resource lives (default for app: giantswarm, default for config: flux-giantswarm)")
 	cmd.Flags().StringVarP(&f.Type, flagType, "t", resourceTypeApp, "Resource type to handle either 'app' or 'config'")
 	cmd.Flags().StringVarP(&f.Catalog, flagCatalog, "c", defaultCatalog, "Catalog to use for the app deployment (only for app type)")
+	cmd.Flags().BoolVarP(&f.Interactive, flagInteractive, "i", false, "Interactive mode: select app and version interactively from catalog entries")
 
 	// Print flags for output formatting
 	f.print = genericclioptions.NewPrintFlags("")
@@ -102,6 +105,16 @@ func (f *flag) Validate() error {
 	validTypes := []string{resourceTypeApp, resourceTypeConfig}
 	if !slices.Contains(validTypes, f.Type) {
 		return fmt.Errorf("%w: --%s must be one of: %s", ErrInvalidFlag, flagType, strings.Join(validTypes, ", "))
+	}
+
+	// Validate interactive flag
+	if f.Interactive {
+		if !f.Deploy {
+			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagInteractive, flagDeploy)
+		}
+		if f.Type != resourceTypeApp {
+			return fmt.Errorf("%w: --%s is only supported for app deployments", ErrInvalidFlag, flagInteractive)
+		}
 	}
 
 	// Set default namespace based on resource type or list type if not specified
