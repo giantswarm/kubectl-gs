@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
@@ -22,7 +21,7 @@ type runner struct {
 	flag         *flag
 	logger       micrologger.Logger
 	fs           afero.Fs
-	service      app.Interface
+	appService   app.Interface
 	stderr       io.Writer
 	stdout       io.Writer
 }
@@ -148,8 +147,8 @@ func (r *runner) handleStatus(ctx context.Context) error {
 	return nil
 }
 
-func (r *runner) getService() error {
-	if r.service != nil {
+func (r *runner) getAppService() error {
+	if r.appService != nil {
 		return nil
 	}
 
@@ -161,7 +160,7 @@ func (r *runner) getService() error {
 	serviceConfig := app.Config{
 		Client: client.CtrlClient(),
 	}
-	r.service, err = app.New(serviceConfig)
+	r.appService, err = app.New(serviceConfig)
 	if err != nil {
 		return err
 	}
@@ -171,20 +170,19 @@ func (r *runner) getService() error {
 
 func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
 	// Initialize the app service
-	err := r.getService()
+	err := r.getAppService()
 	if err != nil {
 		return err
 	}
 
-	// Try to get existing app
+	// Try to get existing app to determine if we need to create or update
 	existingApp := &applicationv1alpha1.App{}
 	err = ctrlClient.Get(ctx, client.ObjectKey{
 		Name:      spec.name,
 		Namespace: r.flag.Namespace,
 	}, existingApp)
-
 	if err != nil {
-		// App doesn't exist, create it using the app service
+		// App doesn't exist, create it
 		if client.IgnoreNotFound(err) == nil {
 			createOptions := app.CreateOptions{
 				Name:         spec.name,
@@ -195,7 +193,7 @@ func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *
 				AppVersion:   spec.version,
 			}
 
-			_, err = r.service.Create(ctx, createOptions)
+			_, err = r.appService.Create(ctx, createOptions)
 			if app.IsNoResources(err) {
 				return fmt.Errorf("no app with the name %s and the version %s found in the catalog", spec.name, spec.version)
 			} else if err != nil {
@@ -215,7 +213,7 @@ func (r *runner) deployApp(ctx context.Context, ctrlClient client.Client, spec *
 		SuspendReconciliation: false,
 	}
 
-	state, err := r.service.Patch(ctx, patchOptions)
+	state, err := r.appService.Patch(ctx, patchOptions)
 	if app.IsNotFound(err) {
 		return fmt.Errorf("app %s not found in namespace %s", spec.name, r.flag.Namespace)
 	} else if app.IsNoResources(err) {
@@ -237,27 +235,8 @@ func (r *runner) deployConfig(ctx context.Context, ctrlClient client.Client, spe
 }
 
 func (r *runner) undeployApp(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {
-	app := &applicationv1alpha1.App{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "application.giantswarm.io/v1alpha1",
-			Kind:       "App",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      spec.name,
-			Namespace: r.flag.Namespace,
-		},
-	}
-
-	err := ctrlClient.Delete(ctx, app)
-	if err != nil {
-		if client.IgnoreNotFound(err) == nil {
-			return fmt.Errorf("%w: app %s not found in namespace %s", ErrResourceNotFound, spec.name, r.flag.Namespace)
-		}
-		return err
-	}
-
-	fmt.Fprintf(r.stdout, "App %s undeployed from namespace %s\n", spec.name, r.flag.Namespace)
-	return nil
+	// TODO: Implement undeploy
+	return fmt.Errorf("undeploy not yet implemented")
 }
 
 func (r *runner) undeployConfig(ctx context.Context, ctrlClient client.Client, spec *resourceSpec) error {

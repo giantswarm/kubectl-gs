@@ -84,6 +84,61 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
+// GetApp fetches a single app CR by namespace and name, returning the concrete type.
+func (s *Service) GetApp(ctx context.Context, namespace, name string) (*applicationv1alpha1.App, error) {
+	var err error
+
+	appCR := &applicationv1alpha1.App{}
+	err = s.client.Get(ctx, client.ObjectKey{
+		Namespace: namespace,
+		Name:      name,
+	}, appCR)
+	if apierrors.IsNotFound(err) {
+		return nil, ErrNotFound
+	} else if meta.IsNoMatchError(err) {
+		return nil, ErrNoMatch
+	} else if err != nil {
+		return nil, err
+	}
+
+	appCR = omitManagedFields(appCR)
+	appCR.TypeMeta = metav1.TypeMeta{
+		APIVersion: "app.application.giantswarm.io/v1alpha1",
+		Kind:       "App",
+	}
+
+	return appCR, nil
+}
+
+// ListApps fetches all app CRs in a namespace, returning the concrete AppList type.
+func (s *Service) ListApps(ctx context.Context, namespace string) (*applicationv1alpha1.AppList, error) {
+	var err error
+
+	apps := &applicationv1alpha1.AppList{}
+
+	{
+		lo := &client.ListOptions{
+			Namespace: namespace,
+		}
+
+		err = s.client.List(ctx, apps, lo)
+		if meta.IsNoMatchError(err) {
+			return nil, ErrNoMatch
+		} else if err != nil {
+			return nil, err
+		} else if len(apps.Items) == 0 {
+			return nil, ErrNoResources
+		}
+	}
+
+	// Clean up managed fields for each app
+	for i := range apps.Items {
+		apps.Items[i].ManagedFields = nil
+	}
+
+	return apps, nil
+}
+
 // Create creates a new app CR using the same approach as architect.
 func (s *Service) Create(ctx context.Context, options CreateOptions) (*applicationv1alpha1.App, error) {
 	// Use the giantswarm/app package to create the App CR with proper defaults

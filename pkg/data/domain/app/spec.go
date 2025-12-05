@@ -58,6 +58,8 @@ type Resource interface {
 type Interface interface {
 	Create(context.Context, CreateOptions) (*applicationv1alpha1.App, error)
 	Get(context.Context, GetOptions) (Resource, error)
+	GetApp(ctx context.Context, namespace, name string) (*applicationv1alpha1.App, error)
+	ListApps(ctx context.Context, namespace string) (*applicationv1alpha1.AppList, error)
 	Patch(context.Context, PatchOptions) ([]string, error)
 }
 
