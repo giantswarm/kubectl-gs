@@ -16,9 +16,10 @@ const (
 	flagList          = "list"
 	flagNamespace     = "namespace"
 	flagType          = "type"
-	flagCatalog       = "catalog"
-	flagInteractive   = "interactive"
+	flagCatalog        = "catalog"
+	flagInteractive    = "interactive"
 	flagUndeployOnExit = "undeploy-on-exit"
+	flagSync           = "sync"
 
 	// Resource types
 	resourceTypeApp    = "app"
@@ -46,9 +47,10 @@ type flag struct {
 	// Option flags
 	Namespace     string
 	Type          string
-	Catalog       string
-	Interactive   bool
+	Catalog        string
+	Interactive    bool
 	UndeployOnExit bool
+	Sync           bool
 
 	// Print flags
 	print *genericclioptions.PrintFlags
@@ -67,6 +69,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.Catalog, flagCatalog, "c", defaultCatalog, "Catalog to use for the app deployment (only for app type)")
 	cmd.Flags().BoolVarP(&f.Interactive, flagInteractive, "i", false, "Interactive mode: select app and version interactively from catalog entries")
 	cmd.Flags().BoolVarP(&f.UndeployOnExit, flagUndeployOnExit, "r", false, "Wait for interrupt signal and undeploy on exit")
+	cmd.Flags().BoolVar(&f.Sync, flagSync, false, "Force synchronous deployment by triggering flux reconciliation")
 
 	// Print flags for output formatting
 	f.print = genericclioptions.NewPrintFlags("")
@@ -124,6 +127,13 @@ func (f *flag) Validate() error {
 	if f.UndeployOnExit {
 		if !f.Deploy {
 			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagUndeployOnExit, flagDeploy)
+		}
+	}
+
+	// Validate sync flag
+	if f.Sync {
+		if !f.Deploy {
+			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagSync, flagDeploy)
 		}
 	}
 

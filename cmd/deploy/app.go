@@ -34,8 +34,19 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 				return err
 			}
 
-			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace, !r.flag.UndeployOnExit)
+			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace)
 			fmt.Fprint(r.stdout, output)
+
+			// Trigger flux reconciliation if --sync flag is set
+			if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
+				return err
+			}
+
+			// Show reminder last if not using --undeploy-on-exit
+			if !r.flag.UndeployOnExit {
+				fmt.Fprint(r.stdout, ReminderOutput("app", spec.name))
+			}
+
 			return nil
 		}
 		return err
@@ -64,8 +75,19 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := UpdateOutput(spec.name, r.flag.Namespace, state, !r.flag.UndeployOnExit)
+	output := UpdateOutput(spec.name, r.flag.Namespace, state)
 	fmt.Fprint(r.stdout, output)
+
+	// Trigger flux reconciliation if --sync flag is set
+	if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
+		return err
+	}
+
+	// Show reminder last if not using --undeploy-on-exit
+	if !r.flag.UndeployOnExit {
+		fmt.Fprint(r.stdout, ReminderOutput("app", spec.name))
+	}
+
 	return nil
 }
 

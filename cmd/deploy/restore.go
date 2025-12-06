@@ -68,6 +68,18 @@ func (r *runner) captureConfigState(ctx context.Context, configName, namespace s
 	}, nil
 }
 
+// restoreState restores the previous state based on resource type
+func (r *runner) restoreState(ctx context.Context, resourceType string, savedState interface{}) error {
+	switch resourceType {
+	case "app":
+		return r.restoreAppState(ctx, savedState.(*savedAppState))
+	case "config":
+		return r.restoreConfigState(ctx, savedState.(*savedConfigState))
+	default:
+		return fmt.Errorf("unsupported resource type: %s", resourceType)
+	}
+}
+
 // waitForInterruptAndRestore waits for an interrupt signal and restores the previous state
 func (r *runner) waitForInterruptAndRestore(ctx context.Context, resourceType string, savedState interface{}) error {
 	// Set up signal handler
@@ -82,15 +94,7 @@ func (r *runner) waitForInterruptAndRestore(ctx context.Context, resourceType st
 	<-signalCtx.Done()
 	fmt.Fprintf(r.stdout, "\n%s Stopping and restoring previous state...\n", warningStyle.Render("⚠"))
 
-	// Restore based on resource type
-	switch resourceType {
-	case "app":
-		return r.restoreAppState(ctx, savedState.(*savedAppState))
-	case "config":
-		return r.restoreConfigState(ctx, savedState.(*savedConfigState))
-	default:
-		return fmt.Errorf("unsupported resource type: %s", resourceType)
-	}
+	return r.restoreState(ctx, resourceType, savedState)
 }
 
 // restoreAppState restores an app to its previous state

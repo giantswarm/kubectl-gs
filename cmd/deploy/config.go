@@ -74,8 +74,19 @@ func (r *runner) deployConfig(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := DeployOutput("config", resourceName, spec.version, resourceNamespace, !r.flag.UndeployOnExit)
+	output := DeployOutput("config", resourceName, spec.version, resourceNamespace)
 	fmt.Fprint(r.stdout, output)
+
+	// Trigger flux reconciliation if --sync flag is set
+	if err := r.reconcileFluxSource(ctx, resourceName, resourceNamespace); err != nil {
+		return err
+	}
+
+	// Show reminder last if not using --undeploy-on-exit
+	if !r.flag.UndeployOnExit {
+		fmt.Fprint(r.stdout, ReminderOutput("config", spec.name))
+	}
+
 	return nil
 }
 

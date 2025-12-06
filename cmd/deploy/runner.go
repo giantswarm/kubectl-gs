@@ -113,6 +113,7 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 
 	// Capture state before deployment if undeploy-on-exit is enabled
 	var savedState interface{}
+	var stateCaptured bool
 	if r.flag.UndeployOnExit {
 		var captureErr error
 		switch r.flag.Type {
@@ -125,11 +126,14 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 		}
 		if captureErr != nil {
 			fmt.Fprintf(r.stderr, "Warning: failed to capture state for restore: %v\n", captureErr)
+		} else {
+			stateCaptured = true
 		}
 	}
 
 	// Perform the deployment
 	var deployErr error
+	var deploymentSucceeded bool
 	switch r.flag.Type {
 	case "app":
 		deployErr = r.deployApp(ctx, spec)
@@ -140,11 +144,21 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 	}
 
 	if deployErr != nil {
+		// If undeploy-on-exit is enabled and state was captured, restore before returning error
+		if r.flag.UndeployOnExit && stateCaptured {
+			fmt.Fprintf(r.stderr, "\n%s Deployment failed, restoring previous state...\n", warningStyle.Render("⚠"))
+			restoreErr := r.restoreState(ctx, r.flag.Type, savedState)
+			if restoreErr != nil {
+				fmt.Fprintf(r.stderr, "Error: failed to restore state: %v\n", restoreErr)
+			}
+		}
 		return deployErr
 	}
 
+	deploymentSucceeded = true
+
 	// If undeploy-on-exit is enabled, wait for interrupt and restore
-	if r.flag.UndeployOnExit {
+	if r.flag.UndeployOnExit && deploymentSucceeded {
 		return r.waitForInterruptAndRestore(ctx, r.flag.Type, savedState)
 	}
 

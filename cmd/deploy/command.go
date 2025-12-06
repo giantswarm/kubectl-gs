@@ -26,6 +26,9 @@ deployments.`
 	examples = `  # Deploy an app with a specific version
   kubectl gs deploy -d my-app@1.0.0-commit
 
+  # Deploy with synchronous reconciliation
+  kubectl gs deploy -d --sync my-app@1.0.0-commit
+
   # Deploy and undeploy on exit (Ctrl+C to undeploy)
   kubectl gs deploy -d -r my-app@1.0.0-commit
 
@@ -43,6 +46,9 @@ deployments.`
 
   # Deploy a config repository
   kubectl gs deploy -t config -d config-repo@branch-ref
+
+  # Deploy a config repository with synchronous reconciliation
+  kubectl gs deploy -t config -d --sync config-repo@branch-ref
 
   # Deploy a config repository with undeploy-on-exit
   kubectl gs deploy -t config -d -r config-repo@branch-ref
