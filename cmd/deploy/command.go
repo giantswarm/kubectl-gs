@@ -59,7 +59,7 @@ deployments.`
   # Undeploy a config repository
   kubectl gs deploy -t config -u config-repo
 
-  # Show status of all resources on the cluster
+  # Show status of kustomizations, gitrepositories, and apps resources on the cluster
   kubectl gs deploy -s
 
   # List all apps in the default namespace

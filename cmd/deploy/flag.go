@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	flagDeploy        = "deploy"
-	flagUndeploy      = "undeploy"
-	flagStatus        = "status"
-	flagList          = "list"
-	flagNamespace     = "namespace"
-	flagType          = "type"
+	flagDeploy         = "deploy"
+	flagUndeploy       = "undeploy"
+	flagStatus         = "status"
+	flagList           = "list"
+	flagNamespace      = "namespace"
+	flagType           = "type"
 	flagCatalog        = "catalog"
 	flagInteractive    = "interactive"
 	flagUndeployOnExit = "undeploy-on-exit"
@@ -45,8 +45,8 @@ type flag struct {
 	List     string
 
 	// Option flags
-	Namespace     string
-	Type          string
+	Namespace      string
+	Type           string
 	Catalog        string
 	Interactive    bool
 	UndeployOnExit bool
