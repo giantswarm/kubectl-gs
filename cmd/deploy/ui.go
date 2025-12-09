@@ -519,11 +519,11 @@ func ListConfigVersionsOutput(configName string, prs []PRInfo, currentBranch str
 
 	// Display PRs
 	for _, pr := range prs {
+		// Format: • <branch> (deployed) [PR #<number>: <title> by @<author>]
 		prDisplay := fmt.Sprintf(
-			"%s PR #%d: %s",
+			"%s %s",
 			infoStyle.Render("•"),
-			pr.Number,
-			pr.Title,
+			pr.HeadRefName,
 		)
 
 		// Mark the current branch
@@ -531,7 +531,8 @@ func ListConfigVersionsOutput(configName string, prs []PRInfo, currentBranch str
 			prDisplay += " " + warningStyle.Render("(deployed)")
 		}
 
-		prDisplay += mutedStyle.Render(fmt.Sprintf(" [%s by @%s]", pr.HeadRefName, pr.Author.Login))
+		// Add PR info
+		prDisplay += mutedStyle.Render(fmt.Sprintf(" [PR #%d: %s by @%s]", pr.Number, pr.Title, pr.Author.Login))
 
 		b.WriteString(listItemStyle.Render(prDisplay) + "\n")
 	}
