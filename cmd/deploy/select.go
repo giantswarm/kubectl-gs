@@ -85,6 +85,21 @@ func (i configPRItem) String() string {
 	return i.displayText
 }
 
+// configVersionItem represents a combined config repo + branch/PR for selection
+type configVersionItem struct {
+	configName    string
+	branch        string
+	prNumber      int
+	prTitle       string
+	author        string
+	isDeployed    bool
+	displayText   string
+}
+
+func (i configVersionItem) String() string {
+	return i.displayText
+}
+
 type itemMatch struct {
 	item      interface{}
 	positions []int
@@ -168,6 +183,8 @@ func (s itemSource) String(i int) string {
 	case configRepoItem:
 		return item.String()
 	case configPRItem:
+		return item.String()
+	case configVersionItem:
 		return item.String()
 	default:
 		return ""
@@ -296,6 +313,8 @@ func (m selectorModel) View() string {
 		case configRepoItem:
 			displayText = item.String()
 		case configPRItem:
+			displayText = item.String()
+		case configVersionItem:
 			displayText = item.String()
 		}
 		s.WriteString(highlightMatches(displayText, m.filtered[i].positions, i == m.cursor))
@@ -642,4 +661,137 @@ func extractConfigNameFromURL(url string) string {
 	name := parts[len(parts)-1]
 	name = strings.TrimSuffix(name, ".git")
 	return name
+}
+
+// selectConfigVersion presents a combined selector of all config repos and their PRs
+func (r *runner) selectConfigVersion(ctx context.Context, configNameFilter string) (*SelectionResult, error) {
+	// Get all config repositories
+	gitRepoList, err := r.listAllConfigRepos(ctx, r.flag.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list config repositories: %w", err)
+	}
+
+	if len(gitRepoList.Items) == 0 {
+		return nil, fmt.Errorf("no config repositories found in namespace %s", r.flag.Namespace)
+	}
+
+	// Collect all versions (PRs) from all matching repos
+	var items []interface{}
+
+	err = RunWithSpinner("Fetching PRs from config repositories", func() error {
+		for _, gitRepo := range gitRepoList.Items {
+			configName := extractConfigNameFromURL(gitRepo.Spec.URL)
+			if configName == "" {
+				continue
+			}
+
+			// Filter by name if provided
+			if configNameFilter != "" && !strings.Contains(configName, configNameFilter) {
+				continue
+			}
+
+			currentBranch := ""
+			if gitRepo.Spec.Reference != nil {
+				currentBranch = gitRepo.Spec.Reference.Branch
+			}
+
+			// Extract GitHub repo from URL
+			repoURL := gitRepo.Spec.URL
+			parts := strings.Split(repoURL, "github.com")
+			if len(parts) != 2 {
+				continue
+			}
+
+			path := parts[1]
+			if strings.HasPrefix(path, ":") {
+				if idx := strings.Index(path, "/"); idx != -1 {
+					path = path[idx:]
+				}
+			}
+			githubRepo := strings.TrimPrefix(path, "/")
+			githubRepo = strings.TrimPrefix(githubRepo, ":")
+			githubRepo = strings.TrimSuffix(githubRepo, ".git")
+
+			// Fetch PRs for this repo
+			var prs []PRInfo
+			cmd := exec.CommandContext(ctx, "gh", "pr", "list",
+				"--repo", githubRepo,
+				"--state", "open",
+				"--json", "number,title,headRefName,author,createdAt",
+			)
+
+			output, cmdErr := cmd.Output()
+			if cmdErr != nil {
+				// Skip repos where we can't fetch PRs
+				continue
+			}
+
+			jsonErr := json.Unmarshal(output, &prs)
+			if jsonErr != nil {
+				continue
+			}
+
+			// Add each PR as an item
+			for _, pr := range prs {
+				isDeployed := currentBranch != "" && pr.HeadRefName == currentBranch
+
+				// Format: config-name branch [PR #XXX: title by @author]
+				displayText := fmt.Sprintf("%-30s %-40s",
+					configName,
+					pr.HeadRefName)
+
+				if isDeployed {
+					displayText += " (deployed)"
+				}
+
+				items = append(items, configVersionItem{
+					configName: configName,
+					branch:     pr.HeadRefName,
+					prNumber:   pr.Number,
+					prTitle:    pr.Title,
+					author:     pr.Author.Login,
+					isDeployed: isDeployed,
+					displayText: displayText,
+				})
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(items) == 0 {
+		if configNameFilter != "" {
+			return nil, fmt.Errorf("no open PRs found for config repositories matching '%s'", configNameFilter)
+		}
+		return nil, fmt.Errorf("no open PRs found for any config repository")
+	}
+
+	// Create and run the selector
+	model := newSelectorModel(items, "Select config and branch > ")
+	p := tea.NewProgram(model, tea.WithAltScreen())
+
+	finalModel, err := p.Run()
+	if err != nil {
+		return nil, fmt.Errorf("error running config version selector: %w", err)
+	}
+
+	// Check if selection was made
+	m := finalModel.(selectorModel)
+	if m.selected == nil {
+		return &SelectionResult{Canceled: true}, nil
+	}
+
+	versionItem, ok := m.selected.(configVersionItem)
+	if !ok {
+		return nil, fmt.Errorf("invalid selection")
+	}
+
+	return &SelectionResult{
+		ConfigRepo: versionItem.configName,
+		Branch:     versionItem.branch,
+		Canceled:   false,
+	}, nil
 }

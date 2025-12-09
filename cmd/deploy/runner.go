@@ -222,27 +222,10 @@ func (r *runner) handleInteractiveConfigMode(ctx context.Context, args []string)
 		configNameFilter = parts[0]
 	}
 
-	// Select config repository
-	configRepoName, err := r.selectConfigRepo(ctx, configNameFilter)
+	// Select config version (combined repo + branch/PR)
+	result, err := r.selectConfigVersion(ctx, configNameFilter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to select config repository: %w", err)
-	}
-
-	// Get current branch for this config
-	gitRepo, err := r.findGitRepository(ctx, configRepoName, r.flag.Namespace)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find config repository: %w", err)
-	}
-
-	currentBranch := ""
-	if gitRepo.Spec.Reference != nil {
-		currentBranch = gitRepo.Spec.Reference.Branch
-	}
-
-	// Select PR/branch
-	result, err := r.selectConfigPR(ctx, configRepoName, currentBranch)
-	if err != nil {
-		return nil, fmt.Errorf("failed to select PR: %w", err)
+		return nil, fmt.Errorf("failed to select config version: %w", err)
 	}
 
 	if result.Canceled {
