@@ -70,8 +70,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.Type, flagType, "t", resourceTypeApp, "Resource type to handle either 'app' or 'config'")
 	cmd.Flags().StringVarP(&f.Catalog, flagCatalog, "c", defaultCatalog, "Catalog to use for the app deployment (only for app type)")
 	cmd.Flags().BoolVarP(&f.Interactive, flagInteractive, "i", false, "Interactive mode: select app and version interactively from catalog entries")
-	cmd.Flags().BoolVarP(&f.UndeployOnExit, flagUndeployOnExit, "r", false, "Wait for interrupt signal and undeploy on exit")
-	cmd.Flags().BoolVar(&f.Sync, flagSync, false, "Force synchronous deployment by triggering flux reconciliation")
+	cmd.Flags().BoolVarP(&f.UndeployOnExit, flagUndeployOnExit, "r", true, "Wait for interrupt signal and undeploy on exit")
+	cmd.Flags().BoolVar(&f.Sync, flagSync, true, "Force synchronous deployment by triggering flux reconciliation")
 	cmd.Flags().BoolVar(&f.InstalledOnly, flagInstalledOnly, false, "When listing apps, show only installed apps (default: show all catalog apps with installation status)")
 
 	// Print flags for output formatting
@@ -79,7 +79,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	f.print.AddFlags(cmd)
 }
 
-func (f *flag) Validate() error {
+func (f *flag) Validate(cmd *cobra.Command) error {
 	// Validate that exactly one action is specified
 	actionCount := 0
 	if f.Deploy {
@@ -126,15 +126,15 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate undeploy-on-exit flag
-	if f.UndeployOnExit {
+	// Validate undeploy-on-exit flag (only if explicitly set by user)
+	if cmd.Flags().Changed(flagUndeployOnExit) && f.UndeployOnExit {
 		if !f.Deploy {
 			return fmt.Errorf("%w: --%s can only be used with deploy action", ErrInvalidFlag, flagUndeployOnExit)
 		}
 	}
 
-	// Validate sync flag
-	if f.Sync {
+	// Validate sync flag (only if explicitly set by user)
+	if cmd.Flags().Changed(flagSync) && f.Sync {
 		if !f.Deploy && !f.Undeploy {
 			return fmt.Errorf("%w: --%s can only be used with deploy or undeploy actions", ErrInvalidFlag, flagSync)
 		}

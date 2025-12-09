@@ -49,7 +49,7 @@ type resourceInfo struct {
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	if err := r.flag.Validate(); err != nil {
+	if err := r.flag.Validate(cmd); err != nil {
 		return err
 	}
 
