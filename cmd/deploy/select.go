@@ -87,13 +87,13 @@ func (i configPRItem) String() string {
 
 // configVersionItem represents a combined config repo + branch/PR for selection
 type configVersionItem struct {
-	configName    string
-	branch        string
-	prNumber      int
-	prTitle       string
-	author        string
-	isDeployed    bool
-	displayText   string
+	configName  string
+	branch      string
+	prNumber    int
+	prTitle     string
+	author      string
+	isDeployed  bool
+	displayText string
 }
 
 func (i configVersionItem) String() string {
@@ -347,7 +347,7 @@ func (r *runner) selectCatalog(ctx context.Context) (string, error) {
 	}
 
 	// Create and run the selector
-	model := newSelectorModel(items, "Select catalog > ")
+	model := newSelectorModel(items, "Select catalog ")
 	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	finalModel, err := p.Run()
@@ -512,7 +512,7 @@ func (r *runner) selectConfigRepo(ctx context.Context, configNameFilter string) 
 	}
 
 	// Create and run the selector
-	model := newSelectorModel(items, "Select config repository > ")
+	model := newSelectorModel(items, "Select config repository ")
 	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	finalModel, err := p.Run()
@@ -580,7 +580,6 @@ func (r *runner) selectConfigPR(ctx context.Context, configRepoName string, curr
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -613,7 +612,7 @@ func (r *runner) selectConfigPR(ctx context.Context, configRepoName string, curr
 	}
 
 	// Create and run the selector
-	model := newSelectorModel(items, "Select PR/branch > ")
+	model := newSelectorModel(items, "Select PR/branch ")
 	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	finalModel, err := p.Run()
@@ -745,19 +744,18 @@ func (r *runner) selectConfigVersion(ctx context.Context, configNameFilter strin
 				}
 
 				items = append(items, configVersionItem{
-					configName: configName,
-					branch:     pr.HeadRefName,
-					prNumber:   pr.Number,
-					prTitle:    pr.Title,
-					author:     pr.Author.Login,
-					isDeployed: isDeployed,
+					configName:  configName,
+					branch:      pr.HeadRefName,
+					prNumber:    pr.Number,
+					prTitle:     pr.Title,
+					author:      pr.Author.Login,
+					isDeployed:  isDeployed,
 					displayText: displayText,
 				})
 			}
 		}
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -770,7 +768,7 @@ func (r *runner) selectConfigVersion(ctx context.Context, configNameFilter strin
 	}
 
 	// Create and run the selector
-	model := newSelectorModel(items, "Select config and branch > ")
+	model := newSelectorModel(items, "Select config and branch ")
 	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	finalModel, err := p.Run()

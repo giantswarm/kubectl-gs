@@ -170,12 +170,12 @@ func (r *runner) checkApps(ctx context.Context) ([]resourceInfo, error) {
 
 // appInfo represents an app with its installation status
 type appInfo struct {
-	name            string
-	version         string
-	catalog         string
-	status          string
-	installed       bool
-	installedInNs   string
+	name               string
+	version            string
+	catalog            string
+	status             string
+	installed          bool
+	installedInNs      string
 	availableInCatalog bool
 }
 
