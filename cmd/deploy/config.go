@@ -79,7 +79,7 @@ func (r *runner) deployConfig(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := DeployOutput("config", resourceName, spec.version, resourceNamespace)
+	output := DeployOutput(strings.ToLower(gitRepo.Kind), resourceName, spec.version, resourceNamespace)
 	fmt.Fprint(r.stdout, output)
 
 	// Show reminder last if not using --undeploy-on-exit
@@ -143,7 +143,7 @@ func (r *runner) undeployConfig(ctx context.Context, spec *resourceSpec) error {
 		}
 	}
 
-	output := UndeployOutput("config", resourceName, resourceNamespace, nil)
+	output := UndeployOutput(strings.ToLower(gitRepo.Kind), resourceName, resourceNamespace, nil)
 	fmt.Fprint(r.stdout, output)
 
 	return nil

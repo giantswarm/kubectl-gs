@@ -3,6 +3,7 @@ package deploy
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
@@ -10,10 +11,11 @@ import (
 
 func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 	// Try to get existing app to determine if we need to create or update
-	_, err := r.appService.GetApp(ctx, r.flag.Namespace, spec.name)
+	existingApp, err := r.appService.GetApp(ctx, r.flag.Namespace, spec.name)
 	if err != nil {
 		// App doesn't exist, create it
 		if app.IsNotFound(err) {
+			var createdApp *applicationv1alpha1.App
 			err = RunWithSpinner(fmt.Sprintf("Deploying app %s@%s", spec.name, spec.version), func() error {
 				createOptions := app.CreateOptions{
 					Name:         spec.name,
@@ -24,7 +26,8 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 					AppVersion:   spec.version,
 				}
 
-				_, createErr := r.appService.Create(ctx, createOptions)
+				var createErr error
+				createdApp, createErr = r.appService.Create(ctx, createOptions)
 				return createErr
 			})
 
@@ -39,7 +42,7 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 				return err
 			}
 
-			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace)
+			output := DeployOutput(strings.ToLower(createdApp.Kind), spec.name, spec.version, r.flag.Namespace)
 			fmt.Fprint(r.stdout, output)
 
 			// Show reminder last if not using --undeploy-on-exit
@@ -80,7 +83,7 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := UpdateOutput(spec.name, r.flag.Namespace, state)
+	output := UpdateOutput(strings.ToLower(existingApp.Kind), spec.name, r.flag.Namespace, state)
 	fmt.Fprint(r.stdout, output)
 
 	// Show reminder last if not using --undeploy-on-exit
@@ -92,8 +95,17 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 }
 
 func (r *runner) undeployApp(ctx context.Context, spec *resourceSpec) error {
+	// Get the app first to retrieve its Kind
+	appResource, err := r.appService.GetApp(ctx, r.flag.Namespace, spec.name)
+	if err != nil {
+		if app.IsNotFound(err) {
+			return fmt.Errorf("app %s not found in namespace %s", spec.name, r.flag.Namespace)
+		}
+		return err
+	}
+
 	var state []string
-	err := RunWithSpinner(fmt.Sprintf("Undeploying app %s", spec.name), func() error {
+	err = RunWithSpinner(fmt.Sprintf("Undeploying app %s", spec.name), func() error {
 		// Use the app service to patch the app and remove the Flux reconciliation annotation
 		// This allows Flux to manage the resource again
 		patchOptions := app.PatchOptions{
@@ -121,7 +133,7 @@ func (r *runner) undeployApp(ctx context.Context, spec *resourceSpec) error {
 		}
 	}
 
-	output := UndeployOutput("app", spec.name, r.flag.Namespace, state)
+	output := UndeployOutput(strings.ToLower(appResource.Kind), spec.name, r.flag.Namespace, state)
 	fmt.Fprint(r.stdout, output)
 
 	return nil

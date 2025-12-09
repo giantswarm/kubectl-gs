@@ -156,7 +156,7 @@ func (t *tableBuilder) render() string {
 }
 
 // DeployOutput renders a formatted deploy success message
-func DeployOutput(resourceType, name, version, namespace string) string {
+func DeployOutput(kind, name, version, namespace string) string {
 	var b strings.Builder
 
 	// Header
@@ -164,8 +164,9 @@ func DeployOutput(resourceType, name, version, namespace string) string {
 
 	// Details box
 	details := fmt.Sprintf(
-		"%s: %s\n%s: %s\n%s: %s",
+		"%s: %s/%s\n%s: %s\n%s: %s",
 		infoStyle.Render("Resource"),
+		kind,
 		name,
 		infoStyle.Render("Version"),
 		version,
@@ -195,7 +196,7 @@ func ReminderOutput(resourceType, name string) string {
 }
 
 // UpdateOutput renders a formatted update success message
-func UpdateOutput(name, namespace string, changes []string) string {
+func UpdateOutput(kind, name, namespace string, changes []string) string {
 	var b strings.Builder
 
 	// Header
@@ -203,8 +204,9 @@ func UpdateOutput(name, namespace string, changes []string) string {
 
 	// Details
 	details := fmt.Sprintf(
-		"%s: %s\n%s: %s",
+		"%s: %s/%s\n%s: %s",
 		infoStyle.Render("Resource"),
+		kind,
 		name,
 		infoStyle.Render("Namespace"),
 		namespace,
@@ -223,7 +225,7 @@ func UpdateOutput(name, namespace string, changes []string) string {
 }
 
 // UndeployOutput renders a formatted undeploy success message
-func UndeployOutput(resourceType, name, namespace string, changes []string) string {
+func UndeployOutput(kind, name, namespace string, changes []string) string {
 	var b strings.Builder
 
 	// Header
@@ -231,8 +233,9 @@ func UndeployOutput(resourceType, name, namespace string, changes []string) stri
 
 	// Details
 	details := fmt.Sprintf(
-		"%s: %s\n%s: %s",
+		"%s: %s/%s\n%s: %s",
 		infoStyle.Render("Resource"),
+		kind,
 		name,
 		infoStyle.Render("Namespace"),
 		namespace,
