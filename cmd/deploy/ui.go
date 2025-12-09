@@ -229,7 +229,7 @@ func UndeployOutput(kind, name, namespace string, changes []string) string {
 	var b strings.Builder
 
 	// Header
-	b.WriteString(successStyle.Render("✓ Undeployment Successful") + "\n\n")
+	b.WriteString(successStyle.Render("✓ Undeployment Successful") + "\n")
 
 	// Details
 	details := fmt.Sprintf(
