@@ -56,8 +56,17 @@ deployments.`
   # Undeploy an app
   kubectl gs deploy -u my-app
 
+  # Undeploy an app with synchronous reconciliation
+  kubectl gs deploy -u --sync my-app
+
+  # Undeploy interactively (select app from list)
+  kubectl gs deploy -u -i
+
   # Undeploy a config repository
   kubectl gs deploy -t config -u config-repo
+
+  # Undeploy a config repository with synchronous reconciliation
+  kubectl gs deploy -t config -u --sync config-repo
 
   # Show status of kustomizations, gitrepositories, and apps resources on the cluster
   kubectl gs deploy --status

@@ -92,10 +92,12 @@ func (r *runner) deployConfig(ctx context.Context, spec *resourceSpec) error {
 
 func (r *runner) undeployConfig(ctx context.Context, spec *resourceSpec) error {
 	var resourceName, resourceNamespace string
+	var gitRepo *sourcev1.GitRepository
 
 	err := RunWithSpinner(fmt.Sprintf("Undeploying config repository %s", spec.name), func() error {
 		// Find the GitRepository by matching its URL against the config repo name
-		gitRepo, findErr := r.findGitRepository(ctx, spec.name, r.flag.Namespace)
+		var findErr error
+		gitRepo, findErr = r.findGitRepository(ctx, spec.name, r.flag.Namespace)
 		if findErr != nil {
 			return fmt.Errorf("failed to find GitRepository for %s: %w", spec.name, findErr)
 		}
@@ -136,6 +138,14 @@ func (r *runner) undeployConfig(ctx context.Context, spec *resourceSpec) error {
 
 	output := UndeployOutput("config", resourceName, resourceNamespace, nil)
 	fmt.Fprint(r.stdout, output)
+
+	// Trigger flux reconciliation if --sync flag is set
+	if r.flag.Sync {
+		if err := r.reconcileFluxSource(ctx, resourceName, resourceNamespace); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

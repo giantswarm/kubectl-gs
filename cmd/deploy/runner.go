@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
@@ -209,13 +210,30 @@ func (r *runner) handleInteractiveMode(ctx context.Context, cmd *cobra.Command, 
 }
 
 func (r *runner) handleUndeploy(ctx context.Context, args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("%w: resource name is required for undeploy action", ErrInvalidArgument)
-	}
+	var spec *resourceSpec
+	var err error
 
-	spec, err := r.parseResourceSpec(args[0], false)
-	if err != nil {
-		return err
+	// Handle interactive mode
+	if r.flag.Interactive {
+		// Interactive mode: select app to undeploy
+		if r.flag.Type != "app" {
+			return fmt.Errorf("%w: interactive mode is only supported for app operations", ErrInvalidFlag)
+		}
+
+		spec, err = r.handleInteractiveUndeploy(ctx)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Non-interactive mode: parse from args
+		if len(args) == 0 {
+			return fmt.Errorf("%w: resource name is required for undeploy action", ErrInvalidArgument)
+		}
+
+		spec, err = r.parseResourceSpec(args[0], false)
+		if err != nil {
+			return err
+		}
 	}
 
 	switch r.flag.Type {
@@ -226,6 +244,62 @@ func (r *runner) handleUndeploy(ctx context.Context, args []string) error {
 	}
 
 	return fmt.Errorf("%w: unsupported resource type: %s", ErrInvalidFlag, r.flag.Type)
+}
+
+func (r *runner) handleInteractiveUndeploy(ctx context.Context) (*resourceSpec, error) {
+	// Get list of installed apps in the namespace
+	installedApps, err := r.appService.ListApps(ctx, r.flag.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list installed apps: %w", err)
+	}
+
+	if len(installedApps.Items) == 0 {
+		return nil, fmt.Errorf("no apps found in namespace %s", r.flag.Namespace)
+	}
+
+	// Build a list of app items for selection
+	items := make([]interface{}, len(installedApps.Items))
+	for i, app := range installedApps.Items {
+		// Format: name version catalog
+		title := fmt.Sprintf("%-40s %-20s %s",
+			app.Spec.Name,
+			app.Spec.Version,
+			app.Spec.Catalog)
+
+		items[i] = catalogEntryItem{
+			appName: app.Spec.Name,
+			version: app.Spec.Version,
+			catalog: app.Spec.Catalog,
+			title:   title,
+		}
+	}
+
+	// Create and run the selector
+	model := newSelectorModel(items, "Select app to undeploy:")
+
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	finalModel, err := p.Run()
+	if err != nil {
+		return nil, fmt.Errorf("error running app selector: %w", err)
+	}
+
+	m := finalModel.(selectorModel)
+	if m.err != nil {
+		return nil, m.err
+	}
+
+	if m.selected == nil {
+		return nil, fmt.Errorf("selection canceled")
+	}
+
+	selectedItem, ok := m.selected.(catalogEntryItem)
+	if !ok {
+		return nil, fmt.Errorf("unexpected item type")
+	}
+
+	return &resourceSpec{
+		name: selectedItem.appName,
+	}, nil
 }
 
 func (r *runner) handleStatus(ctx context.Context) error {

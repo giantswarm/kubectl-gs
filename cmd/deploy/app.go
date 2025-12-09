@@ -116,6 +116,14 @@ func (r *runner) undeployApp(ctx context.Context, spec *resourceSpec) error {
 
 	output := UndeployOutput("app", spec.name, r.flag.Namespace, state)
 	fmt.Fprint(r.stdout, output)
+
+	// Trigger flux reconciliation if --sync flag is set
+	if r.flag.Sync {
+		if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

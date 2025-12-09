@@ -118,25 +118,25 @@ func (f *flag) Validate() error {
 
 	// Validate interactive flag
 	if f.Interactive {
-		if !f.Deploy {
-			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagInteractive, flagDeploy)
+		if !f.Deploy && !f.Undeploy {
+			return fmt.Errorf("%w: --%s can only be used with deploy or undeploy actions", ErrInvalidFlag, flagInteractive)
 		}
 		if f.Type != resourceTypeApp {
-			return fmt.Errorf("%w: --%s is only supported for app deployments", ErrInvalidFlag, flagInteractive)
+			return fmt.Errorf("%w: --%s is only supported for app operations", ErrInvalidFlag, flagInteractive)
 		}
 	}
 
 	// Validate undeploy-on-exit flag
 	if f.UndeployOnExit {
 		if !f.Deploy {
-			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagUndeployOnExit, flagDeploy)
+			return fmt.Errorf("%w: --%s can only be used with deploy action", ErrInvalidFlag, flagUndeployOnExit)
 		}
 	}
 
 	// Validate sync flag
 	if f.Sync {
-		if !f.Deploy {
-			return fmt.Errorf("%w: --%s can only be used with --%s action", ErrInvalidFlag, flagSync, flagDeploy)
+		if !f.Deploy && !f.Undeploy {
+			return fmt.Errorf("%w: --%s can only be used with deploy or undeploy actions", ErrInvalidFlag, flagSync)
 		}
 	}
 
