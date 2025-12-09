@@ -490,6 +490,59 @@ func ListVersionsOutput(appName string, entries *applicationv1alpha1.AppCatalogE
 	return b.String()
 }
 
+// PRInfo represents a GitHub Pull Request for config versions
+type PRInfo struct {
+	Number      int
+	Title       string
+	HeadRefName string
+	Author      struct {
+		Login string
+	}
+	CreatedAt string
+}
+
+// ListConfigVersionsOutput renders a formatted list of config repository versions (PRs)
+func ListConfigVersionsOutput(configName string, prs []PRInfo, currentBranch string, githubRepo string) string {
+	var b strings.Builder
+
+	// Header
+	b.WriteString(titleStyle.Render(fmt.Sprintf("📋 Versions (PRs) for %s", configName)) + "\n")
+	b.WriteString(mutedStyle.Render(fmt.Sprintf("Repository: %s", githubRepo)) + "\n\n")
+
+	if len(prs) == 0 {
+		b.WriteString(warningStyle.Render("No open PRs found") + "\n")
+		if currentBranch != "" {
+			b.WriteString(mutedStyle.Render(fmt.Sprintf("\nCurrent branch: %s", currentBranch)) + "\n")
+		}
+		return b.String()
+	}
+
+	// Display PRs
+	for _, pr := range prs {
+		prDisplay := fmt.Sprintf(
+			"%s PR #%d: %s",
+			infoStyle.Render("•"),
+			pr.Number,
+			pr.Title,
+		)
+
+		// Mark the current branch
+		if currentBranch != "" && pr.HeadRefName == currentBranch {
+			prDisplay += " " + warningStyle.Render("(deployed)")
+		}
+
+		prDisplay += mutedStyle.Render(fmt.Sprintf(" [%s by @%s]", pr.HeadRefName, pr.Author.Login))
+
+		b.WriteString(listItemStyle.Render(prDisplay) + "\n")
+	}
+
+	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d open PRs", len(prs))) + "\n")
+	if currentBranch != "" {
+		b.WriteString(mutedStyle.Render(fmt.Sprintf("Current branch: %s", currentBranch)) + "\n")
+	}
+	return b.String()
+}
+
 // ListConfigsOutput renders a formatted list of config repositories
 func ListConfigsOutput(gitRepoList *sourcev1.GitRepositoryList, namespace string) string {
 	var b strings.Builder

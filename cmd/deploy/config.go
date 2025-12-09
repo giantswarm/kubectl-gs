@@ -2,7 +2,9 @@ package deploy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
@@ -252,6 +254,93 @@ func (r *runner) listConfigs(ctx context.Context) error {
 	}
 
 	output := ListConfigsOutput(gitRepoList, r.flag.Namespace)
+	fmt.Fprint(r.stdout, output)
+	return nil
+}
+
+// listConfigVersions lists available versions (PRs) for a config repository
+func (r *runner) listConfigVersions(ctx context.Context, configRepoName string) error {
+	// Find the GitRepository
+	var gitRepo *sourcev1.GitRepository
+	var repoURL string
+	var currentBranch string
+
+	err := RunWithSpinner(fmt.Sprintf("Finding config repository %s", configRepoName), func() error {
+		var findErr error
+		gitRepo, findErr = r.findGitRepository(ctx, configRepoName, r.flag.Namespace)
+		if findErr != nil {
+			return findErr
+		}
+
+		repoURL = gitRepo.Spec.URL
+		if gitRepo.Spec.Reference != nil {
+			currentBranch = gitRepo.Spec.Reference.Branch
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to find config repository %s: %w", configRepoName, err)
+	}
+
+	// Check if gh CLI is available
+	if _, err := exec.LookPath("gh"); err != nil {
+		return fmt.Errorf("gh CLI not found in PATH. Please install gh CLI to list config versions: %w", err)
+	}
+
+	// Extract GitHub repo from URL
+	// URL format: https://github.com/giantswarm/config-repo-name or git@github.com:giantswarm/config-repo-name.git
+	var githubRepo string
+	if strings.Contains(repoURL, "github.com") {
+		parts := strings.Split(repoURL, "github.com")
+		if len(parts) == 2 {
+			// Remove leading separators (/, :) and any port numbers
+			path := parts[1]
+			// Handle :port/path format
+			if strings.HasPrefix(path, ":") {
+				// Find the next / which marks the start of the repo path
+				if idx := strings.Index(path, "/"); idx != -1 {
+					path = path[idx:]
+				}
+			}
+			githubRepo = strings.TrimPrefix(path, "/")
+			githubRepo = strings.TrimPrefix(githubRepo, ":")
+			githubRepo = strings.TrimSuffix(githubRepo, ".git")
+		}
+	}
+
+	if githubRepo == "" {
+		return fmt.Errorf("failed to extract GitHub repository from URL: %s", repoURL)
+	}
+
+	// Fetch open PRs using gh CLI
+	var prs []PRInfo
+	err = RunWithSpinner(fmt.Sprintf("Fetching open PRs for %s", githubRepo), func() error {
+		cmd := exec.CommandContext(ctx, "gh", "pr", "list",
+			"--repo", githubRepo,
+			"--state", "open",
+			"--json", "number,title,headRefName,author,createdAt",
+		)
+
+		output, cmdErr := cmd.Output()
+		if cmdErr != nil {
+			return fmt.Errorf("failed to list PRs: %w", cmdErr)
+		}
+
+		jsonErr := json.Unmarshal(output, &prs)
+		if jsonErr != nil {
+			return fmt.Errorf("failed to parse PR list: %w", jsonErr)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	output := ListConfigVersionsOutput(configRepoName, prs, currentBranch, githubRepo)
 	fmt.Fprint(r.stdout, output)
 	return nil
 }

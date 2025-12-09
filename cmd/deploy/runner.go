@@ -346,7 +346,10 @@ func (r *runner) handleList(ctx context.Context, args []string) error {
 		return r.listApps(ctx)
 	case "versions":
 		if len(args) == 0 {
-			return fmt.Errorf("%w: app name is required for listing versions", ErrInvalidArgument)
+			return fmt.Errorf("%w: resource name is required for listing versions", ErrInvalidArgument)
+		}
+		if r.flag.Type == resourceTypeConfig {
+			return r.listConfigVersions(ctx, args[0])
 		}
 		return r.listVersions(ctx, args[0])
 	case "configs":
