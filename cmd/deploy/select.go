@@ -2,15 +2,19 @@ package deploy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os/exec"
 	"slices"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/sahilm/fuzzy"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -23,10 +27,12 @@ var (
 
 // SelectionResult holds the result of the interactive selection
 type SelectionResult struct {
-	AppName  string
-	Version  string
-	Catalog  string
-	Canceled bool
+	AppName    string
+	Version    string
+	Catalog    string
+	ConfigRepo string
+	Branch     string
+	Canceled   bool
 }
 
 // catalogItem represents an item in the catalog selector
@@ -50,6 +56,33 @@ type catalogEntryItem struct {
 
 func (i catalogEntryItem) String() string {
 	return i.title
+}
+
+// configRepoItem represents a config repository in the selector
+type configRepoItem struct {
+	name   string
+	url    string
+	branch string
+}
+
+func (i configRepoItem) String() string {
+	if i.branch != "" {
+		return fmt.Sprintf("%-40s (current branch: %s)", i.name, i.branch)
+	}
+	return i.name
+}
+
+// configPRItem represents a PR for a config repository
+type configPRItem struct {
+	number      int
+	title       string
+	branch      string
+	author      string
+	displayText string
+}
+
+func (i configPRItem) String() string {
+	return i.displayText
 }
 
 type itemMatch struct {
@@ -131,6 +164,10 @@ func (s itemSource) String(i int) string {
 	case catalogItem:
 		return item.String()
 	case catalogEntryItem:
+		return item.String()
+	case configRepoItem:
+		return item.String()
+	case configPRItem:
 		return item.String()
 	default:
 		return ""
@@ -255,6 +292,10 @@ func (m selectorModel) View() string {
 		case catalogItem:
 			displayText = item.String()
 		case catalogEntryItem:
+			displayText = item.String()
+		case configRepoItem:
+			displayText = item.String()
+		case configPRItem:
 			displayText = item.String()
 		}
 		s.WriteString(highlightMatches(displayText, m.filtered[i].positions, i == m.cursor))
@@ -404,4 +445,201 @@ func (r *runner) listAllCatalogs(ctx context.Context) (*applicationv1alpha1.Cata
 	catalogs := &applicationv1alpha1.CatalogList{}
 	err := r.ctrlClient.List(ctx, catalogs)
 	return catalogs, err
+}
+
+// selectConfigRepo presents a config repository selector to the user
+func (r *runner) selectConfigRepo(ctx context.Context, configNameFilter string) (string, error) {
+	// Get all config repositories
+	gitRepoList, err := r.listAllConfigRepos(ctx, r.flag.Namespace)
+	if err != nil {
+		return "", fmt.Errorf("failed to list config repositories: %w", err)
+	}
+
+	if len(gitRepoList.Items) == 0 {
+		return "", fmt.Errorf("no config repositories found in namespace %s", r.flag.Namespace)
+	}
+
+	// Convert to config repo items
+	items := make([]interface{}, 0)
+	for _, gitRepo := range gitRepoList.Items {
+		// Extract config repo name from URL
+		configName := extractConfigNameFromURL(gitRepo.Spec.URL)
+		if configName == "" {
+			continue
+		}
+
+		// Filter by name if provided
+		if configNameFilter != "" && !strings.Contains(configName, configNameFilter) {
+			continue
+		}
+
+		currentBranch := ""
+		if gitRepo.Spec.Reference != nil {
+			currentBranch = gitRepo.Spec.Reference.Branch
+		}
+
+		items = append(items, configRepoItem{
+			name:   configName,
+			url:    gitRepo.Spec.URL,
+			branch: currentBranch,
+		})
+	}
+
+	if len(items) == 0 {
+		if configNameFilter != "" {
+			return "", fmt.Errorf("no config repositories found matching '%s'", configNameFilter)
+		}
+		return "", fmt.Errorf("no config repositories found")
+	}
+
+	// Create and run the selector
+	model := newSelectorModel(items, "Select config repository > ")
+	p := tea.NewProgram(model, tea.WithAltScreen())
+
+	finalModel, err := p.Run()
+	if err != nil {
+		return "", fmt.Errorf("error running config repository selector: %w", err)
+	}
+
+	// Check if selection was made
+	m := finalModel.(selectorModel)
+	if m.selected == nil {
+		return "", fmt.Errorf("no config repository selected")
+	}
+
+	repoItem, ok := m.selected.(configRepoItem)
+	if !ok {
+		return "", fmt.Errorf("invalid selection")
+	}
+
+	return repoItem.name, nil
+}
+
+// selectConfigPR presents a PR selector for a config repository
+func (r *runner) selectConfigPR(ctx context.Context, configRepoName string, currentBranch string) (*SelectionResult, error) {
+	// Find the GitRepository to get the GitHub URL
+	gitRepo, err := r.findGitRepository(ctx, configRepoName, r.flag.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find config repository: %w", err)
+	}
+
+	// Extract GitHub repo from URL
+	repoURL := gitRepo.Spec.URL
+	parts := strings.Split(repoURL, "github.com")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("failed to extract GitHub repository from URL: %s", repoURL)
+	}
+
+	path := parts[1]
+	if strings.HasPrefix(path, ":") {
+		if idx := strings.Index(path, "/"); idx != -1 {
+			path = path[idx:]
+		}
+	}
+	githubRepo := strings.TrimPrefix(path, "/")
+	githubRepo = strings.TrimPrefix(githubRepo, ":")
+	githubRepo = strings.TrimSuffix(githubRepo, ".git")
+
+	// Fetch open PRs using gh CLI
+	var prs []PRInfo
+	err = RunWithSpinner(fmt.Sprintf("Fetching open PRs for %s", githubRepo), func() error {
+		cmd := exec.CommandContext(ctx, "gh", "pr", "list",
+			"--repo", githubRepo,
+			"--state", "open",
+			"--json", "number,title,headRefName,author,createdAt",
+		)
+
+		output, cmdErr := cmd.Output()
+		if cmdErr != nil {
+			return fmt.Errorf("failed to list PRs: %w", cmdErr)
+		}
+
+		jsonErr := json.Unmarshal(output, &prs)
+		if jsonErr != nil {
+			return fmt.Errorf("failed to parse PR list: %w", jsonErr)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(prs) == 0 {
+		return nil, fmt.Errorf("no open PRs found for %s", configRepoName)
+	}
+
+	// Convert to PR items
+	items := make([]interface{}, len(prs))
+	for i, pr := range prs {
+		displayText := fmt.Sprintf("PR #%-4d %-60s [%s by @%s]",
+			pr.Number,
+			pr.Title,
+			pr.HeadRefName,
+			pr.Author.Login)
+
+		// Mark if this is the currently deployed branch
+		if currentBranch != "" && pr.HeadRefName == currentBranch {
+			displayText += " (deployed)"
+		}
+
+		items[i] = configPRItem{
+			number:      pr.Number,
+			title:       pr.Title,
+			branch:      pr.HeadRefName,
+			author:      pr.Author.Login,
+			displayText: displayText,
+		}
+	}
+
+	// Create and run the selector
+	model := newSelectorModel(items, "Select PR/branch > ")
+	p := tea.NewProgram(model, tea.WithAltScreen())
+
+	finalModel, err := p.Run()
+	if err != nil {
+		return nil, fmt.Errorf("error running PR selector: %w", err)
+	}
+
+	// Check if selection was made
+	m := finalModel.(selectorModel)
+	if m.selected == nil {
+		return &SelectionResult{Canceled: true}, nil
+	}
+
+	prItem, ok := m.selected.(configPRItem)
+	if !ok {
+		return nil, fmt.Errorf("invalid selection")
+	}
+
+	return &SelectionResult{
+		ConfigRepo: configRepoName,
+		Branch:     prItem.branch,
+		Canceled:   false,
+	}, nil
+}
+
+// listAllConfigRepos lists all GitRepository resources in the namespace
+func (r *runner) listAllConfigRepos(ctx context.Context, namespace string) (*sourcev1.GitRepositoryList, error) {
+	gitRepoList := &sourcev1.GitRepositoryList{}
+	listOptions := &client.ListOptions{
+		Namespace: namespace,
+	}
+	err := r.ctrlClient.List(ctx, gitRepoList, listOptions)
+	return gitRepoList, err
+}
+
+// extractConfigNameFromURL extracts the config repository name from its GitHub URL
+func extractConfigNameFromURL(url string) string {
+	if !strings.Contains(url, "giantswarm/") {
+		return ""
+	}
+	parts := strings.Split(url, "giantswarm/")
+	if len(parts) < 2 {
+		return ""
+	}
+	name := parts[len(parts)-1]
+	name = strings.TrimSuffix(name, ".git")
+	return name
 }

@@ -167,6 +167,10 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 }
 
 func (r *runner) handleInteractiveMode(ctx context.Context, cmd *cobra.Command, args []string) (*resourceSpec, error) {
+	if r.flag.Type == resourceTypeConfig {
+		return r.handleInteractiveConfigMode(ctx, args)
+	}
+
 	// Extract app name filter from args if provided
 	appNameFilter := ""
 	if len(args) > 0 {
@@ -209,18 +213,59 @@ func (r *runner) handleInteractiveMode(ctx context.Context, cmd *cobra.Command, 
 	}, nil
 }
 
+func (r *runner) handleInteractiveConfigMode(ctx context.Context, args []string) (*resourceSpec, error) {
+	// Extract config name filter from args if provided
+	configNameFilter := ""
+	if len(args) > 0 {
+		// Parse args[0] to extract config name (before @)
+		parts := strings.Split(args[0], "@")
+		configNameFilter = parts[0]
+	}
+
+	// Select config repository
+	configRepoName, err := r.selectConfigRepo(ctx, configNameFilter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select config repository: %w", err)
+	}
+
+	// Get current branch for this config
+	gitRepo, err := r.findGitRepository(ctx, configRepoName, r.flag.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find config repository: %w", err)
+	}
+
+	currentBranch := ""
+	if gitRepo.Spec.Reference != nil {
+		currentBranch = gitRepo.Spec.Reference.Branch
+	}
+
+	// Select PR/branch
+	result, err := r.selectConfigPR(ctx, configRepoName, currentBranch)
+	if err != nil {
+		return nil, fmt.Errorf("failed to select PR: %w", err)
+	}
+
+	if result.Canceled {
+		return nil, fmt.Errorf("selection canceled")
+	}
+
+	return &resourceSpec{
+		name:    result.ConfigRepo,
+		version: result.Branch,
+	}, nil
+}
+
 func (r *runner) handleUndeploy(ctx context.Context, args []string) error {
 	var spec *resourceSpec
 	var err error
 
 	// Handle interactive mode
 	if r.flag.Interactive {
-		// Interactive mode: select app to undeploy
-		if r.flag.Type != "app" {
-			return fmt.Errorf("%w: interactive mode is only supported for app operations", ErrInvalidFlag)
+		if r.flag.Type == resourceTypeConfig {
+			spec, err = r.handleInteractiveUndeployConfig(ctx)
+		} else {
+			spec, err = r.handleInteractiveUndeploy(ctx)
 		}
-
-		spec, err = r.handleInteractiveUndeploy(ctx)
 		if err != nil {
 			return err
 		}
@@ -299,6 +344,74 @@ func (r *runner) handleInteractiveUndeploy(ctx context.Context) (*resourceSpec, 
 
 	return &resourceSpec{
 		name: selectedItem.appName,
+	}, nil
+}
+
+func (r *runner) handleInteractiveUndeployConfig(ctx context.Context) (*resourceSpec, error) {
+	// Get list of config repositories in the namespace
+	gitRepoList, err := r.listAllConfigRepos(ctx, r.flag.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list config repositories: %w", err)
+	}
+
+	if len(gitRepoList.Items) == 0 {
+		return nil, fmt.Errorf("no config repositories found in namespace %s", r.flag.Namespace)
+	}
+
+	// Build a list of config items for selection, filtered to those with suspended reconciliation
+	items := make([]interface{}, 0)
+	for _, gitRepo := range gitRepoList.Items {
+		// Only show configs with suspended reconciliation (deployed by us)
+		if !isSuspended(&gitRepo) {
+			continue
+		}
+
+		configName := extractConfigNameFromURL(gitRepo.Spec.URL)
+		if configName == "" {
+			continue
+		}
+
+		currentBranch := ""
+		if gitRepo.Spec.Reference != nil {
+			currentBranch = gitRepo.Spec.Reference.Branch
+		}
+
+		items = append(items, configRepoItem{
+			name:   configName,
+			url:    gitRepo.Spec.URL,
+			branch: currentBranch,
+		})
+	}
+
+	if len(items) == 0 {
+		return nil, fmt.Errorf("no deployed config repositories found in namespace %s", r.flag.Namespace)
+	}
+
+	// Create and run the selector
+	model := newSelectorModel(items, "Select config to undeploy:")
+
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	finalModel, err := p.Run()
+	if err != nil {
+		return nil, fmt.Errorf("error running config selector: %w", err)
+	}
+
+	m := finalModel.(selectorModel)
+	if m.err != nil {
+		return nil, m.err
+	}
+
+	if m.selected == nil {
+		return nil, fmt.Errorf("selection canceled")
+	}
+
+	selectedItem, ok := m.selected.(configRepoItem)
+	if !ok {
+		return nil, fmt.Errorf("unexpected item type")
+	}
+
+	return &resourceSpec{
+		name: selectedItem.name,
 	}, nil
 }
 

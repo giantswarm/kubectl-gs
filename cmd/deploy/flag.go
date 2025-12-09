@@ -121,9 +121,6 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		if !f.Deploy && !f.Undeploy {
 			return fmt.Errorf("%w: --%s can only be used with deploy or undeploy actions", ErrInvalidFlag, flagInteractive)
 		}
-		if f.Type != resourceTypeApp {
-			return fmt.Errorf("%w: --%s is only supported for app operations", ErrInvalidFlag, flagInteractive)
-		}
 	}
 
 	// Validate undeploy-on-exit flag (only if explicitly set by user)
