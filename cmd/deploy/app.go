@@ -34,13 +34,13 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 				return err
 			}
 
-			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace)
-			fmt.Fprint(r.stdout, output)
-
 			// Trigger flux reconciliation if --sync flag is set
 			if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
 				return err
 			}
+
+			output := DeployOutput("app", spec.name, spec.version, r.flag.Namespace)
+			fmt.Fprint(r.stdout, output)
 
 			// Show reminder last if not using --undeploy-on-exit
 			if !r.flag.UndeployOnExit {
@@ -75,13 +75,13 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := UpdateOutput(spec.name, r.flag.Namespace, state)
-	fmt.Fprint(r.stdout, output)
-
 	// Trigger flux reconciliation if --sync flag is set
 	if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
 		return err
 	}
+
+	output := UpdateOutput(spec.name, r.flag.Namespace, state)
+	fmt.Fprint(r.stdout, output)
 
 	// Show reminder last if not using --undeploy-on-exit
 	if !r.flag.UndeployOnExit {
@@ -114,15 +114,15 @@ func (r *runner) undeployApp(ctx context.Context, spec *resourceSpec) error {
 		return err
 	}
 
-	output := UndeployOutput("app", spec.name, r.flag.Namespace, state)
-	fmt.Fprint(r.stdout, output)
-
 	// Trigger flux reconciliation if --sync flag is set
 	if r.flag.Sync {
 		if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
 			return err
 		}
 	}
+
+	output := UndeployOutput("app", spec.name, r.flag.Namespace, state)
+	fmt.Fprint(r.stdout, output)
 
 	return nil
 }

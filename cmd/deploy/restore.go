@@ -85,9 +85,9 @@ func (r *runner) waitForInterruptAndRestore(ctx context.Context, resourceType st
 	// Set up signal handler
 	signalCtx, _ := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 
-	fmt.Fprintf(r.stdout, "\n%s Waiting for interrupt signal (Ctrl+C) to restore previous state...\n",
+	fmt.Fprintf(r.stdout, "%s Waiting for interrupt signal (Ctrl+C) to restore previous state...\n",
 		infoStyle.Render("ℹ"))
-	fmt.Fprintf(r.stdout, "%s Press Ctrl+C to restore and exit\n\n",
+	fmt.Fprintf(r.stdout, "%s Press Ctrl+C to restore and exit\n",
 		mutedStyle.Render("⌨"))
 
 	// Wait for either signal or context cancellation

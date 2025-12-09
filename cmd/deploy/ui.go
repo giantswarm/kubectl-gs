@@ -199,7 +199,7 @@ func UpdateOutput(name, namespace string, changes []string) string {
 	var b strings.Builder
 
 	// Header
-	b.WriteString(successStyle.Render("✓ Update Successful") + "\n\n")
+	b.WriteString(successStyle.Render("✓ Update Successful") + "\n")
 
 	// Details
 	details := fmt.Sprintf(
