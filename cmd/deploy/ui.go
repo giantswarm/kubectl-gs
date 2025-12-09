@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -60,7 +61,15 @@ var (
 			MarginTop(1)
 
 	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(colorInfo)
+
+	// ansiRegex matches ANSI escape codes
+	ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 )
+
+// visibleWidth returns the display width of a string, excluding ANSI codes
+func visibleWidth(s string) int {
+	return len(ansiRegex.ReplaceAllString(s, ""))
+}
 
 // tableBuilder helps build formatted tables
 type tableBuilder struct {
@@ -89,12 +98,13 @@ func (t *tableBuilder) render() string {
 	// Calculate max widths for each column
 	colWidths := make([]int, len(t.headers))
 	for i, header := range t.headers {
-		colWidths[i] = len(header)
+		colWidths[i] = visibleWidth(header)
 	}
 	for _, row := range t.rows {
 		for i, cell := range row {
-			if i < len(colWidths) && len(cell) > colWidths[i] {
-				colWidths[i] = len(cell)
+			cellWidth := visibleWidth(cell)
+			if i < len(colWidths) && cellWidth > colWidths[i] {
+				colWidths[i] = cellWidth
 			}
 		}
 	}
@@ -104,7 +114,13 @@ func (t *tableBuilder) render() string {
 	// Render header
 	headerParts := make([]string, len(t.headers))
 	for i, header := range t.headers {
-		headerParts[i] = fmt.Sprintf("%-*s", colWidths[i], header)
+		headerVisWidth := visibleWidth(header)
+		paddingNeeded := colWidths[i] - headerVisWidth
+		if paddingNeeded > 0 {
+			headerParts[i] = header + strings.Repeat(" ", paddingNeeded)
+		} else {
+			headerParts[i] = header
+		}
 	}
 	b.WriteString(t.indent + headerStyle.Render(strings.Join(headerParts, "  ")) + "\n")
 
@@ -123,7 +139,14 @@ func (t *tableBuilder) render() string {
 		rowParts := make([]string, len(row))
 		for i, cell := range row {
 			if i < len(colWidths) {
-				rowParts[i] = fmt.Sprintf("%-*s", colWidths[i], cell)
+				// Calculate padding needed based on visible width
+				cellVisWidth := visibleWidth(cell)
+				paddingNeeded := colWidths[i] - cellVisWidth
+				if paddingNeeded > 0 {
+					rowParts[i] = cell + strings.Repeat(" ", paddingNeeded)
+				} else {
+					rowParts[i] = cell
+				}
 			}
 		}
 		b.WriteString(t.indent + strings.Join(rowParts, "  ") + "\n")
