@@ -47,7 +47,7 @@ func (r *runner) reconcileFluxApp(ctx context.Context, appName, namespace string
 	fmt.Fprintf(r.stdout, "\n%s Reconciling flux kustomizations...\n", infoStyle.Render("→"))
 
 	// Reconcile the management-clusters-fleet kustomization which manages apps
-	cmd := exec.CommandContext(ctx, "flux", "reconcile", "kustomization", "management-clusters-fleet", "-n", "flux-giantswarm")
+	cmd := exec.CommandContext(ctx, "flux", "reconcile", "kustomization", "collection", "-n", "flux-giantswarm")
 	cmd.Stdout = r.stdout
 	cmd.Stderr = r.stderr
 

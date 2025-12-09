@@ -60,7 +60,7 @@ deployments.`
   kubectl gs deploy -t config -u config-repo
 
   # Show status of kustomizations, gitrepositories, and apps resources on the cluster
-  kubectl gs deploy -s
+  kubectl gs deploy --status
 
   # List all available apps in the catalog
   kubectl gs deploy -l apps
