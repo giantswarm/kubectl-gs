@@ -62,11 +62,14 @@ deployments.`
   # Show status of kustomizations, gitrepositories, and apps resources on the cluster
   kubectl gs deploy -s
 
-  # List all apps in the default namespace
+  # List all available apps in the catalog
   kubectl gs deploy -l apps
 
-  # List all apps in a specific namespace
-  kubectl gs deploy -l apps -n my-namespace
+  # List all available apps in a specific catalog
+  kubectl gs deploy -l apps -c my-catalog
+
+  # List only installed apps in a specific namespace
+  kubectl gs deploy -l apps --installed-only -n my-namespace
 
   # List all versions for a specific app
   kubectl gs deploy -l versions my-app

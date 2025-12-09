@@ -341,41 +341,71 @@ func InfoOutput(message string) string {
 }
 
 // ListAppsOutput renders a formatted list of applications
-func ListAppsOutput(apps *applicationv1alpha1.AppList, namespace string) string {
+func ListAppsOutput(apps []appInfo, namespace string, catalog string, installedOnly bool) string {
 	var b strings.Builder
 
 	b.WriteString(titleStyle.Render("📦 Applications") + "\n")
-	b.WriteString(mutedStyle.Render(fmt.Sprintf("Namespace: %s", namespace)) + "\n\n")
+	if installedOnly {
+		b.WriteString(mutedStyle.Render(fmt.Sprintf("Catalog: %s | Namespace: %s (installed only)", catalog, namespace)) + "\n\n")
+	} else {
+		b.WriteString(mutedStyle.Render(fmt.Sprintf("Catalog: %s | Namespace: %s", catalog, namespace)) + "\n\n")
+	}
 
-	if len(apps.Items) == 0 {
+	if len(apps) == 0 {
 		b.WriteString(warningStyle.Render("No apps found") + "\n")
 		return b.String()
 	}
 
 	// Sort apps by name
-	sortedApps := make([]applicationv1alpha1.App, len(apps.Items))
-	copy(sortedApps, apps.Items)
+	sortedApps := make([]appInfo, len(apps))
+	copy(sortedApps, apps)
 	sort.Slice(sortedApps, func(i, j int) bool {
-		return sortedApps[i].Name < sortedApps[j].Name
+		return sortedApps[i].name < sortedApps[j].name
 	})
 
 	// Build table
-	table := newTable("NAME", "VERSION", "CATALOG", "STATUS")
+	var table *tableBuilder
+	if installedOnly {
+		table = newTable("NAME", "VERSION", "CATALOG", "STATUS")
+	} else {
+		table = newTable("NAME", "INSTALLED", "VERSION", "CATALOG", "STATUS")
+	}
+
+	installedCount := 0
 	for _, app := range sortedApps {
-		version := app.Spec.Version
+		version := app.version
 		if version == "" {
 			version = "-"
 		}
-		catalog := app.Spec.Catalog
+		catalog := app.catalog
 		if catalog == "" {
 			catalog = "-"
 		}
-		status := colorizeStatus(getAppStatus(&app))
-		table.addRow(app.Name, version, catalog, status)
+		status := colorizeStatus(app.status)
+
+		if installedOnly {
+			// When showing installed only, all apps are installed
+			table.addRow(app.name, version, catalog, status)
+			installedCount++
+		} else {
+			// Show installation status
+			installedStatus := "No"
+			if app.installed {
+				installedStatus = successStyle.Render("Yes")
+				installedCount++
+			} else {
+				installedStatus = mutedStyle.Render("No")
+			}
+			table.addRow(app.name, installedStatus, version, catalog, status)
+		}
 	}
 
 	b.WriteString(table.render())
-	b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d apps", len(apps.Items))) + "\n")
+	if installedOnly {
+		b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d apps", len(apps))) + "\n")
+	} else {
+		b.WriteString("\n" + mutedStyle.Render(fmt.Sprintf("Total: %d apps (%d installed)", len(apps), installedCount)) + "\n")
+	}
 	return b.String()
 }
 
@@ -549,6 +579,11 @@ func getGitRepoStatus(repo *sourcev1.GitRepository) string {
 
 // colorizeStatus applies color to status text based on the status value
 func colorizeStatus(status string) string {
+	// Empty or dash status (muted)
+	if status == "-" || status == "" {
+		return mutedStyle.Render("-")
+	}
+
 	// Success statuses
 	if status == "deployed" || status == "Ready" {
 		return successStyle.Render(status)

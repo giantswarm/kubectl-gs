@@ -20,6 +20,7 @@ const (
 	flagInteractive    = "interactive"
 	flagUndeployOnExit = "undeploy-on-exit"
 	flagSync           = "sync"
+	flagInstalledOnly  = "installed-only"
 
 	// Resource types
 	resourceTypeApp    = "app"
@@ -51,6 +52,7 @@ type flag struct {
 	Interactive    bool
 	UndeployOnExit bool
 	Sync           bool
+	InstalledOnly  bool
 
 	// Print flags
 	print *genericclioptions.PrintFlags
@@ -70,6 +72,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.Interactive, flagInteractive, "i", false, "Interactive mode: select app and version interactively from catalog entries")
 	cmd.Flags().BoolVarP(&f.UndeployOnExit, flagUndeployOnExit, "r", false, "Wait for interrupt signal and undeploy on exit")
 	cmd.Flags().BoolVar(&f.Sync, flagSync, false, "Force synchronous deployment by triggering flux reconciliation")
+	cmd.Flags().BoolVar(&f.InstalledOnly, flagInstalledOnly, false, "When listing apps, show only installed apps (default: show all catalog apps with installation status)")
 
 	// Print flags for output formatting
 	f.print = genericclioptions.NewPrintFlags("")
