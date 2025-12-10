@@ -7,6 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+
+	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
 
 const (
@@ -66,7 +68,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&f.List, flagList, "l", "", "List resources. Valid values: apps, versions, configs, catalogs")
 
 	// Option flags
-	cmd.Flags().StringVarP(&f.Namespace, flagNamespace, "n", "", "Namespace where the resource lives (default for app: giantswarm, default for config: flux-giantswarm)")
 	cmd.Flags().StringVarP(&f.Type, flagType, "t", resourceTypeApp, "Resource type to handle either 'app' or 'config'")
 	cmd.Flags().StringVarP(&f.Catalog, flagCatalog, "c", defaultCatalog, "Catalog to use for the app deployment (only for app type)")
 	cmd.Flags().BoolVarP(&f.Interactive, flagInteractive, "i", false, "Interactive mode: select app and version interactively from catalog entries")
@@ -79,7 +80,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	f.print.AddFlags(cmd)
 }
 
-func (f *flag) Validate(cmd *cobra.Command) error {
+func (f *flag) Validate(cmd *cobra.Command, cc *commonconfig.CommonConfig) error {
 	// Validate that exactly one action is specified
 	actionCount := 0
 	if f.Deploy {
@@ -137,17 +138,30 @@ func (f *flag) Validate(cmd *cobra.Command) error {
 		}
 	}
 
-	// Set default namespace based on resource type or list type if not specified
-	if f.Namespace == "" {
+	// Get namespace from global ConfigFlags
+	// Check if namespace flag was explicitly set by user
+	configFlags := cc.GetConfigFlags()
+	var namespace string
+	var namespaceExplicitlySet bool
+
+	if cf, ok := configFlags.(*genericclioptions.ConfigFlags); ok && cf.Namespace != nil && *cf.Namespace != "" {
+		// User explicitly set the namespace via -n flag
+		namespace = *cf.Namespace
+		namespaceExplicitlySet = true
+	}
+
+	// Set default namespace based on resource type or list type if not explicitly set
+	if !namespaceExplicitlySet {
 		// If listing configs, use config namespace
 		if f.List == listTypeConfigs {
-			f.Namespace = defaultConfigNamespace
+			namespace = defaultConfigNamespace
 		} else if f.Type == resourceTypeApp {
-			f.Namespace = defaultAppNamespace
+			namespace = defaultAppNamespace
 		} else if f.Type == resourceTypeConfig {
-			f.Namespace = defaultConfigNamespace
+			namespace = defaultConfigNamespace
 		}
 	}
+	f.Namespace = namespace
 
 	return nil
 }
