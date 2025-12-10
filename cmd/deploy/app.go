@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 )
 
@@ -206,7 +207,6 @@ func (r *runner) listApps(ctx context.Context) error {
 
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -304,7 +304,6 @@ func (r *runner) listVersions(ctx context.Context, appName string) error {
 
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to list versions for app %s: %w", appName, err)
 	}

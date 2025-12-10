@@ -9,8 +9,9 @@ import (
 
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
 )
 
 // savedAppState holds the previous state of an app before deployment

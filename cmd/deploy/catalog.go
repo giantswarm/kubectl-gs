@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
 )
 
 func (r *runner) listCatalogs(ctx context.Context) error {
@@ -17,7 +18,6 @@ func (r *runner) listCatalogs(ctx context.Context) error {
 		// List catalogs in both default and giantswarm namespaces
 		return r.ctrlClient.List(ctx, catalogs, &client.ListOptions{})
 	})
-
 	if err != nil {
 		return err
 	}
