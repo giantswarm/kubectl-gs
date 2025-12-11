@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add support for `user.Exec` using `client-go` credential plugin framework.
+
 ### Changed
 
 - Update `github.com/3th1nk/cidr` to v0.3.0, adapt internal CIDR mask size calculation in the `tempalte cluster` command.
