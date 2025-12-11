@@ -52,4 +52,3 @@ func New(config Config) (*cobra.Command, error) {
 
 	return c, nil
 }
-

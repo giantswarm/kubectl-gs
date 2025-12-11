@@ -19,4 +19,3 @@ var credentialPluginError = &microerror.Error{
 func IsCredentialPluginError(err error) bool {
 	return microerror.Cause(err) == credentialPluginError
 }
-
