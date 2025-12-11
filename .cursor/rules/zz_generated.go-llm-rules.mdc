@@ -1,6 +1,6 @@
 ---
 description: Go language-specific development guidelines and patterns
-globs: ["**/*.go"]
+globs: **/*.go,go.mod,go.sum
 ---
 
 These guidelines apply to Go code and supplement any other general development instructions or workflows.
@@ -16,6 +16,6 @@ These guidelines apply to Go code and supplement any other general development i
 <!--
 DO NOT EDIT. Generated with devctl.
 This file is maintained at:
-https://github.com/giantswarm/devctl/blob/3bbd5cb47ff855f0b9c88881fbdcaa907d85647c/pkg/gen/input/llm/internal/file/go_rules.mdc.template
+https://github.com/giantswarm/devctl/blob/1d28a6f494d3ad993f8a8c48cb54e57244c5abfe/pkg/gen/input/llm/internal/file/go_rules.mdc.template
 Manual changes will be overwritten.
 -->
