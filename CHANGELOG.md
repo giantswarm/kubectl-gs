@@ -7,6 +7,19 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `kubectl gs deploy` command for managing Giant Swarm app and config repository deployments with the following features:
+  - Deploy and undeploy apps from catalogs with version selection
+  - Deploy and undeploy config repositories (GitRepository resources)
+  - Interactive mode with fuzzy finding for catalog, app, and version selection using bubbletea UI
+  - List operations: apps, versions, configs, and catalogs
+  - Status monitoring for all kustomizations, config repositories, and apps on the cluster
+  - `--sync` flag for synchronous deployments with automatic Flux reconciliation
+  - `--undeploy-on-exit` flag to automatically restore previous state on interrupt (Ctrl+C)
+  - Rich terminal UI with color-coded status indicators and formatted tables
+  - Support for custom namespaces and catalogs
+
 ### Changed
 
 - Update `github.com/3th1nk/cidr` to v0.3.0, adapt internal CIDR mask size calculation in the `tempalte cluster` command.
@@ -1617,9 +1630,6 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-<<<<<<< HEAD
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...HEAD
-=======
 [Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...HEAD
 [4.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...v4.8.1
 [4.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...v4.8.0
@@ -1682,7 +1692,6 @@ This release supports rendering for CRs:
 [2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0
 [2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
->>>>>>> 6db3ec168ee4518aa472b58f232bcbb60e4490e8
 [2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
 [2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
 [2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2

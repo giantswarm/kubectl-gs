@@ -1,6 +1,8 @@
 package app
 
 import (
+	"errors"
+
 	"github.com/giantswarm/microerror"
 )
 
@@ -57,3 +59,9 @@ var fetchError = &microerror.Error{
 func IsFetch(err error) bool {
 	return microerror.Cause(err) == fetchError
 }
+
+var (
+	ErrNoMatch     = errors.New("no match")
+	ErrNoResources = errors.New("no resources")
+	ErrNotFound    = errors.New("not found")
+)

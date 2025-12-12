@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	gsapp "github.com/giantswarm/app/v7/pkg/app"
 	"github.com/giantswarm/appcatalog"
 	k8smetadataAnnotation "github.com/giantswarm/k8smetadata/pkg/annotation"
-	k8smetadataLabel "github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -83,6 +83,96 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	return resource, nil
 }
 
+// GetApp fetches a single app CR by namespace and name, returning the concrete type.
+func (s *Service) GetApp(ctx context.Context, namespace, name string) (*applicationv1alpha1.App, error) {
+	var err error
+
+	appCR := &applicationv1alpha1.App{}
+	err = s.client.Get(ctx, client.ObjectKey{
+		Namespace: namespace,
+		Name:      name,
+	}, appCR)
+	if apierrors.IsNotFound(err) {
+		return nil, ErrNotFound
+	} else if meta.IsNoMatchError(err) {
+		return nil, ErrNoMatch
+	} else if err != nil {
+		return nil, err
+	}
+
+	appCR = omitManagedFields(appCR)
+	appCR.TypeMeta = metav1.TypeMeta{
+		APIVersion: "app.application.giantswarm.io/v1alpha1",
+		Kind:       "App",
+	}
+
+	return appCR, nil
+}
+
+// ListApps fetches all app CRs in a namespace, returning the concrete AppList type.
+func (s *Service) ListApps(ctx context.Context, namespace string) (*applicationv1alpha1.AppList, error) {
+	var err error
+
+	apps := &applicationv1alpha1.AppList{}
+
+	{
+		lo := &client.ListOptions{
+			Namespace: namespace,
+		}
+
+		err = s.client.List(ctx, apps, lo)
+		if meta.IsNoMatchError(err) {
+			return nil, ErrNoMatch
+		} else if err != nil {
+			return nil, err
+		} else if len(apps.Items) == 0 {
+			return nil, ErrNoResources
+		}
+	}
+
+	// Clean up managed fields for each app
+	for i := range apps.Items {
+		apps.Items[i].ManagedFields = nil
+	}
+
+	return apps, nil
+}
+
+// Create creates a new app CR using the same approach as architect.
+func (s *Service) Create(ctx context.Context, options CreateOptions) (*applicationv1alpha1.App, error) {
+	// Use the giantswarm/app package to create the App CR with proper defaults
+	config := gsapp.Config{
+		Name:                options.Name,
+		Namespace:           options.Namespace,
+		AppName:             options.AppName,
+		AppNamespace:        options.AppNamespace,
+		AppCatalog:          options.AppCatalog,
+		AppVersion:          options.AppVersion,
+		ConfigVersion:       options.ConfigVersion,
+		DisableForceUpgrade: options.DisableForceUpgrade,
+		UserConfigMapName:   options.UserConfigMapName,
+		UserSecretName:      options.UserSecretName,
+	}
+
+	appCR := gsapp.NewCR(config)
+
+	// Validate that the version exists in the catalog
+	if options.AppVersion != "" {
+		err := s.findVersion(ctx, appCR, options.AppVersion, options.AppCatalog, options.Namespace)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	// Create the App CR in the cluster
+	err := s.client.Create(ctx, appCR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return appCR, nil
+}
+
 // Patch patches an app CR given its name and namespace.
 func (s *Service) Patch(ctx context.Context, options PatchOptions) ([]string, error) {
 	state, err := s.patchVersion(ctx, options.Namespace, options.Name, options.SuspendReconciliation, options.Version)
@@ -138,26 +228,28 @@ func (s *Service) patchVersion(ctx context.Context, namespace string, name strin
 	if labels == nil {
 		labels = make(map[string]string)
 	}
-	// Only handle flux reconcile annotation if the app is managed by Flux.
-	_, fluxLabelExists := labels[k8smetadataLabel.FluxKustomizeName]
-	if fluxLabelExists {
-		annotations := accessor.GetAnnotations()
-		if annotations == nil {
-			annotations = make(map[string]string)
-		}
-		if suspendReconciliation {
-			annotations[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
-			state = append(state, fmt.Sprintf("added annotations[\"%s\"]=%s", k8smetadataAnnotation.FluxKustomizeReconcile, "disabled"))
-		} else {
-
-			_, exists := annotations[k8smetadataAnnotation.FluxKustomizeReconcile]
-			if exists {
-				delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
-				state = append(state, fmt.Sprintf("removed annotations[\"%s\"]", k8smetadataAnnotation.FluxKustomizeReconcile))
-			}
-		}
-		accessor.SetAnnotations(annotations)
+	annotations := accessor.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
 	}
+
+	if suspendReconciliation {
+		labels[k8smetadataAnnotation.FluxKustomizeReconcile] = "disabled"
+		state = append(state, fmt.Sprintf(`added annotations["%s"]=%s`, k8smetadataAnnotation.FluxKustomizeReconcile, "disabled"))
+	} else {
+		// Only report removal if the annotation or label was actually present
+		_, hadLabel := labels[k8smetadataAnnotation.FluxKustomizeReconcile]
+		_, hadAnnotation := annotations[k8smetadataAnnotation.FluxKustomizeReconcile]
+
+		delete(labels, k8smetadataAnnotation.FluxKustomizeReconcile)
+		delete(annotations, k8smetadataAnnotation.FluxKustomizeReconcile)
+
+		if hadLabel || hadAnnotation {
+			state = append(state, fmt.Sprintf(`removed annotations["%s"]`, k8smetadataAnnotation.FluxKustomizeReconcile))
+		}
+	}
+	accessor.SetLabels(labels)
+	accessor.SetAnnotations(annotations)
 
 	err = s.client.Patch(ctx, appCR, patch)
 	if err != nil {
