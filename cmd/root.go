@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/kubectl-gs/v5/cmd/credentialplugin"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/get"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/gitops"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/login"
@@ -229,6 +230,22 @@ func New(config Config) (*cobra.Command, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
+
+	var credentialPluginCmd *cobra.Command
+	{
+		c := credentialplugin.Config{
+			Logger: config.Logger,
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+			Stdin:  config.Stdin,
+		}
+
+		credentialPluginCmd, err = credentialplugin.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	c.AddCommand(getCmd)
 	c.AddCommand(gitopsCmd)
 	c.AddCommand(loginCmd)
@@ -236,6 +253,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(updateCmd)
 	c.AddCommand(validateCmd)
 	c.AddCommand(selfUpdateCmd)
+	c.AddCommand(credentialPluginCmd)
 
 	return c, nil
 }
