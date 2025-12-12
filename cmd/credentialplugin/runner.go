@@ -119,7 +119,10 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// Cache the new token
-	_ = r.cacheToken(issuerURL, clientID, idToken, newRefreshToken)
+	err = r.cacheToken(issuerURL, clientID, idToken, newRefreshToken)
+	if err != nil {
+		return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
+	}
 
 	// Create ExecCredential response
 	execCredential := execCredentialResponse{
