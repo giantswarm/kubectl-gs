@@ -46,7 +46,6 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	// Read ExecCredential request from stdin
-	// Check if stdin is a terminal - if so, skip reading
 	if file, ok := r.stdin.(*os.File); ok {
 		stat, err := file.Stat()
 		if err == nil {
