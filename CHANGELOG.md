@@ -10,7 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add support for `user.Exec` using `client-go` credential plugin framework.
-
+- Support non-default session timeout lengths.
 ### Changed
 
 - Update `github.com/3th1nk/cidr` to v0.3.0, adapt internal CIDR mask size calculation in the `tempalte cluster` command.
