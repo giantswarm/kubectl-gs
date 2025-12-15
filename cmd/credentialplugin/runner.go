@@ -45,26 +45,6 @@ type execCredentialResponse struct {
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	// Read ExecCredential request from stdin
-	if file, ok := r.stdin.(*os.File); ok {
-		stat, err := file.Stat()
-		if err == nil {
-			// Check if stdin is a character device (terminal)
-			if (stat.Mode() & os.ModeCharDevice) != 0 {
-				// It's a terminal, don't try to read from it
-			} else {
-				// It's a pipe or file, try to read (kubectl may send ExecCredential request)
-				// Use a limited reader to avoid reading too much
-				limitedReader := io.LimitReader(r.stdin, 4096)
-				_, _ = io.ReadAll(limitedReader)
-			}
-		}
-	} else {
-		// Not a file, try to read with a limit (kubectl may send ExecCredential request)
-		limitedReader := io.LimitReader(r.stdin, 4096)
-		_, _ = io.ReadAll(limitedReader)
-	}
-
 	// Get OIDC configuration from environment variables
 	issuerURL := os.Getenv(envIssuerURL)
 	clientID := os.Getenv(envClientID)
