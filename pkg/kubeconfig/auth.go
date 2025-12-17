@@ -11,6 +11,7 @@ const (
 	AuthTypeServiceAccount
 	AuthTypeAuthProvider
 	AuthTypeClientCertificate
+	AuthTypeExec
 )
 
 func GetAuthType(config *clientcmdapi.Config, contextName string) AuthType {
@@ -31,6 +32,8 @@ func GetAuthType(config *clientcmdapi.Config, contextName string) AuthType {
 	switch {
 	case len(authInfo.Token) > 0:
 		return AuthTypeServiceAccount
+	case authInfo.Exec != nil:
+		return AuthTypeExec
 	case authInfo.AuthProvider != nil:
 		return AuthTypeAuthProvider
 	case len(authInfo.ClientCertificate) > 0:

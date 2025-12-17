@@ -47,15 +47,7 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 		}
 
 		if len(authResult.clientID) > 0 {
-			initialUser.AuthProvider = &clientcmdapi.AuthProviderConfig{
-				Name: "oidc",
-				Config: map[string]string{
-					ClientID:     authResult.clientID,
-					IDToken:      authResult.token,
-					Issuer:       i.AuthURL,
-					RefreshToken: authResult.refreshToken,
-				},
-			}
+			initialUser.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.refreshToken)
 		} else {
 			initialUser.Token = authResult.token
 		}
@@ -157,15 +149,7 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	authInfo := clientcmdapi.NewAuthInfo()
 	{
 		if len(authResult.clientID) > 0 {
-			authInfo.AuthProvider = &clientcmdapi.AuthProviderConfig{
-				Name: "oidc",
-				Config: map[string]string{
-					ClientID:     authResult.clientID,
-					IDToken:      authResult.token,
-					Issuer:       i.AuthURL,
-					RefreshToken: authResult.refreshToken,
-				},
-			}
+			authInfo.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.refreshToken)
 		} else {
 			authInfo.Token = authResult.token
 		}
@@ -203,6 +187,33 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	return nil
 }
 
+// oidcExec creates an ExecConfig for OIDC authentication using the credential plugin framework
+func oidcExec(issuerURL, clientID, refreshToken string) *clientcmdapi.ExecConfig {
+	// Get the path to the kubectl-gs binary
+	// We use "kubectl-gs" as the command
+	execPath := "kubectl-gs"
+
+	return &clientcmdapi.ExecConfig{
+		APIVersion: "client.authentication.k8s.io/v1beta1",
+		Command:    execPath,
+		Args:       []string{"credential-plugin"},
+		Env: []clientcmdapi.ExecEnvVar{
+			{
+				Name:  "KUBECTL_GS_OIDC_ISSUER_URL",
+				Value: issuerURL,
+			},
+			{
+				Name:  "KUBECTL_GS_OIDC_CLIENT_ID",
+				Value: clientID,
+			},
+			{
+				Name:  "KUBECTL_GS_OIDC_REFRESH_TOKEN",
+				Value: refreshToken,
+			},
+		},
+	}
+}
+
 // switchContext modifies the existing kubeconfig, and switches the currently
 // active context to the one specified.
 func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string, switchContext bool) error {
@@ -221,6 +232,10 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	isContextAlreadySelected := config.CurrentContext == newContextName
 	authType := kubeconfig.GetAuthType(config, newContextName)
 	switch authType {
+	case kubeconfig.AuthTypeExec:
+		if isContextAlreadySelected {
+			return microerror.Mask(contextAlreadySelectedError)
+		}
 	case kubeconfig.AuthTypeAuthProvider:
 		authProvider, exists := kubeconfig.GetAuthProvider(config, newContextName)
 		if !exists {
