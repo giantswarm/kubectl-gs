@@ -7,6 +7,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.9.1] - 2026-01-05
+
+### Changed
+
+- Update CI so the update-krew-index job waits until the binaries have been pushed to the registries.
+
+## [4.9.0] - 2026-01-05
+
 ### Added
 
 - Add support for `user.Exec` using `client-go` credential plugin framework.
@@ -1622,10 +1630,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-<<<<<<< HEAD
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...HEAD
-=======
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.1...HEAD
+[4.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.0...v4.9.1
+[4.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...v4.9.0
 [4.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...v4.8.1
 [4.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...v4.8.0
 [4.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.0...v4.7.1
@@ -1687,7 +1694,6 @@ This release supports rendering for CRs:
 [2.31.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.5...v2.30.0
 [2.29.5]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.4...v2.29.5
->>>>>>> 6db3ec168ee4518aa472b58f232bcbb60e4490e8
 [2.29.4]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.3...v2.29.4
 [2.29.3]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.2...v2.29.3
 [2.29.2]: https://github.com/giantswarm/kubectl-gs/compare/v2.29.1...v2.29.2
