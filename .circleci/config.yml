@@ -232,10 +232,6 @@ workflows:
                 - main
             tags:
               only: /^v.*/
-
-
-  update-krew:
-    jobs:
       - debug-tag:
           filters:
             branches:
@@ -244,6 +240,7 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
       - update-krew-index:
           requires:
+            - push-to-registries-multiarch
             - debug-tag
           filters:
             branches:
