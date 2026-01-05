@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update CI so the update-krew-index job waits until the binaries have been pushed to the registries.
+
 ## [4.9.0] - 2026-01-05
 
 ### Added
