@@ -33,8 +33,8 @@ type savedConfigState struct {
 func (r *runner) captureAppState(ctx context.Context, name, namespace string) (*savedAppState, error) {
 	app, err := r.appService.GetApp(ctx, namespace, name)
 	if err != nil {
-		// App doesn't exist, return nil state
-		return nil, nil
+		// Return error (including NotFound) - caller will handle appropriately
+		return nil, err
 	}
 
 	return &savedAppState{
@@ -49,12 +49,8 @@ func (r *runner) captureAppState(ctx context.Context, name, namespace string) (*
 func (r *runner) captureConfigState(ctx context.Context, configName, namespace string) (*savedConfigState, error) {
 	result, err := r.findGitRepository(ctx, configName, namespace)
 	if err != nil {
+		// Return error (including NotFound) - caller will handle appropriately
 		return nil, err
-	}
-
-	if result == nil {
-		// Config doesn't exist
-		return nil, nil
 	}
 
 	var branch string

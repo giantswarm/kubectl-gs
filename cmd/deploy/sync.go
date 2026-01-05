@@ -42,7 +42,7 @@ func (r *runner) reconcileFluxApp(ctx context.Context, appName, namespace string
 
 	// Check if flux CLI is available
 	if _, err := exec.LookPath("flux"); err != nil {
-		return fmt.Errorf("Warning: flux CLI not found in PATH. Please install flux CLI to use --sync flag: %w", err)
+		return fmt.Errorf("flux CLI not found in PATH. Please install flux CLI to use --sync flag: %w", err)
 	}
 
 	//nolint:errcheck // informational output
