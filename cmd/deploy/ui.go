@@ -415,7 +415,7 @@ func ListAppsOutput(apps []appInfo, namespace string, catalog string, installedO
 			installedCount++
 		} else {
 			// Show installation status
-			installedStatus := "No"
+			var installedStatus string
 			if app.installed {
 				installedStatus = successStyle.Render("Yes")
 				installedCount++
