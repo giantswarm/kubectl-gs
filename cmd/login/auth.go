@@ -46,6 +46,11 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 			initialUser = clientcmdapi.NewAuthInfo()
 		}
 
+		// Remove old auth-provider configuration if it exists
+		if initialUser.AuthProvider != nil {
+			initialUser.AuthProvider = nil
+		}
+
 		if len(authResult.clientID) > 0 {
 			initialUser.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.refreshToken)
 		} else {
