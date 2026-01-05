@@ -17,6 +17,7 @@ func (r *runner) reconcileFluxSource(ctx context.Context, resourceName, namespac
 		return fmt.Errorf("flux CLI not found in PATH. Please install flux CLI to use --sync flag: %w", err)
 	}
 
+	//nolint:errcheck // informational output
 	fmt.Fprintf(r.stdout, "%s Reconciling flux source %s...\n", infoStyle.Render("→"), resourceName)
 
 	// Run: flux reconcile source git <name> -n <namespace>
@@ -44,6 +45,7 @@ func (r *runner) reconcileFluxApp(ctx context.Context, appName, namespace string
 		return fmt.Errorf("Warning: flux CLI not found in PATH. Please install flux CLI to use --sync flag: %w", err)
 	}
 
+	//nolint:errcheck // informational output
 	fmt.Fprintf(r.stdout, "%s Reconciling flux kustomizations...\n", infoStyle.Render("→"))
 
 	// Reconcile the management-clusters-fleet kustomization which manages apps
@@ -53,6 +55,7 @@ func (r *runner) reconcileFluxApp(ctx context.Context, appName, namespace string
 
 	if err := cmd.Run(); err != nil {
 		// If management-clusters-fleet doesn't exist, that's okay - just warn
+		//nolint:errcheck // non-critical warning message
 		fmt.Fprintf(r.stderr, "Warning: failed to reconcile flux kustomizations: %v\n", err)
 		return nil
 	}

@@ -82,11 +82,15 @@ func (r *runner) deployConfig(ctx context.Context, spec *resourceSpec) error {
 	}
 
 	output := DeployOutput(strings.ToLower(gitRepo.Kind), resourceName, spec.version, resourceNamespace)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	// Show reminder last if not using --undeploy-on-exit
 	if !r.flag.UndeployOnExit {
-		fmt.Fprint(r.stdout, ReminderOutput("config", spec.name))
+		if _, err := fmt.Fprint(r.stdout, ReminderOutput("config", spec.name)); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -146,7 +150,9 @@ func (r *runner) undeployConfig(ctx context.Context, spec *resourceSpec) error {
 	}
 
 	output := UndeployOutput(strings.ToLower(gitRepo.Kind), resourceName, resourceNamespace, nil)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -249,12 +255,16 @@ func (r *runner) listConfigs(ctx context.Context) error {
 	}
 
 	if len(gitRepoList.Items) == 0 {
-		fmt.Fprintf(r.stdout, "No config repositories found in namespace %s\n", r.flag.Namespace)
+		if _, err := fmt.Fprintf(r.stdout, "No config repositories found in namespace %s\n", r.flag.Namespace); err != nil {
+			return err
+		}
 		return nil
 	}
 
 	output := ListConfigsOutput(gitRepoList, r.flag.Namespace)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -341,6 +351,8 @@ func (r *runner) listConfigVersions(ctx context.Context, configRepoName string) 
 	}
 
 	output := ListConfigVersionsOutput(configRepoName, prs, currentBranch, githubRepo)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 	return nil
 }

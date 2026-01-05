@@ -23,12 +23,16 @@ func (r *runner) listCatalogs(ctx context.Context) error {
 	}
 
 	if len(catalogs.Items) == 0 {
-		fmt.Fprintf(r.stdout, "No catalogs found\n")
+		if _, err := fmt.Fprintf(r.stdout, "No catalogs found\n"); err != nil {
+			return err
+		}
 		return nil
 	}
 
 	output := ListCatalogsOutput(catalogs)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 	return nil
 }
 

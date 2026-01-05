@@ -126,6 +126,7 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 			return fmt.Errorf("%w: unsupported resource type: %s", ErrInvalidFlag, r.flag.Type)
 		}
 		if captureErr != nil {
+			//nolint:errcheck // non-critical warning message
 			fmt.Fprintf(r.stderr, "Warning: failed to capture state for restore: %v\n", captureErr)
 		} else {
 			stateCaptured = true
@@ -147,9 +148,11 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 	if deployErr != nil {
 		// If undeploy-on-exit is enabled and state was captured, restore before returning error
 		if r.flag.UndeployOnExit && stateCaptured {
+			//nolint:errcheck // informational message
 			fmt.Fprintf(r.stderr, "\n%s Deployment failed, restoring previous state...\n", warningStyle.Render("⚠"))
 			restoreErr := r.restoreState(ctx, r.flag.Type, savedState)
 			if restoreErr != nil {
+				//nolint:errcheck // error message already being handled
 				fmt.Fprintf(r.stderr, "Error: failed to restore state: %v\n", restoreErr)
 			}
 		}
@@ -408,6 +411,7 @@ func (r *runner) handleStatus(ctx context.Context) error {
 		kustomizationsReady, notReadyKustomizations, suspendedKustomizations, err = r.checkKustomizations(ctx)
 		return err
 	}); err != nil {
+		//nolint:errcheck // non-critical error message
 		fmt.Fprintf(r.stderr, "Error checking kustomizations: %v\n", err)
 	}
 
@@ -417,6 +421,7 @@ func (r *runner) handleStatus(ctx context.Context) error {
 		suspendedApps, err = r.checkApps(ctx)
 		return err
 	}); err != nil {
+		//nolint:errcheck // non-critical error message
 		fmt.Fprintf(r.stderr, "Error checking apps: %v\n", err)
 	}
 
@@ -426,12 +431,15 @@ func (r *runner) handleStatus(ctx context.Context) error {
 		suspendedGitRepos, err = r.checkGitRepositories(ctx)
 		return err
 	}); err != nil {
+		//nolint:errcheck // non-critical error message
 		fmt.Fprintf(r.stderr, "Error checking git repositories: %v\n", err)
 	}
 
 	// Display formatted status
 	output := StatusOutput(kustomizationsReady, notReadyKustomizations, suspendedKustomizations, suspendedApps, suspendedGitRepos)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -44,11 +44,15 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 			}
 
 			output := DeployOutput(strings.ToLower(createdApp.Kind), spec.name, spec.version, r.flag.Namespace)
-			fmt.Fprint(r.stdout, output)
+			if _, err := fmt.Fprint(r.stdout, output); err != nil {
+				return err
+			}
 
 			// Show reminder last if not using --undeploy-on-exit
 			if !r.flag.UndeployOnExit {
-				fmt.Fprint(r.stdout, ReminderOutput("app", spec.name))
+				if _, err := fmt.Fprint(r.stdout, ReminderOutput("app", spec.name)); err != nil {
+					return err
+				}
 			}
 
 			return nil
@@ -85,11 +89,15 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 	}
 
 	output := UpdateOutput(strings.ToLower(existingApp.Kind), spec.name, r.flag.Namespace, state)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	// Show reminder last if not using --undeploy-on-exit
 	if !r.flag.UndeployOnExit {
-		fmt.Fprint(r.stdout, ReminderOutput("app", spec.name))
+		if _, err := fmt.Fprint(r.stdout, ReminderOutput("app", spec.name)); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -135,7 +143,9 @@ func (r *runner) undeployApp(ctx context.Context, spec *resourceSpec) error {
 	}
 
 	output := UndeployOutput(strings.ToLower(appResource.Kind), spec.name, r.flag.Namespace, state)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -212,7 +222,9 @@ func (r *runner) listApps(ctx context.Context) error {
 	}
 
 	if len(catalogEntries.Items) == 0 {
-		fmt.Fprintf(r.stdout, "No apps found in catalog %s\n", r.flag.Catalog)
+		if _, err := fmt.Fprintf(r.stdout, "No apps found in catalog %s\n", r.flag.Catalog); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -264,15 +276,21 @@ func (r *runner) listApps(ctx context.Context) error {
 
 	if len(appInfoList) == 0 {
 		if r.flag.InstalledOnly {
-			fmt.Fprintf(r.stdout, "No installed apps found in namespace %s from catalog %s\n", r.flag.Namespace, r.flag.Catalog)
+			if _, err := fmt.Fprintf(r.stdout, "No installed apps found in namespace %s from catalog %s\n", r.flag.Namespace, r.flag.Catalog); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(r.stdout, "No apps found in catalog %s\n", r.flag.Catalog)
+			if _, err := fmt.Fprintf(r.stdout, "No apps found in catalog %s\n", r.flag.Catalog); err != nil {
+				return err
+			}
 		}
 		return nil
 	}
 
 	output := ListAppsOutput(appInfoList, r.flag.Namespace, r.flag.Catalog, r.flag.InstalledOnly)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -309,6 +327,8 @@ func (r *runner) listVersions(ctx context.Context, appName string) error {
 	}
 
 	output := ListVersionsOutput(appName, entries, deployedVersion, deployedCatalog)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 	return nil
 }

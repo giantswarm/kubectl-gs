@@ -86,13 +86,16 @@ func (r *runner) waitForInterruptAndRestore(ctx context.Context, resourceType st
 	// Set up signal handler
 	signalCtx, _ := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 
+	//nolint:errcheck // informational output
 	fmt.Fprintf(r.stdout, "%s Waiting for interrupt signal (Ctrl+C) to restore previous state...\n",
 		infoStyle.Render("ℹ"))
+	//nolint:errcheck // informational output
 	fmt.Fprintf(r.stdout, "%s Press Ctrl+C to restore and exit\n",
 		mutedStyle.Render("⌨"))
 
 	// Wait for either signal or context cancellation
 	<-signalCtx.Done()
+	//nolint:errcheck // informational output
 	fmt.Fprintf(r.stdout, "\n%s Stopping and restoring previous state...\n", warningStyle.Render("⚠"))
 
 	return r.restoreState(ctx, resourceType, savedState)
@@ -102,6 +105,7 @@ func (r *runner) waitForInterruptAndRestore(ctx context.Context, resourceType st
 func (r *runner) restoreAppState(ctx context.Context, state *savedAppState) error {
 	if state == nil {
 		// App didn't exist before, so delete it
+		//nolint:errcheck // informational warning message
 		fmt.Fprintf(r.stderr, "App did not exist before deployment, deletion not yet implemented\n")
 		return nil
 	}
@@ -127,7 +131,9 @@ func (r *runner) restoreAppState(ctx context.Context, state *savedAppState) erro
 		successStyle.Render("✓"),
 		state.name,
 		state.version)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -136,6 +142,7 @@ func (r *runner) restoreAppState(ctx context.Context, state *savedAppState) erro
 func (r *runner) restoreConfigState(ctx context.Context, state *savedConfigState) error {
 	if state == nil {
 		// Config didn't exist before
+		//nolint:errcheck // informational warning message
 		fmt.Fprintf(r.stderr, "Config did not exist before deployment, deletion not yet implemented\n")
 		return nil
 	}
@@ -184,7 +191,9 @@ func (r *runner) restoreConfigState(ctx context.Context, state *savedConfigState
 		successStyle.Render("✓"),
 		state.resourceName,
 		state.branch)
-	fmt.Fprint(r.stdout, output)
+	if _, err := fmt.Fprint(r.stdout, output); err != nil {
+		return err
+	}
 
 	return nil
 }
