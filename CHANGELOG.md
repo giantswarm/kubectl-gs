@@ -9,6 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [4.9.0] - 2026-01-05
 
+## [4.9.0] - 2026-01-05
+
 ### Added
 
 - Add support for `user.Exec` using `client-go` credential plugin framework.
@@ -1625,6 +1627,7 @@ This release supports rendering for CRs:
 - `App`
 
 [Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.0...HEAD
+[4.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.0...v4.9.0
 [4.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...v4.9.0
 [4.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...v4.8.1
 [4.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.7.1...v4.8.0
