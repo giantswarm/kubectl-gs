@@ -23,6 +23,7 @@ const (
 	flagUndeployOnExit = "undeploy-on-exit"
 	flagSync           = "sync"
 	flagInstalledOnly  = "installed-only"
+	flagName           = "name"
 
 	// Resource types
 	resourceTypeApp    = "app"
@@ -55,6 +56,7 @@ type flag struct {
 	UndeployOnExit bool
 	Sync           bool
 	InstalledOnly  bool
+	Name           string
 
 	// Print flags
 	print *genericclioptions.PrintFlags
@@ -74,6 +76,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&f.UndeployOnExit, flagUndeployOnExit, "r", true, "Wait for interrupt signal and undeploy on exit")
 	cmd.Flags().BoolVar(&f.Sync, flagSync, true, "Force synchronous deployment by triggering flux reconciliation")
 	cmd.Flags().BoolVar(&f.InstalledOnly, flagInstalledOnly, false, "When listing apps, show only installed apps (default: show all catalog apps with installation status)")
+	cmd.Flags().StringVar(&f.Name, flagName, "", "Override the app name being deployed (default: use catalog app name)")
 
 	// Print flags for output formatting
 	f.print = genericclioptions.NewPrintFlags("")

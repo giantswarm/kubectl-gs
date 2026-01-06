@@ -11,15 +11,21 @@ import (
 )
 
 func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
+	// Determine the resource name (can be overridden by --name flag)
+	resourceName := spec.name
+	if r.flag.Name != "" {
+		resourceName = r.flag.Name
+	}
+
 	// Try to get existing app to determine if we need to create or update
-	existingApp, err := r.appService.GetApp(ctx, r.flag.Namespace, spec.name)
+	existingApp, err := r.appService.GetApp(ctx, r.flag.Namespace, resourceName)
 	if err != nil {
 		// App doesn't exist, create it
 		if app.IsNotFound(err) {
 			var createdApp *applicationv1alpha1.App
 			err = RunWithSpinner(fmt.Sprintf("Deploying app %s@%s", spec.name, spec.version), func() error {
 				createOptions := app.CreateOptions{
-					Name:         spec.name,
+					Name:         resourceName,
 					Namespace:    r.flag.Namespace,
 					AppName:      spec.name,
 					AppNamespace: r.flag.Namespace,
@@ -39,18 +45,18 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 			}
 
 			// Trigger flux reconciliation if --sync flag is set
-			if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
+			if err := r.reconcileFluxApp(ctx, resourceName, r.flag.Namespace); err != nil {
 				return err
 			}
 
-			output := DeployOutput(strings.ToLower(createdApp.Kind), spec.name, spec.version, r.flag.Namespace)
+			output := DeployOutput(strings.ToLower(createdApp.Kind), resourceName, spec.version, r.flag.Namespace)
 			if _, err := fmt.Fprint(r.stdout, output); err != nil {
 				return err
 			}
 
 			// Show reminder last if not using --undeploy-on-exit
 			if !r.flag.UndeployOnExit {
-				if _, err := fmt.Fprint(r.stdout, ReminderOutput("app", spec.name)); err != nil {
+				if _, err := fmt.Fprint(r.stdout, ReminderOutput("app", resourceName)); err != nil {
 					return err
 				}
 			}
@@ -62,10 +68,10 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 
 	// App exists, use the app service to patch it with version validation
 	var state []string
-	err = RunWithSpinner(fmt.Sprintf("Updating app %s to version %s", spec.name, spec.version), func() error {
+	err = RunWithSpinner(fmt.Sprintf("Updating app %s to version %s", resourceName, spec.version), func() error {
 		patchOptions := app.PatchOptions{
 			Namespace:             r.flag.Namespace,
-			Name:                  spec.name,
+			Name:                  resourceName,
 			Version:               spec.version,
 			SuspendReconciliation: true,
 		}
@@ -76,7 +82,7 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 	})
 
 	if app.IsNotFound(err) {
-		return fmt.Errorf("app %s not found in namespace %s", spec.name, r.flag.Namespace)
+		return fmt.Errorf("app %s not found in namespace %s", resourceName, r.flag.Namespace)
 	} else if app.IsNoResources(err) {
 		return fmt.Errorf("no app with the name %s and the version %s found in the catalog", spec.name, spec.version)
 	} else if err != nil {
@@ -84,18 +90,18 @@ func (r *runner) deployApp(ctx context.Context, spec *resourceSpec) error {
 	}
 
 	// Trigger flux reconciliation if --sync flag is set
-	if err := r.reconcileFluxApp(ctx, spec.name, r.flag.Namespace); err != nil {
+	if err := r.reconcileFluxApp(ctx, resourceName, r.flag.Namespace); err != nil {
 		return err
 	}
 
-	output := UpdateOutput(strings.ToLower(existingApp.Kind), spec.name, r.flag.Namespace, state)
+	output := UpdateOutput(strings.ToLower(existingApp.Kind), resourceName, r.flag.Namespace, state)
 	if _, err := fmt.Fprint(r.stdout, output); err != nil {
 		return err
 	}
 
 	// Show reminder last if not using --undeploy-on-exit
 	if !r.flag.UndeployOnExit {
-		if _, err := fmt.Fprint(r.stdout, ReminderOutput("app", spec.name)); err != nil {
+		if _, err := fmt.Fprint(r.stdout, ReminderOutput("app", resourceName)); err != nil {
 			return err
 		}
 	}

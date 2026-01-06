@@ -112,6 +112,12 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 		}
 	}
 
+	// Determine the resource name (can be overridden by --name flag for apps)
+	resourceName := spec.name
+	if r.flag.Type == "app" && r.flag.Name != "" {
+		resourceName = r.flag.Name
+	}
+
 	// Capture state before deployment if undeploy-on-exit is enabled
 	var savedState interface{}
 	var stateCaptured bool
@@ -119,7 +125,7 @@ func (r *runner) handleDeploy(ctx context.Context, cmd *cobra.Command, args []st
 		var captureErr error
 		switch r.flag.Type {
 		case "app":
-			savedState, captureErr = r.captureAppState(ctx, spec.name, r.flag.Namespace)
+			savedState, captureErr = r.captureAppState(ctx, resourceName, r.flag.Namespace)
 		case "config":
 			savedState, captureErr = r.captureConfigState(ctx, spec.name, r.flag.Namespace)
 		default:
