@@ -46,7 +46,6 @@ data:
         version: 25.0.0
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     giantswarm.io/cluster: test6
   name: test6-userconfig

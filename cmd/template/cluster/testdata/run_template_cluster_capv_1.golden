@@ -48,7 +48,6 @@ data:
         version: 27.0.0
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     giantswarm.io/cluster: test1
   name: test1-userconfig
@@ -100,7 +99,6 @@ data:
     organization: test
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     giantswarm.io/cluster: test1
   name: test1-default-apps-userconfig

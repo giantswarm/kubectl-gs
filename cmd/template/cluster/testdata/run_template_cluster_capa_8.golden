@@ -42,7 +42,6 @@ data:
         version: 25.0.0
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     giantswarm.io/cluster: test8
   name: test8-userconfig

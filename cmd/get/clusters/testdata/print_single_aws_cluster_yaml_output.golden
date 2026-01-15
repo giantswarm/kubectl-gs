@@ -3,7 +3,6 @@ kind: Cluster
 metadata:
   annotations:
     cluster.giantswarm.io/description: test cluster 4
-  creationTimestamp: null
   labels:
     cluster.x-k8s.io/cluster-name: f930q
     giantswarm.io/organization: some-other

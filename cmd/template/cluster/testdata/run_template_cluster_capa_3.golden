@@ -55,7 +55,6 @@ data:
         version: 25.0.0
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     giantswarm.io/cluster: test1
   name: test1-userconfig
