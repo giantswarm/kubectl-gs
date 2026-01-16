@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.10.0] - 2026-01-16
+
 ### Changed
 
 - Replace `github.com/giantswarm/release-operator/v4/api/v1alpha1` with `github.com/giantswarm/releases/sdk/api/v1alpha1` for Release CRD types.
@@ -1635,7 +1637,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.0...HEAD
+[4.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.1...v4.10.0
 [4.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.0...v4.9.1
 [4.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...v4.9.0
 [4.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.0...v4.8.1
