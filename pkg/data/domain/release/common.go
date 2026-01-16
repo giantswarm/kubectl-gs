@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	releasev1alpha1 "github.com/giantswarm/release-operator/v4/api/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -55,7 +55,7 @@ func (s *Service) getByName(ctx context.Context, name, namespace string, activeO
 		r.CR.GetObjectKind().SetGroupVersionKind(schema.GroupVersionKind{
 			Group:   releasev1alpha1.SchemeGroupVersion.Group,
 			Version: releasev1alpha1.SchemeGroupVersion.Version,
-			Kind:    releasev1alpha1.NewReleaseCR().Kind,
+			Kind:    "Release",
 		})
 	}
 

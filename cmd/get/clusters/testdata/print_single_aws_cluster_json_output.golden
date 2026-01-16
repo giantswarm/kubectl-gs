@@ -4,7 +4,6 @@
     "metadata": {
         "name": "f930q",
         "namespace": "default",
-        "creationTimestamp": null,
         "labels": {
             "cluster.x-k8s.io/cluster-name": "f930q",
             "giantswarm.io/organization": "some-other",

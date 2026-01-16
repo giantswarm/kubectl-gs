@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Replace `github.com/giantswarm/release-operator/v4/api/v1alpha1` with `github.com/giantswarm/releases/sdk/api/v1alpha1` for Release CRD types.
+- Update k8s dependencies to v0.35.0.
+
 ## [4.9.1] - 2026-01-05
 
 ### Changed
