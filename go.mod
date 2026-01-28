@@ -27,7 +27,7 @@ require (
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.11.0
 	github.com/giantswarm/telemetrydeck-go v0.1.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/rhysd/go-github-selfupdate v1.2.3
