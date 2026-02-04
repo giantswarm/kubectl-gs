@@ -1,1 +1,1 @@
-CVE-2025-58058 until=2025-12-04 # github.com/ulikunitz/xz@v0.5.9
+CVE-2026-24051 until=2026-03-06 # go.opentelemetry.io/otel/sdk@v1.37.0
