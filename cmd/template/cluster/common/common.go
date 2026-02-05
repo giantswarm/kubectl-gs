@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -269,4 +270,30 @@ func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclie
 	}
 
 	return nil
+}
+
+const (
+	// ReleaseVersionMajorThreshold is the major version threshold above which
+	// we assume the version is a Release version (not an original chart version).
+	// Release versions (e.g., 34.0.0) use release-<provider> chart names.
+	// Original chart versions (e.g., 7.2.5) use cluster-<provider> chart names.
+	ReleaseVersionMajorThreshold = 34
+)
+
+// IsReleaseVersion determines if the given version is a Release version.
+// Release versions have major version >= 34 and use release-<provider> chart names.
+// Original chart versions have lower major versions and use cluster-<provider> chart names.
+func IsReleaseVersion(version string) bool {
+	version = strings.TrimPrefix(version, "v")
+	parts := strings.Split(version, ".")
+	if len(parts) < 1 {
+		return false
+	}
+
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return false
+	}
+
+	return major >= ReleaseVersionMajorThreshold
 }
