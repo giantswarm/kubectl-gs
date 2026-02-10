@@ -23,6 +23,7 @@ const (
 	envIssuerURL    = "KUBECTL_GS_OIDC_ISSUER_URL"
 	envClientID     = "KUBECTL_GS_OIDC_CLIENT_ID"
 	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
+	envIDToken      = "KUBECTL_GS_OIDC_ID_TOKEN"
 
 	// Cache file will be stored in user's home directory under .kube/.kubectl-gs/cache/
 	cacheDirName = ".kube/.kubectl-gs"
@@ -55,25 +56,19 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// Check if we have a cached valid token before renewing
-	cachedToken, err := r.getCachedToken(issuerURL, clientID)
-	if err == nil && isValidIdToken(cachedToken) {
-		// Use cached token if it's still valid
-		idToken := cachedToken
-		execCredential := execCredentialResponse{
-			APIVersion: clientauthv1beta1.SchemeGroupVersion.String(),
-			Kind:       "ExecCredential",
-			Status: &clientauthv1beta1.ExecCredentialStatus{
-				Token: idToken,
-			},
-		}
+	cachedIDToken, cachedRefreshToken, err := r.getCachedToken(issuerURL, clientID)
+	if err == nil && isValidIdToken(cachedIDToken) {
+		return r.outputExecCredential(cachedIDToken)
+	}
 
-		encoder := json.NewEncoder(r.stdout)
-		encoder.SetIndent("", "  ")
-		err = encoder.Encode(execCredential)
-		if err != nil {
-			return microerror.Maskf(credentialPluginError, "failed to encode ExecCredential: %v", err)
-		}
-		return nil
+	// Check if the id_token passed from login is still valid
+	if idTokenFromEnv := os.Getenv(envIDToken); isValidIdToken(idTokenFromEnv) {
+		return r.outputExecCredential(idTokenFromEnv)
+	}
+
+	// Prefer cached refresh token over env var (it may be newer after rotation)
+	if cachedRefreshToken != "" {
+		refreshToken = cachedRefreshToken
 	}
 
 	// Create OIDC authenticator
@@ -103,7 +98,10 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
 	}
 
-	// Create ExecCredential response
+	return r.outputExecCredential(idToken)
+}
+
+func (r *runner) outputExecCredential(idToken string) error {
 	execCredential := execCredentialResponse{
 		APIVersion: clientauthv1beta1.SchemeGroupVersion.String(),
 		Kind:       "ExecCredential",
@@ -112,14 +110,11 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		},
 	}
 
-	// Output the ExecCredential response as JSON
 	encoder := json.NewEncoder(r.stdout)
 	encoder.SetIndent("", "  ")
-	err = encoder.Encode(execCredential)
-	if err != nil {
+	if err := encoder.Encode(execCredential); err != nil {
 		return microerror.Maskf(credentialPluginError, "failed to encode ExecCredential: %v", err)
 	}
-
 	return nil
 }
 
@@ -160,25 +155,26 @@ func isValidIdToken(idToken string) bool {
 	return expTime.After(time.Now().Add(5 * time.Minute))
 }
 
-// getCachedToken retrieves a cached token from disk
-func (r *runner) getCachedToken(issuerURL, clientID string) (string, error) {
+// getCachedToken retrieves a cached id_token and refresh_token from disk
+func (r *runner) getCachedToken(issuerURL, clientID string) (string, string, error) {
 	cacheFile := r.getCacheFilePath(issuerURL, clientID)
 
 	data, err := os.ReadFile(cacheFile)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var cache struct {
-		IDToken string `json:"id_token"`
+		IDToken      string `json:"id_token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	err = json.Unmarshal(data, &cache)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return cache.IDToken, nil
+	return cache.IDToken, cache.RefreshToken, nil
 }
 
 // cacheToken stores a token in a cache file
