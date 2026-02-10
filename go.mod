@@ -222,9 +222,9 @@ require (
 	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/term v0.39.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/term v0.40.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/time v0.13.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.250.0 // indirect
@@ -251,6 +251,6 @@ replace (
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.22.0
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.11.0
-	golang.org/x/crypto => golang.org/x/crypto v0.47.0
+	golang.org/x/crypto => golang.org/x/crypto v0.48.0
 	golang.org/x/text => golang.org/x/text v0.34.0
 )
