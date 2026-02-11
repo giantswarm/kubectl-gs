@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Use `release-<provider>` chart name for Release versions (major >= 34) in `template cluster` command.
+
 ## [4.10.0] - 2026-01-16
 
 ### Changed
