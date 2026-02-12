@@ -55,15 +55,15 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s, %s", envIssuerURL, envClientID, envRefreshToken)
 	}
 
+	// Check if the id_token passed from login is still valid
+	if idTokenFromEnv := os.Getenv(envIDToken); isValidIdToken(idTokenFromEnv) {
+		return r.outputExecCredential(idTokenFromEnv)
+	}
+
 	// Check if we have a cached valid token before renewing
 	cachedIDToken, cachedRefreshToken, err := r.getCachedToken(issuerURL, clientID)
 	if err == nil && isValidIdToken(cachedIDToken) {
 		return r.outputExecCredential(cachedIDToken)
-	}
-
-	// Check if the id_token passed from login is still valid
-	if idTokenFromEnv := os.Getenv(envIDToken); isValidIdToken(idTokenFromEnv) {
-		return r.outputExecCredential(idTokenFromEnv)
 	}
 
 	// Prefer cached refresh token over env var (it may be newer after rotation)
