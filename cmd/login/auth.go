@@ -52,7 +52,7 @@ func storeMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 		}
 
 		if len(authResult.clientID) > 0 {
-			initialUser.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.refreshToken)
+			initialUser.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken)
 		} else {
 			initialUser.Token = authResult.token
 		}
@@ -154,7 +154,7 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 	authInfo := clientcmdapi.NewAuthInfo()
 	{
 		if len(authResult.clientID) > 0 {
-			authInfo.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.refreshToken)
+			authInfo.Exec = oidcExec(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken)
 		} else {
 			authInfo.Token = authResult.token
 		}
@@ -193,7 +193,7 @@ func printMCCredentials(k8sConfigAccess clientcmd.ConfigAccess, i *installation.
 }
 
 // oidcExec creates an ExecConfig for OIDC authentication using the credential plugin framework
-func oidcExec(issuerURL, clientID, refreshToken string) *clientcmdapi.ExecConfig {
+func oidcExec(issuerURL, clientID, idToken, refreshToken string) *clientcmdapi.ExecConfig {
 	// Get the path to the kubectl-gs binary
 	// We use "kubectl-gs" as the command
 	execPath := "kubectl-gs"
@@ -210,6 +210,10 @@ func oidcExec(issuerURL, clientID, refreshToken string) *clientcmdapi.ExecConfig
 			{
 				Name:  "KUBECTL_GS_OIDC_CLIENT_ID",
 				Value: clientID,
+			},
+			{
+				Name:  "KUBECTL_GS_OIDC_ID_TOKEN",
+				Value: idToken,
 			},
 			{
 				Name:  "KUBECTL_GS_OIDC_REFRESH_TOKEN",

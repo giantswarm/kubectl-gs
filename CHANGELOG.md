@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Change cache logic so initial `id_token` doesn't get discarded.
+
 ## [4.10.0] - 2026-01-16
 
 ### Changed
