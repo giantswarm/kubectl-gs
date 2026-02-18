@@ -9,18 +9,15 @@ import (
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/reference"
 	"k8s.io/utils/ptr"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
 )
 
 const (
@@ -176,19 +173,11 @@ func newAzureMasterMachineCR(config common.ClusterConfig) *capz.AzureMachine {
 	return machine
 }
 
-func newCAPZClusterInfraRef(obj client.Object) *corev1.ObjectReference {
-	var infrastructureCRRef *corev1.ObjectReference
-	{
-		s, err := scheme.NewScheme()
-		if err != nil {
-			panic(microerror.Pretty(err, true))
-		}
-
-		infrastructureCRRef, err = reference.GetReference(s, obj)
-		if err != nil {
-			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
-		}
+func newCAPZClusterInfraRef(obj client.Object) capi.ContractVersionedObjectReference {
+	gvk := obj.GetObjectKind().GroupVersionKind()
+	return capi.ContractVersionedObjectReference{
+		Kind:     gvk.Kind,
+		Name:     obj.GetName(),
+		APIGroup: gvk.Group,
 	}
-
-	return infrastructureCRRef
 }

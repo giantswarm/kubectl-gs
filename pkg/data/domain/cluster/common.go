@@ -11,7 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
@@ -65,7 +65,7 @@ func (s *Service) getAllCommonCapi(ctx context.Context, namespace string) (Resou
 	for _, capiCluster := range clusterList.Items {
 		clusterCopy := capiCluster.DeepCopy()
 		clusterCopy.TypeMeta = meta.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "Cluster",
 		}
 		cluster := Cluster{
@@ -107,7 +107,7 @@ func (s *Service) getByNameCommonCapi(ctx context.Context, name, namespace strin
 		}
 
 		capiCluster.TypeMeta = meta.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "Cluster",
 		}
 		cluster.Cluster = &capiCluster

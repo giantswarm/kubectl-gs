@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
 
@@ -167,7 +167,7 @@ func Test_printOutput(t *testing.T) {
 func newcapiCluster(id, release, org, description, servicePriority string, creationDate time.Time, conditions []string) *capi.Cluster {
 	c := &capi.Cluster{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "Cluster",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -186,11 +186,11 @@ func newcapiCluster(id, release, org, description, servicePriority string, creat
 		},
 	}
 
-	resConditions := make([]capi.Condition, 0, len(conditions))
+	resConditions := make([]metav1.Condition, 0, len(conditions))
 	for _, condition := range conditions {
-		resConditions = append(resConditions, capi.Condition{
-			Type:   capi.ConditionType(condition),
-			Status: "True",
+		resConditions = append(resConditions, metav1.Condition{
+			Type:   condition,
+			Status: metav1.ConditionTrue,
 		})
 	}
 	c.SetConditions(resConditions)

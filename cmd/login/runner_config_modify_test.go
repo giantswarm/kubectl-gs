@@ -31,7 +31,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/ptr"
-	"sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/cluster-api/api/core/v1beta2"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
@@ -48,7 +48,7 @@ func TestKubeConfigModification(t *testing.T) {
 		organization        securityv1alpha.Organization
 		idToken             string
 		renewToken          string
-		workloadCluster     v1beta1.Cluster
+		workloadCluster     v1beta2.Cluster
 	}{
 		{
 			name:  "case 0: MC login with provider auth type, selected context, new tokens",
@@ -369,7 +369,7 @@ func TestKubeConfigModification(t *testing.T) {
 	}
 }
 
-func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cluster, idToken string, refreshToken string) (*httptest.Server, error) {
+func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta2.Cluster, idToken string, refreshToken string) (*httptest.Server, error) {
 	// Mock Kubernetes API and auth issuer
 
 	var issuer string
@@ -408,13 +408,13 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 			responseData = appResourceList
 		case "/apis/security.giantswarm.io/v1alpha1":
 			responseData = orgResourceList
-		case "/apis/cluster.x-k8s.io/v1beta1":
+		case "/apis/cluster.x-k8s.io/v1beta2":
 			responseData = clusterResourceList
 		case "/apis/authorization.k8s.io/v1/selfsubjectaccessreviews":
 			responseData = selfSubjectAccessReview
 		case "/apis/security.giantswarm.io/v1alpha1/organizations":
 			responseData = securityv1alpha.OrganizationList{Items: []securityv1alpha.Organization{org}}
-		case fmt.Sprintf("/apis/cluster.x-k8s.io/v1beta1/namespaces/%s/clusters/%s", wc.Namespace, wc.Name):
+		case fmt.Sprintf("/apis/cluster.x-k8s.io/v1beta2/namespaces/%s/clusters/%s", wc.Namespace, wc.Name):
 			responseData = wc
 		case fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s-ca", wc.Namespace, wc.Name):
 			responseData = secret
@@ -591,17 +591,17 @@ func createSelfSubjectAccessReview() authorizationv1.SelfSubjectAccessReview {
 	}
 }
 
-func createCluster(name string, namespace string) v1beta1.Cluster {
-	return v1beta1.Cluster{
-		TypeMeta:   v1.TypeMeta{Kind: "Cluster", APIVersion: "cluster.x-k8s.io/v1beta1"},
+func createCluster(name string, namespace string) v1beta2.Cluster {
+	return v1beta2.Cluster{
+		TypeMeta:   v1.TypeMeta{Kind: "Cluster", APIVersion: "cluster.x-k8s.io/v1beta2"},
 		ObjectMeta: v1.ObjectMeta{Name: name, Namespace: namespace},
-		Spec: v1beta1.ClusterSpec{
-			ControlPlaneEndpoint: v1beta1.APIEndpoint{
+		Spec: v1beta2.ClusterSpec{
+			ControlPlaneEndpoint: v1beta2.APIEndpoint{
 				Host: "localhost",
 				Port: 6443,
 			},
 		},
-		Status: v1beta1.ClusterStatus{},
+		Status: v1beta2.ClusterStatus{},
 	}
 }
 

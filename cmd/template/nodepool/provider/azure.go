@@ -12,18 +12,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/reference"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
 )
 
 func WriteAzureTemplate(ctx context.Context, client k8sclient.Interface, out io.Writer, config NodePoolCRsConfig) error {
@@ -133,36 +130,20 @@ func newAzureMachinePoolCR(config NodePoolCRsConfig) *capzexp.AzureMachinePool {
 	return azureMp
 }
 
-func newCAPZMachinePoolInfraRef(obj client.Object) *corev1.ObjectReference {
-	var infrastructureCRRef *corev1.ObjectReference
-	{
-		s, err := scheme.NewScheme()
-		if err != nil {
-			panic(microerror.Pretty(err, true))
-		}
-
-		infrastructureCRRef, err = reference.GetReference(s, obj)
-		if err != nil {
-			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
-		}
+func newCAPZMachinePoolInfraRef(obj client.Object) capi.ContractVersionedObjectReference {
+	gvk := obj.GetObjectKind().GroupVersionKind()
+	return capi.ContractVersionedObjectReference{
+		Kind:     gvk.Kind,
+		Name:     obj.GetName(),
+		APIGroup: gvk.Group,
 	}
-
-	return infrastructureCRRef
 }
 
-func newSparkCRRef(obj client.Object) *corev1.ObjectReference {
-	var infrastructureCRRef *corev1.ObjectReference
-	{
-		s, err := scheme.NewScheme()
-		if err != nil {
-			panic(microerror.Pretty(err, true))
-		}
-
-		infrastructureCRRef, err = reference.GetReference(s, obj)
-		if err != nil {
-			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
-		}
+func newSparkCRRef(obj client.Object) capi.ContractVersionedObjectReference {
+	gvk := obj.GetObjectKind().GroupVersionKind()
+	return capi.ContractVersionedObjectReference{
+		Kind:     gvk.Kind,
+		Name:     obj.GetName(),
+		APIGroup: gvk.Group,
 	}
-
-	return infrastructureCRRef
 }

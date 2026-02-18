@@ -7,6 +7,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/ptr"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/feature"
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
@@ -68,8 +69,8 @@ func getAWSNodePoolRow(
 			output.TranslateTimestampSince(nodePool.MachineDeployment.CreationTimestamp),
 			getAWSLatestCondition(nodePool, capabilities),
 			getAWSAutoscaling(nodePool, capabilities),
-			nodePool.MachineDeployment.Status.Replicas,
-			nodePool.MachineDeployment.Status.ReadyReplicas,
+			ptr.Deref(nodePool.MachineDeployment.Status.Replicas, 0),
+			ptr.Deref(nodePool.MachineDeployment.Status.ReadyReplicas, 0),
 			getAWSDescription(nodePool),
 		},
 		Object: runtime.RawExtension{

@@ -102,7 +102,6 @@ func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.
 
 func moveCRsToOrgNamespace(crs aws.ClusterCRs, organization string) aws.ClusterCRs {
 	crs.Cluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
-	crs.Cluster.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)
 	crs.AWSCluster.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	crs.G8sControlPlane.SetNamespace(key.OrganizationNamespaceFromName(organization))
 	crs.G8sControlPlane.Spec.InfrastructureRef.Namespace = key.OrganizationNamespaceFromName(organization)

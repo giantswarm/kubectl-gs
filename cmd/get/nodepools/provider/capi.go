@@ -6,6 +6,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/ptr"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
@@ -88,9 +89,9 @@ func getCAPIMachineDeploymentRow(nodePool nodepool.Nodepool) metav1.TableRow {
 			key.ClusterID(nodePool.MachineDeployment),
 			output.TranslateTimestampSince(nodePool.MachineDeployment.CreationTimestamp),
 			getCAPIMachineDeploymentLatestPhase(nodePool),
-			nodePool.MachineDeployment.Status.Replicas,
-			nodePool.MachineDeployment.Status.Replicas,
-			nodePool.MachineDeployment.Status.ReadyReplicas,
+			ptr.Deref(nodePool.MachineDeployment.Status.Replicas, 0),
+			ptr.Deref(nodePool.MachineDeployment.Status.Replicas, 0),
+			ptr.Deref(nodePool.MachineDeployment.Status.ReadyReplicas, 0),
 			getCAPIMachineDeploymentDescription(nodePool),
 		},
 		Object: runtime.RawExtension{
@@ -112,8 +113,8 @@ func getCAPIMachinePoolRow(nodePool nodepool.Nodepool) metav1.TableRow {
 			getCAPIMachinePoolLatestPhase(nodePool),
 			// Only CAPA for now.
 			getCAPAAutoscaling(nodePool),
-			nodePool.MachinePool.Status.Replicas,
-			nodePool.MachinePool.Status.ReadyReplicas,
+			ptr.Deref(nodePool.MachinePool.Status.Replicas, 0),
+			ptr.Deref(nodePool.MachinePool.Status.ReadyReplicas, 0),
 			getCAPIMachinePoolDescription(nodePool),
 		},
 		Object: runtime.RawExtension{

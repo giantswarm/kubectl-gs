@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Bump cluster-api to v1.11.6 (v1beta2 migration). `InfrastructureRef` now uses `ContractVersionedObjectReference` instead of `corev1.ObjectReference`. Status replica fields are now pointer types.
+
 ### Added
 
 - Use `release-<provider>` chart name for Release versions (major >= 34) in `template cluster` command.

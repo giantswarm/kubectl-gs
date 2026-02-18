@@ -5,9 +5,8 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
@@ -127,7 +126,7 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 	return &capi.MachineDeployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachineDeployment",
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      c.MachineDeploymentName,
@@ -149,11 +148,10 @@ func newMachineDeploymentCR(obj *v1alpha3.AWSMachineDeployment, c NodePoolCRsCon
 			Template: capi.MachineTemplateSpec{
 				Spec: capi.MachineSpec{
 					ClusterName: c.ClusterName,
-					InfrastructureRef: corev1.ObjectReference{
-						APIVersion: obj.APIVersion,
-						Kind:       obj.Kind,
-						Name:       obj.GetName(),
-						Namespace:  obj.GetNamespace(),
+					InfrastructureRef: capi.ContractVersionedObjectReference{
+						Kind:     obj.Kind,
+						Name:     obj.GetName(),
+						APIGroup: v1alpha3.SchemeGroupVersion.Group,
 					},
 				},
 			},

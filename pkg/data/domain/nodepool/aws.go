@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -54,7 +54,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace, clusterID string) (R
 
 			if awsMD, exists := awsMDs[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1beta1",
+					APIVersion: "cluster.x-k8s.io/v1beta2",
 					Kind:       "MachineDeployment",
 				}
 				awsMD.TypeMeta = infrastructurev1alpha3.NewAWSMachineDeploymentTypeMeta()
@@ -97,7 +97,7 @@ func (s *Service) getByIdAWS(ctx context.Context, id, namespace, clusterID strin
 		np.MachineDeployment = &crs.Items[0]
 
 		np.MachineDeployment.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "MachineDeployment",
 		}
 	}

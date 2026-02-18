@@ -7,7 +7,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -54,7 +54,7 @@ func (s *Service) getAllAzure(ctx context.Context, namespace string) (Resource, 
 
 			if azureCluster, exists := azureClusters[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1beta1",
+					APIVersion: "cluster.x-k8s.io/v1beta2",
 					Kind:       "Cluster",
 				}
 				azureCluster.TypeMeta = metav1.TypeMeta{
@@ -99,7 +99,7 @@ func (s *Service) getByNameAzure(ctx context.Context, name, namespace string) (R
 		cluster.Cluster = &crs.Items[0]
 
 		cluster.Cluster.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "Cluster",
 		}
 	}

@@ -14,9 +14,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/utils/ptr"
 	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
@@ -257,7 +257,7 @@ func newAWSMachineDeployment(name, clusterName, release, description string, cre
 func newcapiMachineDeployment(name, clusterName, release string, creationDate time.Time, nodesDesired, nodesReady int) *capi.MachineDeployment {
 	n := &capi.MachineDeployment{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "MachineDeployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -272,8 +272,8 @@ func newcapiMachineDeployment(name, clusterName, release string, creationDate ti
 			},
 		},
 		Status: capi.MachineDeploymentStatus{
-			Replicas:      int32(nodesDesired), //nolint:gosec
-			ReadyReplicas: int32(nodesReady),   //nolint:gosec
+			Replicas:      ptr.To(int32(nodesDesired)), //nolint:gosec
+			ReadyReplicas: ptr.To(int32(nodesReady)),   //nolint:gosec
 		},
 	}
 
@@ -313,10 +313,10 @@ func newCAPAexpMachinePool(name, clusterName, description string, creationDate t
 	return n
 }
 
-func newCAPIexpMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexp.MachinePool {
-	n := &capiexp.MachinePool{
+func newCAPIexpMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady, nodesMin, nodesMax int) *capi.MachinePool {
+	n := &capi.MachinePool{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
+			APIVersion: "exp.cluster.x-k8s.io/v1beta2",
 			Kind:       "MachinePool",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -336,9 +336,9 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 				annotation.MachinePoolName: description,
 			},
 		},
-		Status: capiexp.MachinePoolStatus{
-			Replicas:      int32(nodesDesired), //nolint:gosec
-			ReadyReplicas: int32(nodesReady),   //nolint:gosec
+		Status: capi.MachinePoolStatus{
+			Replicas:      ptr.To(int32(nodesDesired)), //nolint:gosec
+			ReadyReplicas: ptr.To(int32(nodesReady)),   //nolint:gosec
 		},
 	}
 

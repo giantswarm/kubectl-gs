@@ -16,16 +16,14 @@ import (
 	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 )
 
 func NewSchemeBuilder() []func(*runtime.Scheme) error {
 	return []func(*runtime.Scheme) error{
 		apiextensions.AddToScheme,    // CustomResourceDefinition
 		application.AddToScheme,      // App, Catalog
-		capi.AddToScheme,             // Cluster
-		capiexp.AddToScheme,          // MachinePool
+		capi.AddToScheme,             // Cluster, MachinePool
 		capaexp.AddToScheme,          // AWSMachinePool
 		eks.AddToScheme,              // EKS CRs
 		k8score.AddToScheme,          // Secret, ConfigMap

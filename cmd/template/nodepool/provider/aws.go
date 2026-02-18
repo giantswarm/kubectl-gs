@@ -96,7 +96,6 @@ func WriteGSAWSTemplate(ctx context.Context, client k8sclient.Interface, out io.
 
 func moveCRsToNamespace(crs aws.NodePoolCRs, namespace string) aws.NodePoolCRs {
 	crs.MachineDeployment.SetNamespace(namespace)
-	crs.MachineDeployment.Spec.Template.Spec.InfrastructureRef.Namespace = namespace
 	crs.AWSMachineDeployment.SetNamespace(namespace)
 	return crs
 }

@@ -1,6 +1,6 @@
 apiVersion: v1
 items:
-- apiVersion: cluster.x-k8s.io/v1beta1
+- apiVersion: cluster.x-k8s.io/v1beta2
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -11,22 +11,10 @@ items:
       release.giantswarm.io/version: 12.0.0
     name: 1sad2
     namespace: default
-  spec:
-    clusterName: ""
-    selector: {}
-    template:
-      metadata: {}
-      spec:
-        bootstrap: {}
-        clusterName: ""
-        infrastructureRef: {}
   status:
-    availableReplicas: 0
     readyReplicas: 2
     replicas: 2
-    unavailableReplicas: 0
-    updatedReplicas: 0
-- apiVersion: cluster.x-k8s.io/v1beta1
+- apiVersion: cluster.x-k8s.io/v1beta2
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -37,22 +25,10 @@ items:
       release.giantswarm.io/version: 11.0.0
     name: 2a03f
     namespace: default
-  spec:
-    clusterName: ""
-    selector: {}
-    template:
-      metadata: {}
-      spec:
-        bootstrap: {}
-        clusterName: ""
-        infrastructureRef: {}
   status:
-    availableReplicas: 0
     readyReplicas: 2
     replicas: 5
-    unavailableReplicas: 0
-    updatedReplicas: 0
-- apiVersion: cluster.x-k8s.io/v1beta1
+- apiVersion: cluster.x-k8s.io/v1beta2
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -63,22 +39,10 @@ items:
       release.giantswarm.io/version: 10.5.0
     name: asd29
     namespace: default
-  spec:
-    clusterName: ""
-    selector: {}
-    template:
-      metadata: {}
-      spec:
-        bootstrap: {}
-        clusterName: ""
-        infrastructureRef: {}
   status:
-    availableReplicas: 0
     readyReplicas: 10
     replicas: 10
-    unavailableReplicas: 0
-    updatedReplicas: 0
-- apiVersion: cluster.x-k8s.io/v1beta1
+- apiVersion: cluster.x-k8s.io/v1beta2
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -89,22 +53,10 @@ items:
       release.giantswarm.io/version: 11.0.0
     name: f930q
     namespace: default
-  spec:
-    clusterName: ""
-    selector: {}
-    template:
-      metadata: {}
-      spec:
-        bootstrap: {}
-        clusterName: ""
-        infrastructureRef: {}
   status:
-    availableReplicas: 0
     readyReplicas: 1
     replicas: 3
-    unavailableReplicas: 0
-    updatedReplicas: 0
-- apiVersion: cluster.x-k8s.io/v1beta1
+- apiVersion: cluster.x-k8s.io/v1beta2
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -115,22 +67,10 @@ items:
       release.giantswarm.io/version: 9.0.0
     name: 9f012
     namespace: default
-  spec:
-    clusterName: ""
-    selector: {}
-    template:
-      metadata: {}
-      spec:
-        bootstrap: {}
-        clusterName: ""
-        infrastructureRef: {}
   status:
-    availableReplicas: 0
     readyReplicas: 1
     replicas: 1
-    unavailableReplicas: 0
-    updatedReplicas: 0
-- apiVersion: cluster.x-k8s.io/v1beta1
+- apiVersion: cluster.x-k8s.io/v1beta2
   kind: MachineDeployment
   metadata:
     creationTimestamp: "2021-01-02T15:04:32Z"
@@ -141,20 +81,8 @@ items:
       release.giantswarm.io/version: 10.5.0
     name: 2f0as
     namespace: default
-  spec:
-    clusterName: ""
-    selector: {}
-    template:
-      metadata: {}
-      spec:
-        bootstrap: {}
-        clusterName: ""
-        infrastructureRef: {}
   status:
-    availableReplicas: 0
     readyReplicas: 5
     replicas: 5
-    unavailableReplicas: 0
-    updatedReplicas: 0
 kind: List
 metadata: {}

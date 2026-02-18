@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -55,7 +55,7 @@ func (s *Service) getAllAWS(ctx context.Context, namespace string) (Resource, er
 
 			if awsCluster, exists := awsClusters[cr.GetName()]; exists {
 				cr.TypeMeta = metav1.TypeMeta{
-					APIVersion: "cluster.x-k8s.io/v1beta1",
+					APIVersion: "cluster.x-k8s.io/v1beta2",
 					Kind:       "Cluster",
 				}
 				awsCluster.TypeMeta = infrastructurev1alpha3.NewAWSClusterTypeMeta()
@@ -110,7 +110,7 @@ func (s *Service) getByNameAWS(ctx context.Context, name, namespace string) (Res
 		cluster.Cluster = &crs.Items[0]
 
 		cluster.Cluster.TypeMeta = metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+			APIVersion: "cluster.x-k8s.io/v1beta2",
 			Kind:       "Cluster",
 		}
 	}
