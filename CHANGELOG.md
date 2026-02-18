@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Use `release-<provider>` chart name for Release versions (major >= 34) in `template cluster` command.
 
+## [4.10.1] - 2026-02-12
+
+### Changed
+
+- Change cache logic so initial `id_token` doesn't get discarded.
+
 ## [4.10.0] - 2026-01-16
 
 ### Changed
@@ -1641,7 +1647,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.1...HEAD
+[4.10.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.0...v4.10.1
 [4.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.1...v4.10.0
 [4.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.0...v4.9.1
 [4.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.8.1...v4.9.0
