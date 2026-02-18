@@ -275,13 +275,13 @@ func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclie
 const (
 	// ReleaseVersionMajorThreshold is the major version threshold above which
 	// we assume the version is a Release version (not an original chart version).
-	// Release versions (e.g., 34.0.0) use release-<provider> chart names.
+	// Release versions (e.g., 35.0.0) use release-<provider> chart names.
 	// Original chart versions (e.g., 7.2.5) use cluster-<provider> chart names.
-	ReleaseVersionMajorThreshold = 34
+	ReleaseVersionMajorThreshold = 35
 )
 
 // IsReleaseVersion determines if the given version is a Release version.
-// Release versions have major version >= 34 and use release-<provider> chart names.
+// Release versions have major version >= 35 and use release-<provider> chart names.
 // Original chart versions have lower major versions and use cluster-<provider> chart names.
 func IsReleaseVersion(version string) bool {
 	version = strings.TrimPrefix(version, "v")

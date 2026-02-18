@@ -38,6 +38,12 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 	{
 		flagValues := BuildCapzClusterConfig(config)
 
+		// For release versions, the release version is baked into the chart,
+		// so we don't need to include it in the user config.
+		if common.IsReleaseVersion(config.App.ClusterVersion) {
+			flagValues.Global.Release = nil
+		}
+
 		configData, err := capz.GenerateClusterValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)
@@ -66,7 +72,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 
 	var appYAML []byte
 	{
-		// Use release-<provider> chart name for release versions (>= 34.0.0).
+		// Use release-<provider> chart name for release versions (>= 35.0.0).
 		// These charts have the release version baked into values.yaml.
 		// For older chart versions, use cluster-<provider> and let the webhook handle version.
 		chartName := ClusterAzureRepoName

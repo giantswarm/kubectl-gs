@@ -20,6 +20,7 @@ import (
 
 const (
 	ClusterCloudDirectorRepoName = "cluster-cloud-director"
+	ReleaseCloudDirectorRepoName = "release-cloud-director"
 )
 
 func WriteCloudDirectorTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
@@ -47,6 +48,12 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 	var configMapYAML []byte
 	{
 		flagValues := BuildCapvcdClusterConfig(config)
+
+		// For release versions, the release version is baked into the chart,
+		// so we don't need to include it in the user config.
+		if common.IsReleaseVersion(appVersion) {
+			flagValues.Global.Release = nil
+		}
 
 		configData, err := capvcd.GenerateClusterValues(flagValues)
 		if err != nil {
@@ -85,11 +92,18 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 			},
 		}
 
+		// Use release-<provider> chart name for release versions (>= 35.0.0).
+		// For older chart versions, use cluster-<provider>.
+		chartName := ClusterCloudDirectorRepoName
+		if common.IsReleaseVersion(appVersion) {
+			chartName = ReleaseCloudDirectorRepoName
+		}
+
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    ClusterCloudDirectorRepoName,
+			Name:                    chartName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,

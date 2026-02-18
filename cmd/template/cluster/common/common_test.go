@@ -9,18 +9,18 @@ func TestIsReleaseVersion(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "release version 34.0.0 returns true",
-			version:  "34.0.0",
+			name:     "release version 35.0.0 returns true",
+			version:  "35.0.0",
 			expected: true,
 		},
 		{
-			name:     "release version v34.0.0 with v prefix returns true",
-			version:  "v34.0.0",
+			name:     "release version v35.0.0 with v prefix returns true",
+			version:  "v35.0.0",
 			expected: true,
 		},
 		{
-			name:     "release version 35.1.2 returns true",
-			version:  "35.1.2",
+			name:     "release version 36.1.2 returns true",
+			version:  "36.1.2",
 			expected: true,
 		},
 		{
@@ -34,8 +34,8 @@ func TestIsReleaseVersion(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:     "chart version 33.9.9 returns false",
-			version:  "33.9.9",
+			name:     "chart version 34.9.9 returns false",
+			version:  "34.9.9",
 			expected: false,
 		},
 		{

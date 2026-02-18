@@ -46,8 +46,6 @@ data:
       providerSpecific:
         awsClusterRoleIdentityName: default
         region: the-region
-      release:
-        version: 34.0.0
 kind: ConfigMap
 metadata:
   labels:
@@ -84,4 +82,4 @@ spec:
     configMap:
       name: test10-userconfig
       namespace: org-test
-  version: 34.0.0
+  version: 35.0.0
