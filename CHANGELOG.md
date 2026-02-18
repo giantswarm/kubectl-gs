@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
-- Bump cluster-api to v1.11.6 (v1beta2 migration). `InfrastructureRef` now uses `ContractVersionedObjectReference` instead of `corev1.ObjectReference`. Status replica fields are now pointer types.
+- Bump cluster-api to v1.12.3 (v1beta2 migration). `InfrastructureRef` now uses `ContractVersionedObjectReference` instead of `corev1.ObjectReference`. Status replica fields are now pointer types.
 
 ### Added
 
