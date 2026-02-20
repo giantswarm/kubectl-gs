@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Use `release-<provider>` chart name for Release versions (major >= 35) in `template cluster` command for all providers (CAPA, CAPZ, VSphere, Cloud Director, EKS).
+- Omit `global.release.version` from user config for Release versions, as it is baked into the chart.
+
 ## [4.10.1] - 2026-02-12
 
 ### Changed

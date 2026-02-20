@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+data:
+  values: |
+    global:
+      connectivity:
+        availabilityZoneUsageLimit: 3
+        network:
+          vpcCidr: 10.123.0.0/16
+        subnets:
+        - cidrBlocks:
+          - availabilityZone: a
+            cidr: 10.123.64.0/18
+          - availabilityZone: b
+            cidr: 10.123.128.0/18
+          - availabilityZone: c
+            cidr: 10.123.192.0/18
+          isPublic: false
+        - cidrBlocks:
+          - availabilityZone: a
+            cidr: 10.123.0.0/20
+          - availabilityZone: b
+            cidr: 10.123.16.0/20
+          - availabilityZone: c
+            cidr: 10.123.32.0/20
+          isPublic: true
+        topology: {}
+      controlPlane:
+        instanceType: control-plane-instance-type
+      metadata:
+        description: cluster using release version directly
+        name: test10
+        organization: test
+        preventDeletion: false
+      nodePools:
+        worker1:
+          availabilityZones:
+          - eu-west-1a
+          - eu-west-1b
+          customNodeLabels:
+          - label=value
+          instanceType: big-one
+          maxSize: 5
+          minSize: 2
+          rootVolumeSizeGB: 200
+      providerSpecific:
+        awsClusterRoleIdentityName: default
+        region: the-region
+kind: ConfigMap
+metadata:
+  labels:
+    giantswarm.io/cluster: test10
+  name: test10-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test10
+  namespace: org-test
+spec:
+  catalog: cluster
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: release-aws
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test10-userconfig
+      namespace: org-test
+  version: 35.0.0

@@ -30,6 +30,7 @@ import (
 const (
 	DefaultAppsAWSRepoName = "default-apps-aws"
 	ClusterAWSRepoName     = "cluster-aws"
+	ReleaseAWSRepoName     = "release-aws"
 	ModePrivate            = "private"
 	ProxyPrivateType       = "proxy-private"
 )
@@ -54,6 +55,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 	var configMapYAML []byte
 	{
 		flagValues := BuildCapaClusterConfig(config)
+
+		// For release versions, the release version is baked into the chart,
+		// so we don't need to include it in the user config.
+		if common.IsReleaseVersion(config.ReleaseVersion) {
+			flagValues.Global.Release = nil
+		}
 
 		if len(config.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 {
 			if config.ManagementCluster == "" {
@@ -229,14 +236,27 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 	var appYAML []byte
 	{
+		// Use release-<provider> chart name for release versions (>= 35.0.0).
+		// These charts have the release version baked into values.yaml.
+		// For older chart versions, use cluster-<provider> and let the webhook handle version.
+		chartName := ClusterAWSRepoName
+		if common.IsReleaseVersion(config.ReleaseVersion) {
+			chartName = ReleaseAWSRepoName
+		}
+
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    ClusterAWSRepoName,
+			Name:                    chartName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			UserConfigConfigMapName: configMapName,
 			ExtraLabels:             map[string]string{},
+		}
+		// Set version for release charts where the chart version equals the release version.
+		// For cluster-<provider> charts, the webhook handles version mutation.
+		if common.IsReleaseVersion(config.ReleaseVersion) {
+			clusterAppConfig.Version = config.ReleaseVersion
 		}
 		if config.PreventDeletion {
 			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"

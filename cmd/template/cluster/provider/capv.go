@@ -23,6 +23,7 @@ import (
 const (
 	DefaultAppsVsphereRepoName = "default-apps-vsphere"
 	ClusterVsphereRepoName     = "cluster-vsphere"
+	ReleaseVsphereRepoName     = "release-vsphere"
 )
 
 func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
@@ -64,6 +65,12 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 	{
 		flagValues := BuildCapvClusterConfig(config)
 
+		// For release versions, the release version is baked into the chart,
+		// so we don't need to include it in the user config.
+		if common.IsReleaseVersion(appVersion) {
+			flagValues.Global.Release = nil
+		}
+
 		configData, err := capv.GenerateClusterValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)
@@ -101,11 +108,18 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 			},
 		}
 
+		// Use release-<provider> chart name for release versions (>= 35.0.0).
+		// For older chart versions, use cluster-<provider>.
+		chartName := ClusterVsphereRepoName
+		if common.IsReleaseVersion(appVersion) {
+			chartName = ReleaseVsphereRepoName
+		}
+
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    ClusterVsphereRepoName,
+			Name:                    chartName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,

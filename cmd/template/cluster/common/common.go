@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	semver "github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
@@ -269,4 +270,24 @@ func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclie
 	}
 
 	return nil
+}
+
+const (
+	// ReleaseVersionMajorThreshold is the major version threshold above which
+	// we assume the version is a Release version (not an original chart version).
+	// Release versions (e.g., 35.0.0) use release-<provider> chart names.
+	// Original chart versions (e.g., 7.2.5) use cluster-<provider> chart names.
+	ReleaseVersionMajorThreshold = 35
+)
+
+// IsReleaseVersion determines if the given version is a Release version.
+// Release versions have major version >= 35 and use release-<provider> chart names.
+// Original chart versions have lower major versions and use cluster-<provider> chart names.
+func IsReleaseVersion(version string) bool {
+	v, err := semver.NewVersion(version)
+	if err != nil {
+		return false
+	}
+
+	return v.Major() >= ReleaseVersionMajorThreshold
 }

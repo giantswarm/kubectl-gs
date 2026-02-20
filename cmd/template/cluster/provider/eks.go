@@ -21,6 +21,7 @@ import (
 const (
 	DefaultAppsEKSRepoName = "default-apps-eks"
 	ClusterEKSRepoName     = "cluster-eks"
+	ReleaseEKSRepoName     = "release-eks"
 )
 
 func WriteEKSTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
@@ -81,11 +82,18 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			}
 		}
 
+		// Use release-<provider> chart name for release versions (>= 35.0.0).
+		// For older chart versions, use cluster-<provider>.
+		chartName := ClusterEKSRepoName
+		if common.IsReleaseVersion(appVersion) {
+			chartName = ReleaseEKSRepoName
+		}
+
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    ClusterEKSRepoName,
+			Name:                    chartName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
