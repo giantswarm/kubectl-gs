@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [4.11.0] - 2026-02-20
+
 ### Added
 
 - Use `release-<provider>` chart name for Release versions (major >= 35) in `template cluster` command for all providers (CAPA, CAPZ, VSphere, Cloud Director, EKS).
@@ -1648,7 +1650,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.11.0...HEAD
+[4.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.1...v4.11.0
 [4.10.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.0...v4.10.1
 [4.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.1...v4.10.0
 [4.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.0...v4.9.1
