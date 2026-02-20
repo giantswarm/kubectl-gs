@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
+	semver "github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
@@ -284,16 +284,10 @@ const (
 // Release versions have major version >= 35 and use release-<provider> chart names.
 // Original chart versions have lower major versions and use cluster-<provider> chart names.
 func IsReleaseVersion(version string) bool {
-	version = strings.TrimPrefix(version, "v")
-	parts := strings.Split(version, ".")
-	if len(parts) < 1 {
-		return false
-	}
-
-	major, err := strconv.Atoi(parts[0])
+	v, err := semver.NewVersion(version)
 	if err != nil {
 		return false
 	}
 
-	return major >= ReleaseVersionMajorThreshold
+	return v.Major() >= ReleaseVersionMajorThreshold
 }
