@@ -40,7 +40,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		// For release versions, the release version is baked into the chart,
 		// so we don't need to include it in the user config.
-		if common.IsReleaseVersion(config.App.ClusterVersion) {
+		if common.IsReleaseVersion(config.ReleaseVersion) {
 			flagValues.Global.Release = nil
 		}
 
@@ -76,7 +76,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 		// These charts have the release version baked into values.yaml.
 		// For older chart versions, use cluster-<provider> and let the webhook handle version.
 		chartName := ClusterAzureRepoName
-		if common.IsReleaseVersion(config.App.ClusterVersion) {
+		if common.IsReleaseVersion(config.ReleaseVersion) {
 			chartName = ReleaseAzureRepoName
 		}
 
@@ -91,8 +91,8 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 		}
 		// Set version for release charts where the chart version equals the release version.
 		// For cluster-<provider> charts, the webhook handles version mutation.
-		if common.IsReleaseVersion(config.App.ClusterVersion) {
-			clusterAppConfig.Version = config.App.ClusterVersion
+		if common.IsReleaseVersion(config.ReleaseVersion) {
+			clusterAppConfig.Version = config.ReleaseVersion
 		}
 		if config.PreventDeletion {
 			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"

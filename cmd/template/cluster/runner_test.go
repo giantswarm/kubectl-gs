@@ -394,7 +394,6 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "35.0.0",
 					ClusterCatalog:     "cluster",
 					DefaultAppsCatalog: "the-default-catalog",
 					DefaultAppsVersion: "2.0.0",
