@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add locks to cache writing when doing `kubectl-gs login` to prevent race-condition between multiple kubectl calls.
+
 ## [4.11.0] - 2026-02-20
 
 ### Added

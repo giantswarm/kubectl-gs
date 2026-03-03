@@ -2,7 +2,6 @@ package credentialplugin
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -10,13 +9,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
+	"github.com/giantswarm/kubectl-gs/v5/pkg/credentialcache"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
-
-	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 )
 
 const (
@@ -24,10 +24,6 @@ const (
 	envClientID     = "KUBECTL_GS_OIDC_CLIENT_ID"
 	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
 	envIDToken      = "KUBECTL_GS_OIDC_ID_TOKEN"
-
-	// Cache file will be stored in user's home directory under .kube/.kubectl-gs/cache/
-	cacheDirName = ".kube/.kubectl-gs"
-	cacheSubDir  = "cache"
 )
 
 type runner struct {
@@ -60,15 +56,32 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.outputExecCredential(idTokenFromEnv)
 	}
 
-	// Check if we have a cached valid token before renewing
-	cachedIDToken, cachedRefreshToken, err := r.getCachedToken(issuerURL, clientID)
-	if err == nil && isValidIdToken(cachedIDToken) {
-		return r.outputExecCredential(cachedIDToken)
+	// Fast path: check cache before acquiring lock.
+	if cached, err := credentialcache.Read(issuerURL, clientID); err == nil && isValidIdToken(cached.IDToken) {
+		return r.outputExecCredential(cached.IDToken)
 	}
 
-	// Prefer cached refresh token over env var (it may be newer after rotation)
-	if cachedRefreshToken != "" {
-		refreshToken = cachedRefreshToken
+	// Acquire exclusive file lock to prevent concurrent token renewals.
+	lockFile, lockErr := r.acquireLock(issuerURL, clientID)
+	if lockErr != nil {
+		_, _ = fmt.Fprintf(r.stderr, "warning: could not acquire token renewal lock: %v\n", lockErr)
+	} else {
+		defer r.releaseLock(lockFile)
+	}
+
+	// Re-check cache after acquiring the lock — another process may have just
+	// renewed the token while we were waiting.
+	cached, err := credentialcache.Read(issuerURL, clientID)
+	if err == nil && isValidIdToken(cached.IDToken) {
+		return r.outputExecCredential(cached.IDToken)
+	}
+
+	// Prefer the cached refresh token over the one embedded in the kubeconfig
+	// env var, as it may be newer after a previous rotation.
+	tokenSource := "kubeconfig"
+	if cached.RefreshToken != "" {
+		refreshToken = cached.RefreshToken
+		tokenSource = "cache"
 	}
 
 	// Create OIDC authenticator
@@ -82,19 +95,18 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		var err error
 		auther, err = oidc.New(ctx, oidcConfig)
 		if err != nil {
-			return microerror.Maskf(credentialPluginError, "failed to create OIDC authenticator: %v", err)
+			return microerror.Maskf(credentialPluginError, "failed to create OIDC authenticator for %s: %v", issuerURL, err)
 		}
 	}
 
-	// Renew token using refresh token
+	_, _ = fmt.Fprintf(r.stderr, "kubectl-gs: renewing OIDC token (issuer: %s, client: %s, refresh token source: %s)\n", issuerURL, clientID, tokenSource)
+
 	idToken, newRefreshToken, err := auther.RenewToken(ctx, refreshToken)
 	if err != nil {
-		return microerror.Maskf(credentialPluginError, "failed to renew token: %v", err)
+		return microerror.Maskf(credentialPluginError, "failed to renew token (issuer: %s, client: %s, source: %s): %v", issuerURL, clientID, tokenSource, err)
 	}
 
-	// Cache the new token
-	err = r.cacheToken(issuerURL, clientID, idToken, newRefreshToken)
-	if err != nil {
+	if err := credentialcache.Write(issuerURL, clientID, idToken, newRefreshToken); err != nil {
 		return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
 	}
 
@@ -155,68 +167,30 @@ func isValidIdToken(idToken string) bool {
 	return expTime.After(time.Now().Add(5 * time.Minute))
 }
 
-// getCachedToken retrieves a cached id_token and refresh_token from disk
-func (r *runner) getCachedToken(issuerURL, clientID string) (string, string, error) {
-	cacheFile := r.getCacheFilePath(issuerURL, clientID)
+// acquireLock acquires an exclusive advisory lock on a per-issuer lock file to
+// serialize token renewals. Callers must call releaseLock when done.
+func (r *runner) acquireLock(issuerURL, clientID string) (*os.File, error) {
+	lockPath := credentialcache.LockFilePath(issuerURL, clientID)
 
-	data, err := os.ReadFile(cacheFile)
+	if err := os.MkdirAll(filepath.Dir(lockPath), 0700); err != nil {
+		return nil, err
+	}
+
+	f, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	var cache struct {
-		IDToken      string `json:"id_token"`
-		RefreshToken string `json:"refresh_token"`
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+		_ = f.Close()
+		return nil, err
 	}
 
-	err = json.Unmarshal(data, &cache)
-	if err != nil {
-		return "", "", err
-	}
-
-	return cache.IDToken, cache.RefreshToken, nil
+	return f, nil
 }
 
-// cacheToken stores a token in a cache file
-func (r *runner) cacheToken(issuerURL, clientID, idToken, refreshToken string) error {
-	cacheDir := r.getCacheDir()
-	err := os.MkdirAll(cacheDir, 0700)
-	if err != nil {
-		return err
-	}
-
-	cacheFile := r.getCacheFilePath(issuerURL, clientID)
-
-	cache := struct {
-		IDToken      string `json:"id_token"`
-		RefreshToken string `json:"refresh_token"`
-	}{
-		IDToken:      idToken,
-		RefreshToken: refreshToken,
-	}
-
-	data, err := json.Marshal(cache)
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(cacheFile, data, 0600)
-}
-
-// getCacheDir returns the cache directory path
-func (r *runner) getCacheDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		// Fallback to temp directory if home directory is not available
-		return filepath.Join(os.TempDir(), cacheDirName, cacheSubDir)
-	}
-	return filepath.Join(homeDir, cacheDirName, cacheSubDir)
-}
-
-// getCacheFilePath returns the cache file path for a given issuer and client ID
-func (r *runner) getCacheFilePath(issuerURL, clientID string) string {
-	// Create a hash of issuer+clientID to create a unique filename
-	hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%s", issuerURL, clientID)))
-	filename := fmt.Sprintf("token-%x.json", hash[:16]) // Use first 16 bytes for filename
-	return filepath.Join(r.getCacheDir(), filename)
+// releaseLock releases the file lock acquired by acquireLock.
+func (r *runner) releaseLock(f *os.File) {
+	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+	_ = f.Close()
 }

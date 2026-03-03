@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/giantswarm/kubectl-gs/v5/pkg/credentialcache"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
 )
@@ -179,6 +180,11 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+
+	// Write the new session's tokens to the credential cache.
+	if authResult.clientID != "" {
+		_ = credentialcache.Write(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken)
 	}
 
 	if len(authResult.email) > 0 {
