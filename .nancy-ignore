@@ -1,3 +1,4 @@
 CVE-2026-24051 until=2026-03-06 # go.opentelemetry.io/otel/sdk@v1.37.0
 CVE-2026-26958 until=2026-03-26 # filippo.io/edwards25519@v1.1.0
 CVE-2026-1229 until=2026-03-28 # github.com/cloudflare/circl@v1.6.1
+CVE-2026-27141 until=2026-04-02 # golang.org/x/net@v0.50.0
