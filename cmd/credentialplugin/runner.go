@@ -12,11 +12,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/credentialcache"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
+
+	"github.com/giantswarm/kubectl-gs/v5/pkg/credentialcache"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
 )
 
 const (
