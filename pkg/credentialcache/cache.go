@@ -20,8 +20,14 @@ type Entry struct {
 }
 
 func Write(issuerURL, clientID, idToken, refreshToken string) error {
-	cacheDir := cacheDir()
-	if err := os.MkdirAll(cacheDir, 0700); err != nil {
+	f, err := lock(issuerURL, clientID)
+	if err != nil {
+		return err
+	}
+	defer unlock(f)
+
+	dir := cacheDir()
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
 
@@ -34,6 +40,12 @@ func Write(issuerURL, clientID, idToken, refreshToken string) error {
 }
 
 func Read(issuerURL, clientID string) (Entry, error) {
+	f, err := lock(issuerURL, clientID)
+	if err != nil {
+		return Entry{}, err
+	}
+	defer unlock(f)
+
 	data, err := os.ReadFile(filePath(issuerURL, clientID))
 	if err != nil {
 		return Entry{}, err
@@ -47,19 +59,13 @@ func Read(issuerURL, clientID string) (Entry, error) {
 	return e, nil
 }
 
-func FilePath(issuerURL, clientID string) string {
-	return filePath(issuerURL, clientID)
-}
-
-func LockFilePath(issuerURL, clientID string) string {
+func lockFilePath(issuerURL, clientID string) string {
 	hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%s", issuerURL, clientID)))
 	return filepath.Join(cacheDir(), fmt.Sprintf("token-%x.lock", hash[:16]))
 }
 
-// Lock acquires an exclusive advisory lock for the given issuer and client ID.
-// The caller must call Unlock when done.
-func Lock(issuerURL, clientID string) (*os.File, error) {
-	lockPath := LockFilePath(issuerURL, clientID)
+func lock(issuerURL, clientID string) (*os.File, error) {
+	lockPath := lockFilePath(issuerURL, clientID)
 
 	if err := os.MkdirAll(filepath.Dir(lockPath), 0700); err != nil {
 		return nil, err
@@ -78,8 +84,7 @@ func Lock(issuerURL, clientID string) (*os.File, error) {
 	return f, nil
 }
 
-// Unlock releases the lock acquired by Lock.
-func Unlock(f *os.File) {
+func unlock(f *os.File) {
 	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
 	_ = f.Close()
 }

@@ -55,28 +55,13 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.outputExecCredential(idTokenFromEnv)
 	}
 
-	// Fast path: check cache before acquiring lock.
-	if cached, err := credentialcache.Read(issuerURL, clientID); err == nil && isValidIdToken(cached.IDToken) {
-		return r.outputExecCredential(cached.IDToken)
-	}
-
-	// Acquire exclusive file lock to prevent concurrent token renewals.
-	lockFile, lockErr := credentialcache.Lock(issuerURL, clientID)
-	if lockErr != nil {
-		_, _ = fmt.Fprintf(r.stderr, "warning: could not acquire token renewal lock: %v\n", lockErr)
-	} else {
-		defer credentialcache.Unlock(lockFile)
-	}
-
-	// Re-check cache after acquiring the lock — another process may have just
-	// renewed the token while we were waiting.
+	// Check if we have a cached valid token before renewing
 	cached, err := credentialcache.Read(issuerURL, clientID)
 	if err == nil && isValidIdToken(cached.IDToken) {
 		return r.outputExecCredential(cached.IDToken)
 	}
 
-	// Prefer the cached refresh token over the one embedded in the kubeconfig
-	// env var, as it may be newer after a previous rotation.
+	// Prefer cached refresh token over env var (it may be newer after rotation)
 	tokenSource := "kubeconfig"
 	if cached.RefreshToken != "" {
 		refreshToken = cached.RefreshToken
