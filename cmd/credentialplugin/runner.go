@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/giantswarm/microerror"
@@ -63,11 +61,11 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// Acquire exclusive file lock to prevent concurrent token renewals.
-	lockFile, lockErr := r.acquireLock(issuerURL, clientID)
+	lockFile, lockErr := credentialcache.Lock(issuerURL, clientID)
 	if lockErr != nil {
 		_, _ = fmt.Fprintf(r.stderr, "warning: could not acquire token renewal lock: %v\n", lockErr)
 	} else {
-		defer r.releaseLock(lockFile)
+		defer credentialcache.Unlock(lockFile)
 	}
 
 	// Re-check cache after acquiring the lock — another process may have just
@@ -166,32 +164,4 @@ func isValidIdToken(idToken string) bool {
 	expTime := time.Unix(expTimestamp, 0)
 	// Add a 5 minute buffer to avoid using tokens that are about to expire
 	return expTime.After(time.Now().Add(5 * time.Minute))
-}
-
-// acquireLock acquires an exclusive advisory lock on a per-issuer lock file to
-// serialize token renewals. Callers must call releaseLock when done.
-func (r *runner) acquireLock(issuerURL, clientID string) (*os.File, error) {
-	lockPath := credentialcache.LockFilePath(issuerURL, clientID)
-
-	if err := os.MkdirAll(filepath.Dir(lockPath), 0700); err != nil {
-		return nil, err
-	}
-
-	f, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0600)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
-		_ = f.Close()
-		return nil, err
-	}
-
-	return f, nil
-}
-
-// releaseLock releases the file lock acquired by acquireLock.
-func (r *runner) releaseLock(f *os.File) {
-	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
-	_ = f.Close()
 }

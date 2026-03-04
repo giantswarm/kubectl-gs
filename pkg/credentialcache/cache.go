@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 const (
@@ -53,6 +54,34 @@ func FilePath(issuerURL, clientID string) string {
 func LockFilePath(issuerURL, clientID string) string {
 	hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%s", issuerURL, clientID)))
 	return filepath.Join(cacheDir(), fmt.Sprintf("token-%x.lock", hash[:16]))
+}
+
+// Lock acquires an exclusive advisory lock for the given issuer and client ID.
+// The caller must call Unlock when done.
+func Lock(issuerURL, clientID string) (*os.File, error) {
+	lockPath := LockFilePath(issuerURL, clientID)
+
+	if err := os.MkdirAll(filepath.Dir(lockPath), 0700); err != nil {
+		return nil, err
+	}
+
+	f, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0600)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+		_ = f.Close()
+		return nil, err
+	}
+
+	return f, nil
+}
+
+// Unlock releases the lock acquired by Lock.
+func Unlock(f *os.File) {
+	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+	_ = f.Close()
 }
 
 func filePath(issuerURL, clientID string) string {
