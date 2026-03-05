@@ -6,8 +6,7 @@ import (
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 )
 
 type NodePoolCRsConfig struct {
@@ -38,8 +37,8 @@ type NodePoolCRsConfig struct {
 	Namespace         string
 }
 
-func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *capiexp.MachinePool {
-	mp := &capiexp.MachinePool{
+func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.ObjectReference, bootstrapConfigRef *corev1.ObjectReference) *capi.MachinePool {
+	mp := &capi.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "MachinePool",
 			APIVersion: "cluster.x-k8s.io/v1beta1",
@@ -59,7 +58,7 @@ func newcapiMachinePoolCR(config NodePoolCRsConfig, infrastructureRef *corev1.Ob
 				annotation.MachinePoolName: config.Description,
 			},
 		},
-		Spec: capiexp.MachinePoolSpec{
+		Spec: capi.MachinePoolSpec{
 			ClusterName:    config.ClusterName,
 			Replicas:       toInt32Ptr(int32(config.NodesMin)), //nolint:gosec
 			FailureDomains: config.AvailabilityZones,

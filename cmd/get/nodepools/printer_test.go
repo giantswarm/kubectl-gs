@@ -15,8 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
-	capiexp "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
@@ -313,8 +312,8 @@ func newCAPAexpMachinePool(name, clusterName, description string, creationDate t
 	return n
 }
 
-func newCAPIexpMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady, nodesMin, nodesMax int) *capiexp.MachinePool {
-	n := &capiexp.MachinePool{
+func newCAPIexpMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady, nodesMin, nodesMax int) *capi.MachinePool {
+	n := &capi.MachinePool{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
 			Kind:       "MachinePool",
@@ -336,7 +335,7 @@ func newCAPIexpMachinePool(name, clusterName, release, description string, creat
 				annotation.MachinePoolName: description,
 			},
 		},
-		Status: capiexp.MachinePoolStatus{
+		Status: capi.MachinePoolStatus{
 			Replicas:      int32(nodesDesired), //nolint:gosec
 			ReadyReplicas: int32(nodesReady),   //nolint:gosec
 		},
