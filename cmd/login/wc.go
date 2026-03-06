@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/clientcert"

@@ -21,6 +21,10 @@ import (
 )
 
 func Test_run(t *testing.T) {
+	// Use a fixed time in the past to avoid flaky tests due to timing races
+	// where AGE shows "0s" locally but "1s" in CI.
+	creationTime := time.Now().Add(-10 * time.Hour)
+
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -36,9 +40,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
+				newOrgResource("test-1", "org-test-1", creationTime).Organization,
+				newOrgResource("test-2", "org-test-2", creationTime).Organization,
+				newOrgResource("test-3", "org-test-3", creationTime).Organization,
 			},
 		},
 		{
@@ -46,9 +50,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_non_admin.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
+				newOrgResource("test-1", "org-test-1", creationTime).Organization,
+				newOrgResource("test-2", "org-test-2", creationTime).Organization,
+				newOrgResource("test-3", "org-test-3", creationTime).Organization,
 			},
 			permittedResources: []v1.ResourceRule{
 				{
@@ -70,9 +74,9 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_get_orgs_empty.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
-				newOrgResource("test-2", "org-test-2", time.Now()).Organization,
-				newOrgResource("test-3", "org-test-3", time.Now()).Organization,
+				newOrgResource("test-1", "org-test-1", creationTime).Organization,
+				newOrgResource("test-2", "org-test-2", creationTime).Organization,
+				newOrgResource("test-3", "org-test-3", creationTime).Organization,
 			},
 		},
 		{
@@ -80,7 +84,7 @@ func Test_run(t *testing.T) {
 			args:               []string{"test-1"},
 			expectedGoldenFile: "run_get_org_by_name.golden",
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-1", "org-test-1", creationTime).Organization,
 			},
 		},
 		{
@@ -88,7 +92,7 @@ func Test_run(t *testing.T) {
 			args:         []string{"test-2"},
 			errorMatcher: IsNotFound,
 			storage: []runtime.Object{
-				newOrgResource("test-1", "org-test-1", time.Now()).Organization,
+				newOrgResource("test-1", "org-test-1", creationTime).Organization,
 			},
 		},
 	}

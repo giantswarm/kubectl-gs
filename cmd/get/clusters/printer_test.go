@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
+	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
 
@@ -28,6 +28,10 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 //
 // go test ./cmd/get/clusters -run Test_printOutput -update
 func Test_printOutput(t *testing.T) {
+	// Use a fixed time in the past to avoid flaky tests due to timing races
+	// where AGE shows "0s" locally but "1s" in CI.
+	creationTime := time.Now().Add(-10 * time.Hour)
+
 	testCases := []struct {
 		name               string
 		clusterRes         cluster.Resource
@@ -38,12 +42,12 @@ func Test_printOutput(t *testing.T) {
 		{
 			name: "case 0: print list of AWS clusters, with table output",
 			clusterRes: newClusterCollection(
-				*newAWSCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, time.Now(), nil),
-				*newAWSCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
-				*newAWSCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
-				*newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", time.Now(), nil),
-				*newAWSCluster("9f012", "9.0.0", "test", "test cluster 5", "", time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
-				*newAWSCluster("2f0as", "10.5.0", "random", "test cluster 6", "", time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("1sad2", "12.0.0", "test", "test cluster 1", label.ServicePriorityHighest, creationTime, nil),
+				*newAWSCluster("2a03f", "11.0.0", "test", "test cluster 2", label.ServicePriorityMedium, creationTime, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+				*newAWSCluster("asd29", "10.5.0", "test", "test cluster 3", label.ServicePriorityLowest, creationTime, []string{infrastructurev1alpha3.ClusterStatusConditionCreated, infrastructurev1alpha3.ClusterStatusConditionCreating}),
+				*newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", "", creationTime, nil),
+				*newAWSCluster("9f012", "9.0.0", "test", "test cluster 5", "", creationTime, []string{infrastructurev1alpha3.ClusterStatusConditionDeleting}),
+				*newAWSCluster("2f0as", "10.5.0", "random", "test cluster 6", "", creationTime, []string{infrastructurev1alpha3.ClusterStatusConditionDeleting, infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
@@ -93,7 +97,7 @@ func Test_printOutput(t *testing.T) {
 		},
 		{
 			name:               "case 4: print single AWS cluster, with table output",
-			clusterRes:         newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, time.Now(), []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
+			clusterRes:         newAWSCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityHighest, creationTime, []string{infrastructurev1alpha3.ClusterStatusConditionCreated}),
 			provider:           key.ProviderAWS,
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_aws_cluster_table_output.golden",

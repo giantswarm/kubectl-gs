@@ -31,7 +31,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/ptr"
-	"sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
