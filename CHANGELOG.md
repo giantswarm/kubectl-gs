@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Fixed
 
 - Fix flaky nodepool, orgs, and clusters tests caused by timing race in AGE column rendering.
+- Update documentation URL from `docs.giantswarm.io/use-the-api/kubectl-gs/` to `docs.giantswarm.io/reference/kubectl-gs/`.
 
 ## [4.12.0] - 2026-03-04
 
