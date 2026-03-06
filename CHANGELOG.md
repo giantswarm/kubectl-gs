@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- Fix flaky nodepool and orgs tests caused by timing race in AGE column rendering.
+- Fix flaky nodepool, orgs, and clusters tests caused by timing race in AGE column rendering.
 
 ## [4.12.0] - 2026-03-04
 

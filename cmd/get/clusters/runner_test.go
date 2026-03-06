@@ -28,6 +28,10 @@ import (
 //
 // go test ./cmd/get/clusters -run Test_run -update
 func Test_run(t *testing.T) {
+	// Use a fixed time in the past to avoid flaky tests due to timing races
+	// where AGE shows "0s" locally but "1s" in CI.
+	creationTime := time.Now().Add(-10 * time.Hour)
+
 	testCases := []struct {
 		name               string
 		storage            []runtime.Object
@@ -39,9 +43,9 @@ func Test_run(t *testing.T) {
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
 				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, parseCreated("default"), nil),
-				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", time.Now(), nil),
+				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", creationTime, nil),
 				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, parseCreated("default"), nil),
-				newAWSClusterResource("f930q", "11.0.0", "some-other", "test cluster 4", time.Now(), nil),
+				newAWSClusterResource("f930q", "11.0.0", "some-other", "test cluster 4", creationTime, nil),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_clusters.golden",
@@ -55,10 +59,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, time.Now(), nil),
-				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", time.Now(), nil),
-				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, time.Now(), nil),
-				newAWSClusterResource("f930q", "11.0.0", "some-other", "test cluster 4", time.Now(), nil),
+				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, creationTime, nil),
+				newAWSClusterResource("1sad2", "10.5.0", "some-org", "test cluster 3", creationTime, nil),
+				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, creationTime, nil),
+				newAWSClusterResource("f930q", "11.0.0", "some-other", "test cluster 4", creationTime, nil),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_cluster_by_id.golden",
