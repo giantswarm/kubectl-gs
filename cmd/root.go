@@ -28,7 +28,7 @@ const (
 	name        = "kubectl-gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
-Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
+Get more information at https://docs.giantswarm.io/reference/kubectl-gs/
 `
 	telemetrydeckAppID = "4539763B-A291-4835-B832-9BEB80CA7039"
 
