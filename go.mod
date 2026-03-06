@@ -38,12 +38,12 @@ require (
 	golang.org/x/oauth2 v0.35.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.2
-	k8s.io/api v0.34.3
-	k8s.io/apiextensions-apiserver v0.34.3
-	k8s.io/apimachinery v0.34.3
-	k8s.io/cli-runtime v0.34.3
-	k8s.io/client-go v0.34.3
-	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
+	k8s.io/api v0.34.5
+	k8s.io/apiextensions-apiserver v0.34.5
+	k8s.io/apimachinery v0.34.5
+	k8s.io/cli-runtime v0.34.5
+	k8s.io/client-go v0.34.5
+	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
 	sigs.k8s.io/cluster-api v1.12.3
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.10.2
 	sigs.k8s.io/cluster-api-provider-azure v1.22.0
@@ -241,7 +241,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/component-base v0.34.3 // indirect
+	k8s.io/component-base v0.34.5 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
