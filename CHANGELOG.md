@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add experimental and hidden `deploy chart` command. Note: the usage of this command is going to change very soon.
+
 ### Fixed
 
 - Fix flaky nodepool, orgs, and clusters tests caused by timing race in AGE column rendering.
