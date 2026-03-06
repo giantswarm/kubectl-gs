@@ -69,7 +69,7 @@ func TestFlagValidate(t *testing.T) {
 				Interval:     defaultInterval,
 			},
 			wantErr: true,
-			errMsg:  "cluster",
+			errMsg:  "target-cluster",
 		},
 		{
 			name: "missing target namespace",
