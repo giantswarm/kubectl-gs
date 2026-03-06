@@ -17,6 +17,10 @@ import (
 )
 
 func Test_printOutput(t *testing.T) {
+	// Use a fixed time in the past to avoid flaky tests due to timing races
+	// where AGE shows "0s" locally but "1s" in CI.
+	creationTime := time.Now().Add(-10 * time.Hour)
+
 	testCases := []struct {
 		name               string
 		orgRes             organization.Resource
@@ -28,9 +32,9 @@ func Test_printOutput(t *testing.T) {
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_list_of_orgs_table_output.golden",
 			orgRes: newOrgCollection(
-				*newOrgResource("test-1", "org-test-1", time.Now()),
-				*newOrgResource("test-2", "org-test-2", time.Now()),
-				*newOrgResource("test-3", "org-test-3", time.Now()),
+				*newOrgResource("test-1", "org-test-1", creationTime),
+				*newOrgResource("test-2", "org-test-2", creationTime),
+				*newOrgResource("test-3", "org-test-3", creationTime),
 			),
 		},
 		{
@@ -67,7 +71,7 @@ func Test_printOutput(t *testing.T) {
 			name:               "case 4: print single org, with table output",
 			outputType:         output.TypeDefault,
 			expectedGoldenFile: "print_single_org_table_output.golden",
-			orgRes:             newOrgResource("test-1", "org-test-1", time.Now()),
+			orgRes:             newOrgResource("test-1", "org-test-1", creationTime),
 		},
 		{
 			name:               "case 4: print single org, with JSON output",
