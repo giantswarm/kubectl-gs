@@ -15,7 +15,7 @@ var semverRe = regexp.MustCompile(`^v?\d+\.\d+\.\d+$`)
 const (
 	flagChartName    = "chart-name"
 	flagOrganization = "organization"
-	flagCluster      = "cluster"
+	flagCluster      = "target-cluster"
 	flagTargetNS     = "target-namespace"
 	flagOCIURLPrefix = "oci-url-prefix"
 	flagVersion      = "version"
@@ -46,7 +46,7 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ChartName, flagChartName, "", "Name of the chart to deploy.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Giant Swarm organization name owning the target cluster.")
-	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Target cluster name.")
+	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Name of the target workload cluster.")
 	cmd.Flags().StringVar(&f.TargetNS, flagTargetNS, "", "Target namespace in the workload cluster.")
 	cmd.Flags().StringVar(&f.OCIURLPrefix, flagOCIURLPrefix, defaultOCIURLPrefix, "OCI URL prefix for the chart registry.")
 	cmd.Flags().StringVar(&f.Version, flagVersion, "", "Chart version to deploy. If not specified, no version ref is set.")

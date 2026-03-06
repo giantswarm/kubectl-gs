@@ -34,7 +34,7 @@ Resource names default to <cluster>-<chart-name> and can be overridden with --na
       --chart-name hello-world-app \
       --version 1.2.3 \
       --organization acme \
-      --cluster mycluster01 \
+      --target-cluster mycluster01 \
       --target-namespace hello
 
   # Deploy a chart from a custom registry
@@ -43,7 +43,7 @@ Resource names default to <cluster>-<chart-name> and can be overridden with --na
       --chart-name my-chart \
       --version 2.0.0 \
       --organization acme \
-      --cluster mycluster01 \
+      --target-cluster mycluster01 \
       --target-namespace my-namespace
 
   # Deploy with auto-upgrade on patch versions
@@ -52,7 +52,7 @@ Resource names default to <cluster>-<chart-name> and can be overridden with --na
       --version 1.2.3 \
       --auto-upgrade patch \
       --organization acme \
-      --cluster mycluster01 \
+      --target-cluster mycluster01 \
       --target-namespace hello
 
   # Deploy with custom values
@@ -60,7 +60,7 @@ Resource names default to <cluster>-<chart-name> and can be overridden with --na
       --chart-name hello-world-app \
       --version 1.2.3 \
       --organization acme \
-      --cluster mycluster01 \
+      --target-cluster mycluster01 \
       --target-namespace hello \
       --values-file my-values.yaml`
 )
