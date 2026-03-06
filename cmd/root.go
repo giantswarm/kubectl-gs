@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/v6/cmd/credentialplugin"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/deploy"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/get"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/login"
@@ -201,6 +202,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var deployCmd *cobra.Command
+	{
+		c := deploy.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			ConfigFlags: &f.config,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		deployCmd, err = deploy.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var updateCmd *cobra.Command
 	{
 		c := update.Config{
@@ -246,6 +265,7 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	c.AddCommand(deployCmd)
 	c.AddCommand(getCmd)
 	c.AddCommand(gitopsCmd)
 	c.AddCommand(loginCmd)
