@@ -221,8 +221,8 @@ github.com/giantswarm/appcatalog v1.0.1 h1:hUBN5CTGbfMYiO28XihSf7kUnnPguTLOBr9BA
 github.com/giantswarm/appcatalog v1.0.1/go.mod h1:mL+OaULPRgdnf91Vws1pmyvqVxx16t89s4kDF/O/ps0=
 github.com/giantswarm/backoff v1.0.1 h1:paqQhjUsibkf+wWFCHsk7VXAkcM1L3ssAe7V7i8twpM=
 github.com/giantswarm/backoff v1.0.1/go.mod h1:RGj8b06J3irMNFRoSiMnngS50K+QbpSvu77sW03bxqQ=
-github.com/giantswarm/k8sclient/v8 v8.0.0 h1:dCj/m0tveyfkGIwaJnE0yKKVG4YbSpQklAprJhbHS5Y=
-github.com/giantswarm/k8sclient/v8 v8.0.0/go.mod h1:MTFn4PU5rTySvM6S++yReSJHtKFoqbxpOj1L0vXTAdk=
+github.com/giantswarm/k8sclient/v8 v8.1.0 h1:29pRG4TAdKn4lw+O6hBVvHIPDjrn/ikA8SgHb2TJPGE=
+github.com/giantswarm/k8sclient/v8 v8.1.0/go.mod h1:C588tvPnMQx2VzQ0WGHTXoN4wzcS0LaYr2SUzGJmzq0=
 github.com/giantswarm/k8smetadata v0.25.0 h1:6mKmmm4xHPuBvxDMAkIhU5oj6KJkJSaR2s5esIsnHs4=
 github.com/giantswarm/k8smetadata v0.25.0/go.mod h1:QiQAyaZnwco1U0lENLF0Kp4bSN4dIPwIlHWEvUo3ES8=
 github.com/giantswarm/microerror v0.4.1 h1:WMiD7HQASoUA9lZzPlPK+erCEOJ0uT4cyo18VfCXHD0=
