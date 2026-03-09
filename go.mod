@@ -19,7 +19,7 @@ require (
 	github.com/giantswarm/appcatalog v1.0.1
 	github.com/giantswarm/backoff v1.0.1
 	github.com/giantswarm/k8sclient/v8 v8.1.0
-	github.com/giantswarm/k8smetadata v0.25.0
+	github.com/giantswarm/k8smetadata v0.26.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/organization-operator v1.6.4
