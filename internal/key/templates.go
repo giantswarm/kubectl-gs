@@ -65,12 +65,6 @@ const ClusterEKSCRsTemplate = `
 {{ .AWSClusterRoleIdentityCR -}}
 `
 
-const MachineDeploymentCRsTemplate = `
-{{- .MachineDeploymentCR -}}
----
-{{ .AWSMachineDeploymentCR -}}
-`
-
 const NetworkPoolCRsTemplate = `
 {{- .NetworkPoolCR -}}
 `
