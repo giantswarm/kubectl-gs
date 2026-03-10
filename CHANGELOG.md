@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.0.1] - 2026-03-10
+
 ### Fixed
 
 - Apply `--label` flag values to the Cluster CR via Helm values (`global.metadata.labels`), the App CR, and the ConfigMap when using `template cluster`.
@@ -1675,7 +1677,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.1...HEAD
+[5.0.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.12.0...v5.0.0
 [4.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.11.0...v4.12.0
 [4.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.1...v4.11.0
