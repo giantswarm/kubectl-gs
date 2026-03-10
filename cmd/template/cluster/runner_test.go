@@ -9,9 +9,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 
 	//nolint:staticcheck
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
@@ -27,18 +26,21 @@ var update = goflag.Bool("update", false, "update .golden reference test files")
 //
 // go test ./cmd/template/cluster -run Test_run -update
 func Test_run(t *testing.T) {
-	capaManagementCluster := &capainfrav1.AWSCluster{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "my-mc",
-			Namespace:       "org-giantswarm",
-			ResourceVersion: "",
-		},
-		Status: capainfrav1.AWSClusterStatus{
-			Network: capainfrav1.NetworkStatus{
-				NatGatewaysIPs: []string{
-					"1.2.3.4",
-					"5.6.7.8",
-					"9.10.11.12",
+	capaManagementCluster := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta2",
+			"kind":       "AWSCluster",
+			"metadata": map[string]interface{}{
+				"name":      "my-mc",
+				"namespace": "org-giantswarm",
+			},
+			"status": map[string]interface{}{
+				"network": map[string]interface{}{
+					"natGatewaysIPs": []interface{}{
+						"1.2.3.4",
+						"5.6.7.8",
+						"9.10.11.12",
+					},
 				},
 			},
 		},

@@ -5,8 +5,8 @@ import (
 
 	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -40,7 +40,7 @@ type Resource interface {
 
 // Cluster contains the resources needed to represent a cluster on any supported provider.
 type Cluster struct {
-	Cluster *capi.Cluster
+	Cluster *unstructured.Unstructured
 
 	// helm-based clusters
 	ClusterApp     *application.App

@@ -156,7 +156,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
 	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted (see https://docs.giantswarm.io/tutorials/fleet-management/deletion-prevention/)")
 
-	// AWS only.
+	// AWS / CAPA.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
@@ -172,6 +172,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
 	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, FlagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
 
+	// aws control plane
 	cmd.Flags().StringArrayVar(&f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, nil, fmt.Sprintf("IPv4 address ranges that are allowed to connect to the control plane load balancer, in CIDR notation. When setting this flag, kubectl-gs automatically adds the NAT Gateway IPs of the management cluster so that the workload cluster can still be managed. If only the management cluster's IP ranges should be allowed, specify one empty value instead of an IP range ('--%s \"\"'). Supported for CAPA. You also need to specify --%s.", flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, flagManagementCluster))
 	// aws machine pool
 	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "nodepool0", "AWS Machine pool name")
@@ -259,8 +260,8 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s.", flagName, flagGenerateName))
-	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s.", flagName, flagName, flagGenerateName))
+	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
+	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional).")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
@@ -305,6 +306,10 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
 	}
 
+	// For vintage, don't break CLI parameter compatibility. But for CAPI or newer implementations, we want to enforce
+	// an explicit choice for a specified name (`--name`) or randomly generated name (`--generate-name`).
+	requireEitherNameOrGenerateNameFlag := key.IsPureCAPIProvider(f.Provider)
+
 	if f.Name != "" {
 		if f.GenerateName {
 			return microerror.Maskf(
@@ -323,10 +328,16 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			return microerror.Maskf(invalidFlagError, "%s", message)
 		}
 	} else if !f.GenerateName {
-		return microerror.Maskf(
-			invalidFlagError,
-			"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
-			flagName, flagGenerateName, flagName)
+		if requireEitherNameOrGenerateNameFlag {
+			return microerror.Maskf(
+				invalidFlagError,
+				"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
+				flagName, flagGenerateName, flagName)
+		} else {
+			// Keep supporting this old default for vintage (= no naming parameter given means to randomly
+			// generate a cluster name)
+			f.GenerateName = true
+		}
 	}
 
 	if f.PodsCIDR != "" {

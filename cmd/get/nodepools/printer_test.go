@@ -3,17 +3,14 @@ package nodepools
 import (
 	"bytes"
 	goflag "flag"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/google/go-cmp/cmp"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
@@ -134,77 +131,72 @@ func Test_printOutput(t *testing.T) {
 	}
 }
 
-func newCAPAexpMachinePool(name, clusterName, description string, creationDate time.Time) *capaexp.AWSMachinePool {
-	n := &capaexp.AWSMachinePool{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1beta2",
-			Kind:       "AWSMachinePool",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              name,
-			Namespace:         "org-giantswarm",
-			CreationTimestamp: metav1.NewTime(creationDate),
-			Labels: map[string]string{
-				label.MachinePool:     name,
-				label.Organization:    "giantswarm",
-				capi.ClusterNameLabel: clusterName,
+func newUnstructuredMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady int) *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"kind":       "MachinePool",
+			"metadata": map[string]interface{}{
+				"name":              name,
+				"namespace":         "org-giantswarm",
+				"creationTimestamp": creationDate.UTC().Format(time.RFC3339),
+				"labels": map[string]interface{}{
+					label.Cluster:        clusterName,
+					label.MachinePool:    name,
+					label.ReleaseVersion: release,
+					label.Organization:   "giantswarm",
+					key.ClusterNameLabel: clusterName,
+				},
+				"annotations": map[string]interface{}{
+					annotation.MachinePoolName: description,
+				},
+			},
+			"status": map[string]interface{}{
+				"replicas":      int64(nodesDesired),
+				"readyReplicas": int64(nodesReady),
 			},
 		},
 	}
-
-	return n
+	return obj
 }
 
-func newCAPIexpMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady, nodesMin, nodesMax int) *capi.MachinePool {
-	n := &capi.MachinePool{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "exp.cluster.x-k8s.io/v1beta1",
-			Kind:       "MachinePool",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              name,
-			Namespace:         "org-giantswarm",
-			CreationTimestamp: metav1.NewTime(creationDate),
-			Labels: map[string]string{
-				label.Cluster:         clusterName,
-				label.MachinePool:     name,
-				label.ReleaseVersion:  release,
-				label.Organization:    "giantswarm",
-				capi.ClusterNameLabel: clusterName,
+func newUnstructuredCAPAMachinePool(name, clusterName string, minSize, maxSize int) *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta2",
+			"kind":       "AWSMachinePool",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": "org-giantswarm",
+				"labels": map[string]interface{}{
+					label.MachinePool:    name,
+					label.Organization:   "giantswarm",
+					key.ClusterNameLabel: clusterName,
+				},
 			},
-			Annotations: map[string]string{
-				annotation.NodePoolMinSize: fmt.Sprintf("%d", nodesMin),
-				annotation.NodePoolMaxSize: fmt.Sprintf("%d", nodesMax),
-				annotation.MachinePoolName: description,
+			"spec": map[string]interface{}{
+				"minSize": int64(minSize),
+				"maxSize": int64(maxSize),
 			},
-		},
-		Status: capi.MachinePoolStatus{
-			Replicas:      int32(nodesDesired), //nolint:gosec
-			ReadyReplicas: int32(nodesReady),   //nolint:gosec
 		},
 	}
-
-	return n
+	return obj
 }
 
 func newCAPANodePool(name, clusterName, description string, creationDate time.Time, nodesMin, nodesMax, nodesDesired, nodesReady int) *nodepool.Nodepool {
-	mp := newCAPIexpMachinePool(name, clusterName, "", description, creationDate, nodesMin, nodesMax, nodesDesired, nodesReady)
-	capaMP := newCAPAexpMachinePool(name, clusterName, description, creationDate)
+	mp := newUnstructuredMachinePool(name, clusterName, "", description, creationDate, nodesDesired, nodesReady)
+	capaMP := newUnstructuredCAPAMachinePool(name, clusterName, nodesMin, nodesMax)
 
-	np := &nodepool.Nodepool{
+	return &nodepool.Nodepool{
 		MachinePool:     mp,
 		CAPAMachinePool: capaMP,
 	}
-
-	return np
 }
 
 func newNodePoolCollection(nps ...nodepool.Nodepool) *nodepool.Collection {
-	collection := &nodepool.Collection{
+	return &nodepool.Collection{
 		Items: nps,
 	}
-
-	return collection
 }
 
 func parseCreated(created string) time.Time {

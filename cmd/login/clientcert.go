@@ -558,7 +558,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 
 			i := 1
 			for c := range clustersCh {
-				org := c.Cluster.Labels[label.Organization]
+				org := c.Cluster.GetLabels()[label.Organization]
 				if len(org) < 1 {
 					org = "n/a"
 				}

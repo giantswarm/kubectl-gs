@@ -4,9 +4,8 @@ import (
 	"context"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	capaexp "sigs.k8s.io/cluster-api-provider-aws/v2/exp/api/v1beta2"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 )
 
 type GetOptions struct {
@@ -27,11 +26,11 @@ type Resource interface {
 // Nodepool abstracts away provider-specific
 // node pool resources.
 type Nodepool struct {
-	MachineDeployment *capi.MachineDeployment
-	MachinePool       *capi.MachinePool
+	MachineDeployment *unstructured.Unstructured
+	MachinePool       *unstructured.Unstructured
 
-	CAPAMachinePool       *capaexp.AWSMachinePool
-	EKSManagedMachinePool *capaexp.AWSManagedMachinePool
+	CAPAMachinePool       *unstructured.Unstructured
+	EKSManagedMachinePool *unstructured.Unstructured
 }
 
 func (n *Nodepool) Object() runtime.Object {

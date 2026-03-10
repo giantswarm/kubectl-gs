@@ -8,9 +8,10 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	eks "sigs.k8s.io/cluster-api-provider-aws/v2/controlplane/eks/api/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
@@ -202,13 +203,20 @@ func fetchEKSCAData(ctx context.Context, c k8sclient.Interface, clusterName stri
 }
 
 func fetchEKSRegion(ctx context.Context, c k8sclient.Interface, clusterName string, clusterNamespace string) (string, error) {
-	var eksCluster eks.AWSManagedControlPlane
-	err := c.CtrlClient().Get(ctx, client.ObjectKey{Name: clusterName, Namespace: clusterNamespace}, &eksCluster)
+	eksCluster := &unstructured.Unstructured{}
+	eksCluster.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "controlplane.cluster.x-k8s.io",
+		Version: "v1beta2",
+		Kind:    "AWSManagedControlPlane",
+	})
+
+	err := c.CtrlClient().Get(ctx, client.ObjectKey{Name: clusterName, Namespace: clusterNamespace}, eksCluster)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return eksCluster.Spec.Region, nil
+	region, _, _ := unstructured.NestedString(eksCluster.Object, "spec", "region")
+	return region, nil
 }
 
 func eksKubeconfigSecretName(clusterName string) string {

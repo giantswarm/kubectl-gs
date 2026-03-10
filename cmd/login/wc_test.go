@@ -18,7 +18,6 @@ import (
 	v1 "k8s.io/api/authorization/v1"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
-	infrastructurev1alpha3 "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -27,11 +26,10 @@ import (
 	"github.com/spf13/afero"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/utils/ptr"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	//nolint:staticcheck
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
@@ -495,85 +493,82 @@ func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
 	return organization
 }
 
-func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp time.Time) *capi.Cluster {
+func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp time.Time) *unstructured.Unstructured {
 	controlPlaneURL, _ := url.Parse(controlPlaneEndpoint)
-	cluster := &capi.Cluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1beta1",
+
+	metadata := map[string]interface{}{
+		"name":      name,
+		"namespace": namespace,
+		"labels": map[string]interface{}{
+			label.Cluster:        name,
+			key.ClusterNameLabel: name,
+			label.Organization:   "organization",
+			label.ReleaseVersion: "20.0.0",
 		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels: map[string]string{
-				label.Cluster:         name,
-				capi.ClusterNameLabel: name,
-				label.Organization:    "organization",
-				label.ReleaseVersion:  "20.0.0",
-			},
-		},
-		Spec: capi.ClusterSpec{},
 	}
+
+	if !creationTimestamp.IsZero() {
+		metadata["creationTimestamp"] = creationTimestamp.UTC().Format(time.RFC3339)
+	}
+
+	spec := map[string]interface{}{}
 
 	if controlPlaneURL != nil {
 		port, err := strconv.ParseInt(controlPlaneURL.Port(), 10, 32)
 		if err == nil {
-			cluster.Spec.ControlPlaneEndpoint = capi.APIEndpoint{
-				Host: controlPlaneURL.Host,
-				Port: int32(port), //nolint:gosec
+			spec["controlPlaneEndpoint"] = map[string]interface{}{
+				"host": controlPlaneURL.Host,
+				"port": port,
 			}
 		}
 	}
 
-	if !creationTimestamp.IsZero() {
-		cluster.CreationTimestamp = metav1.NewTime(creationTimestamp)
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"kind":       "Cluster",
+			"metadata":   metadata,
+			"spec":       spec,
+		},
 	}
-
-	return cluster
 }
 
-func getAzureCluster(name string, namespace string) *capz.AzureCluster {
-	cr := &capz.AzureCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AzureCluster",
-			APIVersion: "infrastructure.cluster.x-k8s.io/v1beta1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels: map[string]string{
-				label.Cluster:         name,
-				capi.ClusterNameLabel: name,
-				label.Organization:    "organization",
-				label.ReleaseVersion:  "20.0.0",
+func getAzureCluster(name string, namespace string) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
+			"kind":       "AzureCluster",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": namespace,
+				"labels": map[string]interface{}{
+					label.Cluster:        name,
+					key.ClusterNameLabel: name,
+					label.Organization:   "organization",
+					label.ReleaseVersion: "20.0.0",
+				},
 			},
 		},
-		Spec: capz.AzureClusterSpec{},
 	}
-
-	return cr
 }
 
-func getAWSCluster(name string, namespace string) *infrastructurev1alpha3.AWSCluster {
-	cr := &infrastructurev1alpha3.AWSCluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AWSCluster",
-			APIVersion: "infrastructure.giantswarm.io/v1alpha3",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels: map[string]string{
-				label.Cluster:         name,
-				capi.ClusterNameLabel: name,
-				label.Organization:    "organization",
-				label.ReleaseVersion:  "20.0.0",
+func getAWSCluster(name string, namespace string) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "infrastructure.giantswarm.io/v1alpha3",
+			"kind":       "AWSCluster",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": namespace,
+				"labels": map[string]interface{}{
+					label.Cluster:        name,
+					key.ClusterNameLabel: name,
+					label.Organization:   "organization",
+					label.ReleaseVersion: "20.0.0",
+				},
 			},
 		},
-		Spec: infrastructurev1alpha3.AWSClusterSpec{},
 	}
-
-	return cr
 }
 
 func getRelease(capi bool) *releasev1alpha1.Release {
