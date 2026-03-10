@@ -191,8 +191,8 @@ github.com/giantswarm/apiextensions-application v0.6.2 h1:XL86OrpprWl5Wp38EUvUXt
 github.com/giantswarm/apiextensions-application v0.6.2/go.mod h1:8ylqSmDSzFblCppRQTFo8v9s/F6MX6RTusVVoDDfWso=
 github.com/giantswarm/apiextensions/v6 v6.6.0 h1:qtsZuxsfigUB6xRd/UygQjh3Oaf54uXp+adbtgpCfiI=
 github.com/giantswarm/apiextensions/v6 v6.6.0/go.mod h1:Wgc2Rx8YAYF2HidjabEvhsj5ADL+RteIC86ofulY+YE=
-github.com/giantswarm/app/v7 v7.1.0 h1:Az26fpOTe8YzYEWepBmfQSxP8zk1owXBj/jBTNUmyx8=
-github.com/giantswarm/app/v7 v7.1.0/go.mod h1:vgv51aLIWIugQhIVaeP1f5qYxO+0tpnw4bXRFXzoDE8=
+github.com/giantswarm/app/v8 v8.1.1 h1:kS9Ma++OBVyODEzYiGA6JcYNOCxuAxu17VpYneIzyIA=
+github.com/giantswarm/app/v8 v8.1.1/go.mod h1:TUwvutQSqcs43FUsoSHlcIS87aqhYyJ2uunbf5Hbb1E=
 github.com/giantswarm/appcatalog v1.0.1 h1:hUBN5CTGbfMYiO28XihSf7kUnnPguTLOBr9BAtqfKK4=
 github.com/giantswarm/appcatalog v1.0.1/go.mod h1:mL+OaULPRgdnf91Vws1pmyvqVxx16t89s4kDF/O/ps0=
 github.com/giantswarm/backoff v1.0.1 h1:paqQhjUsibkf+wWFCHsk7VXAkcM1L3ssAe7V7i8twpM=
@@ -278,8 +278,8 @@ github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX
 github.com/google/go-github/v30 v30.1.0 h1:VLDx+UolQICEOKu2m4uAoMti1SxuEBAl7RSEG16L+Oo=
 github.com/google/go-github/v30 v30.1.0/go.mod h1:n8jBpHl45a/rlBUtRJMOG4GhNADUQFEufcolZ95JfU8=
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
-github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=
-github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
+github.com/google/go-querystring v1.2.0 h1:yhqkPbu2/OH+V9BfpCVPZkNmUXhb2gBxJArfhIxNtP0=
+github.com/google/go-querystring v1.2.0/go.mod h1:8IFJqpSRITyJ8QhQ13bmbeMBDfmeEJZD5A0egEOmkqU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/martian/v3 v3.3.3 h1:DIhPTQrbPkgs2yJYdXU/eNACCG5DVQjySNRNlflZ9Fc=
 github.com/google/martian/v3 v3.3.3/go.mod h1:iEPrYcgCF7jA9OtScMFQyAlZZ4YXTKEtJ1E6RWzmBA0=
