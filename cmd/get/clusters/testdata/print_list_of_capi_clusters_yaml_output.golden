@@ -5,6 +5,7 @@ items:
   metadata:
     annotations:
       cluster.giantswarm.io/description: test cluster 1
+    creationTimestamp: "2021-01-02T15:04:32Z"
     labels:
       cluster.x-k8s.io/cluster-name: 1sad2
       giantswarm.io/organization: test
@@ -24,6 +25,7 @@ items:
   metadata:
     annotations:
       cluster.giantswarm.io/description: test cluster 2
+    creationTimestamp: "2021-01-02T15:04:32Z"
     labels:
       cluster.x-k8s.io/cluster-name: 2a03f
       giantswarm.io/organization: test
@@ -36,10 +38,6 @@ items:
       host: ""
       port: 0
   status:
-    conditions:
-    - lastTransitionTime: null
-      status: "True"
-      type: Created
     controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
@@ -47,6 +45,7 @@ items:
   metadata:
     annotations:
       cluster.giantswarm.io/description: test cluster 3
+    creationTimestamp: "2021-01-02T15:04:32Z"
     labels:
       cluster.x-k8s.io/cluster-name: asd29
       giantswarm.io/organization: test
@@ -59,13 +58,6 @@ items:
       host: ""
       port: 0
   status:
-    conditions:
-    - lastTransitionTime: null
-      status: "True"
-      type: Created
-    - lastTransitionTime: null
-      status: "True"
-      type: Creating
     controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
@@ -73,6 +65,7 @@ items:
   metadata:
     annotations:
       cluster.giantswarm.io/description: test cluster 4
+    creationTimestamp: "2021-01-02T15:04:32Z"
     labels:
       cluster.x-k8s.io/cluster-name: f930q
       giantswarm.io/organization: some-other
@@ -92,6 +85,7 @@ items:
   metadata:
     annotations:
       cluster.giantswarm.io/description: test cluster 5
+    creationTimestamp: "2021-01-02T15:04:32Z"
     labels:
       cluster.x-k8s.io/cluster-name: 9f012
       giantswarm.io/organization: test
@@ -104,10 +98,6 @@ items:
       host: ""
       port: 0
   status:
-    conditions:
-    - lastTransitionTime: null
-      status: "True"
-      type: Deleting
     controlPlaneReady: false
     infrastructureReady: false
 - apiVersion: cluster.x-k8s.io/v1beta1
@@ -115,6 +105,7 @@ items:
   metadata:
     annotations:
       cluster.giantswarm.io/description: test cluster 6
+    creationTimestamp: "2021-01-02T15:04:32Z"
     labels:
       cluster.x-k8s.io/cluster-name: 2f0as
       giantswarm.io/organization: random
@@ -127,13 +118,6 @@ items:
       host: ""
       port: 0
   status:
-    conditions:
-    - lastTransitionTime: null
-      status: "True"
-      type: Deleting
-    - lastTransitionTime: null
-      status: "True"
-      type: Created
     controlPlaneReady: false
     infrastructureReady: false
 kind: List

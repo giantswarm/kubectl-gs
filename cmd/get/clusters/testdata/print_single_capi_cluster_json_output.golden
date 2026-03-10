@@ -4,6 +4,7 @@
     "metadata": {
         "name": "f930q",
         "namespace": "default",
+        "creationTimestamp": "2021-01-02T15:04:32Z",
         "labels": {
             "cluster.x-k8s.io/cluster-name": "f930q",
             "giantswarm.io/organization": "some-other",
@@ -22,13 +23,6 @@
     },
     "status": {
         "infrastructureReady": false,
-        "controlPlaneReady": false,
-        "conditions": [
-            {
-                "type": "Created",
-                "status": "True",
-                "lastTransitionTime": null
-            }
-        ]
+        "controlPlaneReady": false
     }
 }

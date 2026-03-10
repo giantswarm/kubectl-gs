@@ -9,6 +9,7 @@
             "metadata": {
                 "name": "1sad2",
                 "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "1sad2",
                     "giantswarm.io/organization": "test",
@@ -36,6 +37,7 @@
             "metadata": {
                 "name": "2a03f",
                 "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "2a03f",
                     "giantswarm.io/organization": "test",
@@ -54,14 +56,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneReady": false,
-                "conditions": [
-                    {
-                        "type": "Created",
-                        "status": "True",
-                        "lastTransitionTime": null
-                    }
-                ]
+                "controlPlaneReady": false
             }
         },
         {
@@ -70,6 +65,7 @@
             "metadata": {
                 "name": "asd29",
                 "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "asd29",
                     "giantswarm.io/organization": "test",
@@ -88,19 +84,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneReady": false,
-                "conditions": [
-                    {
-                        "type": "Created",
-                        "status": "True",
-                        "lastTransitionTime": null
-                    },
-                    {
-                        "type": "Creating",
-                        "status": "True",
-                        "lastTransitionTime": null
-                    }
-                ]
+                "controlPlaneReady": false
             }
         },
         {
@@ -109,6 +93,7 @@
             "metadata": {
                 "name": "f930q",
                 "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "f930q",
                     "giantswarm.io/organization": "some-other",
@@ -136,6 +121,7 @@
             "metadata": {
                 "name": "9f012",
                 "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "9f012",
                     "giantswarm.io/organization": "test",
@@ -154,14 +140,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneReady": false,
-                "conditions": [
-                    {
-                        "type": "Deleting",
-                        "status": "True",
-                        "lastTransitionTime": null
-                    }
-                ]
+                "controlPlaneReady": false
             }
         },
         {
@@ -170,6 +149,7 @@
             "metadata": {
                 "name": "2f0as",
                 "namespace": "default",
+                "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "2f0as",
                     "giantswarm.io/organization": "random",
@@ -188,19 +168,7 @@
             },
             "status": {
                 "infrastructureReady": false,
-                "controlPlaneReady": false,
-                "conditions": [
-                    {
-                        "type": "Deleting",
-                        "status": "True",
-                        "lastTransitionTime": null
-                    },
-                    {
-                        "type": "Created",
-                        "status": "True",
-                        "lastTransitionTime": null
-                    }
-                ]
+                "controlPlaneReady": false
             }
         }
     ]

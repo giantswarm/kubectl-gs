@@ -484,10 +484,9 @@ func getAllOrganizationNamespaces(ctx context.Context, organizationService organ
 
 func fetchCluster(ctx context.Context, clusterService cluster.Interface, provider, namespace, name string) (*cluster.Cluster, error) {
 	o := cluster.GetOptions{
-		Namespace:      namespace,
-		Name:           name,
-		Provider:       provider,
-		FallbackToCapi: true,
+		Namespace: namespace,
+		Name:      name,
+		Provider:  provider,
 	}
 
 	c, err := clusterService.Get(ctx, o)

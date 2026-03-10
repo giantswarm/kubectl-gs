@@ -4,19 +4,16 @@ import (
 	"context"
 
 	application "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	infrastructure "github.com/giantswarm/apiextensions/v6/pkg/apis/infrastructure/v1alpha3"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1beta1"
 	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type GetOptions struct {
-	Name           string
-	Provider       string
-	Namespace      string
-	FallbackToCapi bool
+	Name      string
+	Provider  string
+	Namespace string
 }
 
 type PatchOptions struct {
@@ -48,10 +45,6 @@ type Cluster struct {
 	// helm-based clusters
 	ClusterApp     *application.App
 	DefaultAppsApp *application.App
-
-	// infrastructure provider cluster
-	AWSCluster   *infrastructure.AWSCluster
-	AzureCluster *capz.AzureCluster
 }
 
 func (n *Cluster) Object() runtime.Object {
