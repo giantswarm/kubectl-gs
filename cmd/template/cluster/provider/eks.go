@@ -61,6 +61,9 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[label.Cluster] = config.Name
+		for k, v := range config.Labels {
+			userConfigMap.Labels[k] = v
+		}
 		if config.PreventDeletion {
 			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
@@ -99,6 +102,9 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			UserConfigConfigMapName: configMapName,
 			ExtraLabels:             map[string]string{},
 		}
+		for k, v := range config.Labels {
+			clusterAppConfig.ExtraLabels[k] = v
+		}
 		if config.PreventDeletion {
 			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
 		}
@@ -125,6 +131,7 @@ func BuildEKSClusterConfig(config common.ClusterConfig) eks.ClusterConfig {
 			Metadata: &eks.Metadata{
 				Name:            config.Name,
 				Description:     config.Description,
+				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},

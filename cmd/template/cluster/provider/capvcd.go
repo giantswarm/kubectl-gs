@@ -71,6 +71,9 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[label.Cluster] = config.Name
+		for k, v := range config.Labels {
+			userConfigMap.Labels[k] = v
+		}
 		if config.PreventDeletion {
 			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
@@ -109,6 +112,9 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 			UserConfigConfigMapName: configMapName,
 			ExtraConfigs:            extraConfigs,
 			ExtraLabels:             map[string]string{},
+		}
+		for k, v := range config.Labels {
+			clusterAppConfig.ExtraLabels[k] = v
 		}
 		if config.PreventDeletion {
 			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
@@ -154,6 +160,7 @@ func BuildCapvcdClusterConfig(config common.ClusterConfig) capvcd.ClusterConfig 
 			Metadata: &capvcd.Metadata{
 				Name:            config.Name,
 				Description:     config.Description,
+				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},
