@@ -14,12 +14,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/clientcert"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/release"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/release"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/kubeconfig"
 )
 
 const (

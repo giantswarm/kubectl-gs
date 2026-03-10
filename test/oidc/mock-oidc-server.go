@@ -14,7 +14,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"gopkg.in/square/go-jose.v2"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
 )
 
 type MockOidcServerConfig struct {

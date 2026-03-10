@@ -33,8 +33,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/ptr"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	testoidc "github.com/giantswarm/kubectl-gs/v6/test/oidc"
 )
 
 func TestKubeConfigModification(t *testing.T) {

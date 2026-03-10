@@ -13,11 +13,11 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	//nolint:staticcheck
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v5/test/goldenfile"
-	"github.com/giantswarm/kubectl-gs/v5/test/kubeclient"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v6/test/goldenfile"
+	"github.com/giantswarm/kubectl-gs/v6/test/kubeclient"
 )
 
 var update = goflag.Bool("update", false, "update .golden reference test files")

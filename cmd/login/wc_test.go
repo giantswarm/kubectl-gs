@@ -32,11 +32,11 @@ import (
 	"k8s.io/utils/ptr"
 
 	//nolint:staticcheck
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/internal/label"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v5/test/kubeclient"
-	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/label"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/test/kubeclient"
+	testoidc "github.com/giantswarm/kubectl-gs/v6/test/oidc"
 )
 
 func TestWCClientCert(t *testing.T) {
