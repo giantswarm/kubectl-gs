@@ -1,6 +1,6 @@
 module github.com/giantswarm/kubectl-gs/v5
 
-go 1.24.7
+go 1.25.0
 
 require (
 	dario.cat/mergo v1.0.2
@@ -19,7 +19,7 @@ require (
 	github.com/giantswarm/appcatalog v1.0.1
 	github.com/giantswarm/backoff v1.0.1
 	github.com/giantswarm/k8sclient/v8 v8.1.0
-	github.com/giantswarm/k8smetadata v0.25.0
+	github.com/giantswarm/k8smetadata v0.26.0
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/organization-operator v1.6.4
@@ -35,7 +35,7 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/oauth2 v0.35.0
+	golang.org/x/oauth2 v0.36.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.2
 	k8s.io/api v0.34.5
