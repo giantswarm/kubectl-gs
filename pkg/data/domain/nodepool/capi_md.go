@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
 )
 
 func (s *Service) getAllCAPI(ctx context.Context, namespace, clusterID string) (Resource, error) {

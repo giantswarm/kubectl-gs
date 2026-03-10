@@ -1,4 +1,4 @@
-module github.com/giantswarm/kubectl-gs/v5
+module github.com/giantswarm/kubectl-gs/v6
 
 go 1.25.0
 

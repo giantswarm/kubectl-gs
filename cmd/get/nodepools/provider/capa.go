@@ -5,7 +5,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/nodepool"
 )
 
 func getCAPAAutoscaling(nodePool nodepool.Nodepool) string {

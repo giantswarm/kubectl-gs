@@ -7,9 +7,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	appdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/app"
-	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/helmbinary"
+	appdata "github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/app"
+	catalogdata "github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/catalog"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/helmbinary"
 )
 
 var _ Interface = &Service{}

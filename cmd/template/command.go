@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/app"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/catalog"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/organization"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/app"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/catalog"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/organization"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
 
 const (

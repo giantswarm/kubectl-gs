@@ -1,6 +1,6 @@
 package capvcd
 
-import "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+import "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 
 type ClusterConfig struct {
 	Global *Global `json:"global,omitempty"`

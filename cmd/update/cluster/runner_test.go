@@ -13,13 +13,13 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/internal/label"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
-	"github.com/giantswarm/kubectl-gs/v5/test/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/label"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v6/test/kubeconfig"
 )
 
 func Test_run(t *testing.T) {

@@ -21,11 +21,11 @@ import (
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capa"
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/v5/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/capa"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v6/pkg/template/app"
 )
 
 const (

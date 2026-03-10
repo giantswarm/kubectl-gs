@@ -13,15 +13,15 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/credentialplugin"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/get"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/gitops"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/login"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/selfupdate"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/update"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/validate"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/project"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/credentialplugin"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/get"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/login"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/selfupdate"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/update"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/validate"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/project"
 )
 
 const (
