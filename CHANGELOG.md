@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.0.2] - 2026-03-10
+
 ### Fixed
 
 - Fix Windows build failure caused by `syscall.Flock` usage in credential cache (not available on Windows).
@@ -1681,7 +1683,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.2...HEAD
+[5.0.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.12.0...v5.0.0
 [4.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.11.0...v4.12.0
