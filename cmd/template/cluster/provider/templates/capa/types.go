@@ -14,10 +14,11 @@ type ClusterConfig struct {
 }
 
 type Metadata struct {
-	Description     string `json:"description,omitempty"`
-	Name            string `json:"name,omitempty"`
-	Organization    string `json:"organization,omitempty"`
-	PreventDeletion bool   `json:"preventDeletion,omitempty"`
+	Description     string            `json:"description,omitempty"`
+	Labels          map[string]string `json:"labels,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	Organization    string            `json:"organization,omitempty"`
+	PreventDeletion bool              `json:"preventDeletion,omitempty"`
 }
 
 type Release struct {

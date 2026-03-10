@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Apply `--label` flag values to the Cluster CR via Helm values (`global.metadata.labels`), the App CR, and the ConfigMap when using `template cluster`.
+
 ## [5.0.0] - 2026-03-10
 
 ### Removed
