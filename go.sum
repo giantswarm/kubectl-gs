@@ -199,8 +199,8 @@ github.com/giantswarm/backoff v1.0.1 h1:paqQhjUsibkf+wWFCHsk7VXAkcM1L3ssAe7V7i8t
 github.com/giantswarm/backoff v1.0.1/go.mod h1:RGj8b06J3irMNFRoSiMnngS50K+QbpSvu77sW03bxqQ=
 github.com/giantswarm/k8sclient/v8 v8.1.0 h1:29pRG4TAdKn4lw+O6hBVvHIPDjrn/ikA8SgHb2TJPGE=
 github.com/giantswarm/k8sclient/v8 v8.1.0/go.mod h1:C588tvPnMQx2VzQ0WGHTXoN4wzcS0LaYr2SUzGJmzq0=
-github.com/giantswarm/k8smetadata v0.25.0 h1:6mKmmm4xHPuBvxDMAkIhU5oj6KJkJSaR2s5esIsnHs4=
-github.com/giantswarm/k8smetadata v0.25.0/go.mod h1:QiQAyaZnwco1U0lENLF0Kp4bSN4dIPwIlHWEvUo3ES8=
+github.com/giantswarm/k8smetadata v0.26.0 h1:2TLymlfjYLyioRRimbm0CxRzEr5lMivsuEiE32+JYxQ=
+github.com/giantswarm/k8smetadata v0.26.0/go.mod h1:QiQAyaZnwco1U0lENLF0Kp4bSN4dIPwIlHWEvUo3ES8=
 github.com/giantswarm/microerror v0.4.1 h1:WMiD7HQASoUA9lZzPlPK+erCEOJ0uT4cyo18VfCXHD0=
 github.com/giantswarm/microerror v0.4.1/go.mod h1:URFj0gFCmZihjya6saQCXxslBrgctXb4NsXYHB5JdrI=
 github.com/giantswarm/micrologger v1.1.2 h1:dNmnGZgAT0rnZkpc2ivj1shJ3Stnnjsy7jIi84//Jqc=
