@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix Windows build failure caused by `syscall.Flock` usage in credential cache (not available on Windows).
+
 ## [5.0.1] - 2026-03-10
 
 ### Fixed
