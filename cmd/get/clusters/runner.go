@@ -65,8 +65,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var resource cluster.Resource
 	{
 		options := cluster.GetOptions{
-			Provider:       r.provider,
-			FallbackToCapi: true,
+			Provider: r.provider,
 		}
 		{
 			if len(args) > 0 {
