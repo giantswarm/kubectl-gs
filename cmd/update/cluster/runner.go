@@ -106,7 +106,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if scheduledTime != "" {
 		patchSpecs := make([]cluster.PatchSpec, 0)
-		if resource.Cluster.Annotations == nil {
+		if resource.Cluster.GetAnnotations() == nil {
 			patchSpecs = append(patchSpecs, cluster.PatchSpec{
 				Op:    "add",
 				Path:  "/metadata/annotations",

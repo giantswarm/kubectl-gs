@@ -13,6 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - Remove `template networkpool` command.
 - Remove AWS vintage and Azure vintage providers from `template cluster` command.
 - Remove AWS vintage and Azure vintage providers from `get clusters` and `get nodepools` commands.
+- Remove typed dependencies on `sigs.k8s.io/cluster-api`, `sigs.k8s.io/cluster-api-provider-aws`, and `sigs.k8s.io/cluster-api-provider-azure` in favor of unstructured objects.
 
 ### Fixed
 

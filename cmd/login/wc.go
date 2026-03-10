@@ -11,8 +11,8 @@ import (
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/clientcmd"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/clientcert"
@@ -220,18 +220,21 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 		return "", false, microerror.Mask(err)
 	}
 
-	if c.Cluster.Spec.ControlPlaneEndpoint.Host == "" || c.Cluster.Spec.ControlPlaneEndpoint.Port == 0 {
-		if c.Cluster.CreationTimestamp.Time.Before(time.Now().Add(-newClusterMaxAge)) {
+	cpHost, _, _ := unstructured.NestedString(c.Cluster.Object, "spec", "controlPlaneEndpoint", "host")
+	cpPort, _, _ := unstructured.NestedInt64(c.Cluster.Object, "spec", "controlPlaneEndpoint", "port")
+
+	if cpHost == "" || cpPort == 0 {
+		if c.Cluster.GetCreationTimestamp().Time.Before(time.Now().Add(-newClusterMaxAge)) {
 			return "", false, microerror.Maskf(clusterAPINotKnownError, "API for cluster '%s' is not known", r.flag.WCName)
 		}
 		return "", false, microerror.Maskf(clusterAPINotReadyError, "API for cluster '%s' is not ready yet", r.flag.WCName)
 	}
 
-	clusterServer := fmt.Sprintf("https://%s:%d", c.Cluster.Spec.ControlPlaneEndpoint.Host, c.Cluster.Spec.ControlPlaneEndpoint.Port)
+	clusterServer := fmt.Sprintf("https://%s:%d", cpHost, cpPort)
 
 	// When on CAPI we need our custom DNS record for the k8s api, rather than the value found in the CAPI CRs so that our connection through the VPN works.
 	if provider != key.ProviderAWS && provider != key.ProviderAzure && provider != key.ProviderEKS {
-		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.Name, clusterBasePath, c.Cluster.Spec.ControlPlaneEndpoint.Port)
+		clusterServer = fmt.Sprintf("https://api.%s.%s:%d", c.Cluster.GetName(), clusterBasePath, cpPort)
 	}
 
 	credentialConfig := clientCertCredentialConfig{
@@ -266,21 +269,23 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 }
 
 func (r *runner) createEKSKubeconfig(ctx context.Context, k8sClient k8sclient.Interface, c *cluster.Cluster) (string, bool, error) {
-	caData, err := fetchEKSCAData(ctx, k8sClient, c.Cluster.Name, c.Cluster.Namespace)
+	caData, err := fetchEKSCAData(ctx, k8sClient, c.Cluster.GetName(), c.Cluster.GetNamespace())
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
 
-	region, err := fetchEKSRegion(ctx, k8sClient, c.Cluster.Name, c.Cluster.Namespace)
+	region, err := fetchEKSRegion(ctx, k8sClient, c.Cluster.GetName(), c.Cluster.GetNamespace())
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}
+
+	cpHost, _, _ := unstructured.NestedString(c.Cluster.Object, "spec", "controlPlaneEndpoint", "host")
 
 	eksClusterConfig := eksClusterConfig{
 		awsProfileName:       r.flag.AWSProfile,
-		clusterName:          c.Cluster.Name,
+		clusterName:          c.Cluster.GetName(),
 		certCA:               caData,
-		controlPlaneEndpoint: c.Cluster.Spec.ControlPlaneEndpoint.Host,
+		controlPlaneEndpoint: cpHost,
 		filePath:             r.flag.SelfContained,
 		region:               region,
 		loginOptions:         r.loginOptions,
@@ -385,6 +390,7 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, curr
 	return strings.TrimPrefix(clusterServer, "g8s."), nil
 }
 
-func isEKS(c *capi.Cluster) bool {
-	return c.Spec.InfrastructureRef != nil && c.Spec.InfrastructureRef.Kind == "AWSManagedCluster"
+func isEKS(c *unstructured.Unstructured) bool {
+	infraKind, _, _ := unstructured.NestedString(c.Object, "spec", "infrastructureRef", "kind")
+	return infraKind == "AWSManagedCluster"
 }

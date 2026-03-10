@@ -4,11 +4,12 @@
     "metadata": {},
     "items": [
         {
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
-                "name": "1sad2",
-                "namespace": "org-giantswarm",
+                "annotations": {
+                    "machine-pool.giantswarm.io/name": "test nodepool 1"
+                },
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "s921a",
@@ -17,36 +18,21 @@
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": ""
                 },
-                "annotations": {
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "-1",
-                    "machine-pool.giantswarm.io/name": "test nodepool 1"
-                }
-            },
-            "spec": {
-                "clusterName": "",
-                "template": {
-                    "metadata": {},
-                    "spec": {
-                        "clusterName": "",
-                        "bootstrap": {},
-                        "infrastructureRef": {}
-                    }
-                }
+                "name": "1sad2",
+                "namespace": "org-giantswarm"
             },
             "status": {
-                "replicas": 1,
-                "readyReplicas": 3,
-                "bootstrapReady": false,
-                "infrastructureReady": false
+                "readyReplicas": -1,
+                "replicas": -1
             }
         },
         {
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
-                "name": "2a03f",
-                "namespace": "org-giantswarm",
+                "annotations": {
+                    "machine-pool.giantswarm.io/name": "test nodepool 2"
+                },
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "3a0d1",
@@ -55,36 +41,21 @@
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": ""
                 },
-                "annotations": {
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "-1",
-                    "machine-pool.giantswarm.io/name": "test nodepool 2"
-                }
-            },
-            "spec": {
-                "clusterName": "",
-                "template": {
-                    "metadata": {},
-                    "spec": {
-                        "clusterName": "",
-                        "bootstrap": {},
-                        "infrastructureRef": {}
-                    }
-                }
+                "name": "2a03f",
+                "namespace": "org-giantswarm"
             },
             "status": {
-                "replicas": 3,
-                "readyReplicas": 10,
-                "bootstrapReady": false,
-                "infrastructureReady": false
+                "readyReplicas": -1,
+                "replicas": -1
             }
         },
         {
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
-                "name": "asd29",
-                "namespace": "org-giantswarm",
+                "annotations": {
+                    "machine-pool.giantswarm.io/name": "test nodepool 3"
+                },
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "s0a10",
@@ -93,36 +64,21 @@
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": ""
                 },
-                "annotations": {
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "10",
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "10",
-                    "machine-pool.giantswarm.io/name": "test nodepool 3"
-                }
-            },
-            "spec": {
-                "clusterName": "",
-                "template": {
-                    "metadata": {},
-                    "spec": {
-                        "clusterName": "",
-                        "bootstrap": {},
-                        "infrastructureRef": {}
-                    }
-                }
+                "name": "asd29",
+                "namespace": "org-giantswarm"
             },
             "status": {
-                "replicas": 10,
                 "readyReplicas": 10,
-                "bootstrapReady": false,
-                "infrastructureReady": false
+                "replicas": 10
             }
         },
         {
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
-                "name": "f930q",
-                "namespace": "org-giantswarm",
+                "annotations": {
+                    "machine-pool.giantswarm.io/name": "test nodepool 4"
+                },
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "s921a",
@@ -131,36 +87,21 @@
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": ""
                 },
-                "annotations": {
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "-1",
-                    "machine-pool.giantswarm.io/name": "test nodepool 4"
-                }
-            },
-            "spec": {
-                "clusterName": "",
-                "template": {
-                    "metadata": {},
-                    "spec": {
-                        "clusterName": "",
-                        "bootstrap": {},
-                        "infrastructureRef": {}
-                    }
-                }
+                "name": "f930q",
+                "namespace": "org-giantswarm"
             },
             "status": {
-                "replicas": 3,
-                "readyReplicas": 3,
-                "bootstrapReady": false,
-                "infrastructureReady": false
+                "readyReplicas": -1,
+                "replicas": -1
             }
         },
         {
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
-                "name": "9f012",
-                "namespace": "org-giantswarm",
+                "annotations": {
+                    "machine-pool.giantswarm.io/name": "test nodepool 5"
+                },
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "29sa0",
@@ -169,36 +110,21 @@
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": ""
                 },
-                "annotations": {
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "1",
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "1",
-                    "machine-pool.giantswarm.io/name": "test nodepool 5"
-                }
-            },
-            "spec": {
-                "clusterName": "",
-                "template": {
-                    "metadata": {},
-                    "spec": {
-                        "clusterName": "",
-                        "bootstrap": {},
-                        "infrastructureRef": {}
-                    }
-                }
+                "name": "9f012",
+                "namespace": "org-giantswarm"
             },
             "status": {
-                "replicas": 0,
-                "readyReplicas": 3,
-                "bootstrapReady": false,
-                "infrastructureReady": false
+                "readyReplicas": 1,
+                "replicas": 1
             }
         },
         {
+            "apiVersion": "cluster.x-k8s.io/v1beta1",
             "kind": "MachinePool",
-            "apiVersion": "exp.cluster.x-k8s.io/v1beta1",
             "metadata": {
-                "name": "2f0as",
-                "namespace": "org-giantswarm",
+                "annotations": {
+                    "machine-pool.giantswarm.io/name": "test nodepool 6"
+                },
                 "creationTimestamp": "2021-01-02T15:04:32Z",
                 "labels": {
                     "cluster.x-k8s.io/cluster-name": "s00sn",
@@ -207,28 +133,12 @@
                     "giantswarm.io/organization": "giantswarm",
                     "release.giantswarm.io/version": ""
                 },
-                "annotations": {
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size": "-1",
-                    "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size": "-1",
-                    "machine-pool.giantswarm.io/name": "test nodepool 6"
-                }
-            },
-            "spec": {
-                "clusterName": "",
-                "template": {
-                    "metadata": {},
-                    "spec": {
-                        "clusterName": "",
-                        "bootstrap": {},
-                        "infrastructureRef": {}
-                    }
-                }
+                "name": "2f0as",
+                "namespace": "org-giantswarm"
             },
             "status": {
-                "replicas": 2,
-                "readyReplicas": 5,
-                "bootstrapReady": false,
-                "infrastructureReady": false
+                "readyReplicas": -1,
+                "replicas": -1
             }
         }
     ]

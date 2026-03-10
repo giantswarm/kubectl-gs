@@ -1,2 +1,2 @@
 NAME    CLUSTER NAME   AGE   PHASE   NODES MIN/MAX   NODES DESIRED   NODES READY   DESCRIPTION
-f930q   s921a          10h   n/a     6               6               6             n/a
+f930q   s921a          10h   n/a     6               6               6             test nodepool 4

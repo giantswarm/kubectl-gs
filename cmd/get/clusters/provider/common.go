@@ -3,17 +3,14 @@ package provider
 import (
 	"strings"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
-
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
-
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
 )
 
 const (
@@ -50,43 +47,28 @@ func formatCondition(condition string) string {
 	return strings.ToUpper(condition)
 }
 
-func getLatestCondition(conditions []capi.Condition) string {
-	if len(conditions) < 1 {
-		return naValue
-	}
-
-	return formatCondition(string(conditions[0].Type))
-}
-
-func getClusterDescription(res *capi.Cluster) string {
-	description := naValue
-
-	annotations := res.GetAnnotations()
+func getClusterDescription(obj *unstructured.Unstructured) string {
+	annotations := obj.GetAnnotations()
 	if annotations != nil && annotations[annotation.ClusterDescription] != "" {
-		description = annotations[annotation.ClusterDescription]
+		return annotations[annotation.ClusterDescription]
 	}
-
-	return description
+	return naValue
 }
 
-func getClusterOrganization(res *capi.Cluster) string {
-	organization := naValue
-
-	if organizationLabel := res.Labels[label.Organization]; organizationLabel != "" {
-		organization = organizationLabel
+func getClusterOrganization(obj *unstructured.Unstructured) string {
+	labels := obj.GetLabels()
+	if organizationLabel := labels[label.Organization]; organizationLabel != "" {
+		return organizationLabel
 	}
-
-	return organization
+	return naValue
 }
 
-func getClusterServicePriority(res *capi.Cluster) string {
-	servicePriority := naValue
-
-	if servicePriorityLabel := res.Labels[label.ServicePriority]; servicePriorityLabel != "" {
-		servicePriority = servicePriorityLabel
+func getClusterServicePriority(obj *unstructured.Unstructured) string {
+	labels := obj.GetLabels()
+	if servicePriorityLabel := labels[label.ServicePriority]; servicePriorityLabel != "" {
+		return servicePriorityLabel
 	}
-
-	return servicePriority
+	return naValue
 }
 
 func getCommonClusterRow(c cluster.Cluster) metav1.TableRow {
@@ -94,14 +76,16 @@ func getCommonClusterRow(c cluster.Cluster) metav1.TableRow {
 		return metav1.TableRow{}
 	}
 
+	phase, _, _ := unstructured.NestedString(c.Cluster.Object, "status", "phase")
+
 	return metav1.TableRow{
 		Cells: []interface{}{
 			c.Cluster.GetName(),
-			output.TranslateTimestampSince(c.Cluster.CreationTimestamp),
-			c.Cluster.Status.Phase,
-			c.Cluster.Labels[label.ReleaseVersion],
+			output.TranslateTimestampSince(c.Cluster.GetCreationTimestamp()),
+			phase,
+			c.Cluster.GetLabels()[label.ReleaseVersion],
 			getClusterServicePriority(c.Cluster),
-			c.Cluster.Labels[label.Organization],
+			c.Cluster.GetLabels()[label.Organization],
 			getClusterDescription(c.Cluster),
 		},
 		Object: runtime.RawExtension{

@@ -3,6 +3,8 @@ package provider
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/nodepool"
 )
 
@@ -11,15 +13,19 @@ func getCAPAAutoscaling(nodePool nodepool.Nodepool) string {
 		return getEKSManagedAutoscaling(nodePool)
 	}
 
-	minScaling := nodePool.CAPAMachinePool.Spec.MinSize
-	maxScaling := nodePool.CAPAMachinePool.Spec.MaxSize
+	if nodePool.CAPAMachinePool == nil {
+		return naValue
+	}
+
+	minScaling, _, _ := unstructured.NestedInt64(nodePool.CAPAMachinePool.Object, "spec", "minSize")
+	maxScaling, _, _ := unstructured.NestedInt64(nodePool.CAPAMachinePool.Object, "spec", "maxSize")
 
 	return fmt.Sprintf("%d/%d", minScaling, maxScaling)
 }
 
 func getEKSManagedAutoscaling(nodePool nodepool.Nodepool) string {
-	minScaling := nodePool.EKSManagedMachinePool.Spec.Scaling.MinSize
-	maxScaling := nodePool.EKSManagedMachinePool.Spec.Scaling.MaxSize
+	minScaling, _, _ := unstructured.NestedInt64(nodePool.EKSManagedMachinePool.Object, "spec", "scaling", "minSize")
+	maxScaling, _, _ := unstructured.NestedInt64(nodePool.EKSManagedMachinePool.Object, "spec", "scaling", "maxSize")
 
-	return fmt.Sprintf("%d/%d", *minScaling, *maxScaling)
+	return fmt.Sprintf("%d/%d", minScaling, maxScaling)
 }

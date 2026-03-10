@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclienttest"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
@@ -28,8 +30,6 @@ import (
 //
 // go test ./cmd/get/clusters -run Test_run -update
 func Test_run(t *testing.T) {
-	// Use a fixed time in the past to avoid flaky tests due to timing races
-	// where AGE shows "0s" locally but "1s" in CI.
 	creationTime := time.Now().Add(-10 * time.Hour)
 
 	testCases := []struct {
@@ -42,8 +42,8 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get clusters",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, creationTime, nil),
-				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, creationTime, nil),
+				newRunnerTestCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, creationTime),
+				newRunnerTestCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, creationTime),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_clusters.golden",
@@ -57,8 +57,8 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get cluster by id",
 			storage: []runtime.Object{
-				newcapiCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, creationTime, nil),
-				newcapiCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, creationTime, nil),
+				newRunnerTestCluster("1sad2", "10.5.0", "some-org", "test cluster 3", label.ServicePriorityHighest, creationTime),
+				newRunnerTestCluster("f930q", "11.0.0", "some-other", "test cluster 4", label.ServicePriorityMedium, creationTime),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_cluster_by_id.golden",
@@ -86,7 +86,7 @@ func Test_run(t *testing.T) {
 				service:      newClusterService(t, tc.storage...),
 				flag:         flag,
 				stdout:       out,
-				provider:     key.ProviderAWS,
+				provider:     key.ProviderCAPA,
 			}
 
 			err := runner.run(ctx, nil, tc.args)
@@ -125,6 +125,35 @@ func Test_run(t *testing.T) {
 	}
 }
 
+func newRunnerTestCluster(name, release, org, description, servicePriority string, creationDate time.Time) *unstructured.Unstructured {
+	labels := map[string]interface{}{
+		label.ReleaseVersion: release,
+		label.Organization:   org,
+		label.Cluster:        name,
+		key.ClusterNameLabel: name,
+	}
+	if servicePriority != "" {
+		labels[label.ServicePriority] = servicePriority
+	}
+
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"kind":       "Cluster",
+			"metadata": map[string]interface{}{
+				"name":              name,
+				"namespace":         "default",
+				"creationTimestamp": creationDate.UTC().Format(time.RFC3339),
+				"labels":            labels,
+				"annotations": map[string]interface{}{
+					annotation.ClusterDescription: description,
+				},
+			},
+		},
+	}
+	return obj
+}
+
 func newClusterService(t *testing.T, object ...runtime.Object) *cluster.Service {
 	clientScheme, err := scheme.NewScheme()
 	if err != nil {
@@ -134,9 +163,6 @@ func newClusterService(t *testing.T, object ...runtime.Object) *cluster.Service 
 	clients := k8sclienttest.NewClients(k8sclienttest.ClientsConfig{
 		CtrlClient: fake.NewClientBuilder().WithScheme(clientScheme).WithRuntimeObjects(object...).Build(),
 	})
-	if err != nil {
-		t.Fatalf("unexpected error: %s", microerror.Pretty(err, true))
-	}
 
 	return cluster.New(cluster.Config{
 		Client: clients.CtrlClient(),

@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclienttest"
+	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake" //nolint:staticcheck
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
@@ -45,8 +45,8 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 0: get nodepools",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", creationTime, 2, 1),
-				newcapiMachineDeployment("f930q", "s921a", "11.0.0", creationTime, 6, 6),
+				newRunnerTestMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", creationTime, 2, 1),
+				newRunnerTestMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", creationTime, 6, 6),
 			},
 			args:               nil,
 			expectedGoldenFile: "run_get_nodepools.golden",
@@ -59,8 +59,8 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 2: get nodepool by name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", creationTime, 2, 1),
-				newcapiMachineDeployment("f930q", "s921a", "11.0.0", creationTime, 6, 6),
+				newRunnerTestMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", creationTime, 2, 1),
+				newRunnerTestMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", creationTime, 6, 6),
 			},
 			args:               []string{"f930q"},
 			expectedGoldenFile: "run_get_nodepool_by_id.golden",
@@ -73,9 +73,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 4: get nodepools by cluster name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", creationTime, 2, 1),
-				newcapiMachineDeployment("f930q", "s921a", "11.0.0", creationTime, 6, 6),
-				newcapiMachineDeployment("9f012", "29sa0", "9.0.0", creationTime, 0, 3),
+				newRunnerTestMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", creationTime, 2, 1),
+				newRunnerTestMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", creationTime, 6, 6),
+				newRunnerTestMachineDeployment("9f012", "29sa0", "9.0.0", "test nodepool 5", creationTime, 0, 3),
 			},
 			args:               nil,
 			clusterName:        "s921a",
@@ -84,9 +84,9 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 5: get nodepools by name and cluster name",
 			storage: []runtime.Object{
-				newcapiMachineDeployment("1sad2", "s921a", "10.5.0", creationTime, 2, 1),
-				newcapiMachineDeployment("f930q", "s921a", "11.0.0", creationTime, 6, 6),
-				newcapiMachineDeployment("9f012", "29sa0", "9.0.0", creationTime, 0, 3),
+				newRunnerTestMachineDeployment("1sad2", "s921a", "10.5.0", "test nodepool 3", creationTime, 2, 1),
+				newRunnerTestMachineDeployment("f930q", "s921a", "11.0.0", "test nodepool 4", creationTime, 6, 6),
+				newRunnerTestMachineDeployment("9f012", "29sa0", "9.0.0", "test nodepool 5", creationTime, 0, 3),
 			},
 			args:               []string{"f930q"},
 			clusterName:        "s921a",
@@ -122,7 +122,7 @@ func Test_run(t *testing.T) {
 				service:      newClusterService(t, tc.storage...),
 				flag:         flag,
 				stdout:       out,
-				provider:     key.ProviderDefault,
+				provider:     key.ProviderCAPA,
 			}
 
 			err := runner.run(ctx, nil, tc.args)
@@ -161,31 +161,33 @@ func Test_run(t *testing.T) {
 	}
 }
 
-func newcapiMachineDeployment(name, clusterName, release string, creationDate time.Time, nodesDesired, nodesReady int) *capi.MachineDeployment {
-	n := &capi.MachineDeployment{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
-			Kind:       "MachineDeployment",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:              name,
-			Namespace:         "default",
-			CreationTimestamp: metav1.NewTime(creationDate),
-			Labels: map[string]string{
-				label.MachineDeployment: name,
-				label.ReleaseVersion:    release,
-				label.Organization:      "giantswarm",
-				label.Cluster:           clusterName,
-				capi.ClusterNameLabel:   clusterName,
+func newRunnerTestMachineDeployment(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady int) *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"kind":       "MachineDeployment",
+			"metadata": map[string]interface{}{
+				"name":              name,
+				"namespace":         "default",
+				"creationTimestamp": creationDate.UTC().Format(time.RFC3339),
+				"labels": map[string]interface{}{
+					label.Cluster:           clusterName,
+					label.MachineDeployment: name,
+					label.ReleaseVersion:    release,
+					label.Organization:      "giantswarm",
+					key.ClusterNameLabel:    clusterName,
+				},
+				"annotations": map[string]interface{}{
+					annotation.MachineDeploymentName: description,
+				},
+			},
+			"status": map[string]interface{}{
+				"replicas":      int64(nodesDesired),
+				"readyReplicas": int64(nodesReady),
 			},
 		},
-		Status: capi.MachineDeploymentStatus{
-			Replicas:      int32(nodesDesired), //nolint:gosec
-			ReadyReplicas: int32(nodesReady),   //nolint:gosec
-		},
 	}
-
-	return n
+	return obj
 }
 
 func newClusterService(t *testing.T, object ...runtime.Object) *nodepool.Service {

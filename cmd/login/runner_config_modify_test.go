@@ -27,11 +27,11 @@ import (
 	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/utils/ptr"
-	"sigs.k8s.io/cluster-api/api/core/v1beta1"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 	testoidc "github.com/giantswarm/kubectl-gs/v5/test/oidc"
@@ -48,7 +48,7 @@ func TestKubeConfigModification(t *testing.T) {
 		organization        securityv1alpha.Organization
 		idToken             string
 		renewToken          string
-		workloadCluster     v1beta1.Cluster
+		workloadCluster     *unstructured.Unstructured
 	}{
 		{
 			name:  "case 0: MC login with provider auth type, selected context, new tokens",
@@ -369,7 +369,7 @@ func TestKubeConfigModification(t *testing.T) {
 	}
 }
 
-func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cluster, idToken string, refreshToken string) (*httptest.Server, error) {
+func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc *unstructured.Unstructured, idToken string, refreshToken string) (*httptest.Server, error) {
 	// Mock Kubernetes API and auth issuer
 
 	var issuer string
@@ -383,10 +383,18 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 
 	apiVersions := createApiVersions()
 
+	var wcTypeMeta v1.TypeMeta
+	var wcName, wcNamespace string
+	if wc != nil {
+		wcTypeMeta = v1.TypeMeta{Kind: wc.GetKind(), APIVersion: wc.GetAPIVersion()}
+		wcName = wc.GetName()
+		wcNamespace = wc.GetNamespace()
+	}
+
 	v1ResourceList, _ := createApiResourceMetadata(secret.TypeMeta, true)
 	appResourceList, appGroup := createApiResourceMetadata(v1.TypeMeta{Kind: "App", APIVersion: "application.giantswarm.io/v1alpha1"}, true)
 	orgResourceList, orgGroup := createApiResourceMetadata(org.TypeMeta, false)
-	clusterResourceList, clusterGroup := createApiResourceMetadata(wc.TypeMeta, true)
+	clusterResourceList, clusterGroup := createApiResourceMetadata(wcTypeMeta, true)
 
 	apiGroupList := v1.APIGroupList{
 		Groups: []v1.APIGroup{appGroup, orgGroup, clusterGroup},
@@ -414,9 +422,9 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc v1beta1.Cl
 			responseData = selfSubjectAccessReview
 		case "/apis/security.giantswarm.io/v1alpha1/organizations":
 			responseData = securityv1alpha.OrganizationList{Items: []securityv1alpha.Organization{org}}
-		case fmt.Sprintf("/apis/cluster.x-k8s.io/v1beta1/namespaces/%s/clusters/%s", wc.Namespace, wc.Name):
+		case fmt.Sprintf("/apis/cluster.x-k8s.io/v1beta1/namespaces/%s/clusters/%s", wcNamespace, wcName):
 			responseData = wc
-		case fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s-ca", wc.Namespace, wc.Name):
+		case fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s-ca", wcNamespace, wcName):
 			responseData = secret
 		default:
 			return "", "", nil
@@ -591,17 +599,23 @@ func createSelfSubjectAccessReview() authorizationv1.SelfSubjectAccessReview {
 	}
 }
 
-func createCluster(name string, namespace string) v1beta1.Cluster {
-	return v1beta1.Cluster{
-		TypeMeta:   v1.TypeMeta{Kind: "Cluster", APIVersion: "cluster.x-k8s.io/v1beta1"},
-		ObjectMeta: v1.ObjectMeta{Name: name, Namespace: namespace},
-		Spec: v1beta1.ClusterSpec{
-			ControlPlaneEndpoint: v1beta1.APIEndpoint{
-				Host: "localhost",
-				Port: 6443,
+func createCluster(name string, namespace string) *unstructured.Unstructured {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"kind":       "Cluster",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": namespace,
 			},
+			"spec": map[string]interface{}{
+				"controlPlaneEndpoint": map[string]interface{}{
+					"host": "localhost",
+					"port": int64(6443),
+				},
+			},
+			"status": map[string]interface{}{},
 		},
-		Status: v1beta1.ClusterStatus{},
 	}
 }
 

@@ -12,8 +12,9 @@ import (
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/utils/net"
-	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
@@ -68,7 +69,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				return errors.New("logic error - ManagementCluster empty")
 			}
 
-			managementCluster := &capainfrav1.AWSCluster{}
+			managementCluster := &unstructured.Unstructured{}
+			managementCluster.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "infrastructure.cluster.x-k8s.io",
+				Version: "v1beta2",
+				Kind:    "AWSCluster",
+			})
 			err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{
 				Namespace: "org-giantswarm",
 				Name:      config.ManagementCluster,
@@ -77,11 +83,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				return errors.Wrap(err, "failed to get management cluster's AWSCluster object")
 			}
 
-			if len(managementCluster.Status.Network.NatGatewaysIPs) == 0 {
+			natGatewayIPs, _, _ := unstructured.NestedStringSlice(managementCluster.Object, "status", "network", "natGatewaysIPs")
+			if len(natGatewayIPs) == 0 {
 				return errors.New("management cluster's AWSCluster object did not have the list `.status.networkStatus.natGatewaysIPs` filled yet, cannot determine IP ranges to allowlist")
 			}
 
-			for _, ip := range managementCluster.Status.Network.NatGatewaysIPs {
+			for _, ip := range natGatewayIPs {
 				var cidr string
 				if net.IsIPv4String(ip) {
 					cidr = ip + "/32"

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/kubectl-gs/v5/internal/key"
@@ -39,10 +40,10 @@ func GetCAPITable(npResource nodepool.Resource) *metav1.Table {
 		sort.Slice(n.Items, func(i, j int) bool {
 			var iClusterName, jClusterName string
 
-			if n.Items[i].MachineDeployment != nil && n.Items[i].MachineDeployment.Labels != nil {
+			if n.Items[i].MachineDeployment != nil && n.Items[i].MachineDeployment.GetLabels() != nil {
 				iClusterName = key.ClusterID(n.Items[i].MachineDeployment)
 			}
-			if n.Items[j].MachineDeployment != nil && n.Items[j].MachineDeployment.Labels != nil {
+			if n.Items[j].MachineDeployment != nil && n.Items[j].MachineDeployment.GetLabels() != nil {
 				jClusterName = key.ClusterID(n.Items[j].MachineDeployment)
 			}
 
@@ -51,10 +52,10 @@ func GetCAPITable(npResource nodepool.Resource) *metav1.Table {
 		sort.Slice(n.Items, func(i, j int) bool {
 			var iClusterName, jClusterName string
 
-			if n.Items[i].MachinePool != nil && n.Items[i].MachinePool.Labels != nil {
+			if n.Items[i].MachinePool != nil && n.Items[i].MachinePool.GetLabels() != nil {
 				iClusterName = key.ClusterID(n.Items[i].MachinePool)
 			}
-			if n.Items[j].MachinePool != nil && n.Items[j].MachinePool.Labels != nil {
+			if n.Items[j].MachinePool != nil && n.Items[j].MachinePool.GetLabels() != nil {
 				jClusterName = key.ClusterID(n.Items[j].MachinePool)
 			}
 
@@ -82,15 +83,18 @@ func getCAPIMachineDeploymentRow(nodePool nodepool.Nodepool) metav1.TableRow {
 		return metav1.TableRow{}
 	}
 
+	replicas, _, _ := unstructured.NestedInt64(nodePool.MachineDeployment.Object, "status", "replicas")
+	readyReplicas, _, _ := unstructured.NestedInt64(nodePool.MachineDeployment.Object, "status", "readyReplicas")
+
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachineDeployment.GetName(),
 			key.ClusterID(nodePool.MachineDeployment),
-			output.TranslateTimestampSince(nodePool.MachineDeployment.CreationTimestamp),
+			output.TranslateTimestampSince(nodePool.MachineDeployment.GetCreationTimestamp()),
 			getCAPIMachineDeploymentLatestPhase(nodePool),
-			nodePool.MachineDeployment.Status.Replicas,
-			nodePool.MachineDeployment.Status.Replicas,
-			nodePool.MachineDeployment.Status.ReadyReplicas,
+			replicas,
+			replicas,
+			readyReplicas,
 			getCAPIMachineDeploymentDescription(nodePool),
 		},
 		Object: runtime.RawExtension{
@@ -104,16 +108,19 @@ func getCAPIMachinePoolRow(nodePool nodepool.Nodepool) metav1.TableRow {
 		return metav1.TableRow{}
 	}
 
+	replicas, _, _ := unstructured.NestedInt64(nodePool.MachinePool.Object, "status", "replicas")
+	readyReplicas, _, _ := unstructured.NestedInt64(nodePool.MachinePool.Object, "status", "readyReplicas")
+
 	return metav1.TableRow{
 		Cells: []interface{}{
 			nodePool.MachinePool.GetName(),
 			key.ClusterID(nodePool.MachinePool),
-			output.TranslateTimestampSince(nodePool.MachinePool.CreationTimestamp),
+			output.TranslateTimestampSince(nodePool.MachinePool.GetCreationTimestamp()),
 			getCAPIMachinePoolLatestPhase(nodePool),
 			// Only CAPA for now.
 			getCAPAAutoscaling(nodePool),
-			nodePool.MachinePool.Status.Replicas,
-			nodePool.MachinePool.Status.ReadyReplicas,
+			replicas,
+			readyReplicas,
 			getCAPIMachinePoolDescription(nodePool),
 		},
 		Object: runtime.RawExtension{
@@ -123,18 +130,18 @@ func getCAPIMachinePoolRow(nodePool nodepool.Nodepool) metav1.TableRow {
 }
 
 func getCAPIMachineDeploymentLatestPhase(nodePool nodepool.Nodepool) string {
-	if nodePool.MachineDeployment.Status.Phase != "" {
-		return nodePool.MachineDeployment.Status.Phase
+	phase, _, _ := unstructured.NestedString(nodePool.MachineDeployment.Object, "status", "phase")
+	if phase != "" {
+		return phase
 	}
-
 	return naValue
 }
 
 func getCAPIMachinePoolLatestPhase(nodePool nodepool.Nodepool) string {
-	if nodePool.MachinePool.Status.Phase != "" {
-		return nodePool.MachinePool.Status.Phase
+	phase, _, _ := unstructured.NestedString(nodePool.MachinePool.Object, "status", "phase")
+	if phase != "" {
+		return phase
 	}
-
 	return naValue
 }
 
