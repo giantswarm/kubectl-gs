@@ -9,14 +9,9 @@ import (
 	semver "github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
-	"github.com/giantswarm/k8smetadata/pkg/annotation"
-	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	capi "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/v5/pkg/app"
@@ -27,10 +22,6 @@ var invalidFlagError = &microerror.Error{
 }
 
 type AWSConfig struct {
-	ExternalSNAT       bool
-	ControlPlaneSubnet string
-
-	// for CAPA
 	AWSClusterRoleIdentityName                     string
 	MachinePool                                    AWSMachinePoolConfig
 	NetworkAZUsageLimit                            int
@@ -168,43 +159,6 @@ type OIDC struct {
 	ClientID      string
 	UsernameClaim string
 	GroupsClaim   string
-}
-
-func NewCapiClusterCR(config ClusterConfig, infrastructureRef *corev1.ObjectReference) *capi.Cluster {
-	cluster := &capi.Cluster{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Cluster",
-			APIVersion: "cluster.x-k8s.io/v1beta1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.Name,
-			Namespace: config.Namespace,
-			Labels: map[string]string{
-				label.Cluster:                config.Name,
-				capi.ClusterNameLabel:        config.Name,
-				label.Organization:           config.Organization,
-				label.ReleaseVersion:         config.ReleaseVersion,
-				label.AzureOperatorVersion:   config.ReleaseComponents["azure-operator"],
-				label.ClusterOperatorVersion: config.ReleaseComponents["cluster-operator"],
-
-				// According to RFC https://github.com/giantswarm/rfc/tree/main/classify-cluster-priority
-				// we use "highest" as the default service priority.
-				label.ServicePriority: config.ServicePriority,
-			},
-			Annotations: map[string]string{
-				annotation.ClusterDescription: config.Description,
-			},
-		},
-		Spec: capi.ClusterSpec{
-			InfrastructureRef: infrastructureRef,
-		},
-	}
-
-	if val, ok := config.Labels[label.ServicePriority]; ok {
-		cluster.Labels[label.ServicePriority] = val
-	}
-
-	return cluster
 }
 
 func GetLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalog string) (string, error) {
