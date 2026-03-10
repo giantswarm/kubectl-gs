@@ -93,7 +93,7 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 
 	if !opts.ManagementCluster {
 		hr.Spec.KubeConfig = &meta.KubeConfigReference{
-			SecretRef: meta.SecretKeyReference{
+			SecretRef: &meta.SecretKeyReference{
 				Name: fmt.Sprintf("%s-kubeconfig", opts.ClusterName),
 			},
 		}
