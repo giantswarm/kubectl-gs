@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/catalog"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/networkpool"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/nodepool"
 	"github.com/giantswarm/kubectl-gs/v5/cmd/template/organization"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
 )
@@ -89,23 +88,6 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
-	var nodepoolCmd *cobra.Command
-	{
-		c := nodepool.Config{
-			Logger: config.Logger,
-
-			ConfigFlags: config.ConfigFlags,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		nodepoolCmd, err = nodepool.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var networkpoolCmd *cobra.Command
 	{
 		c := networkpool.Config{
@@ -159,7 +141,6 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(appcatalogCmd)
 	c.AddCommand(clusterCmd)
 	c.AddCommand(networkpoolCmd)
-	c.AddCommand(nodepoolCmd)
 	c.AddCommand(organizationCmd)
 
 	return c, nil

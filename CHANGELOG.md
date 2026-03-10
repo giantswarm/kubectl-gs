@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Removed
+
+- Remove `template nodepool` command.
+
 ### Fixed
 
 - Fix flaky nodepool, orgs, and clusters tests caused by timing race in AGE column rendering.
