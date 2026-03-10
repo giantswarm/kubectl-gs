@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Removed
 
 - Remove `template nodepool` command.
+- Remove `template networkpool` command.
 
 ### Fixed
 
