@@ -10,6 +10,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Removed
 
 - Remove `template nodepool` command.
+- Remove `template networkpool` command.
+- Remove AWS vintage and Azure vintage providers from `template cluster` command.
 
 ### Fixed
 

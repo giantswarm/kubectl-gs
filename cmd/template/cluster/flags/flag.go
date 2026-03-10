@@ -3,7 +3,6 @@ package flags
 import (
 	"fmt"
 	"net"
-	"regexp"
 	"strings"
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
@@ -20,10 +19,6 @@ const (
 	flagProvider          = "provider"
 	flagManagementCluster = "management-cluster"
 	flagPreventDeletion   = "prevent-deletion"
-
-	// AWS only.
-	flagAWSExternalSNAT       = "external-snat"
-	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	flagAWSClusterRoleIdentityName                       = "aws-cluster-role-identity-name"
 	flagNetworkAZUsageLimit                              = "az-usage-limit"
@@ -165,7 +160,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
-	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagAWSHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster, if not set, --https-proxy value will be used instead")
@@ -178,8 +172,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
 	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, FlagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
 
-	// aws control plane
-	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().StringArrayVar(&f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, nil, fmt.Sprintf("IPv4 address ranges that are allowed to connect to the control plane load balancer, in CIDR notation. When setting this flag, kubectl-gs automatically adds the NAT Gateway IPs of the management cluster so that the workload cluster can still be managed. If only the management cluster's IP ranges should be allowed, specify one empty value instead of an IP range ('--%s \"\"'). Supported for CAPA. You also need to specify --%s.", flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, flagManagementCluster))
 	// aws machine pool
 	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "nodepool0", "AWS Machine pool name")
@@ -267,8 +259,8 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ControlPlaneInstanceType, flagControlPlaneInstanceType, "", "Instance type used for Control plane nodes")
 	cmd.Flags().StringVar(&f.Description, flagDescription, "", "User-friendly description of the cluster's purpose (formerly called name).")
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
-	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
-	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
+	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s.", flagName, flagGenerateName))
+	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s.", flagName, flagName, flagGenerateName))
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional).")
 	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
@@ -296,8 +288,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 func (f *Flag) Validate(cmd *cobra.Command) error {
 	var err error
 	validProviders := []string{
-		key.ProviderAWS,
-		key.ProviderAzure,
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
 		key.ProviderEKS,
@@ -314,10 +304,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 	if !isValidProvider {
 		return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagProvider, strings.Join(validProviders, ", "))
 	}
-
-	// For vintage, don't break CLI parameter compatibility. But for CAPI or newer implementations, we want to enforce
-	// an explicit choice for a specified name (`--name`) or randomly generated name (`--generate-name`).
-	requireEitherNameOrGenerateNameFlag := key.IsPureCAPIProvider(f.Provider)
 
 	if f.Name != "" {
 		if f.GenerateName {
@@ -337,16 +323,10 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			return microerror.Maskf(invalidFlagError, "%s", message)
 		}
 	} else if !f.GenerateName {
-		if requireEitherNameOrGenerateNameFlag {
-			return microerror.Maskf(
-				invalidFlagError,
-				"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
-				flagName, flagGenerateName, flagName)
-		} else {
-			// Keep supporting this old default for vintage (= no naming parameter given means to randomly
-			// generate a cluster name)
-			f.GenerateName = true
-		}
+		return microerror.Maskf(
+			invalidFlagError,
+			"Either --%s or --%s must be specified. We recommend choosing a name explicitly using --%s.",
+			flagName, flagGenerateName, flagName)
 	}
 
 	if f.PodsCIDR != "" {
@@ -362,20 +342,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 	{
 		// Validate Master AZs.
 		switch f.Provider {
-		case key.ProviderAWS:
-			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
-				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
-			}
-			if f.AWS.ControlPlaneSubnet != "" {
-				matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
-				if err == nil && !matchedSubnet {
-					return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
-				}
-			}
-		case key.ProviderAzure:
-			if len(f.ControlPlaneAZ) > 1 {
-				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
-			}
 		case key.ProviderVSphere:
 			if f.VSphere.NetworkName == "" {
 				return microerror.Maskf(invalidFlagError, "Provide the network name in vcenter (required) (--%s)", flagVSphereNetworkName)
