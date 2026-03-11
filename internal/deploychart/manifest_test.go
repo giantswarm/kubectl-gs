@@ -28,7 +28,7 @@ metadata:
   name: mycluster01-hello-world-app
   namespace: org-acme
 spec:
-  interval: 10m
+  interval: 10m0s
   provider: generic
   ref:
     tag: 1.2.3
@@ -52,7 +52,7 @@ metadata:
   name: mycluster01-hello-world-app
   namespace: org-acme
 spec:
-  interval: 10m
+  interval: 10m0s
   provider: generic
   url: oci://gsoci.azurecr.io/charts/giantswarm/hello-world-app
 `,
@@ -76,7 +76,7 @@ metadata:
   name: mycluster01-hello-world-app
   namespace: org-acme
 spec:
-  interval: 10m
+  interval: 10m0s
   provider: generic
   ref:
     semver: 1.2.x
@@ -102,7 +102,7 @@ metadata:
   name: mycluster01-hello-world-app
   namespace: org-acme
 spec:
-  interval: 10m
+  interval: 10m0s
   provider: generic
   ref:
     semver: 1.x
@@ -128,7 +128,7 @@ metadata:
   name: mycluster01-hello-world-app
   namespace: org-acme
 spec:
-  interval: 10m
+  interval: 10m0s
   provider: generic
   ref:
     semver: '*'
@@ -180,7 +180,7 @@ spec:
     name: mycluster01-hello-world-app
   install:
     createNamespace: true
-  interval: 10m
+  interval: 10m0s
   kubeConfig:
     secretRef:
       name: mycluster01-kubeconfig
@@ -218,7 +218,7 @@ spec:
     name: mycluster01-hello-world-app
   install:
     createNamespace: true
-  interval: 10m
+  interval: 10m0s
   kubeConfig:
     secretRef:
       name: mycluster01-kubeconfig
@@ -255,7 +255,7 @@ spec:
     name: mymc01-hello-world-app
   install:
     createNamespace: true
-  interval: 10m
+  interval: 10m0s
   releaseName: hello-world-app
   targetNamespace: hello
 `,
@@ -302,26 +302,3 @@ func TestSemverRange(t *testing.T) {
 	}
 }
 
-func TestNormalizeDuration(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{"10m0s", "10m"},
-		{"1h0m0s", "1h"},
-		{"1h30m0s", "1h30m"},
-		{"10m", "10m"},
-		{"30s", "30s"},
-		{"1h0m", "1h"},
-		{"0s", "0s"},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.input, func(t *testing.T) {
-			got := normalizeDuration(tc.input)
-			if got != tc.expected {
-				t.Errorf("normalizeDuration(%q) = %q, want %q", tc.input, got, tc.expected)
-			}
-		})
-	}
-}
