@@ -4,10 +4,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// MarshalCRD marshals a Kubernetes resource to YAML, removing empty fields
+// MarshalManifest marshals a Kubernetes resource to YAML, removing empty fields
 // that typed structs generate (status, creationTimestamp) and normalizing
 // duration strings (e.g. "10m0s" → "10m").
-func MarshalCRD(obj any) ([]byte, error) {
+func MarshalManifest(obj any) ([]byte, error) {
 	raw, err := yaml.Marshal(obj)
 	if err != nil {
 		return nil, err

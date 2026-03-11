@@ -140,7 +140,7 @@ spec:
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result := BuildOCIRepository(tc.opts)
-			got, err := MarshalCRD(result)
+			got, err := MarshalManifest(result)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -265,7 +265,7 @@ spec:
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result := BuildHelmRelease(tc.opts)
-			got, err := MarshalCRD(result)
+			got, err := MarshalManifest(result)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

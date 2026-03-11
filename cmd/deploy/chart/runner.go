@@ -87,12 +87,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	ociRepo := deploychart.BuildOCIRepository(ociRepoOpts)
 	helmRelease := deploychart.BuildHelmRelease(helmReleaseOpts)
 
-	ociRepoYAML, err := deploychart.MarshalCRD(ociRepo)
+	ociRepoYAML, err := deploychart.MarshalManifest(ociRepo)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	helmReleaseYAML, err := deploychart.MarshalCRD(helmRelease)
+	helmReleaseYAML, err := deploychart.MarshalManifest(helmRelease)
 	if err != nil {
 		return microerror.Mask(err)
 	}
