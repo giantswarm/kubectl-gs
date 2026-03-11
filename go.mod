@@ -219,11 +219,11 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/term v0.40.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	google.golang.org/api v0.266.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
@@ -249,6 +249,6 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.22.0
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.12.1
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.41.0 // Fix CVE-2026-24051
-	golang.org/x/crypto => golang.org/x/crypto v0.48.0
+	golang.org/x/crypto => golang.org/x/crypto v0.49.0
 	golang.org/x/text => golang.org/x/text v0.35.0
 )
