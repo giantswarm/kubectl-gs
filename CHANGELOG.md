@@ -299,6 +299,10 @@ No significant changes compared to v2.52.0. This release was made to ensure the 
 
 ## [2.49.1] - 2023-12-06
 
+### Changed
+
+- Updated Go version.
+
 ## [2.49.0] - 2023-12-05
 
 ### Changed
@@ -349,9 +353,16 @@ No significant changes compared to v2.52.0. This release was made to ensure the 
 
 ## [2.45.3] - 2023-10-26
 
-## [2.45.3] - 2023-10-26
+### Changed
+
+- Updated Go version.
 
 ## [2.45.2] - 2023-10-26
+
+### Fixed
+
+- Bump Go version to prevent build error during release for darwin.
+- Address `rand.Seed` deprecation in Go 1.20.
 
 ## [2.45.1] - 2023-10-26
 
@@ -580,6 +591,11 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 ## [2.28.2] - 2022-11-16
 
+### Fixed
+
+- The `kubectl-gs login` command no longer writes to the main kubeconfig file in case there are no changes in access tokens and/or the current context.
+- Using the `--context` flag will no longer modify the current context setting in kubeconfig.
+
 ## [2.28.1] - 2022-11-09
 
 ### Changed
@@ -701,7 +717,7 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 ## [2.20.0] - 2022-09-02
 
-## Added
+### Added
 
 - Introduced `kubectl gs gitops` family of commands.
 
@@ -725,7 +741,7 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 - Fix nil pointer panic in `template nodepool` command.
 
-# [2.19.0] - 2022-08-12
+## [2.19.0] - 2022-08-12
 
 ### Changed
 
@@ -1461,6 +1477,10 @@ can be set to false to disable this.
 - Add support for node pool autoscaling on Azure.
 
 ## [0.18.0] - 2020-12-14
+
+### Removed
+
+- Remove default value for `--provider` flag in `template cluster` and `template nodepool` commands.
 
 ## [0.17.0] - 2020-12-14
 
