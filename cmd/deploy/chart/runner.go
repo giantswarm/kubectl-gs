@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -70,8 +71,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		version, err = ociregistry.LatestSemverTag(tags)
 		if err != nil {
-			return microerror.Mask(err)
+			return fmt.Errorf("resolving latest version from %s: %w", ociURL, err)
 		}
+
+		// Strip "v" prefix — OCIRepository ref.tag should use bare semver.
+		version = strings.TrimPrefix(version, "v")
 
 		fmt.Fprintf(r.stderr, "Resolved latest version: %s\n", version)
 	}

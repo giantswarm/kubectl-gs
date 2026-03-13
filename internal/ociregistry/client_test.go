@@ -253,12 +253,62 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 		})
 	})
 
-	srv := httptest.NewTLSServer(mux)
+	return httptest.NewTLSServer(mux)
+}
 
-	// Override the httpClient in the client to trust the test server's TLS cert.
-	t.Cleanup(func() {
-		srv.Close()
-	})
+func TestGetManifestAnnotationsInvalidTag(t *testing.T) {
+	c, err := NewClient(ClientOptions{})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
 
-	return srv
+	_, err = c.GetManifestAnnotations(context.Background(), "oci://example.com/repo", "../evil")
+	if err == nil {
+		t.Fatal("expected error for invalid tag")
+	}
+}
+
+func TestParseWWWAuthenticate(t *testing.T) {
+	tests := []struct {
+		name                              string
+		header                            string
+		wantRealm, wantService, wantScope string
+	}{
+		{
+			name:        "standard header",
+			header:      `Bearer realm="https://example.com/token",service="example.com",scope="repository:foo:pull"`,
+			wantRealm:   "https://example.com/token",
+			wantService: "example.com",
+			wantScope:   "repository:foo:pull",
+		},
+		{
+			name:        "scope with comma",
+			header:      `Bearer realm="https://example.com/token",service="example.com",scope="repository:foo:pull,push"`,
+			wantRealm:   "https://example.com/token",
+			wantService: "example.com",
+			wantScope:   "repository:foo:pull,push",
+		},
+		{
+			name:        "extra whitespace",
+			header:      `Bearer realm="https://example.com/token" , service="example.com" , scope="repository:foo:pull"`,
+			wantRealm:   "https://example.com/token",
+			wantService: "example.com",
+			wantScope:   "repository:foo:pull",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			realm, service, scope := parseWWWAuthenticate(tc.header)
+			if realm != tc.wantRealm {
+				t.Errorf("realm = %q, want %q", realm, tc.wantRealm)
+			}
+			if service != tc.wantService {
+				t.Errorf("service = %q, want %q", service, tc.wantService)
+			}
+			if scope != tc.wantScope {
+				t.Errorf("scope = %q, want %q", scope, tc.wantScope)
+			}
+		})
+	}
 }

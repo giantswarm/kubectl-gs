@@ -8,11 +8,25 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
+	"time"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/registry/remote/credentials"
 )
+
+const defaultHTTPTimeout = 30 * time.Second
+
+// acceptHeader is the Accept header value for OCI registry requests.
+var acceptHeader = strings.Join([]string{
+	"application/vnd.oci.image.manifest.v1+json",
+	"application/vnd.docker.distribution.manifest.v2+json",
+	"application/json",
+}, ", ")
+
+// tagRe validates that a tag contains only allowed characters.
+var tagRe = regexp.MustCompile(`^[a-zA-Z0-9_.\-]+$`)
 
 // Client provides read-only access to an OCI registry for listing tags
 // and reading manifest annotations.
@@ -44,7 +58,7 @@ type client struct {
 func NewClient(opts ClientOptions) (Client, error) {
 	httpClient := opts.HTTPClient
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		httpClient = &http.Client{Timeout: defaultHTTPTimeout}
 	}
 	c := &client{
 		httpClient: httpClient,
@@ -98,6 +112,10 @@ func (c *client) ListTags(ctx context.Context, ociURL string) ([]string, error) 
 // GetManifestAnnotations returns the annotations from the manifest for the
 // given OCI URL and tag.
 func (c *client) GetManifestAnnotations(ctx context.Context, ociURL string, tag string) (map[string]string, error) {
+	if !tagRe.MatchString(tag) {
+		return nil, fmt.Errorf("invalid tag %q: must contain only alphanumeric characters, dots, hyphens, and underscores", tag)
+	}
+
 	registryHost, repoPath, err := parseOCIURL(ociURL)
 	if err != nil {
 		return nil, err
@@ -139,12 +157,7 @@ func (c *client) doRegistryRequest(ctx context.Context, registryHost, repoPath, 
 	if err != nil {
 		return nil, err
 	}
-	// Accept OCI manifest media types.
-	req.Header.Set("Accept", strings.Join([]string{
-		"application/vnd.oci.image.manifest.v1+json",
-		"application/vnd.docker.distribution.manifest.v2+json",
-		"application/json",
-	}, ", "))
+	req.Header.Set("Accept", acceptHeader)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -166,11 +179,7 @@ func (c *client) doRegistryRequest(ctx context.Context, registryHost, repoPath, 
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Accept", strings.Join([]string{
-		"application/vnd.oci.image.manifest.v1+json",
-		"application/vnd.docker.distribution.manifest.v2+json",
-		"application/json",
-	}, ", "))
+	req.Header.Set("Accept", acceptHeader)
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	return c.httpClient.Do(req)
@@ -260,20 +269,56 @@ func (c *client) credentialsForHost(ctx context.Context, registryHost string) (s
 // parseWWWAuthenticate extracts realm, service, and scope from a
 // WWW-Authenticate header value like:
 // Bearer realm="https://example.com/token",service="example.com",scope="repository:foo:pull"
+// It handles commas inside quoted values correctly.
 func parseWWWAuthenticate(header string) (realm, service, scope string) {
 	header = strings.TrimPrefix(header, "Bearer ")
-	for _, part := range strings.Split(header, ",") {
-		part = strings.TrimSpace(part)
-		if k, v, ok := strings.Cut(part, "="); ok {
-			v = strings.Trim(v, `"`)
-			switch k {
-			case "realm":
-				realm = v
-			case "service":
-				service = v
-			case "scope":
-				scope = v
+
+	// Parse respecting quoted strings — commas inside quotes are not delimiters.
+	for len(header) > 0 {
+		header = strings.TrimSpace(header)
+		if header == "" {
+			break
+		}
+
+		k, rest, ok := strings.Cut(header, "=")
+		if !ok {
+			break
+		}
+		k = strings.TrimSpace(k)
+
+		var v string
+		if len(rest) > 0 && rest[0] == '"' {
+			// Find closing quote.
+			end := strings.Index(rest[1:], `"`)
+			if end < 0 {
+				v = rest[1:]
+				header = ""
+			} else {
+				v = rest[1 : end+1]
+				header = rest[end+2:]
 			}
+		} else {
+			// Unquoted value — delimited by comma.
+			end := strings.Index(rest, ",")
+			if end < 0 {
+				v = rest
+				header = ""
+			} else {
+				v = rest[:end]
+				header = rest[end:]
+			}
+		}
+
+		// Consume leading comma separator.
+		header = strings.TrimPrefix(strings.TrimSpace(header), ",")
+
+		switch k {
+		case "realm":
+			realm = v
+		case "service":
+			service = v
+		case "scope":
+			scope = v
 		}
 	}
 	return
@@ -287,16 +332,8 @@ func parseOCIURL(ociURL string) (registryHost, repoPath string, err error) {
 		return "", "", fmt.Errorf("OCI URL must start with oci://, got %q", ociURL)
 	}
 
-	// Split into host and path: "registry.example.com/charts/test/myapp"
-	slashIdx := strings.Index(ref, "/")
-	if slashIdx < 0 {
-		return "", "", fmt.Errorf("OCI URL missing repository path: %q", ociURL)
-	}
-
-	registryHost = ref[:slashIdx]
-	repoPath = ref[slashIdx+1:]
-
-	if registryHost == "" || repoPath == "" {
+	registryHost, repoPath, ok := strings.Cut(ref, "/")
+	if !ok || registryHost == "" || repoPath == "" {
 		return "", "", fmt.Errorf("invalid OCI URL %q", ociURL)
 	}
 
