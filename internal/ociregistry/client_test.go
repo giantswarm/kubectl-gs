@@ -75,8 +75,8 @@ func TestListTagsAnonymousTokenExchange(t *testing.T) {
 	expectedTags := []string{"1.0.0", "3.0.0"}
 
 	srv := newMockRegistry(t, mockRegistryConfig{
-		repoPath:          "charts/public/myapp",
-		tags:              expectedTags,
+		repoPath:             "charts/public/myapp",
+		tags:                 expectedTags,
 		requireTokenExchange: true,
 	})
 	defer srv.Close()
@@ -171,7 +171,7 @@ type mockRegistryConfig struct {
 	tags                 []string
 	annotations          map[string]string
 	requireAuth          bool
-	authUsername          string
+	authUsername         string
 	authPassword         string
 	requireTokenExchange bool
 }
