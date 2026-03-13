@@ -13,16 +13,18 @@ import (
 var semverRe = regexp.MustCompile(`^v?\d+\.\d+\.\d+$`)
 
 const (
-	flagChartName    = "chart-name"
-	flagOrganization = "organization"
-	flagCluster      = "target-cluster"
-	flagTargetNS     = "target-namespace"
-	flagOCIURLPrefix = "oci-url-prefix"
-	flagVersion      = "version"
-	flagValuesFile   = "values-file"
-	flagName         = "name"
-	flagAutoUpgrade  = "auto-upgrade"
-	flagInterval     = "interval"
+	flagChartName        = "chart-name"
+	flagOrganization     = "organization"
+	flagCluster          = "target-cluster"
+	flagTargetNS         = "target-namespace"
+	flagOCIURLPrefix     = "oci-url-prefix"
+	flagVersion          = "version"
+	flagValuesFile       = "values-file"
+	flagName             = "name"
+	flagAutoUpgrade      = "auto-upgrade"
+	flagInterval         = "interval"
+	flagRegistryUsername = "registry-username"
+	flagRegistryPassword = "registry-password"
 
 	defaultOCIURLPrefix = "oci://gsoci.azurecr.io/charts/giantswarm/"
 	defaultInterval     = "10m"
@@ -31,16 +33,18 @@ const (
 var validAutoUpgradeValues = []string{"all", "minor", "patch"}
 
 type flag struct {
-	ChartName    string
-	Organization string
-	Cluster      string
-	TargetNS     string
-	OCIURLPrefix string
-	Version      string
-	ValuesFile   string
-	Name         string
-	AutoUpgrade  string
-	Interval     string
+	ChartName        string
+	Organization     string
+	Cluster          string
+	TargetNS         string
+	OCIURLPrefix     string
+	Version          string
+	ValuesFile       string
+	Name             string
+	AutoUpgrade      string
+	Interval         string
+	RegistryUsername string
+	RegistryPassword string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -54,6 +58,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Override the resource name (default: <cluster>-<chart-name>).")
 	cmd.Flags().StringVar(&f.AutoUpgrade, flagAutoUpgrade, "", "Auto-upgrade strategy: all, minor, or patch.")
 	cmd.Flags().StringVar(&f.Interval, flagInterval, defaultInterval, "Reconciliation interval for OCIRepository and HelmRelease.")
+	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication.")
+	cmd.Flags().StringVar(&f.RegistryPassword, flagRegistryPassword, "", "Password or token for private OCI registry authentication.")
 }
 
 func (f *flag) Validate() error {
@@ -87,9 +93,6 @@ func (f *flag) Validate() error {
 		}
 		if !valid {
 			return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagAutoUpgrade, strings.Join(validAutoUpgradeValues, ", "))
-		}
-		if f.AutoUpgrade != "all" && f.Version == "" {
-			return microerror.Maskf(invalidFlagError, "--%s=%s requires --%s to be set", flagAutoUpgrade, f.AutoUpgrade, flagVersion)
 		}
 	}
 

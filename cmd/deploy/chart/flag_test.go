@@ -99,7 +99,7 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "auto-upgrade",
 		},
 		{
-			name: "auto-upgrade without version",
+			name: "auto-upgrade without version is valid (resolved at runtime)",
 			flag: flag{
 				ChartName:    "hello-world-app",
 				Organization: "acme",
@@ -109,8 +109,6 @@ func TestFlagValidate(t *testing.T) {
 				Interval:     defaultInterval,
 				AutoUpgrade:  "patch",
 			},
-			wantErr: true,
-			errMsg:  "version",
 		},
 		{
 			name: "valid auto-upgrade patch",

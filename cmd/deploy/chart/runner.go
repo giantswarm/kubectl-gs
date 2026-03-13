@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/ociregistry"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
 
@@ -51,6 +53,33 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	ociURL := r.flag.OCIURLPrefix + r.flag.ChartName
 
+	// Resolve version from registry if not specified.
+	version := r.flag.Version
+	if version == "" {
+		ociClient, err := ociregistry.NewClient(ociregistry.ClientOptions{
+			Username: r.flag.RegistryUsername,
+			Password: r.flag.RegistryPassword,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		tags, err := ociClient.ListTags(ctx, ociURL)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		version, err = ociregistry.LatestSemverTag(tags)
+		if err != nil {
+			return fmt.Errorf("resolving latest version from %s: %w", ociURL, err)
+		}
+
+		// Strip "v" prefix — OCIRepository ref.tag should use bare semver.
+		version = strings.TrimPrefix(version, "v")
+
+		fmt.Fprintf(r.stderr, "Resolved latest version: %s\n", version)
+	}
+
 	// Read values file if provided.
 	var values map[string]any
 	if r.flag.ValuesFile != "" {
@@ -69,7 +98,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Namespace:   namespace,
 		ClusterName: r.flag.Cluster,
 		URL:         ociURL,
-		Version:     r.flag.Version,
+		Version:     version,
 		AutoUpgrade: r.flag.AutoUpgrade,
 		Interval:    r.flag.Interval,
 	}
