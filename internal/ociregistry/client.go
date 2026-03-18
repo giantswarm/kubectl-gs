@@ -14,14 +14,14 @@ import (
 // Client provides read-only access to an OCI registry for listing tags
 // and reading manifest annotations.
 type Client interface {
-	// ListTags returns all tags for the given OCI URL.
-	ListTags(ctx context.Context, ociURL string) ([]string, error)
+	// ListTags returns all tags for the given registry and repository.
+	ListTags(ctx context.Context, registry, repository string) ([]string, error)
 	// TagExists checks whether a specific tag exists in the repository.
 	// This is faster than ListTags when only validating a single tag.
-	TagExists(ctx context.Context, ociURL string, tag string) (bool, error)
+	TagExists(ctx context.Context, registry, repository, tag string) (bool, error)
 	// GetManifestAnnotations returns the annotations from the manifest
-	// for the given OCI URL and tag.
-	GetManifestAnnotations(ctx context.Context, ociURL string, tag string) (map[string]string, error)
+	// for the given registry, repository, and tag.
+	GetManifestAnnotations(ctx context.Context, registry, repository, tag string) (map[string]string, error)
 }
 
 // ClientOptions configures how the OCI client authenticates.
@@ -46,18 +46,13 @@ func NewClient(opts ClientOptions) (Client, error) {
 	}, nil
 }
 
-// ListTags returns all tags for the repository at the given OCI URL.
+// ListTags returns all tags for the repository.
 // Handles pagination automatically via regclient.
-func (c *client) ListTags(ctx context.Context, ociURL string) ([]string, error) {
-	registryHost, repoPath, err := parseOCIURL(ociURL)
-	if err != nil {
-		return nil, err
-	}
-
-	rc := c.newRegClient(registryHost)
+func (c *client) ListTags(ctx context.Context, registry, repository string) ([]string, error) {
+	rc := c.newRegClient(registry)
 	defer rc.Close(ctx, ref.Ref{})
 
-	r, err := ref.New(registryHost + "/" + repoPath)
+	r, err := ref.New(registry + "/" + repository)
 	if err != nil {
 		return nil, fmt.Errorf("parsing reference: %w", err)
 	}
@@ -77,20 +72,15 @@ func (c *client) ListTags(ctx context.Context, ociURL string) ([]string, error) 
 
 // TagExists checks whether a specific tag exists by performing a HEAD request
 // for its manifest. This is faster than listing all tags.
-func (c *client) TagExists(ctx context.Context, ociURL string, tag string) (bool, error) {
+func (c *client) TagExists(ctx context.Context, registry, repository, tag string) (bool, error) {
 	if tag == "" || strings.ContainsAny(tag, "/:@") {
 		return false, fmt.Errorf("invalid tag %q", tag)
 	}
 
-	registryHost, repoPath, err := parseOCIURL(ociURL)
-	if err != nil {
-		return false, err
-	}
-
-	rc := c.newRegClient(registryHost)
+	rc := c.newRegClient(registry)
 	defer rc.Close(ctx, ref.Ref{})
 
-	r, err := ref.New(registryHost + "/" + repoPath + ":" + tag)
+	r, err := ref.New(registry + "/" + repository + ":" + tag)
 	if err != nil {
 		return false, fmt.Errorf("parsing reference: %w", err)
 	}
@@ -104,21 +94,16 @@ func (c *client) TagExists(ctx context.Context, ociURL string, tag string) (bool
 }
 
 // GetManifestAnnotations returns the annotations from the manifest for the
-// given OCI URL and tag.
-func (c *client) GetManifestAnnotations(ctx context.Context, ociURL string, tag string) (map[string]string, error) {
+// given registry, repository, and tag.
+func (c *client) GetManifestAnnotations(ctx context.Context, registry, repository, tag string) (map[string]string, error) {
 	if tag == "" || strings.ContainsAny(tag, "/:@") {
 		return nil, fmt.Errorf("invalid tag %q", tag)
 	}
 
-	registryHost, repoPath, err := parseOCIURL(ociURL)
-	if err != nil {
-		return nil, err
-	}
-
-	rc := c.newRegClient(registryHost)
+	rc := c.newRegClient(registry)
 	defer rc.Close(ctx, ref.Ref{})
 
-	r, err := ref.New(registryHost + "/" + repoPath + ":" + tag)
+	r, err := ref.New(registry + "/" + repository + ":" + tag)
 	if err != nil {
 		return nil, fmt.Errorf("parsing reference: %w", err)
 	}
@@ -162,20 +147,4 @@ func (c *client) newRegClient(registryHost string) *regclient.RegClient {
 	opts = append(opts, regclient.WithConfigHost(*hostCfg))
 
 	return regclient.New(opts...)
-}
-
-// parseOCIURL parses an OCI URL like "oci://registry.example.com/path/to/repo"
-// and returns the registry host and repository path separately.
-func parseOCIURL(ociURL string) (registryHost, repoPath string, err error) {
-	trimmed := strings.TrimPrefix(ociURL, "oci://")
-	if trimmed == ociURL {
-		return "", "", fmt.Errorf("OCI URL must start with oci://, got %q", ociURL)
-	}
-
-	registryHost, repoPath, ok := strings.Cut(trimmed, "/")
-	if !ok || registryHost == "" || repoPath == "" {
-		return "", "", fmt.Errorf("invalid OCI URL %q", ociURL)
-	}
-
-	return registryHost, repoPath, nil
 }

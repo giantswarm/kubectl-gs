@@ -51,6 +51,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	namespace := key.OrganizationNamespaceFromName(r.flag.Organization)
 
+	// Split the OCI URL prefix into registry host and repository prefix.
+	// OCIURLPrefix is normalized to "oci://host/path/" by flag.Validate().
+	registry, repoPath := splitOCIURLPrefix(r.flag.OCIURLPrefix, r.flag.ChartName)
+
+	// The full OCI URL is needed for the OCIRepository manifest.
 	ociURL := r.flag.OCIURLPrefix + r.flag.ChartName
 
 	// Contact the registry to validate and optionally resolve the version.
@@ -66,7 +71,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if version != "" {
 		// Validate that the specified version exists (single HEAD request).
-		exists, err := ociClient.TagExists(ctx, ociURL, version)
+		exists, err := ociClient.TagExists(ctx, registry, repoPath, version)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -75,7 +80,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	} else {
 		// List tags to validate the repository and resolve version.
-		tags, err := ociClient.ListTags(ctx, ociURL)
+		tags, err := ociClient.ListTags(ctx, registry, repoPath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -142,4 +147,23 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
 
 	return nil
+}
+
+// splitOCIURLPrefix extracts the registry host and full repository path
+// from a normalized OCI URL prefix and chart name.
+// For example: "oci://gsoci.azurecr.io/charts/giantswarm/", "hello-world"
+// returns "gsoci.azurecr.io", "charts/giantswarm/hello-world".
+func splitOCIURLPrefix(ociURLPrefix, chartName string) (registry, repoPath string) {
+	// Strip oci:// scheme.
+	s := strings.TrimPrefix(ociURLPrefix, "oci://")
+	// Strip trailing slash.
+	s = strings.TrimSuffix(s, "/")
+	// Split on first slash: registry / repo-prefix.
+	registry, repoPrefix, _ := strings.Cut(s, "/")
+	if repoPrefix != "" {
+		repoPath = repoPrefix + "/" + chartName
+	} else {
+		repoPath = chartName
+	}
+	return registry, repoPath
 }

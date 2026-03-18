@@ -23,10 +23,9 @@ func TestListTags(t *testing.T) {
 	defer srv.Close()
 
 	host := strings.TrimPrefix(srv.URL, "http://")
-
 	c := newClientForTest(ClientOptions{}, host)
 
-	tags, err := c.ListTags(context.Background(), fmt.Sprintf("oci://%s/charts/test/myapp", host))
+	tags, err := c.ListTags(context.Background(), host, "charts/test/myapp")
 	if err != nil {
 		t.Fatalf("ListTags: %v", err)
 	}
@@ -54,10 +53,9 @@ func TestListTagsWithAuth(t *testing.T) {
 	defer srv.Close()
 
 	host := strings.TrimPrefix(srv.URL, "http://")
-
 	c := newClientForTest(ClientOptions{Username: "user", Password: "pass"}, host)
 
-	tags, err := c.ListTags(context.Background(), fmt.Sprintf("oci://%s/charts/private/myapp", host))
+	tags, err := c.ListTags(context.Background(), host, "charts/private/myapp")
 	if err != nil {
 		t.Fatalf("ListTags: %v", err)
 	}
@@ -78,10 +76,9 @@ func TestListTagsAnonymousTokenExchange(t *testing.T) {
 	defer srv.Close()
 
 	host := strings.TrimPrefix(srv.URL, "http://")
-
 	c := newClientForTest(ClientOptions{}, host)
 
-	tags, err := c.ListTags(context.Background(), fmt.Sprintf("oci://%s/charts/public/myapp", host))
+	tags, err := c.ListTags(context.Background(), host, "charts/public/myapp")
 	if err != nil {
 		t.Fatalf("ListTags: %v", err)
 	}
@@ -105,10 +102,9 @@ func TestGetManifestAnnotations(t *testing.T) {
 	defer srv.Close()
 
 	host := strings.TrimPrefix(srv.URL, "http://")
-
 	c := newClientForTest(ClientOptions{}, host)
 
-	got, err := c.GetManifestAnnotations(context.Background(), fmt.Sprintf("oci://%s/charts/test/myapp", host), "1.0.0")
+	got, err := c.GetManifestAnnotations(context.Background(), host, "charts/test/myapp", "1.0.0")
 	if err != nil {
 		t.Fatalf("GetManifestAnnotations: %v", err)
 	}
@@ -126,44 +122,36 @@ func TestGetManifestAnnotationsInvalidTag(t *testing.T) {
 		t.Fatalf("NewClient: %v", err)
 	}
 
-	_, err = c.GetManifestAnnotations(context.Background(), "oci://example.com/repo", "../evil")
+	_, err = c.GetManifestAnnotations(context.Background(), "example.com", "repo", "../evil")
 	if err == nil {
 		t.Fatal("expected error for invalid tag")
 	}
 }
 
-func TestParseOCIURL(t *testing.T) {
-	tests := []struct {
-		input    string
-		wantHost string
-		wantPath string
-		wantErr  bool
-	}{
-		{"oci://registry.example.com/charts/myapp", "registry.example.com", "charts/myapp", false},
-		{"oci://gsoci.azurecr.io/charts/giantswarm/hello-world", "gsoci.azurecr.io", "charts/giantswarm/hello-world", false},
-		{"https://example.com/foo", "", "", true},
-		{"oci://registry.example.com", "", "", true},
+func TestTagExists(t *testing.T) {
+	srv := newMockRegistry(t, mockRegistryConfig{
+		repoPath: "charts/test/myapp",
+		tags:     []string{"1.0.0"},
+	})
+	defer srv.Close()
+
+	host := strings.TrimPrefix(srv.URL, "http://")
+	c := newClientForTest(ClientOptions{}, host)
+
+	exists, err := c.TagExists(context.Background(), host, "charts/test/myapp", "1.0.0")
+	if err != nil {
+		t.Fatalf("TagExists: %v", err)
+	}
+	if !exists {
+		t.Error("expected tag to exist")
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.input, func(t *testing.T) {
-			host, path, err := parseOCIURL(tc.input)
-			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("expected error, got host=%q path=%q", host, path)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if host != tc.wantHost {
-				t.Errorf("host = %q, want %q", host, tc.wantHost)
-			}
-			if path != tc.wantPath {
-				t.Errorf("path = %q, want %q", path, tc.wantPath)
-			}
-		})
+	exists, err = c.TagExists(context.Background(), host, "charts/test/myapp", "99.99.99")
+	if err != nil {
+		t.Fatalf("TagExists: %v", err)
+	}
+	if exists {
+		t.Error("expected tag to not exist")
 	}
 }
 
@@ -240,8 +228,22 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 	})
 
 	// Manifests endpoint.
-	mux.HandleFunc(fmt.Sprintf("/v2/%s/manifests/", cfg.repoPath), func(w http.ResponseWriter, r *http.Request) {
+	manifestPrefix := fmt.Sprintf("/v2/%s/manifests/", cfg.repoPath)
+	mux.HandleFunc(manifestPrefix, func(w http.ResponseWriter, r *http.Request) {
 		if !checkAuth(w, r) {
+			return
+		}
+		// Check that the requested tag exists.
+		tag := strings.TrimPrefix(r.URL.Path, manifestPrefix)
+		found := false
+		for _, t := range cfg.tags {
+			if t == tag {
+				found = true
+				break
+			}
+		}
+		if !found {
+			http.Error(w, fmt.Sprintf("tag %q not found", tag), http.StatusNotFound)
 			return
 		}
 		annotations := cfg.annotations
