@@ -170,7 +170,7 @@ func (r *runner) resolveRegistryPassword() (string, error) {
 	}
 
 	// Prompt interactively if stdin is a terminal.
-	if key.IsTTY() {
+	if term.IsTerminal(int(os.Stdin.Fd())) {
 		fmt.Fprintf(r.stderr, "Registry password for %s: ", r.flag.RegistryUsername)
 		password, err := term.ReadPassword(int(os.Stdin.Fd()))
 		fmt.Fprintln(r.stderr) // newline after password input
