@@ -53,9 +53,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	ociURL := r.flag.OCIURLPrefix + r.flag.ChartName
 
-	// Resolve version from registry if not specified.
+	// Resolve version from registry if needed.
 	version := r.flag.Version
-	if version == "" {
+	needsVersionResolution := version == "" && r.flag.AutoUpgrade != "all"
+	needsRepoValidation := version == "" && r.flag.AutoUpgrade == "all"
+
+	if needsVersionResolution || needsRepoValidation {
 		ociClient, err := ociregistry.NewClient(ociregistry.ClientOptions{
 			Username: r.flag.RegistryUsername,
 			Password: r.flag.RegistryPassword,
@@ -64,20 +67,23 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 
+		// ListTags validates the repository exists and returns available tags.
 		tags, err := ociClient.ListTags(ctx, ociURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		version, err = ociregistry.LatestSemverTag(tags)
-		if err != nil {
-			return fmt.Errorf("resolving latest version from %s: %w", ociURL, err)
+		if needsVersionResolution {
+			version, err = ociregistry.LatestSemverTag(tags)
+			if err != nil {
+				return fmt.Errorf("resolving latest version from %s: %w", ociURL, err)
+			}
+
+			// Strip "v" prefix — OCIRepository ref.tag should use bare semver.
+			version = strings.TrimPrefix(version, "v")
+
+			fmt.Fprintf(r.stderr, "Resolved latest version: %s\n", version)
 		}
-
-		// Strip "v" prefix — OCIRepository ref.tag should use bare semver.
-		version = strings.TrimPrefix(version, "v")
-
-		fmt.Fprintf(r.stderr, "Resolved latest version: %s\n", version)
 	}
 
 	// Read values file if provided.
