@@ -136,6 +136,9 @@ spec:
 `,
 		},
 		{
+			// Same expected output as "auto-upgrade all" above — SemverRange returns "*"
+			// regardless of version. This test verifies that ref.semver is set even
+			// when Version is empty (the AutoUpgrade field alone triggers it).
 			name: "auto-upgrade all without version",
 			opts: OCIRepositoryOptions{
 				Name:        "mycluster01-hello-world-app",
