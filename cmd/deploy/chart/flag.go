@@ -24,7 +24,8 @@ const (
 	flagAutoUpgrade      = "auto-upgrade"
 	flagInterval         = "interval"
 	flagRegistryUsername = "registry-username"
-	flagRegistryPassword = "registry-password"
+
+	envRegistryPassword = "KUBECTL_GS_REGISTRY_PASSWORD"
 
 	defaultOCIURLPrefix = "oci://gsoci.azurecr.io/charts/giantswarm/"
 	defaultInterval     = "10m"
@@ -44,7 +45,6 @@ type flag struct {
 	AutoUpgrade      string
 	Interval         string
 	RegistryUsername string
-	RegistryPassword string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -58,8 +58,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Override the resource name (default: <cluster>-<chart-name>).")
 	cmd.Flags().StringVar(&f.AutoUpgrade, flagAutoUpgrade, "", "Auto-upgrade strategy: all, minor, or patch.")
 	cmd.Flags().StringVar(&f.Interval, flagInterval, defaultInterval, "Reconciliation interval for OCIRepository and HelmRelease.")
-	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication.")
-	cmd.Flags().StringVar(&f.RegistryPassword, flagRegistryPassword, "", "Password or token for private OCI registry authentication.")
+	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication. Password is read from "+envRegistryPassword+" or prompted interactively.")
 }
 
 func (f *flag) Validate() error {

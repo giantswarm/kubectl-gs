@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
@@ -58,12 +60,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// The full OCI URL is needed for the OCIRepository manifest.
 	ociURL := r.flag.OCIURLPrefix + r.flag.ChartName
 
+	// Resolve registry password if username is provided.
+	registryPassword, err := r.resolveRegistryPassword()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	// Contact the registry to validate and optionally resolve the version.
 	version := r.flag.Version
 
 	ociClient, err := ociregistry.NewClient(ociregistry.ClientOptions{
 		Username: r.flag.RegistryUsername,
-		Password: r.flag.RegistryPassword,
+		Password: registryPassword,
 	})
 	if err != nil {
 		return microerror.Mask(err)
@@ -147,6 +155,32 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
 
 	return nil
+}
+
+// resolveRegistryPassword returns the registry password when a username is provided.
+// Resolution order: KUBECTL_GS_REGISTRY_PASSWORD env var > interactive prompt > empty.
+func (r *runner) resolveRegistryPassword() (string, error) {
+	if r.flag.RegistryUsername == "" {
+		return "", nil
+	}
+
+	// Check environment variable first.
+	if password := os.Getenv(envRegistryPassword); password != "" {
+		return password, nil
+	}
+
+	// Prompt interactively if stdin is a terminal.
+	if key.IsTTY() {
+		fmt.Fprintf(r.stderr, "Registry password for %s: ", r.flag.RegistryUsername)
+		password, err := term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Fprintln(r.stderr) // newline after password input
+		if err != nil {
+			return "", fmt.Errorf("reading registry password: %w", err)
+		}
+		return string(password), nil
+	}
+
+	return "", fmt.Errorf("registry password required: set %s or run interactively", envRegistryPassword)
 }
 
 // splitOCIURLPrefix extracts the registry host and full repository path
