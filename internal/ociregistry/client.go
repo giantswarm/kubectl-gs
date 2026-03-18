@@ -16,6 +16,9 @@ import (
 type Client interface {
 	// ListTags returns all tags for the given OCI URL.
 	ListTags(ctx context.Context, ociURL string) ([]string, error)
+	// TagExists checks whether a specific tag exists in the repository.
+	// This is faster than ListTags when only validating a single tag.
+	TagExists(ctx context.Context, ociURL string, tag string) (bool, error)
 	// GetManifestAnnotations returns the annotations from the manifest
 	// for the given OCI URL and tag.
 	GetManifestAnnotations(ctx context.Context, ociURL string, tag string) (map[string]string, error)
@@ -70,6 +73,34 @@ func (c *client) ListTags(ctx context.Context, ociURL string) ([]string, error) 
 	}
 
 	return tags, nil
+}
+
+// TagExists checks whether a specific tag exists by performing a HEAD request
+// for its manifest. This is faster than listing all tags.
+func (c *client) TagExists(ctx context.Context, ociURL string, tag string) (bool, error) {
+	if tag == "" || strings.ContainsAny(tag, "/:@") {
+		return false, fmt.Errorf("invalid tag %q", tag)
+	}
+
+	registryHost, repoPath, err := parseOCIURL(ociURL)
+	if err != nil {
+		return false, err
+	}
+
+	rc := c.newRegClient(registryHost)
+	defer rc.Close(ctx, ref.Ref{})
+
+	r, err := ref.New(registryHost + "/" + repoPath + ":" + tag)
+	if err != nil {
+		return false, fmt.Errorf("parsing reference: %w", err)
+	}
+
+	_, err = rc.ManifestHead(ctx, r)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // GetManifestAnnotations returns the annotations from the manifest for the

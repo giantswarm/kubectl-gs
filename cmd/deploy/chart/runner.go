@@ -53,27 +53,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	ociURL := r.flag.OCIURLPrefix + r.flag.ChartName
 
-	// Resolve version from registry if needed.
+	// Contact the registry to validate and optionally resolve the version.
 	version := r.flag.Version
-	needsVersionResolution := version == "" && r.flag.AutoUpgrade != "all"
-	needsRepoValidation := version == "" && r.flag.AutoUpgrade == "all"
 
-	if needsVersionResolution || needsRepoValidation {
-		ociClient, err := ociregistry.NewClient(ociregistry.ClientOptions{
-			Username: r.flag.RegistryUsername,
-			Password: r.flag.RegistryPassword,
-		})
+	ociClient, err := ociregistry.NewClient(ociregistry.ClientOptions{
+		Username: r.flag.RegistryUsername,
+		Password: r.flag.RegistryPassword,
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if version != "" {
+		// Validate that the specified version exists (single HEAD request).
+		exists, err := ociClient.TagExists(ctx, ociURL, version)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		// ListTags validates the repository exists and returns available tags.
+		if !exists {
+			return fmt.Errorf("version %q not found in %s", version, ociURL)
+		}
+	} else {
+		// List tags to validate the repository and resolve version.
 		tags, err := ociClient.ListTags(ctx, ociURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		if needsVersionResolution {
+		if r.flag.AutoUpgrade != "all" {
 			version, err = ociregistry.LatestSemverTag(tags)
 			if err != nil {
 				return fmt.Errorf("resolving latest version from %s: %w", ociURL, err)
