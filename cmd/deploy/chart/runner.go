@@ -76,6 +76,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	defer ociClient.Close(ctx)
 
 	if version != "" {
 		// Validate that the specified version exists (single HEAD request).

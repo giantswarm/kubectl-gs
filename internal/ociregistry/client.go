@@ -23,7 +23,11 @@ type Client interface {
 	TagExists(ctx context.Context, registry, repository, tag string) (bool, error)
 	// GetManifestAnnotations returns the annotations from the manifest
 	// for the given registry, repository, and tag.
+	// Not yet called — will be used for values schema validation (fetching
+	// the io.giantswarm.application.values-schema annotation).
 	GetManifestAnnotations(ctx context.Context, registry, repository, tag string) (map[string]string, error)
+	// Close releases resources held by the client.
+	Close(ctx context.Context)
 }
 
 // ClientOptions configures how the OCI client authenticates.
@@ -37,6 +41,9 @@ type client struct {
 	password string
 	// hostOverrides is used in tests to configure TLS settings for specific hosts.
 	hostOverrides map[string]config.Host
+	// rc is created lazily on first use and reused for subsequent calls.
+	rc         *regclient.RegClient
+	rcRegistry string // the registry host rc was configured for
 }
 
 // NewClient creates an OCI registry client with the given authentication options.
@@ -48,11 +55,19 @@ func NewClient(opts ClientOptions) (Client, error) {
 	}, nil
 }
 
+// Close releases resources held by the client.
+func (c *client) Close(ctx context.Context) {
+	if c.rc != nil {
+		c.rc.Close(ctx, ref.Ref{})
+		c.rc = nil
+		c.rcRegistry = ""
+	}
+}
+
 // ListTags returns all tags for the repository.
 // Handles pagination automatically via regclient.
 func (c *client) ListTags(ctx context.Context, registry, repository string) ([]string, error) {
-	rc := c.newRegClient(registry)
-	defer rc.Close(ctx, ref.Ref{})
+	rc := c.getRegClient(registry)
 
 	r, err := ref.New(registry + "/" + repository)
 	if err != nil {
@@ -79,8 +94,7 @@ func (c *client) TagExists(ctx context.Context, registry, repository, tag string
 		return false, fmt.Errorf("invalid tag %q", tag)
 	}
 
-	rc := c.newRegClient(registry)
-	defer rc.Close(ctx, ref.Ref{})
+	rc := c.getRegClient(registry)
 
 	r, err := ref.New(registry + "/" + repository + ":" + tag)
 	if err != nil {
@@ -105,8 +119,7 @@ func (c *client) GetManifestAnnotations(ctx context.Context, registry, repositor
 		return nil, fmt.Errorf("invalid tag %q", tag)
 	}
 
-	rc := c.newRegClient(registry)
-	defer rc.Close(ctx, ref.Ref{})
+	rc := c.getRegClient(registry)
 
 	r, err := ref.New(registry + "/" + repository + ":" + tag)
 	if err != nil {
@@ -131,8 +144,13 @@ func (c *client) GetManifestAnnotations(ctx context.Context, registry, repositor
 	return annot, nil
 }
 
-// newRegClient creates a regclient instance configured for the given registry host.
-func (c *client) newRegClient(registryHost string) *regclient.RegClient {
+// getRegClient returns a cached regclient instance for the given registry host,
+// creating one if needed. If the registry changes, the old client is replaced.
+func (c *client) getRegClient(registryHost string) *regclient.RegClient {
+	if c.rc != nil && c.rcRegistry == registryHost {
+		return c.rc
+	}
+
 	opts := []regclient.Opt{
 		regclient.WithDockerCreds(),
 	}
@@ -151,5 +169,24 @@ func (c *client) newRegClient(registryHost string) *regclient.RegClient {
 
 	opts = append(opts, regclient.WithConfigHost(*hostCfg))
 
-	return regclient.New(opts...)
+	c.rc = regclient.New(opts...)
+	c.rcRegistry = registryHost
+
+	return c.rc
+}
+
+// parseOCIURL parses an OCI URL like "oci://registry.example.com/path/to/repo"
+// and returns the registry host and repository path separately.
+func parseOCIURL(ociURL string) (registryHost, repoPath string, err error) {
+	trimmed := strings.TrimPrefix(ociURL, "oci://")
+	if trimmed == ociURL {
+		return "", "", fmt.Errorf("OCI URL must start with oci://, got %q", ociURL)
+	}
+
+	registryHost, repoPath, ok := strings.Cut(trimmed, "/")
+	if !ok || registryHost == "" || repoPath == "" {
+		return "", "", fmt.Errorf("invalid OCI URL %q", ociURL)
+	}
+
+	return registryHost, repoPath, nil
 }
