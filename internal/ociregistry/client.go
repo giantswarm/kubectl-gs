@@ -2,11 +2,13 @@ package ociregistry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
+	"github.com/regclient/regclient/types/errs"
 	"github.com/regclient/regclient/types/manifest"
 	"github.com/regclient/regclient/types/ref"
 )
@@ -87,7 +89,10 @@ func (c *client) TagExists(ctx context.Context, registry, repository, tag string
 
 	_, err = rc.ManifestHead(ctx, r)
 	if err != nil {
-		return false, nil
+		if errors.Is(err, errs.ErrNotFound) {
+			return false, nil
+		}
+		return false, fmt.Errorf("checking tag %q: %w", tag, err)
 	}
 
 	return true, nil
