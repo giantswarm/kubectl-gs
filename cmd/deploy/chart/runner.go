@@ -187,6 +187,8 @@ func (r *runner) resolveRegistryPassword() (string, error) {
 // from a normalized OCI URL prefix and chart name.
 // For example: "oci://gsoci.azurecr.io/charts/giantswarm/", "hello-world"
 // returns "gsoci.azurecr.io", "charts/giantswarm/hello-world".
+// Precondition: ociURLPrefix must start with "oci://" and end with "/"
+// (guaranteed by normalizeOCIURLPrefix in flag.go).
 func splitOCIURLPrefix(ociURLPrefix, chartName string) (registry, repoPath string) {
 	// Strip oci:// scheme.
 	s := strings.TrimPrefix(ociURLPrefix, "oci://")
