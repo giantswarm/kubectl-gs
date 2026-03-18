@@ -135,6 +135,34 @@ spec:
   url: oci://gsoci.azurecr.io/charts/giantswarm/hello-world-app
 `,
 		},
+		{
+			// Same expected output as "auto-upgrade all" above — SemverRange returns "*"
+			// regardless of version. This test verifies that ref.semver is set even
+			// when Version is empty (the AutoUpgrade field alone triggers it).
+			name: "auto-upgrade all without version",
+			opts: OCIRepositoryOptions{
+				Name:        "mycluster01-hello-world-app",
+				Namespace:   "org-acme",
+				ClusterName: "mycluster01",
+				URL:         "oci://gsoci.azurecr.io/charts/giantswarm/hello-world-app",
+				AutoUpgrade: "all",
+				Interval:    "10m",
+			},
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  labels:
+    giantswarm.io/cluster: mycluster01
+  name: mycluster01-hello-world-app
+  namespace: org-acme
+spec:
+  interval: 10m0s
+  provider: generic
+  ref:
+    semver: '*'
+  url: oci://gsoci.azurecr.io/charts/giantswarm/hello-world-app
+`,
+		},
 	}
 
 	for _, tc := range tests {

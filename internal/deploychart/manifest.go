@@ -55,7 +55,7 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository 
 		},
 	}
 
-	if opts.Version != "" {
+	if opts.Version != "" || opts.AutoUpgrade != "" {
 		repo.Spec.Reference = buildOCIRef(opts.Version, opts.AutoUpgrade)
 	}
 
