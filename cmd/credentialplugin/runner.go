@@ -19,10 +19,12 @@ import (
 )
 
 const (
-	envIssuerURL    = "KUBECTL_GS_OIDC_ISSUER_URL"
-	envClientID     = "KUBECTL_GS_OIDC_CLIENT_ID"
+	envIssuerURL = "KUBECTL_GS_OIDC_ISSUER_URL"
+	envClientID  = "KUBECTL_GS_OIDC_CLIENT_ID"
+	//nolint:gosec // Not a credential, just the env var name.
 	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
-	envIDToken      = "KUBECTL_GS_OIDC_ID_TOKEN"
+	//nolint:gosec // Not a credential, just the env var name.
+	envIDToken = "KUBECTL_GS_OIDC_ID_TOKEN"
 )
 
 type runner struct {

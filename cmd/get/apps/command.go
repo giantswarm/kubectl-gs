@@ -31,7 +31,7 @@ Output columns:
 
 	examples = `  # List all apps for the current namespace
   kubectl gs get apps
-  
+
   # Get one app by its name
   kubectl gs get app coredns`
 )

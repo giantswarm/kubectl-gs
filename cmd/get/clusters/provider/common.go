@@ -1,8 +1,6 @@
 package provider
 
 import (
-	"strings"
-
 	"github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,22 +41,10 @@ func GetCommonClusterTable(clusterResource cluster.Resource) *metav1.Table {
 	return table
 }
 
-func formatCondition(condition string) string {
-	return strings.ToUpper(condition)
-}
-
 func getClusterDescription(obj *unstructured.Unstructured) string {
 	annotations := obj.GetAnnotations()
 	if annotations != nil && annotations[annotation.ClusterDescription] != "" {
 		return annotations[annotation.ClusterDescription]
-	}
-	return naValue
-}
-
-func getClusterOrganization(obj *unstructured.Unstructured) string {
-	labels := obj.GetLabels()
-	if organizationLabel := labels[label.Organization]; organizationLabel != "" {
-		return organizationLabel
 	}
 	return naValue
 }

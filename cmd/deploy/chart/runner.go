@@ -103,7 +103,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			// Strip "v" prefix — OCIRepository ref.tag should use bare semver.
 			version = strings.TrimPrefix(version, "v")
 
-			fmt.Fprintf(r.stderr, "Resolved latest version: %s\n", version)
+			_, _ = fmt.Fprintf(r.stderr, "Resolved latest version: %s\n", version)
 		}
 	}
 
@@ -153,7 +153,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
+	_, _ = fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
 
 	return nil
 }
@@ -171,10 +171,10 @@ func (r *runner) resolveRegistryPassword() (string, error) {
 	}
 
 	// Prompt interactively if stdin is a terminal.
-	if term.IsTerminal(int(os.Stdin.Fd())) {
-		fmt.Fprintf(r.stderr, "Registry password for %s: ", r.flag.RegistryUsername)
-		password, err := term.ReadPassword(int(os.Stdin.Fd()))
-		fmt.Fprintln(r.stderr) // newline after password input
+	if term.IsTerminal(int(os.Stdin.Fd())) { //nolint:gosec // Fd() returns a small file descriptor
+		_, _ = fmt.Fprintf(r.stderr, "Registry password for %s: ", r.flag.RegistryUsername)
+		password, err := term.ReadPassword(int(os.Stdin.Fd())) //nolint:gosec // Fd() returns a small file descriptor
+		_, _ = fmt.Fprintln(r.stderr)                          // newline after password input
 		if err != nil {
 			return "", fmt.Errorf("reading registry password: %w", err)
 		}

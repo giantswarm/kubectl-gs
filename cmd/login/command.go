@@ -27,7 +27,7 @@ Use <arg1> alone for:
   - the URL of the Giant Swarm web UI
   - A Giant Swarm management cluster with an existing context
   - a previously generated context name
-  
+
 Use <arg1> <arg2> for
 
   -  A Giant Swarm management cluster and a Giant Swarm workload cluster with an existing context

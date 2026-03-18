@@ -554,7 +554,7 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	default:
 		{
 			var errMsg strings.Builder
-			errMsg.WriteString(fmt.Sprintf("There are multiple workload clusters with the name %s:\n", name))
+			fmt.Fprintf(&errMsg, "There are multiple workload clusters with the name %s:\n", name)
 
 			i := 1
 			for c := range clustersCh {
@@ -563,12 +563,12 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 					org = "n/a"
 				}
 
-				errMsg.WriteString(fmt.Sprintf("%d. %s in organization %s\n", i, name, org))
+				fmt.Fprintf(&errMsg, "%d. %s in organization %s\n", i, name, org)
 
 				i++
 			}
 
-			errMsg.WriteString(fmt.Sprintf("\nUse the --%s flag to select one from a specific organization.", flagWCOrganization))
+			fmt.Fprintf(&errMsg, "\nUse the --%s flag to select one from a specific organization.", flagWCOrganization)
 
 			return nil, microerror.Maskf(multipleClustersFoundError, "%s", errMsg.String())
 		}
