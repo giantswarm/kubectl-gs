@@ -180,7 +180,8 @@ func (r *runner) resolveRegistryPassword() (string, error) {
 		return string(password), nil
 	}
 
-	return "", fmt.Errorf("registry password required: set %s or run interactively", envRegistryPassword)
+	// No password available — return empty and let regclient try Docker config / anonymous.
+	return "", nil
 }
 
 // splitOCIURLPrefix extracts the registry host and full repository path
