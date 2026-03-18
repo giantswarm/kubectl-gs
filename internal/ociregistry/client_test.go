@@ -2,12 +2,15 @@ package ociregistry
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/regclient/regclient/config"
 )
 
 func TestListTags(t *testing.T) {
@@ -19,13 +22,9 @@ func TestListTags(t *testing.T) {
 	})
 	defer srv.Close()
 
-	// Extract host from server URL (strip "https://").
-	host := strings.TrimPrefix(srv.URL, "https://")
+	host := strings.TrimPrefix(srv.URL, "http://")
 
-	c, err := NewClient(ClientOptions{HTTPClient: srv.Client()})
-	if err != nil {
-		t.Fatalf("NewClient: %v", err)
-	}
+	c := newClientForTest(ClientOptions{}, host)
 
 	tags, err := c.ListTags(context.Background(), fmt.Sprintf("oci://%s/charts/test/myapp", host))
 	if err != nil {
@@ -54,12 +53,9 @@ func TestListTagsWithAuth(t *testing.T) {
 	})
 	defer srv.Close()
 
-	host := strings.TrimPrefix(srv.URL, "https://")
+	host := strings.TrimPrefix(srv.URL, "http://")
 
-	c, err := NewClient(ClientOptions{Username: "user", Password: "pass", HTTPClient: srv.Client()})
-	if err != nil {
-		t.Fatalf("NewClient: %v", err)
-	}
+	c := newClientForTest(ClientOptions{Username: "user", Password: "pass"}, host)
 
 	tags, err := c.ListTags(context.Background(), fmt.Sprintf("oci://%s/charts/private/myapp", host))
 	if err != nil {
@@ -81,12 +77,9 @@ func TestListTagsAnonymousTokenExchange(t *testing.T) {
 	})
 	defer srv.Close()
 
-	host := strings.TrimPrefix(srv.URL, "https://")
+	host := strings.TrimPrefix(srv.URL, "http://")
 
-	c, err := NewClient(ClientOptions{HTTPClient: srv.Client()})
-	if err != nil {
-		t.Fatalf("NewClient: %v", err)
-	}
+	c := newClientForTest(ClientOptions{}, host)
 
 	tags, err := c.ListTags(context.Background(), fmt.Sprintf("oci://%s/charts/public/myapp", host))
 	if err != nil {
@@ -111,12 +104,9 @@ func TestGetManifestAnnotations(t *testing.T) {
 	})
 	defer srv.Close()
 
-	host := strings.TrimPrefix(srv.URL, "https://")
+	host := strings.TrimPrefix(srv.URL, "http://")
 
-	c, err := NewClient(ClientOptions{HTTPClient: srv.Client()})
-	if err != nil {
-		t.Fatalf("NewClient: %v", err)
-	}
+	c := newClientForTest(ClientOptions{}, host)
 
 	got, err := c.GetManifestAnnotations(context.Background(), fmt.Sprintf("oci://%s/charts/test/myapp", host), "1.0.0")
 	if err != nil {
@@ -127,6 +117,18 @@ func TestGetManifestAnnotations(t *testing.T) {
 		if got[k] != v {
 			t.Errorf("annotation %q = %q, want %q", k, got[k], v)
 		}
+	}
+}
+
+func TestGetManifestAnnotationsInvalidTag(t *testing.T) {
+	c, err := NewClient(ClientOptions{})
+	if err != nil {
+		t.Fatalf("NewClient: %v", err)
+	}
+
+	_, err = c.GetManifestAnnotations(context.Background(), "oci://example.com/repo", "../evil")
+	if err == nil {
+		t.Fatal("expected error for invalid tag")
 	}
 }
 
@@ -165,6 +167,17 @@ func TestParseOCIURL(t *testing.T) {
 	}
 }
 
+// newClientForTest creates a client configured for testing with a plain HTTP mock server.
+func newClientForTest(opts ClientOptions, host string) Client {
+	return &client{
+		username: opts.Username,
+		password: opts.Password,
+		hostOverrides: map[string]config.Host{
+			host: {TLS: config.TLSDisabled},
+		},
+	}
+}
+
 // mockRegistryConfig controls the behavior of the mock registry.
 type mockRegistryConfig struct {
 	repoPath             string
@@ -176,7 +189,7 @@ type mockRegistryConfig struct {
 	requireTokenExchange bool
 }
 
-// newMockRegistry creates an httptest TLS server that mimics an OCI registry.
+// newMockRegistry creates a plain HTTP httptest server that mimics an OCI registry.
 func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 	t.Helper()
 
@@ -207,13 +220,9 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 			return true
 		}
 		// Return 401 with WWW-Authenticate challenge.
-		scheme := r.URL.Scheme
-		if scheme == "" {
-			scheme = "https"
-		}
 		w.Header().Set("WWW-Authenticate", fmt.Sprintf(
-			`Bearer realm="%s://%s/token",service="%s",scope="repository:%s:pull"`,
-			scheme, r.Host, r.Host, cfg.repoPath))
+			`Bearer realm="http://%s/token",service="%s",scope="repository:%s:pull"`,
+			r.Host, r.Host, cfg.repoPath))
 		w.WriteHeader(http.StatusUnauthorized)
 		return false
 	}
@@ -239,8 +248,7 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 		if annotations == nil {
 			annotations = map[string]string{}
 		}
-		w.Header().Set("Content-Type", "application/vnd.oci.image.manifest.v1+json")
-		json.NewEncoder(w).Encode(map[string]any{
+		manifestBody := map[string]any{
 			"schemaVersion": 2,
 			"mediaType":     "application/vnd.oci.image.manifest.v1+json",
 			"annotations":   annotations,
@@ -250,65 +258,14 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 				"digest":    "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 			},
 			"layers": []any{},
-		})
+		}
+		body, _ := json.Marshal(manifestBody)
+		digest := fmt.Sprintf("sha256:%x", sha256.Sum256(body))
+		w.Header().Set("Content-Type", "application/vnd.oci.image.manifest.v1+json")
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(body)))
+		w.Header().Set("Docker-Content-Digest", digest)
+		w.Write(body)
 	})
 
-	return httptest.NewTLSServer(mux)
-}
-
-func TestGetManifestAnnotationsInvalidTag(t *testing.T) {
-	c, err := NewClient(ClientOptions{})
-	if err != nil {
-		t.Fatalf("NewClient: %v", err)
-	}
-
-	_, err = c.GetManifestAnnotations(context.Background(), "oci://example.com/repo", "../evil")
-	if err == nil {
-		t.Fatal("expected error for invalid tag")
-	}
-}
-
-func TestParseWWWAuthenticate(t *testing.T) {
-	tests := []struct {
-		name                              string
-		header                            string
-		wantRealm, wantService, wantScope string
-	}{
-		{
-			name:        "standard header",
-			header:      `Bearer realm="https://example.com/token",service="example.com",scope="repository:foo:pull"`,
-			wantRealm:   "https://example.com/token",
-			wantService: "example.com",
-			wantScope:   "repository:foo:pull",
-		},
-		{
-			name:        "scope with comma",
-			header:      `Bearer realm="https://example.com/token",service="example.com",scope="repository:foo:pull,push"`,
-			wantRealm:   "https://example.com/token",
-			wantService: "example.com",
-			wantScope:   "repository:foo:pull,push",
-		},
-		{
-			name:        "extra whitespace",
-			header:      `Bearer realm="https://example.com/token" , service="example.com" , scope="repository:foo:pull"`,
-			wantRealm:   "https://example.com/token",
-			wantService: "example.com",
-			wantScope:   "repository:foo:pull",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			realm, service, scope := parseWWWAuthenticate(tc.header)
-			if realm != tc.wantRealm {
-				t.Errorf("realm = %q, want %q", realm, tc.wantRealm)
-			}
-			if service != tc.wantService {
-				t.Errorf("service = %q, want %q", service, tc.wantService)
-			}
-			if scope != tc.wantScope {
-				t.Errorf("scope = %q, want %q", scope, tc.wantScope)
-			}
-		})
-	}
+	return httptest.NewServer(mux)
 }
