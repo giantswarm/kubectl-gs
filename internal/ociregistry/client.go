@@ -58,7 +58,7 @@ func NewClient(opts ClientOptions) (Client, error) {
 // Close releases resources held by the client.
 func (c *client) Close(ctx context.Context) {
 	if c.rc != nil {
-		c.rc.Close(ctx, ref.Ref{})
+		_ = c.rc.Close(ctx, ref.Ref{})
 		c.rc = nil
 		c.rcRegistry = ""
 	}
@@ -173,20 +173,4 @@ func (c *client) getRegClient(registryHost string) *regclient.RegClient {
 	c.rcRegistry = registryHost
 
 	return c.rc
-}
-
-// parseOCIURL parses an OCI URL like "oci://registry.example.com/path/to/repo"
-// and returns the registry host and repository path separately.
-func parseOCIURL(ociURL string) (registryHost, repoPath string, err error) {
-	trimmed := strings.TrimPrefix(ociURL, "oci://")
-	if trimmed == ociURL {
-		return "", "", fmt.Errorf("OCI URL must start with oci://, got %q", ociURL)
-	}
-
-	registryHost, repoPath, ok := strings.Cut(trimmed, "/")
-	if !ok || registryHost == "" || repoPath == "" {
-		return "", "", fmt.Errorf("invalid OCI URL %q", ociURL)
-	}
-
-	return registryHost, repoPath, nil
 }

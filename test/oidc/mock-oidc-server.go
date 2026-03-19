@@ -77,7 +77,7 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 				s.tokenFatalFailures--
 				return
 			}
-			_ = r.ParseForm()
+			_ = r.ParseForm() //nolint:gosec // Test server only
 			grantType := r.Form.Get(oidc.DeviceAuthKeyGrantType)
 			if grantType == oidc.DeviceAuthGrantType {
 				w.Header().Set("Content-Type", "application/json")
@@ -181,7 +181,7 @@ func getDeviceTokenResponseData(clientID, issuer string, key *rsa.PrivateKey) ([
 		RefreshToken: "refresh-token",
 		IdToken:      token,
 	}
-	return json.Marshal(data)
+	return json.Marshal(data) //nolint:gosec // Test server only
 }
 
 func getRawToken(clientID, issuer string, key *rsa.PrivateKey) (string, error) {

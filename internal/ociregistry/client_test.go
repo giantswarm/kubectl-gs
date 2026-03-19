@@ -195,7 +195,7 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 			}
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"token": testToken})
+		_ = json.NewEncoder(w).Encode(map[string]string{"token": testToken})
 	})
 
 	// checkAuth validates the bearer token if auth is required.
@@ -221,7 +221,7 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]any{
+		_ = json.NewEncoder(w).Encode(map[string]any{
 			"name": cfg.repoPath,
 			"tags": cfg.tags,
 		})
@@ -266,7 +266,7 @@ func newMockRegistry(t *testing.T, cfg mockRegistryConfig) *httptest.Server {
 		w.Header().Set("Content-Type", "application/vnd.oci.image.manifest.v1+json")
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(body)))
 		w.Header().Set("Docker-Content-Digest", digest)
-		w.Write(body)
+		_, _ = w.Write(body)
 	})
 
 	return httptest.NewServer(mux)

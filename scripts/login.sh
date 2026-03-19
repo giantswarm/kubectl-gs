@@ -51,7 +51,7 @@ verificationUrl=$(echo "$deviceCodeResponse" | jq -r .verification_uri_complete)
 
 echo "Open this URL to log in: $verificationUrl"
 echo "Press ENTER when ready to continue"
-read -r continue
+read -r _
 
 deviceTokenResponse=$(curl "$dexUrl/device/token" -d device_code="$deviceCode" -d grant_type="urn:ietf:params:oauth:grant-type:device_code" -s)
 idToken=$(echo "$deviceTokenResponse" | jq -r .id_token)

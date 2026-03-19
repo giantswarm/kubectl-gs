@@ -15,12 +15,12 @@ func lock(issuerURL, clientID string) (*os.File, error) {
 		return nil, err
 	}
 
-	f, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0600)
+	f, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0600) //nolint:gosec // Path is constructed internally, not from user input
 	if err != nil {
 		return nil, err
 	}
 
-	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil { //nolint:gosec // Fd() returns a small file descriptor
 		_ = f.Close()
 		return nil, err
 	}
@@ -29,6 +29,6 @@ func lock(issuerURL, clientID string) (*os.File, error) {
 }
 
 func unlock(f *os.File) {
-	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN) //nolint:gosec // Fd() returns a small file descriptor
 	_ = f.Close()
 }

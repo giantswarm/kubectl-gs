@@ -25,7 +25,7 @@ const (
 	flagInterval         = "interval"
 	flagRegistryUsername = "registry-username"
 
-	envRegistryPassword = "KUBECTL_GS_REGISTRY_PASSWORD"
+	envRegistryPassword = "KUBECTL_GS_REGISTRY_PASSWORD" //nolint:gosec // Not a credential, just the env var name.
 
 	defaultOCIURLPrefix = "oci://gsoci.azurecr.io/charts/giantswarm/"
 	defaultInterval     = "10m"

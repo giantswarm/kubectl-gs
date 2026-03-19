@@ -59,7 +59,7 @@ func Test_NewAppCR(t *testing.T) {
 		},
 		{
 			name: "case 3: user secrets with defauting disabled",
-			config: Config{
+			config: Config{ //nolint:gosec // Field name matches pattern but contains no hardcoded credential
 				AppName:              "ingress-nginx",
 				Catalog:              "giantswarm",
 				Cluster:              "eggs2",

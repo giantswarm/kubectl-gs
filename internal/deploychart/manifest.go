@@ -142,7 +142,7 @@ func parseSemver(version string) (int, int, int) {
 		version = version[1:]
 	}
 	var major, minor, patch int
-	fmt.Sscanf(version, "%d.%d.%d", &major, &minor, &patch)
+	_, _ = fmt.Sscanf(version, "%d.%d.%d", &major, &minor, &patch)
 	return major, minor, patch
 }
 
