@@ -142,6 +142,9 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	if resourceName == "" {
 		resourceName = fmt.Sprintf("%s-%s", clusterName, r.flag.ChartName)
 	}
+	if len(resourceName) > 253 {
+		return microerror.Maskf(invalidFlagError, "resource name %q exceeds maximum length of 253 characters", resourceName)
+	}
 
 	// Build manifests with detected API versions.
 	ociRepoOpts := deploychart.OCIRepositoryOptions{
@@ -223,8 +226,8 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 			if diff != "" {
 				_, _ = fmt.Fprintf(r.stderr, "\n%s %s has changes:\n%s\n", m.kind, resourceName, diff)
 
-				if !key.IsTTY() {
-					return fmt.Errorf("resources already exist and have changes; interactive confirmation required (run interactively or use --dry-run to preview)")
+				if !term.IsTerminal(int(os.Stdin.Fd())) { //nolint:gosec // Fd() returns a small file descriptor
+					return microerror.Maskf(confirmationRequiredError, "resources already exist and have changes; run interactively or use --dry-run to preview")
 				}
 
 				confirmed, err := deploychart.AskConfirmation(

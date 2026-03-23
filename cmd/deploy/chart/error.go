@@ -28,3 +28,12 @@ var applyAbortedError = &microerror.Error{
 func IsApplyAborted(err error) bool {
 	return microerror.Cause(err) == applyAbortedError
 }
+
+var confirmationRequiredError = &microerror.Error{
+	Kind: "confirmationRequiredError",
+}
+
+// IsConfirmationRequired asserts confirmationRequiredError.
+func IsConfirmationRequired(err error) bool {
+	return microerror.Cause(err) == confirmationRequiredError
+}

@@ -59,4 +59,19 @@ func cleanForDiff(obj map[string]any) {
 	delete(metadata, "creationTimestamp")
 	delete(metadata, "generation")
 	delete(metadata, "selfLink")
+
+	// Strip well-known annotations added by apply mechanisms.
+	annotations, ok := metadata["annotations"].(map[string]any)
+	if ok {
+		delete(annotations, "kubectl.kubernetes.io/last-applied-configuration")
+	}
+	// Remove empty annotations map to avoid spurious diff against no-annotations desired state.
+	if annot, ok := metadata["annotations"].(map[string]any); ok && len(annot) == 0 {
+		delete(metadata, "annotations")
+	}
+
+	// Same for labels.
+	if labels, ok := metadata["labels"].(map[string]any); ok && len(labels) == 0 {
+		delete(metadata, "labels")
+	}
 }

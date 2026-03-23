@@ -184,7 +184,7 @@ func TestFlagValidate(t *testing.T) {
 			},
 		},
 		{
-			name: "management-cluster with target-cluster is valid",
+			name: "management-cluster with target-cluster is invalid",
 			flag: flag{
 				ChartName:         "hello-world-app",
 				Organization:      "acme",
@@ -194,6 +194,8 @@ func TestFlagValidate(t *testing.T) {
 				Interval:          defaultInterval,
 				ManagementCluster: true,
 			},
+			wantErr: true,
+			errMsg:  "mutually exclusive",
 		},
 		{
 			name: "dry-run flag is valid",

@@ -77,6 +77,9 @@ func (f *flag) Validate() error {
 	if f.Organization == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
 	}
+	if f.ManagementCluster && f.Cluster != "" {
+		return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagManagementCluster, flagCluster)
+	}
 	if f.Cluster == "" && !f.ManagementCluster {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty (or use --%s)", flagCluster, flagManagementCluster)
 	}
