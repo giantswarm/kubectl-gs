@@ -172,6 +172,41 @@ func TestFlagValidate(t *testing.T) {
 				Interval:     defaultInterval,
 			},
 		},
+		{
+			name: "management-cluster without target-cluster is valid",
+			flag: flag{
+				ChartName:         "hello-world-app",
+				Organization:      "acme",
+				TargetNS:          "hello",
+				OCIURLPrefix:      defaultOCIURLPrefix,
+				Interval:          defaultInterval,
+				ManagementCluster: true,
+			},
+		},
+		{
+			name: "management-cluster with target-cluster is valid",
+			flag: flag{
+				ChartName:         "hello-world-app",
+				Organization:      "acme",
+				Cluster:           "mycluster01",
+				TargetNS:          "hello",
+				OCIURLPrefix:      defaultOCIURLPrefix,
+				Interval:          defaultInterval,
+				ManagementCluster: true,
+			},
+		},
+		{
+			name: "dry-run flag is valid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				DryRun:       true,
+			},
+		},
 	}
 
 	for _, tc := range tests {

@@ -13,17 +13,19 @@ import (
 var semverRe = regexp.MustCompile(`^v?\d+\.\d+\.\d+$`)
 
 const (
-	flagChartName        = "chart-name"
-	flagOrganization     = "organization"
-	flagCluster          = "target-cluster"
-	flagTargetNS         = "target-namespace"
-	flagOCIURLPrefix     = "oci-url-prefix"
-	flagVersion          = "version"
-	flagValuesFile       = "values-file"
-	flagName             = "name"
-	flagAutoUpgrade      = "auto-upgrade"
-	flagInterval         = "interval"
-	flagRegistryUsername = "registry-username"
+	flagChartName         = "chart-name"
+	flagOrganization      = "organization"
+	flagCluster           = "target-cluster"
+	flagTargetNS          = "target-namespace"
+	flagOCIURLPrefix      = "oci-url-prefix"
+	flagVersion           = "version"
+	flagValuesFile        = "values-file"
+	flagName              = "name"
+	flagAutoUpgrade       = "auto-upgrade"
+	flagInterval          = "interval"
+	flagRegistryUsername  = "registry-username"
+	flagManagementCluster = "management-cluster"
+	flagDryRun            = "dry-run"
 
 	envRegistryPassword = "KUBECTL_GS_REGISTRY_PASSWORD" //nolint:gosec // Not a credential, just the env var name.
 
@@ -34,17 +36,19 @@ const (
 var validAutoUpgradeValues = []string{"all", "minor", "patch"}
 
 type flag struct {
-	ChartName        string
-	Organization     string
-	Cluster          string
-	TargetNS         string
-	OCIURLPrefix     string
-	Version          string
-	ValuesFile       string
-	Name             string
-	AutoUpgrade      string
-	Interval         string
-	RegistryUsername string
+	ChartName         string
+	Organization      string
+	Cluster           string
+	TargetNS          string
+	OCIURLPrefix      string
+	Version           string
+	ValuesFile        string
+	Name              string
+	AutoUpgrade       string
+	Interval          string
+	RegistryUsername  string
+	ManagementCluster bool
+	DryRun            bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -59,6 +63,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AutoUpgrade, flagAutoUpgrade, "", "Auto-upgrade strategy: all, minor, or patch.")
 	cmd.Flags().StringVar(&f.Interval, flagInterval, defaultInterval, "Reconciliation interval for OCIRepository and HelmRelease.")
 	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication. Password is read from "+envRegistryPassword+" or prompted interactively.")
+	cmd.Flags().BoolVar(&f.ManagementCluster, flagManagementCluster, false, "Deploy to the management cluster itself. Cluster name is derived from the current kubectl context.")
+	cmd.Flags().BoolVar(&f.DryRun, flagDryRun, false, "Perform server-side validation without applying. Prints manifests to stdout.")
 }
 
 func (f *flag) Validate() error {
@@ -71,8 +77,8 @@ func (f *flag) Validate() error {
 	if f.Organization == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
 	}
-	if f.Cluster == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagCluster)
+	if f.Cluster == "" && !f.ManagementCluster {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty (or use --%s)", flagCluster, flagManagementCluster)
 	}
 	if f.TargetNS == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNS)
@@ -98,12 +104,12 @@ func (f *flag) Validate() error {
 	// Normalize OCI URL prefix.
 	f.OCIURLPrefix = normalizeOCIURLPrefix(f.OCIURLPrefix)
 
-	// Validate resource name length.
+	// Validate resource name length (when we can compute it at flag-validation time).
 	resourceName := f.Name
-	if resourceName == "" {
+	if resourceName == "" && f.Cluster != "" {
 		resourceName = fmt.Sprintf("%s-%s", f.Cluster, f.ChartName)
 	}
-	if len(resourceName) > 253 {
+	if resourceName != "" && len(resourceName) > 253 {
 		return microerror.Maskf(invalidFlagError, "resource name %q exceeds maximum length of 253 characters", resourceName)
 	}
 

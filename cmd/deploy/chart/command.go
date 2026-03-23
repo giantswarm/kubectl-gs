@@ -23,11 +23,18 @@ const (
 
 NOTE: This command is currently in development and may change without notice.
 
-Generates and outputs OCIRepository and HelmRelease manifests for deploying a
-Helm chart from an OCI registry. The resources are created in the organization
-namespace on the management cluster.
+Generates OCIRepository and HelmRelease manifests for deploying a Helm chart
+from an OCI registry and applies them to the management cluster. The resources
+are created in the organization namespace.
 
-Resource names default to <cluster>-<chart-name> and can be overridden with --name.`
+Resource names default to <cluster>-<chart-name> and can be overridden with --name.
+
+The command detects the installed Flux CRD versions and uses the appropriate
+API versions in the generated manifests. If resources already exist, a diff is
+shown and confirmation is required before applying.
+
+Use --dry-run to perform server-side validation without persisting resources.
+Use --management-cluster to deploy to the MC itself (no --target-cluster needed).`
 
 	examples = `  # Deploy a chart with a specific version
   kubectl gs deploy chart \
@@ -62,7 +69,22 @@ Resource names default to <cluster>-<chart-name> and can be overridden with --na
       --organization acme \
       --target-cluster mycluster01 \
       --target-namespace hello \
-      --values-file my-values.yaml`
+      --values-file my-values.yaml
+
+  # Server-side dry-run (validate without applying)
+  kubectl gs deploy chart \
+      --chart-name hello-world-app \
+      --organization acme \
+      --target-cluster mycluster01 \
+      --target-namespace hello \
+      --dry-run
+
+  # Deploy to the management cluster itself
+  kubectl gs deploy chart \
+      --chart-name hello-world-app \
+      --organization acme \
+      --target-namespace hello \
+      --management-cluster`
 )
 
 type Config struct {

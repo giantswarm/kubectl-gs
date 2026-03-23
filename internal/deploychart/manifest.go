@@ -20,6 +20,7 @@ type OCIRepositoryOptions struct {
 	Version     string
 	AutoUpgrade string
 	Interval    string
+	APIVersion  string // If set, overrides the default API version.
 }
 
 type HelmReleaseOptions struct {
@@ -31,6 +32,7 @@ type HelmReleaseOptions struct {
 	Interval          string
 	Values            map[string]any
 	ManagementCluster bool
+	APIVersion        string // If set, overrides the default API version.
 }
 
 func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository {
@@ -57,6 +59,10 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository 
 
 	if opts.Version != "" || opts.AutoUpgrade != "" {
 		repo.Spec.Reference = buildOCIRef(opts.Version, opts.AutoUpgrade)
+	}
+
+	if opts.APIVersion != "" {
+		repo.APIVersion = opts.APIVersion
 	}
 
 	return repo
@@ -102,6 +108,10 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 	if opts.Values != nil {
 		raw, _ := json.Marshal(opts.Values)
 		hr.Spec.Values = &apiextensionsv1.JSON{Raw: raw}
+	}
+
+	if opts.APIVersion != "" {
+		hr.APIVersion = opts.APIVersion
 	}
 
 	return hr

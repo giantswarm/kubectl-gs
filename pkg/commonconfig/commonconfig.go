@@ -126,3 +126,17 @@ func (cc *CommonConfig) GetNamespace() (string, bool, error) {
 func (cc *CommonConfig) GetConfigAccess() clientcmd.ConfigAccess {
 	return cc.GetConfigFlags().ToRawKubeConfigLoader().ConfigAccess()
 }
+
+// GetCurrentContextName returns the effective kubectl context name.
+// If a --context override was provided, returns that. Otherwise returns
+// the current-context from the kubeconfig.
+func (cc *CommonConfig) GetCurrentContextName() (string, error) {
+	if override := cc.GetContextOverride(); override != "" {
+		return override, nil
+	}
+	config, err := cc.GetConfigAccess().GetStartingConfig()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return config.CurrentContext, nil
+}
