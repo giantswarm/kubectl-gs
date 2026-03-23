@@ -12,6 +12,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
@@ -121,6 +124,17 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		return microerror.Mask(err)
 	}
 
+	// Verify the organization namespace exists.
+	_, err = k8sClients.K8sClient().CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			return microerror.Maskf(invalidFlagError,
+				"the organization %q wasn't found\nPlease check for existing organizations using\n\n    kubectl gs get organizations",
+				r.flag.Organization)
+		}
+		return microerror.Mask(err)
+	}
+
 	// Detect CRD versions.
 	crdVersions, err := deploychart.DetectFluxCRDVersions(ctx, k8sClients.ExtClient())
 	if err != nil {
@@ -135,6 +149,24 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 			return microerror.Mask(err)
 		}
 		clusterName = deploychart.ClusterNameFromContext(contextName)
+	}
+
+	// Verify the target cluster exists (workload cluster mode only).
+	if !r.flag.ManagementCluster {
+		capiClusterGVR := schema.GroupVersionResource{
+			Group:    "cluster.x-k8s.io",
+			Version:  "v1beta1",
+			Resource: "clusters",
+		}
+		_, err = k8sClients.DynClient().Resource(capiClusterGVR).Namespace(namespace).Get(ctx, clusterName, metav1.GetOptions{})
+		if err != nil {
+			if k8serrors.IsNotFound(err) {
+				return microerror.Maskf(invalidFlagError,
+					"cluster %q not found in organization %q\n\n  Please check for existing clusters using\n\n    kubectl gs get clusters --namespace %s",
+					clusterName, r.flag.Organization, namespace)
+			}
+			return microerror.Mask(err)
+		}
 	}
 
 	// Compute resource name.
