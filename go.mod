@@ -249,7 +249,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v28.5.2+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.22.0
+	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.23.0
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.12.2
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.41.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.49.0
