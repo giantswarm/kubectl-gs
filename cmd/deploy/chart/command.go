@@ -29,10 +29,6 @@ are created in the organization namespace.
 
 Resource names default to <cluster>-<chart-name> and can be overridden with --name.
 
-The command detects the installed Flux CRD versions and uses the appropriate
-API versions in the generated manifests. If resources already exist, a diff is
-shown and confirmation is required before applying.
-
 Use --dry-run to perform server-side validation without persisting resources.
 Use --management-cluster to deploy to the MC itself (no --target-cluster needed).`
 
