@@ -165,7 +165,7 @@ func Test_printOutput(t *testing.T) {
 func newUnstructuredCluster(name, namespace string, labels, annotations map[string]string, creationDate time.Time) *unstructured.Unstructured {
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"apiVersion": "cluster.x-k8s.io/v1beta2",
 			"kind":       "Cluster",
 			"metadata": map[string]interface{}{
 				"name":              name,

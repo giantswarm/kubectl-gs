@@ -134,7 +134,7 @@ func Test_printOutput(t *testing.T) {
 func newUnstructuredMachinePool(name, clusterName, release, description string, creationDate time.Time, nodesDesired, nodesReady int) *unstructured.Unstructured {
 	obj := &unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"apiVersion": "cluster.x-k8s.io/v1beta2",
 			"kind":       "MachinePool",
 			"metadata": map[string]interface{}{
 				"name":              name,

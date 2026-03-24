@@ -22,7 +22,7 @@ func (s *Service) getAllCAPI(ctx context.Context, namespace, clusterID string) (
 	machineDeployments := &unstructured.UnstructuredList{}
 	machineDeployments.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "cluster.x-k8s.io",
-		Version: "v1beta1",
+		Version: "v1beta2",
 		Kind:    "MachineDeploymentList",
 	})
 
@@ -59,7 +59,7 @@ func (s *Service) getByIdCAPI(ctx context.Context, id, namespace, clusterID stri
 	machineDeployments := &unstructured.UnstructuredList{}
 	machineDeployments.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "cluster.x-k8s.io",
-		Version: "v1beta1",
+		Version: "v1beta2",
 		Kind:    "MachineDeploymentList",
 	})
 

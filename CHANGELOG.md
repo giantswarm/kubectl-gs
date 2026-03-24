@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Migrate `cluster.x-k8s.io` API usage from `v1beta1` to `v1beta2`. MachinePool CRD reference updated from `exp.cluster.x-k8s.io` to `cluster.x-k8s.io`.
+
 ### Added
 
 - Add experimental and hidden `deploy chart` command. Note: the usage of this command is going to change very soon.

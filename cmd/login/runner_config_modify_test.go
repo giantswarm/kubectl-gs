@@ -416,13 +416,13 @@ func mockKubernetesAndAuthServer(org securityv1alpha.Organization, wc *unstructu
 			responseData = appResourceList
 		case "/apis/security.giantswarm.io/v1alpha1":
 			responseData = orgResourceList
-		case "/apis/cluster.x-k8s.io/v1beta1":
+		case "/apis/cluster.x-k8s.io/v1beta2":
 			responseData = clusterResourceList
 		case "/apis/authorization.k8s.io/v1/selfsubjectaccessreviews":
 			responseData = selfSubjectAccessReview
 		case "/apis/security.giantswarm.io/v1alpha1/organizations":
 			responseData = securityv1alpha.OrganizationList{Items: []securityv1alpha.Organization{org}}
-		case fmt.Sprintf("/apis/cluster.x-k8s.io/v1beta1/namespaces/%s/clusters/%s", wcNamespace, wcName):
+		case fmt.Sprintf("/apis/cluster.x-k8s.io/v1beta2/namespaces/%s/clusters/%s", wcNamespace, wcName):
 			responseData = wc
 		case fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s-ca", wcNamespace, wcName):
 			responseData = secret
@@ -602,7 +602,7 @@ func createSelfSubjectAccessReview() authorizationv1.SelfSubjectAccessReview {
 func createCluster(name string, namespace string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"apiVersion": "cluster.x-k8s.io/v1beta2",
 			"kind":       "Cluster",
 			"metadata": map[string]interface{}{
 				"name":      name,
