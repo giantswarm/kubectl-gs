@@ -20,7 +20,7 @@ func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error
 	clusterList := &unstructured.UnstructuredList{}
 	clusterList.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "cluster.x-k8s.io",
-		Version: "v1beta1",
+		Version: "v1beta2",
 		Kind:    "ClusterList",
 	})
 
@@ -90,7 +90,7 @@ func (s *Service) getByName(ctx context.Context, name, namespace string) (Resour
 	capiCluster := &unstructured.Unstructured{}
 	capiCluster.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "cluster.x-k8s.io",
-		Version: "v1beta1",
+		Version: "v1beta2",
 		Kind:    "Cluster",
 	})
 

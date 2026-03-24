@@ -67,7 +67,7 @@ var (
 		},
 		{
 			DisplayName: "Machine Pool",
-			Name:        "machinepools.exp.cluster.x-k8s.io",
+			Name:        "machinepools.cluster.x-k8s.io",
 			Provider:    providerAll,
 		},
 		{

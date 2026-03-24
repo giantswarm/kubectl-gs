@@ -525,7 +525,7 @@ func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp 
 
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"apiVersion": "cluster.x-k8s.io/v1beta1",
+			"apiVersion": "cluster.x-k8s.io/v1beta2",
 			"kind":       "Cluster",
 			"metadata":   metadata,
 			"spec":       spec,
@@ -536,7 +536,7 @@ func getCluster(name, namespace, controlPlaneEndpoint string, creationTimestamp 
 func getAzureCluster(name string, namespace string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
+			"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta2",
 			"kind":       "AzureCluster",
 			"metadata": map[string]interface{}{
 				"name":      name,
