@@ -34,6 +34,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 	github.com/regclient/regclient v0.11.2
 	github.com/rhysd/go-github-selfupdate v1.2.3
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/cobra v1.10.2

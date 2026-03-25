@@ -22,9 +22,8 @@ type Client interface {
 	// This is faster than ListTags when only validating a single tag.
 	TagExists(ctx context.Context, registry, repository, tag string) (bool, error)
 	// GetManifestAnnotations returns the annotations from the manifest
-	// for the given registry, repository, and tag.
-	// Not yet called — will be used for values schema validation (fetching
-	// the io.giantswarm.application.values-schema annotation).
+	// for the given registry, repository, and tag. Used to fetch the
+	// io.giantswarm.application.values-schema annotation for schema validation.
 	GetManifestAnnotations(ctx context.Context, registry, repository, tag string) (map[string]string, error)
 	// Close releases resources held by the client.
 	Close(ctx context.Context)
