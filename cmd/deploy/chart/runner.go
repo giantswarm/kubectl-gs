@@ -190,6 +190,13 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		APIVersion:  crdVersions.OCIRepositoryAPIVersion,
 	}
 
+	// Parse --values-from references.
+	var valuesFrom []deploychart.ValuesFromReference
+	for _, vf := range r.flag.ValuesFrom {
+		kind, name, _ := strings.Cut(vf, "/")
+		valuesFrom = append(valuesFrom, deploychart.ValuesFromReference{Kind: kind, Name: name})
+	}
+
 	helmReleaseOpts := deploychart.HelmReleaseOptions{
 		Name:              resourceName,
 		Namespace:         namespace,
@@ -198,6 +205,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		TargetNamespace:   r.flag.TargetNS,
 		Interval:          r.flag.Interval,
 		Values:            values,
+		ValuesFrom:        valuesFrom,
 		ManagementCluster: r.flag.ManagementCluster,
 		APIVersion:        crdVersions.HelmReleaseAPIVersion,
 	}

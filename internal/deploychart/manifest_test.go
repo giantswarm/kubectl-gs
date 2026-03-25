@@ -288,6 +288,46 @@ spec:
   targetNamespace: hello
 `,
 		},
+		{
+			name: "with valuesFrom",
+			opts: HelmReleaseOptions{
+				Name:            "mycluster01-hello-world-app",
+				Namespace:       "org-acme",
+				ClusterName:     "mycluster01",
+				ChartName:       "hello-world-app",
+				TargetNamespace: "hello",
+				Interval:        "10m",
+				ValuesFrom: []ValuesFromReference{
+					{Kind: "ConfigMap", Name: "my-config"},
+					{Kind: "Secret", Name: "my-secret"},
+				},
+			},
+			expected: `apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: mycluster01
+  name: mycluster01-hello-world-app
+  namespace: org-acme
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: mycluster01-hello-world-app
+  install:
+    createNamespace: true
+  interval: 10m0s
+  kubeConfig:
+    secretRef:
+      name: mycluster01-kubeconfig
+  releaseName: hello-world-app
+  targetNamespace: hello
+  valuesFrom:
+  - kind: ConfigMap
+    name: my-config
+  - kind: Secret
+    name: my-secret
+`,
+		},
 	}
 
 	for _, tc := range tests {

@@ -75,6 +75,15 @@ Use --management-cluster to deploy to the MC itself (no --target-cluster needed)
       --target-namespace hello \
       --dry-run
 
+  # Deploy with values from a ConfigMap and a Secret
+  kubectl gs deploy chart \
+      --chart-name hello-world-app \
+      --organization acme \
+      --target-cluster mycluster01 \
+      --target-namespace hello \
+      --values-from ConfigMap/my-config \
+      --values-from Secret/my-secret
+
   # Deploy to the management cluster itself
   kubectl gs deploy chart \
       --chart-name hello-world-app \
