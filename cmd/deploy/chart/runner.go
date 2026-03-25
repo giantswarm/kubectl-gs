@@ -345,20 +345,20 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	}
 
 	// Print YAML to stdout.
-	if registrySecretYAML != nil {
-		_, _ = fmt.Fprintf(r.stdout, "%s---\n", string(registrySecretYAML))
+	for i, m := range manifests {
+		_, _ = fmt.Fprintf(r.stdout, "%s", string(m.yaml))
+		if i < len(manifests)-1 {
+			_, _ = fmt.Fprintf(r.stdout, "---\n")
+		}
 	}
-	_, _ = fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
 
 	// Print status to stderr.
 	if r.flag.DryRun {
 		_, _ = fmt.Fprintf(r.stderr, "Server-side dry-run succeeded.\n")
 	} else {
-		if registrySecretName != "" {
-			_, _ = fmt.Fprintf(r.stderr, "Applied Secret %s/%s\n", namespace, registrySecretName)
+		for _, m := range manifests {
+			_, _ = fmt.Fprintf(r.stderr, "Applied %s %s/%s\n", m.kind, namespace, m.resourceName)
 		}
-		_, _ = fmt.Fprintf(r.stderr, "Applied OCIRepository %s/%s\n", namespace, resourceName)
-		_, _ = fmt.Fprintf(r.stderr, "Applied HelmRelease %s/%s\n", namespace, resourceName)
 	}
 
 	return nil

@@ -124,6 +124,10 @@ func (f *flag) Validate() error {
 		}
 	}
 
+	if f.RegistryProvider != "" && f.RegistryUsername != "" {
+		return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagRegistryProvider, flagRegistryUsername)
+	}
+
 	// Validate and normalize --values-from entries.
 	for i, vf := range f.ValuesFrom {
 		kind, name, ok := strings.Cut(vf, "/")
