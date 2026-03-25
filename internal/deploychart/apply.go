@@ -21,6 +21,7 @@ const fieldManager = "kubectl-gs"
 var knownResources = map[string]string{
 	"OCIRepository": "ocirepositories",
 	"HelmRelease":   "helmreleases",
+	"Secret":        "secrets",
 }
 
 // ApplyOptions controls the apply behavior.

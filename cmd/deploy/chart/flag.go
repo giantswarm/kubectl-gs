@@ -24,6 +24,7 @@ const (
 	flagAutoUpgrade       = "auto-upgrade"
 	flagInterval          = "interval"
 	flagRegistryUsername  = "registry-username"
+	flagRegistryProvider  = "registry-provider"
 	flagValuesFrom        = "values-from"
 	flagManagementCluster = "management-cluster"
 	flagDryRun            = "dry-run"
@@ -35,6 +36,7 @@ const (
 )
 
 var validAutoUpgradeValues = []string{"all", "minor", "patch"}
+var validRegistryProviders = []string{"aws", "azure", "gcp"}
 
 type flag struct {
 	ChartName         string
@@ -48,6 +50,7 @@ type flag struct {
 	AutoUpgrade       string
 	Interval          string
 	RegistryUsername  string
+	RegistryProvider  string
 	ValuesFrom        []string
 	ManagementCluster bool
 	DryRun            bool
@@ -65,6 +68,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AutoUpgrade, flagAutoUpgrade, "", "Auto-upgrade strategy: all, minor, or patch.")
 	cmd.Flags().StringVar(&f.Interval, flagInterval, defaultInterval, "Reconciliation interval for OCIRepository and HelmRelease.")
 	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication. Password is read from "+envRegistryPassword+" or prompted interactively.")
+	cmd.Flags().StringVar(&f.RegistryProvider, flagRegistryProvider, "", "Cloud provider for registry authentication via workload identity (aws, azure, gcp). When set, no registry Secret is created.")
 	cmd.Flags().StringSliceVar(&f.ValuesFrom, flagValuesFrom, nil, "Reference to a ConfigMap or Secret containing chart values (format: ConfigMap/name or Secret/name). Can be specified multiple times.")
 	cmd.Flags().BoolVar(&f.ManagementCluster, flagManagementCluster, false, "Deploy to the management cluster itself. Cluster name is derived from the current kubectl context.")
 	cmd.Flags().BoolVar(&f.DryRun, flagDryRun, false, "Perform server-side validation without applying. Prints manifests to stdout.")
@@ -104,6 +108,19 @@ func (f *flag) Validate() error {
 		}
 		if !valid {
 			return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagAutoUpgrade, strings.Join(validAutoUpgradeValues, ", "))
+		}
+	}
+
+	if f.RegistryProvider != "" {
+		valid := false
+		for _, v := range validRegistryProviders {
+			if f.RegistryProvider == v {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagRegistryProvider, strings.Join(validRegistryProviders, ", "))
 		}
 	}
 
