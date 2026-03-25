@@ -13,7 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- Add experimental and hidden `deploy chart` command. Note: the usage of this command is going to change very soon.
+- Add `deploy chart` command.
 
 ## [5.0.2] - 2026-03-10
 
