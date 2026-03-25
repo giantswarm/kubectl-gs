@@ -118,6 +118,19 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		}
 	}
 
+	// Validate values against chart schema if values are provided and a version is known.
+	if values != nil && version != "" {
+		annotations, err := ociClient.GetManifestAnnotations(ctx, registry, repoPath, version)
+		if err != nil {
+			_, _ = fmt.Fprintf(r.stderr, "Warning: could not fetch chart annotations for schema validation: %v\n", err)
+		} else if schemaURL, ok := annotations[deploychart.ValuesSchemaAnnotation]; ok && schemaURL != "" {
+			_, _ = fmt.Fprintf(r.stderr, "Validating values against schema...\n")
+			if err := deploychart.ValidateValuesAgainstSchema(ctx, values, schemaURL); err != nil {
+				return microerror.Mask(err)
+			}
+		}
+	}
+
 	// Connect to the cluster.
 	k8sClients, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
