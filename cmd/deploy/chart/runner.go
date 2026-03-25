@@ -170,7 +170,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	if !r.flag.ManagementCluster {
 		capiClusterGVR := schema.GroupVersionResource{
 			Group:    "cluster.x-k8s.io",
-			Version:  "v1beta1",
+			Version:  "v1beta2",
 			Resource: "clusters",
 		}
 		_, err = k8sClients.DynClient().Resource(capiClusterGVR).Namespace(namespace).Get(ctx, clusterName, metav1.GetOptions{})
