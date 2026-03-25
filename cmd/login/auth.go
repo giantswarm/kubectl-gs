@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/giantswarm/kubectl-gs/v6/pkg/credentialcache"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/kubeconfig"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
