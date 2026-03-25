@@ -77,7 +77,7 @@ func ValidateValuesAgainstSchema(values map[string]any, schemaURL string) error 
 	}
 
 	var b strings.Builder
-	b.WriteString("Values validation failed:\n\n")
+	b.WriteString("Values validation failed:\n \n")
 	for _, e := range rootErrors {
 		_, _ = fmt.Fprintf(&b, "%s\n", e)
 	}
