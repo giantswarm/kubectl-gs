@@ -12,6 +12,9 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
@@ -45,12 +48,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	resourceName := r.flag.Name
-	if resourceName == "" {
-		resourceName = fmt.Sprintf("%s-%s", r.flag.Cluster, r.flag.ChartName)
-	}
-
+func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	namespace := key.OrganizationNamespaceFromName(r.flag.Organization)
 
 	// Split the OCI URL prefix into registry host and repository prefix.
@@ -120,24 +118,88 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	}
 
+	// Connect to the cluster.
+	k8sClients, err := r.commonConfig.GetClient(r.logger)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Verify the organization namespace exists.
+	_, err = k8sClients.K8sClient().CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			return microerror.Maskf(invalidFlagError,
+				"the organization %q wasn't found\nPlease check for existing organizations using\n\n    kubectl gs get organizations",
+				r.flag.Organization)
+		}
+		return microerror.Mask(err)
+	}
+
+	// Detect CRD versions.
+	crdVersions, err := deploychart.DetectFluxCRDVersions(ctx, k8sClients.ExtClient())
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Resolve cluster name.
+	clusterName := r.flag.Cluster
+	if r.flag.ManagementCluster {
+		contextName, err := r.commonConfig.GetCurrentContextName()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		clusterName = deploychart.ClusterNameFromContext(contextName)
+	}
+
+	// Verify the target cluster exists (workload cluster mode only).
+	if !r.flag.ManagementCluster {
+		capiClusterGVR := schema.GroupVersionResource{
+			Group:    "cluster.x-k8s.io",
+			Version:  "v1beta1",
+			Resource: "clusters",
+		}
+		_, err = k8sClients.DynClient().Resource(capiClusterGVR).Namespace(namespace).Get(ctx, clusterName, metav1.GetOptions{})
+		if err != nil {
+			if k8serrors.IsNotFound(err) {
+				return microerror.Maskf(invalidFlagError,
+					"cluster %q not found in organization %q\n\n  Please check for existing clusters using\n\n    kubectl gs get clusters --namespace %s",
+					clusterName, r.flag.Organization, namespace)
+			}
+			return microerror.Mask(err)
+		}
+	}
+
+	// Compute resource name.
+	resourceName := r.flag.Name
+	if resourceName == "" {
+		resourceName = fmt.Sprintf("%s-%s", clusterName, r.flag.ChartName)
+	}
+	if len(resourceName) > 253 {
+		return microerror.Maskf(invalidFlagError, "resource name %q exceeds maximum length of 253 characters", resourceName)
+	}
+
+	// Build manifests with detected API versions.
 	ociRepoOpts := deploychart.OCIRepositoryOptions{
 		Name:        resourceName,
 		Namespace:   namespace,
-		ClusterName: r.flag.Cluster,
+		ClusterName: clusterName,
 		URL:         ociURL,
 		Version:     version,
 		AutoUpgrade: r.flag.AutoUpgrade,
 		Interval:    r.flag.Interval,
+		APIVersion:  crdVersions.OCIRepositoryAPIVersion,
 	}
 
 	helmReleaseOpts := deploychart.HelmReleaseOptions{
-		Name:            resourceName,
-		Namespace:       namespace,
-		ClusterName:     r.flag.Cluster,
-		ChartName:       r.flag.ChartName,
-		TargetNamespace: r.flag.TargetNS,
-		Interval:        r.flag.Interval,
-		Values:          values,
+		Name:              resourceName,
+		Namespace:         namespace,
+		ClusterName:       clusterName,
+		ChartName:         r.flag.ChartName,
+		TargetNamespace:   r.flag.TargetNS,
+		Interval:          r.flag.Interval,
+		Values:            values,
+		ManagementCluster: r.flag.ManagementCluster,
+		APIVersion:        crdVersions.HelmReleaseAPIVersion,
 	}
 
 	ociRepo := deploychart.BuildOCIRepository(ociRepoOpts)
@@ -153,7 +215,82 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
+	// Apply or dry-run each manifest.
+	dynClient := k8sClients.DynClient()
+	applyOpts := deploychart.ApplyOptions{DryRun: r.flag.DryRun}
+
+	manifests := []struct {
+		kind       string
+		apiVersion string
+		yaml       []byte
+	}{
+		{"OCIRepository", crdVersions.OCIRepositoryAPIVersion, ociRepoYAML},
+		{"HelmRelease", crdVersions.HelmReleaseAPIVersion, helmReleaseYAML},
+	}
+
+	for _, m := range manifests {
+		gvr, err := deploychart.ResourceGVR(m.apiVersion, m.kind)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		// Check if resource already exists.
+		existing, err := deploychart.GetExistingResource(ctx, dynClient, gvr, namespace, resourceName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if existing != nil && !r.flag.DryRun {
+			// Compute diff.
+			existingYAML, err := yaml.Marshal(existing.Object)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			diff, err := deploychart.DiffManifests(
+				fmt.Sprintf("%s/%s", namespace, resourceName),
+				existingYAML, m.yaml,
+			)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if diff != "" {
+				_, _ = fmt.Fprintf(r.stderr, "\n%s %s has changes:\n%s\n", m.kind, resourceName, diff)
+
+				if !term.IsTerminal(int(os.Stdin.Fd())) { //nolint:gosec // Fd() returns a small file descriptor
+					return microerror.Maskf(confirmationRequiredError, "resources already exist and have changes; run interactively or use --dry-run to preview")
+				}
+
+				confirmed, err := deploychart.AskConfirmation(
+					fmt.Sprintf("Apply changes to %s %s/%s?", m.kind, namespace, resourceName),
+					os.Stdin, r.stderr,
+				)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				if !confirmed {
+					return microerror.Maskf(applyAbortedError, "user declined changes to %s %s/%s", m.kind, namespace, resourceName)
+				}
+			}
+		}
+
+		err = deploychart.ApplyManifest(ctx, dynClient, m.yaml, applyOpts)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	// Print YAML to stdout.
 	_, _ = fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
+
+	// Print status to stderr.
+	if r.flag.DryRun {
+		_, _ = fmt.Fprintf(r.stderr, "Server-side dry-run succeeded.\n")
+	} else {
+		_, _ = fmt.Fprintf(r.stderr, "Applied OCIRepository %s/%s\n", namespace, resourceName)
+		_, _ = fmt.Fprintf(r.stderr, "Applied HelmRelease %s/%s\n", namespace, resourceName)
+	}
 
 	return nil
 }
