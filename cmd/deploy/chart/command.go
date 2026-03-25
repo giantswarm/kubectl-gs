@@ -136,7 +136,6 @@ func New(config Config) (*cobra.Command, error) {
 		Example: examples,
 		Args:    cobra.ExactArgs(0),
 		RunE:    r.Run,
-		Hidden:  true,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(*config.ConfigFlags),
 		),
