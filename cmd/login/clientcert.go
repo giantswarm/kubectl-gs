@@ -26,13 +26,13 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	kgslabel "github.com/giantswarm/kubectl-gs/v5/internal/label"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/clientcert"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/organization"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/release"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	kgslabel "github.com/giantswarm/kubectl-gs/v6/internal/label"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/clientcert"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/organization"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/release"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/kubeconfig"
 )
 
 const (
@@ -484,10 +484,9 @@ func getAllOrganizationNamespaces(ctx context.Context, organizationService organ
 
 func fetchCluster(ctx context.Context, clusterService cluster.Interface, provider, namespace, name string) (*cluster.Cluster, error) {
 	o := cluster.GetOptions{
-		Namespace:      namespace,
-		Name:           name,
-		Provider:       provider,
-		FallbackToCapi: true,
+		Namespace: namespace,
+		Name:      name,
+		Provider:  provider,
 	}
 
 	c, err := clusterService.Get(ctx, o)
@@ -555,21 +554,21 @@ func findCluster(ctx context.Context, clusterService cluster.Interface, organiza
 	default:
 		{
 			var errMsg strings.Builder
-			errMsg.WriteString(fmt.Sprintf("There are multiple workload clusters with the name %s:\n", name))
+			fmt.Fprintf(&errMsg, "There are multiple workload clusters with the name %s:\n", name)
 
 			i := 1
 			for c := range clustersCh {
-				org := c.Cluster.Labels[label.Organization]
+				org := c.Cluster.GetLabels()[label.Organization]
 				if len(org) < 1 {
 					org = "n/a"
 				}
 
-				errMsg.WriteString(fmt.Sprintf("%d. %s in organization %s\n", i, name, org))
+				fmt.Fprintf(&errMsg, "%d. %s in organization %s\n", i, name, org)
 
 				i++
 			}
 
-			errMsg.WriteString(fmt.Sprintf("\nUse the --%s flag to select one from a specific organization.", flagWCOrganization))
+			fmt.Fprintf(&errMsg, "\nUse the --%s flag to select one from a specific organization.", flagWCOrganization)
 
 			return nil, microerror.Maskf(multipleClustersFoundError, "%s", errMsg.String())
 		}

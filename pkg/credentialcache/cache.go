@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
 )
 
 const (
@@ -31,7 +30,7 @@ func Write(issuerURL, clientID, idToken, refreshToken string) error {
 		return err
 	}
 
-	data, err := json.Marshal(Entry{IDToken: idToken, RefreshToken: refreshToken})
+	data, err := json.Marshal(Entry{IDToken: idToken, RefreshToken: refreshToken}) //nolint:gosec // Field name matches pattern but contains no hardcoded credential
 	if err != nil {
 		return err
 	}
@@ -107,31 +106,6 @@ func WriteLocked(issuerURL, clientID, idToken, refreshToken string) error {
 func lockFilePath(issuerURL, clientID string) string {
 	hash := sha256.Sum256([]byte(fmt.Sprintf("%s:%s", issuerURL, clientID)))
 	return filepath.Join(cacheDir(), fmt.Sprintf("token-%x.lock", hash[:16]))
-}
-
-func lock(issuerURL, clientID string) (*os.File, error) {
-	lockPath := lockFilePath(issuerURL, clientID)
-
-	if err := os.MkdirAll(filepath.Dir(lockPath), 0700); err != nil {
-		return nil, err
-	}
-
-	f, err := os.OpenFile(lockPath, os.O_CREATE|os.O_RDWR, 0600)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
-		_ = f.Close()
-		return nil, err
-	}
-
-	return f, nil
-}
-
-func unlock(f *os.File) {
-	_ = syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
-	_ = f.Close()
 }
 
 func filePath(issuerURL, clientID string) string {

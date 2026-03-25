@@ -16,7 +16,7 @@ import (
 	"k8s.io/cli-runtime/pkg/printers"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
 
 const (
@@ -67,7 +67,7 @@ var (
 		},
 		{
 			DisplayName: "Machine Pool",
-			Name:        "machinepools.exp.cluster.x-k8s.io",
+			Name:        "machinepools.cluster.x-k8s.io",
 			Provider:    providerAll,
 		},
 		{

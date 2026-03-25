@@ -1,6 +1,6 @@
 package capvcd
 
-import "github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
+import "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 
 type ClusterConfig struct {
 	Global *Global `json:"global,omitempty"`
@@ -56,10 +56,11 @@ type MachineTemplate struct {
 }
 
 type Metadata struct {
-	Description     string `json:"description,omitempty"`
-	Name            string `json:"name,omitempty"`
-	Organization    string `json:"organization,omitempty"`
-	PreventDeletion bool   `json:"preventDeletion,omitempty"`
+	Description     string            `json:"description,omitempty"`
+	Labels          map[string]string `json:"labels,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	Organization    string            `json:"organization,omitempty"`
+	PreventDeletion bool              `json:"preventDeletion,omitempty"`
 }
 
 type NodePool struct {

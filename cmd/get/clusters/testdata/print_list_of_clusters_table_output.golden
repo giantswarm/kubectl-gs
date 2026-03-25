@@ -1,0 +1,7 @@
+NAME    AGE   PHASE   RELEASE   SERVICE PRIORITY   ORGANIZATION   DESCRIPTION
+1sad2   10h           12.0.0    highest            test           test cluster 1
+2a03f   10h           11.0.0    medium             test           test cluster 2
+asd29   10h           10.5.0    lowest             test           test cluster 3
+f930q   10h           11.0.0    n/a                some-other     test cluster 4
+9f012   10h           9.0.0     n/a                test           test cluster 5
+2f0as   10h           10.5.0    n/a                random         test cluster 6

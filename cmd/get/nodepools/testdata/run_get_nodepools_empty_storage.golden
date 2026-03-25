@@ -1,4 +1,1 @@
 No node pools found.
-To create a node pool, please check
-
-  kubectl gs template nodepool --help

@@ -11,15 +11,17 @@ import (
 	"github.com/spf13/cobra"
 	clientauthv1beta1 "k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/credentialcache"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/credentialcache"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
 )
 
 const (
-	envIssuerURL    = "KUBECTL_GS_OIDC_ISSUER_URL"
-	envClientID     = "KUBECTL_GS_OIDC_CLIENT_ID"
+	envIssuerURL = "KUBECTL_GS_OIDC_ISSUER_URL"
+	envClientID  = "KUBECTL_GS_OIDC_CLIENT_ID"
+	//nolint:gosec // Not a credential, just the env var name.
 	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
-	envIDToken      = "KUBECTL_GS_OIDC_ID_TOKEN"
+	//nolint:gosec // Not a credential, just the env var name.
+	envIDToken = "KUBECTL_GS_OIDC_ID_TOKEN"
 )
 
 type runner struct {

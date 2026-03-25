@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
 )
 
 const (

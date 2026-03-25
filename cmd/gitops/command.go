@@ -11,8 +11,8 @@ import (
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/gitops/add"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/gitops/initialize"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/add"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/initialize"
 )
 
 const (

@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/output"
 )
 
 type runner struct {
@@ -65,8 +65,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var resource cluster.Resource
 	{
 		options := cluster.GetOptions{
-			Provider:       r.provider,
-			FallbackToCapi: true,
+			Provider: r.provider,
 		}
 		{
 			if len(args) > 0 {

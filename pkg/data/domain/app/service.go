@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	catalogdata "github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/catalog"
+	catalogdata "github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/catalog"
 )
 
 var _ Interface = &Service{}

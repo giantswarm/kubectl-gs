@@ -14,7 +14,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"gopkg.in/square/go-jose.v2"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
 )
 
 type MockOidcServerConfig struct {
@@ -77,7 +77,7 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 				s.tokenFatalFailures--
 				return
 			}
-			_ = r.ParseForm()
+			_ = r.ParseForm() //nolint:gosec // Test server only
 			grantType := r.Form.Get(oidc.DeviceAuthKeyGrantType)
 			if grantType == oidc.DeviceAuthGrantType {
 				w.Header().Set("Content-Type", "application/json")
@@ -181,7 +181,7 @@ func getDeviceTokenResponseData(clientID, issuer string, key *rsa.PrivateKey) ([
 		RefreshToken: "refresh-token",
 		IdToken:      token,
 	}
-	return json.Marshal(data)
+	return json.Marshal(data) //nolint:gosec // Test server only
 }
 
 func getRawToken(clientID, issuer string, key *rsa.PrivateKey) (string, error) {

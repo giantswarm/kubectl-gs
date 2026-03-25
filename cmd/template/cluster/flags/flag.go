@@ -3,7 +3,6 @@ package flags
 import (
 	"fmt"
 	"net"
-	"regexp"
 	"strings"
 
 	"github.com/giantswarm/k8smetadata/pkg/label"
@@ -11,19 +10,15 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/labels"
 )
 
 const (
 	flagProvider          = "provider"
 	flagManagementCluster = "management-cluster"
 	flagPreventDeletion   = "prevent-deletion"
-
-	// AWS only.
-	flagAWSExternalSNAT       = "external-snat"
-	flagAWSControlPlaneSubnet = "control-plane-subnet"
 
 	flagAWSClusterRoleIdentityName                       = "aws-cluster-role-identity-name"
 	flagNetworkAZUsageLimit                              = "az-usage-limit"
@@ -161,11 +156,10 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Name of the management cluster. Only required in combination with certain parameters.")
 	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, false, "Prevent cluster from getting deleted (see https://docs.giantswarm.io/tutorials/fleet-management/deletion-prevention/)")
 
-	// AWS only.
+	// AWS / CAPA.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
 	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
-	cmd.Flags().BoolVar(&f.AWS.ExternalSNAT, flagAWSExternalSNAT, false, "AWS CNI configuration.")
 	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpProxy, flagAWSHttpProxy, "", "'HTTP_PROXY' env value configuration for the cluster, if not set, --https-proxy value will be used instead")
@@ -179,7 +173,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, FlagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
 
 	// aws control plane
-	cmd.Flags().StringVar(&f.AWS.ControlPlaneSubnet, flagAWSControlPlaneSubnet, "", "Subnet used for the Control Plane.")
 	cmd.Flags().StringArrayVar(&f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, nil, fmt.Sprintf("IPv4 address ranges that are allowed to connect to the control plane load balancer, in CIDR notation. When setting this flag, kubectl-gs automatically adds the NAT Gateway IPs of the management cluster so that the workload cluster can still be managed. If only the management cluster's IP ranges should be allowed, specify one empty value instead of an IP range ('--%s \"\"'). Supported for CAPA. You also need to specify --%s.", flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock, flagManagementCluster))
 	// aws machine pool
 	cmd.Flags().StringVar(&f.AWS.MachinePool.Name, flagAWSMachinePoolName, "nodepool0", "AWS Machine pool name")
@@ -296,8 +289,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 func (f *Flag) Validate(cmd *cobra.Command) error {
 	var err error
 	validProviders := []string{
-		key.ProviderAWS,
-		key.ProviderAzure,
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
 		key.ProviderEKS,
@@ -362,20 +353,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 	{
 		// Validate Master AZs.
 		switch f.Provider {
-		case key.ProviderAWS:
-			if len(f.ControlPlaneAZ) != 0 && len(f.ControlPlaneAZ) != 1 && len(f.ControlPlaneAZ) != 3 {
-				return microerror.Maskf(invalidFlagError, "--%s must be set to either one or three availability zone names", flagControlPlaneAZ)
-			}
-			if f.AWS.ControlPlaneSubnet != "" {
-				matchedSubnet, err := regexp.MatchString("^20|21|22|23|24|25$", f.AWS.ControlPlaneSubnet)
-				if err == nil && !matchedSubnet {
-					return microerror.Maskf(invalidFlagError, "--%s must be a valid subnet size (20, 21, 22, 23, 24 or 25)", flagAWSControlPlaneSubnet)
-				}
-			}
-		case key.ProviderAzure:
-			if len(f.ControlPlaneAZ) > 1 {
-				return microerror.Maskf(invalidFlagError, "--%s supports one availability zone only", flagControlPlaneAZ)
-			}
 		case key.ProviderVSphere:
 			if f.VSphere.NetworkName == "" {
 				return microerror.Maskf(invalidFlagError, "Provide the network name in vcenter (required) (--%s)", flagVSphereNetworkName)

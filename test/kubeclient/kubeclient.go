@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/scheme"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/scheme"
 )
 
 type fakeK8sClient struct {
@@ -40,7 +40,7 @@ func FakeK8sClient(objects ...runtime.Object) Interface {
 			panic(err)
 		}
 
-		clientSet := fakek8s.NewSimpleClientset()
+		clientSet := fakek8s.NewClientset()
 
 		k8sClient = &fakeK8sClient{
 			ctrlClient: fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build(),

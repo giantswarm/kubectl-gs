@@ -12,19 +12,20 @@ import (
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/utils/net"
-	capainfrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 
 	gsannotation "github.com/giantswarm/k8smetadata/pkg/annotation"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider/templates/capa"
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	templateapp "github.com/giantswarm/kubectl-gs/v5/pkg/template/app"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/capa"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	templateapp "github.com/giantswarm/kubectl-gs/v6/pkg/template/app"
 )
 
 const (
@@ -68,7 +69,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				return errors.New("logic error - ManagementCluster empty")
 			}
 
-			managementCluster := &capainfrav1.AWSCluster{}
+			managementCluster := &unstructured.Unstructured{}
+			managementCluster.SetGroupVersionKind(schema.GroupVersionKind{
+				Group:   "infrastructure.cluster.x-k8s.io",
+				Version: "v1beta2",
+				Kind:    "AWSCluster",
+			})
 			err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{
 				Namespace: "org-giantswarm",
 				Name:      config.ManagementCluster,
@@ -77,11 +83,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				return errors.Wrap(err, "failed to get management cluster's AWSCluster object")
 			}
 
-			if len(managementCluster.Status.Network.NatGatewaysIPs) == 0 {
+			natGatewayIPs, _, _ := unstructured.NestedStringSlice(managementCluster.Object, "status", "network", "natGatewaysIPs")
+			if len(natGatewayIPs) == 0 {
 				return errors.New("management cluster's AWSCluster object did not have the list `.status.networkStatus.natGatewaysIPs` filled yet, cannot determine IP ranges to allowlist")
 			}
 
-			for _, ip := range managementCluster.Status.Network.NatGatewaysIPs {
+			for _, ip := range natGatewayIPs {
 				var cidr string
 				if net.IsIPv4String(ip) {
 					cidr = ip + "/32"
@@ -224,6 +231,9 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		userConfigMap.Labels = map[string]string{}
 		userConfigMap.Labels[label.Cluster] = config.Name
+		for k, v := range config.Labels {
+			userConfigMap.Labels[k] = v
+		}
 		if config.PreventDeletion {
 			userConfigMap.Labels[label.PreventDeletion] = "true" //nolint:goconst
 		}
@@ -257,6 +267,9 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		// For cluster-<provider> charts, the webhook handles version mutation.
 		if common.IsReleaseVersion(config.ReleaseVersion) {
 			clusterAppConfig.Version = config.ReleaseVersion
+		}
+		for k, v := range config.Labels {
+			clusterAppConfig.ExtraLabels[k] = v
 		}
 		if config.PreventDeletion {
 			clusterAppConfig.ExtraLabels[label.PreventDeletion] = "true"
@@ -294,6 +307,7 @@ func BuildCapaClusterConfig(config common.ClusterConfig) capa.ClusterConfig {
 			Metadata: &capa.Metadata{
 				Name:            config.Name,
 				Description:     config.Description,
+				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},

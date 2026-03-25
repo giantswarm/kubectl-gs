@@ -10,36 +10,35 @@ import (
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	capi "sigs.k8s.io/cluster-api/api/v1beta1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
 )
 
-func (s *Service) getAllCommonCapi(ctx context.Context, namespace string) (Resource, error) {
-	var clusterList capi.ClusterList
-	{
-		err := s.client.List(ctx, &clusterList, runtimeClient.InNamespace(namespace))
-		if apierrors.IsForbidden(err) {
-			return nil, microerror.Mask(insufficientPermissionsError)
-		} else if err != nil {
-			return nil, microerror.Mask(err)
-		} else if len(clusterList.Items) == 0 {
-			return nil, microerror.Mask(noResourcesError)
-		}
+func (s *Service) getAll(ctx context.Context, namespace string) (Resource, error) {
+	clusterList := &unstructured.UnstructuredList{}
+	clusterList.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "cluster.x-k8s.io",
+		Version: "v1beta2",
+		Kind:    "ClusterList",
+	})
+
+	err := s.client.List(ctx, clusterList, runtimeClient.InNamespace(namespace))
+	if apierrors.IsForbidden(err) {
+		return nil, microerror.Mask(insufficientPermissionsError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	} else if len(clusterList.Items) == 0 {
+		return nil, microerror.Mask(noResourcesError)
 	}
 
 	var clusterAppList application.AppList
-	{
-		err := s.client.List(ctx, &clusterAppList, runtimeClient.InNamespace(namespace))
-		if apierrors.IsForbidden(err) {
-			return nil, microerror.Mask(insufficientPermissionsError)
-		} else if err != nil {
-			return nil, microerror.Mask(err)
-		} else if len(clusterList.Items) == 0 {
-			return nil, microerror.Mask(noResourcesError)
-		}
+	err = s.client.List(ctx, &clusterAppList, runtimeClient.InNamespace(namespace))
+	if apierrors.IsForbidden(err) {
+		return nil, microerror.Mask(insufficientPermissionsError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	clusterAppMap := map[runtimeClient.ObjectKey]application.App{}
@@ -62,19 +61,15 @@ func (s *Service) getAllCommonCapi(ctx context.Context, namespace string) (Resou
 	}
 
 	var clusterCollection Collection
-	for _, capiCluster := range clusterList.Items {
-		clusterCopy := capiCluster.DeepCopy()
-		clusterCopy.TypeMeta = meta.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
-			Kind:       "Cluster",
-		}
+	for i := range clusterList.Items {
+		item := &clusterList.Items[i]
 		cluster := Cluster{
-			Cluster: clusterCopy,
+			Cluster: item,
 		}
 
 		appKey := runtimeClient.ObjectKey{
-			Namespace: clusterCopy.Namespace,
-			Name:      clusterCopy.Name,
+			Namespace: item.GetNamespace(),
+			Name:      item.GetName(),
 		}
 		if clusterApp, ok := clusterAppMap[appKey]; ok {
 			cluster.ClusterApp = &clusterApp
@@ -89,29 +84,29 @@ func (s *Service) getAllCommonCapi(ctx context.Context, namespace string) (Resou
 	return &clusterCollection, nil
 }
 
-func (s *Service) getByNameCommonCapi(ctx context.Context, name, namespace string) (Resource, error) {
+func (s *Service) getByName(ctx context.Context, name, namespace string) (Resource, error) {
 	var cluster Cluster
 
-	{
-		var capiCluster capi.Cluster
-		err := s.client.Get(ctx, runtimeClient.ObjectKey{
-			Namespace: namespace,
-			Name:      name,
-		}, &capiCluster)
-		if apierrors.IsForbidden(err) {
-			return nil, microerror.Mask(insufficientPermissionsError)
-		} else if apierrors.IsNotFound(err) {
-			return nil, microerror.Mask(notFoundError)
-		} else if err != nil {
-			return nil, microerror.Mask(err)
-		}
+	capiCluster := &unstructured.Unstructured{}
+	capiCluster.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "cluster.x-k8s.io",
+		Version: "v1beta2",
+		Kind:    "Cluster",
+	})
 
-		capiCluster.TypeMeta = meta.TypeMeta{
-			APIVersion: "cluster.x-k8s.io/v1beta1",
-			Kind:       "Cluster",
-		}
-		cluster.Cluster = &capiCluster
+	err := s.client.Get(ctx, runtimeClient.ObjectKey{
+		Namespace: namespace,
+		Name:      name,
+	}, capiCluster)
+	if apierrors.IsForbidden(err) {
+		return nil, microerror.Mask(insufficientPermissionsError)
+	} else if apierrors.IsNotFound(err) {
+		return nil, microerror.Mask(notFoundError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
 	}
+
+	cluster.Cluster = capiCluster
 
 	{
 		var clusterApp application.App
@@ -163,84 +158,18 @@ func (s *Service) Get(ctx context.Context, options GetOptions) (Resource, error)
 	var err error
 
 	if len(options.Name) > 0 {
-		resource, err = s.getByName(ctx, options.Provider, options.Name, options.Namespace, options.FallbackToCapi)
+		resource, err = s.getByName(ctx, options.Name, options.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	} else {
-		resource, err = s.getAll(ctx, options.Provider, options.Namespace, options.FallbackToCapi)
+		resource, err = s.getAll(ctx, options.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	return resource, nil
-}
-
-func (s *Service) getByName(ctx context.Context, provider, name, namespace string, fallbackToCapi bool) (Resource, error) {
-	var err error
-
-	var cluster Resource
-	{
-		switch provider {
-		case key.ProviderAWS:
-			cluster, err = s.getByNameAWS(ctx, name, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderAzure:
-			cluster, err = s.getByNameAzure(ctx, name, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		default:
-			if !fallbackToCapi {
-				return nil, microerror.Mask(invalidProviderError)
-			}
-
-			cluster, err = s.getByNameCommonCapi(ctx, name, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		}
-	}
-
-	return cluster, nil
-}
-
-func (s *Service) getAll(ctx context.Context, provider, namespace string, fallbackToCapi bool) (Resource, error) {
-	var err error
-
-	var clusterCollection Resource
-	{
-		switch provider {
-		case key.ProviderAWS:
-			clusterCollection, err = s.getAllAWS(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		case key.ProviderAzure:
-			clusterCollection, err = s.getAllAzure(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-		default:
-			if !fallbackToCapi {
-				return nil, microerror.Mask(invalidProviderError)
-			}
-
-			clusterCollection, err = s.getAllCommonCapi(ctx, namespace)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		}
-	}
-
-	return clusterCollection, nil
 }
 
 func (s *Service) Patch(ctx context.Context, object runtimeClient.Object, options PatchOptions) error {

@@ -14,12 +14,12 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/flags"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster/provider"
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/labels"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/flags"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider"
+	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/labels"
 )
 
 type runner struct {
@@ -74,16 +74,6 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 	}
 
 	switch r.flag.Provider {
-	case key.ProviderAWS:
-		err = provider.WriteAWSTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	case key.ProviderAzure:
-		err = provider.WriteAzureTemplate(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	case key.ProviderCAPA:
 		err = provider.WriteCAPATemplate(ctx, client, output, config)
 		if err != nil {
@@ -163,9 +153,7 @@ func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
 		return common.ClusterConfig{}, microerror.Mask(err)
 	}
 
-	if r.flag.Provider != key.ProviderAWS {
-		config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
-	}
+	config.Namespace = key.OrganizationNamespaceFromName(config.Organization)
 
 	return config, nil
 }

@@ -13,22 +13,23 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/credentialplugin"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/get"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/gitops"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/login"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/selfupdate"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/update"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/validate"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/project"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/credentialplugin"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/deploy"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/get"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/login"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/selfupdate"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/update"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/validate"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/project"
 )
 
 const (
 	name        = "kubectl-gs"
 	description = `Your user-friendly kubectl plug-in for the Giant Swarm management cluster.
 
-Get more information at https://docs.giantswarm.io/use-the-api/kubectl-gs/
+Get more information at https://docs.giantswarm.io/reference/kubectl-gs/
 `
 	telemetrydeckAppID = "4539763B-A291-4835-B832-9BEB80CA7039"
 
@@ -201,6 +202,24 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var deployCmd *cobra.Command
+	{
+		c := deploy.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			ConfigFlags: &f.config,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		deployCmd, err = deploy.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var updateCmd *cobra.Command
 	{
 		c := update.Config{
@@ -246,6 +265,7 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	c.AddCommand(deployCmd)
 	c.AddCommand(getCmd)
 	c.AddCommand(gitopsCmd)
 	c.AddCommand(loginCmd)

@@ -7,6 +7,43 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Migrate `cluster.x-k8s.io` API usage from `v1beta1` to `v1beta2`. MachinePool CRD reference updated from `exp.cluster.x-k8s.io` to `cluster.x-k8s.io`.
+
+### Added
+
+- Add experimental and hidden `deploy chart` command. Note: the usage of this command is going to change very soon.
+
+## [5.0.2] - 2026-03-10
+
+### Fixed
+
+- Fix Windows build failure caused by `syscall.Flock` usage in credential cache (not available on Windows).
+
+## [5.0.1] - 2026-03-10
+
+### Fixed
+
+- Apply `--label` flag values to the Cluster CR via Helm values (`global.metadata.labels`), the App CR, and the ConfigMap when using `template cluster`.
+
+## [5.0.0] - 2026-03-10
+
+### Removed
+
+- Remove `template nodepool` command.
+- Remove `template networkpool` command.
+- Remove AWS vintage and Azure vintage providers from `template cluster` command.
+- Remove AWS vintage and Azure vintage providers from `get clusters` and `get nodepools` commands.
+- Remove typed dependencies on `sigs.k8s.io/cluster-api`, `sigs.k8s.io/cluster-api-provider-aws`, and `sigs.k8s.io/cluster-api-provider-azure` in favor of unstructured objects.
+
+### Fixed
+
+- Fix flaky nodepool, orgs, and clusters tests caused by timing race in AGE column rendering.
+- Update documentation URL from `docs.giantswarm.io/use-the-api/kubectl-gs/` to `docs.giantswarm.io/reference/kubectl-gs/`.
+
+## [4.12.0] - 2026-03-04
+
 ### Added
 
 - Add locks to cache writing when doing `kubectl-gs login` to prevent race-condition between multiple kubectl calls.
@@ -267,6 +304,10 @@ No significant changes compared to v2.52.0. This release was made to ensure the 
 
 ## [2.49.1] - 2023-12-06
 
+### Changed
+
+- Updated Go version.
+
 ## [2.49.0] - 2023-12-05
 
 ### Changed
@@ -317,9 +358,16 @@ No significant changes compared to v2.52.0. This release was made to ensure the 
 
 ## [2.45.3] - 2023-10-26
 
-## [2.45.3] - 2023-10-26
+### Changed
+
+- Updated Go version.
 
 ## [2.45.2] - 2023-10-26
+
+### Fixed
+
+- Bump Go version to prevent build error during release for darwin.
+- Address `rand.Seed` deprecation in Go 1.20.
 
 ## [2.45.1] - 2023-10-26
 
@@ -548,6 +596,11 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 ## [2.28.2] - 2022-11-16
 
+### Fixed
+
+- The `kubectl-gs login` command no longer writes to the main kubeconfig file in case there are no changes in access tokens and/or the current context.
+- Using the `--context` flag will no longer modify the current context setting in kubeconfig.
+
 ## [2.28.1] - 2022-11-09
 
 ### Changed
@@ -669,7 +722,7 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 ## [2.20.0] - 2022-09-02
 
-## Added
+### Added
 
 - Introduced `kubectl gs gitops` family of commands.
 
@@ -693,7 +746,7 @@ As part of our automatic upgrades journey, we have learnt that cluster chart sho
 
 - Fix nil pointer panic in `template nodepool` command.
 
-# [2.19.0] - 2022-08-12
+## [2.19.0] - 2022-08-12
 
 ### Changed
 
@@ -1430,6 +1483,10 @@ can be set to false to disable this.
 
 ## [0.18.0] - 2020-12-14
 
+### Removed
+
+- Remove default value for `--provider` flag in `template cluster` and `template nodepool` commands.
+
 ## [0.17.0] - 2020-12-14
 
 ### Changed
@@ -1655,7 +1712,11 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v4.11.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.2...HEAD
+[5.0.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.1...v5.0.2
+[5.0.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.0...v5.0.1
+[5.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.12.0...v5.0.0
+[4.12.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.11.0...v4.12.0
 [4.11.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.1...v4.11.0
 [4.10.1]: https://github.com/giantswarm/kubectl-gs/compare/v4.10.0...v4.10.1
 [4.10.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.9.1...v4.10.0

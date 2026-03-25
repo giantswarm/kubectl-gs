@@ -7,10 +7,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/get/clusters/provider"
-	"github.com/giantswarm/kubectl-gs/v5/internal/key"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/output"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/get/clusters/provider"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/output"
 )
 
 func (r *runner) printOutput(clusterResource cluster.Resource) error {
@@ -22,12 +21,7 @@ func (r *runner) printOutput(clusterResource cluster.Resource) error {
 
 	switch {
 	case output.IsOutputDefault(r.flag.print.OutputFormat):
-		switch r.provider {
-		case key.ProviderAWS:
-			resource = provider.GetAWSTable(clusterResource)
-		default:
-			resource = provider.GetCommonClusterTable(clusterResource)
-		}
+		resource = provider.GetCommonClusterTable(clusterResource)
 
 		printOptions := printers.PrintOptions{
 			WithNamespace: r.flag.AllNamespaces,

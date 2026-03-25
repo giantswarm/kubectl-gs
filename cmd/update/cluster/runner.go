@@ -14,9 +14,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/giantswarm/kubectl-gs/v5/internal/label"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/data/domain/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/internal/label"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/data/domain/cluster"
 )
 
 type runner struct {
@@ -106,7 +106,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if scheduledTime != "" {
 		patchSpecs := make([]cluster.PatchSpec, 0)
-		if resource.Cluster.Annotations == nil {
+		if resource.Cluster.GetAnnotations() == nil {
 			patchSpecs = append(patchSpecs, cluster.PatchSpec{
 				Op:    "add",
 				Path:  "/metadata/annotations",

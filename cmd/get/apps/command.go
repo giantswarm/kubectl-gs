@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/middleware/renewtoken"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/middleware"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/middleware/renewtoken"
 )
 
 const (
@@ -31,7 +31,7 @@ Output columns:
 
 	examples = `  # List all apps for the current namespace
   kubectl gs get apps
-  
+
   # Get one app by its name
   kubectl gs get app coredns`
 )

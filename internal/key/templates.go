@@ -21,24 +21,6 @@ const CatalogCRTemplate = `
 {{ .CatalogCR -}}
 `
 
-const ClusterAWSCRsTemplate = `
-{{- .ClusterCR -}}
----
-{{ .AWSClusterCR -}}
----
-{{ .G8sControlPlaneCR -}}
----
-{{ .AWSControlPlaneCR -}}
-`
-
-const ClusterAzureCRsTemplate = `
-{{- .ProviderClusterCR -}}
----
-{{ .ClusterCR -}}
----
-{{ .MasterMachineCR -}}
-`
-
 const ClusterCAPACRsTemplate = `
 {{- .ClusterCR -}}
 ---
@@ -63,16 +45,6 @@ const ClusterEKSCRsTemplate = `
 {{ .AWSManagedControlPlaneCR -}}
 ---
 {{ .AWSClusterRoleIdentityCR -}}
-`
-
-const MachineDeploymentCRsTemplate = `
-{{- .MachineDeploymentCR -}}
----
-{{ .AWSMachineDeploymentCR -}}
-`
-
-const NetworkPoolCRsTemplate = `
-{{- .NetworkPoolCR -}}
 `
 
 const MachinePoolAWSCRsTemplate = `

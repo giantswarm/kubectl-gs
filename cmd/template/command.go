@@ -9,13 +9,11 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/app"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/catalog"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/cluster"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/networkpool"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/nodepool"
-	"github.com/giantswarm/kubectl-gs/v5/cmd/template/organization"
-	"github.com/giantswarm/kubectl-gs/v5/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/app"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/catalog"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/organization"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
 
 const (
@@ -89,37 +87,6 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
-	var nodepoolCmd *cobra.Command
-	{
-		c := nodepool.Config{
-			Logger: config.Logger,
-
-			ConfigFlags: config.ConfigFlags,
-
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		nodepoolCmd, err = nodepool.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var networkpoolCmd *cobra.Command
-	{
-		c := networkpool.Config{
-			Logger: config.Logger,
-			Stderr: config.Stderr,
-			Stdout: config.Stdout,
-		}
-
-		networkpoolCmd, err = networkpool.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var organizationCmd *cobra.Command
 	{
 		c := organization.Config{
@@ -158,8 +125,6 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(appCmd)
 	c.AddCommand(appcatalogCmd)
 	c.AddCommand(clusterCmd)
-	c.AddCommand(networkpoolCmd)
-	c.AddCommand(nodepoolCmd)
 	c.AddCommand(organizationCmd)
 
 	return c, nil
