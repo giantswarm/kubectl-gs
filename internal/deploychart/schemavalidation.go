@@ -2,8 +2,8 @@ package deploychart
 
 import (
 	"bytes"
-	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -19,12 +19,15 @@ const (
 	ValuesSchemaAnnotation = "io.giantswarm.application.values-schema"
 
 	schemaFetchTimeout = 30 * time.Second
+
+	// maxSchemaSize is the maximum size of a fetched schema document (10 MB).
+	maxSchemaSize = 10 * 1024 * 1024
 )
 
 // ValidateValuesAgainstSchema fetches a JSON Schema from schemaURL and validates
 // the given values against it. External $ref URLs (http/https) are resolved
 // automatically. Returns nil if validation passes.
-func ValidateValuesAgainstSchema(_ context.Context, values map[string]any, schemaURL string) error {
+func ValidateValuesAgainstSchema(values map[string]any, schemaURL string) error {
 	compiler := jsonschema.NewCompiler()
 	compiler.UseLoader(newSchemeURLLoader())
 
@@ -74,7 +77,7 @@ func ValidateValuesAgainstSchema(_ context.Context, values map[string]any, schem
 	}
 
 	var b strings.Builder
-	b.WriteString("values validation failed:\n \n")
+	b.WriteString("Values validation failed:\n \n")
 	for _, e := range rootErrors {
 		_, _ = fmt.Fprintf(&b, "%s\n", e)
 	}
@@ -98,7 +101,7 @@ type httpURLLoader http.Client
 
 func (l *httpURLLoader) Load(url string) (any, error) {
 	client := (*http.Client)(l)
-	resp, err := client.Get(url) //nolint:gosec // URL comes from chart schema $ref, not user input.
+	resp, err := client.Get(url) //nolint:gosec // URL comes from chart schema $ref — expected to be an external HTTP resource.
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +111,7 @@ func (l *httpURLLoader) Load(url string) (any, error) {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	return jsonschema.UnmarshalJSON(resp.Body)
+	return jsonschema.UnmarshalJSON(io.LimitReader(resp.Body, maxSchemaSize))
 }
 
 func newHTTPURLLoader() *httpURLLoader {

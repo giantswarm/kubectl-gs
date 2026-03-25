@@ -1,7 +1,6 @@
 package deploychart
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -83,7 +82,7 @@ func TestValidateValuesAgainstSchema(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateValuesAgainstSchema(context.Background(), tc.values, srv.URL+"/schema.json")
+			err := ValidateValuesAgainstSchema(tc.values, srv.URL+"/schema.json")
 			if tc.wantErr {
 				if err == nil {
 					t.Fatal("expected error, got nil")
@@ -106,7 +105,7 @@ func TestValidateValuesAgainstSchema_SchemaNotFound(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	err := ValidateValuesAgainstSchema(context.Background(), map[string]any{"key": "value"}, srv.URL+"/schema.json")
+	err := ValidateValuesAgainstSchema(map[string]any{"key": "value"}, srv.URL+"/schema.json")
 	if err == nil {
 		t.Fatal("expected error for 404 schema")
 	}
@@ -146,7 +145,7 @@ func TestValidateValuesAgainstSchema_InvalidSchema(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			err := ValidateValuesAgainstSchema(context.Background(), map[string]any{"key": "value"}, srv.URL+"/schema.json")
+			err := ValidateValuesAgainstSchema(map[string]any{"key": "value"}, srv.URL+"/schema.json")
 			if err == nil {
 				t.Fatal("expected error for invalid schema")
 			}
@@ -188,13 +187,13 @@ func TestValidateValuesAgainstSchema_ExternalRef(t *testing.T) {
 	defer srv.Close()
 
 	// Valid port.
-	err := ValidateValuesAgainstSchema(context.Background(), map[string]any{"port": 8080}, srv.URL+"/schema.json")
+	err := ValidateValuesAgainstSchema(map[string]any{"port": 8080}, srv.URL+"/schema.json")
 	if err != nil {
 		t.Fatalf("expected valid, got: %v", err)
 	}
 
 	// Invalid port (out of range).
-	err = ValidateValuesAgainstSchema(context.Background(), map[string]any{"port": 99999}, srv.URL+"/schema.json")
+	err = ValidateValuesAgainstSchema(map[string]any{"port": 99999}, srv.URL+"/schema.json")
 	if err == nil {
 		t.Fatal("expected validation error for out-of-range port")
 	}
