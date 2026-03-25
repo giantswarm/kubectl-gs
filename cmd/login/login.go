@@ -49,7 +49,7 @@ func (r *runner) loginWithKubeContextName(ctx context.Context, contextName strin
 
 	if newLoginRequired || r.loginOptions.selfContained {
 		authType := kubeconfig.GetAuthType(config, contextName)
-		if authType == kubeconfig.AuthTypeAuthProvider {
+		if authType == kubeconfig.AuthTypeAuthProvider || authType == kubeconfig.AuthTypeExec {
 			// If we get here, we are sure that the kubeconfig context exists.
 			server, _ := kubeconfig.GetClusterServer(config, contextName)
 
@@ -184,7 +184,9 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 
 	// Write the new session's tokens to the credential cache.
 	if authResult.clientID != "" {
-		_ = credentialcache.Write(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken)
+		if err := credentialcache.Write(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken); err != nil {
+			_, _ = fmt.Fprintf(r.stderr, color.YellowString("Warning: failed to write token cache, token renewal may require re-login sooner: %v\n"), err)
+		}
 	}
 
 	if len(authResult.email) > 0 {
