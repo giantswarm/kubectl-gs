@@ -284,6 +284,47 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "ConfigMap/name or Secret/name",
 		},
 		{
+			name: "registry-provider aws is valid",
+			flag: flag{
+				ChartName:        "hello-world-app",
+				Organization:     "acme",
+				Cluster:          "mycluster01",
+				TargetNS:         "hello",
+				OCIURLPrefix:     defaultOCIURLPrefix,
+				Interval:         defaultInterval,
+				RegistryProvider: "aws",
+			},
+		},
+		{
+			name: "registry-provider invalid value",
+			flag: flag{
+				ChartName:        "hello-world-app",
+				Organization:     "acme",
+				Cluster:          "mycluster01",
+				TargetNS:         "hello",
+				OCIURLPrefix:     defaultOCIURLPrefix,
+				Interval:         defaultInterval,
+				RegistryProvider: "invalid",
+			},
+			wantErr: true,
+			errMsg:  "registry-provider",
+		},
+		{
+			name: "registry-provider and registry-username mutually exclusive",
+			flag: flag{
+				ChartName:        "hello-world-app",
+				Organization:     "acme",
+				Cluster:          "mycluster01",
+				TargetNS:         "hello",
+				OCIURLPrefix:     defaultOCIURLPrefix,
+				Interval:         defaultInterval,
+				RegistryProvider: "aws",
+				RegistryUsername: "myuser",
+			},
+			wantErr: true,
+			errMsg:  "mutually exclusive",
+		},
+		{
 			name: "values-from invalid kind",
 			flag: flag{
 				ChartName:    "hello-world-app",

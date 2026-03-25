@@ -170,7 +170,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	if !r.flag.ManagementCluster {
 		capiClusterGVR := schema.GroupVersionResource{
 			Group:    "cluster.x-k8s.io",
-			Version:  "v1beta1",
+			Version:  "v1beta2",
 			Resource: "clusters",
 		}
 		_, err = k8sClients.DynClient().Resource(capiClusterGVR).Namespace(namespace).Get(ctx, clusterName, metav1.GetOptions{})
@@ -193,6 +193,17 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		return microerror.Maskf(invalidFlagError, "resource name %q exceeds maximum length of 253 characters", resourceName)
 	}
 
+	// Determine registry Secret name and provider for OCIRepository.
+	var registrySecretName string
+	registryProvider := r.flag.RegistryProvider
+
+	// When credentials are provided and no cloud provider is set, we create a
+	// docker-registry Secret for Flux to use. When --registry-provider is set,
+	// Flux uses workload identity — credentials are client-side only.
+	if r.flag.RegistryUsername != "" && registryPassword != "" && registryProvider == "" {
+		registrySecretName = resourceName + "-registry"
+	}
+
 	// Build manifests with detected API versions.
 	ociRepoOpts := deploychart.OCIRepositoryOptions{
 		Name:        resourceName,
@@ -203,6 +214,8 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		AutoUpgrade: r.flag.AutoUpgrade,
 		Interval:    r.flag.Interval,
 		APIVersion:  crdVersions.OCIRepositoryAPIVersion,
+		SecretRef:   registrySecretName,
+		Provider:    registryProvider,
 	}
 
 	// Parse --values-from references.
@@ -228,6 +241,26 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	ociRepo := deploychart.BuildOCIRepository(ociRepoOpts)
 	helmRelease := deploychart.BuildHelmRelease(helmReleaseOpts)
 
+	// Build registry Secret if needed.
+	var registrySecretYAML []byte
+	if registrySecretName != "" {
+		secret, err := deploychart.BuildRegistrySecret(deploychart.RegistrySecretOptions{
+			Name:        registrySecretName,
+			Namespace:   namespace,
+			ClusterName: clusterName,
+			Registry:    registry,
+			Username:    r.flag.RegistryUsername,
+			Password:    registryPassword,
+		})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		registrySecretYAML, err = deploychart.MarshalManifest(secret)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	ociRepoYAML, err := deploychart.MarshalManifest(ociRepo)
 	if err != nil {
 		return microerror.Mask(err)
@@ -242,14 +275,21 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	dynClient := k8sClients.DynClient()
 	applyOpts := deploychart.ApplyOptions{DryRun: r.flag.DryRun}
 
-	manifests := []struct {
-		kind       string
-		apiVersion string
-		yaml       []byte
-	}{
-		{"OCIRepository", crdVersions.OCIRepositoryAPIVersion, ociRepoYAML},
-		{"HelmRelease", crdVersions.HelmReleaseAPIVersion, helmReleaseYAML},
+	type manifest struct {
+		kind         string
+		apiVersion   string
+		resourceName string
+		yaml         []byte
 	}
+
+	var manifests []manifest
+	if registrySecretYAML != nil {
+		manifests = append(manifests, manifest{"Secret", "v1", registrySecretName, registrySecretYAML})
+	}
+	manifests = append(manifests,
+		manifest{"OCIRepository", crdVersions.OCIRepositoryAPIVersion, resourceName, ociRepoYAML},
+		manifest{"HelmRelease", crdVersions.HelmReleaseAPIVersion, resourceName, helmReleaseYAML},
+	)
 
 	for _, m := range manifests {
 		gvr, err := deploychart.ResourceGVR(m.apiVersion, m.kind)
@@ -258,7 +298,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		}
 
 		// Check if resource already exists.
-		existing, err := deploychart.GetExistingResource(ctx, dynClient, gvr, namespace, resourceName)
+		existing, err := deploychart.GetExistingResource(ctx, dynClient, gvr, namespace, m.resourceName)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -271,7 +311,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 			}
 
 			diff, err := deploychart.DiffManifests(
-				fmt.Sprintf("%s/%s", namespace, resourceName),
+				fmt.Sprintf("%s/%s", namespace, m.resourceName),
 				existingYAML, m.yaml,
 			)
 			if err != nil {
@@ -279,21 +319,21 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 			}
 
 			if diff != "" {
-				_, _ = fmt.Fprintf(r.stderr, "\n%s %s has changes:\n%s\n", m.kind, resourceName, diff)
+				_, _ = fmt.Fprintf(r.stderr, "\n%s %s has changes:\n%s\n", m.kind, m.resourceName, diff)
 
 				if !term.IsTerminal(int(os.Stdin.Fd())) { //nolint:gosec // Fd() returns a small file descriptor
 					return microerror.Maskf(confirmationRequiredError, "resources already exist and have changes; run interactively or use --dry-run to preview")
 				}
 
 				confirmed, err := deploychart.AskConfirmation(
-					fmt.Sprintf("Apply changes to %s %s/%s?", m.kind, namespace, resourceName),
+					fmt.Sprintf("Apply changes to %s %s/%s?", m.kind, namespace, m.resourceName),
 					os.Stdin, r.stderr,
 				)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 				if !confirmed {
-					return microerror.Maskf(applyAbortedError, "user declined changes to %s %s/%s", m.kind, namespace, resourceName)
+					return microerror.Maskf(applyAbortedError, "user declined changes to %s %s/%s", m.kind, namespace, m.resourceName)
 				}
 			}
 		}
@@ -305,14 +345,20 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	}
 
 	// Print YAML to stdout.
-	_, _ = fmt.Fprintf(r.stdout, "%s---\n%s", string(ociRepoYAML), string(helmReleaseYAML))
+	for i, m := range manifests {
+		_, _ = fmt.Fprintf(r.stdout, "%s", string(m.yaml))
+		if i < len(manifests)-1 {
+			_, _ = fmt.Fprintf(r.stdout, "---\n")
+		}
+	}
 
 	// Print status to stderr.
 	if r.flag.DryRun {
 		_, _ = fmt.Fprintf(r.stderr, "Server-side dry-run succeeded.\n")
 	} else {
-		_, _ = fmt.Fprintf(r.stderr, "Applied OCIRepository %s/%s\n", namespace, resourceName)
-		_, _ = fmt.Fprintf(r.stderr, "Applied HelmRelease %s/%s\n", namespace, resourceName)
+		for _, m := range manifests {
+			_, _ = fmt.Fprintf(r.stderr, "Applied %s %s/%s\n", m.kind, namespace, m.resourceName)
+		}
 	}
 
 	return nil

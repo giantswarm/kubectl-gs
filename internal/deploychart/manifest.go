@@ -21,6 +21,8 @@ type OCIRepositoryOptions struct {
 	AutoUpgrade string
 	Interval    string
 	APIVersion  string // If set, overrides the default API version.
+	SecretRef   string // If set, adds spec.secretRef pointing to this Secret name.
+	Provider    string // If set, overrides the default "generic" provider (aws, azure, gcp).
 }
 
 // ValuesFromReference describes a reference to a ConfigMap or Secret
@@ -46,6 +48,11 @@ type HelmReleaseOptions struct {
 func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository {
 	interval := parseDuration(opts.Interval)
 
+	provider := "generic"
+	if opts.Provider != "" {
+		provider = opts.Provider
+	}
+
 	repo := &sourcev1beta2.OCIRepository{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: sourcev1beta2.GroupVersion.String(),
@@ -61,12 +68,18 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository 
 		Spec: sourcev1beta2.OCIRepositorySpec{
 			Interval: metav1.Duration{Duration: interval},
 			URL:      opts.URL,
-			Provider: "generic",
+			Provider: provider,
 		},
 	}
 
 	if opts.Version != "" || opts.AutoUpgrade != "" {
 		repo.Spec.Reference = buildOCIRef(opts.Version, opts.AutoUpgrade)
+	}
+
+	if opts.SecretRef != "" {
+		repo.Spec.SecretRef = &meta.LocalObjectReference{
+			Name: opts.SecretRef,
+		}
 	}
 
 	if opts.APIVersion != "" {
