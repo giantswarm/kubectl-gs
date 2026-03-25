@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/giantswarm/kubectl-gs/v5/pkg/credentialcache"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/kubeconfig"
 	"github.com/giantswarm/kubectl-gs/v5/pkg/oidc"
@@ -223,6 +224,16 @@ func oidcExec(issuerURL, clientID, idToken, refreshToken string) *clientcmdapi.E
 	}
 }
 
+// execEnvVar returns the value of the named variable from an ExecConfig's Env list.
+func execEnvVar(exec *clientcmdapi.ExecConfig, name string) string {
+	for _, env := range exec.Env {
+		if env.Name == name {
+			return env.Value
+		}
+	}
+	return ""
+}
+
 // switchContext modifies the existing kubeconfig, and switches the currently
 // active context to the one specified.
 func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, newContextName string, switchContext bool) error {
@@ -242,6 +253,41 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 	authType := kubeconfig.GetAuthType(config, newContextName)
 	switch authType {
 	case kubeconfig.AuthTypeExec:
+		execConfig, exists := kubeconfig.GetExecConfig(config, newContextName)
+		if !exists {
+			return microerror.Maskf(incorrectConfigurationError, "There is no exec authentication configuration for the '%s' context", newContextName)
+		}
+
+		issuerURL := execEnvVar(execConfig, "KUBECTL_GS_OIDC_ISSUER_URL")
+		clientID := execEnvVar(execConfig, "KUBECTL_GS_OIDC_CLIENT_ID")
+		refreshToken := execEnvVar(execConfig, "KUBECTL_GS_OIDC_REFRESH_TOKEN")
+
+		if issuerURL == "" || clientID == "" || refreshToken == "" {
+			return microerror.Maskf(incorrectConfigurationError, "The exec authentication configuration for '%s' is incomplete, please log in again using a URL.", newContextName)
+		}
+
+		// Check if a valid token exists in the cache.
+		cached, _ := credentialcache.Read(issuerURL, clientID)
+		if !oidc.IsValidIDToken(cached.IDToken) {
+			// Token is expired or absent; attempt renewal before switching context.
+			rt := refreshToken
+			if cached.RefreshToken != "" {
+				rt = cached.RefreshToken
+			}
+
+			auther, err := oidc.New(ctx, oidc.Config{Issuer: issuerURL, ClientID: clientID})
+			if err != nil {
+				return microerror.Mask(tokenRenewalFailedError)
+			}
+
+			idToken, newRT, err := auther.RenewToken(ctx, rt)
+			if err != nil {
+				return microerror.Mask(tokenRenewalFailedError)
+			}
+
+			_ = credentialcache.Write(issuerURL, clientID, idToken, newRT)
+		}
+
 		if isContextAlreadySelected {
 			return microerror.Mask(contextAlreadySelectedError)
 		}
