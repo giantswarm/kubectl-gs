@@ -23,6 +23,13 @@ type OCIRepositoryOptions struct {
 	APIVersion  string // If set, overrides the default API version.
 }
 
+// ValuesFromReference describes a reference to a ConfigMap or Secret
+// containing values for the HelmRelease.
+type ValuesFromReference struct {
+	Kind string // "ConfigMap" or "Secret"
+	Name string
+}
+
 type HelmReleaseOptions struct {
 	Name              string
 	Namespace         string
@@ -31,6 +38,7 @@ type HelmReleaseOptions struct {
 	TargetNamespace   string
 	Interval          string
 	Values            map[string]any
+	ValuesFrom        []ValuesFromReference
 	ManagementCluster bool
 	APIVersion        string // If set, overrides the default API version.
 }
@@ -108,6 +116,13 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 	if opts.Values != nil {
 		raw, _ := json.Marshal(opts.Values)
 		hr.Spec.Values = &apiextensionsv1.JSON{Raw: raw}
+	}
+
+	for _, vf := range opts.ValuesFrom {
+		hr.Spec.ValuesFrom = append(hr.Spec.ValuesFrom, meta.ValuesReference{
+			Kind: vf.Kind,
+			Name: vf.Name,
+		})
 	}
 
 	if opts.APIVersion != "" {

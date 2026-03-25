@@ -24,6 +24,7 @@ const (
 	flagAutoUpgrade       = "auto-upgrade"
 	flagInterval          = "interval"
 	flagRegistryUsername  = "registry-username"
+	flagValuesFrom        = "values-from"
 	flagManagementCluster = "management-cluster"
 	flagDryRun            = "dry-run"
 
@@ -47,6 +48,7 @@ type flag struct {
 	AutoUpgrade       string
 	Interval          string
 	RegistryUsername  string
+	ValuesFrom        []string
 	ManagementCluster bool
 	DryRun            bool
 }
@@ -63,6 +65,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AutoUpgrade, flagAutoUpgrade, "", "Auto-upgrade strategy: all, minor, or patch.")
 	cmd.Flags().StringVar(&f.Interval, flagInterval, defaultInterval, "Reconciliation interval for OCIRepository and HelmRelease.")
 	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication. Password is read from "+envRegistryPassword+" or prompted interactively.")
+	cmd.Flags().StringSliceVar(&f.ValuesFrom, flagValuesFrom, nil, "Reference to a ConfigMap or Secret containing chart values (format: ConfigMap/name or Secret/name). Can be specified multiple times.")
 	cmd.Flags().BoolVar(&f.ManagementCluster, flagManagementCluster, false, "Deploy to the management cluster itself. Cluster name is derived from the current kubectl context.")
 	cmd.Flags().BoolVar(&f.DryRun, flagDryRun, false, "Perform server-side validation without applying. Prints manifests to stdout.")
 }
@@ -102,6 +105,23 @@ func (f *flag) Validate() error {
 		if !valid {
 			return microerror.Maskf(invalidFlagError, "--%s must be one of: %s", flagAutoUpgrade, strings.Join(validAutoUpgradeValues, ", "))
 		}
+	}
+
+	// Validate and normalize --values-from entries.
+	for i, vf := range f.ValuesFrom {
+		kind, name, ok := strings.Cut(vf, "/")
+		if !ok || name == "" {
+			return microerror.Maskf(invalidFlagError, "--%s %q must be in the format ConfigMap/name or Secret/name", flagValuesFrom, vf)
+		}
+		switch strings.ToLower(kind) {
+		case "configmap":
+			kind = "ConfigMap"
+		case "secret":
+			kind = "Secret"
+		default:
+			return microerror.Maskf(invalidFlagError, "--%s %q has invalid kind %q (must be ConfigMap or Secret)", flagValuesFrom, vf, kind)
+		}
+		f.ValuesFrom[i] = kind + "/" + name
 	}
 
 	// Normalize OCI URL prefix.
