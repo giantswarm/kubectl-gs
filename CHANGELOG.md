@@ -10,6 +10,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Deprecated app-related commands: `get apps`, `get catalogs`, `gitops add app`, `update app`, `validate apps`.
+- Added extra error logging when doing login and cache operations.
+- Added handler for Exec AuthType.
 
 ## [5.1.0] - 2026-03-26
 
@@ -54,7 +56,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add locks to cache writing when doing `kubectl-gs login` to prevent race-condition between multiple kubectl calls.
-- Add extra logging when writing to cache.
 
 ## [4.11.0] - 2026-02-20
 
