@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Deprecated app-related commands: `get apps`, `get catalogs`, `gitops add app`, `update app`, `validate apps`.
+
 ## [5.1.0] - 2026-03-26
 
 ### Changed

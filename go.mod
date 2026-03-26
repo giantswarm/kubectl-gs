@@ -1,6 +1,6 @@
 module github.com/giantswarm/kubectl-gs/v6
 
-go 1.25.0
+go 1.25.5
 
 require (
 	dario.cat/mergo v1.0.2
@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/organization-operator v1.6.4
-	github.com/giantswarm/releases/sdk v0.11.0
+	github.com/giantswarm/releases/sdk v0.12.0
 	github.com/giantswarm/telemetrydeck-go v0.1.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
@@ -89,8 +89,6 @@ require (
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.187 // indirect
 	github.com/klauspost/compress v1.18.4 // indirect
-	github.com/onsi/ginkgo/v2 v2.27.5 // indirect
-	github.com/onsi/gomega v1.39.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
@@ -239,7 +237,7 @@ require (
 	gopkg.in/ini.v1 v1.67.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
+	k8s.io/kube-openapi v0.0.0-20251125145642-4e65d59e963e // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kustomize/api v0.20.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.20.1 // indirect
