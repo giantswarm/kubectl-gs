@@ -18,10 +18,8 @@ import (
 const (
 	commandName = "chart"
 
-	shortDescription = "[DEVELOPMENT] Deploy a Helm chart via Flux OCIRepository and HelmRelease."
-	longDescription  = `[DEVELOPMENT] Deploy a Helm chart to a workload cluster via Flux OCIRepository and HelmRelease.
-
-NOTE: This command is currently in development and may change without notice.
+	shortDescription = "Deploy a Helm chart via Flux OCIRepository and HelmRelease."
+	longDescription  = `Deploy a Helm chart to a workload cluster via Flux OCIRepository and HelmRelease.
 
 Generates OCIRepository and HelmRelease manifests for deploying a Helm chart
 from an OCI registry and applies them to the management cluster. The resources
@@ -136,7 +134,6 @@ func New(config Config) (*cobra.Command, error) {
 		Example: examples,
 		Args:    cobra.ExactArgs(0),
 		RunE:    r.Run,
-		Hidden:  true,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(*config.ConfigFlags),
 		),
