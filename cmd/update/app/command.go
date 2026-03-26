@@ -73,12 +73,13 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:     name,
-		Short:   shortDescription,
-		Long:    longDescription,
-		Example: examples,
-		Args:    cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
-		RunE:    r.Run,
+		Deprecated: "currently without replacement",
+		Use:        name,
+		Short:      shortDescription,
+		Long:       longDescription,
+		Example:    examples,
+		Args:       cobra.MatchAll(cobra.ExactArgs(0), cobra.OnlyValidArgs),
+		RunE:       r.Run,
 		PreRunE: middleware.Compose(
 			renewtoken.Middleware(*config.ConfigFlags),
 		),
