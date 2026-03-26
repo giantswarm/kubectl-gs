@@ -41,11 +41,12 @@ func New(config Config) (*cobra.Command, error) {
 	}
 
 	c := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  description,
-		Args:  cobra.NoArgs,
-		RunE:  r.Run,
+		Use:        name,
+		Short:      description,
+		Long:       description,
+		Args:       cobra.NoArgs,
+		RunE:       r.Run,
+		Deprecated: `use "deploy chart" instead`,
 	}
 
 	f.Init(c)
