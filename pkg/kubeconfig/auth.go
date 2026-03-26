@@ -49,6 +49,30 @@ func GetAuthType(config *clientcmdapi.Config, contextName string) AuthType {
 	return AuthTypeUnknown
 }
 
+// GetExecConfig fetches the exec authentication config from kubeconfig,
+// for a desired context name.
+func GetExecConfig(config *clientcmdapi.Config, contextName string) (*clientcmdapi.ExecConfig, bool) {
+	if contextName == "" {
+		return nil, false
+	}
+
+	currentContext, exists := config.Contexts[contextName]
+	if !exists {
+		return nil, false
+	}
+
+	authInfo, exists := config.AuthInfos[currentContext.AuthInfo]
+	if !exists {
+		return nil, false
+	}
+
+	if authInfo.Exec == nil {
+		return nil, false
+	}
+
+	return authInfo.Exec, true
+}
+
 // GetAuthProvider fetches the authentication provider from kubeconfig,
 // for a desired context name.
 func GetAuthProvider(config *clientcmdapi.Config, contextName string) (*clientcmdapi.AuthProviderConfig, bool) {
