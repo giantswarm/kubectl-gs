@@ -21,7 +21,9 @@ const (
 	//nolint:gosec // Not a credential, just the env var name.
 	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
 	//nolint:gosec // Not a credential, just the env var name.
-	envIDToken = "KUBECTL_GS_OIDC_ID_TOKEN"
+	envIDToken       = "KUBECTL_GS_OIDC_ID_TOKEN"
+	sourceCache      = "cache"
+	sourceKubeconfig = "kubeconfig"
 )
 
 type runner struct {
@@ -82,7 +84,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		defer credentialcache.Unlock(tokenLock)
 	}
 
-	tokenSource := "kubeconfig"
+	tokenSource := sourceKubeconfig
 	if lockErr == nil {
 		// Under lock: re-check cache in case another process renewed while we waited.
 		if cached, err := credentialcache.ReadLocked(issuerURL, clientID); err == nil {
@@ -92,7 +94,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 			// Use the cached refresh token (may be newer after prior rotation).
 			if cached.RefreshToken != "" {
 				refreshToken = cached.RefreshToken
-				tokenSource = "cache"
+				tokenSource = sourceCache
 			}
 		}
 	} else {
@@ -100,7 +102,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		_, _ = fmt.Fprintf(r.stderr, "kubectl-gs: warning: failed to acquire token cache lock: %v\n", lockErr)
 		if cached, err := credentialcache.Read(issuerURL, clientID); err == nil && cached.RefreshToken != "" {
 			refreshToken = cached.RefreshToken
-			tokenSource = "cache"
+			tokenSource = sourceCache
 		}
 	}
 
