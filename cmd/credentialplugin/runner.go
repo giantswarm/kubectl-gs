@@ -16,12 +16,12 @@ import (
 )
 
 const (
-	envIssuerURL = "KUBECTL_GS_OIDC_ISSUER_URL"
-	envClientID  = "KUBECTL_GS_OIDC_CLIENT_ID"
+	EnvIssuerURL = "KUBECTL_GS_OIDC_ISSUER_URL"
+	EnvClientID  = "KUBECTL_GS_OIDC_CLIENT_ID"
 	//nolint:gosec // Not a credential, just the env var name.
-	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
+	EnvRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
 	//nolint:gosec // Not a credential, just the env var name.
-	envIDToken       = "KUBECTL_GS_OIDC_ID_TOKEN"
+	EnvIDToken       = "KUBECTL_GS_OIDC_ID_TOKEN"
 	sourceCache      = "cache"
 	sourceKubeconfig = "kubeconfig"
 )
@@ -43,16 +43,16 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	// Get OIDC configuration from environment variables
-	issuerURL := os.Getenv(envIssuerURL)
-	clientID := os.Getenv(envClientID)
-	refreshToken := os.Getenv(envRefreshToken)
+	issuerURL := os.Getenv(EnvIssuerURL)
+	clientID := os.Getenv(EnvClientID)
+	refreshToken := os.Getenv(EnvRefreshToken)
 
 	if issuerURL == "" || clientID == "" || refreshToken == "" {
-		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s, %s", envIssuerURL, envClientID, envRefreshToken)
+		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s, %s", EnvIssuerURL, EnvClientID, EnvRefreshToken)
 	}
 
 	// Check if the id_token passed from login is still valid
-	if idTokenFromEnv := os.Getenv(envIDToken); oidc.IsValidIDToken(idTokenFromEnv) {
+	if idTokenFromEnv := os.Getenv(EnvIDToken); oidc.IsValidIDToken(idTokenFromEnv) {
 		return r.outputExecCredential(idTokenFromEnv)
 	}
 

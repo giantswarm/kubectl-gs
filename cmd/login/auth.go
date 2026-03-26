@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/giantswarm/kubectl-gs/v6/cmd/credentialplugin"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/credentialcache"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/kubeconfig"
@@ -205,19 +206,19 @@ func oidcExec(issuerURL, clientID, idToken, refreshToken string) *clientcmdapi.E
 		Args:       []string{"credential-plugin"},
 		Env: []clientcmdapi.ExecEnvVar{
 			{
-				Name:  "KUBECTL_GS_OIDC_ISSUER_URL",
+				Name:  credentialplugin.EnvIssuerURL,
 				Value: issuerURL,
 			},
 			{
-				Name:  "KUBECTL_GS_OIDC_CLIENT_ID",
+				Name:  credentialplugin.EnvClientID,
 				Value: clientID,
 			},
 			{
-				Name:  "KUBECTL_GS_OIDC_ID_TOKEN",
+				Name:  credentialplugin.EnvIDToken,
 				Value: idToken,
 			},
 			{
-				Name:  "KUBECTL_GS_OIDC_REFRESH_TOKEN",
+				Name:  credentialplugin.EnvRefreshToken,
 				Value: refreshToken,
 			},
 		},
@@ -258,9 +259,9 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 			return microerror.Maskf(incorrectConfigurationError, "There is no exec authentication configuration for the '%s' context", newContextName)
 		}
 
-		issuerURL := execEnvVar(execConfig, "KUBECTL_GS_OIDC_ISSUER_URL")
-		clientID := execEnvVar(execConfig, "KUBECTL_GS_OIDC_CLIENT_ID")
-		refreshToken := execEnvVar(execConfig, "KUBECTL_GS_OIDC_REFRESH_TOKEN")
+		issuerURL := execEnvVar(execConfig, credentialplugin.EnvIssuerURL)
+		clientID := execEnvVar(execConfig, credentialplugin.EnvClientID)
+		refreshToken := execEnvVar(execConfig, credentialplugin.EnvRefreshToken)
 
 		if issuerURL == "" || clientID == "" || refreshToken == "" {
 			return microerror.Maskf(incorrectConfigurationError, "The exec authentication configuration for '%s' is incomplete, please log in again using a URL.", newContextName)
