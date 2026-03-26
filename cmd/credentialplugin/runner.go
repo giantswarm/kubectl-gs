@@ -57,7 +57,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	// Fast path: return a cached token if still valid (no lock needed).
-	if cached, err := credentialcache.Read(issuerURL, clientID); err == nil && oidc.IsValidIDToken(cached.IDToken) {
+	if cached, err := credentialcache.ReadWithLock(issuerURL, clientID); err == nil && oidc.IsValidIDToken(cached.IDToken) {
 		return r.outputExecCredential(cached.IDToken)
 	}
 
@@ -87,7 +87,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	tokenSource := sourceKubeconfig
 	if lockErr == nil {
 		// Under lock: re-check cache in case another process renewed while we waited.
-		if cached, err := credentialcache.ReadLocked(issuerURL, clientID); err == nil {
+		if cached, err := credentialcache.ReadWithoutLock(issuerURL, clientID); err == nil {
 			if oidc.IsValidIDToken(cached.IDToken) {
 				return r.outputExecCredential(cached.IDToken)
 			}
@@ -100,7 +100,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	} else {
 		// Locking failed: best-effort fallback without coordination.
 		_, _ = fmt.Fprintf(r.stderr, "kubectl-gs: warning: failed to acquire token cache lock: %v\n", lockErr)
-		if cached, err := credentialcache.Read(issuerURL, clientID); err == nil && cached.RefreshToken != "" {
+		if cached, err := credentialcache.ReadWithLock(issuerURL, clientID); err == nil && cached.RefreshToken != "" {
 			refreshToken = cached.RefreshToken
 			tokenSource = sourceCache
 		}
@@ -114,11 +114,11 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	}
 
 	if lockErr == nil {
-		if err := credentialcache.WriteLocked(issuerURL, clientID, idToken, newRefreshToken); err != nil {
+		if err := credentialcache.WriteWithoutLock(issuerURL, clientID, idToken, newRefreshToken); err != nil {
 			return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
 		}
 	} else {
-		if err := credentialcache.Write(issuerURL, clientID, idToken, newRefreshToken); err != nil {
+		if err := credentialcache.WriteWithLock(issuerURL, clientID, idToken, newRefreshToken); err != nil {
 			return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
 		}
 	}

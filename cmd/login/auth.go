@@ -268,7 +268,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 		}
 
 		// Check if a valid token exists in the cache.
-		cached, _ := credentialcache.Read(issuerURL, clientID)
+		cached, _ := credentialcache.ReadWithLock(issuerURL, clientID)
 		if !oidc.IsValidIDToken(cached.IDToken) {
 			// Token is expired or absent; attempt renewal before switching context.
 			rt := refreshToken
@@ -286,7 +286,7 @@ func switchContext(ctx context.Context, k8sConfigAccess clientcmd.ConfigAccess, 
 				return microerror.Mask(tokenRenewalFailedError)
 			}
 
-			_ = credentialcache.Write(issuerURL, clientID, idToken, newRT)
+			_ = credentialcache.WriteWithLock(issuerURL, clientID, idToken, newRT)
 		}
 
 		if isContextAlreadySelected {

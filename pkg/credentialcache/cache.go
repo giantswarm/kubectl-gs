@@ -18,7 +18,7 @@ type Entry struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func Write(issuerURL, clientID, idToken, refreshToken string) error {
+func WriteWithLock(issuerURL, clientID, idToken, refreshToken string) error {
 	f, err := lock(issuerURL, clientID)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func Write(issuerURL, clientID, idToken, refreshToken string) error {
 	return os.WriteFile(filePath(issuerURL, clientID), data, 0600)
 }
 
-func Read(issuerURL, clientID string) (Entry, error) {
+func ReadWithLock(issuerURL, clientID string) (Entry, error) {
 	f, err := lock(issuerURL, clientID)
 	if err != nil {
 		return Entry{}, err
@@ -71,9 +71,9 @@ func Unlock(f *os.File) {
 	unlock(f)
 }
 
-// ReadLocked reads the cache entry without acquiring a lock.
+// ReadWithoutLock reads the cache entry without acquiring a lock.
 // The caller must hold the lock returned by Lock.
-func ReadLocked(issuerURL, clientID string) (Entry, error) {
+func ReadWithoutLock(issuerURL, clientID string) (Entry, error) {
 	data, err := os.ReadFile(filePath(issuerURL, clientID))
 	if err != nil {
 		return Entry{}, err
@@ -87,9 +87,9 @@ func ReadLocked(issuerURL, clientID string) (Entry, error) {
 	return e, nil
 }
 
-// WriteLocked writes the cache entry without acquiring a lock.
+// WriteWithoutLock writes the cache entry without acquiring a lock.
 // The caller must hold the lock returned by Lock.
-func WriteLocked(issuerURL, clientID, idToken, refreshToken string) error {
+func WriteWithoutLock(issuerURL, clientID, idToken, refreshToken string) error {
 	dir := cacheDir()
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err

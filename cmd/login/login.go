@@ -184,7 +184,7 @@ func (r *runner) loginWithInstallation(ctx context.Context, tokenOverride string
 
 	// Write the new session's tokens to the credential cache.
 	if authResult.clientID != "" {
-		if err := credentialcache.Write(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken); err != nil {
+		if err := credentialcache.WriteWithLock(i.AuthURL, authResult.clientID, authResult.token, authResult.refreshToken); err != nil {
 			_, _ = fmt.Fprintf(r.stderr, color.YellowString("Warning: failed to write token cache, token renewal may require re-login sooner: %v\n"), err)
 		}
 	}
