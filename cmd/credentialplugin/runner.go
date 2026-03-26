@@ -56,7 +56,7 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return r.outputExecCredential(idTokenFromEnv)
 	}
 
-	// Fast path: return a cached token if still valid (no lock needed).
+	// Fast path: return a cached token if still valid.
 	if cached, err := credentialcache.ReadWithLock(issuerURL, clientID); err == nil && oidc.IsValidIDToken(cached.IDToken) {
 		return r.outputExecCredential(cached.IDToken)
 	}

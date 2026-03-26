@@ -72,7 +72,6 @@ func Unlock(f *os.File) {
 }
 
 // ReadWithoutLock reads the cache entry without acquiring a lock.
-// The caller must hold the lock returned by Lock.
 func ReadWithoutLock(issuerURL, clientID string) (Entry, error) {
 	data, err := os.ReadFile(filePath(issuerURL, clientID))
 	if err != nil {
@@ -88,7 +87,6 @@ func ReadWithoutLock(issuerURL, clientID string) (Entry, error) {
 }
 
 // WriteWithoutLock writes the cache entry without acquiring a lock.
-// The caller must hold the lock returned by Lock.
 func WriteWithoutLock(issuerURL, clientID, idToken, refreshToken string) error {
 	dir := cacheDir()
 	if err := os.MkdirAll(dir, 0700); err != nil {
