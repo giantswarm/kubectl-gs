@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-03-26
+
 ### Changed
 
 - Migrate `cluster.x-k8s.io` API usage from `v1beta1` to `v1beta2`. MachinePool CRD reference updated from `exp.cluster.x-k8s.io` to `cluster.x-k8s.io`.
@@ -1712,7 +1714,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.2...v5.1.0
 [5.0.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/giantswarm/kubectl-gs/compare/v4.12.0...v5.0.0
