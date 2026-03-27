@@ -2,13 +2,10 @@ package credentialplugin
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -19,12 +16,14 @@ import (
 )
 
 const (
-	envIssuerURL = "KUBECTL_GS_OIDC_ISSUER_URL"
-	envClientID  = "KUBECTL_GS_OIDC_CLIENT_ID"
+	EnvIssuerURL = "KUBECTL_GS_OIDC_ISSUER_URL"
+	EnvClientID  = "KUBECTL_GS_OIDC_CLIENT_ID"
 	//nolint:gosec // Not a credential, just the env var name.
-	envRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
+	EnvRefreshToken = "KUBECTL_GS_OIDC_REFRESH_TOKEN"
 	//nolint:gosec // Not a credential, just the env var name.
-	envIDToken = "KUBECTL_GS_OIDC_ID_TOKEN"
+	EnvIDToken       = "KUBECTL_GS_OIDC_ID_TOKEN"
+	sourceCache      = "cache"
+	sourceKubeconfig = "kubeconfig"
 )
 
 type runner struct {
@@ -44,33 +43,26 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	// Get OIDC configuration from environment variables
-	issuerURL := os.Getenv(envIssuerURL)
-	clientID := os.Getenv(envClientID)
-	refreshToken := os.Getenv(envRefreshToken)
+	issuerURL := os.Getenv(EnvIssuerURL)
+	clientID := os.Getenv(EnvClientID)
+	refreshToken := os.Getenv(EnvRefreshToken)
 
 	if issuerURL == "" || clientID == "" || refreshToken == "" {
-		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s, %s", envIssuerURL, envClientID, envRefreshToken)
+		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s, %s", EnvIssuerURL, EnvClientID, EnvRefreshToken)
 	}
 
 	// Check if the id_token passed from login is still valid
-	if idTokenFromEnv := os.Getenv(envIDToken); isValidIdToken(idTokenFromEnv) {
+	if idTokenFromEnv := os.Getenv(EnvIDToken); oidc.IsValidIDToken(idTokenFromEnv) {
 		return r.outputExecCredential(idTokenFromEnv)
 	}
 
-	// Check if we have a cached valid token before renewing
-	cached, err := credentialcache.Read(issuerURL, clientID)
-	if err == nil && isValidIdToken(cached.IDToken) {
+	// Fast path: return a cached token if still valid.
+	if cached, err := credentialcache.ReadWithLock(issuerURL, clientID); err == nil && oidc.IsValidIDToken(cached.IDToken) {
 		return r.outputExecCredential(cached.IDToken)
 	}
 
-	// Prefer cached refresh token over env var (it may be newer after rotation)
-	tokenSource := "kubeconfig"
-	if cached.RefreshToken != "" {
-		refreshToken = cached.RefreshToken
-		tokenSource = "cache"
-	}
-
-	// Create OIDC authenticator
+	// Create the OIDC authenticator before acquiring the lock to keep lock
+	// duration short (provider discovery requires an HTTP round-trip).
 	var auther *oidc.Authenticator
 	{
 		oidcConfig := oidc.Config{
@@ -85,6 +77,35 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Acquire an exclusive lock to prevent concurrent processes from
+	// simultaneously consuming the same refresh token.
+	tokenLock, lockErr := credentialcache.Lock(issuerURL, clientID)
+	if lockErr == nil {
+		defer credentialcache.Unlock(tokenLock)
+	}
+
+	tokenSource := sourceKubeconfig
+	if lockErr == nil {
+		// Under lock: re-check cache in case another process renewed while we waited.
+		if cached, err := credentialcache.ReadWithoutLock(issuerURL, clientID); err == nil {
+			if oidc.IsValidIDToken(cached.IDToken) {
+				return r.outputExecCredential(cached.IDToken)
+			}
+			// Use the cached refresh token (may be newer after prior rotation).
+			if cached.RefreshToken != "" {
+				refreshToken = cached.RefreshToken
+				tokenSource = sourceCache
+			}
+		}
+	} else {
+		// Locking failed: best-effort fallback without coordination.
+		_, _ = fmt.Fprintf(r.stderr, "kubectl-gs: warning: failed to acquire token cache lock: %v\n", lockErr)
+		if cached, err := credentialcache.ReadWithLock(issuerURL, clientID); err == nil && cached.RefreshToken != "" {
+			refreshToken = cached.RefreshToken
+			tokenSource = sourceCache
+		}
+	}
+
 	_, _ = fmt.Fprintf(r.stderr, "kubectl-gs: renewing OIDC token (issuer: %s, client: %s, refresh token source: %s)\n", issuerURL, clientID, tokenSource)
 
 	idToken, newRefreshToken, err := auther.RenewToken(ctx, refreshToken)
@@ -92,8 +113,14 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 		return microerror.Maskf(credentialPluginError, "failed to renew token (issuer: %s, client: %s, source: %s): %v", issuerURL, clientID, tokenSource, err)
 	}
 
-	if err := credentialcache.Write(issuerURL, clientID, idToken, newRefreshToken); err != nil {
-		return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
+	if lockErr == nil {
+		if err := credentialcache.WriteWithoutLock(issuerURL, clientID, idToken, newRefreshToken); err != nil {
+			return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
+		}
+	} else {
+		if err := credentialcache.WriteWithLock(issuerURL, clientID, idToken, newRefreshToken); err != nil {
+			return microerror.Maskf(credentialPluginError, "failed to cache token: %v", err)
+		}
 	}
 
 	return r.outputExecCredential(idToken)
@@ -114,41 +141,4 @@ func (r *runner) outputExecCredential(idToken string) error {
 		return microerror.Maskf(credentialPluginError, "failed to encode ExecCredential: %v", err)
 	}
 	return nil
-}
-
-// isValidIdToken checks if a JWT token is still valid (not expired)
-func isValidIdToken(idToken string) bool {
-	if idToken == "" {
-		return false
-	}
-
-	idTokenParts := strings.Split(idToken, ".")
-	if len(idTokenParts) != 3 {
-		return false
-	}
-
-	rawIdTokenBody, err := base64.RawStdEncoding.DecodeString(idTokenParts[1])
-	if err != nil {
-		return false
-	}
-
-	var bodyMap map[string]json.RawMessage
-	err = json.Unmarshal(rawIdTokenBody, &bodyMap)
-	if err != nil {
-		return false
-	}
-
-	var expTimestamp int64
-	err = json.Unmarshal(bodyMap["exp"], &expTimestamp)
-	if err != nil {
-		return false
-	}
-
-	if expTimestamp == 0 {
-		return false
-	}
-
-	expTime := time.Unix(expTimestamp, 0)
-	// Add a 5 minute buffer to avoid using tokens that are about to expire
-	return expTime.After(time.Now().Add(5 * time.Minute))
 }

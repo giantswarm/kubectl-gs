@@ -2,8 +2,11 @@ package oidc
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/giantswarm/microerror"
@@ -40,6 +43,35 @@ type Claims struct {
 	Email    string   `json:"email"`
 	Verified bool     `json:"email_verified"`
 	Groups   []string `json:"groups"`
+}
+
+// IsValidIDToken reports whether the given raw ID token JWT is valid
+func IsValidIDToken(idToken string) bool {
+	if idToken == "" {
+		return false
+	}
+
+	parts := strings.Split(idToken, ".")
+	if len(parts) != 3 {
+		return false
+	}
+
+	payload, err := base64.RawStdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return false
+	}
+
+	var claims map[string]json.RawMessage
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return false
+	}
+
+	var exp int64
+	if err := json.Unmarshal(claims["exp"], &exp); err != nil || exp == 0 {
+		return false
+	}
+
+	return time.Unix(exp, 0).After(time.Now().Add(5 * time.Minute))
 }
 
 func New(ctx context.Context, c Config) (*Authenticator, error) {

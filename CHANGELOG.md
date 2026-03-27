@@ -7,9 +7,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-03-26
+
 ### Changed
 
 - Deprecated app-related commands: `get apps`, `get catalogs`, `gitops add app`, `update app`, `validate apps`.
+- Added extra error logging when doing login and cache operations.
+- Added handler for Exec AuthType.
 
 ## [5.1.0] - 2026-03-26
 
@@ -1718,7 +1722,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.2.0...HEAD
+[5.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.2...v5.1.0
 [5.0.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.0.0...v5.0.1
