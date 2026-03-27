@@ -18,6 +18,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/cmd/get/orgs"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/get/releases"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
+	"github.com/giantswarm/kubectl-gs/v6/pkg/usagetemplate"
 )
 
 const (
@@ -194,6 +195,8 @@ func New(config Config) (*cobra.Command, error) {
 		Long:  description,
 		RunE:  r.Run,
 	}
+
+	usagetemplate.Apply(c)
 
 	f.Init(c)
 
