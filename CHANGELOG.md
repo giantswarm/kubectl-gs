@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [5.3.0] - 2026-03-27
 
+### Added
+
+- Usage info now also shows aliases for subcommands.
+
 ## [5.2.0] - 2026-03-26
 
 ### Changed
