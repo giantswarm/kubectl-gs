@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [5.3.1] - 2026-04-04
 
+### Fixed
+
+-  Updated dependencies
+
 ## [5.3.0] - 2026-03-27
 
 ### Added
