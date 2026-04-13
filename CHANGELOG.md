@@ -7,11 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `--update-only` flag to `deploy chart` command to only update pre-existing `OCIRepository` and `HelmRelease` resources and fail if they do not exist
+
 ## [5.3.1] - 2026-04-04
 
 ### Fixed
 
--  Updated dependencies
+- Updated dependencies
 
 ## [5.3.0] - 2026-03-27
 

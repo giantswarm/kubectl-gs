@@ -37,3 +37,12 @@ var confirmationRequiredError = &microerror.Error{
 func IsConfirmationRequired(err error) bool {
 	return microerror.Cause(err) == confirmationRequiredError
 }
+
+var resourceNotFoundError = &microerror.Error{
+	Kind: "resourceNotFoundError",
+}
+
+// IsResourceNotFound asserts resourceNotFoundError.
+func IsResourceNotFound(err error) bool {
+	return microerror.Cause(err) == resourceNotFoundError
+}

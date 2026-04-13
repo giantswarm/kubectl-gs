@@ -291,6 +291,23 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		manifest{"HelmRelease", crdVersions.HelmReleaseAPIVersion, resourceName, helmReleaseYAML},
 	)
 
+	if r.flag.UpdateOnly {
+		for _, m := range manifests {
+			gvr, err := deploychart.ResourceGVR(m.apiVersion, m.kind)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			existing, err := deploychart.GetExistingResource(ctx, dynClient, gvr, namespace, m.resourceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if existing == nil {
+				return microerror.Maskf(resourceNotFoundError,
+					"--%s is set but %s %s/%s does not exist", flagUpdateOnly, m.kind, namespace, m.resourceName)
+			}
+		}
+	}
+
 	for _, m := range manifests {
 		gvr, err := deploychart.ResourceGVR(m.apiVersion, m.kind)
 		if err != nil {

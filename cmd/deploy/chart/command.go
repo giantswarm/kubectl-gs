@@ -28,7 +28,8 @@ are created in the organization namespace.
 Resource names default to <cluster>-<chart-name> and can be overridden with --name.
 
 Use --dry-run to perform server-side validation without persisting resources.
-Use --management-cluster to deploy to the MC itself (no --target-cluster needed).`
+Use --management-cluster to deploy to the MC itself (no --target-cluster needed).
+Use --update-only to only update pre-existing resources and fail if they are missing.`
 
 	examples = `  # Deploy a chart with a specific version
   kubectl gs deploy chart \
@@ -87,7 +88,16 @@ Use --management-cluster to deploy to the MC itself (no --target-cluster needed)
       --chart-name hello-world-app \
       --organization acme \
       --target-namespace hello \
-      --management-cluster`
+      --management-cluster
+
+  # Update an already-deployed chart to a new version (fail if not deployed yet)
+  kubectl gs deploy chart \
+      --chart-name hello-world-app \
+      --version 1.2.4 \
+      --organization acme \
+      --target-cluster mycluster01 \
+      --target-namespace hello \
+      --update-only`
 )
 
 type Config struct {

@@ -27,6 +27,7 @@ const (
 	flagRegistryProvider  = "registry-provider"
 	flagValuesFrom        = "values-from"
 	flagManagementCluster = "management-cluster"
+	flagUpdateOnly        = "update-only"
 	flagDryRun            = "dry-run"
 
 	envRegistryPassword = "KUBECTL_GS_REGISTRY_PASSWORD" //nolint:gosec // Not a credential, just the env var name.
@@ -53,6 +54,7 @@ type flag struct {
 	RegistryProvider  string
 	ValuesFrom        []string
 	ManagementCluster bool
+	UpdateOnly        bool
 	DryRun            bool
 }
 
@@ -71,6 +73,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.RegistryProvider, flagRegistryProvider, "", "Cloud provider for registry authentication via workload identity (aws, azure, gcp). When set, no registry Secret is created.")
 	cmd.Flags().StringSliceVar(&f.ValuesFrom, flagValuesFrom, nil, "Reference to a ConfigMap or Secret containing chart values (format: ConfigMap/name or Secret/name). Can be specified multiple times.")
 	cmd.Flags().BoolVar(&f.ManagementCluster, flagManagementCluster, false, "Deploy to the management cluster itself. Cluster name is derived from the current kubectl context.")
+	cmd.Flags().BoolVar(&f.UpdateOnly, flagUpdateOnly, false, "Only update existing OCIRepository and HelmRelease resources; fail if they do not exist.")
 	cmd.Flags().BoolVar(&f.DryRun, flagDryRun, false, "Perform server-side validation without applying. Prints manifests to stdout.")
 }
 
