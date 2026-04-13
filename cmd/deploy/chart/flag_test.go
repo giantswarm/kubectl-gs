@@ -48,7 +48,7 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "must not contain '/'",
 		},
 		{
-			name: "missing organization",
+			name: "missing organization and namespace",
 			flag: flag{
 				ChartName:    "hello-world-app",
 				Cluster:      "mycluster01",
@@ -57,7 +57,32 @@ func TestFlagValidate(t *testing.T) {
 				Interval:     defaultInterval,
 			},
 			wantErr: true,
-			errMsg:  "organization",
+			errMsg:  "one of --organization or --namespace",
+		},
+		{
+			name: "namespace alone is valid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Namespace:    "my-namespace",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+			},
+		},
+		{
+			name: "organization and namespace are mutually exclusive",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Namespace:    "my-namespace",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+			},
+			wantErr: true,
+			errMsg:  "mutually exclusive",
 		},
 		{
 			name: "missing cluster",

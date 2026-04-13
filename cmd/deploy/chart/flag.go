@@ -11,6 +11,7 @@ import (
 const (
 	flagChartName         = "chart-name"
 	flagOrganization      = "organization"
+	flagNamespace         = "namespace"
 	flagCluster           = "target-cluster"
 	flagTargetNS          = "target-namespace"
 	flagOCIURLPrefix      = "oci-url-prefix"
@@ -38,6 +39,7 @@ var validRegistryProviders = []string{"aws", "azure", "gcp"}
 type flag struct {
 	ChartName         string
 	Organization      string
+	Namespace         string
 	Cluster           string
 	TargetNS          string
 	OCIURLPrefix      string
@@ -56,7 +58,8 @@ type flag struct {
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ChartName, flagChartName, "", "Name of the chart to deploy.")
-	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Giant Swarm organization name owning the target cluster.")
+	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Giant Swarm organization name owning the target cluster. The namespace is derived as `org-<organization>`. Mutually exclusive with --namespace.")
+	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace in which to create or update the resources. Mutually exclusive with --organization.")
 	cmd.Flags().StringVar(&f.Cluster, flagCluster, "", "Name of the target workload cluster.")
 	cmd.Flags().StringVar(&f.TargetNS, flagTargetNS, "", "Target namespace in the workload cluster.")
 	cmd.Flags().StringVar(&f.OCIURLPrefix, flagOCIURLPrefix, defaultOCIURLPrefix, "OCI URL prefix for the chart registry.")
@@ -80,8 +83,11 @@ func (f *flag) Validate() error {
 	if strings.Contains(f.ChartName, "/") {
 		return microerror.Maskf(invalidFlagError, "--%s must not contain '/'", flagChartName)
 	}
-	if f.Organization == "" {
-		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagOrganization)
+	if f.Organization == "" && f.Namespace == "" {
+		return microerror.Maskf(invalidFlagError, "one of --%s or --%s must be specified", flagOrganization, flagNamespace)
+	}
+	if f.Organization != "" && f.Namespace != "" {
+		return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagOrganization, flagNamespace)
 	}
 	if f.ManagementCluster && f.Cluster != "" {
 		return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagManagementCluster, flagCluster)

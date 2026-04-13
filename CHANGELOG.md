@@ -10,6 +10,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Added
 
 - Add `--update-only` flag to `deploy chart` command to only update pre-existing `OCIRepository` and `HelmRelease` resources and fail if they do not exist
+- Add `--namespace` flag to `deploy chart` command to set the target namespace directly, as an alternative to `--organization` which derives the namespace as `org-<organization>`. The two flags are mutually exclusive.
 
 ### Fixed
 

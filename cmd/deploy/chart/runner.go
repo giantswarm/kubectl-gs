@@ -49,7 +49,10 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
-	namespace := key.OrganizationNamespaceFromName(r.flag.Organization)
+	namespace := r.flag.Namespace
+	if namespace == "" {
+		namespace = key.OrganizationNamespaceFromName(r.flag.Organization)
+	}
 
 	// Split the OCI URL prefix into registry host and repository prefix.
 	// OCIURLPrefix is normalized to "oci://host/path/" by flag.Validate().
@@ -139,13 +142,16 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		return microerror.Mask(err)
 	}
 
-	// Verify the organization namespace exists.
+	// Verify the namespace exists.
 	_, err = k8sClients.K8sClient().CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
-			return microerror.Maskf(invalidFlagError,
-				"the organization %q wasn't found\nPlease check for existing organizations using\n\n    kubectl gs get organizations",
-				r.flag.Organization)
+			if r.flag.Organization != "" {
+				return microerror.Maskf(invalidFlagError,
+					"the organization %q wasn't found\nPlease check for existing organizations using\n\n    kubectl gs get organizations",
+					r.flag.Organization)
+			}
+			return microerror.Maskf(invalidFlagError, "namespace %q does not exist", namespace)
 		}
 		return microerror.Mask(err)
 	}
@@ -177,8 +183,8 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		if err != nil {
 			if k8serrors.IsNotFound(err) {
 				return microerror.Maskf(invalidFlagError,
-					"cluster %q not found in organization %q\n\n  Please check for existing clusters using\n\n    kubectl gs get clusters --namespace %s",
-					clusterName, r.flag.Organization, namespace)
+					"cluster %q not found in namespace %q\n\n  Please check for existing clusters using\n\n    kubectl gs get clusters --namespace %s",
+					clusterName, namespace, namespace)
 			}
 			return microerror.Mask(err)
 		}
