@@ -93,7 +93,7 @@ func WriteWithoutLock(issuerURL, clientID, idToken, refreshToken string) error {
 		return err
 	}
 
-	data, err := json.Marshal(Entry{IDToken: idToken, RefreshToken: refreshToken})
+	data, err := json.Marshal(Entry{IDToken: idToken, RefreshToken: refreshToken}) //nolint:gosec // Field name matches pattern but contains no hardcoded credential
 	if err != nil {
 		return err
 	}
