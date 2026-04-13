@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Add `--update-only` flag to `deploy chart` command to only update pre-existing `OCIRepository` and `HelmRelease` resources and fail if they do not exist
 
+### Fixed
+
+- Remove semver validation from `--version` flag of `deploy chart` command to allow arbitrary version strings (such as commit-suffixed pre-release versions `X.Y.Z-commit`). The command already verifies that an image with the given version exists in the OCI repository, so the extra check was redundant and rejected otherwise valid versions.
+
 ## [5.3.1] - 2026-04-04
 
 ### Fixed
