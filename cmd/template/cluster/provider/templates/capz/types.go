@@ -20,11 +20,6 @@ type Metadata struct {
 	PreventDeletion bool              `json:"preventDeletion,omitempty"`
 }
 
-type DefaultAppsConfig struct {
-	ClusterName  string `json:"clusterName,omitempty"`
-	Organization string `json:"organization,omitempty"`
-}
-
 type ProviderSpecific struct {
 	Location       string `json:"location,omitempty"`
 	SubscriptionID string `json:"subscriptionId,omitempty"`

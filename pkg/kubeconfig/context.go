@@ -28,10 +28,6 @@ func GenerateKubeContextName(installationCodeName string) string {
 	return fmt.Sprintf("%s%s", ContextPrefix, installationCodeName)
 }
 
-func GenerateWCKubeContextName(mcKubeContextName string, wcName string) string {
-	return fmt.Sprintf("%s-%s", mcKubeContextName, wcName)
-}
-
 func GenerateWCClientCertKubeContextName(mcKubeContextName string, wcName string) string {
 	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, ClientCertSuffix)
 }

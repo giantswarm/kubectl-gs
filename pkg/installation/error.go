@@ -8,11 +8,6 @@ var cannotGetInstallationInfoError = &microerror.Error{
 	Kind: "cannotGetInstallationInfoError",
 }
 
-// IsCannotGetInstallationInfo asserts cannotGetInstallationInfoError.
-func IsCannotGetInstallationInfo(err error) bool {
-	return microerror.Cause(err) == cannotGetInstallationInfoError
-}
-
 var unknownUrlTypeError = &microerror.Error{
 	Kind: "unknownUrlTypeError",
 }

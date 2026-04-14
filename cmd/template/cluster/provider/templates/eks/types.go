@@ -1,10 +1,5 @@
 package eks
 
-type DefaultAppsConfig struct {
-	ClusterName  string `json:"clusterName,omitempty"`
-	Organization string `json:"organization,omitempty"`
-}
-
 type Global struct {
 	Metadata *Metadata `json:"metadata,omitempty"`
 }
