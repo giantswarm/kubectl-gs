@@ -32,7 +32,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
-	github.com/regclient/regclient v0.11.2
+	github.com/regclient/regclient v0.11.3
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
@@ -88,7 +88,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.187 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
