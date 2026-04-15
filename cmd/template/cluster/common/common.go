@@ -2,19 +2,13 @@ package common
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 
 	semver "github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
-	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/kubectl-gs/v6/pkg/app"
 )
 
 var invalidFlagError = &microerror.Error{
@@ -194,36 +188,6 @@ func DefaultTo(value string, defaultValue string) string {
 		return value
 	}
 	return defaultValue
-}
-
-// validateYAML validates the given yaml against the cluster specific app values schema
-func ValidateYAML(ctx context.Context, logger micrologger.Logger, client k8sclient.Interface, clusterApp applicationv1alpha1.App, yaml map[string]interface{}) error {
-
-	serviceConfig := app.Config{
-		Client: client,
-		Logger: logger,
-	}
-	service, err := app.New(serviceConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	_, resultJsonValidate, err := service.ValidateApp(ctx, &clusterApp, "", yaml)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	resultErrors := resultJsonValidate.Errors()
-	var validationErrors []string
-	if len(resultErrors) > 0 {
-		for _, resultError := range resultErrors {
-			validationErrors = append(validationErrors, fmt.Errorf("%s", resultError.Description()).Error())
-		}
-		// return all validation errors
-		return microerror.Mask(errors.New(strings.Join(validationErrors, "; ")))
-	}
-
-	return nil
 }
 
 const (

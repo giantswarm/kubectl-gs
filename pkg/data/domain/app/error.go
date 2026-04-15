@@ -8,11 +8,6 @@ var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
 
-// IsInvalidConfig asserts invalidConfigError.
-func IsInvalidConfig(err error) bool {
-	return microerror.Cause(err) == invalidConfigError
-}
-
 var noMatchError = &microerror.Error{
 	Kind: "noMatchError",
 }
@@ -44,16 +39,6 @@ var invalidTypeError = &microerror.Error{
 	Kind: "invalidTypeError",
 }
 
-// IsInvalidType asserts invalidTypeError.
-func IsInvalidType(err error) bool {
-	return microerror.Cause(err) == invalidTypeError
-}
-
 var fetchError = &microerror.Error{
 	Kind: "fetchError",
-}
-
-// IsFetch asserts fetchError.
-func IsFetch(err error) bool {
-	return microerror.Cause(err) == fetchError
 }
