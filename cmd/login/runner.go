@@ -56,48 +56,60 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
-	switch len(args) {
-	// No arguments given - we try to reuse the existing context.
-	case 0:
-		err := r.tryToReuseExistingContext(ctx)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	// One argument - This can be an existing context, an installation name or a login URL
-	case 1:
-		installationIdentifier := strings.ToLower(args[0])
-		foundContext, err := r.findContext(ctx, installationIdentifier)
-		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
-			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
-			_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
-			foundContext, err = r.findContext(ctx, clientCertContext)
-		}
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		if !foundContext {
-			err = r.loginWithURL(ctx, installationIdentifier, true, r.commonConfig.GetTokenOverride())
+	// When WC OIDC flags are provided and the current context is not a gs-
+	// managed context (e.g. teleport), skip the MC credential validation step.
+	// The current context already provides valid MC access; we only need
+	// to proceed to the WC kubeconfig creation.
+	if r.canSkipMCLogin() {
+		_, _ = fmt.Fprintf(r.stdout, "Using current kubeconfig context for MC access (skipping MC OIDC validation).\n")
+	} else {
+		switch len(args) {
+		// No arguments given - show help unless --workload-cluster or --context
+		// was provided (which signal the user's intent to reuse a specific context).
+		case 0:
+			if !r.loginOptions.isWC && r.commonConfig.GetContextOverride() == "" {
+				return cmd.Help()
+			}
+			err := r.tryToReuseExistingContext(ctx)
 			if err != nil {
 				return microerror.Mask(err)
 			}
+		// One argument - This can be an existing context, an installation name or a login URL
+		case 1:
+			installationIdentifier := strings.ToLower(args[0])
+			foundContext, err := r.findContext(ctx, installationIdentifier)
+			if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
+				clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
+				_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+				foundContext, err = r.findContext(ctx, clientCertContext)
+			}
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if !foundContext {
+				err = r.loginWithURL(ctx, installationIdentifier, true, r.commonConfig.GetTokenOverride())
+				if err != nil {
+					return microerror.Mask(err)
+				}
+			}
+		// Two arguments - This is interpreted as an installation and a workload cluster
+		case 2:
+			installationIdentifier := strings.ToLower(strings.Join(args, "-"))
+			foundContext, err := r.findContext(ctx, installationIdentifier)
+			if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
+				clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
+				_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
+				foundContext, err = r.findContext(ctx, clientCertContext)
+			}
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if !foundContext {
+				return microerror.Maskf(contextDoesNotExistError, "Could not find context for identifier %s", installationIdentifier)
+			}
+		default:
+			return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 		}
-	// Two arguments - This is interpreted as an installation and a workload cluster
-	case 2:
-		installationIdentifier := strings.ToLower(strings.Join(args, "-"))
-		foundContext, err := r.findContext(ctx, installationIdentifier)
-		if IsContextDoesNotExist(err) && !strings.HasSuffix(installationIdentifier, kubeconfig.ClientCertSuffix) {
-			clientCertContext := kubeconfig.GetClientCertContextName(installationIdentifier)
-			_, _ = fmt.Fprint(r.stdout, color.YellowString("No context named %s was found: %s\nLooking for context %s.\n", installationIdentifier, err, clientCertContext))
-			foundContext, err = r.findContext(ctx, clientCertContext)
-		}
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		if !foundContext {
-			return microerror.Maskf(contextDoesNotExistError, "Could not find context for identifier %s", installationIdentifier)
-		}
-	default:
-		return microerror.Maskf(invalidConfigError, "Invalid number of arguments.")
 	}
 
 	// used only if both MC and WC are specified on command line
@@ -109,6 +121,32 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+// canSkipMCLogin returns true when the WC OIDC flags indicate we can skip
+// the MC context credential validation. This allows using non-gs contexts
+// (e.g. teleport) that already provide valid MC access.
+func (r *runner) canSkipMCLogin() bool {
+	if !r.loginOptions.isWC {
+		return false
+	}
+	// If at least issuer+client-id are provided, we know this is a direct
+	// OIDC WC login and the MC context only needs to be accessible (not
+	// necessarily a gs-managed OIDC context).
+	if r.flag.WCOIDCIssuer != "" && r.flag.WCOIDCClientID != "" {
+		return true
+	}
+	// Also skip MC login when the current context is not a gs- context,
+	// since switchContext would fail anyway. The WC flow will still use
+	// the current context's k8s client for cluster discovery.
+	currentContext := r.loginOptions.contextOverride
+	if currentContext == "" {
+		currentContext = r.loginOptions.originContext
+	}
+	if _, contextType := kubeconfig.IsKubeContext(currentContext); contextType == kubeconfig.ContextTypeNone {
+		return true
+	}
+	return false
 }
 
 func (r *runner) tryToGetCurrentContexts(ctx context.Context) (string, string, error) {

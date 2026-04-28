@@ -117,14 +117,13 @@ func TestLogin(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 		},
-		// Empty starting config, Try to reuse existing context
+		// Empty starting config and no args — help is shown, no error.
 		{
 			name:        "case 9",
 			startConfig: &clientcmdapi.Config{},
 			flags: &flag{
 				WCCertTTL: "8h",
 			},
-			expectError: selectedContextNonCompatibleError,
 		},
 		// Valid starting config with authprovider info, reuse context
 		{

@@ -26,6 +26,11 @@ const (
 
 	flagConnectorID = "connector-id"
 
+	flagStructuredAuth = "structured-auth"
+	flagWCOIDCIssuer   = "issuer"
+	flagWCOIDCClientID = "client-id"
+	flagWCOIDCCAFile   = "ca-file"
+
 	flagProxy     = "proxy"
 	flagProxyPort = "proxy-port"
 
@@ -55,6 +60,11 @@ type flag struct {
 
 	ConnectorID string
 
+	StructuredAuth bool
+	WCOIDCIssuer   string
+	WCOIDCClientID string
+	WCOIDCCAFile   string
+
 	Proxy     bool
 	ProxyPort int
 
@@ -83,7 +93,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCCertCNPrefix, flagWCCertCNPrefix, "", fmt.Sprintf(`For client certificate creation. Prefix for the name encoded in the X.509 field "CN". Requires --%s.`, flagWCName))
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
-	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector to use for authentication. This allows to skip the selection page.")
+	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector for MC login, or OIDC client-id for selecting among multiple structured authentication issuers on a workload cluster.")
+
+	cmd.Flags().BoolVar(&f.StructuredAuth, flagStructuredAuth, false, "Opt in to direct OIDC login against a workload cluster using Kubernetes structured authentication. Issuer URL, client ID and CA are auto-discovered from the management cluster unless overridden via --issuer, --client-id, --ca-file.")
+	cmd.Flags().StringVar(&f.WCOIDCIssuer, flagWCOIDCIssuer, "", "OIDC issuer URL for direct workload cluster OIDC login. When set together with --client-id, skips auto-detection from KubeadmControlPlane.")
+	cmd.Flags().StringVar(&f.WCOIDCClientID, flagWCOIDCClientID, "", "OIDC client ID for direct workload cluster OIDC login. When set together with --issuer, skips auto-detection from KubeadmControlPlane.")
+	cmd.Flags().StringVar(&f.WCOIDCCAFile, flagWCOIDCCAFile, "", "Path to CA certificate file for the workload cluster API server. When set, skips fetching CA from the management cluster ConfigMap.")
 
 	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")

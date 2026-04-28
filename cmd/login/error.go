@@ -138,3 +138,15 @@ func IsClusterAPINotKnown(err error) bool {
 var deviceAuthError = &microerror.Error{
 	Kind: "deviceAuthError",
 }
+
+var structuredAuthMultipleIssuersError = &microerror.Error{
+	Kind: "structuredAuthMultipleIssuersError",
+}
+
+var structuredAuthIssuerNotFoundError = &microerror.Error{
+	Kind: "structuredAuthIssuerNotFoundError",
+}
+
+var structuredAuthCANotFoundError = &microerror.Error{
+	Kind: "structuredAuthCANotFoundError",
+}

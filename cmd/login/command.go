@@ -19,13 +19,12 @@ const (
 	name = `login <arg1> <arg2> [flags]
 
 Arguments <arg1> and <arg2> are optional and can take several forms.
-No arguments means that the currently selected context will be used.
 
 Use <arg1> alone for:
 
-  - the URL of the cluster Kubernetes endpoint
+  - the URL of the cluster Kubernetes API endpoint
   - the URL of the Giant Swarm web UI
-  - A Giant Swarm management cluster with an existing context
+  - a Giant Swarm management cluster with an existing context
   - a previously generated context name
 
 Use <arg1> <arg2> for
@@ -57,7 +56,7 @@ Management cluster:
 
   kubectl gs login https://api.g8s.test.eu-west-1.aws.gigantic.io
 
-  kubectl gs login gs-mymc
+  kubectl gs login gs-mymc # "gs-mymc" is the context name for the management cluster
 
   kubectl gs login mymc
 
@@ -76,6 +75,24 @@ Workload cluster client certificate:
     --` + flagWCOrganization + ` acme \
     --` + flagWCCertGroups + ` admins \
     --` + flagWCCertTTL + ` 3h
+
+Workload cluster direct OIDC (Kubernetes structured authentication),
+auto-discovering issuer URL, client ID and CA from the management cluster:
+
+  kubectl gs login mymc \
+    --` + flagWCName + ` gir0y \
+    --` + flagWCOrganization + ` acme \
+    --` + flagStructuredAuth + `
+
+Workload cluster direct OIDC, with explicit overrides (no MC lookup
+of KubeadmControlPlane or cluster-values ConfigMap is performed):
+
+  kubectl gs login mymc \
+    --` + flagWCName + ` gir0y \
+    --` + flagWCOrganization + ` acme \
+    --` + flagWCOIDCIssuer + ` https://login.example.com/tenant-id \
+    --` + flagWCOIDCClientID + ` my-client-id \
+    --` + flagWCOIDCCAFile + ` /path/to/ca.crt
 `
 )
 

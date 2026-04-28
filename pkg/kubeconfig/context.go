@@ -10,6 +10,7 @@ const (
 	ContextPrefix    = "gs-"
 	ClientCertSuffix = "-clientcert"
 	AWSIAMSuffix     = "-awsiam"
+	OIDCSuffix       = "-oidc"
 )
 
 type ContextType int
@@ -34,6 +35,10 @@ func GenerateWCClientCertKubeContextName(mcKubeContextName string, wcName string
 
 func GenerateWCAWSIAMKubeContextName(mcKubeContextName string, wcName string) string {
 	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, AWSIAMSuffix)
+}
+
+func GenerateWCOIDCKubeContextName(mcKubeContextName string, wcName string) string {
+	return fmt.Sprintf("%s-%s%s", mcKubeContextName, wcName, OIDCSuffix)
 }
 
 // IsKubeContext checks whether the name provided,
