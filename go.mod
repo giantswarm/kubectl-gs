@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	dario.cat/mergo v1.0.2
 	github.com/3th1nk/cidr v0.3.0
-	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/ProtonMail/gopenpgp/v3 v3.4.1
 	github.com/blang/semver v3.5.1+incompatible
