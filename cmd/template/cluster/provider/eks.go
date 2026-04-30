@@ -37,6 +37,13 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 	var configMapYAML []byte
 	{
 		flagValues := BuildEKSClusterConfig(config)
+
+		// For release versions, the release version is baked into the chart,
+		// so we don't need to include it in the user config.
+		if common.IsReleaseVersion(config.ReleaseVersion) {
+			flagValues.Global.Release = nil
+		}
+
 		configData, err := eks.GenerateClusterValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)
@@ -126,6 +133,9 @@ func BuildEKSClusterConfig(config common.ClusterConfig) eks.ClusterConfig {
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+			},
+			Release: &eks.Release{
+				Version: config.ReleaseVersion,
 			},
 		},
 	}

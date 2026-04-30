@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- Add `global.release.version` to template output for EKS
+
 ### Removed
 
 - Remove unused code (error variables, helper functions, types, and dead templates)
