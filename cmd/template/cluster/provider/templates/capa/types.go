@@ -25,11 +25,6 @@ type Release struct {
 	Version string `json:"version,omitempty"`
 }
 
-type DefaultAppsConfig struct {
-	ClusterName  string `json:"clusterName,omitempty"`
-	Organization string `json:"organization,omitempty"`
-}
-
 type ProviderSpecific struct {
 	AMI                        string `json:"ami,omitempty"`
 	AWSClusterRoleIdentityName string `json:"awsClusterRoleIdentityName,omitempty"`

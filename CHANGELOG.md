@@ -10,12 +10,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Removed
 
 - Remove unused code (error variables, helper functions, types, and dead templates)
+- Stop templating the deprecated `default-apps-eks` App
 
 ## [5.3.1] - 2026-04-04
 
 ### Fixed
 
--  Updated dependencies
+- Updated dependencies
 
 ## [5.3.0] - 2026-03-27
 
