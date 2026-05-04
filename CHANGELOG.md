@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.4.0] - 2026-05-04
+
 ### Added
 
 - Add `global.release.version` to template output for EKS
@@ -1743,7 +1745,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.4.0...HEAD
+[5.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.1...v5.4.0
 [5.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.0...v5.3.1
 [5.3.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.1.0...v5.2.0
