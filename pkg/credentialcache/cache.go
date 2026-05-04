@@ -93,6 +93,7 @@ func WriteWithoutLock(issuerURL, clientID, idToken, refreshToken string) error {
 		return err
 	}
 
+	//nolint:gosec
 	data, err := json.Marshal(Entry{IDToken: idToken, RefreshToken: refreshToken})
 	if err != nil {
 		return err
