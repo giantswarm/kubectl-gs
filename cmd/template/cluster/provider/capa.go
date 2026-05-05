@@ -29,11 +29,10 @@ import (
 )
 
 const (
-	DefaultAppsAWSRepoName = "default-apps-aws"
-	ClusterAWSRepoName     = "cluster-aws"
-	ReleaseAWSRepoName     = "release-aws"
-	ModePrivate            = "private"
-	ProxyPrivateType       = "proxy-private"
+	ClusterAWSRepoName = "cluster-aws"
+	ReleaseAWSRepoName = "release-aws"
+	ModePrivate        = "private"
+	ProxyPrivateType   = "proxy-private"
 )
 
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
