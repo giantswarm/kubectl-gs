@@ -61,7 +61,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// The current context already provides valid MC access; we only need
 	// to proceed to the WC kubeconfig creation.
 	if r.canSkipMCLogin() {
-		_, _ = fmt.Fprintf(r.stdout, "Using current kubeconfig context for MC access (skipping MC OIDC validation).\n")
+		_, _ = fmt.Fprintf(r.stdout, "Using the current kubeconfig context to reach the management cluster.\n")
 	} else {
 		switch len(args) {
 		// No arguments given - we try to reuse the existing context.

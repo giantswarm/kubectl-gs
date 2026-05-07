@@ -195,7 +195,7 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 		return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
 	}
 	if r.flag.WCOIDCIssuer != "" || r.flag.WCOIDCClientID != "" {
-		return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "no structured authentication issuer found for cluster %q; ensure the KubeadmControlPlane has an auth-config file or pass both --%s and --%s", c.Cluster.GetName(), flagWCOIDCIssuer, flagWCOIDCClientID)
+		return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "could not auto-detect the OIDC issuer for cluster %q; pass both --%s and --%s to log in directly", c.Cluster.GetName(), flagWCOIDCIssuer, flagWCOIDCClientID)
 	}
 
 	// Fallback to client certificate kubeconfig.

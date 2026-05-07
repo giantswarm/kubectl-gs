@@ -82,13 +82,13 @@ client certificate, or AWS IAM - is selected automatically based on the
 cluster's configuration):
 
   kubectl gs login mymc \
-    --` + flagWCName + ` gir0y \
+    --` + flagWCName + ` mywc \
     --` + flagWCOrganization + ` acme
 
 Workload cluster, forcing client certificate creation parameters:
 
   kubectl gs login mymc \
-    --` + flagWCName + ` gir0y \
+    --` + flagWCName + ` mywc \
     --` + flagWCOrganization + ` acme \
     --` + flagWCCertGroups + ` admins \
     --` + flagWCCertTTL + ` 3h
@@ -97,7 +97,7 @@ Workload cluster direct OIDC with explicit overrides (skips management
 cluster lookup of issuer URL, client ID and API server CA):
 
   kubectl gs login mymc \
-    --` + flagWCName + ` gir0y \
+    --` + flagWCName + ` mywc \
     --` + flagWCOrganization + ` acme \
     --` + flagWCOIDCIssuer + ` https://login.example.com/tenant-id \
     --` + flagWCOIDCClientID + ` my-client-id \

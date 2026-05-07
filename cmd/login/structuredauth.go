@@ -105,8 +105,8 @@ func detectStructuredAuth(ctx context.Context, k8sClient k8sclient.Interface, cl
 			}
 		}
 		return nil, microerror.Maskf(structuredAuthIssuerNotFoundError,
-			"no structured auth issuer found with client-id %q; available: %s",
-			clientIDOverride, formatAvailableIssuers(issuers))
+			"no OIDC issuer matches --%s %q; available issuers:\n%s",
+			flagWCOIDCClientID, clientIDOverride, formatAvailableIssuers(issuers))
 	}
 
 	// Auto-selection: single issuer.
@@ -217,8 +217,8 @@ func fetchClusterCA(ctx context.Context, k8sClient k8sclient.Interface, clusterN
 	}, &cm)
 	if err != nil {
 		return nil, microerror.Maskf(structuredAuthCANotFoundError,
-			"failed to fetch ConfigMap %s-cluster-values in namespace %s: %s",
-			clusterName, namespace, err.Error())
+			"could not auto-detect the API server CA for cluster %q; pass --%s to provide it directly: %s",
+			clusterName, flagWCOIDCCAFile, err.Error())
 	}
 
 	if valuesData, ok := cm.Data["values"]; ok {
@@ -233,7 +233,8 @@ func fetchClusterCA(ctx context.Context, k8sClient k8sclient.Interface, clusterN
 	}
 
 	return nil, microerror.Maskf(structuredAuthCANotFoundError,
-		"could not find cluster CA in ConfigMap %s-cluster-values", clusterName)
+		"could not auto-detect the API server CA for cluster %q; pass --%s to provide it directly",
+		clusterName, flagWCOIDCCAFile)
 }
 
 func extractCAFromValues(valuesData string) string {
