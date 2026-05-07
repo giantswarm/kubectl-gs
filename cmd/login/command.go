@@ -35,12 +35,21 @@ Use <arg1> <arg2> for
 	longDescription  = `Ensure an authenticated context for a Giant Swarm management or workload cluster
 
 Use this command to set up a kubectl context to work with:
-  (1) a management cluster, using OIDC authentication
-  (2) a workload cluster, using OIDC authentication
-  (3) a workload cluster, using client certificate auth.
+  (1) a management cluster (MC), using OIDC authentication via Dex
+  (2) a workload cluster (WC), using OIDC authentication via Dex
+  (3) a workload cluster (WC), using client certificate authentication
+  (4) a workload cluster (WC), using AWS IAM authentication (EKS only)
+  (5) a workload cluster (WC), using direct OIDC authentication (Kubernetes
+      structured authentication)
 
-Note that (3) implies (1). When creating a workload cluster client certificate,
-management cluster access will be set up as well, if that is not yet done.
+The appropriate workload-cluster mode (2, 3, 4 or 5) is selected automatically
+based on the cluster's configuration. (3) implies (1): when creating a workload
+cluster client certificate, management cluster access will be set up as well,
+if that is not yet done.
+
+For (5), the OIDC issuer URL, client ID and API server CA are auto-discovered
+from the management cluster. The flags --` + flagWCOIDCIssuer + `, --` + flagWCOIDCClientID + ` and
+--` + flagWCOIDCCAFile + ` can be used to override the discovered values.
 
 Security notes:
 
@@ -60,7 +69,7 @@ Management cluster:
 
   kubectl gs login mymc
 
-Workload cluster:
+Workload cluster (re-using an existing context):
 
   kubectl gs login https://api.example.g8s.test.eu-west-1.aws.gigantic.io
 
@@ -68,7 +77,15 @@ Workload cluster:
 
   kubectl gs login mymc mywc
 
-Workload cluster client certificate:
+Workload cluster (the appropriate authentication method - direct OIDC,
+client certificate, or AWS IAM - is selected automatically based on the
+cluster's configuration):
+
+  kubectl gs login mymc \
+    --` + flagWCName + ` gir0y \
+    --` + flagWCOrganization + ` acme
+
+Workload cluster, forcing client certificate creation parameters:
 
   kubectl gs login mymc \
     --` + flagWCName + ` gir0y \
@@ -76,16 +93,8 @@ Workload cluster client certificate:
     --` + flagWCCertGroups + ` admins \
     --` + flagWCCertTTL + ` 3h
 
-Workload cluster direct OIDC (Kubernetes structured authentication),
-auto-discovering issuer URL, client ID and CA from the management cluster:
-
-  kubectl gs login mymc \
-    --` + flagWCName + ` gir0y \
-    --` + flagWCOrganization + ` acme \
-    --` + flagStructuredAuth + `
-
-Workload cluster direct OIDC, with explicit overrides (no MC lookup
-of KubeadmControlPlane or cluster-values ConfigMap is performed):
+Workload cluster direct OIDC with explicit overrides (skips management
+cluster lookup of issuer URL, client ID and API server CA):
 
   kubectl gs login mymc \
     --` + flagWCName + ` gir0y \

@@ -127,7 +127,8 @@ func detectStructuredAuth(ctx context.Context, k8sClient k8sclient.Interface, cl
 	}
 
 	return nil, microerror.Maskf(structuredAuthMultipleIssuersError,
-		"multiple OIDC issuers detected; use --connector-id, --client-id, or --issuer to select one:\n%s",
+		"multiple OIDC issuers detected; use --%s, --%s, or --%s to select one:\n%s",
+		flagConnectorID, flagWCOIDCClientID, flagWCOIDCIssuer,
 		formatAvailableIssuers(issuers))
 }
 

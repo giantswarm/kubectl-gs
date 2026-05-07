@@ -183,18 +183,19 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 		return contextName, contextExists, nil
 	}
 
-	// Direct OIDC (structured authentication) is opt-in: only attempted when
-	// the user passes --structured-auth, --issuer or --client-id. Without
-	// these flags we go straight to the client-cert flow.
-	if r.flag.StructuredAuth || r.flag.WCOIDCIssuer != "" || r.flag.WCOIDCClientID != "" {
-		authConfig, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.ConnectorID, r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
-		if err != nil {
-			return "", false, microerror.Mask(err)
-		}
-		if authConfig != nil {
-			return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
-		}
-		return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "no structured authentication issuer found for cluster %q; ensure the KubeadmControlPlane has an auth-config file or pass --issuer/--client-id", c.Cluster.GetName())
+	// Auto-detect direct OIDC (Kubernetes structured authentication). When the
+	// cluster is configured for it, log in via OIDC. Otherwise, fall back to
+	// client certificate. The user can force direct OIDC by setting
+	// --oidc-issuer and --oidc-client-id explicitly.
+	authConfig, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.ConnectorID, r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	if authConfig != nil {
+		return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
+	}
+	if r.flag.WCOIDCIssuer != "" || r.flag.WCOIDCClientID != "" {
+		return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "no structured authentication issuer found for cluster %q; ensure the KubeadmControlPlane has an auth-config file or pass both --%s and --%s", c.Cluster.GetName(), flagWCOIDCIssuer, flagWCOIDCClientID)
 	}
 
 	// Fallback to client certificate kubeconfig.
