@@ -64,12 +64,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		_, _ = fmt.Fprintf(r.stdout, "Using current kubeconfig context for MC access (skipping MC OIDC validation).\n")
 	} else {
 		switch len(args) {
-		// No arguments given - show help unless --workload-cluster or --context
-		// was provided (which signal the user's intent to reuse a specific context).
+		// No arguments given - we try to reuse the existing context.
 		case 0:
-			if !r.loginOptions.isWC && r.commonConfig.GetContextOverride() == "" {
-				return cmd.Help()
-			}
 			err := r.tryToReuseExistingContext(ctx)
 			if err != nil {
 				return microerror.Mask(err)
