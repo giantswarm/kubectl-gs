@@ -187,7 +187,7 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 	// cluster is configured for it, log in via OIDC. Otherwise, fall back to
 	// client certificate. The user can force direct OIDC by setting
 	// --oidc-issuer and --oidc-client-id explicitly.
-	authConfig, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.ConnectorID, r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
+	authConfig, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
 	if err != nil {
 		return "", false, microerror.Mask(err)
 	}

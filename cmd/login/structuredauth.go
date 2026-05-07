@@ -45,7 +45,7 @@ type jwtIssuer struct {
 //
 // When issuerOverride and clientIDOverride are both provided the values are used
 // directly and no KubeadmControlPlane resource is fetched from the MC.
-func detectStructuredAuth(ctx context.Context, k8sClient k8sclient.Interface, clusterName, namespace, connectorID, issuerOverride, clientIDOverride string) (*structuredAuthIssuer, error) {
+func detectStructuredAuth(ctx context.Context, k8sClient k8sclient.Interface, clusterName, namespace, issuerOverride, clientIDOverride string) (*structuredAuthIssuer, error) {
 	// If both issuer and client-id are provided via flags, use them directly
 	// without needing management cluster access for KCP detection.
 	if issuerOverride != "" && clientIDOverride != "" {
@@ -109,26 +109,14 @@ func detectStructuredAuth(ctx context.Context, k8sClient k8sclient.Interface, cl
 			clientIDOverride, formatAvailableIssuers(issuers))
 	}
 
-	// Auto-selection: single issuer or connector-id matching.
+	// Auto-selection: single issuer.
 	if len(issuers) == 1 {
 		return &issuers[0], nil
 	}
 
-	// Multiple issuers: need connector-id to disambiguate.
-	if connectorID != "" {
-		for _, iss := range issuers {
-			if iss.ClientID == connectorID {
-				return &iss, nil
-			}
-		}
-		return nil, microerror.Maskf(structuredAuthIssuerNotFoundError,
-			"connector-id %q does not match any structured auth issuer audience; available: %s",
-			connectorID, formatAvailableIssuers(issuers))
-	}
-
 	return nil, microerror.Maskf(structuredAuthMultipleIssuersError,
-		"multiple OIDC issuers detected; use --%s, --%s, or --%s to select one:\n%s",
-		flagConnectorID, flagWCOIDCClientID, flagWCOIDCIssuer,
+		"multiple OIDC issuers detected; use --%s or --%s to select one:\n%s",
+		flagWCOIDCClientID, flagWCOIDCIssuer,
 		formatAvailableIssuers(issuers))
 }
 

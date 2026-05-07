@@ -91,7 +91,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCCertCNPrefix, flagWCCertCNPrefix, "", fmt.Sprintf(`For client certificate creation. Prefix for the name encoded in the X.509 field "CN". Requires --%s.`, flagWCName))
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
-	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector for MC login, or OIDC client-id for selecting among multiple structured authentication issuers on a workload cluster.")
+	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector to use for authentication. This allows to skip the selection page.")
 
 	cmd.Flags().StringVar(&f.WCOIDCIssuer, flagWCOIDCIssuer, "", fmt.Sprintf("Override the OIDC issuer URL for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCClientID))
 	cmd.Flags().StringVar(&f.WCOIDCClientID, flagWCOIDCClientID, "", fmt.Sprintf("Override the OIDC client ID for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCIssuer))
