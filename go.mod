@@ -244,7 +244,7 @@ replace (
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.23.0
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.0
-	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.41.0 // Fix CVE-2026-24051
+	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.43.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.51.0
 	golang.org/x/text => golang.org/x/text v0.37.0
 )
