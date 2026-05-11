@@ -102,6 +102,13 @@ func New(ctx context.Context, c Config) (*Authenticator, error) {
 	return a, nil
 }
 
+// GetPlainAuthURL returns the authorization URL without any Dex-specific parameters.
+// This is used for direct OIDC flows (e.g., structured authentication) where the
+// issuer is not Dex and doesn't understand connector_id or connector_filter.
+func (a *Authenticator) GetPlainAuthURL() string {
+	return a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)
+}
+
 func (a *Authenticator) GetAuthURL(connectorID string) string {
 
 	authURL := a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)

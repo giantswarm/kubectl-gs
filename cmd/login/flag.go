@@ -26,6 +26,10 @@ const (
 
 	flagConnectorID = "connector-id"
 
+	flagWCOIDCIssuer   = "oidc-issuer"
+	flagWCOIDCClientID = "oidc-client-id"
+	flagWCOIDCCAFile   = "api-ca-file"
+
 	flagProxy     = "proxy"
 	flagProxyPort = "proxy-port"
 
@@ -54,6 +58,10 @@ type flag struct {
 	WCInsecureNamespace bool
 
 	ConnectorID string
+
+	WCOIDCIssuer   string
+	WCOIDCClientID string
+	WCOIDCCAFile   string
 
 	Proxy     bool
 	ProxyPort int
@@ -84,6 +92,10 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.WCInsecureNamespace, flagWCInsecureNamespace, false, fmt.Sprintf(`For client certificate creation. Allow using an insecure namespace for creating the client certificate. Requires --%s.`, flagWCName))
 
 	cmd.Flags().StringVar(&f.ConnectorID, flagConnectorID, "", "Dex connector to use for authentication. This allows to skip the selection page.")
+
+	cmd.Flags().StringVar(&f.WCOIDCIssuer, flagWCOIDCIssuer, "", fmt.Sprintf("Override the OIDC issuer URL for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCClientID))
+	cmd.Flags().StringVar(&f.WCOIDCClientID, flagWCOIDCClientID, "", fmt.Sprintf("Override the OIDC client ID for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCIssuer))
+	cmd.Flags().StringVar(&f.WCOIDCCAFile, flagWCOIDCCAFile, "", "Override the path to the CA certificate file for the workload cluster API server. When set, skips fetching the CA from the management cluster.")
 
 	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")

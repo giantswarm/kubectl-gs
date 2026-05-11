@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `login`: support direct OIDC authentication for workload clusters (Kubernetes structured authentication). The appropriate workload-cluster authentication mode is now selected automatically based on the cluster's configuration.
+
 ## [5.4.0] - 2026-05-04
 
 ### Added

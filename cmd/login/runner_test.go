@@ -117,7 +117,6 @@ func TestLogin(t *testing.T) {
 				WCCertTTL: "8h",
 			},
 		},
-		// Empty starting config, Try to reuse existing context
 		{
 			name:        "case 9",
 			startConfig: &clientcmdapi.Config{},

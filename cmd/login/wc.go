@@ -175,17 +175,33 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 	}
 
 	// for EKS the kubeconfig cannot be client-cert as it uses aws authentication
-	// for the rest of workload cluster client-cert kubeconfig will be generated
 	if isEKS(c.Cluster) {
 		contextName, contextExists, err = r.createEKSKubeconfig(ctx, client, c)
 		if err != nil {
 			return "", false, microerror.Mask(err)
 		}
-	} else {
-		contextName, contextExists, err = r.createCertKubeconfig(ctx, c, services, provider)
-		if err != nil {
-			return "", false, microerror.Mask(err)
-		}
+		return contextName, contextExists, nil
+	}
+
+	// Auto-detect direct OIDC (Kubernetes structured authentication). When the
+	// cluster is configured for it, log in via OIDC. Otherwise, fall back to
+	// client certificate. The user can force direct OIDC by setting
+	// --oidc-issuer and --oidc-client-id explicitly.
+	authConfig, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
+	if err != nil {
+		return "", false, microerror.Mask(err)
+	}
+	if authConfig != nil {
+		return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
+	}
+	if r.flag.WCOIDCIssuer != "" || r.flag.WCOIDCClientID != "" {
+		return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "could not auto-detect the OIDC issuer for cluster %q; pass both --%s and --%s to log in directly", c.Cluster.GetName(), flagWCOIDCIssuer, flagWCOIDCClientID)
+	}
+
+	// Fallback to client certificate kubeconfig.
+	contextName, contextExists, err = r.createCertKubeconfig(ctx, c, services, provider)
+	if err != nil {
+		return "", false, microerror.Mask(err)
 	}
 
 	return contextName, contextExists, nil
@@ -220,14 +236,9 @@ func (r *runner) createCertKubeconfig(ctx context.Context, c *cluster.Cluster, s
 		return "", false, microerror.Mask(err)
 	}
 
-	cpHost, _, _ := unstructured.NestedString(c.Cluster.Object, "spec", "controlPlaneEndpoint", "host")
-	cpPort, _, _ := unstructured.NestedInt64(c.Cluster.Object, "spec", "controlPlaneEndpoint", "port")
-
-	if cpHost == "" || cpPort == 0 {
-		if c.Cluster.GetCreationTimestamp().Time.Before(time.Now().Add(-newClusterMaxAge)) {
-			return "", false, microerror.Maskf(clusterAPINotKnownError, "API for cluster '%s' is not known", r.flag.WCName)
-		}
-		return "", false, microerror.Maskf(clusterAPINotReadyError, "API for cluster '%s' is not ready yet", r.flag.WCName)
+	cpHost, cpPort, err := controlPlaneEndpoint(c.Cluster)
+	if err != nil {
+		return "", false, microerror.Mask(err)
 	}
 
 	clusterServer := fmt.Sprintf("https://%s:%d", cpHost, cpPort)
@@ -388,6 +399,23 @@ func getWCBasePath(k8sConfigAccess clientcmd.ConfigAccess, provider string, curr
 	}
 
 	return strings.TrimPrefix(clusterServer, "g8s."), nil
+}
+
+// controlPlaneEndpoint extracts and validates the API server endpoint from a
+// CAPI Cluster resource. Returns an error if the endpoint is not yet available.
+func controlPlaneEndpoint(cluster *unstructured.Unstructured) (string, int64, error) {
+	cpHost, _, _ := unstructured.NestedString(cluster.Object, "spec", "controlPlaneEndpoint", "host")
+	cpPort, _, _ := unstructured.NestedInt64(cluster.Object, "spec", "controlPlaneEndpoint", "port")
+
+	if cpHost == "" || cpPort == 0 {
+		name := cluster.GetName()
+		if cluster.GetCreationTimestamp().Time.Before(time.Now().Add(-newClusterMaxAge)) {
+			return "", 0, microerror.Maskf(clusterAPINotKnownError, "API for cluster '%s' is not known", name)
+		}
+		return "", 0, microerror.Maskf(clusterAPINotReadyError, "API for cluster '%s' is not ready yet", name)
+	}
+
+	return cpHost, cpPort, nil
 }
 
 func isEKS(c *unstructured.Unstructured) bool {

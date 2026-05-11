@@ -19,13 +19,12 @@ const (
 	name = `login <arg1> <arg2> [flags]
 
 Arguments <arg1> and <arg2> are optional and can take several forms.
-No arguments means that the currently selected context will be used.
 
 Use <arg1> alone for:
 
-  - the URL of the cluster Kubernetes endpoint
+  - the URL of the cluster Kubernetes API endpoint
   - the URL of the Giant Swarm web UI
-  - A Giant Swarm management cluster with an existing context
+  - a Giant Swarm management cluster with an existing context
   - a previously generated context name
 
 Use <arg1> <arg2> for
@@ -36,12 +35,21 @@ Use <arg1> <arg2> for
 	longDescription  = `Ensure an authenticated context for a Giant Swarm management or workload cluster
 
 Use this command to set up a kubectl context to work with:
-  (1) a management cluster, using OIDC authentication
-  (2) a workload cluster, using OIDC authentication
-  (3) a workload cluster, using client certificate auth.
+  (1) a management cluster (MC), using OIDC authentication via Dex
+  (2) a workload cluster (WC), using OIDC authentication via Dex
+  (3) a workload cluster (WC), using client certificate authentication
+  (4) a workload cluster (WC), using AWS IAM authentication (EKS only)
+  (5) a workload cluster (WC), using direct OIDC authentication (Kubernetes
+      structured authentication)
 
-Note that (3) implies (1). When creating a workload cluster client certificate,
-management cluster access will be set up as well, if that is not yet done.
+The appropriate workload-cluster mode (2, 3, 4 or 5) is selected automatically
+based on the cluster's configuration. (3) implies (1): when creating a workload
+cluster client certificate, management cluster access will be set up as well,
+if that is not yet done.
+
+For (5), the OIDC issuer URL, client ID and API server CA are auto-discovered
+from the management cluster. The flags --` + flagWCOIDCIssuer + `, --` + flagWCOIDCClientID + ` and
+--` + flagWCOIDCCAFile + ` can be used to override the discovered values.
 
 Security notes:
 
@@ -57,11 +65,11 @@ Management cluster:
 
   kubectl gs login https://api.g8s.test.eu-west-1.aws.gigantic.io
 
-  kubectl gs login gs-mymc
+  kubectl gs login gs-mymc # "gs-mymc" is the context name for the management cluster
 
   kubectl gs login mymc
 
-Workload cluster:
+Workload cluster (re-using an existing context):
 
   kubectl gs login https://api.example.g8s.test.eu-west-1.aws.gigantic.io
 
@@ -69,13 +77,31 @@ Workload cluster:
 
   kubectl gs login mymc mywc
 
-Workload cluster client certificate:
+Workload cluster (the appropriate authentication method - direct OIDC,
+client certificate, or AWS IAM - is selected automatically based on the
+cluster's configuration):
 
   kubectl gs login mymc \
-    --` + flagWCName + ` gir0y \
+    --` + flagWCName + ` mywc \
+    --` + flagWCOrganization + ` acme
+
+Workload cluster, forcing client certificate creation parameters:
+
+  kubectl gs login mymc \
+    --` + flagWCName + ` mywc \
     --` + flagWCOrganization + ` acme \
     --` + flagWCCertGroups + ` admins \
     --` + flagWCCertTTL + ` 3h
+
+Workload cluster direct OIDC with explicit overrides (skips management
+cluster lookup of issuer URL, client ID and API server CA):
+
+  kubectl gs login mymc \
+    --` + flagWCName + ` mywc \
+    --` + flagWCOrganization + ` acme \
+    --` + flagWCOIDCIssuer + ` https://login.example.com/tenant-id \
+    --` + flagWCOIDCClientID + ` my-client-id \
+    --` + flagWCOIDCCAFile + ` /path/to/ca.crt
 `
 )
 
