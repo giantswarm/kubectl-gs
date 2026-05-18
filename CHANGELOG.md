@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `giantswarm/architect` orb to `8.1.0` and replace the hand-rolled inline `push-to-registries-multiarch` job (~75 lines of `docker buildx` wrapper) with `architect/push-to-registries` and `multiarch: true`. The orb job builds the same `linux/amd64,linux/arm64,linux/386` matrix from the per-arch binaries produced by `go-build-{amd64,arm64,386}` and reuses the Dockerfile's `COPY ./kubectl-gs-${TARGETARCH}` step. Picks up the v8.1.0 QEMU/binfmt auto-registration, hardened buildx bootstrap, and standard OCI image labels for free.
+
 ## [5.5.0] - 2026-05-12
 
 ### Added
