@@ -157,6 +157,7 @@ workflows:
           multiarch: true
           platforms: "linux/amd64,linux/arm64"
           force-public: true
+          split-china-push: true
           requires:
             - go-build-amd64
             - go-build-arm64
@@ -166,6 +167,19 @@ workflows:
             branches:
               ignore:
                 - main
+            tags:
+              only: /^v.*/
+      # Mirror gsoci -> Aliyun via the in-China giantswarm/galaxy-runner on
+      # tag builds only. Replaces the cross-Pacific docker buildx push to
+      # Aliyun that timed out on tag jobs.
+      - architect/sync-china-registry:
+          context: architect
+          name: sync-china-registry
+          requires:
+            - push-to-registries-multiarch
+          filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
       - debug-tag:
