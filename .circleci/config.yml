@@ -145,16 +145,21 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      # Docker image: linux/amd64 + linux/arm64 only. The alpine base image
+      # in gsoci.azurecr.io/giantswarm/alpine does not ship a linux/386
+      # variant, so the legacy inline job's 386 build silently failed every
+      # run (the `tee` pipe always returned 0 and masked the buildx error).
+      # The standalone linux/386 kubectl-gs binary is still produced by
+      # go-build-386 and distributed through GitHub releases / krew.
       - architect/push-to-registries:
           context: architect
           name: push-to-registries-multiarch
           multiarch: true
-          platforms: "linux/amd64,linux/arm64,linux/386"
+          platforms: "linux/amd64,linux/arm64"
           force-public: true
           requires:
             - go-build-amd64
             - go-build-arm64
-            - go-build-386
             # - go-build-ppc64le
             # - go-build-s390x
           filters:
