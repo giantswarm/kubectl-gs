@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- `login`: when a workload cluster's structured authentication exposes multiple OIDC issuers and no `--oidc-issuer` / `--oidc-client-id` flag is set, prompt the user to pick one from a numbered menu (interactive TTY only). Non-interactive invocations keep the previous error listing the available issuers so scripted callers stay informative.
 - Enable `split-china-push: true` on the tag-build `push-to-registries-multiarch` job and add a companion `sync-china-registry` job. The cross-Pacific `docker buildx` push to the Aliyun mirror is replaced with a `regctl image copy` from gsoci to Aliyun executed on the in-China `giantswarm/galaxy-runner` self-hosted CircleCI runner.
 - Bump `giantswarm/architect` orb to `8.1.0` and replace the hand-rolled inline `push-to-registries-multiarch` job (~75 lines of `docker buildx` wrapper) with `architect/push-to-registries` and `multiarch: true`. The orb job builds the multi-arch image from the per-arch binaries produced by `go-build-{amd64,arm64}` and reuses the Dockerfile's `COPY ./kubectl-gs-${TARGETARCH}` step. Picks up the v8.1.0 QEMU/binfmt auto-registration, hardened buildx bootstrap, and standard OCI image labels for free.
 
