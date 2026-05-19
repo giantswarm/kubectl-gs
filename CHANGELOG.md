@@ -9,6 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+
+- Bump `giantswarm/architect` orb to `8.2.1` to pick up [architect-orb#767](https://github.com/giantswarm/architect-orb/pull/767): `image-login-to-registries` is now POSIX-portable, unblocking `architect/sync-china-registry` (the gsoci -> Aliyun mirror via the in-China `giantswarm/galaxy-runner`). The v8.1.0 refactor accidentally introduced bash-only `${!var}` indirect expansion in the shared login command, which BusyBox `/bin/sh` (used by the regctl executor) rejected with `bad substitution` -- so no Aliyun mirror has been happening since the migration to `split-china-push: true`. v8.2.x also enables cosign keyless signing, SLSA provenance, and SBOM attestations by default for public images and charts.
 - Enable `split-china-push: true` on the tag-build `push-to-registries-multiarch` job and add a companion `sync-china-registry` job. The cross-Pacific `docker buildx` push to the Aliyun mirror is replaced with a `regctl image copy` from gsoci to Aliyun executed on the in-China `giantswarm/galaxy-runner` self-hosted CircleCI runner.
 - Bump `giantswarm/architect` orb to `8.1.0` and replace the hand-rolled inline `push-to-registries-multiarch` job (~75 lines of `docker buildx` wrapper) with `architect/push-to-registries` and `multiarch: true`. The orb job builds the multi-arch image from the per-arch binaries produced by `go-build-{amd64,arm64}` and reuses the Dockerfile's `COPY ./kubectl-gs-${TARGETARCH}` step. Picks up the v8.1.0 QEMU/binfmt auto-registration, hardened buildx bootstrap, and standard OCI image labels for free.
 
