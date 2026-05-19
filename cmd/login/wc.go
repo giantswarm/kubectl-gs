@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"golang.org/x/term"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/clientcmd"
@@ -187,9 +189,29 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 	// cluster is configured for it, log in via OIDC. Otherwise, fall back to
 	// client certificate. The user can force direct OIDC by setting
 	// --oidc-issuer and --oidc-client-id explicitly.
-	authConfig, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
+	authConfig, candidates, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
 	if err != nil {
 		return "", false, microerror.Mask(err)
+	}
+	if authConfig == nil && len(candidates) > 0 {
+		// Multiple issuers detected and no flag to disambiguate. Prompt the
+		// user when both stdin AND stdout are TTYs (otherwise either the
+		// prompt or the user's reply could be silently swallowed -- e.g.
+		// `kubectl gs login ... 1>/dev/null`). Fall back to the
+		// scripted-friendly error so callers can rerun with
+		// --oidc-client-id or --oidc-issuer.
+		stdinIsTTY := term.IsTerminal(int(os.Stdin.Fd()))   //nolint:gosec // Fd() returns a small file descriptor
+		stdoutIsTTY := term.IsTerminal(int(os.Stdout.Fd())) //nolint:gosec // Fd() returns a small file descriptor
+		if stdinIsTTY && stdoutIsTTY {
+			authConfig, err = pickIssuerInteractive(candidates, os.Stdin, r.stdout)
+			if err != nil {
+				return "", false, microerror.Mask(err)
+			}
+		} else {
+			return "", false, microerror.Maskf(structuredAuthMultipleIssuersError,
+				"multiple OIDC issuers detected; use --%s or --%s to select one:\n%s",
+				flagWCOIDCClientID, flagWCOIDCIssuer, formatAvailableIssuers(candidates))
+		}
 	}
 	if authConfig != nil {
 		return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
