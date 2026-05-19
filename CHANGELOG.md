@@ -7,6 +7,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Enable `split-china-push: true` on the tag-build `push-to-registries-multiarch` job and add a companion `sync-china-registry` job. The cross-Pacific `docker buildx` push to the Aliyun mirror is replaced with a `regctl image copy` from gsoci to Aliyun executed on the in-China `giantswarm/galaxy-runner` self-hosted CircleCI runner.
+- Bump `giantswarm/architect` orb to `8.1.0` and replace the hand-rolled inline `push-to-registries-multiarch` job (~75 lines of `docker buildx` wrapper) with `architect/push-to-registries` and `multiarch: true`. The orb job builds the multi-arch image from the per-arch binaries produced by `go-build-{amd64,arm64}` and reuses the Dockerfile's `COPY ./kubectl-gs-${TARGETARCH}` step. Picks up the v8.1.0 QEMU/binfmt auto-registration, hardened buildx bootstrap, and standard OCI image labels for free.
+
+### Fixed
+
+- Drop `linux/386` from the docker image's `--platform` list. The base image `gsoci.azurecr.io/giantswarm/alpine` does not ship a `linux/386` variant, so the legacy inline `push-to-registries-multiarch` job's `buildx` invocation has been silently failing for that platform on every run -- the bug was masked by the script's `... | tee .docker.log` pipe always returning `0`, so the failed buildx output never affected the job's exit code. The pushed multi-arch image therefore never actually contained a `linux/386` variant. The standalone `linux/386` `kubectl-gs` binary continues to be produced by `go-build-386` and shipped through GitHub releases / krew.
+
 ## [5.5.0] - 2026-05-12
 
 ### Added
