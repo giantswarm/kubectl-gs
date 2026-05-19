@@ -195,10 +195,15 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 	}
 	if authConfig == nil && len(candidates) > 0 {
 		// Multiple issuers detected and no flag to disambiguate. Prompt the
-		// user when stdin is a TTY; otherwise surface the scripted-friendly
-		// error so they can rerun with --oidc-client-id or --oidc-issuer.
-		if term.IsTerminal(int(os.Stdin.Fd())) { //nolint:gosec // Fd() returns a small file descriptor
-			authConfig, err = pickIssuerInteractive(candidates, os.Stdin, r.stderr)
+		// user when both stdin AND stdout are TTYs (otherwise either the
+		// prompt or the user's reply could be silently swallowed -- e.g.
+		// `kubectl gs login ... 1>/dev/null`). Fall back to the
+		// scripted-friendly error so callers can rerun with
+		// --oidc-client-id or --oidc-issuer.
+		stdinIsTTY := term.IsTerminal(int(os.Stdin.Fd()))   //nolint:gosec // Fd() returns a small file descriptor
+		stdoutIsTTY := term.IsTerminal(int(os.Stdout.Fd())) //nolint:gosec // Fd() returns a small file descriptor
+		if stdinIsTTY && stdoutIsTTY {
+			authConfig, err = pickIssuerInteractive(candidates, os.Stdin, r.stdout)
 			if err != nil {
 				return "", false, microerror.Mask(err)
 			}

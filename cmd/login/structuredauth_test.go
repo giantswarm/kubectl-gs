@@ -46,35 +46,33 @@ func TestPickIssuerInteractive(t *testing.T) {
 			wantIssuer: "https://login.microsoftonline.com/tid/v2.0",
 		},
 		{
-			name:        "rejects zero",
+			name:       "retries after invalid then accepts",
+			input:      "0\nokta\n2\n",
+			issuers:    issuers,
+			wantIssuer: "https://login.microsoftonline.com/tid/v2.0",
+		},
+		{
+			name:       "accepts on last attempt",
+			input:      "0\n9\n1\n",
+			issuers:    issuers,
+			wantIssuer: "https://trial-1234.okta.com",
+		},
+		{
+			name:        "gives up after max invalid attempts",
+			input:       "0\nokta\n9\n1\n",
+			issuers:     issuers,
+			wantErr:     true,
+			wantErrText: "no valid issuer selection after 3 attempts",
+		},
+		{
+			name:        "EOF after one invalid still aborts",
 			input:       "0\n",
 			issuers:     issuers,
 			wantErr:     true,
-			wantErrText: "invalid selection",
+			wantErrText: "no issuer selected",
 		},
 		{
-			name:        "rejects out of range",
-			input:       "9\n",
-			issuers:     issuers,
-			wantErr:     true,
-			wantErrText: "invalid selection",
-		},
-		{
-			name:        "rejects non-numeric",
-			input:       "okta\n",
-			issuers:     issuers,
-			wantErr:     true,
-			wantErrText: "invalid selection",
-		},
-		{
-			name:        "rejects empty input",
-			input:       "\n",
-			issuers:     issuers,
-			wantErr:     true,
-			wantErrText: "invalid selection",
-		},
-		{
-			name:        "rejects EOF",
+			name:        "rejects immediate EOF",
 			input:       "",
 			issuers:     issuers,
 			wantErr:     true,
@@ -122,6 +120,25 @@ func TestPickIssuerInteractive(t *testing.T) {
 				t.Errorf("issuer = %q, want %q", got.IssuerURL, tt.wantIssuer)
 			}
 		})
+	}
+}
+
+func TestPickIssuerInteractiveRetryHint(t *testing.T) {
+	issuers := []structuredAuthIssuer{
+		{IssuerURL: "https://a.example.com", ClientID: "a"},
+		{IssuerURL: "https://b.example.com", ClientID: "b"},
+	}
+	out := &bytes.Buffer{}
+	_, err := pickIssuerInteractive(issuers, strings.NewReader("nope\n1\n"), out)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	got := out.String()
+	if !strings.Contains(got, "Invalid selection \"nope\"") {
+		t.Errorf("expected retry hint quoting the bad input; got:\n%s", got)
+	}
+	if !strings.Contains(got, "attempt(s) left") {
+		t.Errorf("expected remaining-attempts hint; got:\n%s", got)
 	}
 }
 

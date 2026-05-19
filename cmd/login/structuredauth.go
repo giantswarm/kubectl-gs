@@ -131,8 +131,15 @@ func detectStructuredAuth(ctx context.Context, k8sClient k8sclient.Interface, cl
 	return nil, issuers, nil
 }
 
+// pickIssuerMaxAttempts caps the number of invalid selections before
+// pickIssuerInteractive gives up.
+const pickIssuerMaxAttempts = 3
+
 // pickIssuerInteractive prints a numbered menu of issuers and reads a
-// selection from the provided reader. Used when stdin is a TTY.
+// selection from the provided reader. On invalid input it re-prompts up to
+// pickIssuerMaxAttempts times; on EOF or read error it returns immediately.
+// Callers should gate this on both stdin and `out` being a TTY so the
+// prompt is actually visible to the user.
 func pickIssuerInteractive(issuers []structuredAuthIssuer, in io.Reader, out io.Writer) (*structuredAuthIssuer, error) {
 	if len(issuers) == 0 {
 		return nil, microerror.Maskf(structuredAuthIssuerNotFoundError, "no OIDC issuers to choose from")
@@ -145,25 +152,33 @@ func pickIssuerInteractive(issuers []structuredAuthIssuer, in io.Reader, out io.
 	for i, iss := range issuers {
 		_, _ = fmt.Fprintf(out, "  %d) issuer: %s, client-id: %s\n", i+1, iss.IssuerURL, iss.ClientID)
 	}
-	_, _ = fmt.Fprintf(out, "Select an issuer [1-%d]: ", len(issuers))
 
 	scanner := bufio.NewScanner(in)
-	if !scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return nil, microerror.Mask(err)
+	for attempt := 1; attempt <= pickIssuerMaxAttempts; attempt++ {
+		_, _ = fmt.Fprintf(out, "Select an issuer [1-%d]: ", len(issuers))
+
+		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				return nil, microerror.Mask(err)
+			}
+			return nil, microerror.Maskf(structuredAuthIssuerNotFoundError, "no issuer selected")
 		}
-		return nil, microerror.Maskf(structuredAuthIssuerNotFoundError, "no issuer selected")
+
+		line := strings.TrimSpace(scanner.Text())
+		n, err := strconv.Atoi(line)
+		if err == nil && n >= 1 && n <= len(issuers) {
+			return &issuers[n-1], nil
+		}
+
+		remaining := pickIssuerMaxAttempts - attempt
+		if remaining > 0 {
+			_, _ = fmt.Fprintf(out, "Invalid selection %q; expected a number between 1 and %d (%d attempt(s) left).\n",
+				line, len(issuers), remaining)
+		}
 	}
 
-	line := strings.TrimSpace(scanner.Text())
-	n, err := strconv.Atoi(line)
-	if err != nil || n < 1 || n > len(issuers) {
-		return nil, microerror.Maskf(structuredAuthIssuerNotFoundError,
-			"invalid selection %q; expected a number between 1 and %d",
-			line, len(issuers))
-	}
-
-	return &issuers[n-1], nil
+	return nil, microerror.Maskf(structuredAuthIssuerNotFoundError,
+		"no valid issuer selection after %d attempts", pickIssuerMaxAttempts)
 }
 
 // fetchKubeadmControlPlane retrieves the KubeadmControlPlane resource for
