@@ -18,6 +18,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `login`: enable PKCE (RFC 7636) on the direct OIDC flow used for workload clusters with Kubernetes structured authentication. Public OIDC clients registered without a `client_secret` (e.g. Okta SPA / Native apps) previously failed the token exchange with `invalid_client` because neither client authentication nor a PKCE code verifier was sent. The Dex-mediated management cluster flow is unaffected.
 - Drop `linux/386` from the docker image's `--platform` list. The base image `gsoci.azurecr.io/giantswarm/alpine` does not ship a `linux/386` variant, so the legacy inline `push-to-registries-multiarch` job's `buildx` invocation has been silently failing for that platform on every run -- the bug was masked by the script's `... | tee .docker.log` pipe always returning `0`, so the failed buildx output never affected the job's exit code. The pushed multi-arch image therefore never actually contained a `linux/386` variant. The standalone `linux/386` `kubectl-gs` binary continues to be produced by `go-build-386` and shipped through GitHub releases / krew.
 
 ## [5.5.0] - 2026-05-12
