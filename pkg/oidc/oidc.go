@@ -17,6 +17,7 @@ type Authenticator struct {
 	provider     *gooidc.Provider
 	clientConfig oauth2.Config
 	challenge    string
+	pkceVerifier string
 }
 
 type UserInfo struct {
@@ -105,8 +106,13 @@ func New(ctx context.Context, c Config) (*Authenticator, error) {
 // GetPlainAuthURL returns the authorization URL without any Dex-specific parameters.
 // This is used for direct OIDC flows (e.g., structured authentication) where the
 // issuer is not Dex and doesn't understand connector_id or connector_filter.
+//
+// PKCE (RFC 7636) is enabled on this path because direct OIDC clients are
+// typically registered as public clients (no client_secret) — e.g. an Okta
+// SPA/Native app — which require PKCE for the token exchange to succeed.
 func (a *Authenticator) GetPlainAuthURL() string {
-	return a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline)
+	a.pkceVerifier = oauth2.GenerateVerifier()
+	return a.clientConfig.AuthCodeURL(a.challenge, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(a.pkceVerifier))
 }
 
 func (a *Authenticator) GetAuthURL(connectorID string) string {
@@ -157,8 +163,14 @@ func (a *Authenticator) HandleIssuerResponse(ctx context.Context, challenge stri
 
 	var token *oauth2.Token
 	{
-		// Convert the authorization code into a token.
-		token, err = a.clientConfig.Exchange(ctx, code)
+		// Convert the authorization code into a token. Send the PKCE code
+		// verifier when one was generated for this authentication (direct
+		// OIDC flow); Dex flows leave it empty.
+		var exchangeOpts []oauth2.AuthCodeOption
+		if a.pkceVerifier != "" {
+			exchangeOpts = append(exchangeOpts, oauth2.VerifierOption(a.pkceVerifier))
+		}
+		token, err = a.clientConfig.Exchange(ctx, code, exchangeOpts...)
 		if err != nil {
 			return UserInfo{}, microerror.Mask(err)
 		}
