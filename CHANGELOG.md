@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.6.0] - 2026-05-19
+
 ### Changed
 
 - `login`: when a workload cluster's structured authentication exposes multiple OIDC issuers and no `--oidc-issuer` / `--oidc-client-id` flag is set, prompt the user to pick one from a numbered menu (interactive TTY only). Non-interactive invocations keep the previous error listing the available issuers so scripted callers stay informative.
@@ -1764,7 +1766,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...HEAD
+[5.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...v5.6.0
 [5.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.1...v5.4.0
 [5.3.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.0...v5.3.1
