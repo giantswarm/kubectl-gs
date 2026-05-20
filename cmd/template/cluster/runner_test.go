@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	goflag "flag"
+	"strings"
 	"testing"
 
 	"github.com/giantswarm/micrologger"
@@ -419,6 +420,80 @@ func Test_run(t *testing.T) {
 			},
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capa_9.golden",
+		},
+		{
+			name: "case 11: template cluster capa with small VPC for single AZ",
+			flags: &flags.Flag{
+				Name:                     "test11",
+				Provider:                 "capa",
+				Description:              "small single-AZ VPC layout",
+				Release:                  "25.0.0",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				App: common.AppConfig{
+					ClusterVersion:     "1.0.0",
+					ClusterCatalog:     "the-catalog",
+					DefaultAppsCatalog: "the-default-catalog",
+					DefaultAppsVersion: "2.0.0",
+				},
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					AWSClusterRoleIdentityName: "default",
+					NetworkVPCCIDR:             "10.85.0.0/24",
+					PublicSubnetMask:           26,
+					PrivateSubnetMask:          25,
+					NetworkAZUsageLimit:        1,
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa_10.golden",
+		},
+		{
+			name: "case 12: template cluster capa with VPC too small for requested AZs",
+			flags: &flags.Flag{
+				Name:                     "test12",
+				Provider:                 "capa",
+				Description:              "VPC too small for 3 AZs with default subnet sizes",
+				Release:                  "25.0.0",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				App: common.AppConfig{
+					ClusterVersion:     "1.0.0",
+					ClusterCatalog:     "the-catalog",
+					DefaultAppsCatalog: "the-default-catalog",
+					DefaultAppsVersion: "2.0.0",
+				},
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b", "eu-west-1c"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					AWSClusterRoleIdentityName: "default",
+					NetworkVPCCIDR:             "10.85.0.0/24",
+					PublicSubnetMask:           20,
+					PrivateSubnetMask:          18,
+					NetworkAZUsageLimit:        3,
+				},
+			},
+			args: nil,
+			errorMatcher: func(err error) bool {
+				return err != nil && strings.Contains(err.Error(), "too small to host 3 availability zones")
+			},
 		},
 	}
 
