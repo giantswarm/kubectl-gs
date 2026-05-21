@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `login` / credential plugin: do not break the generated kubeconfig when the OIDC provider does not return a refresh token. Previously the credential plugin required `KUBECTL_GS_OIDC_REFRESH_TOKEN` to be non-empty as part of its initial env-var check and failed before even looking at the ID token, so a kubeconfig produced from an IdP application that does not issue refresh tokens (e.g. an Okta app without the refresh-token grant enabled) was unusable from the moment it was written. The plugin now serves the still-valid ID token first and only requires a refresh token at renewal time, returning an actionable error pointing to either re-running `kubectl gs login` or enabling `offline_access` + the refresh-token grant on the IdP application. `kubectl gs login` also prints a warning at login time when no refresh token comes back, so the user knows the kubeconfig will need to be re-issued once the ID token expires.
+
 ## [5.6.0] - 2026-05-19
 
 ### Changed
