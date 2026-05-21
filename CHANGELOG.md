@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- `template cluster`: expand the command's `--help` with a multi-line `Long` description, a docs URL, and worked examples — including how to add an arm64 worker node pool to the generated values.yaml for AWS clusters.
+
 ## [5.6.0] - 2026-05-19
 
 ### Changed
