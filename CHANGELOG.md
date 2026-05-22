@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- (CAPA): Derive the number of VPC chunks from `--az-usage-limit`. This enables small single-AZ VPC layouts (e.g. a `/24` VPC with a `/25` private subnet and a `/26` public subnet).
+
 ## [5.6.1] - 2026-05-22
 
 ### Changed
