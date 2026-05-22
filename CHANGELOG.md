@@ -7,6 +7,16 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `login`: do not break the generated kubeconfig when the OIDC provider does not return a refresh token. The plugin now serves the still-valid ID token first and only requires a refresh token at renewal time.
+
+## [5.6.1] - 2026-05-22
+
+### Changed
+
+- Upgrading Flux API versions to match the ones considered stable in Flux 2.6.
+
 ## [5.6.0] - 2026-05-19
 
 ### Changed
@@ -1766,7 +1776,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...HEAD
+[5.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...v5.6.1
 [5.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...v5.6.0
 [5.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.1...v5.4.0
