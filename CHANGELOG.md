@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `login`: do not break the generated kubeconfig when the OIDC provider does not return a refresh token. The plugin now serves the still-valid ID token first and only requires a refresh token at renewal time.
+
 ## [5.6.1] - 2026-05-22
 
 ### Changed
