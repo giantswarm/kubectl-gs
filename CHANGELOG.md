@@ -11,6 +11,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - (CAPA): Derive the number of VPC chunks from `--az-usage-limit`. This enables small single-AZ VPC layouts (e.g. a `/24` VPC with a `/25` private subnet and a `/26` public subnet).
 
+## [5.6.1] - 2026-05-22
+
+### Changed
+
+- Upgrading Flux API versions to match the ones considered stable in Flux 2.6.
+
 ## [5.6.0] - 2026-05-19
 
 ### Changed
@@ -1770,7 +1776,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...HEAD
+[5.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...v5.6.1
 [5.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...v5.6.0
 [5.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.1...v5.4.0
