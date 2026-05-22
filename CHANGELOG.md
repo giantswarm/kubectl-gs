@@ -9,7 +9,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- `login` / credential plugin: do not break the generated kubeconfig when the OIDC provider does not return a refresh token. Previously the credential plugin required `KUBECTL_GS_OIDC_REFRESH_TOKEN` to be non-empty as part of its initial env-var check and failed before even looking at the ID token, so a kubeconfig produced from an IdP application that does not issue refresh tokens (e.g. an Okta app without the refresh-token grant enabled) was unusable from the moment it was written. The plugin now serves the still-valid ID token first and only requires a refresh token at renewal time, returning an actionable error pointing to either re-running `kubectl gs login` or enabling `offline_access` + the refresh-token grant on the IdP application. `kubectl gs login` also prints a warning at login time when no refresh token comes back, so the user knows the kubeconfig will need to be re-issued once the ID token expires.
+- `login`: do not break the generated kubeconfig when the OIDC provider does not return a refresh token. The plugin now serves the still-valid ID token first and only requires a refresh token at renewal time.
+
+## [5.6.1] - 2026-05-22
+
+### Changed
+
+- Upgrading Flux API versions to match the ones considered stable in Flux 2.6.
 
 ## [5.6.0] - 2026-05-19
 
@@ -1770,7 +1776,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...HEAD
+[5.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...v5.6.1
 [5.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...v5.6.0
 [5.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.3.1...v5.4.0
