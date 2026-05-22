@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [5.6.1] - 2026-05-22
 
+### Changed
+
+- Upgrading Flux API versions to match the ones considered stable in Flux 2.6.
+
 ## [5.6.0] - 2026-05-19
 
 ### Changed
