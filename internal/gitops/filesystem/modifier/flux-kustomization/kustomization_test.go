@@ -17,7 +17,7 @@ func Test_KustomizationModifier(t *testing.T) {
 	}{
 		{
 			name: "add decryption",
-			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -36,7 +36,7 @@ spec:
     name: gitops-demo
   timeout: 2m0s
 `),
-			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -57,7 +57,7 @@ spec:
 		},
 		{
 			name: "don't add if exists decryption",
-			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -76,7 +76,7 @@ spec:
     name: gitops-demo
   timeout: 2m0s
 `),
-			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -101,7 +101,7 @@ spec:
 		},
 		{
 			name: "change back to the right one",
-			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -120,7 +120,7 @@ spec:
     name: gitops-demo
   timeout: 2m0s
 `),
-			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -145,7 +145,7 @@ spec:
 		},
 		{
 			name: "adding postBuild variables",
-			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			expected: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops
@@ -163,7 +163,7 @@ spec:
     name: gitops-demo
   timeout: 2m0s
 `),
-			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+			input: []byte(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-gitops

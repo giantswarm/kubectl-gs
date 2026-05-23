@@ -47,8 +47,15 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 	clientID := os.Getenv(EnvClientID)
 	refreshToken := os.Getenv(EnvRefreshToken)
 
-	if issuerURL == "" || clientID == "" || refreshToken == "" {
-		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s, %s", EnvIssuerURL, EnvClientID, EnvRefreshToken)
+	// Issuer URL and client ID are configuration (not credentials) and are
+	// always required. Refresh token is only needed when renewal is necessary
+	// — when the kubeconfig still carries a valid id_token (or the cache
+	// does) we can serve it without renewing. This matters for IdP
+	// applications that do not (or are not configured to) issue refresh
+	// tokens, where the kubeconfig is otherwise still usable until the
+	// id_token expires.
+	if issuerURL == "" || clientID == "" {
+		return microerror.Maskf(credentialPluginError, "missing required environment variables: %s, %s", EnvIssuerURL, EnvClientID)
 	}
 
 	// Check if the id_token passed from login is still valid
@@ -104,6 +111,16 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 			refreshToken = cached.RefreshToken
 			tokenSource = sourceCache
 		}
+	}
+
+	if refreshToken == "" {
+		return microerror.Maskf(credentialPluginError,
+			"the ID token in this kubeconfig has expired and no refresh token is available to renew it. "+
+				"Re-run 'kubectl gs login' to obtain a fresh token. "+
+				"If this happens on every renewal, the OIDC application (issuer: %s, client: %s) is likely "+
+				"not configured to issue refresh tokens — ensure the 'offline_access' scope is enabled and "+
+				"the refresh-token grant is allowed for the application.",
+			issuerURL, clientID)
 	}
 
 	_, _ = fmt.Fprintf(r.stderr, "kubectl-gs: renewing OIDC token (issuer: %s, client: %s, refresh token source: %s)\n", issuerURL, clientID, tokenSource)

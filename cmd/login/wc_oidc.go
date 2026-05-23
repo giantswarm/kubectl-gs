@@ -70,6 +70,19 @@ func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.I
 		_, _ = fmt.Fprintf(r.stderr, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error: %s", verifyErr.Error()))
 	}
 
+	// Warn when the IdP did not return a refresh token. The kubeconfig will
+	// still work until the id_token expires, but cannot be auto-renewed
+	// afterwards — the user will have to re-run 'kubectl gs login'.
+	if authResult.refreshToken == "" {
+		_, _ = fmt.Fprintf(r.stderr, "%s\n", color.YellowString(
+			"Warning: the OIDC provider (%s) did not return a refresh token. "+
+				"The generated kubeconfig will only work until the ID token expires; "+
+				"after that, re-run 'kubectl gs login' to renew. "+
+				"To enable automatic renewal, configure the OIDC application (client: %s) "+
+				"to issue refresh tokens (enable the 'offline_access' scope and the refresh-token grant).",
+			authConfig.IssuerURL, authConfig.ClientID))
+	}
+
 	wcConfig := oidcWCConfig{
 		clusterName:          cluster.GetName(),
 		certCA:               caData,
