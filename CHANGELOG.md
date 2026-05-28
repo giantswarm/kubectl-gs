@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.6.3] - 2026-05-28
+
+### Fixed
+
+- `login`: stop silently rerouting client-certificate logins to direct OIDC. Passing any cert-only flag now skips structured-auth detection.
+
 ### Changed
 
 - `template cluster`: expand the command's `--help` with a multi-line `Long` description, a docs URL, and worked examples — including how to add an arm64 worker node pool to the generated values.yaml for AWS clusters.
@@ -1782,7 +1788,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.3...HEAD
+[5.6.3]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.2...v5.6.3
 [5.6.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...v5.6.2
 [5.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...v5.6.1
 [5.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...v5.6.0
