@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `login`: stop silently rerouting client-certificate logins to direct OIDC. Passing any cert-only flag now skips structured-auth detection.
+
 ### Changed
 
 - `template cluster`: expand the command's `--help` with a multi-line `Long` description, a docs URL, and worked examples — including how to add an arm64 worker node pool to the generated values.yaml for AWS clusters.
