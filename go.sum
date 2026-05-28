@@ -450,8 +450,8 @@ github.com/prometheus/common v0.67.5 h1:pIgK94WWlQt1WLwAC5j2ynLaBRDiinoAb86HZHTU
 github.com/prometheus/common v0.67.5/go.mod h1:SjE/0MzDEEAyrdr5Gqc6G+sXI67maCxzaT3A2+HqjUw=
 github.com/prometheus/procfs v0.19.2 h1:zUMhqEW66Ex7OXIiDkll3tl9a1ZdilUOd/F6ZXw4Vws=
 github.com/prometheus/procfs v0.19.2/go.mod h1:M0aotyiemPhBCM0z5w87kL22CxfcH05ZpYlu+b4J7mw=
-github.com/regclient/regclient v0.11.4 h1:C57SmEfq7LpNQ8+2fBGZrlPnED0CIps3YoAr+ucQetE=
-github.com/regclient/regclient v0.11.4/go.mod h1:dP+RE3tZsACtpenMoRXpmdrVYT+FTZUvOZBMdGQVXk0=
+github.com/regclient/regclient v0.11.5 h1:OHRsXO0F3qHGfa4HEUv+EkMH9NXNcCTBKjNzyC/UhIA=
+github.com/regclient/regclient v0.11.5/go.mod h1:DZUOfIT14WFTK2Pj4vjd93avy9O4Fdpjrf9ir23TbRE=
 github.com/rhysd/go-github-selfupdate v1.2.3 h1:iaa+J202f+Nc+A8zi75uccC8Wg3omaM7HDeimXA22Ag=
 github.com/rhysd/go-github-selfupdate v1.2.3/go.mod h1:mp/N8zj6jFfBQy/XMYoWsmfzxazpPAODuqarmPDe2Rg=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=
