@@ -30,7 +30,7 @@ func TestDetectFluxCRDVersions(t *testing.T) {
 					{Name: "v2", Storage: true, Served: true},
 				}),
 			},
-			wantOCI: "source.toolkit.fluxcd.io/v1",
+			wantOCI: "source.toolkit.fluxcd.io/v1beta2",
 			wantHR:  "helm.toolkit.fluxcd.io/v2",
 		},
 		{
