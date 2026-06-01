@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `login`: new `--oidc-scope` flag (repeatable, comma-separated) appends extra scopes to the direct workload-cluster OIDC request. Use `--oidc-scope=groups` with Okta to receive group memberships in the ID token when the workload cluster's structured auth is configured with `groupsClaim`.
+
 ## [5.6.3] - 2026-05-28
 
 ### Fixed
