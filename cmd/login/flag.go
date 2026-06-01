@@ -29,6 +29,7 @@ const (
 	flagWCOIDCIssuer   = "oidc-issuer"
 	flagWCOIDCClientID = "oidc-client-id"
 	flagWCOIDCCAFile   = "api-ca-file"
+	flagWCOIDCScope    = "oidc-scope"
 
 	flagProxy     = "proxy"
 	flagProxyPort = "proxy-port"
@@ -62,6 +63,7 @@ type flag struct {
 	WCOIDCIssuer   string
 	WCOIDCClientID string
 	WCOIDCCAFile   string
+	WCOIDCScopes   []string
 
 	Proxy     bool
 	ProxyPort int
@@ -96,6 +98,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCOIDCIssuer, flagWCOIDCIssuer, "", fmt.Sprintf("Override the OIDC issuer URL for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCClientID))
 	cmd.Flags().StringVar(&f.WCOIDCClientID, flagWCOIDCClientID, "", fmt.Sprintf("Override the OIDC client ID for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCIssuer))
 	cmd.Flags().StringVar(&f.WCOIDCCAFile, flagWCOIDCCAFile, "", "Override the path to the CA certificate file for the workload cluster API server. When set, skips fetching the CA from the management cluster.")
+	cmd.Flags().StringSliceVar(&f.WCOIDCScopes, flagWCOIDCScope, nil, "Additional OIDC scopes to request from the issuer, on top of the defaults (openid, profile, email, offline_access). Repeat the flag or pass a comma-separated list. Example: --oidc-scope=groups to receive group memberships from Okta into the ID token.")
 
 	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")
