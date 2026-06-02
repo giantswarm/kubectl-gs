@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.6.4] - 2026-06-01
+
+### Added
+
+- `login`: new `--oidc-scope` flag (repeatable, comma-separated) appends extra scopes to the direct workload-cluster OIDC request. Use `--oidc-scope=groups` with Okta to receive group memberships in the ID token when the workload cluster's structured auth is configured with `groupsClaim`.
+
 ## [5.6.3] - 2026-05-28
 
 ### Fixed
@@ -1788,7 +1794,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.3...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.4...HEAD
+[5.6.4]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.3...v5.6.4
 [5.6.3]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.2...v5.6.3
 [5.6.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...v5.6.2
 [5.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...v5.6.1
