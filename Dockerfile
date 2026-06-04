@@ -13,7 +13,7 @@ FROM gsoci.azurecr.io/giantswarm/alpine:3.23.4
 ARG TARGETARCH
 
 COPY --from=binaries /binaries/* /usr/bin/
-COPY ./kubectl-gs-${TARGETARCH} /usr/bin/kubectl-gs
+COPY ./kubectl-gs-linux-${TARGETARCH} /usr/bin/kubectl-gs
 RUN ln -s /usr/bin/kubectl-gs /usr/bin/kgs
 
 ENTRYPOINT ["kubectl-gs"]

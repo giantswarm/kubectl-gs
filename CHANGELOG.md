@@ -7,6 +7,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.
+- krew manifest updated to reference bare binaries directly instead of tarballs, and extended with `windows/arm64` support.
+
 ## [5.6.4] - 2026-06-01
 
 ### Added
