@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@8.3.0
+  architect: giantswarm/architect@9.1.0
 
 jobs:
   debug-tag:
     docker:
-      - image: cimg/base:2026.04
+      - image: cimg/base:2026.06
     steps:
       - checkout
       - run: |
@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: cimg/go:1.26.3
+      - image: cimg/go:1.26.4
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38
@@ -36,161 +36,66 @@ jobs:
           name: Execute krew-release-bot
           command: ./krew-release-bot action
 
-  go-build-386:
-    executor: architect/architect
-    resource_class: "medium+"
-    steps:
-      - checkout
-      - architect/tools-info
-      - architect/go-cache-restore
-      # We don't test for 386 specifically
-      - run:
-          name: Build binary (linux/386)
-          command: |
-            CGO_ENABLED=0 GOOS="linux" GOARCH=386 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-386 .
-      - architect/go-cache-save
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./kubectl-gs-386
-
-  go-build-amd64:
-    executor: architect/architect
-    resource_class: "medium+"
-    steps:
-      - checkout
-      - architect/tools-info
-      - architect/go-cache-restore
-      - architect/go-test
-      - run:
-          name: Build binary (linux/amd64)
-          command: |
-            CGO_ENABLED=0 GOOS="linux" GOARCH=amd64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-amd64 .
-      - architect/go-cache-save
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./kubectl-gs-amd64
-
-  go-build-arm64:
-    executor: architect/architect
-    resource_class: "arm.medium"
-    steps:
-      - checkout
-      - architect/tools-info
-      - architect/go-cache-restore
-      - architect/go-test
-      - run:
-         name: Build binary (linux/arm64)
-         command: |
-           CGO_ENABLED=0 GOOS="linux" GOARCH=arm64 go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-arm64 .
-      - architect/go-cache-save
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./kubectl-gs-arm64
-
-  # go-build-ppc64le:
-  #   executor: architect/architect
-  #   resource_class: "medium+"
-  #   steps:
-  #     - checkout
-  #     - architect/tools-info
-  #     - architect/go-cache-restore
-  #     - run:
-  #        name: Build binary (linux/ppc64le)
-  #        command: |
-  #          CGO_ENABLED=0 GOOS="linux" GOARCH=ppc64le go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-ppc64le .
-  #     - architect/go-cache-save
-  #     - persist_to_workspace:
-  #         root: .
-  #         paths:
-  #           - ./kubectl-gs-ppc64le
-
-  # go-build-s390x:
-  #   executor: architect/architect
-  #   resource_class: "medium+"
-  #   steps:
-  #     - checkout
-  #     - architect/tools-info
-  #     - architect/go-cache-restore
-  #     - run:
-  #        name: Build binary (linux/s390x)
-  #        command: |
-  #          CGO_ENABLED=0 GOOS="linux" GOARCH=s390x go build -ldflags "$(cat .ldflags)" -o ./kubectl-gs-s390x .
-  #     - architect/go-cache-save
-  #     - persist_to_workspace:
-  #         root: .
-  #         paths:
-  #           - ./kubectl-gs-s390x
-
 workflows:
   go-build-multiarch:
     jobs:
-      - go-build-amd64:
+      - architect/go-build:
           context: architect
-          name: go-build-amd64
+          name: go-build
+          binary: kubectl-gs
+          architectures: "linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/amd64,windows/arm64"
           filters:
             tags:
               only: /^v.*/
-      - go-build-arm64:
-          context: architect
-          name: go-build-arm64
-          filters:
-            tags:
-              only: /^v.*/
-      - go-build-386:
-          context: architect
-          name: go-build-386
-          filters:
-            tags:
-              only: /^v.*/
-      # Docker image: linux/amd64 + linux/arm64 only. The alpine base image
-      # in gsoci.azurecr.io/giantswarm/alpine does not ship a linux/386
-      # variant, so the legacy inline job's 386 build silently failed every
-      # run (the `tee` pipe always returned 0 and masked the buildx error).
-      # The standalone linux/386 kubectl-gs binary is still produced by
-      # go-build-386 and distributed through GitHub releases / krew.
+
       - architect/push-to-registries:
           context: architect
-          name: push-to-registries-multiarch
-          multiarch: true
+          name: push-to-registries
           platforms: "linux/amd64,linux/arm64"
           force-public: true
           split-china-push: true
           requires:
-            - go-build-amd64
-            - go-build-arm64
-            # - go-build-ppc64le
-            # - go-build-s390x
+            - go-build
           filters:
             branches:
               ignore:
                 - main
             tags:
               only: /^v.*/
-      # Mirror gsoci -> Aliyun via the in-China giantswarm/galaxy-runner on
-      # tag builds only. Replaces the cross-Pacific docker buildx push to
-      # Aliyun that timed out on tag jobs.
+
       - architect/sync-china-registry:
           context: architect
           name: sync-china-registry
           requires:
-            - push-to-registries-multiarch
+            - push-to-registries
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
+
+      - architect/upload-release-assets:
+          context: architect
+          name: upload-release-assets
+          binary: kubectl-gs
+          requires:
+            - go-build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
       - debug-tag:
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+
       - update-krew-index:
           requires:
-            - push-to-registries-multiarch
+            - upload-release-assets
             - debug-tag
           filters:
             branches:
