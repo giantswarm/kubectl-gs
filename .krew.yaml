@@ -14,44 +14,35 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
-    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-amd64.tar.gz" .TagName }}
-    files:
-    - from: ./kubectl-gs-*/*
-      to: .
-    bin: ./kubectl-gs
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-darwin-amd64" .TagName }}
+    bin: kubectl-gs
   - selector:
       matchLabels:
         os: darwin
         arch: arm64
-    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-darwin-arm64.tar.gz" .TagName }}
-    files:
-    - from: ./kubectl-gs-*/*
-      to: .
-    bin: ./kubectl-gs
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-darwin-arm64" .TagName }}
+    bin: kubectl-gs
   - selector:
       matchLabels:
         os: linux
         arch: amd64
-    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-amd64.tar.gz" .TagName }}
-    files:
-    - from: ./kubectl-gs-*/*
-      to: .
-    bin: ./kubectl-gs
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-linux-amd64" .TagName }}
+    bin: kubectl-gs
   - selector:
       matchLabels:
         os: linux
         arch: arm64
-    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-linux-arm64.tar.gz" .TagName }}
-    files:
-    - from: ./kubectl-gs-*/*
-      to: .
-    bin: ./kubectl-gs
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-linux-arm64" .TagName }}
+    bin: kubectl-gs
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-{{ .TagName }}-windows-amd64.zip" .TagName }}
-    files:
-    - from: ./kubectl-gs-*/*
-      to: .
-    bin: ./kubectl-gs.exe
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-windows-amd64.exe" .TagName }}
+    bin: kubectl-gs.exe
+  - selector:
+      matchLabels:
+        os: windows
+        arch: arm64
+    {{addURIAndSha "https://github.com/giantswarm/kubectl-gs/releases/download/{{ .TagName }}/kubectl-gs-windows-arm64.exe" .TagName }}
+    bin: kubectl-gs.exe
