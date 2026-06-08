@@ -18,7 +18,7 @@ const (
 	longDescription  = `Adds a new GPG key pair to the SOPS repository configuration.
 
 enc \
---fingerprint <fingerprint> | --generate
+--generate
 --management-cluster <mc_code_name>
 [--organization <org_name>]
 [--workload-cluster <wc_name>]
@@ -30,13 +30,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc_structure.md#create-flux-gpg-regular-key-pair-optional-step`
 
-	examples = `  # Configure Management Cluster encryption with an existing key pair.
-  # Configures SOPS for handling the "management-clusters/demomc/secrets/*.enc.yaml" files. # master key
-  kubectl gs gitops add encryption \
-  --fingerprint 123456789ABCDEF123456789ABCDEF123456789A \
-  --management-cluster demomc
-
-  # Configure Management Cluster encryption with a new key pair.
+	examples = `  # Configure Management Cluster encryption with a new key pair.
   # Configures SOPS for handling the "management-clusters/demomc/secrets/*.enc.yaml" files. # master key
   kubectl gs gitops add encryption \
   --generate \
