@@ -26,8 +26,9 @@ Output columns:
 
 - NAME: Unique identifier of the cluster.
 - AGE: How long ago was the cluster created.
-- CONDITION: Latest condition reported for the cluster. Can be "CREATING", "CREATED", "UPDATING", "UPDATED", "DELETING".
+- PHASE: Current lifecycle phase of the cluster. Can be "Pending", "Provisioning", "Provisioned", "Deleting", "Failed".
 - RELEASE: Workload cluster release used by the cluster.
+- SERVICE PRIORITY: Service priority level of the cluster.
 - ORGANIZATION: Organization owning the cluster.
 - DESCRIPTION: User friendly description for the cluster.`
 
