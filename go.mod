@@ -42,7 +42,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.36.0
-	golang.org/x/term v0.43.0
+	golang.org/x/term v0.44.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.2
 	k8s.io/api v0.36.1
@@ -216,10 +216,10 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/net v0.54.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/api v0.278.0 // indirect
 	google.golang.org/genproto v0.0.0-20260427160629-7cedc36a6bc4 // indirect
@@ -245,6 +245,6 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.23.0
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.1
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.43.0 // Fix CVE-2026-24051
-	golang.org/x/crypto => golang.org/x/crypto v0.52.0
+	golang.org/x/crypto => golang.org/x/crypto v0.53.0
 	golang.org/x/text => golang.org/x/text v0.37.0
 )
