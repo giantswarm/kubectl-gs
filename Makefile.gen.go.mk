@@ -2,7 +2,7 @@
 #
 #    devctl
 #
-#    https://github.com/giantswarm/devctl/blob/65cb5e002052cd8a1eac99d8d8e428142507f996/pkg/gen/input/makefile/internal/file/Makefile.gen.go.mk.template
+#    https://github.com/giantswarm/devctl/blob/0a4b91f4aa7d4eceff967a333eadac0286a526b3/pkg/gen/input/makefile/internal/file/Makefile.gen.go.mk.template
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -15,7 +15,7 @@ MODULE         := $(shell go list -m)
 MAIN_SOURCE    := $(shell if test -e cmd/main.go; then echo cmd/main.go; else echo main.go; fi)
 OS             := $(shell go env GOOS)
 SOURCES        := $(shell find . -name '*.go')
-VERSION        := $(shell gitsemver version)
+VERSION        := $(shell gitsemver get)
 ifeq ($(OS), linux)
 EXTLDFLAGS := -static
 endif
