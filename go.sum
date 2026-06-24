@@ -227,8 +227,8 @@ github.com/giantswarm/organization-operator v1.6.4 h1:t0G0hoB7TfeGzRnr58NIwO6LAm
 github.com/giantswarm/organization-operator v1.6.4/go.mod h1:Rw9gG/ReI5YfvoC85F9H5wH2aWguUR7JY/NfTjZC2Jc=
 github.com/giantswarm/releases/sdk v0.13.0 h1:xEAO+rI820X/XTeMDF2IowmBKEbHQ0PS5LkpDAMRmmY=
 github.com/giantswarm/releases/sdk v0.13.0/go.mod h1:YBRAKlJhZkt3hIxOIuQN5CD7A67it67s7GjGaE1yedU=
-github.com/giantswarm/telemetrydeck-go v0.1.13 h1:7jAfOTT0sjztrVL+bSCoJcVY4pjTUHJ4VUOwUVLSCv4=
-github.com/giantswarm/telemetrydeck-go v0.1.13/go.mod h1:BitlH7nTrQmWvVEtnAa8pNM+FjI0+9S7JA9tl1PVvzo=
+github.com/giantswarm/telemetrydeck-go v0.1.14 h1:+svKxhdxytRF/fssAVCx7FOh3QOrAtMtK+yPki2TtAM=
+github.com/giantswarm/telemetrydeck-go v0.1.14/go.mod h1:BitlH7nTrQmWvVEtnAa8pNM+FjI0+9S7JA9tl1PVvzo=
 github.com/go-errors/errors v1.4.2 h1:J6MZopCL4uSllY1OfXM374weqZFFItUbrImctkmUxIA=
 github.com/go-errors/errors v1.4.2/go.mod h1:sIVyrIiJhuEF+Pj9Ebtd6P/rEYROXFi3BopGUQ5a5Og=
 github.com/go-jose/go-jose/v4 v4.1.4 h1:moDMcTHmvE6Groj34emNPLs/qtYXRVcd6S7NHbHz3kA=
