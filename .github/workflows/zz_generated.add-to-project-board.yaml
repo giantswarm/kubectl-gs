@@ -65,7 +65,7 @@ jobs:
         echo "BOARD=${BOARD}" >> $GITHUB_ENV
     - name: Add issue to personal board
       if: ${{ env.BOARD != 'null' && env.BOARD != ''  && env.BOARD != null }}
-      uses: actions/add-to-project@9bfe908f2eaa7ba10340b31e314148fcfe6a2458 # v1.0.1
+      uses: actions/add-to-project@244f685bbc3b7adfa8466e08b698b5577571133e # v1.0.2
       with:
         project-url: ${{ env.BOARD }}
         github-token: ${{ secrets.ISSUE_AUTOMATION }}
@@ -91,7 +91,7 @@ jobs:
         echo "BOARD=${BOARD}" >> $GITHUB_ENV
     - name: Add issue to team board
       if: ${{ env.BOARD != 'null' && env.BOARD != '' && env.BOARD != null }}
-      uses: actions/add-to-project@9bfe908f2eaa7ba10340b31e314148fcfe6a2458 # v1.0.1
+      uses: actions/add-to-project@244f685bbc3b7adfa8466e08b698b5577571133e # v1.0.2
       with:
         project-url: ${{ env.BOARD }}
         github-token: ${{ secrets.ISSUE_AUTOMATION }}
