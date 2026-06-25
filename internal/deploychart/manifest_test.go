@@ -267,6 +267,7 @@ spec:
     secretRef:
       name: mycluster01-kubeconfig
   releaseName: hello-world-app
+  storageNamespace: hello
   targetNamespace: hello
 `,
 		},
@@ -305,6 +306,7 @@ spec:
     secretRef:
       name: mycluster01-kubeconfig
   releaseName: hello-world-app
+  storageNamespace: hello
   targetNamespace: hello
   values:
     ingress:
@@ -374,6 +376,7 @@ spec:
     secretRef:
       name: mycluster01-kubeconfig
   releaseName: hello-world-app
+  storageNamespace: hello
   targetNamespace: hello
   valuesFrom:
   - kind: ConfigMap
