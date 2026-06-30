@@ -13,7 +13,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.19.0
 	github.com/fatih/color v1.19.0
 	github.com/fluxcd/helm-controller/api v1.6.0
-	github.com/fluxcd/pkg/apis/meta v1.30.0
+	github.com/fluxcd/pkg/apis/meta v1.31.0
 	github.com/fluxcd/source-controller/api v1.9.0
 	github.com/getsops/sops/v3 v3.13.1
 	github.com/giantswarm/apiextensions-application v0.6.2
@@ -27,7 +27,7 @@ require (
 	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/releases/sdk v0.13.0
-	github.com/giantswarm/telemetrydeck-go v0.1.12
+	github.com/giantswarm/telemetrydeck-go v0.1.17
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/pkg/errors v0.9.1
@@ -50,7 +50,7 @@ require (
 	k8s.io/apimachinery v0.36.2
 	k8s.io/cli-runtime v0.36.2
 	k8s.io/client-go v0.36.2
-	k8s.io/utils v0.0.0-20260617174310-a95e086a2553
+	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -101,6 +101,7 @@ require (
 	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.195 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
+	github.com/opencontainers/runc v1.2.9 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
@@ -114,11 +115,11 @@ require (
 	go.opentelemetry.io/contrib/detectors/gcp v1.43.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.68.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.68.0 // indirect
-	go.opentelemetry.io/otel v1.43.0 // indirect
-	go.opentelemetry.io/otel/metric v1.43.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.43.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.43.0 // indirect
-	go.opentelemetry.io/otel/trace v1.43.0 // indirect
+	go.opentelemetry.io/otel v1.44.0 // indirect
+	go.opentelemetry.io/otel/metric v1.44.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.44.0 // indirect
+	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
@@ -250,10 +251,12 @@ replace (
 	github.com/Azure/azure-service-operator/v2 => github.com/Azure/azure-service-operator/v2 v2.9.0 // fix checksum problem with v2.8.0
 	github.com/docker/docker => github.com/moby/moby v28.5.2+incompatible
 	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
+	github.com/golang-jwt/jwt/v4 => github.com/golang-jwt/jwt/v4 v4.5.2 // Fix CVE: force fixed version of transitive dep
 	github.com/hashicorp/go-retryablehttp => github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.23.0
+	github.com/yuin/goldmark => github.com/yuin/goldmark v1.8.2 // Fix CVE: force fixed version of transitive dep
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.1
-	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.43.0 // Fix CVE-2026-24051
+	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.44.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.53.0
 	golang.org/x/text => golang.org/x/text v0.38.0
 )

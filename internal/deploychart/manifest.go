@@ -124,6 +124,7 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 				Name: fmt.Sprintf("%s-kubeconfig", opts.ClusterName),
 			},
 		}
+		hr.Spec.StorageNamespace = opts.TargetNamespace
 	}
 
 	if opts.Values != nil {

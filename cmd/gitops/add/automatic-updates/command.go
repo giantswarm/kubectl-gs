@@ -33,7 +33,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/apps/automatic_upda
 	examples = `  # Enable automatic updates for hello-world app
     kubectl gs gitops add automatic-update \
     --app hello-world \
-    --version-repository giantswarmpublic.azurecr.io/giantswarm-catalog/hello-world-app \
+    --version-repository gsoci.azurecr.io/charts/giantswarm/hello-world \
     --management-cluster demomc \
     --organization demoorg \
     --workload-cluster demowc \
