@@ -48,6 +48,11 @@ type AzureConfig struct {
 	SubscriptionID string
 }
 
+type AKSConfig struct {
+	TenantID string
+	ClientID string
+}
+
 type CloudDirectorConfig struct {
 	VipSubnet               string
 	CredentialsSecretName   string
@@ -143,6 +148,7 @@ type ClusterConfig struct {
 	App           AppConfig
 	AWS           AWSConfig
 	Azure         AzureConfig
+	AKS           AKSConfig
 	VSphere       VSphereConfig
 	CloudDirector CloudDirectorConfig
 }

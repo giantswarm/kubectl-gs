@@ -84,6 +84,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	case key.ProviderAKS:
+		err = provider.WriteAKSTemplate(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	case key.ProviderEKS:
 		err = provider.WriteEKSTemplate(ctx, client, output, config)
 		if err != nil {
@@ -124,6 +129,7 @@ func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
 		App:           r.flag.App,
 		AWS:           r.flag.AWS,
 		Azure:         r.flag.Azure,
+		AKS:           r.flag.AKS,
 		OIDC:          r.flag.OIDC,
 		VSphere:       r.flag.VSphere,
 		CloudDirector: r.flag.CloudDirector,

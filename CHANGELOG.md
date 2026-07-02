@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `template cluster`: support `--provider aks` for templating AKS workload clusters via the `cluster-aks` / `release-aks` chart. Adds `--aks-tenant-id` and `--aks-client-id` for the optional `global.providerSpecific.asoAuthentication` block. Reuses `--region`, `--azure-subscription-id`, and `--management-cluster` for the required Azure inputs.
+
 ### Changed
 
 - Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.

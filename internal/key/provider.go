@@ -3,6 +3,7 @@ package key
 const (
 	ProviderAWS           = "aws"
 	ProviderAzure         = "azure"
+	ProviderAKS           = "aks"
 	ProviderCAPA          = "capa"
 	ProviderCAPZ          = "capz"
 	ProviderEKS           = "eks"
@@ -30,6 +31,7 @@ type CAPIAppConfig struct {
 // PureCAPIProviders is the list of all providers which are purely based on or fully migrated to CAPI
 func PureCAPIProviders() []string {
 	return []string{
+		ProviderAKS,
 		ProviderCAPA,
 		ProviderCAPZ,
 		ProviderEKS,
@@ -41,6 +43,7 @@ func PureCAPIProviders() []string {
 // CAPIProvidersUsingReleases is the list of CAPI providers which are using Release resources.
 func CAPIProvidersUsingReleases() []string {
 	return []string{
+		ProviderAKS,
 		ProviderCAPA,
 		ProviderCAPZ,
 		ProviderCloudDirector,

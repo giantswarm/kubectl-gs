@@ -47,6 +47,10 @@ const (
 	// Azure only
 	flagAzureSubscriptionID = "azure-subscription-id"
 
+	// AKS only.
+	flagAKSTenantID = "aks-tenant-id"
+	flagAKSClientID = "aks-client-id"
+
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
 	flagClusterVersion     = "cluster-version"
@@ -143,6 +147,7 @@ type Flag struct {
 	// Provider-specific
 	AWS           common.AWSConfig
 	Azure         common.AzureConfig
+	AKS           common.AKSConfig
 	VSphere       common.VSphereConfig
 	CloudDirector common.CloudDirectorConfig
 	App           common.AppConfig
@@ -185,6 +190,10 @@ func (f *Flag) Init(cmd *cobra.Command) {
 
 	// Azure only
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
+
+	// AKS only
+	cmd.Flags().StringVar(&f.AKS.TenantID, flagAKSTenantID, "", "Azure tenant ID for the workload identity used by Azure Service Operator (optional, sets global.providerSpecific.asoAuthentication.tenantID).")
+	cmd.Flags().StringVar(&f.AKS.ClientID, flagAKSClientID, "", "Azure client ID for the workload identity used by Azure Service Operator (optional, sets global.providerSpecific.asoAuthentication.clientID).")
 
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
@@ -291,6 +300,7 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 	validProviders := []string{
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
+		key.ProviderAKS,
 		key.ProviderEKS,
 		key.ProviderVSphere,
 		key.ProviderCloudDirector,
@@ -382,6 +392,17 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 
 			if len(f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 && f.ManagementCluster == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty when specifying --%s", flagManagementCluster, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock)
+			}
+		case key.ProviderAKS:
+			if f.Region == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagRegion)
+			}
+			if f.Azure.SubscriptionID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagAzureSubscriptionID)
+			}
+			// asoAuthentication is all-or-nothing: tenant+client must come together.
+			if (f.AKS.TenantID == "") != (f.AKS.ClientID == "") {
+				return microerror.Maskf(invalidFlagError, "--%s and --%s must be specified together", flagAKSTenantID, flagAKSClientID)
 			}
 		}
 
