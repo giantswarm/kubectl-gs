@@ -20,7 +20,7 @@ require (
 	github.com/giantswarm/apiextensions/v6 v6.6.0
 	github.com/giantswarm/app/v8 v8.1.1
 	github.com/giantswarm/appcatalog v1.0.1
-	github.com/giantswarm/backoff v1.0.1
+	github.com/giantswarm/backoff/v2 v2.0.0
 	github.com/giantswarm/k8sclient/v8 v8.1.0
 	github.com/giantswarm/k8smetadata v0.26.0
 	github.com/giantswarm/microerror v0.4.1
@@ -76,6 +76,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.29 // indirect
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.2.0 // indirect
+	github.com/cenkalti/backoff/v6 v6.0.1 // indirect
 	github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.37.0 // indirect
@@ -84,6 +85,7 @@ require (
 	github.com/fluxcd/pkg/apis/acl v0.10.0 // indirect
 	github.com/fluxcd/pkg/apis/kustomize v1.19.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.2 // indirect
+	github.com/giantswarm/backoff v1.0.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/swag/cmdutils v0.25.4 // indirect
 	github.com/go-openapi/swag/conv v0.25.4 // indirect
