@@ -259,5 +259,5 @@ replace (
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.2
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.44.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.53.0
-	golang.org/x/text => golang.org/x/text v0.38.0
+	golang.org/x/text => golang.org/x/text v0.39.0
 )
