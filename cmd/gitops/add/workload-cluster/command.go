@@ -24,7 +24,7 @@ workload-cluster \
 --name <wc_id> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
---repository <gitops_repo_name> \
+--repository-name <gitops_repo_name> \
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.

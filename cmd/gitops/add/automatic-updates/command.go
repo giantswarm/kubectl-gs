@@ -17,7 +17,7 @@ const (
 	shortDescription = "Enable automatic updates for an app."
 	longDescription  = `Enable automatic updates for an app.
 
-app \
+automatic-update \
 --app <app_to_configure_updates_for> \
 --version-repository <repository_to_track_version_in> \
 --management-cluster <mc_code_name> \
@@ -31,12 +31,13 @@ Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/apps/automatic_updates_appcr.md`
 
 	examples = `  # Enable automatic updates for hello-world app
-    kubectl gs gitops add app \
+    kubectl gs gitops add automatic-update \
     --app hello-world \
-	--version-repository giantswarmpublic.azurecr.io/giantswarm-catalog/hello-world-app \
+    --version-repository gsoci.azurecr.io/charts/giantswarm/hello-world \
     --management-cluster demomc \
     --organization demoorg \
-    --workload-cluster demowc`
+    --workload-cluster demowc \
+    --repository gitops-demo`
 )
 
 type Config struct {

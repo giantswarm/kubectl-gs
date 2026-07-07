@@ -185,39 +185,49 @@ func (r *runner) createClusterKubeconfig(ctx context.Context, client k8sclient.I
 		return contextName, contextExists, nil
 	}
 
-	// Auto-detect direct OIDC (Kubernetes structured authentication). When the
-	// cluster is configured for it, log in via OIDC. Otherwise, fall back to
-	// client certificate. The user can force direct OIDC by setting
-	// --oidc-issuer and --oidc-client-id explicitly.
-	authConfig, candidates, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
-	if err != nil {
-		return "", false, microerror.Mask(err)
-	}
-	if authConfig == nil && len(candidates) > 0 {
-		// Multiple issuers detected and no flag to disambiguate. Prompt the
-		// user when both stdin AND stdout are TTYs (otherwise either the
-		// prompt or the user's reply could be silently swallowed -- e.g.
-		// `kubectl gs login ... 1>/dev/null`). Fall back to the
-		// scripted-friendly error so callers can rerun with
-		// --oidc-client-id or --oidc-issuer.
-		stdinIsTTY := term.IsTerminal(int(os.Stdin.Fd()))   //nolint:gosec // Fd() returns a small file descriptor
-		stdoutIsTTY := term.IsTerminal(int(os.Stdout.Fd())) //nolint:gosec // Fd() returns a small file descriptor
-		if stdinIsTTY && stdoutIsTTY {
-			authConfig, err = pickIssuerInteractive(candidates, os.Stdin, r.stdout)
-			if err != nil {
-				return "", false, microerror.Mask(err)
-			}
-		} else {
-			return "", false, microerror.Maskf(structuredAuthMultipleIssuersError,
-				"multiple OIDC issuers detected; use --%s or --%s to select one:\n%s",
-				flagWCOIDCClientID, flagWCOIDCIssuer, formatAvailableIssuers(candidates))
+	// If the user passed any cert-only flag, treat that as a clear intent
+	// signal for client-certificate auth and skip structured-auth detection.
+	certIntent := r.flag.WCCertCNPrefix != "" ||
+		len(r.flag.WCCertGroups) > 0 ||
+		r.flag.WCInsecureNamespace ||
+		// Only non-default values should be considered
+		(r.flag.WCCertTTL != "" && r.flag.WCCertTTL != "1h")
+
+	if !certIntent {
+		// Auto-detect direct OIDC (Kubernetes structured authentication). When the
+		// cluster is configured for it, log in via OIDC. Otherwise, fall back to
+		// client certificate. The user can force direct OIDC by setting
+		// --oidc-issuer and --oidc-client-id explicitly.
+		authConfig, candidates, err := detectStructuredAuth(ctx, client, c.Cluster.GetName(), c.Cluster.GetNamespace(), r.flag.WCOIDCIssuer, r.flag.WCOIDCClientID)
+		if err != nil {
+			return "", false, microerror.Mask(err)
 		}
-	}
-	if authConfig != nil {
-		return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
-	}
-	if r.flag.WCOIDCIssuer != "" || r.flag.WCOIDCClientID != "" {
-		return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "could not auto-detect the OIDC issuer for cluster %q; pass both --%s and --%s to log in directly", c.Cluster.GetName(), flagWCOIDCIssuer, flagWCOIDCClientID)
+		if authConfig == nil && len(candidates) > 0 {
+			// Multiple issuers detected and no flag to disambiguate. Prompt the
+			// user when both stdin AND stdout are TTYs (otherwise either the
+			// prompt or the user's reply could be silently swallowed -- e.g.
+			// `kubectl gs login ... 1>/dev/null`). Fall back to the
+			// scripted-friendly error so callers can rerun with
+			// --oidc-client-id or --oidc-issuer.
+			stdinIsTTY := term.IsTerminal(int(os.Stdin.Fd()))   //nolint:gosec // Fd() returns a small file descriptor
+			stdoutIsTTY := term.IsTerminal(int(os.Stdout.Fd())) //nolint:gosec // Fd() returns a small file descriptor
+			if stdinIsTTY && stdoutIsTTY {
+				authConfig, err = pickIssuerInteractive(candidates, os.Stdin, r.stdout)
+				if err != nil {
+					return "", false, microerror.Mask(err)
+				}
+			} else {
+				return "", false, microerror.Maskf(structuredAuthMultipleIssuersError,
+					"multiple OIDC issuers detected; use --%s or --%s to select one:\n%s",
+					flagWCOIDCClientID, flagWCOIDCIssuer, formatAvailableIssuers(candidates))
+			}
+		}
+		if authConfig != nil {
+			return r.createOIDCKubeconfig(ctx, client, c.Cluster, c.Cluster.GetNamespace(), authConfig)
+		}
+		if r.flag.WCOIDCIssuer != "" || r.flag.WCOIDCClientID != "" {
+			return "", false, microerror.Maskf(structuredAuthIssuerNotFoundError, "could not auto-detect the OIDC issuer for cluster %q; pass both --%s and --%s to log in directly", c.Cluster.GetName(), flagWCOIDCIssuer, flagWCOIDCClientID)
+		}
 	}
 
 	// Fallback to client certificate kubeconfig.

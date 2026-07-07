@@ -7,7 +7,7 @@ import (
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	"github.com/fluxcd/pkg/apis/meta"
-	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -45,7 +45,7 @@ type HelmReleaseOptions struct {
 	APIVersion        string // If set, overrides the default API version.
 }
 
-func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository {
+func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1.OCIRepository {
 	interval := parseDuration(opts.Interval)
 
 	provider := "generic"
@@ -53,10 +53,10 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository 
 		provider = opts.Provider
 	}
 
-	repo := &sourcev1beta2.OCIRepository{
+	repo := &sourcev1.OCIRepository{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: sourcev1beta2.GroupVersion.String(),
-			Kind:       sourcev1beta2.OCIRepositoryKind,
+			APIVersion: sourcev1.GroupVersion.String(),
+			Kind:       sourcev1.OCIRepositoryKind,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      opts.Name,
@@ -65,7 +65,7 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1beta2.OCIRepository 
 				"giantswarm.io/cluster": opts.ClusterName,
 			},
 		},
-		Spec: sourcev1beta2.OCIRepositorySpec{
+		Spec: sourcev1.OCIRepositorySpec{
 			Interval: metav1.Duration{Duration: interval},
 			URL:      opts.URL,
 			Provider: provider,
@@ -112,7 +112,7 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 				CreateNamespace: true,
 			},
 			ChartRef: &helmv2.CrossNamespaceSourceReference{
-				Kind: sourcev1beta2.OCIRepositoryKind,
+				Kind: sourcev1.OCIRepositoryKind,
 				Name: opts.Name,
 			},
 		},
@@ -124,6 +124,7 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 				Name: fmt.Sprintf("%s-kubeconfig", opts.ClusterName),
 			},
 		}
+		hr.Spec.StorageNamespace = opts.TargetNamespace
 	}
 
 	if opts.Values != nil {
@@ -145,14 +146,14 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 	return hr
 }
 
-func buildOCIRef(version, autoUpgrade string) *sourcev1beta2.OCIRepositoryRef {
+func buildOCIRef(version, autoUpgrade string) *sourcev1.OCIRepositoryRef {
 	if autoUpgrade == "" {
-		return &sourcev1beta2.OCIRepositoryRef{
+		return &sourcev1.OCIRepositoryRef{
 			Tag: version,
 		}
 	}
 
-	return &sourcev1beta2.OCIRepositoryRef{
+	return &sourcev1.OCIRepositoryRef{
 		SemVer: SemverRange(version, autoUpgrade),
 	}
 }

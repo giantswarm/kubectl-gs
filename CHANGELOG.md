@@ -9,7 +9,31 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.
+- krew manifest updated to reference bare binaries directly instead of tarballs, and extended with `windows/arm64` support.
 - (CAPA): Derive the number of VPC chunks from `--az-usage-limit`. This enables small single-AZ VPC layouts (e.g. a `/24` VPC with a `/25` private subnet and a `/26` public subnet).
+
+## [5.6.4] - 2026-06-01
+
+### Added
+
+- `login`: new `--oidc-scope` flag (repeatable, comma-separated) appends extra scopes to the direct workload-cluster OIDC request. Use `--oidc-scope=groups` with Okta to receive group memberships in the ID token when the workload cluster's structured auth is configured with `groupsClaim`.
+
+## [5.6.3] - 2026-05-28
+
+### Fixed
+
+- `login`: stop silently rerouting client-certificate logins to direct OIDC. Passing any cert-only flag now skips structured-auth detection.
+
+### Changed
+
+- `template cluster`: expand the command's `--help` with a multi-line `Long` description, a docs URL, and worked examples — including how to add an arm64 worker node pool to the generated values.yaml for AWS clusters.
+
+## [5.6.2] - 2026-05-22
+
+### Fixed
+
+- `login`: do not break the generated kubeconfig when the OIDC provider does not return a refresh token. The plugin now serves the still-valid ID token first and only requires a refresh token at renewal time.
 
 ## [5.6.1] - 2026-05-22
 
@@ -1776,7 +1800,10 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.4...HEAD
+[5.6.4]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.3...v5.6.4
+[5.6.3]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.2...v5.6.3
+[5.6.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...v5.6.2
 [5.6.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.0...v5.6.1
 [5.6.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.5.0...v5.6.0
 [5.5.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.4.0...v5.5.0

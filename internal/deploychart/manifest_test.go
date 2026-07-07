@@ -20,7 +20,7 @@ func TestBuildOCIRepository(t *testing.T) {
 				Version:     "1.2.3",
 				Interval:    "10m",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -44,7 +44,7 @@ spec:
 				URL:         "oci://gsoci.azurecr.io/charts/giantswarm/hello-world-app",
 				Interval:    "10m",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -68,7 +68,7 @@ spec:
 				AutoUpgrade: "patch",
 				Interval:    "10m",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -94,7 +94,7 @@ spec:
 				AutoUpgrade: "minor",
 				Interval:    "10m",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -120,7 +120,7 @@ spec:
 				AutoUpgrade: "all",
 				Interval:    "10m",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -146,7 +146,7 @@ spec:
 				Interval:    "10m",
 				SecretRef:   "mycluster01-hello-world-app-registry",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -174,7 +174,7 @@ spec:
 				Interval:    "10m",
 				Provider:    "aws",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -202,7 +202,7 @@ spec:
 				AutoUpgrade: "all",
 				Interval:    "10m",
 			},
-			expected: `apiVersion: source.toolkit.fluxcd.io/v1beta2
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
   labels:
@@ -267,6 +267,7 @@ spec:
     secretRef:
       name: mycluster01-kubeconfig
   releaseName: hello-world-app
+  storageNamespace: hello
   targetNamespace: hello
 `,
 		},
@@ -305,6 +306,7 @@ spec:
     secretRef:
       name: mycluster01-kubeconfig
   releaseName: hello-world-app
+  storageNamespace: hello
   targetNamespace: hello
   values:
     ingress:
@@ -374,6 +376,7 @@ spec:
     secretRef:
       name: mycluster01-kubeconfig
   releaseName: hello-world-app
+  storageNamespace: hello
   targetNamespace: hello
   valuesFrom:
   - kind: ConfigMap

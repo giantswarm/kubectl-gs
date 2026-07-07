@@ -28,6 +28,7 @@ Output columns:
 
 - NAME: The organization's name, or: name of the Organization (organizations.security.giantswarm.io) resource.
 - ORG NAMESPACE: The namespace belonging to this organization.
+- AGE: How long ago the organization was created.
 `
 
 	examples = `  # List all organizations you have access to

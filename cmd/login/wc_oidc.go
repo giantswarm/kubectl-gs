@@ -58,7 +58,7 @@ func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.I
 	if r.flag.DeviceAuth {
 		authResult, err = handleDirectDeviceOIDC(r.stdout, r.stderr, authConfig.IssuerURL, authConfig.ClientID)
 	} else {
-		authResult, err = handleDirectOIDC(ctx, r.stdout, r.stderr, authConfig.IssuerURL, authConfig.ClientID, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout)
+		authResult, err = handleDirectOIDC(ctx, r.stdout, r.stderr, authConfig.IssuerURL, authConfig.ClientID, r.flag.CallbackServerHost, r.flag.CallbackServerPort, r.flag.LoginTimeout, r.flag.WCOIDCScopes)
 	}
 	if err != nil {
 		return "", false, microerror.Mask(err)
@@ -68,6 +68,19 @@ func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.I
 	verifyErr := VerifyIDTokenWithKubernetesAPI(authResult.token, clusterServer, caData)
 	if verifyErr != nil {
 		_, _ = fmt.Fprintf(r.stderr, "%s\n", color.YellowString("OIDC flow succeeded but token verification returned error: %s", verifyErr.Error()))
+	}
+
+	// Warn when the IdP did not return a refresh token. The kubeconfig will
+	// still work until the id_token expires, but cannot be auto-renewed
+	// afterwards — the user will have to re-run 'kubectl gs login'.
+	if authResult.refreshToken == "" {
+		_, _ = fmt.Fprintf(r.stderr, "%s\n", color.YellowString(
+			"Warning: the OIDC provider (%s) did not return a refresh token. "+
+				"The generated kubeconfig will only work until the ID token expires; "+
+				"after that, re-run 'kubectl gs login' to renew. "+
+				"To enable automatic renewal, configure the OIDC application (client: %s) "+
+				"to issue refresh tokens (enable the 'offline_access' scope and the refresh-token grant).",
+			authConfig.IssuerURL, authConfig.ClientID))
 	}
 
 	wcConfig := oidcWCConfig{
@@ -220,7 +233,7 @@ func printWCOIDCCredentials(k8sConfigAccess clientcmd.ConfigAccess, fs afero.Fs,
 
 // handleDirectOIDC performs the browser-based OIDC flow directly against
 // a non-Dex issuer (e.g., Azure AD via structured authentication).
-func handleDirectOIDC(ctx context.Context, out io.Writer, errOut io.Writer, issuerURL, oidcClientID, host string, port int, timeout time.Duration) (authInfo, error) {
+func handleDirectOIDC(ctx context.Context, out io.Writer, errOut io.Writer, issuerURL, oidcClientID, host string, port int, timeout time.Duration, extraScopes []string) (authInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -242,11 +255,16 @@ func handleDirectOIDC(ctx context.Context, out io.Writer, errOut io.Writer, issu
 		}
 	}
 
+	scopes := directOIDCScopes
+	if len(extraScopes) > 0 {
+		scopes = append(append([]string{}, directOIDCScopes...), extraScopes...)
+	}
+
 	oidcConfig := oidc.Config{
 		ClientID:    oidcClientID,
 		Issuer:      issuerURL,
 		RedirectURL: fmt.Sprintf("%s:%d", oidcCallbackURL, authProxy.Port()),
-		AuthScopes:  directOIDCScopes,
+		AuthScopes:  scopes,
 	}
 	auther, err := oidc.New(ctx, oidcConfig)
 	if err != nil {
