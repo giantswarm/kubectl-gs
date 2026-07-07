@@ -126,7 +126,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		}
 
 		if config.AWS.NetworkVPCCIDR != "" {
-			c, err := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			vpcCidr, err := cidr.Parse(config.AWS.NetworkVPCCIDR)
 			if err != nil {
 				return fmt.Errorf("failed to parse VPC CIDR %q: %w", config.AWS.NetworkVPCCIDR, err)
 			}
@@ -146,7 +146,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			}
 			chunkCount := nextPowerOfTwo(required)
 
-			vpcOnes, _ := c.Mask().Size()
+			vpcOnes, _ := vpcCidr.Mask().Size()
 			chunkPrefix := vpcOnes + int(math.Log2(float64(chunkCount)))
 
 			if chunkPrefix > 32 {
@@ -168,7 +168,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			// public subnets and the remaining chunks for private subnets. If
 			// the cluster is proxy-private, every chunk is used for private
 			// subnets.
-			cidrSplit, err := c.SubNetting(cidr.MethodSubnetNum, chunkCount)
+			cidrSplit, err := vpcCidr.SubNetting(cidr.MethodSubnetNum, chunkCount)
 			if err != nil {
 				return fmt.Errorf("failed to split VPC CIDR %q into %d subnets: %w", config.AWS.NetworkVPCCIDR, chunkCount, err)
 			}
