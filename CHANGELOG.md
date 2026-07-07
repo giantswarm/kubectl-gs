@@ -11,6 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.
 - krew manifest updated to reference bare binaries directly instead of tarballs, and extended with `windows/arm64` support.
+- (CAPA): Derive the number of VPC chunks from `--az-usage-limit`. This enables small single-AZ VPC layouts (e.g. a `/24` VPC with a `/25` private subnet and a `/26` public subnet).
 
 ## [5.6.4] - 2026-06-01
 
