@@ -6,29 +6,28 @@ data:
       connectivity:
         availabilityZoneUsageLimit: 1
         network:
-          vpcCidr: 10.10.0.0/12
+          vpcCidr: 10.85.0.0/24
         subnets:
         - cidrBlocks:
           - availabilityZone: a
-            cidr: 10.8.0.0/16
+            cidr: 10.85.0.128/25
           isPublic: false
         - cidrBlocks:
           - availabilityZone: a
-            cidr: 10.0.0.0/21
+            cidr: 10.85.0.0/26
           isPublic: true
         topology: {}
       controlPlane:
         instanceType: control-plane-instance-type
       metadata:
-        description: just a test cluster
-        name: test8
+        description: small single-AZ VPC layout
+        name: test11
         organization: test
         preventDeletion: false
       nodePools:
         worker1:
           availabilityZones:
           - eu-west-1a
-          - eu-west-1b
           customNodeLabels:
           - label=value
           instanceType: big-one
@@ -43,8 +42,8 @@ data:
 kind: ConfigMap
 metadata:
   labels:
-    giantswarm.io/cluster: test8
-  name: test8-userconfig
+    giantswarm.io/cluster: test11
+  name: test11-userconfig
   namespace: org-test
 ---
 apiVersion: application.giantswarm.io/v1alpha1
@@ -52,7 +51,7 @@ kind: App
 metadata:
   labels:
     app-operator.giantswarm.io/version: 0.0.0
-  name: test8
+  name: test11
   namespace: org-test
 spec:
   catalog: the-catalog
@@ -74,6 +73,6 @@ spec:
   namespace: org-test
   userConfig:
     configMap:
-      name: test8-userconfig
+      name: test11-userconfig
       namespace: org-test
   version: ""
