@@ -121,6 +121,19 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 }
 
 func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
+	providerSpecific := &capz.ProviderSpecific{
+		Location:       config.Region,
+		SubscriptionID: config.Azure.SubscriptionID,
+	}
+	// Only emit the azureClusterIdentity block when the user overrode the reference,
+	// otherwise rely on the chart's defaults.
+	if config.Azure.ClusterIdentityName != "" || config.Azure.ClusterIdentityNamespace != "" {
+		providerSpecific.AzureClusterIdentity = &capz.AzureClusterIdentity{
+			Name:      config.Azure.ClusterIdentityName,
+			Namespace: config.Azure.ClusterIdentityNamespace,
+		}
+	}
+
 	return capz.ClusterConfig{
 		Global: &capz.Global{
 			Metadata: &capz.Metadata{
@@ -130,10 +143,7 @@ func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},
-			ProviderSpecific: &capz.ProviderSpecific{
-				Location:       config.Region,
-				SubscriptionID: config.Azure.SubscriptionID,
-			},
+			ProviderSpecific: providerSpecific,
 			Connectivity: &capz.Connectivity{
 				Bastion: &capz.Bastion{
 					Enabled:      true,

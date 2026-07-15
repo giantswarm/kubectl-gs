@@ -400,9 +400,7 @@ func Test_run(t *testing.T) {
 					ClusterCatalog: "cluster",
 				},
 				Azure: common.AzureConfig{
-					SubscriptionID: "6b1f6e4a-6d0e-4aa4-9a5a-fbaca65a23b3",
-				},
-				AKS: common.AKSConfig{
+					SubscriptionID:           "6b1f6e4a-6d0e-4aa4-9a5a-fbaca65a23b3",
 					ClusterIdentityName:      "my-aks-identity",
 					ClusterIdentityNamespace: "org-test",
 				},

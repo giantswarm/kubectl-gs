@@ -45,10 +45,7 @@ type AWSMachinePoolConfig struct {
 }
 
 type AzureConfig struct {
-	SubscriptionID string
-}
-
-type AKSConfig struct {
+	SubscriptionID           string
 	ClusterIdentityName      string
 	ClusterIdentityNamespace string
 }
@@ -148,7 +145,6 @@ type ClusterConfig struct {
 	App           AppConfig
 	AWS           AWSConfig
 	Azure         AzureConfig
-	AKS           AKSConfig
 	VSphere       VSphereConfig
 	CloudDirector CloudDirectorConfig
 }

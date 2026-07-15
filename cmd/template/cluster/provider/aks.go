@@ -127,10 +127,10 @@ func BuildAKSClusterConfig(config common.ClusterConfig) aks.ClusterConfig {
 	}
 	// Only emit the azureClusterIdentity block when the user overrode the reference,
 	// otherwise rely on the chart's defaults (cluster-identity in org-giantswarm).
-	if config.AKS.ClusterIdentityName != "" || config.AKS.ClusterIdentityNamespace != "" {
+	if config.Azure.ClusterIdentityName != "" || config.Azure.ClusterIdentityNamespace != "" {
 		providerSpecific.AzureClusterIdentity = &aks.AzureClusterIdentity{
-			Name:      config.AKS.ClusterIdentityName,
-			Namespace: config.AKS.ClusterIdentityNamespace,
+			Name:      config.Azure.ClusterIdentityName,
+			Namespace: config.Azure.ClusterIdentityNamespace,
 		}
 	}
 

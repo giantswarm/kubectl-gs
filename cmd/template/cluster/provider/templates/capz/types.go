@@ -21,8 +21,14 @@ type Metadata struct {
 }
 
 type ProviderSpecific struct {
-	Location       string `json:"location,omitempty"`
-	SubscriptionID string `json:"subscriptionId,omitempty"`
+	Location             string                `json:"location,omitempty"`
+	SubscriptionID       string                `json:"subscriptionId,omitempty"`
+	AzureClusterIdentity *AzureClusterIdentity `json:"azureClusterIdentity,omitempty"`
+}
+
+type AzureClusterIdentity struct {
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 type Connectivity struct {

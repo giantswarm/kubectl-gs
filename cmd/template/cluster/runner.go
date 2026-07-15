@@ -129,7 +129,6 @@ func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
 		App:           r.flag.App,
 		AWS:           r.flag.AWS,
 		Azure:         r.flag.Azure,
-		AKS:           r.flag.AKS,
 		OIDC:          r.flag.OIDC,
 		VSphere:       r.flag.VSphere,
 		CloudDirector: r.flag.CloudDirector,

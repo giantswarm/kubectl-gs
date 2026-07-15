@@ -44,12 +44,10 @@ const (
 	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
-	// Azure only
-	flagAzureSubscriptionID = "azure-subscription-id"
-
-	// AKS only.
-	flagAKSClusterIdentityName      = "aks-cluster-identity-name"
-	flagAKSClusterIdentityNamespace = "aks-cluster-identity-namespace"
+	// Azure (CAPZ + AKS).
+	flagAzureSubscriptionID           = "azure-subscription-id"
+	flagAzureClusterIdentityName      = "azure-cluster-identity-name"
+	flagAzureClusterIdentityNamespace = "azure-cluster-identity-namespace"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -147,7 +145,6 @@ type Flag struct {
 	// Provider-specific
 	AWS           common.AWSConfig
 	Azure         common.AzureConfig
-	AKS           common.AKSConfig
 	VSphere       common.VSphereConfig
 	CloudDirector common.CloudDirectorConfig
 	App           common.AppConfig
@@ -188,12 +185,10 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
 
-	// Azure only
+	// Azure (CAPZ + AKS)
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
-
-	// AKS only
-	cmd.Flags().StringVar(&f.AKS.ClusterIdentityName, flagAKSClusterIdentityName, "", "Name of the AzureClusterIdentity resource to use for authentication (optional, sets global.providerSpecific.azureClusterIdentity.name; defaults to 'cluster-identity' via the chart).")
-	cmd.Flags().StringVar(&f.AKS.ClusterIdentityNamespace, flagAKSClusterIdentityNamespace, "", "Namespace of the AzureClusterIdentity resource (optional, sets global.providerSpecific.azureClusterIdentity.namespace; defaults to 'org-giantswarm' via the chart).")
+	cmd.Flags().StringVar(&f.Azure.ClusterIdentityName, flagAzureClusterIdentityName, "", "Name of the AzureClusterIdentity resource to use for authentication (optional, sets global.providerSpecific.azureClusterIdentity.name; defaults to the chart's built-in value).")
+	cmd.Flags().StringVar(&f.Azure.ClusterIdentityNamespace, flagAzureClusterIdentityNamespace, "", "Namespace of the AzureClusterIdentity resource (optional, sets global.providerSpecific.azureClusterIdentity.namespace; defaults to the chart's built-in value).")
 
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
