@@ -5,10 +5,11 @@ type ClusterConfig struct {
 }
 
 type Global struct {
-	ControlPlane     *ControlPlane     `json:"controlPlane,omitempty"`
-	Metadata         *Metadata         `json:"metadata,omitempty"`
-	ProviderSpecific *ProviderSpecific `json:"providerSpecific,omitempty"`
-	Release          *Release          `json:"release,omitempty"`
+	ControlPlane      *ControlPlane     `json:"controlPlane,omitempty"`
+	ManagementCluster string            `json:"managementCluster,omitempty"`
+	Metadata          *Metadata         `json:"metadata,omitempty"`
+	ProviderSpecific  *ProviderSpecific `json:"providerSpecific,omitempty"`
+	Release           *Release          `json:"release,omitempty"`
 }
 
 type Metadata struct {
@@ -28,15 +29,14 @@ type SKU struct {
 }
 
 type ProviderSpecific struct {
-	Location          string             `json:"location,omitempty"`
-	SubscriptionID    string             `json:"subscriptionId,omitempty"`
-	ASOAuthentication *ASOAuthentication `json:"asoAuthentication,omitempty"`
+	Location             string                `json:"location,omitempty"`
+	SubscriptionID       string                `json:"subscriptionId,omitempty"`
+	AzureClusterIdentity *AzureClusterIdentity `json:"azureClusterIdentity,omitempty"`
 }
 
-type ASOAuthentication struct {
-	SubscriptionID string `json:"subscriptionID,omitempty"`
-	TenantID       string `json:"tenantID,omitempty"`
-	ClientID       string `json:"clientID,omitempty"`
+type AzureClusterIdentity struct {
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 type Release struct {

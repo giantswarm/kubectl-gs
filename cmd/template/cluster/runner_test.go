@@ -389,12 +389,13 @@ func Test_run(t *testing.T) {
 		{
 			name: "case 11: template cluster aks",
 			flags: &flags.Flag{
-				Name:         "test-aks",
-				Provider:     "aks",
-				Description:  "an AKS test cluster",
-				Release:      "35.0.0",
-				Region:       "westeurope",
-				Organization: "test",
+				Name:              "test-aks",
+				Provider:          "aks",
+				Description:       "an AKS test cluster",
+				Release:           "35.0.0",
+				Region:            "westeurope",
+				Organization:      "test",
+				ManagementCluster: "my-mc",
 				App: common.AppConfig{
 					ClusterCatalog: "cluster",
 				},
@@ -402,8 +403,8 @@ func Test_run(t *testing.T) {
 					SubscriptionID: "6b1f6e4a-6d0e-4aa4-9a5a-fbaca65a23b3",
 				},
 				AKS: common.AKSConfig{
-					TenantID: "31f75bf9-3d8c-4691-95c0-83dd71613db8",
-					ClientID: "c299134a-dbae-4861-9c06-f11f7b603f5f",
+					ClusterIdentityName:      "my-aks-identity",
+					ClusterIdentityNamespace: "org-test",
 				},
 			},
 			args:               nil,

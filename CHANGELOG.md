@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- `template cluster`: support `--provider aks` for templating AKS workload clusters via the `cluster-aks` / `release-aks` chart. Adds `--aks-tenant-id` and `--aks-client-id` for the optional `global.providerSpecific.asoAuthentication` block. Reuses `--region`, `--azure-subscription-id`, and `--management-cluster` for the required Azure inputs.
+- `template cluster`: support `--provider aks` for templating AKS workload clusters via the `cluster-aks` / `release-aks` chart. Adds `--aks-cluster-identity-name` and `--aks-cluster-identity-namespace` for overriding the `AzureClusterIdentity` reference under `global.providerSpecific.azureClusterIdentity`. Reuses `--region`, `--azure-subscription-id`, and `--management-cluster` for the required Azure inputs.
 
 ### Changed
 

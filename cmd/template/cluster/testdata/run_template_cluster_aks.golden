@@ -6,15 +6,15 @@ data:
       controlPlane:
         sku:
           tier: Standard
+      managementCluster: my-mc
       metadata:
         description: an AKS test cluster
         name: test-aks
         organization: test
       providerSpecific:
-        asoAuthentication:
-          clientID: c299134a-dbae-4861-9c06-f11f7b603f5f
-          subscriptionID: 6b1f6e4a-6d0e-4aa4-9a5a-fbaca65a23b3
-          tenantID: 31f75bf9-3d8c-4691-95c0-83dd71613db8
+        azureClusterIdentity:
+          name: my-aks-identity
+          namespace: org-test
         location: westeurope
         subscriptionId: 6b1f6e4a-6d0e-4aa4-9a5a-fbaca65a23b3
 kind: ConfigMap

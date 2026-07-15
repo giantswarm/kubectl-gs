@@ -125,18 +125,18 @@ func BuildAKSClusterConfig(config common.ClusterConfig) aks.ClusterConfig {
 		Location:       config.Region,
 		SubscriptionID: config.Azure.SubscriptionID,
 	}
-	// Only emit the asoAuthentication block when the user supplied workload-identity
-	// values, otherwise rely on the chart's default credential resolution.
-	if config.AKS.TenantID != "" || config.AKS.ClientID != "" {
-		providerSpecific.ASOAuthentication = &aks.ASOAuthentication{
-			SubscriptionID: config.Azure.SubscriptionID,
-			TenantID:       config.AKS.TenantID,
-			ClientID:       config.AKS.ClientID,
+	// Only emit the azureClusterIdentity block when the user overrode the reference,
+	// otherwise rely on the chart's defaults (cluster-identity in org-giantswarm).
+	if config.AKS.ClusterIdentityName != "" || config.AKS.ClusterIdentityNamespace != "" {
+		providerSpecific.AzureClusterIdentity = &aks.AzureClusterIdentity{
+			Name:      config.AKS.ClusterIdentityName,
+			Namespace: config.AKS.ClusterIdentityNamespace,
 		}
 	}
 
 	return aks.ClusterConfig{
 		Global: &aks.Global{
+			ManagementCluster: config.ManagementCluster,
 			Metadata: &aks.Metadata{
 				Name:            config.Name,
 				Description:     config.Description,

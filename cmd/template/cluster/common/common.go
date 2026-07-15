@@ -49,8 +49,8 @@ type AzureConfig struct {
 }
 
 type AKSConfig struct {
-	TenantID string
-	ClientID string
+	ClusterIdentityName      string
+	ClusterIdentityNamespace string
 }
 
 type CloudDirectorConfig struct {

@@ -48,8 +48,8 @@ const (
 	flagAzureSubscriptionID = "azure-subscription-id"
 
 	// AKS only.
-	flagAKSTenantID = "aks-tenant-id"
-	flagAKSClientID = "aks-client-id"
+	flagAKSClusterIdentityName      = "aks-cluster-identity-name"
+	flagAKSClusterIdentityNamespace = "aks-cluster-identity-namespace"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -192,8 +192,8 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
 
 	// AKS only
-	cmd.Flags().StringVar(&f.AKS.TenantID, flagAKSTenantID, "", "Azure tenant ID for the workload identity used by Azure Service Operator (optional, sets global.providerSpecific.asoAuthentication.tenantID).")
-	cmd.Flags().StringVar(&f.AKS.ClientID, flagAKSClientID, "", "Azure client ID for the workload identity used by Azure Service Operator (optional, sets global.providerSpecific.asoAuthentication.clientID).")
+	cmd.Flags().StringVar(&f.AKS.ClusterIdentityName, flagAKSClusterIdentityName, "", "Name of the AzureClusterIdentity resource to use for authentication (optional, sets global.providerSpecific.azureClusterIdentity.name; defaults to 'cluster-identity' via the chart).")
+	cmd.Flags().StringVar(&f.AKS.ClusterIdentityNamespace, flagAKSClusterIdentityNamespace, "", "Namespace of the AzureClusterIdentity resource (optional, sets global.providerSpecific.azureClusterIdentity.namespace; defaults to 'org-giantswarm' via the chart).")
 
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
@@ -400,9 +400,8 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			if f.Azure.SubscriptionID == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagAzureSubscriptionID)
 			}
-			// asoAuthentication is all-or-nothing: tenant+client must come together.
-			if (f.AKS.TenantID == "") != (f.AKS.ClientID == "") {
-				return microerror.Maskf(invalidFlagError, "--%s and --%s must be specified together", flagAKSTenantID, flagAKSClientID)
+			if f.ManagementCluster == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagManagementCluster)
 			}
 		}
 
