@@ -44,8 +44,10 @@ const (
 	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
-	// Azure only
-	flagAzureSubscriptionID = "azure-subscription-id"
+	// Azure (CAPZ + AKS).
+	flagAzureSubscriptionID           = "azure-subscription-id"
+	flagAzureClusterIdentityName      = "azure-cluster-identity-name"
+	flagAzureClusterIdentityNamespace = "azure-cluster-identity-namespace"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -183,8 +185,10 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
 
-	// Azure only
+	// Azure (CAPZ + AKS)
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
+	cmd.Flags().StringVar(&f.Azure.ClusterIdentityName, flagAzureClusterIdentityName, "", "Name of the AzureClusterIdentity resource to use for authentication (optional, sets global.providerSpecific.azureClusterIdentity.name; defaults to the chart's built-in value).")
+	cmd.Flags().StringVar(&f.Azure.ClusterIdentityNamespace, flagAzureClusterIdentityNamespace, "", "Namespace of the AzureClusterIdentity resource (optional, sets global.providerSpecific.azureClusterIdentity.namespace; defaults to the chart's built-in value).")
 
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
@@ -291,6 +295,7 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 	validProviders := []string{
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
+		key.ProviderAKS,
 		key.ProviderEKS,
 		key.ProviderVSphere,
 		key.ProviderCloudDirector,
@@ -382,6 +387,16 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 
 			if len(f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 && f.ManagementCluster == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty when specifying --%s", flagManagementCluster, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock)
+			}
+		case key.ProviderAKS:
+			if f.Region == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagRegion)
+			}
+			if f.Azure.SubscriptionID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagAzureSubscriptionID)
+			}
+			if f.ManagementCluster == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagManagementCluster)
 			}
 		}
 
