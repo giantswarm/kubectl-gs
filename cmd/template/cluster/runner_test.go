@@ -387,6 +387,28 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capa_8.golden",
 		},
 		{
+			name: "case 11: template cluster aks",
+			flags: &flags.Flag{
+				Name:              "test-aks",
+				Provider:          "aks",
+				Description:       "an AKS test cluster",
+				Release:           "35.0.0",
+				Region:            "westeurope",
+				Organization:      "test",
+				ManagementCluster: "my-mc",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+				},
+				Azure: common.AzureConfig{
+					SubscriptionID:           "6b1f6e4a-6d0e-4aa4-9a5a-fbaca65a23b3",
+					ClusterIdentityName:      "my-aks-identity",
+					ClusterIdentityNamespace: "org-test",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_aks.golden",
+		},
+		{
 			name: "case 10: template cluster capa with release version",
 			flags: &flags.Flag{
 				Name:                     "test10",

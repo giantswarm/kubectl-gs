@@ -84,6 +84,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	case key.ProviderAKS:
+		err = provider.WriteAKSTemplate(ctx, client, output, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	case key.ProviderEKS:
 		err = provider.WriteEKSTemplate(ctx, client, output, config)
 		if err != nil {

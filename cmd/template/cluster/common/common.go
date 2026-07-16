@@ -45,7 +45,9 @@ type AWSMachinePoolConfig struct {
 }
 
 type AzureConfig struct {
-	SubscriptionID string
+	SubscriptionID           string
+	ClusterIdentityName      string
+	ClusterIdentityNamespace string
 }
 
 type CloudDirectorConfig struct {
