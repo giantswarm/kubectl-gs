@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -146,6 +147,44 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
+	r.printWCKubeconfigResult(contextName, contextExists)
+
+	return nil
+}
+
+// handleWCKubeconfigDirect creates a workload cluster OIDC kubeconfig entirely
+// from flags, without any management cluster access. It is used when the user
+// supplies --api-endpoint together with the OIDC issuer, client ID and CA
+// file (enforced by flag validation).
+func (r *runner) handleWCKubeconfigDirect(ctx context.Context) error {
+	caData, err := os.ReadFile(r.flag.WCOIDCCAFile)
+	if err != nil {
+		return microerror.Maskf(invalidFlagError, "failed to read CA file %q passed via --%s: %s", r.flag.WCOIDCCAFile, flagWCOIDCCAFile, err.Error())
+	}
+
+	clusterServer, err := normalizeAPIEndpoint(r.flag.WCAPIEndpoint)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	authConfig := &structuredAuthIssuer{
+		IssuerURL: r.flag.WCOIDCIssuer,
+		ClientID:  r.flag.WCOIDCClientID,
+	}
+
+	contextName, contextExists, err := r.runOIDCLogin(ctx, r.flag.WCName, clusterServer, caData, authConfig)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.printWCKubeconfigResult(contextName, contextExists)
+
+	return nil
+}
+
+// printWCKubeconfigResult prints the user-facing message describing the newly
+// created workload cluster context.
+func (r *runner) printWCKubeconfigResult(contextName string, contextExists bool) {
 	if r.loginOptions.selfContainedWC {
 		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		_, _ = fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
@@ -160,8 +199,6 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected. To switch back to this context later, use this command:\n\n", contextName)
 		_, _ = fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
-
-	return nil
 }
 
 // used only if both MC and WC are specified on command line
@@ -453,4 +490,19 @@ func controlPlaneEndpoint(cluster *unstructured.Unstructured) (string, int64, er
 func isEKS(c *unstructured.Unstructured) bool {
 	infraKind, _, _ := unstructured.NestedString(c.Object, "spec", "infrastructureRef", "kind")
 	return infraKind == "AWSManagedCluster"
+}
+
+// normalizeAPIEndpoint validates the user-supplied workload cluster API server
+// endpoint and returns it with an https:// scheme prepended when absent.
+func normalizeAPIEndpoint(endpoint string) (string, error) {
+	if !strings.Contains(endpoint, "://") {
+		endpoint = "https://" + endpoint
+	}
+
+	u, err := url.Parse(endpoint)
+	if err != nil || u.Host == "" {
+		return "", microerror.Maskf(invalidFlagError, "--%s %q is not a valid URL", flagWCAPIEndpoint, endpoint)
+	}
+
+	return endpoint, nil
 }

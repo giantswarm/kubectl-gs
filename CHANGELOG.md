@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `login`: new `--api-endpoint` flag enables a fully offline direct-OIDC workload cluster login. When set together with `--oidc-issuer`, `--oidc-client-id` and `--api-ca-file`, the login skips all management cluster access, so the user needs no RBAC on the management cluster.
+
 ### Changed
 
 - Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.

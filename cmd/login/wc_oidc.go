@@ -38,7 +38,8 @@ type oidcWCConfig struct {
 }
 
 // createOIDCKubeconfig handles the creation of a workload cluster kubeconfig
-// using direct OIDC authentication (structured authentication).
+// using direct OIDC authentication (structured authentication). The CA and API
+// server endpoint are resolved from the management cluster.
 func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.Interface, cluster *unstructured.Unstructured, namespace string, authConfig *structuredAuthIssuer) (string, bool, error) {
 	// Fetch CA - either from flag or from MC ConfigMap.
 	caData, err := fetchClusterCA(ctx, k8sClient, cluster.GetName(), namespace, r.flag.WCOIDCCAFile)
@@ -53,8 +54,16 @@ func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.I
 
 	clusterServer := fmt.Sprintf("https://%s:%d", cpHost, cpPort)
 
+	return r.runOIDCLogin(ctx, cluster.GetName(), clusterServer, caData, authConfig)
+}
+
+// runOIDCLogin performs the direct OIDC authentication flow against the issuer,
+// verifies the token, and stores the resulting workload cluster kubeconfig. All
+// inputs are already resolved, so this step needs no management cluster access.
+func (r *runner) runOIDCLogin(ctx context.Context, clusterName, clusterServer string, caData []byte, authConfig *structuredAuthIssuer) (string, bool, error) {
 	// Run OIDC authentication flow.
 	var authResult authInfo
+	var err error
 	if r.flag.DeviceAuth {
 		authResult, err = handleDirectDeviceOIDC(r.stdout, r.stderr, authConfig.IssuerURL, authConfig.ClientID)
 	} else {
@@ -84,7 +93,7 @@ func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.I
 	}
 
 	wcConfig := oidcWCConfig{
-		clusterName:          cluster.GetName(),
+		clusterName:          clusterName,
 		certCA:               caData,
 		controlPlaneEndpoint: clusterServer,
 		filePath:             r.flag.SelfContained,
@@ -105,7 +114,7 @@ func (r *runner) createOIDCKubeconfig(ctx context.Context, k8sClient k8sclient.I
 		_, _ = fmt.Fprintf(r.stderr, color.YellowString("Warning: failed to write token cache: %v\n"), err)
 	}
 
-	_, _ = fmt.Fprint(r.stdout, color.GreenString("\nCreated OIDC kubeconfig for workload cluster '%s'.\n", cluster.GetName()))
+	_, _ = fmt.Fprint(r.stdout, color.GreenString("\nCreated OIDC kubeconfig for workload cluster '%s'.\n", clusterName))
 
 	return contextName, contextExists, nil
 }
