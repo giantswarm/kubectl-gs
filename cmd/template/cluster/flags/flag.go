@@ -395,9 +395,6 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			if f.Azure.SubscriptionID == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagAzureSubscriptionID)
 			}
-			if f.ManagementCluster == "" {
-				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagManagementCluster)
-			}
 		}
 
 		if f.Release == "" {
