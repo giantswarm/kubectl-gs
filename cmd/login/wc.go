@@ -85,19 +85,13 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 	var err error
 	var c *cluster.Cluster
 
-	var namespaces []string
 	if len(r.flag.WCOrganization) > 0 {
-		orgNamespace, err := getOrganizationNamespace(ctx, services.organizationService, r.flag.WCOrganization)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+		return r.getClusterInOrganization(ctx, services, provider)
+	}
 
-		namespaces = append(namespaces, orgNamespace)
-	} else {
-		namespaces, err = getAllOrganizationNamespaces(ctx, services.organizationService)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+	namespaces, err := getAllOrganizationNamespaces(ctx, services.organizationService)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	if r.flag.WCInsecureNamespace {
@@ -105,6 +99,56 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 	}
 
 	c, err = findCluster(ctx, services.clusterService, services.organizationService, provider, r.flag.WCName, namespaces...)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return c, nil
+}
+
+// getClusterInOrganization locates the workload cluster when the user passed
+// --organization. It first assumes the conventional organization namespace
+// (org-<name>) so that no cluster-scoped read of the Organization CR is
+// required. Only if the cluster cannot be found there does it fall back to
+// resolving the authoritative namespace from the Organization CR's status,
+// which handles organizations whose namespace does not follow the convention.
+func (r *runner) getClusterInOrganization(ctx context.Context, services serviceSet, provider string) (*cluster.Cluster, error) {
+	assumedNamespace := fmt.Sprintf("org-%s", r.flag.WCOrganization)
+
+	c, err := r.findClusterInNamespace(ctx, services, provider, assumedNamespace)
+	if err == nil {
+		return c, nil
+	}
+	if !IsClusterNotFound(err) {
+		return nil, microerror.Mask(err)
+	}
+
+	// The cluster wasn't found in the conventional namespace. Resolve the
+	// namespace from the Organization CR and, if it differs, retry there.
+	orgNamespace, err := getOrganizationNamespace(ctx, services.organizationService, r.flag.WCOrganization)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if orgNamespace == assumedNamespace {
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", r.flag.WCName)
+	}
+
+	c, err = r.findClusterInNamespace(ctx, services, provider, orgNamespace)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return c, nil
+}
+
+// findClusterInNamespace looks up the workload cluster in the given namespace,
+// additionally searching the "default" namespace when --insecure-namespace is
+// set (for legacy clusters residing outside the organization namespace).
+func (r *runner) findClusterInNamespace(ctx context.Context, services serviceSet, provider, namespace string) (*cluster.Cluster, error) {
+	namespaces := []string{namespace}
+	if r.flag.WCInsecureNamespace {
+		namespaces = append(namespaces, "default")
+	}
+
+	c, err := findCluster(ctx, services.clusterService, services.organizationService, provider, r.flag.WCName, namespaces...)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
