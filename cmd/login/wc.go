@@ -537,7 +537,9 @@ func isEKS(c *unstructured.Unstructured) bool {
 }
 
 // normalizeAPIEndpoint validates the user-supplied workload cluster API server
-// endpoint and returns it with an https:// scheme prepended when absent.
+// endpoint and returns it with an https:// scheme prepended when absent. An
+// explicit non-https scheme is rejected: the endpoint carries OIDC bearer
+// tokens, so it must be served over TLS.
 func normalizeAPIEndpoint(endpoint string) (string, error) {
 	if !strings.Contains(endpoint, "://") {
 		endpoint = "https://" + endpoint
@@ -546,6 +548,9 @@ func normalizeAPIEndpoint(endpoint string) (string, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil || u.Host == "" {
 		return "", microerror.Maskf(invalidFlagError, "--%s %q is not a valid URL", flagWCAPIEndpoint, endpoint)
+	}
+	if u.Scheme != "https" {
+		return "", microerror.Maskf(invalidFlagError, "--%s must use https, got %q", flagWCAPIEndpoint, u.Scheme)
 	}
 
 	return endpoint, nil

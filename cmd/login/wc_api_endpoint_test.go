@@ -38,6 +38,11 @@ func TestNormalizeAPIEndpoint(t *testing.T) {
 			endpoint: "https://",
 			wantErr:  true,
 		},
+		{
+			name:     "explicit http scheme is rejected",
+			endpoint: "http://api.mycluster.example.com:6443",
+			wantErr:  true,
+		},
 	}
 
 	for _, tt := range tests {
