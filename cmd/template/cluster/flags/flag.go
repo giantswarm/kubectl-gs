@@ -21,7 +21,7 @@ const (
 	flagPreventDeletion   = "prevent-deletion"
 
 	flagAWSClusterRoleIdentityName                       = "aws-cluster-role-identity-name"
-	flagNetworkAZUsageLimit                              = "az-usage-limit"
+	FlagNetworkAZUsageLimit                              = "az-usage-limit"
 	flagNetworkVPCCidr                                   = "vpc-cidr"
 	flagAWSClusterType                                   = "cluster-type"
 	flagAWSHttpsProxy                                    = "https-proxy"
@@ -33,7 +33,7 @@ const (
 	flagAWSPrefixListID                                  = "aws-prefix-list-id"
 	flagAWSTransitGatewayID                              = "aws-transit-gateway-id"
 	flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock = "control-plane-load-balancer-ingress-allow-cidr-block"
-	flagAWSPublicSubnetMask                              = "public-subnet-size"
+	FlagAWSPublicSubnetMask                              = "public-subnet-size"
 	FlagAWSPrivateSubnetMask                             = "private-subnet-size"
 
 	flagAWSMachinePoolMinSize          = "machine-pool-min-size"
@@ -44,8 +44,10 @@ const (
 	flagAWSMachinePoolRootVolumeSizeGB = "machine-pool-root-volume-size-gb"
 	flagAWSMachinePoolCustomNodeLabels = "machine-pool-custom-node-labels"
 
-	// Azure only
-	flagAzureSubscriptionID = "azure-subscription-id"
+	// Azure (CAPZ + AKS).
+	flagAzureSubscriptionID           = "azure-subscription-id"
+	flagAzureClusterIdentityName      = "azure-cluster-identity-name"
+	flagAzureClusterIdentityNamespace = "azure-cluster-identity-namespace"
 
 	// App-based clusters only.
 	flagClusterCatalog     = "cluster-catalog"
@@ -158,7 +160,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 
 	// AWS / CAPA.
 	cmd.Flags().StringVar(&f.AWS.AWSClusterRoleIdentityName, flagAWSClusterRoleIdentityName, "", "Name of the AWSClusterRoleIdentity that will be used for cluster creation.")
-	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, flagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
+	cmd.Flags().IntVar(&f.AWS.NetworkAZUsageLimit, FlagNetworkAZUsageLimit, 3, "Amount of AZs that will be used for VPC.")
 	cmd.Flags().StringVar(&f.AWS.NetworkVPCCIDR, flagNetworkVPCCidr, "", "CIDR for the VPC.")
 	cmd.Flags().StringVar(&f.AWS.ClusterType, flagAWSClusterType, "public", "Cluster type to be created (public,proxy-private)")
 	cmd.Flags().StringVar(&f.AWS.HttpsProxy, flagAWSHttpsProxy, "", "'HTTPS_PROXY' env value configuration for the cluster (required if cluster-type is set to proxy-private)")
@@ -169,7 +171,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.AWS.TopologyMode, flagAWSTopologyMode, "", "Topology mode of the network (UserManaged,GiantSwarmManaged,None)")
 	cmd.Flags().StringVar(&f.AWS.PrefixListID, flagAWSPrefixListID, "", "Prefix list ID to manage. Workload cluster will be able to reach the destinations in the prefix list via the transit gateway. If not specified, it will be looked up by name/namespace of the management cluster (ends with `-tgw-prefixlist`). Only applies to proxy-private clusters.")
 	cmd.Flags().StringVar(&f.AWS.TransitGatewayID, flagAWSTransitGatewayID, "", "ID of the transit gateway to attach the cluster VPC to. If not specified for workload clusters, the management cluster's transit gateway will be used. Only applies to proxy-private clusters.")
-	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, flagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
+	cmd.Flags().IntVar(&f.AWS.PublicSubnetMask, FlagAWSPublicSubnetMask, 20, "Subnet mask of the public subnets. Minimum is 25 (128 IPs), default is 20.")
 	cmd.Flags().IntVar(&f.AWS.PrivateSubnetMask, FlagAWSPrivateSubnetMask, 18, "Subnet mask of the private subnets. Minimum size is 25 (128 IPs), default is 18.")
 
 	// aws control plane
@@ -183,8 +185,10 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.AZs, flagAWSMachinePoolAZs, []string{}, "AWS Machine pool availability zones")
 	cmd.Flags().StringSliceVar(&f.AWS.MachinePool.CustomNodeLabels, flagAWSMachinePoolCustomNodeLabels, []string{}, "AWS Machine pool custom node labels")
 
-	// Azure only
+	// Azure (CAPZ + AKS)
 	cmd.Flags().StringVar(&f.Azure.SubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
+	cmd.Flags().StringVar(&f.Azure.ClusterIdentityName, flagAzureClusterIdentityName, "", "Name of the AzureClusterIdentity resource to use for authentication (optional, sets global.providerSpecific.azureClusterIdentity.name; defaults to the chart's built-in value).")
+	cmd.Flags().StringVar(&f.Azure.ClusterIdentityNamespace, flagAzureClusterIdentityNamespace, "", "Namespace of the AzureClusterIdentity resource (optional, sets global.providerSpecific.azureClusterIdentity.namespace; defaults to the chart's built-in value).")
 
 	// VSphere only
 	cmd.Flags().StringVar(&f.VSphere.ControlPlane.Ip, flagVSphereControlPlaneIP, "", "Control plane IP, leave empty for auto allocation.")
@@ -231,7 +235,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	_ = cmd.Flags().MarkHidden(flagBastionInstanceType)
 	_ = cmd.Flags().MarkHidden(flagBastionReplicas)
 	_ = cmd.Flags().MarkHidden(flagNetworkVPCCidr)
-	_ = cmd.Flags().MarkHidden(flagNetworkAZUsageLimit)
+	_ = cmd.Flags().MarkHidden(FlagNetworkAZUsageLimit)
 	_ = cmd.Flags().MarkHidden(flagControlPlaneInstanceType)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolName)
 	_ = cmd.Flags().MarkHidden(flagAWSMachinePoolInstanceType)
@@ -291,6 +295,7 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 	validProviders := []string{
 		key.ProviderCAPA,
 		key.ProviderCAPZ,
+		key.ProviderAKS,
 		key.ProviderEKS,
 		key.ProviderVSphere,
 		key.ProviderCloudDirector,
@@ -382,6 +387,13 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 
 			if len(f.AWS.ControlPlaneLoadBalancerIngressAllowCIDRBlocks) > 0 && f.ManagementCluster == "" {
 				return microerror.Maskf(invalidFlagError, "--%s must not be empty when specifying --%s", flagManagementCluster, flagAWSControlPlaneLoadBalancerIngressAllowCIDRBlock)
+			}
+		case key.ProviderAKS:
+			if f.Region == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagRegion)
+			}
+			if f.Azure.SubscriptionID == "" {
+				return microerror.Maskf(invalidFlagError, "--%s must not be empty for AKS", flagAzureSubscriptionID)
 			}
 		}
 

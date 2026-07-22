@@ -56,6 +56,13 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 }
 
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
+	// A fully offline direct-OIDC WC login supplies everything via flags and
+	// never touches the management cluster, so skip all MC context handling.
+	if r.isDirectWCLogin() {
+		_, _ = fmt.Fprintf(r.stdout, "Skipping management cluster access; using the endpoint, issuer, client ID and CA provided via flags.\n")
+		return r.handleWCKubeconfigDirect(ctx)
+	}
+
 	// When WC OIDC flags are provided and the current context is not a gs-
 	// managed context (e.g. teleport), skip the MC credential validation step.
 	// The current context already provides valid MC access; we only need
@@ -117,6 +124,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+// isDirectWCLogin returns true when the user requested a fully offline
+// direct-OIDC workload cluster login by supplying --api-endpoint. Flag
+// validation guarantees the accompanying issuer, client ID and CA flags are
+// also set, so no management cluster access is required.
+func (r *runner) isDirectWCLogin() bool {
+	return r.loginOptions.isWC && r.flag.WCAPIEndpoint != ""
 }
 
 // canSkipMCLogin returns true when the WC OIDC flags indicate we can skip

@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/microerror"
@@ -30,6 +31,7 @@ const (
 	flagWCOIDCClientID = "oidc-client-id"
 	flagWCOIDCCAFile   = "api-ca-file"
 	flagWCOIDCScope    = "oidc-scope"
+	flagWCAPIEndpoint  = "api-endpoint"
 
 	flagProxy     = "proxy"
 	flagProxyPort = "proxy-port"
@@ -64,6 +66,7 @@ type flag struct {
 	WCOIDCClientID string
 	WCOIDCCAFile   string
 	WCOIDCScopes   []string
+	WCAPIEndpoint  string
 
 	Proxy     bool
 	ProxyPort int
@@ -99,6 +102,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WCOIDCClientID, flagWCOIDCClientID, "", fmt.Sprintf("Override the OIDC client ID for direct workload cluster OIDC login. When set together with --%s, skips auto-detection from the management cluster.", flagWCOIDCIssuer))
 	cmd.Flags().StringVar(&f.WCOIDCCAFile, flagWCOIDCCAFile, "", "Override the path to the CA certificate file for the workload cluster API server. When set, skips fetching the CA from the management cluster.")
 	cmd.Flags().StringSliceVar(&f.WCOIDCScopes, flagWCOIDCScope, nil, "Additional OIDC scopes to request from the issuer, on top of the defaults (openid, profile, email, offline_access). Repeat the flag or pass a comma-separated list. Example: --oidc-scope=groups to receive group memberships from Okta into the ID token.")
+	cmd.Flags().StringVar(&f.WCAPIEndpoint, flagWCAPIEndpoint, "", fmt.Sprintf("Workload cluster API server endpoint (e.g. https://api.mycluster.example.com:6443) for direct OIDC login. When set together with --%s, --%s and --%s, the login skips all management cluster access.", flagWCOIDCIssuer, flagWCOIDCClientID, flagWCOIDCCAFile))
 
 	cmd.Flags().BoolVar(&f.Proxy, flagProxy, false, "Enable socks proxy configuration for the cluster. Only Supported for Workload Cluster using clientcert auth mode")
 	cmd.Flags().IntVar(&f.ProxyPort, flagProxyPort, 9000, "Port for the socks proxy configuration for the cluster")
@@ -130,6 +134,28 @@ func (f *flag) Validate() error {
 	keepContextEnvVar := viper.GetString(envKeepContext)
 	if keepContextEnvVar != "" && keepContextEnvVar != "true" && keepContextEnvVar != "false" {
 		return microerror.Maskf(invalidFlagError, "KUBECTL_GS_LOGIN_KEEP_CONTEXT environment variable must be either 'true' or 'false'")
+	}
+
+	// The WC API endpoint flag enables a fully offline direct-OIDC login that
+	// never touches the management cluster. That is only possible when every
+	// value normally read from the MC is instead supplied via flags.
+	if f.WCAPIEndpoint != "" {
+		var missing []string
+		if f.WCName == "" {
+			missing = append(missing, "--"+flagWCName)
+		}
+		if f.WCOIDCIssuer == "" {
+			missing = append(missing, "--"+flagWCOIDCIssuer)
+		}
+		if f.WCOIDCClientID == "" {
+			missing = append(missing, "--"+flagWCOIDCClientID)
+		}
+		if f.WCOIDCCAFile == "" {
+			missing = append(missing, "--"+flagWCOIDCCAFile)
+		}
+		if len(missing) > 0 {
+			return microerror.Maskf(invalidFlagError, "--%s also requires %s to be set (a fully offline login cannot read these from the management cluster).", flagWCAPIEndpoint, strings.Join(missing, ", "))
+		}
 	}
 
 	return nil

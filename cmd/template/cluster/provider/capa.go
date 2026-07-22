@@ -35,6 +35,19 @@ const (
 	ProxyPrivateType   = "proxy-private"
 )
 
+// nextPowerOfTwo returns the smallest power of two greater than or equal to n.
+// For n <= 1 it returns 1.
+func nextPowerOfTwo(n int) int {
+	if n <= 1 {
+		return 1
+	}
+	result := 1
+	for result < n {
+		result <<= 1
+	}
+	return result
+}
+
 func WriteCAPATemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	err := templateClusterCAPA(ctx, client, output, config)
 	if err != nil {
@@ -113,18 +126,51 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		}
 
 		if config.AWS.NetworkVPCCIDR != "" {
-			c, err := cidr.Parse(config.AWS.NetworkVPCCIDR)
+			vpcCidr, err := cidr.Parse(config.AWS.NetworkVPCCIDR)
 			if err != nil {
 				return fmt.Errorf("failed to parse VPC CIDR %q: %w", config.AWS.NetworkVPCCIDR, err)
 			}
 
 			subnetCount := config.AWS.NetworkAZUsageLimit
+			isProxyPrivate := config.AWS.ClusterType == ProxyPrivateType
 
-			//I cluster has public subnets, first split will be used for the public subnets, the last 3 splits for private subnets
-			//if cluster has only private subnets, all 4 splits will be used for private subnets
-			cidrSplit, err := c.SubNetting(cidr.MethodSubnetNum, 4)
+			// Derive the number of VPC chunks from the AZ usage limit. For a
+			// public cluster we reserve one chunk for public subnets and one
+			// chunk per AZ for private subnets. For a proxy-private cluster
+			// every chunk is used for private subnets. The chunk count is
+			// rounded up to a power of two because the underlying SubNetting
+			// helper only accepts powers of two.
+			required := subnetCount
+			if !isProxyPrivate {
+				required = 1 + subnetCount
+			}
+			chunkCount := nextPowerOfTwo(required)
+
+			vpcOnes, _ := vpcCidr.Mask().Size()
+			chunkPrefix := vpcOnes + int(math.Log2(float64(chunkCount)))
+
+			if chunkPrefix > 32 {
+				return fmt.Errorf("VPC CIDR %q is too small to host %d availability zones: splitting it into %d chunks would require a prefix beyond /32", config.AWS.NetworkVPCCIDR, subnetCount, chunkCount)
+			}
+			if chunkPrefix > config.AWS.PrivateSubnetMask {
+				return fmt.Errorf("VPC CIDR %q is too small to host %d availability zones with private subnet size /%d: each VPC chunk would be /%d, smaller than the requested private subnet. Use a larger VPC, fewer AZs (--%s), or a larger value for --%s", config.AWS.NetworkVPCCIDR, subnetCount, config.AWS.PrivateSubnetMask, chunkPrefix, flags.FlagNetworkAZUsageLimit, flags.FlagAWSPrivateSubnetMask)
+			}
+			if !isProxyPrivate {
+				if chunkPrefix > config.AWS.PublicSubnetMask {
+					return fmt.Errorf("VPC CIDR %q is too small to host %d availability zones with public subnet size /%d: each VPC chunk would be /%d, smaller than the requested public subnet. Use a larger VPC, fewer AZs (--%s), or a larger value for --%s", config.AWS.NetworkVPCCIDR, subnetCount, config.AWS.PublicSubnetMask, chunkPrefix, flags.FlagNetworkAZUsageLimit, flags.FlagAWSPublicSubnetMask)
+				}
+				if 1<<uint(config.AWS.PublicSubnetMask-chunkPrefix) < subnetCount {
+					return fmt.Errorf("VPC CIDR %q is too small to host %d availability zones with public subnet size /%d: the public chunk /%d can only hold %d subnets. Use a larger VPC, fewer AZs (--%s), or a larger value for --%s", config.AWS.NetworkVPCCIDR, subnetCount, config.AWS.PublicSubnetMask, chunkPrefix, 1<<uint(config.AWS.PublicSubnetMask-chunkPrefix), flags.FlagNetworkAZUsageLimit, flags.FlagAWSPublicSubnetMask)
+				}
+			}
+
+			// If a cluster has public subnets, the first chunk is used for
+			// public subnets and the remaining chunks for private subnets. If
+			// the cluster is proxy-private, every chunk is used for private
+			// subnets.
+			cidrSplit, err := vpcCidr.SubNetting(cidr.MethodSubnetNum, chunkCount)
 			if err != nil {
-				return fmt.Errorf("failed to split VPC CIDR %q into 4 subnets: %w", config.AWS.NetworkVPCCIDR, err)
+				return fmt.Errorf("failed to split VPC CIDR %q into %d subnets: %w", config.AWS.NetworkVPCCIDR, chunkCount, err)
 			}
 
 			//initialize the subnet structure, there will always be private subnets
@@ -135,21 +181,15 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				},
 			}
 
-			//if cluster has public subnets, we use splits 1 for public subnets and 2,3,4 for private subnets
 			privateCidrSplitStart := 1
-			if config.AWS.ClusterType == ProxyPrivateType {
-				//if cluster has only private subnets we use all 4 splits
+			if isProxyPrivate {
 				privateCidrSplitStart = 0
 			}
 
 			privateSubnetCount := 0
 			// loop over the private subnet splits in order to generate the required amount of private subnets
-			for j := privateCidrSplitStart; j < 4 && privateSubnetCount < subnetCount; j++ {
+			for j := privateCidrSplitStart; j < chunkCount && privateSubnetCount < subnetCount; j++ {
 				ones, _ := cidrSplit[j].Mask().Size()
-
-				if config.AWS.PrivateSubnetMask < ones {
-					return fmt.Errorf("failed to split VPC CIDR %q into subnets because subsplit of private subnet %q failed: you must specify a smaller private subnet size than `/%d` i.e. larger value for --%s)", config.AWS.NetworkVPCCIDR, cidrSplit[j].CIDR(), config.AWS.PrivateSubnetMask, flags.FlagAWSPrivateSubnetMask)
-				}
 
 				//divide the current split in blocks with the size of the private subnet mask
 				availablePrivateSubnetSplits, err := cidrSplit[j].SubNetting(cidr.MethodSubnetNum, int(math.Pow(2, float64(config.AWS.PrivateSubnetMask-ones))))
@@ -167,8 +207,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 				}
 			}
 
-			if config.AWS.ClusterType != ProxyPrivateType {
-
+			if !isProxyPrivate {
 				//initialize public subnets in the cluster structure
 				flagValues.Global.Connectivity.Subnets = append(flagValues.Global.Connectivity.Subnets, capa.Subnet{
 					IsPublic:   true,
@@ -192,7 +231,6 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 					})
 				}
 			}
-
 		}
 
 		if config.AWS.ClusterType == ProxyPrivateType {

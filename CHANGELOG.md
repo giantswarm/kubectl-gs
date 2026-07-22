@@ -7,10 +7,17 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `login`: new `--api-endpoint` flag enables a fully offline direct-OIDC workload cluster login. When set together with `--oidc-issuer`, `--oidc-client-id` and `--api-ca-file`, the login skips all management cluster access, so the user needs no RBAC on the management cluster.
+- `template cluster`: support `--provider aks` for templating AKS workload clusters via the `cluster-aks` / `release-aks` chart. Reuses `--region`, `--azure-subscription-id`, and `--management-cluster` for the required Azure inputs.
+- `template cluster`: new `--azure-cluster-identity-name` and `--azure-cluster-identity-namespace` flags for both `capz` and `aks`, setting `global.providerSpecific.azureClusterIdentity`. Omitted when unset so the chart's built-in defaults apply.
+
 ### Changed
 
 - Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.
 - krew manifest updated to reference bare binaries directly instead of tarballs, and extended with `windows/arm64` support.
+- (CAPA): Derive the number of VPC chunks from `--az-usage-limit`. This enables small single-AZ VPC layouts (e.g. a `/24` VPC with a `/25` private subnet and a `/26` public subnet).
 
 ## [5.6.4] - 2026-06-01
 

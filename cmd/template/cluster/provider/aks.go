@@ -11,18 +11,18 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
-	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/capz"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/aks"
 	"github.com/giantswarm/kubectl-gs/v6/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v6/pkg/template/app"
 )
 
 const (
-	ClusterAzureRepoName = "cluster-azure"
-	ReleaseAzureRepoName = "release-azure"
+	ClusterAKSRepoName = "cluster-aks"
+	ReleaseAKSRepoName = "release-aks"
 )
 
-func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
-	err := templateClusterCAPZ(ctx, client, output, config)
+func WriteAKSTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
+	err := templateClusterAKS(ctx, client, output, config)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -30,13 +30,13 @@ func WriteCAPZTemplate(ctx context.Context, client k8sclient.Interface, output i
 	return nil
 }
 
-func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
+func templateClusterAKS(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
 	appName := config.Name
 	configMapName := common.UserConfigMapName(appName)
 
 	var configMapYAML []byte
 	{
-		flagValues := BuildCapzClusterConfig(config)
+		flagValues := BuildAKSClusterConfig(config)
 
 		// For release versions, the release version is baked into the chart,
 		// so we don't need to include it in the user config.
@@ -44,7 +44,7 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 			flagValues.Global.Release = nil
 		}
 
-		configData, err := capz.GenerateClusterValues(flagValues)
+		configData, err := aks.GenerateClusterValues(flagValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -78,9 +78,9 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 		// Use release-<provider> chart name for release versions (>= 35.0.0).
 		// These charts have the release version baked into values.yaml.
 		// For older chart versions, use cluster-<provider> and let the webhook handle version.
-		chartName := ClusterAzureRepoName
+		chartName := ClusterAKSRepoName
 		if common.IsReleaseVersion(config.ReleaseVersion) {
-			chartName = ReleaseAzureRepoName
+			chartName = ReleaseAKSRepoName
 		}
 
 		clusterAppConfig := templateapp.Config{
@@ -120,41 +120,37 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 	return microerror.Mask(err)
 }
 
-func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
-	providerSpecific := &capz.ProviderSpecific{
+func BuildAKSClusterConfig(config common.ClusterConfig) aks.ClusterConfig {
+	providerSpecific := &aks.ProviderSpecific{
 		Location:       config.Region,
 		SubscriptionID: config.Azure.SubscriptionID,
 	}
 	// Only emit the azureClusterIdentity block when the user overrode the reference,
-	// otherwise rely on the chart's defaults.
+	// otherwise rely on the chart's defaults (cluster-identity in org-giantswarm).
 	if config.Azure.ClusterIdentityName != "" || config.Azure.ClusterIdentityNamespace != "" {
-		providerSpecific.AzureClusterIdentity = &capz.AzureClusterIdentity{
+		providerSpecific.AzureClusterIdentity = &aks.AzureClusterIdentity{
 			Name:      config.Azure.ClusterIdentityName,
 			Namespace: config.Azure.ClusterIdentityNamespace,
 		}
 	}
 
-	return capz.ClusterConfig{
-		Global: &capz.Global{
-			Metadata: &capz.Metadata{
+	return aks.ClusterConfig{
+		Global: &aks.Global{
+			ManagementCluster: config.ManagementCluster,
+			Metadata: &aks.Metadata{
 				Name:            config.Name,
 				Description:     config.Description,
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
 			},
-			ProviderSpecific: providerSpecific,
-			Connectivity: &capz.Connectivity{
-				Bastion: &capz.Bastion{
-					Enabled:      true,
-					InstanceType: config.BastionInstanceType,
+			ControlPlane: &aks.ControlPlane{
+				SKU: &aks.SKU{
+					Tier: "Standard",
 				},
 			},
-			ControlPlane: &capz.ControlPlane{
-				InstanceType: config.ControlPlaneInstanceType,
-				Replicas:     3,
-			},
-			Release: &capz.Release{
+			ProviderSpecific: providerSpecific,
+			Release: &aks.Release{
 				Version: config.ReleaseVersion,
 			},
 		},

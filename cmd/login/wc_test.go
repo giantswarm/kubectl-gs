@@ -11,14 +11,13 @@ import (
 	"os"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
 	v1 "k8s.io/api/authorization/v1"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v6/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/backoff/v2"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	securityv1alpha1 "github.com/giantswarm/organization-operator/api/v1alpha1"
@@ -51,6 +50,10 @@ func TestWCClientCert(t *testing.T) {
 		isAdmin              bool
 		permittedResources   []v1.ResourceRule
 		expectError          *microerror.Error
+		// organization CR seeded in the fake client. Defaults to name
+		// "organization" with status namespace "org-organization" when unset.
+		orgName      string
+		orgNamespace string
 	}{
 		// Logging into WC
 		{
@@ -129,6 +132,23 @@ func TestWCClientCert(t *testing.T) {
 			},
 			provider: "aws",
 			isAdmin:  true,
+		},
+		// Explicit organization whose namespace does not follow the org-<name>
+		// convention: the cluster is not found in the assumed "org-legacy"
+		// namespace, so we fall back to resolving it from the Organization CR.
+		{
+			name:                 "case 4b",
+			clustersInNamespaces: map[string]string{"cluster": "legacy-ns"},
+			controlPlaneEndpoint: "https://localhost:6443",
+			flags: &flag{
+				WCName:         "cluster",
+				WCCertTTL:      "8h",
+				WCOrganization: "legacy",
+			},
+			provider:     "aws",
+			isAdmin:      true,
+			orgName:      "legacy",
+			orgNamespace: "legacy-ns",
 		},
 		// Several clusters in several namespaces exist
 		{
@@ -269,7 +289,15 @@ func TestWCClientCert(t *testing.T) {
 
 			ctx := context.Background()
 			{
-				err = client.CtrlClient().Create(ctx, getOrganization("org-organization"))
+				orgName := tc.orgName
+				orgNamespace := tc.orgNamespace
+				if orgName == "" {
+					orgName = "organization"
+				}
+				if orgNamespace == "" {
+					orgNamespace = "org-organization"
+				}
+				err = client.CtrlClient().Create(ctx, getOrganizationNamed(orgName, orgNamespace))
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -480,14 +508,14 @@ func createSecret(ctx context.Context, client k8sclient.Interface, provider stri
 	}
 }
 
-func getOrganization(orgnamespace string) *securityv1alpha1.Organization {
+func getOrganizationNamed(name, namespace string) *securityv1alpha1.Organization {
 	organization := &securityv1alpha1.Organization{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: strings.TrimPrefix(orgnamespace, "org-"),
+			Name: name,
 		},
 		Spec: securityv1alpha1.OrganizationSpec{},
 		Status: securityv1alpha1.OrganizationStatus{
-			Namespace: orgnamespace,
+			Namespace: namespace,
 		},
 	}
 	return organization

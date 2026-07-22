@@ -1,15 +1,15 @@
-package capz
+package aks
 
 type ClusterConfig struct {
 	Global *Global `json:"global,omitempty"`
 }
 
 type Global struct {
-	Connectivity     *Connectivity     `json:"connectivity,omitempty"`
-	ControlPlane     *ControlPlane     `json:"controlPlane,omitempty"`
-	Metadata         *Metadata         `json:"metadata,omitempty"`
-	ProviderSpecific *ProviderSpecific `json:"providerSpecific,omitempty"`
-	Release          *Release          `json:"release,omitempty"`
+	ControlPlane      *ControlPlane     `json:"controlPlane,omitempty"`
+	ManagementCluster string            `json:"managementCluster,omitempty"`
+	Metadata          *Metadata         `json:"metadata,omitempty"`
+	ProviderSpecific  *ProviderSpecific `json:"providerSpecific,omitempty"`
+	Release           *Release          `json:"release,omitempty"`
 }
 
 type Metadata struct {
@@ -18,6 +18,14 @@ type Metadata struct {
 	Labels          map[string]string `json:"labels,omitempty"`
 	Organization    string            `json:"organization,omitempty"`
 	PreventDeletion bool              `json:"preventDeletion,omitempty"`
+}
+
+type ControlPlane struct {
+	SKU *SKU `json:"sku,omitempty"`
+}
+
+type SKU struct {
+	Tier string `json:"tier,omitempty"`
 }
 
 type ProviderSpecific struct {
@@ -31,19 +39,6 @@ type AzureClusterIdentity struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
-type Connectivity struct {
-	Bastion *Bastion `json:"bastion,omitempty"`
-}
-
-type Bastion struct {
-	Enabled      bool   `json:"enabled,omitempty"`
-	InstanceType string `json:"instanceType,omitempty"`
-}
-
-type ControlPlane struct {
-	InstanceType string `json:"instanceType,omitempty"`
-	Replicas     int    `json:"replicas,omitempty"`
-}
 type Release struct {
 	Version string `json:"version,omitempty"`
 }
