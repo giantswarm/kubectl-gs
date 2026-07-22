@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.7.0] - 2026-07-22
+
 ### Added
 
 - `login`: new `--api-endpoint` flag enables a fully offline direct-OIDC workload cluster login. When set together with `--oidc-issuer`, `--oidc-client-id` and `--api-ca-file`, the login skips all management cluster access, so the user needs no RBAC on the management cluster.
@@ -1806,7 +1808,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.4...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.0...HEAD
+[5.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.4...v5.7.0
 [5.6.4]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.3...v5.6.4
 [5.6.3]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.2...v5.6.3
 [5.6.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.1...v5.6.2
