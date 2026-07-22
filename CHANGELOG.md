@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- krew archives now include the `LICENSE` file, so `validate-krew-manifest` accepts the `gs` plugin release.
+
 ## [5.7.1] - 2026-07-22
 
 ### Fixed

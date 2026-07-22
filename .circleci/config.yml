@@ -108,7 +108,7 @@ workflows:
                     cp "$binary" "$inner"
                     chmod +x "$inner"
                     archive="kubectl-gs-${tag}-${os}-${arch}.tar.gz"
-                    tar -czf "$archive" "$inner"
+                    tar -czf "$archive" "$inner" LICENSE
                     rm -f "$inner"
                     archives+=( "$archive" )
                   done
