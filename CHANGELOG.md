@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.7.2] - 2026-07-22
+
 ### Fixed
 
 - krew archives now include the `LICENSE` file, so `validate-krew-manifest` accepts the `gs` plugin release.
@@ -1818,7 +1820,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...HEAD
+[5.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.1...v5.7.2
 [5.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.0...v5.7.1
 [5.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.4...v5.7.0
 [5.6.4]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.3...v5.6.4
