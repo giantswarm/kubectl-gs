@@ -261,3 +261,5 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.54.0
 	golang.org/x/text => golang.org/x/text v0.40.0
 )
+
+replace github.com/yuin/goldmark v1.4.13 => github.com/yuin/goldmark v1.8.2
