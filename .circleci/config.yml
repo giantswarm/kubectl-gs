@@ -80,6 +80,49 @@ workflows:
           binary: kubectl-gs
           requires:
             - go-build
+          post-steps:
+            - run:
+                name: Package binaries as krew archives and upload
+                command: |
+                  set -euo pipefail
+
+                  tag="${CIRCLE_TAG:?CIRCLE_TAG must be set}"
+                  shopt -s nullglob
+
+                  archives=()
+                  for binary in kubectl-gs-*-*; do
+                    case "$binary" in
+                      *.bundle | *.tar.gz) continue ;;
+                    esac
+
+                    platform="${binary#kubectl-gs-}"
+                    os="${platform%%-*}"
+                    arch="${platform#*-}"; arch="${arch%.exe}"
+
+                    if [[ "$os" == "windows" ]]; then
+                      inner="kubectl-gs.exe"
+                    else
+                      inner="kubectl-gs"
+                    fi
+
+                    cp "$binary" "$inner"
+                    chmod +x "$inner"
+                    archive="kubectl-gs-${tag}-${os}-${arch}.tar.gz"
+                    tar -czf "$archive" "$inner"
+                    rm -f "$inner"
+                    archives+=( "$archive" )
+                  done
+
+                  if [[ ${#archives[@]} -eq 0 ]]; then
+                    echo "No binaries found to package." >&2
+                    ls -la
+                    exit 1
+                  fi
+
+                  echo "Uploading ${#archives[@]} krew archive(s):"
+                  printf '  %s\n' "${archives[@]}"
+                  gh release upload "$tag" "${archives[@]}" --clobber \
+                    --repo "${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
           filters:
             tags:
               only: /^v.*/
