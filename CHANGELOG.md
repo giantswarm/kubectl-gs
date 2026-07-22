@@ -9,7 +9,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- `template cluster`: support `--provider aks` for templating AKS workload clusters via the `cluster-aks` / `release-aks` chart. Requires `--region` and `--azure-subscription-id`; `--management-cluster` is optional.
+- `login`: new `--api-endpoint` flag enables a fully offline direct-OIDC workload cluster login. When set together with `--oidc-issuer`, `--oidc-client-id` and `--api-ca-file`, the login skips all management cluster access, so the user needs no RBAC on the management cluster.
+- `template cluster`: support `--provider aks` for templating AKS workload clusters via the `cluster-aks` / `release-aks` chart. Reuses `--region`, `--azure-subscription-id`, and `--management-cluster` for the required Azure inputs.
 - `template cluster`: new `--azure-cluster-identity-name` and `--azure-cluster-identity-namespace` flags for both `capz` and `aks`, setting `global.providerSpecific.azureClusterIdentity`. Omitted when unset so the chart's built-in defaults apply.
 
 ### Changed

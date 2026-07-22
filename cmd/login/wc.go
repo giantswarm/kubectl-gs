@@ -3,6 +3,7 @@ package login
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -84,19 +85,13 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 	var err error
 	var c *cluster.Cluster
 
-	var namespaces []string
 	if len(r.flag.WCOrganization) > 0 {
-		orgNamespace, err := getOrganizationNamespace(ctx, services.organizationService, r.flag.WCOrganization)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+		return r.getClusterInOrganization(ctx, services, provider)
+	}
 
-		namespaces = append(namespaces, orgNamespace)
-	} else {
-		namespaces, err = getAllOrganizationNamespaces(ctx, services.organizationService)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+	namespaces, err := getAllOrganizationNamespaces(ctx, services.organizationService)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	if r.flag.WCInsecureNamespace {
@@ -104,6 +99,56 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 	}
 
 	c, err = findCluster(ctx, services.clusterService, services.organizationService, provider, r.flag.WCName, namespaces...)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return c, nil
+}
+
+// getClusterInOrganization locates the workload cluster when the user passed
+// --organization. It first assumes the conventional organization namespace
+// (org-<name>) so that no cluster-scoped read of the Organization CR is
+// required. Only if the cluster cannot be found there does it fall back to
+// resolving the authoritative namespace from the Organization CR's status,
+// which handles organizations whose namespace does not follow the convention.
+func (r *runner) getClusterInOrganization(ctx context.Context, services serviceSet, provider string) (*cluster.Cluster, error) {
+	assumedNamespace := fmt.Sprintf("org-%s", r.flag.WCOrganization)
+
+	c, err := r.findClusterInNamespace(ctx, services, provider, assumedNamespace)
+	if err == nil {
+		return c, nil
+	}
+	if !IsClusterNotFound(err) {
+		return nil, microerror.Mask(err)
+	}
+
+	// The cluster wasn't found in the conventional namespace. Resolve the
+	// namespace from the Organization CR and, if it differs, retry there.
+	orgNamespace, err := getOrganizationNamespace(ctx, services.organizationService, r.flag.WCOrganization)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if orgNamespace == assumedNamespace {
+		return nil, microerror.Maskf(clusterNotFoundError, "The workload cluster %s could not be found.", r.flag.WCName)
+	}
+
+	c, err = r.findClusterInNamespace(ctx, services, provider, orgNamespace)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	return c, nil
+}
+
+// findClusterInNamespace looks up the workload cluster in the given namespace,
+// additionally searching the "default" namespace when --insecure-namespace is
+// set (for legacy clusters residing outside the organization namespace).
+func (r *runner) findClusterInNamespace(ctx context.Context, services serviceSet, provider, namespace string) (*cluster.Cluster, error) {
+	namespaces := []string{namespace}
+	if r.flag.WCInsecureNamespace {
+		namespaces = append(namespaces, "default")
+	}
+
+	c, err := findCluster(ctx, services.clusterService, services.organizationService, provider, r.flag.WCName, namespaces...)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -146,6 +191,44 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
+	r.printWCKubeconfigResult(contextName, contextExists)
+
+	return nil
+}
+
+// handleWCKubeconfigDirect creates a workload cluster OIDC kubeconfig entirely
+// from flags, without any management cluster access. It is used when the user
+// supplies --api-endpoint together with the OIDC issuer, client ID and CA
+// file (enforced by flag validation).
+func (r *runner) handleWCKubeconfigDirect(ctx context.Context) error {
+	caData, err := os.ReadFile(r.flag.WCOIDCCAFile)
+	if err != nil {
+		return microerror.Maskf(invalidFlagError, "failed to read CA file %q passed via --%s: %s", r.flag.WCOIDCCAFile, flagWCOIDCCAFile, err.Error())
+	}
+
+	clusterServer, err := normalizeAPIEndpoint(r.flag.WCAPIEndpoint)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	authConfig := &structuredAuthIssuer{
+		IssuerURL: r.flag.WCOIDCIssuer,
+		ClientID:  r.flag.WCOIDCClientID,
+	}
+
+	contextName, contextExists, err := r.runOIDCLogin(ctx, r.flag.WCName, clusterServer, caData, authConfig)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.printWCKubeconfigResult(contextName, contextExists)
+
+	return nil
+}
+
+// printWCKubeconfigResult prints the user-facing message describing the newly
+// created workload cluster context.
+func (r *runner) printWCKubeconfigResult(contextName string, contextExists bool) {
 	if r.loginOptions.selfContainedWC {
 		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and stored in '%s'. You can select this context like this:\n\n", contextName, r.flag.SelfContained)
 		_, _ = fmt.Fprintf(r.stdout, "  kubectl cluster-info --kubeconfig %s \n", r.flag.SelfContained)
@@ -160,8 +243,6 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 		_, _ = fmt.Fprintf(r.stdout, "A new kubectl context has been created named '%s' and selected. To switch back to this context later, use this command:\n\n", contextName)
 		_, _ = fmt.Fprintf(r.stdout, "  kubectl config use-context %s\n", contextName)
 	}
-
-	return nil
 }
 
 // used only if both MC and WC are specified on command line
@@ -453,4 +534,24 @@ func controlPlaneEndpoint(cluster *unstructured.Unstructured) (string, int64, er
 func isEKS(c *unstructured.Unstructured) bool {
 	infraKind, _, _ := unstructured.NestedString(c.Object, "spec", "infrastructureRef", "kind")
 	return infraKind == "AWSManagedCluster"
+}
+
+// normalizeAPIEndpoint validates the user-supplied workload cluster API server
+// endpoint and returns it with an https:// scheme prepended when absent. An
+// explicit non-https scheme is rejected: the endpoint carries OIDC bearer
+// tokens, so it must be served over TLS.
+func normalizeAPIEndpoint(endpoint string) (string, error) {
+	if !strings.Contains(endpoint, "://") {
+		endpoint = "https://" + endpoint
+	}
+
+	u, err := url.Parse(endpoint)
+	if err != nil || u.Host == "" {
+		return "", microerror.Maskf(invalidFlagError, "--%s %q is not a valid URL", flagWCAPIEndpoint, endpoint)
+	}
+	if u.Scheme != "https" {
+		return "", microerror.Maskf(invalidFlagError, "--%s must use https, got %q", flagWCAPIEndpoint, u.Scheme)
+	}
+
+	return endpoint, nil
 }
