@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- krew install of the `gs` plugin: releases again publish `.tar.gz` archives (`kubectl-gs-<tag>-<os>-<arch>.tar.gz`) for every platform and the krew manifest references them.
+
 ## [5.7.0] - 2026-07-22
 
 ### Added
@@ -18,11 +22,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - Release binaries now include darwin/amd64, darwin/arm64, windows/amd64, and windows/arm64 alongside the existing linux targets. Windows binaries are named `kubectl-gs-windows-<arch>.exe`.
-- krew manifest extended with `windows/arm64` support.
-
-### Fixed
-
-- krew install of the `gs` plugin. Releases again publish `.tar.gz` archives (`kubectl-gs-<tag>-<os>-<arch>.tar.gz`) for every platform and the krew manifest references them; krew cannot unpack the bare binaries the previous release published.
+- krew manifest updated to reference bare binaries directly instead of tarballs, and extended with `windows/arm64` support.
 - (CAPA): Derive the number of VPC chunks from `--az-usage-limit`. This enables small single-AZ VPC layouts (e.g. a `/24` VPC with a `/25` private subnet and a `/26` public subnet).
 
 ## [5.6.4] - 2026-06-01
