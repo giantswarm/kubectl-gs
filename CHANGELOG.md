@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- krew install of the `gs` plugin: releases again publish `.tar.gz` archives (`kubectl-gs-<tag>-<os>-<arch>.tar.gz`) for every platform and the krew manifest references them.
+
 ## [5.7.0] - 2026-07-22
 
 ### Added
