@@ -45,6 +45,11 @@ func (ep *ErrorPrinter) Format(err error) string {
 		builder.WriteString(ep.formatBody(rows[1]))
 	}
 
+	if h := hint(err); h != "" {
+		builder.WriteString("\n\n")
+		builder.WriteString(h)
+	}
+
 	return builder.String()
 }
 
