@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Commands that fail because you are not logged into a management cluster now print a hint telling you to run `kubectl gs login`, instead of only a raw client error such as `dial tcp 127.0.0.1:8080: connect: connection refused` or `no matches for kind "AppCatalogEntry"`. The hint is added for every command, not just `template cluster`.
+
 ## [5.7.2] - 2026-07-22
 
 ### Fixed

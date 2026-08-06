@@ -169,7 +169,9 @@ func GetLatestVersion(ctx context.Context, ctrlClient client.Client, app, catalo
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to get latest version of https://github.com/giantswarm/%s. Did you log into the management cluster so the catalog %s can be accessed? You can follow the instructions at https://docs.giantswarm.io/getting-started/create-workload-cluster/ to successfully create a workload cluster. Either the KUBECONFIG environment variable or default kubectl context should be set correctly and point to your management cluster, not to a workload cluster. Detailed error: %w", app, catalog, microerror.Mask(err))
+		// Advice about logging into a management cluster is added centrally,
+		// see pkg/errorprinter.
+		return "", fmt.Errorf("failed to get the latest version of https://github.com/giantswarm/%s from the %s catalog: %w", app, catalog, microerror.Mask(err))
 	} else if len(catalogEntryList.Items) != 1 {
 		return "", microerror.Maskf(invalidFlagError, "version not specified for %s and latest release couldn't be uniquely determined in %s catalog", app, catalog)
 	}
