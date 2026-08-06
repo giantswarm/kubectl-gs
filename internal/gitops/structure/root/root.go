@@ -36,6 +36,11 @@ func Initialize() (*creator.CreatorConfig, error) {
 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects: fsObjects,
+
+		// Initializing a repository creates no layer, but it is the point at
+		// which the repository starts recording the structure version it is
+		// built on.
+		WriteMetadata: true,
 	}
 
 	return &creatorConfig, nil

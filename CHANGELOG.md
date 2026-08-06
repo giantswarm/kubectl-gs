@@ -7,6 +7,17 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `gitops`: generated repositories now record which version of the repository structure they were built
+  with, in a `.gitops-metadata.yaml` file at the repository root. `gitops init` creates it and every
+  `gitops add ...` records the layer it generated.
+- `gitops check`: new command reporting the parts of a GitOps repository that were generated with an older
+  repository structure than the current kubectl-gs produces. It exits non-zero when anything is behind, so
+  it can be used as a check in the repository's own CI. Repositories created before this existed are
+  brought in with `gitops check --adopt`.
+  ([#23540](https://github.com/giantswarm/giantswarm/issues/23540))
+
 ### Fixed
 
 - Commands that fail because you are not logged into a management cluster now print a hint telling you to run `kubectl gs login`, instead of only a raw client error such as `dial tcp 127.0.0.1:8080: connect: connection refused` or `no matches for kind "AppCatalogEntry"`. The hint is added for every command, not just `template cluster`.

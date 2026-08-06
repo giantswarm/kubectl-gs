@@ -10,6 +10,7 @@ import (
 	fluxkusmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/flux-kustomization"
 	sigskusmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/sigs-kustomization"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	wctmpl "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/workload-cluster/templates"
 )
@@ -141,6 +142,10 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
+		MetadataLayer: &metadata.Layer{
+			Kind: metadata.LayerWorkloadCluster,
+			Path: wcDir,
+		},
 	}
 
 	return &creatorConfig, nil

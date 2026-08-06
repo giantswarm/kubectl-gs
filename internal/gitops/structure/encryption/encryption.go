@@ -88,6 +88,9 @@ func NewEncryption(config common.StructureConfig) (*creator.CreatorConfig, error
 		},
 	}
 
+	// No MetadataLayer here on purpose: enabling encryption configures a
+	// management or workload cluster that is already recorded, rather than
+	// creating a layer of its own.
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,

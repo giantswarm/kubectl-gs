@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	orgtmpl "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/organization/templates"
 )
@@ -39,6 +40,10 @@ func NewOrganization(config common.StructureConfig) (*creator.CreatorConfig, err
 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects: fsObjects,
+		MetadataLayer: &metadata.Layer{
+			Kind: metadata.LayerOrganization,
+			Path: orgDir,
+		},
 	}
 
 	return &creatorConfig, nil

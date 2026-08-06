@@ -12,6 +12,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/add"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/check"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/initialize"
 )
 
@@ -80,6 +81,22 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var checkCmd *cobra.Command
+	{
+		c := check.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		checkCmd, err = check.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -99,6 +116,7 @@ func New(config Config) (*cobra.Command, error) {
 	f.Init(c)
 
 	c.AddCommand(addCmd)
+	c.AddCommand(checkCmd)
 	c.AddCommand(initCmd)
 
 	return c, nil

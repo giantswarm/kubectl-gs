@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	sigskusmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/sigs-kustomization"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 	apptmpl "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/app/templates"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
@@ -78,6 +79,10 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
+		MetadataLayer: &metadata.Layer{
+			Kind: metadata.LayerApp,
+			Path: appDir,
+		},
 		PreValidators: map[string]func(fs *afero.Afero, path string) error{
 			appDir: func(fs *afero.Afero, path string) error {
 				ok, err := fs.Exists(path)

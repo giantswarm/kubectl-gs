@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 )
 
 // Create creates or prints the file system structure.
@@ -31,14 +33,21 @@ func (c *Creator) Create() error {
 
 // NewCreator returns new creator object
 func NewCreator(config CreatorConfig) *Creator {
+	fs := config.Fs
+	if fs == nil {
+		fs = afero.NewOsFs()
+	}
+
 	return &Creator{
 		dryRun:        config.DryRun,
-		fs:            &afero.Afero{Fs: afero.NewOsFs()},
+		fs:            &afero.Afero{Fs: fs},
 		fsObjects:     config.FsObjects,
+		metadataLayer: config.MetadataLayer,
 		path:          config.Path,
 		postModifiers: config.PostModifiers,
 		preValidators: config.PreValidators,
 		stdout:        config.Stdout,
+		writeMetadata: config.WriteMetadata || config.MetadataLayer != nil,
 	}
 }
 
@@ -53,6 +62,24 @@ func NewFsObject(path string, data []byte, perm os.FileMode) *FsObject {
 	fo.ensurePermissions()
 
 	return fo
+}
+
+// repositoryMetadata returns the repository metadata as it looks after this
+// run, by taking what the repository already holds and recording the layer
+// this run generates on top of it.
+func (c *Creator) repositoryMetadata() (*metadata.RepositoryMetadata, error) {
+	md, err := metadata.LoadOrNew(c.fs, c.path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	md.Stamp()
+
+	if c.metadataLayer != nil {
+		md.Upsert(*c.metadataLayer)
+	}
+
+	return md, nil
 }
 
 // createDirectory creates a new directory, if not already exists.
@@ -195,6 +222,26 @@ func (c *Creator) print() {
 		_, _ = fmt.Fprintf(c.stdout, "%s/%s\n", c.path, n)
 		_, _ = fmt.Fprintln(c.stdout, string(edited))
 	}
+
+	if !c.writeMetadata {
+		return
+	}
+
+	md, err := c.repositoryMetadata()
+	if err != nil {
+		_, _ = fmt.Fprintln(c.stdout, err)
+		return
+	}
+
+	body, err := metadata.Render(md)
+	if err != nil {
+		_, _ = fmt.Fprintln(c.stdout, err)
+		return
+	}
+
+	_, _ = fmt.Fprintf(c.stdout, "\n## METADATA ##\n")
+	_, _ = fmt.Fprintf(c.stdout, "%s\n", metadata.FilePath(c.path))
+	_, _ = fmt.Fprintf(c.stdout, "%s\n", string(bytes.TrimSpace(body)))
 }
 
 // write writes the creator's file system objects into the disk.
@@ -251,6 +298,20 @@ func (c *Creator) write() error {
 		}
 
 		err = c.createFileWithOverride(file, edited, stat.Mode())
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	if c.writeMetadata {
+		md, err := c.repositoryMetadata()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		// Unlike the generated structure, the metadata file is ours to own,
+		// so it is rewritten rather than left alone when it already exists.
+		err = metadata.Save(c.fs, c.path, md)
 		if err != nil {
 			return microerror.Mask(err)
 		}
