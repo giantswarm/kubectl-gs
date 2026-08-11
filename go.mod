@@ -259,7 +259,7 @@ replace (
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.3
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.44.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.54.0
-	golang.org/x/text => golang.org/x/text v0.40.0
+	golang.org/x/text => golang.org/x/text v0.41.0
 )
 
 replace github.com/yuin/goldmark v1.4.13 => github.com/yuin/goldmark v1.8.2
