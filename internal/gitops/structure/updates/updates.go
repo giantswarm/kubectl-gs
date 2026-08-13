@@ -82,6 +82,8 @@ func NewAutomaticUpdate(config common.StructureConfig) (*creator.CreatorConfig, 
 		},
 	}
 
+	// No MetadataLayer here on purpose: automatic updates configure an app
+	// that is already recorded, rather than creating a layer of their own.
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,

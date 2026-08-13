@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 	base "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/base/templates"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
@@ -28,6 +29,10 @@ func NewClusterBase(config common.StructureConfig) (*creator.CreatorConfig, erro
 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects: fsObjects,
+		MetadataLayer: &metadata.Layer{
+			Kind: metadata.LayerClusterBase,
+			Path: clusterBaseDir,
+		},
 	}
 
 	return &creatorConfig, nil

@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	sopsmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/sops"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	mctmpl "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/management-cluster/templates"
 )
@@ -57,6 +58,10 @@ func NewManagementCluster(config common.StructureConfig) (*creator.CreatorConfig
 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects: fsObjects,
+		MetadataLayer: &metadata.Layer{
+			Kind: metadata.LayerManagementCluster,
+			Path: mcDir,
+		},
 	}
 
 	if !reflect.DeepEqual(config.EncryptionKeyPair, encryption.KeyPair{}) {

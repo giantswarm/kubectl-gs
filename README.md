@@ -20,7 +20,7 @@ Check the [installation docs](https://docs.giantswarm.io/vintage/use-the-api/kub
   - Node pools
   - App catalogs
   - Apps
-- **Gitops repository management**: The `gitops` command family allows to create and modify resources in your GitOps repo clone.
+- **Gitops repository management**: The `gitops` command family allows to create and modify resources in your GitOps repo clone, and to check whether it is still up to date with the recommended repository structure.
 - **Resource display**: The `get` commands allow for retrieving a list of resources, or details for a single one.
 
 ## Documentation
