@@ -201,7 +201,7 @@ func (r *runner) handleWCKubeconfig(ctx context.Context) error {
 // supplies --api-endpoint together with the OIDC issuer, client ID and CA
 // file (enforced by flag validation).
 func (r *runner) handleWCKubeconfigDirect(ctx context.Context) error {
-	caData, err := os.ReadFile(r.flag.WCOIDCCAFile)
+	caData, err := readCAFile(r.flag.WCOIDCCAFile)
 	if err != nil {
 		return microerror.Maskf(invalidFlagError, "failed to read CA file %q passed via --%s: %s", r.flag.WCOIDCCAFile, flagWCOIDCCAFile, err.Error())
 	}
