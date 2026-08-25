@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"context"
 	goflag "flag"
+	"fmt"
 	"strings"
 	"testing"
 
+	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/micrologger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	//nolint:staticcheck
@@ -45,6 +49,15 @@ func Test_run(t *testing.T) {
 				},
 			},
 		},
+	}
+
+	// Catalog entries for the release-<provider> charts which are published
+	// for release v35.0.0. Release versions without such an entry, e.g. a
+	// hand-crafted Release CR used for testing, must fall back to the
+	// cluster-<provider> chart.
+	releaseCatalogEntries := []runtime.Object{
+		newAppCatalogEntry("cluster", "release-aws", "35.0.0"),
+		newAppCatalogEntry("cluster", "release-aks", "35.0.0"),
 	}
 
 	testCases := []struct {
@@ -444,6 +457,73 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capa_9.golden",
 		},
 		{
+			name: "case 13: template cluster capa with a release version which has no release chart",
+			flags: &flags.Flag{
+				Name:                     "test13",
+				Provider:                 "capa",
+				Description:              "cluster using a hand-crafted release for testing",
+				Release:                  "35.0.0-andreas",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+				},
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					AWSClusterRoleIdentityName: "default",
+					NetworkVPCCIDR:             "10.123.0.0/16",
+					PublicSubnetMask:           20,
+					PrivateSubnetMask:          18,
+					NetworkAZUsageLimit:        3,
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa_11.golden",
+		},
+		{
+			name: "case 14: template cluster capa with release version and explicit cluster chart version",
+			flags: &flags.Flag{
+				Name:                     "test14",
+				Provider:                 "capa",
+				Description:              "cluster testing a cluster-aws dev build",
+				Release:                  "35.0.0",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+					ClusterVersion: "9.0.1-dev.private-karpenter.2026-08-20.16-33-07.h62652f9",
+				},
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					AWSClusterRoleIdentityName: "default",
+					NetworkVPCCIDR:             "10.123.0.0/16",
+					PublicSubnetMask:           20,
+					PrivateSubnetMask:          18,
+					NetworkAZUsageLimit:        3,
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa_12.golden",
+		},
+		{
 			name: "case 11: template cluster capa with small VPC for single AZ",
 			flags: &flags.Flag{
 				Name:                     "test11",
@@ -537,7 +617,7 @@ func Test_run(t *testing.T) {
 				stdout: out,
 			}
 
-			k8sClient := kubeclient.FakeK8sClient()
+			k8sClient := kubeclient.FakeK8sClient(releaseCatalogEntries...)
 			if tc.flags.Provider == "capa" {
 				err = k8sClient.CtrlClient().Create(ctx, capaManagementCluster.DeepCopy())
 				if err != nil {
@@ -575,6 +655,105 @@ func Test_run(t *testing.T) {
 			diff := cmp.Diff(string(expectedResult), out.String())
 			if diff != "" {
 				t.Fatalf("no difference from golden file %s expected, got:\n %s", tc.expectedGoldenFile, diff)
+			}
+		})
+	}
+}
+
+func newAppCatalogEntry(catalog, app, version string) *applicationv1alpha1.AppCatalogEntry {
+	return &applicationv1alpha1.AppCatalogEntry{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-%s-%s", catalog, app, version),
+			Namespace: "giantswarm",
+			Labels: map[string]string{
+				"app.kubernetes.io/name":            app,
+				"application.giantswarm.io/catalog": catalog,
+			},
+		},
+		Spec: applicationv1alpha1.AppCatalogEntrySpec{
+			AppName: app,
+			Version: version,
+		},
+	}
+}
+
+func Test_useReleaseChart(t *testing.T) {
+	testCases := []struct {
+		name           string
+		provider       string
+		release        string
+		clusterVersion string
+		catalogEntries []runtime.Object
+		expected       bool
+		expectedWarn   string
+	}{
+		{
+			name:           "case 0: legacy cluster chart version",
+			provider:       "capa",
+			release:        "25.0.0",
+			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
+			expected:       false,
+		},
+		{
+			name:           "case 1: published release version",
+			provider:       "capa",
+			release:        "35.0.0",
+			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
+			expected:       true,
+		},
+		{
+			name:           "case 2: release version without release chart falls back",
+			provider:       "capa",
+			release:        "35.0.0-andreas",
+			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
+			expected:       false,
+			expectedWarn:   "no release-aws chart with version 35.0.0-andreas found",
+		},
+		{
+			name:           "case 3: explicit cluster chart version wins",
+			provider:       "capa",
+			release:        "35.0.0",
+			clusterVersion: "9.0.1-dev.private-karpenter.2026-08-20.16-33-07.h62652f9",
+			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
+			expected:       false,
+		},
+		{
+			name:           "case 4: release chart of another provider does not count",
+			provider:       "capz",
+			release:        "35.0.0",
+			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
+			expected:       false,
+			expectedWarn:   "no release-azure chart with version 35.0.0 found",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			stderr := new(bytes.Buffer)
+
+			r := &runner{
+				flag:   &flags.Flag{Provider: tc.provider},
+				stderr: stderr,
+			}
+			config := common.ClusterConfig{
+				ReleaseVersion: tc.release,
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+					ClusterVersion: tc.clusterVersion,
+				},
+			}
+
+			result := r.useReleaseChart(ctx, kubeclient.FakeK8sClient(tc.catalogEntries...), config)
+			if result != tc.expected {
+				t.Fatalf("useReleaseChart() = %v, want %v", result, tc.expected)
+			}
+
+			if tc.expectedWarn == "" && stderr.Len() > 0 {
+				t.Fatalf("unexpected warning: %s", stderr.String())
+			}
+			if tc.expectedWarn != "" && !strings.Contains(stderr.String(), tc.expectedWarn) {
+				t.Fatalf("expected warning containing %q, got %q", tc.expectedWarn, stderr.String())
 			}
 		})
 	}

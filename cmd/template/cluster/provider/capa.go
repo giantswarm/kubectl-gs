@@ -71,7 +71,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 
 		// For release versions, the release version is baked into the chart,
 		// so we don't need to include it in the user config.
-		if common.IsReleaseVersion(config.ReleaseVersion) {
+		if config.UseReleaseChart {
 			flagValues.Global.Release = nil
 		}
 
@@ -287,7 +287,7 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 		// These charts have the release version baked into values.yaml.
 		// For older chart versions, use cluster-<provider> and let the webhook handle version.
 		chartName := ClusterAWSRepoName
-		if common.IsReleaseVersion(config.ReleaseVersion) {
+		if config.UseReleaseChart {
 			chartName = ReleaseAWSRepoName
 		}
 
@@ -301,9 +301,12 @@ func templateClusterCAPA(ctx context.Context, k8sClient k8sclient.Interface, out
 			ExtraLabels:             map[string]string{},
 		}
 		// Set version for release charts where the chart version equals the release version.
-		// For cluster-<provider> charts, the webhook handles version mutation.
-		if common.IsReleaseVersion(config.ReleaseVersion) {
+		// For cluster-<provider> charts, only an explicitly requested version is set,
+		// otherwise the webhook handles version mutation.
+		if config.UseReleaseChart {
 			clusterAppConfig.Version = config.ReleaseVersion
+		} else {
+			clusterAppConfig.Version = config.App.ClusterVersion
 		}
 		for k, v := range config.Labels {
 			clusterAppConfig.ExtraLabels[k] = v

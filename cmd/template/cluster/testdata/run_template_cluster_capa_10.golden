@@ -75,4 +75,4 @@ spec:
     configMap:
       name: test11-userconfig
       namespace: org-test
-  version: ""
+  version: 1.0.0

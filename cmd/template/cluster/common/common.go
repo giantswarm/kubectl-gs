@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	semver "github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
@@ -142,6 +143,10 @@ type ClusterConfig struct {
 	BastionReplicas          int
 	ControlPlaneInstanceType string
 
+	// UseReleaseChart tells whether the cluster App CR should point to the
+	// release-<provider> chart instead of the cluster-<provider> chart.
+	UseReleaseChart bool
+
 	App           AppConfig
 	AWS           AWSConfig
 	Azure         AzureConfig
@@ -212,4 +217,33 @@ func IsReleaseVersion(version string) bool {
 	}
 
 	return v.Major() >= ReleaseVersionMajorThreshold
+}
+
+// ReleaseChartAvailable checks whether the given version of a
+// release-<provider> chart is available in the catalog.
+//
+// Release CRs created by hand for testing purposes (e.g. `35.0.0-andreas`,
+// copied from a released one) have no matching release-<provider> chart, so
+// pulling that chart would fail. In such cases the cluster-<provider> chart
+// has to be used instead, which resolves the Release CR at runtime.
+func ReleaseChartAvailable(ctx context.Context, ctrlClient client.Client, app, catalog, version string) (bool, error) {
+	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
+	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(map[string]string{
+			"app.kubernetes.io/name":            app,
+			"application.giantswarm.io/catalog": catalog,
+		}),
+		Namespace: "giantswarm",
+	})
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	for _, entry := range catalogEntryList.Items {
+		if strings.TrimPrefix(entry.Spec.Version, "v") == strings.TrimPrefix(version, "v") {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
