@@ -84,4 +84,4 @@ spec:
     configMap:
       name: test1-userconfig
       namespace: org-test
-  version: ""
+  version: 1.0.0

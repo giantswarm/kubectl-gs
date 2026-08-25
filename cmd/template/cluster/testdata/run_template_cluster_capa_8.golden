@@ -76,4 +76,4 @@ spec:
     configMap:
       name: test8-userconfig
       namespace: org-test
-  version: ""
+  version: 1.0.0

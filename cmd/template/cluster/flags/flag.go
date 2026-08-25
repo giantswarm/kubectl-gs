@@ -226,7 +226,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 
 	// App-based clusters only.
 	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
-	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of cluster to be created.")
+	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of the cluster-<provider> app to be created. Setting this uses the cluster-<provider> chart instead of the release-<provider> chart.")
 	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app.")
 	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created.")
 

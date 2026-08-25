@@ -3,6 +3,7 @@ package cluster
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"sort"
@@ -73,6 +74,8 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		return microerror.Mask(err)
 	}
 
+	config.UseReleaseChart = r.useReleaseChart(ctx, client, config)
+
 	switch r.flag.Provider {
 	case key.ProviderCAPA:
 		err = provider.WriteCAPATemplate(ctx, client, output, config)
@@ -109,6 +112,79 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 	}
 
 	return nil
+}
+
+// useReleaseChart tells whether the cluster App CR should point to the
+// release-<provider> chart (the flow used since release v35) or to the
+// cluster-<provider> chart.
+//
+// The release-<provider> chart has the release version baked in, so it only
+// works for releases which are actually published as a chart. Developers
+// commonly create a Release CR by hand to test a change (e.g. a copy of
+// `aws-35.0.0` named `aws-35.0.0-andreas`). For those, no release-<provider>
+// chart exists and we have to fall back to the cluster-<provider> chart, which
+// resolves the Release CR at runtime.
+func (r *runner) useReleaseChart(ctx context.Context, client k8sclient.Interface, config common.ClusterConfig) bool {
+	if !common.IsReleaseVersion(config.ReleaseVersion) {
+		return false
+	}
+
+	clusterChart, releaseChart := providerChartNames(r.flag.Provider)
+	if releaseChart == "" {
+		return false
+	}
+
+	// An explicitly requested cluster-<provider> chart version is a clear
+	// opt-in to the cluster-<provider> chart, as used for testing.
+	if config.App.ClusterVersion != "" {
+		return false
+	}
+
+	available, err := common.ReleaseChartAvailable(ctx, client.CtrlClient(), releaseChart, config.App.ClusterCatalog, config.ReleaseVersion)
+	if err != nil {
+		// We cannot tell, so we stick to the default flow for releases.
+		r.warnf("Warning: could not check whether the %s chart exists in the %s catalog: %s\n", releaseChart, config.App.ClusterCatalog, err)
+		return true
+	}
+
+	if !available {
+		r.warnf(
+			"Warning: no %s chart with version %s found in the %s catalog, using the %s chart instead. Make sure the Release CR for %s exists in the management cluster.\n",
+			releaseChart, config.ReleaseVersion, config.App.ClusterCatalog, clusterChart, config.ReleaseVersion,
+		)
+		return false
+	}
+
+	return true
+}
+
+func (r *runner) warnf(format string, a ...interface{}) {
+	if r.stderr == nil {
+		return
+	}
+
+	_, _ = fmt.Fprintf(r.stderr, format, a...)
+}
+
+// providerChartNames returns the names of the cluster-<provider> and
+// release-<provider> charts for the given provider.
+func providerChartNames(providerName string) (clusterChart string, releaseChart string) {
+	switch providerName {
+	case key.ProviderCAPA:
+		return provider.ClusterAWSRepoName, provider.ReleaseAWSRepoName
+	case key.ProviderCAPZ:
+		return provider.ClusterAzureRepoName, provider.ReleaseAzureRepoName
+	case key.ProviderAKS:
+		return provider.ClusterAKSRepoName, provider.ReleaseAKSRepoName
+	case key.ProviderEKS:
+		return provider.ClusterEKSRepoName, provider.ReleaseEKSRepoName
+	case key.ProviderVSphere:
+		return provider.ClusterVsphereRepoName, provider.ReleaseVsphereRepoName
+	case key.ProviderCloudDirector:
+		return provider.ClusterCloudDirectorRepoName, provider.ReleaseCloudDirectorRepoName
+	default:
+		return "", ""
+	}
 }
 
 func (r *runner) getClusterConfig() (common.ClusterConfig, error) {

@@ -20,6 +20,15 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `template cluster`: releases without a published `release-<provider>` chart, such as a hand-crafted
+  Release CR used for testing (e.g. `35.0.0-andreas`), no longer produce an App CR pointing to a chart
+  which does not exist. The `cluster-<provider>` chart is used instead, which resolves the Release CR in
+  the management cluster.
+  ([#4347](https://github.com/giantswarm/roadmap/issues/4347))
+- `template cluster`: `--cluster-version` is no longer ignored for CAPA, CAPZ and AKS. Setting it templates
+  the given `cluster-<provider>` app version instead of the `release-<provider>` chart, which allows testing
+  a provider chart build together with a release.
+
 - Commands that fail because you are not logged into a management cluster now print a hint telling you to run `kubectl gs login`, instead of only a raw client error such as `dial tcp 127.0.0.1:8080: connect: connection refused` or `no matches for kind "AppCatalogEntry"`. The hint is added for every command, not just `template cluster`.
 
 ## [5.7.2] - 2026-07-22
