@@ -2,6 +2,8 @@ package login
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -165,5 +167,65 @@ func TestPickIssuerInteractiveMenuOutput(t *testing.T) {
 		if !strings.Contains(got, s) {
 			t.Errorf("menu output missing %q; got:\n%s", s, got)
 		}
+	}
+}
+
+func TestReadCAFile(t *testing.T) {
+	dir := t.TempDir()
+
+	caPath := filepath.Join(dir, "ca.crt")
+	if err := os.WriteFile(caPath, []byte("cert-data"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name     string
+		path     string
+		want     string
+		wantErr  bool
+		errMatch string
+	}{
+		{
+			name: "reads a regular file",
+			path: caPath,
+			want: "cert-data",
+		},
+		{
+			name: "normalises traversal segments",
+			path: filepath.Join(dir, "nested", "..", "ca.crt"),
+			want: "cert-data",
+		},
+		{
+			name:     "rejects a directory",
+			path:     dir,
+			wantErr:  true,
+			errMatch: "not a regular file",
+		},
+		{
+			name:    "reports a missing file",
+			path:    filepath.Join(dir, "does-not-exist.crt"),
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := readCAFile(tc.path)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected an error, got none")
+				}
+				if tc.errMatch != "" && !strings.Contains(err.Error(), tc.errMatch) {
+					t.Fatalf("expected error containing %q, got %q", tc.errMatch, err.Error())
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if string(got) != tc.want {
+				t.Fatalf("expected %q, got %q", tc.want, string(got))
+			}
+		})
 	}
 }

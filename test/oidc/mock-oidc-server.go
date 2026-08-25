@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +16,13 @@ import (
 	"gopkg.in/square/go-jose.v2"
 
 	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
+)
+
+// The local callback server the login command starts listens on this address;
+// the mock identity provider redirects the browser there to complete the flow.
+const (
+	callbackHost = "localhost:8080"
+	callbackPath = "/oauth/callback"
 )
 
 type MockOidcServerConfig struct {
@@ -55,7 +63,21 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 	hf := func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/auth":
-			http.Redirect(w, r, "http://localhost:8080/oauth/callback?"+r.URL.RawQuery+"&code=codename", http.StatusFound)
+			// Stand in for the identity provider bouncing the browser back to
+			// the local callback server. The redirect target is assembled from
+			// constants rather than from the incoming request, and only the
+			// parameters the callback handler actually reads are carried over,
+			// so a request to /auth cannot steer the redirect anywhere else.
+			callback := url.URL{
+				Scheme: "http",
+				Host:   callbackHost,
+				Path:   callbackPath,
+				RawQuery: url.Values{
+					"state": {r.URL.Query().Get("state")},
+					"code":  {"codename"},
+				}.Encode(),
+			}
+			http.Redirect(w, r, callback.String(), http.StatusFound)
 		case "/token":
 			if s.tokenRecoverableFailures > 0 {
 				w.WriteHeader(http.StatusUnauthorized)
