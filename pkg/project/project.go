@@ -3,7 +3,7 @@ package project
 var (
 	name    = "kubectl-gs"
 	source  = "https://github.com/giantswarm/kubectl-gs"
-	version = "5.7.3-dev"
+	version = "5.8.0"
 )
 
 func Name() string {
