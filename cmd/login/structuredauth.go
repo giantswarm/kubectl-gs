@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -259,12 +260,39 @@ func parseAuthenticationConfig(kcp *unstructured.Unstructured) ([]structuredAuth
 	return nil, nil
 }
 
+// readCAFile reads a PEM CA bundle from a path supplied by the user via the
+// --api-ca-file flag.
+//
+// The path is normalised with filepath.Clean before it is opened, so traversal
+// segments cannot make the file we actually read differ from the path we report
+// back in error messages. The target is additionally required to be a regular
+// file: without that check, pointing the flag at a directory, a FIFO or a device
+// node either fails with an opaque syscall error or blocks the login forever.
+func readCAFile(caFilePath string) ([]byte, error) {
+	cleanPath := filepath.Clean(caFilePath)
+
+	info, err := os.Stat(cleanPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if !info.Mode().IsRegular() {
+		return nil, microerror.Maskf(invalidFlagError, "not a regular file")
+	}
+
+	caData, err := os.ReadFile(cleanPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return caData, nil
+}
+
 // fetchClusterCA retrieves the CA certificate for the workload cluster.
 // If caFilePath is provided, it reads the CA from that file instead of
 // fetching from the management cluster ConfigMap.
 func fetchClusterCA(ctx context.Context, k8sClient k8sclient.Interface, clusterName, namespace, caFilePath string) ([]byte, error) {
 	if caFilePath != "" {
-		caData, err := os.ReadFile(caFilePath)
+		caData, err := readCAFile(caFilePath)
 		if err != nil {
 			return nil, microerror.Maskf(structuredAuthCANotFoundError, "failed to read CA file %q: %s", caFilePath, err.Error())
 		}
