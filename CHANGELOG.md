@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.8.0] - 2026-08-25
+
 ### Added
 
 - `gitops`: generated repositories now record which version of the repository structure they were built
@@ -1844,7 +1846,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...HEAD
+[5.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...v5.8.0
 [5.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.1...v5.7.2
 [5.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.0...v5.7.1
 [5.7.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.6.4...v5.7.0
