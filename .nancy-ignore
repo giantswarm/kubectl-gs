@@ -3,3 +3,6 @@ CVE-2026-41579 until=2026-09-30 # github.com/opencontainers/runc symlink followi
 CVE-2026-63209 until=2026-09-04 # github.com/klauspost/compress@v1.18.6
 CVE-2026-56864 until=2026-09-27 # golang.org/x/mod@v0.38.0
 CVE-2026-56865 until=2026-09-27 # golang.org/x/mod@v0.38.0
+CVE-2026-81870 until=2026-10-03 # go.opentelemetry.io/otel/sdk@v1.44.0
+CVE-2026-84303 until=2026-10-03 # google.golang.org/grpc@v1.82.1
+CVE-2026-84304 until=2026-10-03 # google.golang.org/grpc@v1.82.1
