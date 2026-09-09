@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- Usage telemetry: the version is also sent as `TelemetryDeck.AppInfo.version`, the parameter the TelemetryDeck dashboard's standard "App Versions" insight reads (it was only in the payload key `appVersion`, so that chart stayed empty). telemetrydeck-go v0.2.0.
+
 ## [5.8.0] - 2026-08-25
 
 ### Added

@@ -85,7 +85,11 @@ func New(config Config) (*cobra.Command, error) {
 				return
 			}
 
-			tdClient, err := telemetrydeck.NewClient(telemetrydeckAppID)
+			// WithAppVersion sends the version as TelemetryDeck.AppInfo.version,
+			// the parameter the dashboard's standard "App Versions" insight
+			// reads; the payload's appVersion below is what the usage reports
+			// query.
+			tdClient, err := telemetrydeck.NewClient(telemetrydeckAppID, telemetrydeck.WithAppVersion(project.Version()))
 			if err != nil {
 				log.Printf("error creating telemetrydeck client: %s", err)
 			} else {
