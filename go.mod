@@ -228,7 +228,7 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
@@ -258,7 +258,7 @@ replace (
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.3
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.44.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.57.0
-	golang.org/x/text => golang.org/x/text v0.41.0
+	golang.org/x/text => golang.org/x/text v0.42.0
 )
 
 replace github.com/yuin/goldmark v1.4.13 => github.com/yuin/goldmark v1.8.2
