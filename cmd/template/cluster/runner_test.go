@@ -597,6 +597,43 @@ func Test_run(t *testing.T) {
 				return err != nil && strings.Contains(err.Error(), "too small to host 3 availability zones")
 			},
 		},
+		{
+			name: "case 13: template cluster capa with a non-default service priority",
+			flags: &flags.Flag{
+				Name:                     "test13",
+				Provider:                 "capa",
+				Description:              "just a test cluster",
+				Release:                  "25.0.0",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				ServicePriority:          "medium",
+				App: common.AppConfig{
+					ClusterVersion:     "1.0.0",
+					ClusterCatalog:     "the-catalog",
+					DefaultAppsCatalog: "the-default-catalog",
+					DefaultAppsVersion: "2.0.0",
+				},
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+						CustomNodeLabels: []string{"label=value"},
+					},
+					AWSClusterRoleIdentityName: "default",
+					NetworkVPCCIDR:             "10.123.0.0/16",
+					PublicSubnetMask:           20,
+					PrivateSubnetMask:          18,
+					NetworkAZUsageLimit:        3,
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa_service_priority.golden",
+		},
 	}
 
 	for _, tc := range testCases {

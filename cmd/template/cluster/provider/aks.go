@@ -146,6 +146,7 @@ func BuildAKSClusterConfig(config common.ClusterConfig) aks.ClusterConfig {
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+				ServicePriority: config.ServicePriority,
 			},
 			ControlPlane: &aks.ControlPlane{
 				SKU: &aks.SKU{

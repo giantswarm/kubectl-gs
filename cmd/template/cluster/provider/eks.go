@@ -133,6 +133,7 @@ func BuildEKSClusterConfig(config common.ClusterConfig) eks.ClusterConfig {
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+				ServicePriority: config.ServicePriority,
 			},
 			Release: &eks.Release{
 				Version: config.ReleaseVersion,

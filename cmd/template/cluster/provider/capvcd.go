@@ -163,6 +163,7 @@ func BuildCapvcdClusterConfig(config common.ClusterConfig) capvcd.ClusterConfig 
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+				ServicePriority: config.ServicePriority,
 			},
 			NodePools: map[string]*capvcd.NodePool{
 				"worker": {
