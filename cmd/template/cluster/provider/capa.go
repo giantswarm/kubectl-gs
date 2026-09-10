@@ -350,6 +350,7 @@ func BuildCapaClusterConfig(config common.ClusterConfig) capa.ClusterConfig {
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+				ServicePriority: config.ServicePriority,
 			},
 			NodePools: &map[string]capa.MachinePool{
 				config.AWS.MachinePool.Name: {

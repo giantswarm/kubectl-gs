@@ -182,6 +182,7 @@ func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+				ServicePriority: config.ServicePriority,
 			},
 			NodePools: map[string]*capv.NodePool{
 				"worker": getNodePool(getMachineTemplate(&config.VSphere.Worker, &config), config.VSphere.Worker.Replicas),

@@ -61,6 +61,7 @@ type Metadata struct {
 	Name            string            `json:"name,omitempty"`
 	Organization    string            `json:"organization,omitempty"`
 	PreventDeletion bool              `json:"preventDeletion,omitempty"`
+	ServicePriority string            `json:"servicePriority,omitempty"`
 }
 
 type NodePool struct {

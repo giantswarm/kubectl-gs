@@ -9,6 +9,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
+  but its value never reached the rendered manifests, because its only consumers were the vintage
+  AWS/Azure providers removed in v5.0.0. It is now rendered as `global.metadata.servicePriority`
+  for every provider. Clusters templated without the flag are unaffected, since the flag default
+  and the chart default are both `highest`.
+
 - Usage telemetry: the version is also sent as `TelemetryDeck.AppInfo.version`, the parameter the TelemetryDeck dashboard's standard "App Versions" insight reads (it was only in the payload key `appVersion`, so that chart stayed empty). telemetrydeck-go v0.2.0.
 
 ## [5.8.0] - 2026-08-25

@@ -18,6 +18,7 @@ type Metadata struct {
 	Labels          map[string]string `json:"labels,omitempty"`
 	Organization    string            `json:"organization,omitempty"`
 	PreventDeletion bool              `json:"preventDeletion,omitempty"`
+	ServicePriority string            `json:"servicePriority,omitempty"`
 }
 
 type ControlPlane struct {

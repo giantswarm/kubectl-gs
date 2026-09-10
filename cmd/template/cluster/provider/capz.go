@@ -145,6 +145,7 @@ func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
 				Labels:          config.Labels,
 				Organization:    config.Organization,
 				PreventDeletion: config.PreventDeletion,
+				ServicePriority: config.ServicePriority,
 			},
 			ProviderSpecific: providerSpecific,
 			Connectivity: &capz.Connectivity{
