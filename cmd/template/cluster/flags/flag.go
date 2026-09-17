@@ -50,10 +50,8 @@ const (
 	flagAzureClusterIdentityNamespace = "azure-cluster-identity-namespace"
 
 	// App-based clusters only.
-	flagClusterCatalog     = "cluster-catalog"
-	flagClusterVersion     = "cluster-version"
-	flagDefaultAppsCatalog = "default-apps-catalog"
-	flagDefaultAppsVersion = "default-apps-version"
+	flagClusterCatalog = "cluster-catalog"
+	flagClusterVersion = "cluster-version"
 
 	// VSphere only.
 	flagVSphereControlPlaneIP          = "vsphere-control-plane-ip"
@@ -227,8 +225,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	// App-based clusters only.
 	cmd.Flags().StringVar(&f.App.ClusterCatalog, flagClusterCatalog, "cluster", "Catalog for cluster app.")
 	cmd.Flags().StringVar(&f.App.ClusterVersion, flagClusterVersion, "", "Version of the cluster-<provider> app to be created. Setting this uses the cluster-<provider> chart instead of the release-<provider> chart.")
-	cmd.Flags().StringVar(&f.App.DefaultAppsCatalog, flagDefaultAppsCatalog, "cluster", "Catalog for cluster default apps app.")
-	cmd.Flags().StringVar(&f.App.DefaultAppsVersion, flagDefaultAppsVersion, "", "Version of default apps to be created.")
 
 	_ = cmd.Flags().MarkHidden(flagRegion)
 	_ = cmd.Flags().MarkHidden(flagAWSClusterRoleIdentityName)
@@ -256,8 +252,6 @@ func (f *Flag) Init(cmd *cobra.Command) {
 
 	_ = cmd.Flags().MarkHidden(flagClusterCatalog)
 	_ = cmd.Flags().MarkHidden(flagClusterVersion)
-	_ = cmd.Flags().MarkHidden(flagDefaultAppsCatalog)
-	_ = cmd.Flags().MarkHidden(flagDefaultAppsVersion)
 
 	// Common.
 	cmd.Flags().StringSliceVar(&f.ControlPlaneAZ, flagControlPlaneAZ, nil, "Availability zone(s) to use by control plane nodes. Azure only supports one.")

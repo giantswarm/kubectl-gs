@@ -21,11 +21,6 @@ type Metadata struct {
 	ServicePriority string            `json:"servicePriority,omitempty"`
 }
 
-type DefaultAppsConfig struct {
-	ClusterName  string `json:"clusterName,omitempty"`
-	Organization string `json:"organization,omitempty"`
-}
-
 type Connectivity struct {
 	BaseDomain string   `json:"baseDomain,omitempty"`
 	Network    *Network `json:"network,omitempty"`

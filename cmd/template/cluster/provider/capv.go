@@ -2,11 +2,9 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"text/template"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -21,9 +19,8 @@ import (
 )
 
 const (
-	DefaultAppsVsphereRepoName = "default-apps-vsphere"
-	ClusterVsphereRepoName     = "cluster-vsphere"
-	ReleaseVsphereRepoName     = "release-vsphere"
+	ClusterVsphereRepoName = "cluster-vsphere"
+	ReleaseVsphereRepoName = "release-vsphere"
 )
 
 func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
@@ -36,25 +33,7 @@ func WriteVSphereTemplate(ctx context.Context, client k8sclient.Interface, outpu
 		}
 	}
 
-	err := templateClusterVSphere(output, config, appVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	minUnifiedClusterVSphereVersion := semver.New(0, 61, 0, "", "")
-	desiredClusterVSphereVersion, err := semver.StrictNewVersion(appVersion)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if desiredClusterVSphereVersion.LessThan(minUnifiedClusterVSphereVersion) {
-		err = templateDefaultAppsVsphere(ctx, client, output, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	return nil
+	return templateClusterVSphere(output, config, appVersion)
 }
 
 func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVersion string) error {
@@ -229,79 +208,4 @@ func getNodePool(machineTemplate *capv.MachineTemplate, replicas int) *capv.Node
 		ResourcePool: machineTemplate.ResourcePool,
 		Template:     machineTemplate.Template,
 	}
-}
-
-func templateDefaultAppsVsphere(ctx context.Context, k8sClient k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
-	appName := fmt.Sprintf("%s-default-apps", config.Name)
-	configMapName := common.UserConfigMapName(appName)
-
-	var configMapYAML []byte
-	{
-		flagValues := capv.DefaultAppsConfig{
-			ClusterName:  config.Name,
-			Organization: config.Organization,
-		}
-
-		configData, err := capv.GenerateDefaultAppsValues(flagValues)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap, err := templateapp.NewConfigMap(templateapp.UserConfig{
-			Name:      configMapName,
-			Namespace: common.OrganizationNamespace(config.Organization),
-			Data:      configData,
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		userConfigMap.Labels = map[string]string{}
-		userConfigMap.Labels[label.Cluster] = config.Name
-
-		configMapYAML, err = yaml.Marshal(userConfigMap)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var appYAML []byte
-	{
-		appVersion := config.App.DefaultAppsVersion
-		if appVersion == "" {
-			var err error
-			appVersion, err = common.GetLatestVersion(ctx, k8sClient.CtrlClient(), DefaultAppsVsphereRepoName, config.App.DefaultAppsCatalog)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var err error
-		appYAML, err = templateapp.NewAppCR(templateapp.Config{
-			AppName:                 appName,
-			Cluster:                 config.Name,
-			Catalog:                 config.App.DefaultAppsCatalog,
-			DefaultingEnabled:       false,
-			InCluster:               true,
-			Name:                    DefaultAppsVsphereRepoName,
-			Namespace:               common.OrganizationNamespace(config.Organization),
-			Version:                 appVersion,
-			UserConfigConfigMapName: configMapName,
-			UseClusterValuesConfig:  true,
-			ExtraLabels: map[string]string{
-				label.ManagedBy: "cluster",
-			},
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	t := template.Must(template.New("appCR").Parse(key.AppCRTemplate))
-
-	err := t.Execute(output, templateapp.AppCROutput{
-		UserConfigConfigMap: string(configMapYAML),
-		AppCR:               string(appYAML),
-	})
-	return microerror.Mask(err)
 }
