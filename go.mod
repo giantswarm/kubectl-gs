@@ -13,7 +13,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/fatih/color v1.19.0
 	github.com/fluxcd/helm-controller/api v1.6.4
-	github.com/fluxcd/pkg/apis/meta v1.31.0
+	github.com/fluxcd/pkg/apis/meta v1.32.0
 	github.com/fluxcd/source-controller/api v1.9.5
 	github.com/getsops/sops/v3 v3.13.3
 	github.com/giantswarm/apiextensions-application v0.6.2
