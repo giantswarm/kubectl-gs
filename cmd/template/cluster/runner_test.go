@@ -79,10 +79,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -116,10 +114,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					ClusterType: "proxy-private",
@@ -157,10 +153,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					ClusterType: "proxy-private",
@@ -212,7 +206,7 @@ func Test_run(t *testing.T) {
 			expectedGoldenFile: "run_template_cluster_capz.golden",
 		},
 		{
-			name: "case 5: template cluster capv (cluster-vsphere and default-apps-vsphere)",
+			name: "case 5: template cluster capv (cluster-vsphere)",
 			flags: &flags.Flag{
 				Name:              "test1",
 				Provider:          "vsphere",
@@ -221,10 +215,8 @@ func Test_run(t *testing.T) {
 				Organization:      "test",
 				KubernetesVersion: "v1.2.3",
 				App: common.AppConfig{
-					ClusterVersion:     "0.59.0",
-					ClusterCatalog:     "foo-catalog",
-					DefaultAppsCatalog: "foo-default-catalog",
-					DefaultAppsVersion: "3.2.1",
+					ClusterVersion: "0.59.0",
+					ClusterCatalog: "foo-catalog",
 				},
 				VSphere: common.VSphereConfig{
 					ServiceLoadBalancerCIDR: "1.2.3.4/32",
@@ -302,10 +294,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -338,10 +328,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -374,10 +362,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -432,9 +418,7 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterCatalog:     "cluster",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterCatalog: "cluster",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -534,10 +518,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -570,10 +552,8 @@ func Test_run(t *testing.T) {
 				Organization:             "test",
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{
@@ -609,10 +589,8 @@ func Test_run(t *testing.T) {
 				ControlPlaneInstanceType: "control-plane-instance-type",
 				ServicePriority:          "medium",
 				App: common.AppConfig{
-					ClusterVersion:     "1.0.0",
-					ClusterCatalog:     "the-catalog",
-					DefaultAppsCatalog: "the-default-catalog",
-					DefaultAppsVersion: "2.0.0",
+					ClusterVersion: "1.0.0",
+					ClusterCatalog: "the-catalog",
 				},
 				AWS: common.AWSConfig{
 					MachinePool: common.AWSMachinePoolConfig{

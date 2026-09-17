@@ -115,10 +115,8 @@ type MachineConfig struct {
 }
 
 type AppConfig struct {
-	ClusterCatalog     string
-	ClusterVersion     string
-	DefaultAppsCatalog string
-	DefaultAppsVersion string
+	ClusterCatalog string
+	ClusterVersion string
 }
 
 type ClusterConfig struct {
