@@ -10,6 +10,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
+	"github.com/giantswarm/kubectl-gs/v6/internal/ociregistry"
 )
 
 var invalidFlagError = &microerror.Error{
@@ -186,6 +189,60 @@ func OrganizationNamespace(org string) string {
 	return fmt.Sprintf("org-%s", org)
 }
 
+// BuildClusterFluxResources builds the OCIRepository and HelmRelease that
+// deploy a release-<provider> chart via Flux, in place of the App CR used
+// for pre-release-chart releases. userConfigMapName must point at a
+// ConfigMap whose data key is "values" (see UserConfigMapName).
+func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMapName string) (ociRepoYAML, helmReleaseYAML []byte, err error) {
+	namespace := OrganizationNamespace(config.Organization)
+
+	ociRepo := deploychart.BuildOCIRepository(deploychart.OCIRepositoryOptions{
+		Name:        config.Name,
+		Namespace:   namespace,
+		ClusterName: config.Name,
+		URL:         fmt.Sprintf("oci://%s/%s%s", GSOCIRegistry, GSOCIChartsRepoPrefix, releaseChart),
+		Version:     config.ReleaseVersion,
+		Interval:    "10m",
+		Timeout:     "60s",
+	})
+
+	helmRelease := deploychart.BuildHelmRelease(deploychart.HelmReleaseOptions{
+		Name:               config.Name,
+		Namespace:          namespace,
+		ClusterName:        config.Name,
+		ChartName:          config.Name,
+		TargetNamespace:    namespace,
+		Interval:           "5m",
+		Timeout:            "10m",
+		ManagementCluster:  true,
+		ServiceAccountName: "automation",
+		StorageNamespace:   namespace,
+		InstallRemediation: &deploychart.RemediationPolicy{
+			Retries: 10,
+		},
+		UpgradeRemediation: &deploychart.RemediationPolicy{
+			Retries:              10,
+			RemediateLastFailure: true,
+			Strategy:             "rollback",
+		},
+		ValuesFrom: []deploychart.ValuesFromReference{
+			{Kind: "ConfigMap", Name: userConfigMapName, ValuesKey: "values"},
+		},
+	})
+
+	ociRepoYAML, err = deploychart.MarshalManifest(ociRepo)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	helmReleaseYAML, err = deploychart.MarshalManifest(helmRelease)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	return ociRepoYAML, helmReleaseYAML, nil
+}
+
 func UserConfigMapName(app string) string {
 	return fmt.Sprintf("%s-userconfig", app)
 }
@@ -217,31 +274,25 @@ func IsReleaseVersion(version string) bool {
 	return v.Major() >= ReleaseVersionMajorThreshold
 }
 
+// GSOCIRegistry and GSOCIChartsRepoPrefix locate Giant Swarm's public Helm
+// chart OCI repository.
+const (
+	GSOCIRegistry         = "gsoci.azurecr.io"
+	GSOCIChartsRepoPrefix = "charts/giantswarm/"
+)
+
 // ReleaseChartAvailable checks whether the given version of a
-// release-<provider> chart is available in the catalog.
+// release-<provider> chart is published in the gsoci OCI registry.
 //
 // Release CRs created by hand for testing purposes (e.g. `35.0.0-andreas`,
 // copied from a released one) have no matching release-<provider> chart, so
 // pulling that chart would fail. In such cases the cluster-<provider> chart
 // has to be used instead, which resolves the Release CR at runtime.
-func ReleaseChartAvailable(ctx context.Context, ctrlClient client.Client, app, catalog, version string) (bool, error) {
-	var catalogEntryList applicationv1alpha1.AppCatalogEntryList
-	err := ctrlClient.List(ctx, &catalogEntryList, &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(map[string]string{
-			"app.kubernetes.io/name":            app,
-			"application.giantswarm.io/catalog": catalog,
-		}),
-		Namespace: "giantswarm",
-	})
+func ReleaseChartAvailable(ctx context.Context, ociClient ociregistry.Client, app, version string) (bool, error) {
+	exists, err := ociClient.TagExists(ctx, GSOCIRegistry, GSOCIChartsRepoPrefix+app, strings.TrimPrefix(version, "v"))
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	for _, entry := range catalogEntryList.Items {
-		if strings.TrimPrefix(entry.Spec.Version, "v") == strings.TrimPrefix(version, "v") {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return exists, nil
 }

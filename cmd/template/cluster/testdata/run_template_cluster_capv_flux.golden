@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+data:
+  values: |
+    global:
+      connectivity:
+        baseDomain: test.gigantic.io
+        network:
+          controlPlaneEndpoint:
+            host: ""
+            port: 6443
+          loadBalancers:
+            ipPoolName: svc-foo-pool
+      controlPlane:
+        image:
+          repository: gsoci.azurecr.io/giantswarm
+        machineTemplate:
+          cloneMode: linkedClone
+          network:
+            devices:
+            - dhcp4: true
+              networkName: foonet
+        replicas: 3
+      metadata:
+        description: cluster using release version directly
+        name: test-capv-flux
+        organization: test
+      nodePools:
+        worker:
+          cloneMode: linkedClone
+          network:
+            devices:
+            - dhcp4: true
+              networkName: foonet
+          replicas: 3
+kind: ConfigMap
+metadata:
+  labels:
+    giantswarm.io/cluster: test-capv-flux
+  name: test-capv-flux-userconfig
+  namespace: org-test
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  labels:
+    giantswarm.io/cluster: test-capv-flux
+  name: test-capv-flux
+  namespace: org-test
+spec:
+  interval: 10m0s
+  provider: generic
+  ref:
+    tag: 35.0.0
+  timeout: 1m0s
+  url: oci://gsoci.azurecr.io/charts/giantswarm/release-vsphere
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: test-capv-flux
+  name: test-capv-flux
+  namespace: org-test
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: test-capv-flux
+    namespace: org-test
+  install:
+    remediation:
+      remediateLastFailure: false
+      retries: 10
+  interval: 5m0s
+  releaseName: test-capv-flux
+  serviceAccountName: automation
+  storageNamespace: org-test
+  targetNamespace: org-test
+  timeout: 10m0s
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+      retries: 10
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: test-capv-flux-userconfig
+    valuesKey: values
