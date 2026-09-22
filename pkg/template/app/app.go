@@ -52,6 +52,15 @@ type AppCROutput struct {
 	UserConfigConfigMap string
 }
 
+// ClusterFluxOutput holds the rendered manifests for key.ClusterFluxTemplate:
+// the user-values ConfigMap alongside the OCIRepository and HelmRelease that
+// deploy a release-<provider> chart via Flux.
+type ClusterFluxOutput struct {
+	UserConfigConfigMap string
+	OCIRepository       string
+	HelmRelease         string
+}
+
 func NewAppCR(config Config) ([]byte, error) {
 	userConfig := v1alpha1.AppSpecUserConfig{}
 	appLabels := map[string]string{}
