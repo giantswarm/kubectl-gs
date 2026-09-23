@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `template cluster --provider vsphere`: no longer renders `global.controlPlane.image`. The key was
+  removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with
+  `additional properties 'image' not allowed`. The value matched the chart's old default, so this
+  changes nothing about the resulting cluster.
 - `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
   but its value never reached the rendered manifests, because its only consumers were the vintage
   AWS/Azure providers removed in v5.0.0. It is now rendered as `global.metadata.servicePriority`

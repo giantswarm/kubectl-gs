@@ -12,8 +12,6 @@ data:
           loadBalancers:
             ipPoolName: svc-foo-pool
       controlPlane:
-        image:
-          repository: gsoci.azurecr.io/giantswarm
         machineTemplate:
           cloneMode: linkedClone
           network:
