@@ -14,6 +14,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/capv"
+	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 	"github.com/giantswarm/kubectl-gs/v6/internal/key"
 	templateapp "github.com/giantswarm/kubectl-gs/v6/pkg/template/app"
 )
@@ -83,7 +84,9 @@ func templateClusterVSphere(output io.Writer, config common.ClusterConfig, appVe
 	}
 
 	if config.UseReleaseChart {
-		ociRepoYAML, helmReleaseYAML, err := common.BuildClusterFluxResources(config, ReleaseVsphereRepoName, configMapName)
+		ociRepoYAML, helmReleaseYAML, err := common.BuildClusterFluxResources(config, ReleaseVsphereRepoName, configMapName,
+			// vCenter credentials (global.providerSpecific.vcenter), formerly the App CR's userConfig secret.
+			deploychart.ValuesFromReference{Kind: "Secret", Name: config.VSphere.CredentialsSecretName})
 		if err != nil {
 			return microerror.Mask(err)
 		}
