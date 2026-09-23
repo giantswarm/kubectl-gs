@@ -17,6 +17,11 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Releases are cut by the Auto Release workflow: every merge to `main` publishes a release candidate `vX.Y.Z-rc.N` from the conventional commit subjects, and a stable release promotes the latest candidate. The release-PR workflows are gone. The krew index is updated for stable releases only.
 
+- `template cluster`: for releases whose `release-<provider>` chart is published in gsoci, the
+  cluster is now templated as a Flux `OCIRepository` and `HelmRelease` that install that chart
+  directly, instead of an App CR for the `cluster-<provider>` chart. Releases without a published
+  release chart keep using the App CR path unchanged.
+
 ### Fixed
 
 - `template cluster --provider vsphere`: the release chart's HelmRelease now also reads values
