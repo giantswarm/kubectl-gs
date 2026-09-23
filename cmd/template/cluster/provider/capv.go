@@ -159,11 +159,8 @@ func BuildCapvClusterConfig(config common.ClusterConfig) capv.ClusterConfig {
 				},
 			},
 			ControlPlane: &capv.ControlPlane{
-				Replicas: config.VSphere.ControlPlane.Replicas,
-				OIDC:     config.OIDC,
-				Image: &capv.Image{
-					Repository: "gsoci.azurecr.io/giantswarm",
-				},
+				Replicas:        config.VSphere.ControlPlane.Replicas,
+				OIDC:            config.OIDC,
 				MachineTemplate: getMachineTemplate(&config.VSphere.ControlPlane.VSphereMachineTemplate, &config),
 			},
 			Metadata: &capv.Metadata{

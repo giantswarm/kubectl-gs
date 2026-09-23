@@ -17,6 +17,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - Releases are cut by the Auto Release workflow: every merge to `main` publishes a release candidate `vX.Y.Z-rc.N` from the conventional commit subjects, and a stable release promotes the latest candidate. The release-PR workflows are gone. The krew index is updated for stable releases only.
 
+### Fixed
+
+- `template cluster --provider vsphere`: no longer renders `global.controlPlane.image`. The key was
+  removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with
+  `additional properties 'image' not allowed`. The value matched the chart's old default, so this
+  changes nothing about the resulting cluster.
+
 ## [5.9.1] - 2026-10-09
 
 ### Fixed
