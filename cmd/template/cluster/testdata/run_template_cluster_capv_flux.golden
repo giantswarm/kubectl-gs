@@ -84,3 +84,5 @@ spec:
   - kind: ConfigMap
     name: test-capv-flux-userconfig
     valuesKey: values
+  - kind: Secret
+    name: foosecret

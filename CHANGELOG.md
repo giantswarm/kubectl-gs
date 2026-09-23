@@ -9,6 +9,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `template cluster --provider vsphere`: the release chart's HelmRelease now also reads values
+  from the `--vsphere-credentials-secret-name` secret, as the App CR did through its userConfig
+  secret. Without it `global.providerSpecific.vcenter` was empty and the install failed in
+  `provider-secret.yaml` with `invalid value; expected string`.
 - `template cluster --provider vsphere`: no longer renders `global.controlPlane.image`. The key was
   removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with
   `additional properties 'image' not allowed`. The value matched the chart's old default, so this

@@ -193,7 +193,8 @@ func OrganizationNamespace(org string) string {
 // deploy a release-<provider> chart via Flux, in place of the App CR used
 // for pre-release-chart releases. userConfigMapName must point at a
 // ConfigMap whose data key is "values" (see UserConfigMapName).
-func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMapName string) (ociRepoYAML, helmReleaseYAML []byte, err error) {
+// extraValuesFrom are appended after it, so they take precedence.
+func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMapName string, extraValuesFrom ...deploychart.ValuesFromReference) (ociRepoYAML, helmReleaseYAML []byte, err error) {
 	namespace := OrganizationNamespace(config.Organization)
 
 	ociRepo := deploychart.BuildOCIRepository(deploychart.OCIRepositoryOptions{
@@ -225,9 +226,9 @@ func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMap
 			RemediateLastFailure: true,
 			Strategy:             "rollback",
 		},
-		ValuesFrom: []deploychart.ValuesFromReference{
+		ValuesFrom: append([]deploychart.ValuesFromReference{
 			{Kind: "ConfigMap", Name: userConfigMapName, ValuesKey: "values"},
-		},
+		}, extraValuesFrom...),
 	})
 
 	ociRepoYAML, err = deploychart.MarshalManifest(ociRepo)
