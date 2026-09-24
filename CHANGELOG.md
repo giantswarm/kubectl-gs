@@ -7,8 +7,23 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- `template cluster`: for releases whose `release-<provider>` chart is published in gsoci, the
+  cluster is now templated as a Flux `OCIRepository` and `HelmRelease` that install that chart
+  directly, instead of an App CR for the `cluster-<provider>` chart. Releases without a published
+  release chart keep using the App CR path unchanged.
+
 ### Fixed
 
+- `template cluster --provider vsphere`: the release chart's HelmRelease now also reads values
+  from the `--vsphere-credentials-secret-name` secret, as the App CR did through its userConfig
+  secret. Without it `global.providerSpecific.vcenter` was empty and the install failed in
+  `provider-secret.yaml` with `invalid value; expected string`.
+- `template cluster --provider vsphere`: no longer renders `global.controlPlane.image`. The key was
+  removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with
+  `additional properties 'image' not allowed`. The value matched the chart's old default, so this
+  changes nothing about the resulting cluster.
 - `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
   but its value never reached the rendered manifests, because its only consumers were the vintage
   AWS/Azure providers removed in v5.0.0. It is now rendered as `global.metadata.servicePriority`
