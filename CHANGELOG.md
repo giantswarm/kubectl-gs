@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update github.com/giantswarm/telemetrydeck-go to v0.3.3 (giantswarm/kubectl-gs#2146)
+
 ### Fixed
 
 - `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
