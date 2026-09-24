@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Update architect to v10.11.0 (giantswarm/kubectl-gs#2148)
+
 ### Fixed
 
 - `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
