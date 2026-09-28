@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.8.1] - 2026-09-28
+
 ### Changed
 
 - Update github.com/giantswarm/telemetrydeck-go to v0.3.3 (giantswarm/kubectl-gs#2146)
@@ -1868,7 +1870,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.1...HEAD
+[5.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...v5.8.0
 [5.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.1...v5.7.2
 [5.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.0...v5.7.1
