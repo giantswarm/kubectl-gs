@@ -13,6 +13,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `update cluster`: a Cluster API cluster's update is checked before it is applied or scheduled. The
+  command fails when the management cluster has no `Release` for the target version (for example
+  `aws-34.3.0`), when the target is not higher than the current version, or when the values carry no
+  `global.release.version`. The current version is read from the values, not the Cluster's label, so an
+  update after a failed one no longer silently changes nothing, and only `global.release.version` is
+  replaced, not every key ending in `version:`.
+
 - `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
   but its value never reached the rendered manifests, because its only consumers were the vintage
   AWS/Azure providers removed in v5.0.0. It is now rendered as `global.metadata.servicePriority`
