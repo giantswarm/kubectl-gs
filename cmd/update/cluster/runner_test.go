@@ -138,7 +138,7 @@ func Test_run_capi(t *testing.T) {
 			labelVersion:  "33.4.0",
 			valuesVersion: "33.4.0",
 			releases:      []string{"aws-33.4.0", "aws-34.5.0"},
-			flags:         flag{Name: "di34r", ReleaseVersion: "34.5.0"},
+			flags:         flag{Name: "abcd1", ReleaseVersion: "34.5.0"},
 			wantVersion:   "34.5.0",
 		},
 		{
@@ -146,7 +146,7 @@ func Test_run_capi(t *testing.T) {
 			labelVersion:  "33.4.0",
 			valuesVersion: "34.3.0",
 			releases:      []string{"aws-33.4.0", "aws-34.5.0"},
-			flags:         flag{Name: "di34r", ReleaseVersion: "34.5.0"},
+			flags:         flag{Name: "abcd1", ReleaseVersion: "34.5.0"},
 			wantVersion:   "34.5.0",
 		},
 		{
@@ -154,7 +154,7 @@ func Test_run_capi(t *testing.T) {
 			labelVersion:  "33.4.0",
 			valuesVersion: "33.4.0",
 			releases:      []string{"aws-33.4.0", "aws-34.5.0"},
-			flags:         flag{Name: "di34r", ReleaseVersion: "34.3.0"},
+			flags:         flag{Name: "abcd1", ReleaseVersion: "34.3.0"},
 			wantErr:       notFoundError,
 		},
 		{
@@ -162,7 +162,7 @@ func Test_run_capi(t *testing.T) {
 			labelVersion:  "33.4.0",
 			valuesVersion: "33.4.0",
 			releases:      []string{"aws-33.4.0"},
-			flags:         flag{Name: "di34r", ReleaseVersion: "34.3.0", ScheduledTime: "2022-01-01 01:00"},
+			flags:         flag{Name: "abcd1", ReleaseVersion: "34.3.0", ScheduledTime: "2022-01-01 01:00"},
 			wantErr:       notFoundError,
 		},
 		{
@@ -170,7 +170,7 @@ func Test_run_capi(t *testing.T) {
 			labelVersion:  "34.5.0",
 			valuesVersion: "34.5.0",
 			releases:      []string{"aws-34.5.0"},
-			flags:         flag{Name: "di34r", ReleaseVersion: "34.5.0"},
+			flags:         flag{Name: "abcd1", ReleaseVersion: "34.5.0"},
 			wantErr:       notAllowedError,
 		},
 		{
@@ -178,14 +178,14 @@ func Test_run_capi(t *testing.T) {
 			labelVersion:  "34.5.0",
 			valuesVersion: "34.5.0",
 			releases:      []string{"aws-33.4.0", "aws-34.5.0"},
-			flags:         flag{Name: "di34r", ReleaseVersion: "33.4.0"},
+			flags:         flag{Name: "abcd1", ReleaseVersion: "33.4.0"},
 			wantErr:       notAllowedError,
 		},
 		{
 			name:         "values without a release version",
 			labelVersion: "33.4.0",
 			releases:     []string{"aws-34.5.0"},
-			flags:        flag{Name: "di34r", ReleaseVersion: "34.5.0"},
+			flags:        flag{Name: "abcd1", ReleaseVersion: "34.5.0"},
 			wantErr:      notFoundError,
 		},
 	}
@@ -199,9 +199,9 @@ func Test_run_capi(t *testing.T) {
 				values = fmt.Sprintf(capiValues, tc.valuesVersion)
 			}
 			storage := []runtime.Object{
-				newCAPICluster("di34r", "default", tc.labelVersion),
+				newCAPICluster("abcd1", "default", tc.labelVersion),
 				&corev1.ConfigMap{
-					ObjectMeta: metav1.ObjectMeta{Name: "di34r-userconfig", Namespace: "default"},
+					ObjectMeta: metav1.ObjectMeta{Name: "abcd1-userconfig", Namespace: "default"},
 					Data:       map[string]string{"values": values},
 				},
 			}
@@ -226,7 +226,7 @@ func Test_run_capi(t *testing.T) {
 			err := runner.run(ctx, nil, []string{})
 
 			cm := &corev1.ConfigMap{}
-			getErr := ctrlClient.Get(ctx, client.ObjectKey{Name: "di34r-userconfig", Namespace: "default"}, cm)
+			getErr := ctrlClient.Get(ctx, client.ObjectKey{Name: "abcd1-userconfig", Namespace: "default"}, cm)
 			if getErr != nil {
 				t.Fatal(getErr)
 			}
