@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/label"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
@@ -25,6 +26,7 @@ type runner struct {
 	logger       micrologger.Logger
 
 	service cluster.Interface
+	client  client.Client
 
 	stdout io.Writer
 	stderr io.Writer
@@ -101,6 +103,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(notFoundError, "Cluster with name '%s' cannot be found in the '%s' namespace.\n", getOptions.Name, getOptions.Namespace)
 	}
 
+	// A Cluster API cluster's release lives in its values: check the edit
+	// before scheduling or applying it, so a typo never reaches the chart.
+	var userConfig *corev1.ConfigMap
+	capi := isCapiProvider(resource)
+	if capi {
+		userConfig, err = r.releaseUpdate(ctx, resource, targetRelease)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var patches cluster.PatchOptions
 	var msg string
 
@@ -129,30 +142,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 		messageFormat := "An upgrade of cluster %s to release %s has been scheduled for\n\n    %v, (%v)"
 		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
-	} else if isCapiProvider(resource) {
-
-		currentVersion := getReleaseVersion(resource)
-		if currentVersion == "" {
-			return microerror.Maskf(notFoundError, "Release version not found in cluster '%s'", name)
-		}
-
-		k8sclient, err := r.commonConfig.GetClient(r.logger)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		cm := &corev1.ConfigMap{}
-		err = k8sclient.CtrlClient().Get(ctx, types.NamespacedName{Name: fmt.Sprintf("%s-userconfig", resource.Cluster.GetName()), Namespace: resource.Cluster.GetNamespace()}, cm)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		// Extract the values field and replace the current version with the target version
-		values := cm.Data["values"]
-		values = strings.ReplaceAll(values, fmt.Sprintf("version: %s", currentVersion), fmt.Sprintf("version: %s", targetRelease))
-		cm.Data["values"] = values
-
-		err = k8sclient.CtrlClient().Update(ctx, cm)
+	} else if capi {
+		err = r.client.Update(ctx, userConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -182,24 +173,60 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
+// releaseUpdate returns the cluster's user config with the release version
+// set to target. It fails when the values carry no release version, when
+// target is not higher than it, or when the management cluster has no
+// Release for target.
+func (r *runner) releaseUpdate(ctx context.Context, resource *cluster.Cluster, target string) (*corev1.ConfigMap, error) {
+	cm := &corev1.ConfigMap{}
+	key := types.NamespacedName{Name: fmt.Sprintf("%s-userconfig", resource.Cluster.GetName()), Namespace: resource.Cluster.GetNamespace()}
+	err := r.client.Get(ctx, key, cm)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	current, values, err := setReleaseVersion(cm.Data["values"], target)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	err = ensureNewer(current, target)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	provider, err := releaseProvider(resource.Cluster)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	err = ensureRelease(ctx, r.client, provider, target)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	cm.Data["values"] = values
+	return cm, nil
+}
+
 func replaceToEscape(from string) string {
 	return strings.ReplaceAll(from, "/", "~1")
 }
 
 func (r *runner) getService() error {
-	if r.service != nil {
+	if r.service != nil && r.client != nil {
 		return nil
 	}
 
-	client, err := r.commonConfig.GetClient(r.logger)
+	k8sClient, err := r.commonConfig.GetClient(r.logger)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	serviceConfig := cluster.Config{
-		Client: client.CtrlClient(),
-	}
-	r.service = cluster.New(serviceConfig)
+	r.client = k8sClient.CtrlClient()
+	r.service = cluster.New(cluster.Config{
+		Client: r.client,
+	})
 
 	return nil
 }
@@ -214,9 +241,4 @@ func isCapiProvider(cluster *cluster.Cluster) bool {
 		return true
 	}
 	return false
-}
-
-func getReleaseVersion(cluster *cluster.Cluster) string {
-	labels := cluster.Cluster.GetLabels()
-	return labels[label.ReleaseVersion]
 }
