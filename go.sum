@@ -194,8 +194,8 @@ github.com/fluxcd/pkg/apis/kustomize v1.19.2 h1:/E8Nmn1XdAGUIqxI5vK60WemyBX3pIpf
 github.com/fluxcd/pkg/apis/kustomize v1.19.2/go.mod h1:HryXaJ1GpvagUOmh5uMkVtXVlfXWdKjc3/5IlLsjyzI=
 github.com/fluxcd/pkg/apis/meta v1.32.0 h1:jWuNuIziUM8NOrhZB7vovdFQ4wBYRNJoAn+XUoYlj1I=
 github.com/fluxcd/pkg/apis/meta v1.32.0/go.mod h1:bZmU0RbSwFzsCg9sgjhbSWxgSbUy+3Oh/s7qUCZjwPk=
-github.com/fluxcd/source-controller/api v1.9.5 h1:QwOqmw6/NqOXUR+kGmBJ18CEvthD8DNrSRTtjQG+bHQ=
-github.com/fluxcd/source-controller/api v1.9.5/go.mod h1:Y5mcHYzML/mJYjvSJRcIo7eLLjd+cZjnKR6WeIGrouE=
+github.com/fluxcd/source-controller/api v1.9.6 h1:h9+CsJVw4CNbMEsnEb11SGEhLfKzVTkWC0w7M8VX4Hk=
+github.com/fluxcd/source-controller/api v1.9.6/go.mod h1:Y5mcHYzML/mJYjvSJRcIo7eLLjd+cZjnKR6WeIGrouE=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
