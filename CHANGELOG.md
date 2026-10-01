@@ -24,6 +24,22 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with
   `additional properties 'image' not allowed`. The value matched the chart's old default, so this
   changes nothing about the resulting cluster.
+
+## [5.8.1] - 2026-09-28
+
+### Changed
+
+- Update github.com/giantswarm/telemetrydeck-go to v0.3.3 (giantswarm/kubectl-gs#2146)
+
+### Fixed
+
+- `update cluster`: a Cluster API cluster's update is checked before it is applied or scheduled. The
+  command fails when the management cluster has no `Release` for the target version (for example
+  `aws-34.3.0`), when the target is not higher than the current version, or when the values carry no
+  `global.release.version`. The current version is read from the values, not the Cluster's label, so an
+  update after a failed one no longer silently changes nothing, and only `global.release.version` is
+  replaced, not every key ending in `version:`.
+
 - `template cluster`: `--service-priority` takes effect again. The flag was accepted and validated
   but its value never reached the rendered manifests, because its only consumers were the vintage
   AWS/Azure providers removed in v5.0.0. It is now rendered as `global.metadata.servicePriority`
@@ -1872,7 +1888,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.1...HEAD
+[5.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...v5.8.0
 [5.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.1...v5.7.2
 [5.7.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.0...v5.7.1
