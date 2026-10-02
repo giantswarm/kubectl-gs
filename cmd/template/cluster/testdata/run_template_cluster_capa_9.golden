@@ -53,33 +53,49 @@ metadata:
   name: test10-userconfig
   namespace: org-test
 ---
-apiVersion: application.giantswarm.io/v1alpha1
-kind: App
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
 metadata:
   labels:
-    app-operator.giantswarm.io/version: 0.0.0
+    giantswarm.io/cluster: test10
   name: test10
   namespace: org-test
 spec:
-  catalog: cluster
-  config:
-    configMap:
-      name: ""
-      namespace: ""
-    secret:
-      name: ""
-      namespace: ""
-  kubeConfig:
-    context:
-      name: ""
-    inCluster: true
-    secret:
-      name: ""
-      namespace: ""
-  name: release-aws
+  interval: 10m0s
+  provider: generic
+  ref:
+    tag: 35.0.0
+  timeout: 1m0s
+  url: oci://gsoci.azurecr.io/charts/giantswarm/release-aws
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: test10
+  name: test10
   namespace: org-test
-  userConfig:
-    configMap:
-      name: test10-userconfig
-      namespace: org-test
-  version: 35.0.0
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: test10
+    namespace: org-test
+  install:
+    remediation:
+      remediateLastFailure: false
+      retries: 10
+  interval: 5m0s
+  releaseName: test10
+  serviceAccountName: automation
+  storageNamespace: org-test
+  targetNamespace: org-test
+  timeout: 10m0s
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+      retries: 10
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: test10-userconfig
+    valuesKey: values

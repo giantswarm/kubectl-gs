@@ -4,17 +4,13 @@ import (
 	"bytes"
 	"context"
 	goflag "flag"
-	"fmt"
 	"strings"
 	"testing"
 
-	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
 	"github.com/giantswarm/micrologger"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	//nolint:staticcheck
@@ -24,6 +20,29 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/test/goldenfile"
 	"github.com/giantswarm/kubectl-gs/v6/test/kubeclient"
 )
+
+// fakeOCIClient is a minimal ociregistry.Client fake for testing the
+// release-<provider> chart availability check without hitting a real
+// registry. tags holds "repository:tag" keys that exist.
+type fakeOCIClient struct {
+	tags map[string]bool
+	err  error
+}
+
+func (f *fakeOCIClient) ListTags(_ context.Context, _, _ string) ([]string, error) { return nil, nil }
+
+func (f *fakeOCIClient) TagExists(_ context.Context, _, repository, tag string) (bool, error) {
+	if f.err != nil {
+		return false, f.err
+	}
+	return f.tags[repository+":"+tag], nil
+}
+
+func (f *fakeOCIClient) GetManifestAnnotations(_ context.Context, _, _, _ string) (map[string]string, error) {
+	return nil, nil
+}
+
+func (f *fakeOCIClient) Close(_ context.Context) {}
 
 var update = goflag.Bool("update", false, "update .golden reference test files")
 
@@ -51,13 +70,19 @@ func Test_run(t *testing.T) {
 		},
 	}
 
-	// Catalog entries for the release-<provider> charts which are published
-	// for release v35.0.0. Release versions without such an entry, e.g. a
-	// hand-crafted Release CR used for testing, must fall back to the
-	// cluster-<provider> chart.
-	releaseCatalogEntries := []runtime.Object{
-		newAppCatalogEntry("cluster", "release-aws", "35.0.0"),
-		newAppCatalogEntry("cluster", "release-aks", "35.0.0"),
+	// The release-<provider> chart tags published in gsoci for release v35.0.0.
+	// Release versions without such a tag, e.g. a hand-crafted Release CR used
+	// for testing, must fall back to the cluster-<provider> chart. This
+	// mirrors the real gsoci registry state: no release-eks chart is
+	// published yet, so EKS keeps falling back.
+	releaseChartOCIClient := &fakeOCIClient{
+		tags: map[string]bool{
+			"charts/giantswarm/release-aws:35.0.0":            true,
+			"charts/giantswarm/release-aks:35.0.0":            true,
+			"charts/giantswarm/release-azure:35.0.0":          true,
+			"charts/giantswarm/release-vsphere:35.0.0":        true,
+			"charts/giantswarm/release-cloud-director:35.0.0": true,
+		},
 	}
 
 	testCases := []struct {
@@ -612,6 +637,85 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capa_service_priority.golden",
 		},
+		{
+			name: "case 15: template cluster capz with release version",
+			flags: &flags.Flag{
+				Name:                     "test-capz-flux",
+				Provider:                 "capz",
+				Description:              "cluster using release version directly",
+				Region:                   "northeurope",
+				Release:                  "35.0.0",
+				Organization:             "test",
+				ControlPlaneInstanceType: "B2s",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+				},
+				Azure: common.AzureConfig{
+					SubscriptionID: "12345678-ebb8-4b1f-8f96-d950d9e7aaaa",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capz_flux.golden",
+		},
+		{
+			name: "case 16: template cluster capv (vsphere) with release version",
+			flags: &flags.Flag{
+				Name:              "test-capv-flux",
+				Provider:          "vsphere",
+				Description:       "cluster using release version directly",
+				Release:           "35.0.0",
+				Organization:      "test",
+				KubernetesVersion: "v1.2.3",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+				},
+				VSphere: common.VSphereConfig{
+					NetworkName:           "foonet",
+					SvcLbIpPoolName:       "svc-foo-pool",
+					CredentialsSecretName: "foosecret",
+					ControlPlane: common.VSphereControlPlane{
+						VSphereMachineTemplate: common.VSphereMachineTemplate{Replicas: 3},
+					},
+					Worker: common.VSphereMachineTemplate{Replicas: 3},
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capv_flux.golden",
+		},
+		{
+			name: "case 17: template cluster capvcd (cloud-director) with release version",
+			flags: &flags.Flag{
+				Name:         "test-capvcd-flux",
+				Provider:     "cloud-director",
+				Description:  "cluster using release version directly",
+				Release:      "35.0.0",
+				Organization: "test",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+				},
+				CloudDirector: common.CloudDirectorConfig{
+					VipSubnet: "10.0.0.0/24",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capvcd_flux.golden",
+		},
+		{
+			name: "case 18: template cluster eks with release version but no release-eks chart",
+			flags: &flags.Flag{
+				Name:         "test-eks-fallback",
+				Provider:     "eks",
+				Description:  "cluster using a release without a published release-eks chart",
+				Release:      "35.0.0",
+				Organization: "test",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+					ClusterVersion: "1.0.0",
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_eks_fallback.golden",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -627,12 +731,13 @@ func Test_run(t *testing.T) {
 			}
 
 			runner := &runner{
-				flag:   tc.flags,
-				logger: logger,
-				stdout: out,
+				flag:      tc.flags,
+				logger:    logger,
+				stdout:    out,
+				ociClient: releaseChartOCIClient,
 			}
 
-			k8sClient := kubeclient.FakeK8sClient(releaseCatalogEntries...)
+			k8sClient := kubeclient.FakeK8sClient()
 			if tc.flags.Provider == "capa" {
 				err = k8sClient.CtrlClient().Create(ctx, capaManagementCluster.DeepCopy())
 				if err != nil {
@@ -675,70 +780,53 @@ func Test_run(t *testing.T) {
 	}
 }
 
-func newAppCatalogEntry(catalog, app, version string) *applicationv1alpha1.AppCatalogEntry {
-	return &applicationv1alpha1.AppCatalogEntry{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-%s-%s", catalog, app, version),
-			Namespace: "giantswarm",
-			Labels: map[string]string{
-				"app.kubernetes.io/name":            app,
-				"application.giantswarm.io/catalog": catalog,
-			},
-		},
-		Spec: applicationv1alpha1.AppCatalogEntrySpec{
-			AppName: app,
-			Version: version,
-		},
-	}
-}
-
 func Test_useReleaseChart(t *testing.T) {
+	// release-aws:35.0.0 is the only tag published in this fake registry,
+	// mirroring what's actually available in gsoci.
+	publishedTags := map[string]bool{
+		"charts/giantswarm/release-aws:35.0.0": true,
+	}
+
 	testCases := []struct {
 		name           string
 		provider       string
 		release        string
 		clusterVersion string
-		catalogEntries []runtime.Object
 		expected       bool
 		expectedWarn   string
 	}{
 		{
-			name:           "case 0: legacy cluster chart version",
-			provider:       "capa",
-			release:        "25.0.0",
-			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
-			expected:       false,
+			name:     "case 0: legacy cluster chart version",
+			provider: "capa",
+			release:  "25.0.0",
+			expected: false,
 		},
 		{
-			name:           "case 1: published release version",
-			provider:       "capa",
-			release:        "35.0.0",
-			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
-			expected:       true,
+			name:     "case 1: published release version",
+			provider: "capa",
+			release:  "35.0.0",
+			expected: true,
 		},
 		{
-			name:           "case 2: release version without release chart falls back",
-			provider:       "capa",
-			release:        "35.0.0-andreas",
-			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
-			expected:       false,
-			expectedWarn:   "no release-aws chart with version 35.0.0-andreas found",
+			name:         "case 2: release version without release chart falls back",
+			provider:     "capa",
+			release:      "35.0.0-andreas",
+			expected:     false,
+			expectedWarn: "no release-aws chart with version 35.0.0-andreas found",
 		},
 		{
 			name:           "case 3: explicit cluster chart version wins",
 			provider:       "capa",
 			release:        "35.0.0",
 			clusterVersion: "9.0.1-dev.private-karpenter.2026-08-20.16-33-07.h62652f9",
-			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
 			expected:       false,
 		},
 		{
-			name:           "case 4: release chart of another provider does not count",
-			provider:       "capz",
-			release:        "35.0.0",
-			catalogEntries: []runtime.Object{newAppCatalogEntry("cluster", "release-aws", "35.0.0")},
-			expected:       false,
-			expectedWarn:   "no release-azure chart with version 35.0.0 found",
+			name:         "case 4: release chart of another provider does not count",
+			provider:     "capz",
+			release:      "35.0.0",
+			expected:     false,
+			expectedWarn: "no release-azure chart with version 35.0.0 found",
 		},
 	}
 
@@ -748,18 +836,18 @@ func Test_useReleaseChart(t *testing.T) {
 			stderr := new(bytes.Buffer)
 
 			r := &runner{
-				flag:   &flags.Flag{Provider: tc.provider},
-				stderr: stderr,
+				flag:      &flags.Flag{Provider: tc.provider},
+				stderr:    stderr,
+				ociClient: &fakeOCIClient{tags: publishedTags},
 			}
 			config := common.ClusterConfig{
 				ReleaseVersion: tc.release,
 				App: common.AppConfig{
-					ClusterCatalog: "cluster",
 					ClusterVersion: tc.clusterVersion,
 				},
 			}
 
-			result := r.useReleaseChart(ctx, kubeclient.FakeK8sClient(tc.catalogEntries...), config)
+			result := r.useReleaseChart(ctx, config)
 			if result != tc.expected {
 				t.Fatalf("useReleaseChart() = %v, want %v", result, tc.expected)
 			}

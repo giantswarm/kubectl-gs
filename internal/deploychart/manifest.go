@@ -20,6 +20,7 @@ type OCIRepositoryOptions struct {
 	Version     string
 	AutoUpgrade string
 	Interval    string
+	Timeout     string // If set, adds spec.timeout.
 	APIVersion  string // If set, overrides the default API version.
 	SecretRef   string // If set, adds spec.secretRef pointing to this Secret name.
 	Provider    string // If set, overrides the default "generic" provider (aws, azure, gcp).
@@ -28,21 +29,35 @@ type OCIRepositoryOptions struct {
 // ValuesFromReference describes a reference to a ConfigMap or Secret
 // containing values for the HelmRelease.
 type ValuesFromReference struct {
-	Kind string // "ConfigMap" or "Secret"
-	Name string
+	Kind      string // "ConfigMap" or "Secret"
+	Name      string
+	ValuesKey string // If set, overrides the default "values.yaml" data key.
 }
 
 type HelmReleaseOptions struct {
-	Name              string
-	Namespace         string
-	ClusterName       string
-	ChartName         string
-	TargetNamespace   string
-	Interval          string
-	Values            map[string]any
-	ValuesFrom        []ValuesFromReference
-	ManagementCluster bool
-	APIVersion        string // If set, overrides the default API version.
+	Name               string
+	Namespace          string
+	ClusterName        string
+	ChartName          string
+	TargetNamespace    string
+	Interval           string
+	Timeout            string // If set, adds spec.timeout.
+	Values             map[string]any
+	ValuesFrom         []ValuesFromReference
+	ManagementCluster  bool
+	APIVersion         string // If set, overrides the default API version.
+	ServiceAccountName string // If set, adds spec.serviceAccountName.
+	StorageNamespace   string // If set, overrides spec.storageNamespace (defaults to TargetNamespace for workload clusters).
+	CreateNamespace    bool
+	InstallRemediation *RemediationPolicy
+	UpgradeRemediation *RemediationPolicy
+}
+
+// RemediationPolicy configures spec.install.remediation or spec.upgrade.remediation.
+type RemediationPolicy struct {
+	Retries              int
+	RemediateLastFailure bool
+	Strategy             string // "rollback" or "uninstall"; empty leaves the Flux default.
 }
 
 func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1.OCIRepository {
@@ -82,6 +97,11 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1.OCIRepository {
 		}
 	}
 
+	if opts.Timeout != "" {
+		timeout := parseDuration(opts.Timeout)
+		repo.Spec.Timeout = &metav1.Duration{Duration: timeout}
+	}
+
 	if opts.APIVersion != "" {
 		repo.APIVersion = opts.APIVersion
 	}
@@ -109,11 +129,12 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 			ReleaseName:     opts.ChartName,
 			TargetNamespace: opts.TargetNamespace,
 			Install: &helmv2.Install{
-				CreateNamespace: true,
+				CreateNamespace: opts.CreateNamespace,
 			},
 			ChartRef: &helmv2.CrossNamespaceSourceReference{
-				Kind: sourcev1.OCIRepositoryKind,
-				Name: opts.Name,
+				Kind:      sourcev1.OCIRepositoryKind,
+				Name:      opts.Name,
+				Namespace: opts.Namespace,
 			},
 		},
 	}
@@ -127,6 +148,41 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 		hr.Spec.StorageNamespace = opts.TargetNamespace
 	}
 
+	if opts.StorageNamespace != "" {
+		hr.Spec.StorageNamespace = opts.StorageNamespace
+	}
+
+	if opts.ServiceAccountName != "" {
+		hr.Spec.ServiceAccountName = opts.ServiceAccountName
+	}
+
+	if opts.Timeout != "" {
+		timeout := parseDuration(opts.Timeout)
+		hr.Spec.Timeout = &metav1.Duration{Duration: timeout}
+	}
+
+	if opts.InstallRemediation != nil {
+		remediateLastFailure := opts.InstallRemediation.RemediateLastFailure
+		hr.Spec.Install.Remediation = &helmv2.InstallRemediation{
+			Retries:              opts.InstallRemediation.Retries,
+			RemediateLastFailure: &remediateLastFailure,
+		}
+	}
+
+	if opts.UpgradeRemediation != nil {
+		remediateLastFailure := opts.UpgradeRemediation.RemediateLastFailure
+		hr.Spec.Upgrade = &helmv2.Upgrade{
+			Remediation: &helmv2.UpgradeRemediation{
+				Retries:              opts.UpgradeRemediation.Retries,
+				RemediateLastFailure: &remediateLastFailure,
+			},
+		}
+		if opts.UpgradeRemediation.Strategy != "" {
+			strategy := helmv2.RemediationStrategy(opts.UpgradeRemediation.Strategy)
+			hr.Spec.Upgrade.Remediation.Strategy = &strategy
+		}
+	}
+
 	if opts.Values != nil {
 		raw, _ := json.Marshal(opts.Values)
 		hr.Spec.Values = &apiextensionsv1.JSON{Raw: raw}
@@ -134,8 +190,9 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 
 	for _, vf := range opts.ValuesFrom {
 		hr.Spec.ValuesFrom = append(hr.Spec.ValuesFrom, meta.ValuesReference{
-			Kind: vf.Kind,
-			Name: vf.Name,
+			Kind:      vf.Kind,
+			Name:      vf.Name,
+			ValuesKey: vf.ValuesKey,
 		})
 	}
 
