@@ -449,6 +449,7 @@ func Test_getWCBasePath(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		cf := genericclioptions.NewConfigFlags(true)
+		cf.KubeConfig = ptr.To[string](fmt.Sprintf("%s/config.yaml", t.TempDir()))
 		commonConfig := commonconfig.New(cf)
 		k8sConfigAccess := commonConfig.GetConfigAccess()
 		testConfig := *createValidTestConfig("", false)
