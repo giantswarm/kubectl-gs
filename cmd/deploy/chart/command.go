@@ -28,7 +28,10 @@ are created in the organization namespace.
 Resource names default to <cluster>-<chart-name> and can be overridden with --name.
 
 Use --dry-run to perform server-side validation without persisting resources.
-Use --management-cluster to deploy to the MC itself (no --target-cluster needed).`
+Use --management-cluster to deploy to the MC itself (no --target-cluster needed).
+Use --bundle to deploy a bundle chart: the HelmRelease is reconciled on the
+management cluster in the organization namespace with the 'automation' service
+account, and is named <cluster>-<chart-name>.`
 
 	examples = `  # Deploy a chart with a specific version
   kubectl gs deploy chart \
@@ -87,7 +90,14 @@ Use --management-cluster to deploy to the MC itself (no --target-cluster needed)
       --chart-name hello-world-app \
       --organization acme \
       --target-namespace hello \
-      --management-cluster`
+      --management-cluster
+
+  # Deploy a bundle chart for a workload cluster
+  kubectl gs deploy chart \
+      --chart-name observability-bundle \
+      --organization acme \
+      --target-cluster mycluster01 \
+      --bundle`
 )
 
 type Config struct {

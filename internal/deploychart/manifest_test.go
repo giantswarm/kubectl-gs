@@ -345,6 +345,34 @@ spec:
 `,
 		},
 		{
+			name: "bundle",
+			opts: HelmReleaseOptions{
+				Name:            "mycluster01-observability-bundle",
+				Namespace:       "org-acme",
+				ClusterName:     "mycluster01",
+				ChartName:       "observability-bundle",
+				TargetNamespace: "org-acme",
+				Interval:        "10m",
+				Bundle:          true,
+			},
+			expected: `apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: mycluster01
+  name: mycluster01-observability-bundle
+  namespace: org-acme
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: mycluster01-observability-bundle
+  interval: 10m0s
+  releaseName: mycluster01-observability-bundle
+  serviceAccountName: automation
+  targetNamespace: org-acme
+`,
+		},
+		{
 			name: "with valuesFrom",
 			opts: HelmReleaseOptions{
 				Name:            "mycluster01-hello-world-app",
