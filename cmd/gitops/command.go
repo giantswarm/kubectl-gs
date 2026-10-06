@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/add"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/check"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/initialize"
+	"github.com/giantswarm/kubectl-gs/v6/cmd/gitops/upgrade"
 )
 
 const (
@@ -97,6 +98,22 @@ func New(config Config) (*cobra.Command, error) {
 		}
 	}
 
+	var upgradeCmd *cobra.Command
+	{
+		c := upgrade.Config{
+			Logger:     config.Logger,
+			FileSystem: config.FileSystem,
+
+			Stderr: config.Stderr,
+			Stdout: config.Stdout,
+		}
+
+		upgradeCmd, err = upgrade.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	f := &flag{}
 
 	r := &runner{
@@ -118,6 +135,7 @@ func New(config Config) (*cobra.Command, error) {
 	c.AddCommand(addCmd)
 	c.AddCommand(checkCmd)
 	c.AddCommand(initCmd)
+	c.AddCommand(upgradeCmd)
 
 	return c, nil
 }
