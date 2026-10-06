@@ -12,9 +12,9 @@ require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/fatih/color v1.19.0
-	github.com/fluxcd/helm-controller/api v1.6.4
+	github.com/fluxcd/helm-controller/api v1.6.5
 	github.com/fluxcd/pkg/apis/meta v1.32.0
-	github.com/fluxcd/source-controller/api v1.9.5
+	github.com/fluxcd/source-controller/api v1.9.6
 	github.com/getsops/sops/v3 v3.13.3
 	github.com/giantswarm/apiextensions-application v0.6.2
 	github.com/giantswarm/apiextensions/v6 v6.6.0
@@ -52,7 +52,7 @@ require (
 	k8s.io/cli-runtime v0.37.1
 	k8s.io/client-go v0.37.1
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
-	sigs.k8s.io/controller-runtime v0.25.1
+	sigs.k8s.io/controller-runtime v0.25.2
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -77,6 +77,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.31 // indirect
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.105.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.4.1 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v6 v6.0.1 // indirect
 	github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
@@ -106,6 +107,10 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
+	github.com/prometheus/client_golang v1.24.0 // indirect
+	github.com/prometheus/client_model v0.6.2 // indirect
+	github.com/prometheus/common v0.70.0 // indirect
+	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.1 // indirect
@@ -117,11 +122,12 @@ require (
 	go.opentelemetry.io/contrib/detectors/gcp v1.44.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.69.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0 // indirect
-	go.opentelemetry.io/otel v1.44.0 // indirect
-	go.opentelemetry.io/otel/metric v1.44.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.44.0 // indirect
-	go.opentelemetry.io/otel/trace v1.44.0 // indirect
+	go.opentelemetry.io/otel v1.47.0 // indirect
+	go.opentelemetry.io/otel/log v1.47.0 // indirect
+	go.opentelemetry.io/otel/metric v1.47.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.47.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.47.0 // indirect
+	go.opentelemetry.io/otel/trace v1.47.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
@@ -167,7 +173,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-openapi/jsonpointer v1.0.0 // indirect
 	github.com/go-openapi/jsonreference v1.0.0 // indirect
 	github.com/go-openapi/swag v0.27.1 // indirect
@@ -256,7 +262,6 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.23.0
 	github.com/yuin/goldmark => github.com/yuin/goldmark v1.8.2 // Fix CVE: force fixed version of transitive dep
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.3
-	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.44.0 // Fix CVE-2026-24051
 	golang.org/x/crypto => golang.org/x/crypto v0.57.0
 	golang.org/x/text => golang.org/x/text v0.42.0
 )

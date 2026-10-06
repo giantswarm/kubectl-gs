@@ -25,6 +25,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   `additional properties 'image' not allowed`. The value matched the chart's old default, so this
   changes nothing about the resulting cluster.
 
+### Fixed
+
+- Update go.opentelemetry.io/otel modules to v1.47.0 to fix CVE-2026-81870, and drop the expired `.nancy-ignore` entries whose findings are resolved.
+
 ## [5.8.1] - 2026-09-28
 
 ### Changed
