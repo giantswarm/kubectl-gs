@@ -198,6 +198,58 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "mutually exclusive",
 		},
 		{
+			name: "bundle without target namespace is valid",
+			flag: flag{
+				ChartName:    "observability-bundle",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Bundle:       true,
+			},
+		},
+		{
+			name: "bundle with target namespace is invalid",
+			flag: flag{
+				ChartName:    "observability-bundle",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Bundle:       true,
+			},
+			wantErr: true,
+			errMsg:  "mutually exclusive",
+		},
+		{
+			name: "bundle with name is invalid",
+			flag: flag{
+				ChartName:    "observability-bundle",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				Name:         "custom",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Bundle:       true,
+			},
+			wantErr: true,
+			errMsg:  "mutually exclusive",
+		},
+		{
+			name: "bundle with management-cluster is invalid",
+			flag: flag{
+				ChartName:         "observability-bundle",
+				Organization:      "acme",
+				ManagementCluster: true,
+				OCIURLPrefix:      defaultOCIURLPrefix,
+				Interval:          defaultInterval,
+				Bundle:            true,
+			},
+			wantErr: true,
+			errMsg:  "mutually exclusive",
+		},
+		{
 			name: "dry-run flag is valid",
 			flag: flag{
 				ChartName:    "hello-world-app",

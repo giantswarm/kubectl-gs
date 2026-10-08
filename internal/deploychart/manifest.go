@@ -42,8 +42,16 @@ type HelmReleaseOptions struct {
 	Values            map[string]any
 	ValuesFrom        []ValuesFromReference
 	ManagementCluster bool
-	APIVersion        string // If set, overrides the default API version.
+	// Bundle installs the release on the management cluster in its own
+	// namespace, using the bundle service account and the resource name as
+	// the release name.
+	Bundle     bool
+	APIVersion string // If set, overrides the default API version.
 }
+
+// BundleServiceAccountName is the service account used to reconcile bundle
+// HelmReleases.
+const BundleServiceAccountName = "automation"
 
 func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1.OCIRepository {
 	interval := parseDuration(opts.Interval)
@@ -118,7 +126,11 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 		},
 	}
 
-	if !opts.ManagementCluster {
+	if opts.Bundle {
+		hr.Spec.ReleaseName = opts.Name
+		hr.Spec.ServiceAccountName = BundleServiceAccountName
+		hr.Spec.Install = nil
+	} else if !opts.ManagementCluster {
 		hr.Spec.KubeConfig = &meta.KubeConfigReference{
 			SecretRef: &meta.SecretKeyReference{
 				Name: fmt.Sprintf("%s-kubeconfig", opts.ClusterName),

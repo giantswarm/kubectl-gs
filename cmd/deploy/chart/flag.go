@@ -28,6 +28,7 @@ const (
 	flagValuesFrom        = "values-from"
 	flagManagementCluster = "management-cluster"
 	flagDryRun            = "dry-run"
+	flagBundle            = "bundle"
 
 	envRegistryPassword = "KUBECTL_GS_REGISTRY_PASSWORD" //nolint:gosec // Not a credential, just the env var name.
 
@@ -54,6 +55,7 @@ type flag struct {
 	ValuesFrom        []string
 	ManagementCluster bool
 	DryRun            bool
+	Bundle            bool
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -72,6 +74,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&f.ValuesFrom, flagValuesFrom, nil, "Reference to a ConfigMap or Secret containing chart values (format: ConfigMap/name or Secret/name). Can be specified multiple times.")
 	cmd.Flags().BoolVar(&f.ManagementCluster, flagManagementCluster, false, "Deploy to the management cluster itself. Cluster name is derived from the current kubectl context.")
 	cmd.Flags().BoolVar(&f.DryRun, flagDryRun, false, "Perform server-side validation without applying. Prints manifests to stdout.")
+	cmd.Flags().BoolVar(&f.Bundle, flagBundle, false, "Deploy a bundle chart. It is installed on the management cluster in the organization namespace, using the 'automation' service account.")
 }
 
 func (f *flag) Validate() error {
@@ -90,7 +93,17 @@ func (f *flag) Validate() error {
 	if f.Cluster == "" && !f.ManagementCluster {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty (or use --%s)", flagCluster, flagManagementCluster)
 	}
-	if f.TargetNS == "" {
+	if f.Bundle {
+		if f.ManagementCluster {
+			return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagBundle, flagManagementCluster)
+		}
+		if f.TargetNS != "" {
+			return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive (bundles are installed in the organization namespace)", flagBundle, flagTargetNS)
+		}
+		if f.Name != "" {
+			return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive (bundle names must be <cluster>-<chart-name>)", flagBundle, flagName)
+		}
+	} else if f.TargetNS == "" {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNS)
 	}
 
