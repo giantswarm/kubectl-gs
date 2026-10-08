@@ -1,0 +1,1 @@
+CVE-2026-81870 until=2026-11-06 # go.opentelemetry.io/otel/exporters/otlp/otlptrace@v1.44.0
