@@ -2,11 +2,11 @@
 
 Create a new release in just a few steps:
 
-1. Make sure you're on the master branch, and pull the latest changes.
+1. Make sure you're on the master branch and pull the latest changes.
 
     ```nohighlight
-    git checkout master
-    git pull origin master
+    git checkout main
+    git pull origin main
     ```
 
 2. Create a new branch in the shape of `master#release#v<MAJOR.MINOR.PATCH>` and push it to the remote repository
@@ -14,17 +14,17 @@ Create a new release in just a few steps:
     For example, for the `v1.0.0` version:
 
     ```nohighlight
-    git checkout -b master#release#v1.0.0
-    git push origin master#release#v1.0.0
+    git checkout -b main#release#v1.0.0
+    git push origin main#release#v1.0.0
     ```
 
-3. You will be assigned to a Pull Request in the GitHub repository, after the GitHub workflow finishes running. You can check its status [here](https://github.com/giantswarm/kubectl-gs/actions), by looking at the `Create Release PR` workflow.
+3. You will be assigned to a Pull Request in the GitHub repository after the GitHub workflow finishes running. You can check its status [here](https://github.com/giantswarm/kubectl-gs/actions), by looking at the `Create Release PR` workflow.
 
 4. Ask for a Pull Request review from your team or the project owners. After getting it approved and ready to go, squash and merge it.
 
 5. The PR merge will trigger a GitHub workflow, which will create a tag, a new release, package the build artifacts and attach them to the newly created release.
 
-6. A new PR will be created, which will bump the `project.go` version to a development one. Approve it, merge it and move on.
+6. A new PR will be created, which will bump the `project.go` version to a development one. Approve it, merge it, and move on.
 
 7. [Edit your newly created release](https://github.com/giantswarm/kubectl-gs/releases) and add release notes.
 
