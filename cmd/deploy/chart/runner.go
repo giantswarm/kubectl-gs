@@ -246,6 +246,9 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 
 	ociRepo := deploychart.BuildOCIRepository(ociRepoOpts)
 	helmRelease := deploychart.BuildHelmRelease(helmReleaseOpts)
+	if err := validateReleaseName(helmRelease.Spec.ReleaseName); err != nil {
+		return microerror.Mask(err)
+	}
 
 	// Build registry Secret if needed.
 	var registrySecretYAML []byte
@@ -416,4 +419,18 @@ func splitOCIURLPrefix(ociURLPrefix, chartName string) (registry, repoPath strin
 		repoPath = chartName
 	}
 	return registry, repoPath
+}
+
+// maxReleaseNameLength is the Helm release name limit, also enforced by the
+// HelmRelease CRD on spec.releaseName.
+const maxReleaseNameLength = 53
+
+// validateReleaseName checks the HelmRelease release name against the Helm
+// limit, so that no resource gets applied when the API server would reject
+// the HelmRelease.
+func validateReleaseName(releaseName string) error {
+	if len(releaseName) > maxReleaseNameLength {
+		return microerror.Maskf(invalidFlagError, "release name %q exceeds maximum length of %d characters", releaseName, maxReleaseNameLength)
+	}
+	return nil
 }
