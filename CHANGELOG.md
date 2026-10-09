@@ -11,7 +11,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- `deploy chart`: add `--bundle` flag to deploy bundle charts in the organization namespace using the `automation` service account.
+- `deploy chart`: add `--bundle` flag to deploy bundle charts in the organization namespace using the `automation` service account. Release names longer than 53 characters are rejected.
 
 ### Fixed
 

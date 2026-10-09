@@ -237,6 +237,19 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "mutually exclusive",
 		},
 		{
+			name: "bundle with release name too long is invalid",
+			flag: flag{
+				ChartName:    "observability-bundle",
+				Organization: "acme",
+				Cluster:      "my-very-long-cluster-name-0123456789",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Bundle:       true,
+			},
+			wantErr: true,
+			errMsg:  "53 characters",
+		},
+		{
 			name: "bundle with management-cluster is invalid",
 			flag: flag{
 				ChartName:         "observability-bundle",

@@ -169,6 +169,10 @@ func (f *flag) Validate() error {
 	if resourceName != "" && len(resourceName) > 253 {
 		return microerror.Maskf(invalidFlagError, "resource name %q exceeds maximum length of 253 characters", resourceName)
 	}
+	// Bundles use the resource name as Helm release name, which is limited to 53 characters.
+	if f.Bundle && len(resourceName) > 53 {
+		return microerror.Maskf(invalidFlagError, "release name %q exceeds maximum length of 53 characters", resourceName)
+	}
 
 	return nil
 }

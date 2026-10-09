@@ -38,7 +38,7 @@ kubectl gs deploy chart \
 - `--chart-name`: Name of the chart to deploy. Combined with `--oci-url-prefix` to form the full OCI URL.
 - `--organization`: Giant Swarm organization name owning the target cluster.
 - `--cluster`: Target cluster name. Not required when `--management-cluster` is set (determined automatically from context).
-- `--target-namespace`: Target namespace in the workload cluster to deploy the Helm release into.
+- `--target-namespace`: Target namespace in the workload cluster to deploy the Helm release into. Not allowed with `--bundle`.
 
 ### Optional flags
 
@@ -53,6 +53,7 @@ kubectl gs deploy chart \
     - `patch`: Upgrade to latest patch version.
 - `--interval`: Reconciliation interval for both OCIRepository and HelmRelease. Default: `10m`.
 - `--management-cluster`: Deploy to the management cluster itself instead of a workload cluster. When set, `--cluster` is not required — the cluster name is determined automatically from the current kubectl context. The HelmRelease omits `.spec.kubeConfig`, so Flux deploys the Helm release locally.
+- `--bundle`: Deploy a bundle chart. The HelmRelease is reconciled on the management cluster in the organization namespace using the `automation` service account, and the release name is `<clustername>-<chartname>`, which must not exceed 53 characters. Mutually exclusive with `--target-namespace`, `--name` and `--management-cluster`.
 - `--dry-run`: Only generate manifests and print them to stdout. Server-side validation is performed via `kubectl apply --dry-run=server`. Useful for GitOps workflows where manifests are committed to a repository rather than applied directly.
 
 #### Examples
@@ -396,6 +397,43 @@ spec:
 ```
 
 Note: No `.spec.kubeConfig` is set, so Flux deploys the Helm release to the same cluster where the HelmRelease resource lives (the management cluster). The cluster name `mymc01` was determined automatically from the current kubectl context.
+
+#### Example 5: Deployment of a bundle chart
+
+Invocation:
+
+```bash
+kubectl gs deploy chart \
+    --chart-name observability-bundle \
+    --version 1.2.3 \
+    --organization acme \
+    --cluster mycluster01 \
+    --bundle
+```
+
+Generated OCIRepository: Same as Example 1, named `mycluster01-observability-bundle`.
+
+Generated HelmRelease:
+
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mycluster01-observability-bundle
+  namespace: org-acme
+  labels:
+    giantswarm.io/cluster: mycluster01
+spec:
+  interval: 10m
+  releaseName: mycluster01-observability-bundle
+  targetNamespace: org-acme
+  serviceAccountName: automation
+  chartRef:
+    kind: OCIRepository
+    name: mycluster01-observability-bundle
+```
+
+Note: The bundle is installed on the management cluster in the organization namespace. The release name is the resource name, so that bundles of different clusters in the same organization don't collide. Since Helm limits release names to 53 characters, longer names are rejected before any resource is applied.
 
 ### Behavior on re-run
 
