@@ -53,7 +53,7 @@ kubectl gs deploy chart \
     - `patch`: Upgrade to latest patch version.
 - `--interval`: Reconciliation interval for both OCIRepository and HelmRelease. Default: `10m`.
 - `--management-cluster`: Deploy to the management cluster itself instead of a workload cluster. When set, `--cluster` is not required — the cluster name is determined automatically from the current kubectl context. The HelmRelease omits `.spec.kubeConfig`, so Flux deploys the Helm release locally.
-- `--bundle`: Deploy a bundle chart. The HelmRelease is reconciled on the management cluster in the organization namespace using the `automation` service account, and the release name is `<clustername>-<chartname>`, which must not exceed 53 characters. Mutually exclusive with `--target-namespace`, `--name` and `--management-cluster`.
+- `--bundle`: Deploy a bundle chart. The HelmRelease is reconciled on the management cluster in the organization namespace using the `automation` service account, and the release name is `<clustername>-<chartname>`. Mutually exclusive with `--target-namespace`, `--name` and `--management-cluster`.
 - `--dry-run`: Only generate manifests and print them to stdout. Server-side validation is performed via `kubectl apply --dry-run=server`. Useful for GitOps workflows where manifests are committed to a repository rather than applied directly.
 
 #### Examples
@@ -434,7 +434,7 @@ spec:
     name: mycluster01-observability-bundle
 ```
 
-Note: The bundle is installed on the management cluster in the organization namespace. The release name is the resource name, so that bundles of different clusters in the same organization don't collide. Since Helm limits release names to 53 characters, longer names are rejected before any resource is applied.
+Note: The bundle is installed on the management cluster in the organization namespace. The release name is the resource name, so that bundles of different clusters in the same organization don't collide.
 
 ### Behavior on re-run
 
