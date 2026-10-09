@@ -250,6 +250,19 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "53 characters",
 		},
 		{
+			name: "chart name too long for release name is invalid",
+			flag: flag{
+				ChartName:    "a-very-long-chart-name-that-exceeds-the-helm-release-limit",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+			},
+			wantErr: true,
+			errMsg:  "53 characters",
+		},
+		{
 			name: "bundle with management-cluster is invalid",
 			flag: flag{
 				ChartName:         "observability-bundle",

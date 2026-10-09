@@ -169,9 +169,14 @@ func (f *flag) Validate() error {
 	if resourceName != "" && len(resourceName) > 253 {
 		return microerror.Maskf(invalidFlagError, "resource name %q exceeds maximum length of 253 characters", resourceName)
 	}
-	// Bundles use the resource name as Helm release name, which is limited to 53 characters.
-	if f.Bundle && len(resourceName) > 53 {
-		return microerror.Maskf(invalidFlagError, "release name %q exceeds maximum length of 53 characters", resourceName)
+	// Helm release names are limited to 53 characters. Bundles use the
+	// resource name as release name, other charts use the chart name.
+	releaseName := f.ChartName
+	if f.Bundle {
+		releaseName = resourceName
+	}
+	if len(releaseName) > 53 {
+		return microerror.Maskf(invalidFlagError, "release name %q exceeds maximum length of 53 characters", releaseName)
 	}
 
 	return nil

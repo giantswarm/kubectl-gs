@@ -177,6 +177,7 @@ The command creates two Kubernetes resources: an **OCIRepository** and a **HelmR
 #### HelmRelease
 
 - Values inline (not in a ConfigMap). May be revised in the future.
+- Release name set to the chart name (the resource name with `--bundle`). Helm limits release names to 53 characters, so longer names are rejected before applying any resource.
 - Kubeconfig secret reference named `<cluster-name>-kubeconfig`.
 - Label `giantswarm.io/cluster` set to the cluster name.
 - Target namespace will be created if not existing (`createTargetNamespace: true`).
