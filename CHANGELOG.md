@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `deploy chart`: reject Helm release names longer than 53 characters before applying any resource.
+
 ## [5.9.0] - 2026-10-09
 
 ### Added
@@ -15,7 +19,6 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- `deploy chart`: reject Helm release names longer than 53 characters before applying any resource.
 - Update go.opentelemetry.io/otel modules to v1.47.0 to fix CVE-2026-81870, and drop the expired `.nancy-ignore` entries whose findings are resolved.
 
 ## [5.8.1] - 2026-09-28
