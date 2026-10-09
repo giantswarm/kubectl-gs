@@ -1,6 +1,7 @@
 package chart
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -52,5 +53,14 @@ func TestSplitOCIURLPrefix(t *testing.T) {
 				t.Errorf("repoPath = %q, want %q", repoPath, tc.wantRepoPath)
 			}
 		})
+	}
+}
+
+func TestValidateReleaseName(t *testing.T) {
+	if err := validateReleaseName(strings.Repeat("a", maxReleaseNameLength)); err != nil {
+		t.Errorf("unexpected error for name at the limit: %v", err)
+	}
+	if err := validateReleaseName(strings.Repeat("a", maxReleaseNameLength+1)); err == nil {
+		t.Error("expected error for name over the limit")
 	}
 }

@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Fixed
+
+- `deploy chart`: reject Helm release names longer than 53 characters before applying any resource.
+
 ## [5.9.0] - 2026-10-09
 
 ### Added
