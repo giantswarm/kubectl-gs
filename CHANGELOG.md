@@ -7,6 +7,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+## [5.9.1] - 2026-10-09
+
 ### Fixed
 
 - `deploy chart`: reject Helm release names longer than 53 characters before applying any resource.
@@ -1884,7 +1886,8 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.9.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.9.1...HEAD
+[5.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.9.0...v5.9.1
 [5.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.1...v5.9.0
 [5.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...v5.8.0
