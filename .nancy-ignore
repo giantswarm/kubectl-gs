@@ -1,1 +1,4 @@
 CVE-2026-81870 until=2026-11-06 # go.opentelemetry.io/otel/exporters/otlp/otlptrace@v1.44.0
+# CVE-2026-107325 (GHSA-frr6-8pf7-f9r2): mongo-driver v1.17.10 via sops/v3 → huaweicloud-sdk-go-v3; the fix (v2.9.2) is on the v2 module path only, no v1 release carries it.
+# Tracked in https://github.com/giantswarm/kubectl-gs/issues/2187; remove by 2026-11-09.
+CVE-2026-107325 until=2026-11-09 # go.mongodb.org/mongo-driver@v1.17.10
