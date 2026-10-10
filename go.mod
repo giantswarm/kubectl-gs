@@ -234,7 +234,7 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	golang.org/x/crypto v0.58.0 // indirect
 	golang.org/x/net v0.61.0 // indirect
-	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
@@ -263,7 +263,7 @@ replace (
 	github.com/yuin/goldmark => github.com/yuin/goldmark v1.8.2 // Fix CVE: force fixed version of transitive dep
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.3
 	golang.org/x/crypto => golang.org/x/crypto v0.58.0
-	golang.org/x/text => golang.org/x/text v0.42.0
+	golang.org/x/text => golang.org/x/text v0.43.0
 )
 
 replace github.com/yuin/goldmark v1.4.13 => github.com/yuin/goldmark v1.8.2
