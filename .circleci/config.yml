@@ -134,8 +134,10 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
 
+      # Stable tags only: a release candidate is a GitHub pre-release, which
+      # krew-release-bot refuses, and krew users get stable versions only.
       - update-krew-index:
           requires:
             - upload-release-assets
@@ -144,4 +146,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/

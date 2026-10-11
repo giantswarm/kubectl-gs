@@ -7,6 +7,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- Releases are cut by the Auto Release workflow: every merge to `main` publishes a release candidate `vX.Y.Z-rc.N` from the conventional commit subjects, and a stable release promotes the latest candidate. The release-PR workflows are gone. The krew index is updated for stable releases only.
+
 ## [5.9.1] - 2026-10-09
 
 ### Fixed
