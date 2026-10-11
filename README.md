@@ -29,4 +29,4 @@ Find the [kubectl gs reference](https://docs.giantswarm.io/vintage/use-the-api/k
 
 ## Publishing a release
 
-See [docs/Release.md](https://github.com/giantswarm/kubectl-gs/blob/master/docs/Release.md)
+Every merge to `main` publishes a release candidate; a stable release promotes the latest candidate. See [docs/Release.md](https://github.com/giantswarm/kubectl-gs/blob/main/docs/Release.md).
