@@ -132,7 +132,6 @@ type ClusterConfig struct {
 	Labels            map[string]string
 	Namespace         string
 	PodsCIDR          string
-	OIDC              OIDC
 	ServicePriority   string
 	PreventDeletion   bool
 
@@ -140,6 +139,10 @@ type ClusterConfig struct {
 	BastionInstanceType      string
 	BastionReplicas          int
 	ControlPlaneInstanceType string
+
+	// OIDC is the issuer the workload cluster's API server trusts, nil to
+	// leave global.controlPlane.oidc out.
+	OIDC *OIDCValues
 
 	// UseReleaseChart tells whether the cluster App CR should point to the
 	// release-<provider> chart instead of the cluster-<provider> chart.
@@ -152,6 +155,7 @@ type ClusterConfig struct {
 	CloudDirector CloudDirectorConfig
 }
 
+// OIDC holds the --oidc-* flags. Empty fields were not given.
 type OIDC struct {
 	IssuerURL     string
 	CAFile        string

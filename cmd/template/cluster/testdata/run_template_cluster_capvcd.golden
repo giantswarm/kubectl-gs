@@ -1,0 +1,83 @@
+---
+apiVersion: v1
+data:
+  values: |
+    global:
+      connectivity:
+        baseDomain: test.gigantic.io
+        network:
+          loadBalancers:
+            vipSubnet: 10.205.9.254/24
+      controlPlane:
+        machineTemplate:
+          catalog: giantswarm
+          diskSizeGB: 30
+          sizingPolicy: m1.medium
+        oidc:
+          clientId: dex-k8s-authenticator
+          groupsClaim: groups
+          issuerUrl: https://dex.my-mc.example.com
+          usernameClaim: email
+        replicas: 3
+      metadata:
+        description: a Cloud Director test cluster
+        name: test-vcd
+        organization: test
+      nodePools:
+        worker:
+          catalog: giantswarm
+          diskSizeGB: 30
+          replicas: 3
+          sizingPolicy: m1.medium
+      providerSpecific:
+        org: my-org
+        ovdc: my-ovdc
+        ovdcNetwork: my-network
+        site: https://vcd.example.com
+        userContext:
+          secretRef:
+            secretName: vcd-credentials
+      release:
+        version: 25.0.0
+kind: ConfigMap
+metadata:
+  labels:
+    giantswarm.io/cluster: test-vcd
+  name: test-vcd-userconfig
+  namespace: org-test
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+  name: test-vcd
+  namespace: org-test
+spec:
+  catalog: cluster
+  config:
+    configMap:
+      name: ""
+      namespace: ""
+    secret:
+      name: ""
+      namespace: ""
+  extraConfigs:
+  - kind: secret
+    name: container-registries-configuration
+    namespace: default
+    priority: 25
+  kubeConfig:
+    context:
+      name: ""
+    inCluster: true
+    secret:
+      name: ""
+      namespace: ""
+  name: cluster-cloud-director
+  namespace: org-test
+  userConfig:
+    configMap:
+      name: test-vcd-userconfig
+      namespace: org-test
+  version: 1.0.0

@@ -25,6 +25,14 @@ cluster app. It is a starting template — fields not exposed as flags
 (extra node pools, custom taints, machine pool architecture, etc.)
 can be set by editing the generated values.yaml before applying it.
 
+For CAPA, CAPZ, vSphere and Cloud Director, the cluster's API server
+trusts the OIDC issuer (Dex) of the management cluster the kubeconfig
+context points at: global.controlPlane.oidc is read from the management
+cluster's own API server. --oidc-issuer-url and --oidc-client-id name
+another issuer, the other --oidc-* flags override single settings, and
+--disable-oidc leaves the OIDC settings out. Adding them to a running
+cluster later replaces its control plane nodes.
+
 See https://docs.giantswarm.io/getting-started/create-workload-cluster/`
 
 	example = `
@@ -35,6 +43,14 @@ See https://docs.giantswarm.io/getting-started/create-workload-cluster/`
     Template an AWS cluster and write to a file for further editing:
 
     kubectl-gs template cluster --provider capa --name my-cluster --organization acme --release 35.0.0 --region eu-west-1 --output my-cluster.yaml
+
+    Template an AWS cluster whose API server trusts another OIDC issuer:
+
+    kubectl-gs template cluster --provider capa --name my-cluster --organization acme --release 35.0.0 --region eu-west-1 --oidc-issuer-url https://idp.example.com --oidc-client-id my-client
+
+    Template an AWS cluster whose API server trusts no OIDC issuer:
+
+    kubectl-gs template cluster --provider capa --name my-cluster --organization acme --release 35.0.0 --region eu-west-1 --disable-oidc
 
     Template a proxy-private AWS cluster:
 

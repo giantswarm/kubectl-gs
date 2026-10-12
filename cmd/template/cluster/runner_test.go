@@ -51,6 +51,33 @@ func Test_run(t *testing.T) {
 		},
 	}
 
+	// The management cluster's control plane, whose API server trusts the
+	// management cluster's Dex.
+	mcControlPlane := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "controlplane.cluster.x-k8s.io/v1beta2",
+			"kind":       "KubeadmControlPlane",
+			"metadata": map[string]interface{}{
+				"name":      "my-mc",
+				"namespace": "org-giantswarm",
+			},
+			"spec": map[string]interface{}{
+				"kubeadmConfigSpec": map[string]interface{}{
+					"clusterConfiguration": map[string]interface{}{
+						"apiServer": map[string]interface{}{
+							"extraArgs": []interface{}{
+								apiServerArg("oidc-client-id", "dex-k8s-authenticator"),
+								apiServerArg("oidc-groups-claim", "groups"),
+								apiServerArg("oidc-issuer-url", "https://dex.my-mc.example.com"),
+								apiServerArg("oidc-username-claim", "email"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	// Catalog entries for the release-<provider> charts which are published
 	// for release v35.0.0. Release versions without such an entry, e.g. a
 	// hand-crafted Release CR used for testing, must fall back to the
@@ -67,6 +94,9 @@ func Test_run(t *testing.T) {
 		clusterName        string
 		expectedGoldenFile string
 		errorMatcher       func(error) bool
+		// noMCControlPlane leaves the management cluster's control plane
+		// out of the fake management cluster.
+		noMCControlPlane bool
 	}{
 		{
 			name: "case 1: template cluster capa",
@@ -406,6 +436,8 @@ func Test_run(t *testing.T) {
 			},
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_aks.golden",
+			// AKS renders no OIDC settings, so it never asks for them.
+			noMCControlPlane: true,
 		},
 		{
 			name: "case 10: template cluster capa with release version",
@@ -612,6 +644,72 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capa_service_priority.golden",
 		},
+		{
+			name:               "case 14: template cluster capa with OIDC disabled",
+			flags:              oidcTestFlags(func(f *flags.Flag) { f.DisableOIDC = true }),
+			expectedGoldenFile: "run_template_cluster_capa_oidc_disabled.golden",
+			noMCControlPlane:   true,
+		},
+		{
+			name: "case 15: template cluster capa with an explicit OIDC issuer",
+			flags: oidcTestFlags(func(f *flags.Flag) {
+				f.OIDC = common.OIDC{IssuerURL: testIssuerURL, ClientID: testClientID}
+			}),
+			expectedGoldenFile: "run_template_cluster_capa_oidc_explicit.golden",
+			noMCControlPlane:   true,
+		},
+		{
+			name: "case 16: template cluster capa with the management cluster's OIDC issuer and an explicit groups claim",
+			flags: oidcTestFlags(func(f *flags.Flag) {
+				f.OIDC = common.OIDC{GroupsClaim: "roles"}
+			}),
+			expectedGoldenFile: "run_template_cluster_capa_oidc_groups_claim.golden",
+		},
+		{
+			name:             "case 17: template cluster capa without a management cluster control plane",
+			flags:            oidcTestFlags(nil),
+			noMCControlPlane: true,
+			errorMatcher: func(err error) bool {
+				return common.IsManagementClusterOIDC(err) &&
+					strings.Contains(err.Error(), "no KubeadmControlPlane found in namespace org-giantswarm") &&
+					strings.Contains(err.Error(), "--disable-oidc")
+			},
+		},
+		{
+			name: "case 18: template cluster cloud-director",
+			flags: &flags.Flag{
+				Name:         "test-vcd",
+				Provider:     "cloud-director",
+				Description:  "a Cloud Director test cluster",
+				Release:      "25.0.0",
+				Organization: "test",
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+					ClusterVersion: "1.0.0",
+				},
+				CloudDirector: common.CloudDirectorConfig{
+					VipSubnet:             "10.205.9.254/24",
+					CredentialsSecretName: "vcd-credentials",
+					Org:                   "my-org",
+					Ovdc:                  "my-ovdc",
+					OvdcNetwork:           "my-network",
+					Site:                  "https://vcd.example.com",
+					ControlPlane: common.CloudDirectorControlPlane{
+						Replicas: 3,
+						MachineTemplate: common.CloudDirectorMachineTemplate{
+							DiskSizeGB:   30,
+							SizingPolicy: "m1.medium",
+						},
+					},
+					Worker: common.CloudDirectorMachineTemplate{
+						DiskSizeGB:   30,
+						SizingPolicy: "m1.medium",
+						Replicas:     3,
+					},
+				},
+			},
+			expectedGoldenFile: "run_template_cluster_capvcd.golden",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -637,6 +735,12 @@ func Test_run(t *testing.T) {
 				err = k8sClient.CtrlClient().Create(ctx, capaManagementCluster.DeepCopy())
 				if err != nil {
 					t.Fatalf("failed to fake AWSCluster object: %s", err.Error())
+				}
+			}
+			if !tc.noMCControlPlane {
+				err = k8sClient.CtrlClient().Create(ctx, mcControlPlane.DeepCopy())
+				if err != nil {
+					t.Fatalf("failed to fake KubeadmControlPlane object: %s", err.Error())
 				}
 			}
 			err = runner.run(ctx, k8sClient)
@@ -673,6 +777,42 @@ func Test_run(t *testing.T) {
 			}
 		})
 	}
+}
+
+// apiServerArg is one API server extra argument of a KubeadmControlPlane.
+func apiServerArg(name, value string) interface{} {
+	return map[string]interface{}{"name": name, "value": value}
+}
+
+// oidcTestFlags returns the flags of a plain CAPA cluster, changed by modify.
+func oidcTestFlags(modify func(*flags.Flag)) *flags.Flag {
+	f := &flags.Flag{
+		Name:                     "test-oidc",
+		Provider:                 "capa",
+		Description:              "OIDC test cluster",
+		Release:                  "25.0.0",
+		Region:                   "the-region",
+		Organization:             "test",
+		ControlPlaneInstanceType: "control-plane-instance-type",
+		App: common.AppConfig{
+			ClusterCatalog: "cluster",
+		},
+		AWS: common.AWSConfig{
+			MachinePool: common.AWSMachinePoolConfig{
+				Name:         "worker1",
+				AZs:          []string{"eu-west-1a"},
+				InstanceType: "big-one",
+				MaxSize:      5,
+				MinSize:      2,
+			},
+			AWSClusterRoleIdentityName: "default",
+			NetworkAZUsageLimit:        3,
+		},
+	}
+	if modify != nil {
+		modify(f)
+	}
+	return f
 }
 
 func newAppCatalogEntry(catalog, app, version string) *applicationv1alpha1.AppCatalogEntry {

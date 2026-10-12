@@ -1,5 +1,7 @@
 package capz
 
+import "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+
 type ClusterConfig struct {
 	Global *Global `json:"global,omitempty"`
 }
@@ -42,8 +44,9 @@ type Bastion struct {
 }
 
 type ControlPlane struct {
-	InstanceType string `json:"instanceType,omitempty"`
-	Replicas     int    `json:"replicas,omitempty"`
+	InstanceType string             `json:"instanceType,omitempty"`
+	OIDC         *common.OIDCValues `json:"oidc,omitempty"`
+	Replicas     int                `json:"replicas,omitempty"`
 }
 type Release struct {
 	Version string `json:"version,omitempty"`

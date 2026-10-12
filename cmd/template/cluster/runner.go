@@ -76,6 +76,11 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 
 	config.UseReleaseChart = r.useReleaseChart(ctx, client, config)
 
+	config.OIDC, err = r.oidcValues(ctx, client)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	switch r.flag.Provider {
 	case key.ProviderCAPA:
 		err = provider.WriteCAPATemplate(ctx, client, output, config)
@@ -205,7 +210,6 @@ func (r *runner) getClusterConfig() (common.ClusterConfig, error) {
 		App:           r.flag.App,
 		AWS:           r.flag.AWS,
 		Azure:         r.flag.Azure,
-		OIDC:          r.flag.OIDC,
 		VSphere:       r.flag.VSphere,
 		CloudDirector: r.flag.CloudDirector,
 	}

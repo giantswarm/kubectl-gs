@@ -148,13 +148,8 @@ func BuildCapvcdClusterConfig(config common.ClusterConfig) capvcd.ClusterConfig 
 				},
 			},
 			ControlPlane: &capvcd.ControlPlane{
-				Replicas: config.CloudDirector.ControlPlane.Replicas,
-				Oidc: &common.OIDC{
-					IssuerURL:     config.OIDC.IssuerURL,
-					ClientID:      config.OIDC.ClientID,
-					UsernameClaim: config.OIDC.UsernameClaim,
-					GroupsClaim:   config.OIDC.GroupsClaim,
-				},
+				Replicas:        config.CloudDirector.ControlPlane.Replicas,
+				OIDC:            config.OIDC,
 				MachineTemplate: getCapvdMachineTemplate(&config.CloudDirector.ControlPlane.MachineTemplate),
 			},
 			Metadata: &capvcd.Metadata{

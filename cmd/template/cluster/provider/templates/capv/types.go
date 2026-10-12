@@ -1,5 +1,7 @@
 package capv
 
+import "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+
 type ClusterConfig struct {
 	Global *Global `json:"global,omitempty"`
 }
@@ -43,9 +45,10 @@ type LoadBalancers struct {
 }
 
 type ControlPlane struct {
-	Image           *Image           `json:"image,omitempty"`
-	Replicas        int              `json:"replicas,omitempty"`
-	MachineTemplate *MachineTemplate `json:"machineTemplate,omitempty"`
+	Image           *Image             `json:"image,omitempty"`
+	OIDC            *common.OIDCValues `json:"oidc,omitempty"`
+	Replicas        int                `json:"replicas,omitempty"`
+	MachineTemplate *MachineTemplate   `json:"machineTemplate,omitempty"`
 }
 
 type MTNetwork struct {

@@ -27,6 +27,11 @@ data:
               networkName: foonet
           numCPUs: 6
           resourcePool: foopool
+        oidc:
+          clientId: dex-k8s-authenticator
+          groupsClaim: groups
+          issuerUrl: https://dex.my-mc.example.com
+          usernameClaim: email
         replicas: 5
       metadata:
         description: yet another test cluster
