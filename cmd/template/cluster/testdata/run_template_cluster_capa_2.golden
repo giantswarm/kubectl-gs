@@ -29,6 +29,11 @@ data:
         - 1.2.3.4/32
         - 5.6.7.8/32
         - 9.10.11.12/32
+        oidc:
+          clientId: dex-k8s-authenticator
+          groupsClaim: groups
+          issuerUrl: https://dex.my-mc.example.com
+          usernameClaim: email
       metadata:
         description: just a test cluster
         name: test1

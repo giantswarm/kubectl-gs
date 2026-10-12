@@ -1,5 +1,7 @@
 package capa
 
+import "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+
 type Global struct {
 	Connectivity     *Connectivity           `json:"connectivity,omitempty"`
 	ControlPlane     *ControlPlane           `json:"controlPlane,omitempty"`
@@ -69,14 +71,15 @@ type Bastion struct {
 }
 
 type ControlPlane struct {
-	APIMode                            string   `json:"apiMode,omitempty"`
-	InstanceType                       string   `json:"instanceType,omitempty"`
-	RootVolumeSizeGB                   int      `json:"rootVolumeSizeGB,omitempty"`
-	EtcdVolumeSizeGB                   int      `json:"etcdVolumeSizeGB,omitempty"`
-	ContainerdVolumeSizeGB             int      `json:"containerdVolumeSizeGB,omitempty"`
-	KubeletVolumeSizeGB                int      `json:"kubeletVolumeSizeGB,omitempty"`
-	AvailabilityZones                  []string `json:"availabilityZones,omitempty"`
-	LoadBalancerIngressAllowCIDRBlocks []string `json:"loadBalancerIngressAllowCidrBlocks,omitempty"`
+	APIMode                            string             `json:"apiMode,omitempty"`
+	InstanceType                       string             `json:"instanceType,omitempty"`
+	RootVolumeSizeGB                   int                `json:"rootVolumeSizeGB,omitempty"`
+	EtcdVolumeSizeGB                   int                `json:"etcdVolumeSizeGB,omitempty"`
+	ContainerdVolumeSizeGB             int                `json:"containerdVolumeSizeGB,omitempty"`
+	KubeletVolumeSizeGB                int                `json:"kubeletVolumeSizeGB,omitempty"`
+	AvailabilityZones                  []string           `json:"availabilityZones,omitempty"`
+	LoadBalancerIngressAllowCIDRBlocks []string           `json:"loadBalancerIngressAllowCidrBlocks,omitempty"`
+	OIDC                               *common.OIDCValues `json:"oidc,omitempty"`
 }
 
 type MachinePool struct {
