@@ -192,8 +192,8 @@ github.com/fluxcd/pkg/apis/acl v0.10.0 h1:KPfAmELNvtvaz8wixnm/MYXqa+MJf7ntVVMUU9
 github.com/fluxcd/pkg/apis/acl v0.10.0/go.mod h1:a87i2A7AlFO5N2J8CxtzaUCCDmuLLWOHwkKu3eJF5fY=
 github.com/fluxcd/pkg/apis/kustomize v1.19.2 h1:/E8Nmn1XdAGUIqxI5vK60WemyBX3pIpfmP3mr/E3p9c=
 github.com/fluxcd/pkg/apis/kustomize v1.19.2/go.mod h1:HryXaJ1GpvagUOmh5uMkVtXVlfXWdKjc3/5IlLsjyzI=
-github.com/fluxcd/pkg/apis/meta v1.33.0 h1:2Ly/kUV1bZ3ms/ldwZUNo1ThzmCrah/ftar6siPVsis=
-github.com/fluxcd/pkg/apis/meta v1.33.0/go.mod h1:bZmU0RbSwFzsCg9sgjhbSWxgSbUy+3Oh/s7qUCZjwPk=
+github.com/fluxcd/pkg/apis/meta v1.35.0 h1:/k5d7uEFrxkz/hf6JTrdsKBr3UQWVHW2J4G6VSSae/k=
+github.com/fluxcd/pkg/apis/meta v1.35.0/go.mod h1:1MLvK2Xu3UdTKBzg+Q1Oj7H9PHeiKsUB1UW3uwxAwiM=
 github.com/fluxcd/source-controller/api v1.9.6 h1:h9+CsJVw4CNbMEsnEb11SGEhLfKzVTkWC0w7M8VX4Hk=
 github.com/fluxcd/source-controller/api v1.9.6/go.mod h1:Y5mcHYzML/mJYjvSJRcIo7eLLjd+cZjnKR6WeIGrouE=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
