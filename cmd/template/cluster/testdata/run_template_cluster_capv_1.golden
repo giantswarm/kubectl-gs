@@ -15,8 +15,6 @@ data:
             - 1.2.3.4/32
             ipPoolName: svc-foo-pool
       controlPlane:
-        image:
-          repository: gsoci.azurecr.io/giantswarm
         machineTemplate:
           cloneMode: linkedClone
           diskGiB: 42

@@ -13,6 +13,20 @@ const AppCRTemplate = `
 {{ .AppCR -}}
 `
 
+// ClusterFluxTemplate renders the user-values ConfigMap alongside the
+// OCIRepository and HelmRelease that deploy a release-<provider> chart via
+// Flux, in place of the App CR used by AppCRTemplate.
+const ClusterFluxTemplate = `
+{{- if .UserConfigConfigMap -}}
+---
+{{ .UserConfigConfigMap -}}
+{{- end -}}
+---
+{{ .OCIRepository -}}
+---
+{{ .HelmRelease -}}
+`
+
 const CatalogCRTemplate = `
 {{- .ConfigMap -}}
 ---
