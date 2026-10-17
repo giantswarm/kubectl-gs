@@ -2,7 +2,7 @@
 #
 #    devctl
 #
-#    https://github.com/giantswarm/devctl/blob/abc5bac3d3d80f2297debd3f8b12ed79ba948740/pkg/gen/input/makefile/internal/file/Makefile.gen.go.mk.template
+#    https://github.com/giantswarm/devctl/blob/08fb95b2ab602fcd8941aef7eba24edba72982f2/pkg/gen/input/makefile/internal/file/Makefile.gen.go.mk.template
 #
 
 PACKAGE_DIR    := ./bin-dist
@@ -16,6 +16,10 @@ MAIN_SOURCE    := $(shell if test -e cmd/main.go; then echo cmd/main.go; else ec
 OS             := $(shell go env GOOS)
 SOURCES        := $(shell find . -name '*.go')
 VERSION        := $(shell gitsemver get)
+# Expanded first in every recipe that stamps VERSION into its output, so a failed
+# `gitsemver get` fails the build instead of producing an unversioned binary.
+# Targets that do not ship a version (test, lint, ...) never expand it.
+REQUIRE_VERSION = $(if $(VERSION),,$(error VERSION is empty: `gitsemver get` failed in $(CURDIR); pass VERSION=<version> to override))
 ifeq ($(OS), linux)
 EXTLDFLAGS := -static
 endif
@@ -67,14 +71,17 @@ $(APPLICATION)-windows-amd64.exe: $(APPLICATION)-v$(VERSION)-windows-amd64.exe
 	cp -a $< $@
 
 $(APPLICATION)-v$(VERSION)-%-amd64: $(SOURCES)
+	$(REQUIRE_VERSION)
 	@echo "====> $@"
 	CGO_ENABLED=0 GOOS=$* GOARCH=amd64 go build -trimpath -ldflags "$(LDFLAGS)" -o $@ "$(MAIN_SOURCE)"
 
 $(APPLICATION)-v$(VERSION)-%-arm64: $(SOURCES)
+	$(REQUIRE_VERSION)
 	@echo "====> $@"
 	CGO_ENABLED=0 GOOS=$* GOARCH=arm64 go build -trimpath -ldflags "$(LDFLAGS)" -o $@ "$(MAIN_SOURCE)"
 
 $(APPLICATION)-v$(VERSION)-windows-amd64.exe: $(SOURCES)
+	$(REQUIRE_VERSION)
 	@echo "====> $@"
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "$(LDFLAGS)" -o $@ "$(MAIN_SOURCE)"
 
@@ -124,6 +131,7 @@ $(PACKAGE_DIR)/$(APPLICATION)-v$(VERSION)-%-arm64.tar.gz: $(APPLICATION)-v$(VERS
 
 .PHONY: install
 install: ## Install the application.
+	$(REQUIRE_VERSION)
 	@echo "====> $@"
 	go build -ldflags "$(LDFLAGS)" -o "$(shell go env GOPATH)/bin/$(APPLICATION)" "$(MAIN_SOURCE)"
 
@@ -180,6 +188,7 @@ test: ## Runs go test with default values (race detector when a C toolchain is a
 
 .PHONY: build-docker
 build-docker: build-linux ## Builds docker image to registry.
+	$(REQUIRE_VERSION)
 	@echo "====> $@"
 	cp -a $(APPLICATION)-linux $(APPLICATION)
 	docker build -t ${APPLICATION}:${VERSION} .
