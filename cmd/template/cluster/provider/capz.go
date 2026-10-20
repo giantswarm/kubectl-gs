@@ -156,6 +156,7 @@ func BuildCapzClusterConfig(config common.ClusterConfig) capz.ClusterConfig {
 			},
 			ControlPlane: &capz.ControlPlane{
 				InstanceType: config.ControlPlaneInstanceType,
+				OIDC:         config.OIDC,
 				Replicas:     3,
 			},
 			Release: &capz.Release{

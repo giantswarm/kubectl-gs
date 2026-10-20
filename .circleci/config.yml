@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@10.12.1
+  architect: giantswarm/architect@10.13.9
 
 jobs:
   debug-tag:
@@ -14,7 +14,7 @@ jobs:
 
   update-krew-index:
     docker:
-      - image: cimg/go:1.27.1
+      - image: cimg/go:1.27.2
 
     environment:
       KREW_RELEASE_BOT_VERSION: v0.0.38
@@ -134,8 +134,10 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
 
+      # Stable tags only: a release candidate is a GitHub pre-release, which
+      # krew-release-bot refuses, and krew users get stable versions only.
       - update-krew-index:
           requires:
             - upload-release-assets
@@ -144,4 +146,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/

@@ -27,6 +27,11 @@ data:
         topology: {}
       controlPlane:
         instanceType: control-plane-instance-type
+        oidc:
+          clientId: dex-k8s-authenticator
+          groupsClaim: groups
+          issuerUrl: https://dex.my-mc.example.com
+          usernameClaim: email
       metadata:
         description: cluster testing a cluster-aws dev build
         name: test14

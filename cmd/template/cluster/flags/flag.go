@@ -97,6 +97,7 @@ const (
 	flagGenerateName             = "generate-name"
 	flagKubernetesVersion        = "kubernetes-version"
 	flagName                     = "name"
+	FlagDisableOIDC              = "disable-oidc"
 	flagOIDCIssuerURL            = "oidc-issuer-url"
 	flagOIDCCAFile               = "oidc-ca-file"
 	flagOIDCClientID             = "oidc-client-id"
@@ -147,6 +148,7 @@ type Flag struct {
 	CloudDirector common.CloudDirectorConfig
 	App           common.AppConfig
 	OIDC          common.OIDC
+	DisableOIDC   bool
 
 	Print *genericclioptions.PrintFlags
 }
@@ -260,11 +262,12 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.KubernetesVersion, flagKubernetesVersion, defaultKubernetesVersion, "Cluster Kubernetes version.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", fmt.Sprintf("Unique identifier of the cluster. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagGenerateName))
 	cmd.Flags().BoolVar(&f.GenerateName, flagGenerateName, false, fmt.Sprintf("Generate a random identifier of the cluster. We recommend to instead choose a name explicitly using --%s. You must specify either --%s or --%s (except for vintage where, for CLI compatibility, we kept the old default of randomly generating a name if you do not specify one of these flags).", flagName, flagName, flagGenerateName))
-	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL.")
-	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to CA file used to verify OIDC issuer (optional).")
-	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID.")
-	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "email", "OIDC username claim.")
-	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "groups", "OIDC groups claim.")
+	cmd.Flags().BoolVar(&f.DisableOIDC, FlagDisableOIDC, false, "Leave global.controlPlane.oidc out, so that the workload cluster's API server trusts no OIDC issuer. By default the cluster trusts the OIDC issuer (Dex) of the management cluster the kubeconfig context points at. Cannot be combined with the --oidc-* flags. Supported for CAPA, CAPZ, vSphere and Cloud Director.")
+	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL the cluster trusts instead of the management cluster's Dex. Requires --"+flagOIDCClientID+".")
+	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to a PEM file with the CA certificate used to verify the OIDC issuer (optional).")
+	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID. Default: the management cluster's.")
+	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "", "OIDC username claim. Default: the management cluster's, or email with --"+flagOIDCIssuerURL+".")
+	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "", "OIDC groups claim. Default: the management cluster's, or groups with --"+flagOIDCIssuerURL+".")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Workload cluster organization.")
 	cmd.Flags().StringVar(&f.PodsCIDR, flagPodsCIDR, "", "CIDR used for the pods.")
@@ -404,10 +407,39 @@ func (f *Flag) Validate(cmd *cobra.Command) error {
 			return microerror.Maskf(invalidFlagError, "--%s must contain valid label definitions (%s)", flagLabel, err)
 		}
 
+		err = f.validateOIDC()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
 		if !isValidServicePriority(f.ServicePriority) {
 			return microerror.Maskf(invalidFlagError, "--%s value %s is invalid. Must be one of %v.", flagServicePriority, f.ServicePriority, getServicePriorities())
 		}
 
+	}
+
+	return nil
+}
+
+func (f *Flag) validateOIDC() error {
+	given := map[string]string{
+		flagOIDCIssuerURL:     f.OIDC.IssuerURL,
+		flagOIDCCAFile:        f.OIDC.CAFile,
+		flagOIDCClientID:      f.OIDC.ClientID,
+		flagOIDCUsernameClaim: f.OIDC.UsernameClaim,
+		flagOIDCGroupsClaim:   f.OIDC.GroupsClaim,
+	}
+
+	if f.DisableOIDC {
+		for _, name := range []string{flagOIDCIssuerURL, flagOIDCCAFile, flagOIDCClientID, flagOIDCUsernameClaim, flagOIDCGroupsClaim} {
+			if given[name] != "" {
+				return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive: --%s leaves the OIDC settings out", FlagDisableOIDC, name, FlagDisableOIDC)
+			}
+		}
+	}
+
+	if f.OIDC.IssuerURL != "" && f.OIDC.ClientID == "" {
+		return microerror.Maskf(invalidFlagError, "--%s must not be empty when specifying --%s", flagOIDCClientID, flagOIDCIssuerURL)
 	}
 
 	return nil

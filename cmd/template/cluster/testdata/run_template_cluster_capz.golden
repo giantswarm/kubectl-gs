@@ -8,6 +8,11 @@ data:
           enabled: true
       controlPlane:
         instanceType: B2s
+        oidc:
+          clientId: dex-k8s-authenticator
+          groupsClaim: groups
+          issuerUrl: https://dex.my-mc.example.com
+          usernameClaim: email
         replicas: 3
       metadata:
         description: just a test cluster

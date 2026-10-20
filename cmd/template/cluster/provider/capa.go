@@ -343,6 +343,7 @@ func BuildCapaClusterConfig(config common.ClusterConfig) capa.ClusterConfig {
 			},
 			ControlPlane: &capa.ControlPlane{
 				InstanceType: config.ControlPlaneInstanceType,
+				OIDC:         config.OIDC,
 			},
 			Metadata: &capa.Metadata{
 				Name:            config.Name,

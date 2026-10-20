@@ -44,9 +44,9 @@ type Proxy struct {
 }
 
 type ControlPlane struct {
-	Replicas        int              `json:"replicas,omitempty"`
-	Oidc            *common.OIDC     `json:"oidc,omitempty"`
-	MachineTemplate *MachineTemplate `json:"machineTemplate,omitempty"`
+	Replicas        int                `json:"replicas,omitempty"`
+	OIDC            *common.OIDCValues `json:"oidc,omitempty"`
+	MachineTemplate *MachineTemplate   `json:"machineTemplate,omitempty"`
 }
 
 type MachineTemplate struct {

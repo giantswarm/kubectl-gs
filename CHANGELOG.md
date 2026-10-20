@@ -16,6 +16,25 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   `--dry-run` lists the files it would change without writing anything. Structure version 1 is still the
   only one, so there is nothing to upgrade yet; every future structure bump ships with its migration.
   `gitops check` now points at it when the repository is behind.
+- `template cluster`: the `--disable-oidc` flag leaves `global.controlPlane.oidc` out.
+
+### Changed
+
+- `template cluster`: for CAPA, CAPZ, vSphere and Cloud Director, the cluster's API server trusts the OIDC issuer (Dex) of the management cluster the kubeconfig context points at by default. `global.controlPlane.oidc` is read from the management cluster's own control plane; given `--oidc-*` flags override single settings, `--oidc-issuer-url` with `--oidc-client-id` names another issuer. A failed lookup is an error naming the cause and `--disable-oidc`. `--oidc-ca-file` now renders its PEM file as `caPem`, and Cloud Director renders the OIDC keys the chart's schema expects.
+
+- Releases are cut by the Auto Release workflow: every merge to `main` publishes a release candidate `vX.Y.Z-rc.N` from the conventional commit subjects, and a stable release promotes the latest candidate. The release-PR workflows are gone. The krew index is updated for stable releases only.
+
+## [5.9.1] - 2026-10-09
+
+### Fixed
+
+- `deploy chart`: reject Helm release names longer than 53 characters before applying any resource.
+
+## [5.9.0] - 2026-10-09
+
+### Added
+
+- `deploy chart`: add `--bundle` flag to deploy bundle charts in the organization namespace using the `automation` service account.
 
 ### Fixed
 
@@ -1884,7 +1903,9 @@ This release supports rendering for CRs:
 - `AppCatalog`
 - `App`
 
-[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kubectl-gs/compare/v5.9.1...HEAD
+[5.9.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.9.0...v5.9.1
+[5.9.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.1...v5.9.0
 [5.8.1]: https://github.com/giantswarm/kubectl-gs/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.2...v5.8.0
 [5.7.2]: https://github.com/giantswarm/kubectl-gs/compare/v5.7.1...v5.7.2
