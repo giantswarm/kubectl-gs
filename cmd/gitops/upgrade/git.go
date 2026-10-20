@@ -53,7 +53,10 @@ func dirtyPaths(repoPath string) ([]string, error) {
 }
 
 func git(repoPath string, args ...string) (string, error) {
-	cmd := exec.Command("git", append([]string{"-C", repoPath, "-c", "core.quotepath=false"}, args...)...)
+	// nosec is applied here, the binary is a fixed `git` run without a shell,
+	// args are fixed strings from this package, and repoPath, the only user
+	// input, is passed as a single argument to -C, never parsed as an option.
+	cmd := exec.Command("git", append([]string{"-C", repoPath, "-c", "core.quotepath=false"}, args...)...) // #nosec G204
 	cmd.Env = gitEnv(os.Environ())
 
 	var stdout, stderr bytes.Buffer
