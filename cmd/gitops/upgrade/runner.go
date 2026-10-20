@@ -35,6 +35,10 @@ type runner struct {
 	migrations []migration.Migration
 	target     int
 
+	// gitErr is why git could not vouch for the repository, nil when it
+	// tracks it. Found by ensureClean, or before a version only bump.
+	gitErr error
+
 	// tracked records whether git tracks the repository, as found by
 	// ensureClean.
 	tracked bool
@@ -127,8 +131,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		}
 	} else if !dryRun {
 		// Nothing to guard, only whether to suggest `git diff` afterwards.
-		_, err = r.dirtyPaths(repoPath)
-		r.tracked = err == nil
+		_, r.gitErr = r.dirtyPaths(repoPath)
+		r.tracked = r.gitErr == nil
 	}
 
 	result, err := plan.Run(r.fs, repoPath, md, dryRun)
@@ -185,6 +189,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 // can still help, for undoHint.
 func (r *runner) ensureClean(repoPath string) error {
 	dirty, err := r.dirtyPaths(repoPath)
+	r.gitErr = err
 	r.tracked = err == nil
 
 	if r.flag.Force {
@@ -236,8 +241,10 @@ func (r *runner) ensureClean(repoPath string) error {
 // safe to suggest, and outside git there is nothing to suggest at all.
 func (r *runner) undoHint(repoPath string) string {
 	switch {
-	case !r.tracked:
+	case errors.Is(r.gitErr, errNotTracked):
 		return "Some files may already be changed, and as git does not track the repository, they cannot be restored automatically."
+	case r.gitErr != nil:
+		return fmt.Sprintf("Some files may already be changed, and git could not check the repository (%s), so check them by hand before running the upgrade again.", r.gitErr)
 	case r.flag.Force:
 		return fmt.Sprintf("Some files may already be changed. Check them with `%s` before running the upgrade again.", gitCommand(repoPath, "status"))
 	default:

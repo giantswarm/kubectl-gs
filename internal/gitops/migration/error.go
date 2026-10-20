@@ -14,6 +14,11 @@ var missingMigrationError = &microerror.Error{
 	Kind: "missingMigrationError",
 }
 
+// IsMissingMigration asserts missingMigrationError.
+func IsMissingMigration(err error) bool {
+	return microerror.Cause(err) == missingMigrationError
+}
+
 // unversionedLayerError is returned for layers recorded at structure version
 // 0, which predates structure versioning. There is no migration from there, as
 // nothing tells what such a layer looks like.

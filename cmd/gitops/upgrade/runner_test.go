@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
@@ -357,5 +358,48 @@ func Test_Upgrade_VersionOnlyOutsideGit(t *testing.T) {
 	md, err := metadata.Load(fs, testRepo)
 	if err != nil || md.StructureVersion != 2 {
 		t.Errorf("expected the repository to be recorded at 2, got %v, %v", md, err)
+	}
+}
+
+// The repository is given with --local-path: a positional argument must be
+// refused rather than the current directory upgraded instead.
+func Test_Upgrade_RefusesPositionalArgs(t *testing.T) {
+	cmd, err := New(Config{Logger: microloggertest.New(), FileSystem: afero.NewMemMapFs()})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if cmd.Args(cmd, []string{"../other-repo"}) == nil {
+		t.Errorf("expected a positional argument to be refused")
+	}
+	if err := cmd.Args(cmd, nil); err != nil {
+		t.Errorf("expected no arguments to be accepted, got: %s", err)
+	}
+}
+
+// With --force, a git failure other than an untracked repository must not be
+// reported as one.
+func Test_Upgrade_ForcedHintNamesGitFailure(t *testing.T) {
+	fs := versionOneRepo(t)
+	out := new(bytes.Buffer)
+
+	r := newTestRunner(fs.Fs, 2, out)
+	r.flag.Force = true
+	r.migrations = []migration.Migration{{
+		From:        1,
+		Description: "Always fails",
+		Kinds:       []string{metadata.LayerOrganization},
+		Apply: func(*afero.Afero, string, metadata.Layer) ([]string, error) {
+			return nil, fmt.Errorf("boom")
+		},
+	}}
+	r.dirtyPaths = func(string) ([]string, error) { return nil, errGitNotFound }
+
+	err := r.run(context.Background(), newTestCommand(testRepo, false), nil)
+	if err == nil || !strings.Contains(err.Error(), "git could not check the repository (git is not installed)") {
+		t.Errorf("expected the hint to name the git failure, got: %v", err)
+	}
+	if strings.Contains(err.Error(), "does not track") {
+		t.Errorf("expected the hint not to claim git does not track the repository, got: %s", err)
 	}
 }

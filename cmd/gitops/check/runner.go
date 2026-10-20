@@ -191,7 +191,15 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 	// newer kubectl-gs, say why it cannot, rather than send the user to a
 	// command that refuses.
 	_, err := migration.NewPlan(md, migration.Migrations, metadata.StructureVersion)
-	if err != nil {
+	if migration.IsMissingMigration(err) {
+		// A bug in kubectl-gs rather than in the repository, but the
+		// repository is still behind: say so, and where to read what changed.
+		return microerror.Maskf(
+			outOfSyncError,
+			"the repository was generated with an older repository structure than this kubectl-gs produces (version %d), and this kubectl-gs has no migration to bring it there. This is a bug in kubectl-gs, please report it.\nSee https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md for what changed.",
+			metadata.StructureVersion,
+		)
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 

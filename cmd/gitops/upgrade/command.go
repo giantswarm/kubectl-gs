@@ -94,7 +94,11 @@ func New(config Config) (*cobra.Command, error) {
 		Short:   shortDescription,
 		Long:    longDescription,
 		Example: examples,
-		RunE:    r.Run,
+		// The repository is given with --local-path. A positional argument
+		// would otherwise be ignored, and the current directory upgraded
+		// instead of the repository the user meant.
+		Args: cobra.NoArgs,
+		RunE: r.Run,
 	}
 
 	f.Init(c)

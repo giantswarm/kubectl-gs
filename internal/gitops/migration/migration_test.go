@@ -183,8 +183,8 @@ func Test_NewPlan_MissingMigration(t *testing.T) {
 	_, md := testRepository(t)
 
 	_, err := NewPlan(md, nil, 2)
-	if err == nil {
-		t.Fatalf("expected an error for a missing migration")
+	if !IsMissingMigration(err) {
+		t.Fatalf("expected a missing migration error, got: %v", err)
 	}
 }
 
