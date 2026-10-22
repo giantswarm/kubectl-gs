@@ -7,6 +7,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Changed
+
+- `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
+
+## [5.10.0] - 2026-10-12
+
 ### Added
 
 - `template cluster`: the `--disable-oidc` flag leaves `global.controlPlane.oidc` out.
@@ -14,6 +20,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 ### Changed
 
 - `template cluster`: for CAPA, CAPZ, vSphere and Cloud Director, the cluster's API server trusts the OIDC issuer (Dex) of the management cluster the kubeconfig context points at by default. `global.controlPlane.oidc` is read from the management cluster's own control plane; given `--oidc-*` flags override single settings, `--oidc-issuer-url` with `--oidc-client-id` names another issuer. A failed lookup is an error naming the cause and `--disable-oidc`. `--oidc-ca-file` now renders its PEM file as `caPem`, and Cloud Director renders the OIDC keys the chart's schema expects.
+
+## [5.9.2] - 2026-10-11
+
+### Changed
 
 - Releases are cut by the Auto Release workflow: every merge to `main` publishes a release candidate `vX.Y.Z-rc.N` from the conventional commit subjects, and a stable release promotes the latest candidate. The release-PR workflows are gone. The krew index is updated for stable releases only.
 
