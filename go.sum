@@ -229,8 +229,8 @@ github.com/giantswarm/micrologger v1.1.2 h1:dNmnGZgAT0rnZkpc2ivj1shJ3Stnnjsy7jIi
 github.com/giantswarm/micrologger v1.1.2/go.mod h1:lJe2gBm3O3miycXjWOgDh6vVuaKCACsPjBcobc0dvPM=
 github.com/giantswarm/organization-operator v1.6.4 h1:t0G0hoB7TfeGzRnr58NIwO6LAmNcQgJ5vL+GtB0ydG8=
 github.com/giantswarm/organization-operator v1.6.4/go.mod h1:Rw9gG/ReI5YfvoC85F9H5wH2aWguUR7JY/NfTjZC2Jc=
-github.com/giantswarm/pagekit v0.3.0 h1:OcCLu+ObVvqaeqSJn9DFYIujAZqqydwTu+5fxPOgHao=
-github.com/giantswarm/pagekit v0.3.0/go.mod h1:bXMRzjARa/TewLywz4naTh8YsGzbfSLUoGlEfM92oPQ=
+github.com/giantswarm/pagekit v0.3.1 h1:m2KIW2FY4YEFoVm8TrC1rJiCdnrWHnzYo9i+XsGlIKA=
+github.com/giantswarm/pagekit v0.3.1/go.mod h1:bXMRzjARa/TewLywz4naTh8YsGzbfSLUoGlEfM92oPQ=
 github.com/giantswarm/releases/sdk v0.13.0 h1:xEAO+rI820X/XTeMDF2IowmBKEbHQ0PS5LkpDAMRmmY=
 github.com/giantswarm/releases/sdk v0.13.0/go.mod h1:YBRAKlJhZkt3hIxOIuQN5CD7A67it67s7GjGaE1yedU=
 github.com/giantswarm/telemetrydeck-go v0.3.11 h1:3n97qxUjMGcENjBIGHQCqXlHsi7ioRRqEyxN7smjS6A=
