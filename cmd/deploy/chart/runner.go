@@ -221,8 +221,11 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 	// Parse --values-from references.
 	var valuesFrom []deploychart.ValuesFromReference
 	for _, vf := range r.flag.ValuesFrom {
-		kind, name, _ := strings.Cut(vf, "/")
-		valuesFrom = append(valuesFrom, deploychart.ValuesFromReference{Kind: kind, Name: name})
+		ref, err := parseValuesFrom(vf)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		valuesFrom = append(valuesFrom, ref)
 	}
 
 	targetNS := r.flag.TargetNS
