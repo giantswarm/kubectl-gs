@@ -3,6 +3,7 @@ package wcluster
 import (
 	"context"
 	"io"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
+	gitopskey "github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	structure "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/workload-cluster"
 	commonkey "github.com/giantswarm/kubectl-gs/v6/internal/key"
@@ -65,6 +67,24 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		config.ClusterUserConfig = strings.TrimSpace(config.ClusterUserConfig)
 	}
 
+	localPath := ""
+	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
+	if localPathFlag != nil {
+		localPath = localPathFlag.Value.String()
+	}
+
+	// A management cluster added with `--skip-encryption` has no `secrets`
+	// directory, so its workload clusters get no SOPS key storage either.
+	secretsDir := filepath.Join(
+		localPath,
+		gitopskey.ResourcePath(gitopskey.BaseDirPath(config.ManagementCluster, "", ""), gitopskey.SecretsDirName()),
+	)
+	hasSecretsDir, err := afero.DirExists(afero.NewOsFs(), secretsDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	config.SkipEncryption = !hasSecretsDir
+
 	creatorConfig, err := structure.NewWorkloadCluster(config)
 	if err != nil {
 		return microerror.Mask(err)
@@ -77,9 +97,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		creatorConfig.DryRun, _ = strconv.ParseBool(dryRunFlag.Value.String())
 	}
 
-	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
 	if localPathFlag != nil {
-		creatorConfig.Path = localPathFlag.Value.String()
+		creatorConfig.Path = localPath
 	}
 
 	creator := creator.NewCreator(*creatorConfig)

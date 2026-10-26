@@ -68,9 +68,13 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	// creator to create something or modify it, assuming it exists. So instead of tweaking
 	// the creator's logic, I decided to drop an empty Secret and edit it with creator's
 	// post modifiers.
-	err = common.AppendFromTemplate(&fsObjects, secretsDir, wctmpl.GetSecretsDirectoryTemplates, config)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	// A management cluster without encryption has no `secrets` directory to put it in.
+	// `add encryption` creates the Secret when it is missing.
+	if !config.SkipEncryption {
+		err = common.AppendFromTemplate(&fsObjects, secretsDir, wctmpl.GetSecretsDirectoryTemplates, config)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	// We then continue at the `workload-clusters` directory. This should already
