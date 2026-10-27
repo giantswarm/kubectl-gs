@@ -36,8 +36,10 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md
 With --base, the cluster App's version is the version of the base's cluster
 chart that --release ships. It is read from the release in the
 giantswarm/releases repository on GitHub, for example
-capa/v36.1.1/release.yaml for cluster-aws. Set --cluster-app-version to use
-another version without the lookup.`
+capa/v36.1.1/release.yaml for cluster-aws or azure/v36.1.1/release.yaml for
+cluster-azure. Archived releases are read from the provider's archived
+directory. Set --cluster-app-version to use another version without the
+lookup.`
 
 	examples = `  # Add dummy workload cluster structure, without cluster definition
   kubectl gs gitops add wc \

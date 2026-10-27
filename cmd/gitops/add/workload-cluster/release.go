@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	releaseURLFormat = "https://raw.githubusercontent.com/giantswarm/releases/master/%s/v%s/release.yaml"
-	fetchTimeout     = 30 * time.Second
+	releaseURLFormat         = "https://raw.githubusercontent.com/giantswarm/releases/master/%s/v%s/release.yaml"
+	archivedReleaseURLFormat = "https://raw.githubusercontent.com/giantswarm/releases/master/%s/archived/v%s/release.yaml"
+	fetchTimeout             = 30 * time.Second
 )
 
 // fetchFunc returns the body of the document at url. It returns an error
@@ -104,7 +105,8 @@ func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 }
 
 // releaseDirectory returns the giantswarm/releases directory that holds the
-// releases of a cluster chart.
+// releases of a cluster chart: capa for cluster-aws, and the provider name for
+// the others, such as azure, vsphere, cloud-director, eks and aks.
 func releaseDirectory(chartName string) string {
 	if chartName == "cluster-aws" {
 		return "capa"
@@ -114,13 +116,17 @@ func releaseDirectory(chartName string) string {
 
 // releaseClusterAppVersion returns the version of the cluster chart that a
 // release ships, from the release's Release resource in giantswarm/releases.
+// Older releases are moved to the provider's archived directory.
 func releaseClusterAppVersion(ctx context.Context, fetch fetchFunc, chartName, release string) (string, error) {
 	release = strings.TrimPrefix(release, "v")
 	dir := releaseDirectory(chartName)
 
 	data, err := fetch(ctx, fmt.Sprintf(releaseURLFormat, dir, release))
 	if IsNotFound(err) {
-		return "", microerror.Maskf(notFoundError, "release v%s was not found for provider %s in giantswarm/releases", release, dir)
+		data, err = fetch(ctx, fmt.Sprintf(archivedReleaseURLFormat, dir, release))
+	}
+	if IsNotFound(err) {
+		return "", microerror.Maskf(notFoundError, "release v%s was not found for provider %s in giantswarm/releases, pass --%s to skip the lookup", release, dir, flagClusterAppVersion)
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}

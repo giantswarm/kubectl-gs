@@ -68,6 +68,18 @@ func fakeFetch(t *testing.T, wantURL string, body string, err error) fetchFunc {
 	}
 }
 
+// fakeReleases serves the given release files by URL, and answers any other
+// URL with a not found error.
+func fakeReleases(files map[string]string) fetchFunc {
+	return func(ctx context.Context, url string) ([]byte, error) {
+		body, ok := files[url]
+		if !ok {
+			return nil, microerror.Maskf(notFoundError, "%s was not found", url)
+		}
+		return []byte(body), nil
+	}
+}
+
 func Test_clusterChartName(t *testing.T) {
 	testCases := []struct {
 		name          string
@@ -134,6 +146,7 @@ func Test_releaseDirectory(t *testing.T) {
 		"cluster-vsphere":        "vsphere",
 		"cluster-cloud-director": "cloud-director",
 		"cluster-eks":            "eks",
+		"cluster-aks":            "aks",
 	}
 
 	for chart, expected := range testCases {
@@ -145,6 +158,7 @@ func Test_releaseDirectory(t *testing.T) {
 
 func Test_releaseClusterAppVersion(t *testing.T) {
 	const url = "https://raw.githubusercontent.com/giantswarm/releases/master/capa/v36.1.1/release.yaml"
+	const archivedURL = "https://raw.githubusercontent.com/giantswarm/releases/master/capa/archived/v36.1.1/release.yaml"
 
 	testCases := []struct {
 		name          string
@@ -169,11 +183,20 @@ func Test_releaseClusterAppVersion(t *testing.T) {
 			expected:  "11.0.2",
 		},
 		{
+			name:      "found in archived",
+			release:   "36.1.1",
+			chartName: "cluster-aws",
+			fetch: func(t *testing.T) fetchFunc {
+				return fakeReleases(map[string]string{archivedURL: testRelease})
+			},
+			expected: "11.0.2",
+		},
+		{
 			name:      "release not found",
 			release:   "36.1.1",
 			chartName: "cluster-aws",
 			fetch: func(t *testing.T) fetchFunc {
-				return fakeFetch(t, url, "", microerror.Maskf(notFoundError, "%s was not found", url))
+				return fakeReleases(map[string]string{})
 			},
 			expectedError: "release v36.1.1 was not found for provider capa",
 		},
@@ -202,6 +225,32 @@ func Test_releaseClusterAppVersion(t *testing.T) {
 			}
 			if version != tc.expected {
 				t.Fatalf("expected %q, got %q", tc.expected, version)
+			}
+		})
+	}
+}
+
+func Test_releaseClusterAppVersion_providers(t *testing.T) {
+	testCases := map[string]string{
+		"cluster-aws":            "capa",
+		"cluster-azure":          "azure",
+		"cluster-vsphere":        "vsphere",
+		"cluster-cloud-director": "cloud-director",
+		"cluster-eks":            "eks",
+		"cluster-aks":            "aks",
+	}
+
+	for chartName, dir := range testCases {
+		t.Run(chartName, func(t *testing.T) {
+			url := "https://raw.githubusercontent.com/giantswarm/releases/master/" + dir + "/v36.1.1/release.yaml"
+			body := strings.Replace(testRelease, "cluster-aws", chartName, 1)
+
+			version, err := releaseClusterAppVersion(context.Background(), fakeReleases(map[string]string{url: body}), chartName, "36.1.1")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if version != "11.0.2" {
+				t.Fatalf("expected %q, got %q", "11.0.2", version)
 			}
 		})
 	}

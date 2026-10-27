@@ -9,7 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
-- `gitops add workload-cluster`: with `--base`, the version of the cluster App is the version of the base's cluster chart that `--release` ships, for example `cluster-aws` in `capa/v36.1.1/release.yaml` of [giantswarm/releases](https://github.com/giantswarm/releases). The new `--cluster-app-version` flag sets another version and skips the lookup.
+- `gitops add workload-cluster`: with `--base`, the version of the cluster App is the version of the base's cluster chart that `--release` ships, for example `cluster-aws` in `capa/v36.1.1/release.yaml` of [giantswarm/releases](https://github.com/giantswarm/releases). It works for every provider there (`capa`, `azure`, `vsphere`, `cloud-director`, `eks` and `aks`), and for archived releases. The new `--cluster-app-version` flag sets another version and skips the lookup.
 
 ### Changed
 
