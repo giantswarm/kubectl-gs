@@ -1,10 +1,13 @@
-{{- if and .ClusterBase .ClusterUserConfig -}}
+{{- if .ClusterBase -}}
 apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
   name: ${cluster_name}
   namespace: org-${organization}
 spec:
+  {{- if .ClusterAppVersion }}
+  version: "{{ .ClusterAppVersion }}"
+  {{- end }}
   userConfig:
     configMap:
       name: {{ .WorkloadCluster }}-cluster-userconfig

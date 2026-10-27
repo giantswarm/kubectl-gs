@@ -7,9 +7,17 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `gitops add workload-cluster`: the `--cluster-app-version` flag sets the version of the cluster App, for example the `cluster-aws` version the release ships. It is required with `--base`.
+
 ### Changed
 
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
+
+### Fixed
+
+- `gitops add workload-cluster`: a cluster created with `--base` can now install. The cluster App gets its `spec.version` from `--cluster-app-version`, and `--release` is written to the cluster values as `global.release.version`, merged with the values from `--cluster-user-config` and taking precedence over them. The merged values are written with sorted keys and without comments. The values ConfigMap and its App patch are created for every `--base`, and the `cluster` kustomization uses `patches` instead of the deprecated `patchesStrategicMerge`.
 
 ## [5.10.0] - 2026-10-12
 

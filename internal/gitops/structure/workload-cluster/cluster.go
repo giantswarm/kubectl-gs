@@ -2,8 +2,10 @@ package wcluster
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
@@ -19,6 +21,13 @@ import (
 // structure.
 func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
+
+	if config.ClusterBase != "" && config.Release != "" {
+		config.ClusterUserConfig, err = clusterUserConfigWithRelease(config.ClusterUserConfig, config.Release)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	// Holds management-cluster/MC_NAME
 	mcDir := key.BaseDirPath(config.ManagementCluster, "", "")
@@ -149,4 +158,40 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	}
 
 	return &creatorConfig, nil
+}
+
+// clusterUserConfigWithRelease sets `global.release.version` in the cluster
+// app values, keeping all other values the user gave. Cluster charts read the
+// release version from there.
+func clusterUserConfigWithRelease(userConfig, release string) (string, error) {
+	values := map[string]interface{}{}
+	err := yaml.Unmarshal([]byte(userConfig), &values)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	// Empty user configuration unmarshals to a nil map.
+	if values == nil {
+		values = map[string]interface{}{}
+	}
+
+	global, ok := values["global"].(map[string]interface{})
+	if !ok {
+		global = map[string]interface{}{}
+		values["global"] = global
+	}
+
+	releaseValues, ok := global["release"].(map[string]interface{})
+	if !ok {
+		releaseValues = map[string]interface{}{}
+		global["release"] = releaseValues
+	}
+
+	releaseValues["version"] = release
+
+	data, err := yaml.Marshal(values)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return strings.TrimSpace(string(data)), nil
 }

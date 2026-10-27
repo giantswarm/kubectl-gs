@@ -20,6 +20,7 @@ const (
 workload-cluster \
 [--base <path_to_base>] \
 [--release <version>] \
+[--cluster-app-version <version>] \
 [--cluster-user-config <path_to_values.yaml>] \
 --name <wc_id> \
 --management-cluster <mc_code_name> \
@@ -46,7 +47,8 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md`
   --organization myorg \
   --repository-name gitops-demo \
   --base bases/clusters/openstack \
-  --release 29.0.0
+  --release 29.0.0 \
+  --cluster-app-version 1.0.0
 
   # Add dummy workload cluster structure with definition from base and extra configuration
   kubectl gs gitops add wc \
@@ -56,6 +58,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md`
   --repository-name gitops-demo \
   --base bases/clusters/openstack \
   --release 29.0.0 \
+  --cluster-app-version 1.0.0 \
   --cluster-user-config /tmp/cluster_user_config.yaml`
 )
 

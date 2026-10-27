@@ -4,6 +4,7 @@ metadata:
   name: ${cluster_name}
   namespace: org-${organization}
 spec:
+  version: "2.3.0"
   userConfig:
     configMap:
       name: demowc-cluster-userconfig
