@@ -143,7 +143,8 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	if config.ClusterBase != "" {
 		fsModifiers[wcFile] = fluxkusmod.KustomizationModifier{
 			PostBuildEnvs: map[string]string{
-				"release": config.Release,
+				"cluster_description": fmt.Sprintf("%s managed by GitOps", config.WorkloadCluster),
+				"release":             config.Release,
 			},
 		}
 	}

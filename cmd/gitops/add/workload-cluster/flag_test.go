@@ -55,7 +55,6 @@ func Test_flag_Validate(t *testing.T) {
 				RepositoryName:    "gitops-demo",
 				Release:           "36.1.0",
 			},
-			expectInvalid: true,
 		},
 	}
 

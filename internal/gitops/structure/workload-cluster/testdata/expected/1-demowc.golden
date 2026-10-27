@@ -9,6 +9,7 @@ spec:
   postBuild:
     substitute:
       cluster_name: demowc
+      cluster_description: "demowc managed by GitOps"
       release: 0.13.0
       organization: demoorg
   prune: false
