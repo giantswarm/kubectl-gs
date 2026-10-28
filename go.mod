@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/organization-operator v1.6.4
-	github.com/giantswarm/pagekit v0.3.1
+	github.com/giantswarm/pagekit v0.3.2
 	github.com/giantswarm/releases/sdk v0.13.0
 	github.com/giantswarm/telemetrydeck-go v0.3.11
 	github.com/golang-jwt/jwt/v5 v5.3.1
