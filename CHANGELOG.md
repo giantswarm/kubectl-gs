@@ -15,6 +15,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- `gitops upgrade`: new command bringing the parts of a GitOps repository generated with an older repository
+  structure up to the one this kubectl-gs produces, one structure version at a time, and recording the new
+  version in `.gitops-metadata.yaml`. A failed upgrade is undone with git, so the command refuses to run
+  migrations on a repository with uncommitted changes, or one git does not track, unless `--force` is given.
+  `--dry-run` lists the files it would change without writing anything. Structure version 1 is still the
+  only one, so there is nothing to upgrade yet; every future structure bump ships with its migration.
+  `gitops check` now points at it when the repository is behind.
 - `template cluster`: the `--disable-oidc` flag leaves `global.controlPlane.oidc` out.
 
 ### Changed
