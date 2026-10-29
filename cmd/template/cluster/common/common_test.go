@@ -1,6 +1,11 @@
 package common
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+)
 
 func TestBuildClusterFluxResources(t *testing.T) {
 	config := ClusterConfig{
@@ -29,8 +34,8 @@ spec:
   timeout: 1m0s
   url: oci://gsoci.azurecr.io/charts/giantswarm/release-aws
 `
-	if string(ociRepoYAML) != expectedOCIRepo {
-		t.Errorf("unexpected OCIRepository:\n--- got ---\n%s\n--- expected ---\n%s", ociRepoYAML, expectedOCIRepo)
+	if diff := cmp.Diff(strings.Split(expectedOCIRepo, "\n"), strings.Split(string(ociRepoYAML), "\n")); diff != "" {
+		t.Errorf("unexpected OCIRepository (-want +got):\n%s", diff)
 	}
 
 	expectedHelmRelease := `apiVersion: helm.toolkit.fluxcd.io/v2
@@ -65,8 +70,8 @@ spec:
     name: e9sc4-userconfig
     valuesKey: values
 `
-	if string(helmReleaseYAML) != expectedHelmRelease {
-		t.Errorf("unexpected HelmRelease:\n--- got ---\n%s\n--- expected ---\n%s", helmReleaseYAML, expectedHelmRelease)
+	if diff := cmp.Diff(strings.Split(expectedHelmRelease, "\n"), strings.Split(string(helmReleaseYAML), "\n")); diff != "" {
+		t.Errorf("unexpected HelmRelease (-want +got):\n%s", diff)
 	}
 }
 
