@@ -11,6 +11,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
 
+### Fixed
+
+- `gitops add workload-cluster`: a cluster created with `--base` can now install. If the base's cluster App uses a `cluster-<provider>` chart, `--release` is written to the cluster values as `global.release.version`, merged with the values from `--cluster-user-config` and taking precedence over them, so the management cluster sets the App's version from the matching Release. If it uses a `release-<provider>` chart, the values are left as they are, since that chart carries the release version itself. The values ConfigMap and its App patch are created for every `--base`, the Flux Kustomization sets `cluster_description`, which the CAPA base uses, and the `cluster` kustomization uses `patches` instead of the deprecated `patchesStrategicMerge`.
+
 ## [5.10.0] - 2026-10-12
 
 ### Added

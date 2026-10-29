@@ -4,6 +4,9 @@ data:
     testKey: testValue
     topKey:
       nestedKey: nestedValue
+    global:
+      release:
+        version: 0.13.0
 kind: ConfigMap
 metadata:
   name: demowc-cluster-userconfig

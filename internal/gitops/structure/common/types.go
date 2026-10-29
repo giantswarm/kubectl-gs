@@ -31,6 +31,10 @@ type StructureConfig struct {
 	ClusterUserConfig string
 	InCluster         string
 
+	// ReleaseChart tells whether the base's cluster App uses a
+	// release-<provider> chart, which carries the release version itself.
+	ReleaseChart bool
+
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
 
