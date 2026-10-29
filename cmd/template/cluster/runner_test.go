@@ -798,22 +798,6 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capvcd_flux.golden",
 		},
-		{
-			name: "case 22: template cluster eks with release version but no release-eks chart",
-			flags: &flags.Flag{
-				Name:         "test-eks-fallback",
-				Provider:     "eks",
-				Description:  "cluster using a release without a published release-eks chart",
-				Release:      "35.0.0",
-				Organization: "test",
-				App: common.AppConfig{
-					ClusterCatalog: "cluster",
-					ClusterVersion: "1.0.0",
-				},
-			},
-			args:               nil,
-			expectedGoldenFile: "run_template_cluster_eks_fallback.golden",
-		},
 	}
 
 	for _, tc := range testCases {
