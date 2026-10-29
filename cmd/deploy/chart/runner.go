@@ -242,6 +242,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		ManagementCluster: r.flag.ManagementCluster,
 		Bundle:            r.flag.Bundle,
 		APIVersion:        crdVersions.HelmReleaseAPIVersion,
+		CreateNamespace:   true,
 	}
 
 	ociRepo := deploychart.BuildOCIRepository(ociRepoOpts)

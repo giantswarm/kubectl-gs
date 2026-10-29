@@ -45,7 +45,6 @@ type LoadBalancers struct {
 }
 
 type ControlPlane struct {
-	Image           *Image             `json:"image,omitempty"`
 	OIDC            *common.OIDCValues `json:"oidc,omitempty"`
 	Replicas        int                `json:"replicas,omitempty"`
 	MachineTemplate *MachineTemplate   `json:"machineTemplate,omitempty"`
@@ -58,10 +57,6 @@ type MTNetwork struct {
 type MTDevice struct {
 	NetworkName string `json:"networkName,omitempty"`
 	Dhcp4       bool   `json:"dhcp4,omitempty"`
-}
-
-type Image struct {
-	Repository string `json:"repository,omitempty"`
 }
 
 type MachineTemplate struct {

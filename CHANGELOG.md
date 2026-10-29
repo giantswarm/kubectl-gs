@@ -11,6 +11,14 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
 
+- `template cluster`: for releases whose `release-<provider>` chart is published in gsoci, the cluster is now templated as a Flux `OCIRepository` and `HelmRelease` that install that chart directly, instead of an App CR for the `cluster-<provider>` chart. Releases without a published release chart keep using the App CR path unchanged.
+- `template cluster --provider vsphere`: releases before v36.1.0 keep using the App CR path. Their cluster-vsphere chart (before v10.0.1, see giantswarm/cluster-vsphere#556) puts the chart version into a label, which fails as a HelmRelease.
+
+### Fixed
+
+- `template cluster --provider vsphere`: the release chart's HelmRelease now also reads values from the `--vsphere-credentials-secret-name` secret, as the App CR did through its userConfig secret. Without it `global.providerSpecific.vcenter` was empty and the install failed in `provider-secret.yaml` with `invalid value; expected string`.
+- `template cluster --provider vsphere`: no longer renders `global.controlPlane.image`. The key was removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with `additional properties 'image' not allowed`. The value matched the chart's old default, so this changes nothing about the resulting cluster.
+
 ## [5.10.0] - 2026-10-12
 
 ### Added
