@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"reflect"
 	"strings"
@@ -386,6 +387,8 @@ func TestLogin(t *testing.T) {
 }
 
 func TestMCLoginWithInstallation(t *testing.T) {
+	callbackPort := freeLocalPort(t)
+
 	testCases := []struct {
 		name string
 
@@ -440,20 +443,19 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			name: "case 4",
 			flags: &flag{
 				ClusterAdmin:       false,
-				CallbackServerPort: 8080,
+				CallbackServerPort: callbackPort,
 				LoginTimeout:       60 * time.Second,
 			},
 			startConfig:  &clientcmdapi.Config{},
-			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID},
+			serverConfig: testoidc.MockOidcServerConfig{ClientID: clientID, CallbackPort: callbackPort},
 			skipInCI:     true,
 		},
 		// Fail in case the OIDC flow does not finish within time period specified in the flag
 		{
 			name: "case 5",
 			flags: &flag{
-				ClusterAdmin:       false,
-				CallbackServerPort: 8080,
-				LoginTimeout:       500 * time.Microsecond,
+				ClusterAdmin: false,
+				LoginTimeout: 500 * time.Microsecond,
 			},
 			startConfig:    &clientcmdapi.Config{},
 			serverConfig:   testoidc.MockOidcServerConfig{ClientID: clientID},
@@ -589,6 +591,21 @@ func TestMCLoginWithInstallation(t *testing.T) {
 			}
 		})
 	}
+}
+
+// freeLocalPort returns a TCP port that was free on the loopback interface
+// when it was checked, for flows where the code under test binds the port
+// itself and the test needs to know it in advance.
+func freeLocalPort(t *testing.T) int {
+	t.Helper()
+
+	listener, err := new(net.ListenConfig).Listen(t.Context(), "tcp", "localhost:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = listener.Close() }()
+
+	return listener.Addr().(*net.TCPAddr).Port
 }
 
 func createValidTestConfig(wcSuffix string, authProvider bool) *clientcmdapi.Config {
