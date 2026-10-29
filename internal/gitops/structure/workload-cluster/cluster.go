@@ -23,7 +23,9 @@ import (
 func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	if config.ClusterBase != "" && config.Release != "" {
+	// A release-<provider> chart carries `global.release.version` in its
+	// default values, and its version in git is the release version.
+	if config.ClusterBase != "" && config.Release != "" && !config.ReleaseChart {
 		config.ClusterUserConfig, err = clusterUserConfigWithRelease(config.ClusterUserConfig, config.Release)
 		if err != nil {
 			return nil, microerror.Mask(err)

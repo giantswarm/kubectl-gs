@@ -3,6 +3,7 @@ package wcluster
 import (
 	"context"
 	"io"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -20,6 +21,7 @@ import (
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
+	fs     afero.Fs
 	stdout io.Writer
 	stderr io.Writer
 }
@@ -53,6 +55,20 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		RepositoryName:    r.flag.RepositoryName,
 	}
 
+	localPath := ""
+	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
+	if localPathFlag != nil {
+		localPath = localPathFlag.Value.String()
+	}
+
+	if r.flag.Base != "" {
+		chart, err := clusterChartName(r.fs, filepath.Join(localPath, r.flag.Base))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		config.ReleaseChart = isReleaseChart(chart)
+	}
+
 	if r.flag.ClusterUserConfig != "" {
 		config.ClusterUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
 			afero.NewOsFs(),
@@ -77,10 +93,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		creatorConfig.DryRun, _ = strconv.ParseBool(dryRunFlag.Value.String())
 	}
 
-	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
-	if localPathFlag != nil {
-		creatorConfig.Path = localPathFlag.Value.String()
-	}
+	creatorConfig.Path = localPath
 
 	creator := creator.NewCreator(*creatorConfig)
 
