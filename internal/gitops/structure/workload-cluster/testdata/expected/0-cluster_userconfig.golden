@@ -1,12 +1,12 @@
 apiVersion: v1
 data:
   values: |
-    global:
-      release:
-        version: 0.13.0
     testKey: testValue
     topKey:
       nestedKey: nestedValue
+    global:
+      release:
+        version: 0.13.0
 kind: ConfigMap
 metadata:
   name: demowc-cluster-userconfig

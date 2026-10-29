@@ -20,7 +20,6 @@ const (
 workload-cluster \
 [--base <path_to_base>] \
 [--release <version>] \
-[--cluster-app-version <version>] \
 [--cluster-user-config <path_to_values.yaml>] \
 --name <wc_id> \
 --management-cluster <mc_code_name> \
@@ -31,15 +30,7 @@ It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md
-
-With --base, the cluster App's version is the version of the base's cluster
-chart that --release ships. It is read from the release in the
-giantswarm/releases repository on GitHub, for example
-capa/v36.1.1/release.yaml for cluster-aws or azure/v36.1.1/release.yaml for
-cluster-azure. Archived releases are read from the provider's archived
-directory. Set --cluster-app-version to use another version without the
-lookup.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md`
 
 	examples = `  # Add dummy workload cluster structure, without cluster definition
   kubectl gs gitops add wc \
@@ -56,16 +47,6 @@ lookup.`
   --repository-name gitops-demo \
   --base bases/clusters/capa/template \
   --release 36.1.1
-
-  # Add dummy workload cluster structure with definition from base and a specific cluster app version
-  kubectl gs gitops add wc \
-  --name dummy \
-  --management-cluster mymc \
-  --organization myorg \
-  --repository-name gitops-demo \
-  --base bases/clusters/capa/template \
-  --release 36.1.1 \
-  --cluster-app-version 11.0.2
 
   # Add dummy workload cluster structure with definition from base and extra configuration
   kubectl gs gitops add wc \
@@ -105,8 +86,6 @@ func New(config Config) (*cobra.Command, error) {
 	r := &runner{
 		flag:   f,
 		logger: config.Logger,
-		fs:     config.FileSystem,
-		fetch:  httpFetch,
 		stderr: config.Stderr,
 		stdout: config.Stdout,
 	}

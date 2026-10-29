@@ -3,7 +3,6 @@ package wcluster
 import (
 	"context"
 	"io"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -21,8 +20,6 @@ import (
 type runner struct {
 	flag   *flag
 	logger micrologger.Logger
-	fs     afero.Fs
-	fetch  fetchFunc
 	stdout io.Writer
 	stderr io.Writer
 }
@@ -46,21 +43,9 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	localPath := "."
-	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
-	if localPathFlag != nil {
-		localPath = localPathFlag.Value.String()
-	}
-
-	clusterAppVersion, err := r.clusterAppVersion(ctx, localPath)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	config := common.StructureConfig{
 		ClusterBase:       r.flag.Base,
 		Release:           r.flag.Release,
-		ClusterAppVersion: clusterAppVersion,
 		ManagementCluster: r.flag.ManagementCluster,
 		WorkloadCluster:   r.flag.Name,
 		Organization:      r.flag.Organization,
@@ -92,7 +77,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		creatorConfig.DryRun, _ = strconv.ParseBool(dryRunFlag.Value.String())
 	}
 
-	creatorConfig.Path = localPath
+	localPathFlag := cmd.InheritedFlags().Lookup("local-path")
+	if localPathFlag != nil {
+		creatorConfig.Path = localPathFlag.Value.String()
+	}
 
 	creator := creator.NewCreator(*creatorConfig)
 
@@ -102,25 +90,4 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
-}
-
-// clusterAppVersion returns the version of the cluster App. It is
-// --cluster-app-version when set. Otherwise it is the version of the base's
-// cluster chart that --release ships, from giantswarm/releases.
-func (r *runner) clusterAppVersion(ctx context.Context, localPath string) (string, error) {
-	if r.flag.Base == "" || r.flag.ClusterAppVersion != "" {
-		return r.flag.ClusterAppVersion, nil
-	}
-
-	chartName, err := clusterChartName(r.fs, filepath.Join(localPath, r.flag.Base))
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	version, err := releaseClusterAppVersion(ctx, r.fetch, chartName, r.flag.Release)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return version, nil
 }

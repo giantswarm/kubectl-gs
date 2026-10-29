@@ -22,7 +22,7 @@ func Test_flag_Validate(t *testing.T) {
 			},
 		},
 		{
-			name: "with base, release and cluster app version",
+			name: "with base and release",
 			flag: flag{
 				Base:              "bases/clusters/capa/template",
 				ManagementCluster: "demomc",
@@ -30,7 +30,6 @@ func Test_flag_Validate(t *testing.T) {
 				Organization:      "demoorg",
 				RepositoryName:    "gitops-demo",
 				Release:           "36.1.0",
-				ClusterAppVersion: "2.3.0",
 			},
 		},
 		{
@@ -41,20 +40,8 @@ func Test_flag_Validate(t *testing.T) {
 				Name:              "demowc",
 				Organization:      "demoorg",
 				RepositoryName:    "gitops-demo",
-				ClusterAppVersion: "2.3.0",
 			},
 			expectInvalid: true,
-		},
-		{
-			name: "with base and without cluster app version",
-			flag: flag{
-				Base:              "bases/clusters/capa/template",
-				ManagementCluster: "demomc",
-				Name:              "demowc",
-				Organization:      "demoorg",
-				RepositoryName:    "gitops-demo",
-				Release:           "36.1.0",
-			},
 		},
 	}
 

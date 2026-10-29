@@ -28,7 +28,6 @@ type StructureConfig struct {
 
 	ClusterBase       string
 	Release           string
-	ClusterAppVersion string
 	ClusterUserConfig string
 	InCluster         string
 

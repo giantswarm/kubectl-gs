@@ -15,7 +15,6 @@ const (
 
 	// CAPI only
 	flagRelease           = "release"
-	flagClusterAppVersion = "cluster-app-version"
 	flagClusterUserConfig = "cluster-user-config"
 )
 
@@ -28,7 +27,6 @@ type flag struct {
 	RepositoryName    string
 
 	Release           string
-	ClusterAppVersion string
 	ClusterUserConfig string
 }
 
@@ -40,7 +38,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.SkipMAPI, flagSkipMAPI, false, "Skip `mapi` directory when adding the app.")
 	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "", "Name of the GitOps repository.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release version.")
-	cmd.Flags().StringVar(&f.ClusterAppVersion, flagClusterAppVersion, "", "Version of the cluster app. Defaults to the version that --release ships, from the giantswarm/releases repository.")
 	cmd.Flags().StringVar(&f.ClusterUserConfig, flagClusterUserConfig, "", "Cluster app user configuration to patch the base with.")
 }
 

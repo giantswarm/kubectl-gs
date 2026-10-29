@@ -1,11 +1,12 @@
 package wcluster
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/yaml"
+	"go.yaml.in/yaml/v3"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
@@ -161,38 +162,67 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	return &creatorConfig, nil
 }
 
+// releaseVersionPath is where the cluster chart's values carry the release version.
+var releaseVersionPath = []string{"global", "release", "version"}
+
 // clusterUserConfigWithRelease sets `global.release.version` in the cluster
-// app values, keeping all other values the user gave. Cluster charts read the
-// release version from there.
+// app values. All other values the user gave are kept, with their comments
+// and order. Cluster charts read the release version from there.
 func clusterUserConfigWithRelease(userConfig, release string) (string, error) {
-	values := map[string]interface{}{}
-	err := yaml.Unmarshal([]byte(userConfig), &values)
+	var doc yaml.Node
+	err := yaml.Unmarshal([]byte(userConfig), &doc)
+	if err != nil {
+		return "", microerror.Maskf(invalidConfigError, "cluster user config is not valid YAML: %s", err)
+	}
+	// Empty user configuration unmarshals to a zero node.
+	if len(doc.Content) == 0 {
+		doc = yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{{Kind: yaml.MappingNode}}}
+	}
+	if doc.Content[0].Kind != yaml.MappingNode {
+		return "", microerror.Maskf(invalidConfigError, "cluster user config must be a mapping")
+	}
+
+	setValue(doc.Content[0], release, releaseVersionPath...)
+
+	var buf bytes.Buffer
+	encoder := yaml.NewEncoder(&buf)
+	encoder.SetIndent(2)
+	err = encoder.Encode(&doc)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	// Empty user configuration unmarshals to a nil map.
-	if values == nil {
-		values = map[string]interface{}{}
-	}
-
-	global, ok := values["global"].(map[string]interface{})
-	if !ok {
-		global = map[string]interface{}{}
-		values["global"] = global
-	}
-
-	releaseValues, ok := global["release"].(map[string]interface{})
-	if !ok {
-		releaseValues = map[string]interface{}{}
-		global["release"] = releaseValues
-	}
-
-	releaseValues["version"] = release
-
-	data, err := yaml.Marshal(values)
+	err = encoder.Close()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return strings.TrimSpace(string(data)), nil
+	return strings.TrimSpace(buf.String()), nil
+}
+
+// setValue sets the string at the mapping path. Missing keys are appended,
+// and values on the way that aren't mappings are replaced by one.
+func setValue(node *yaml.Node, value string, path ...string) {
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		if node.Content[i].Value != path[0] {
+			continue
+		}
+
+		child := node.Content[i+1]
+		if len(path) == 1 {
+			child.Kind, child.Tag, child.Value, child.Content = yaml.ScalarNode, "!!str", value, nil
+			return
+		}
+		if child.Kind != yaml.MappingNode {
+			child.Kind, child.Tag, child.Value, child.Content, child.Style = yaml.MappingNode, "!!map", "", nil, 0
+		}
+		setValue(child, value, path[1:]...)
+		return
+	}
+
+	child := &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: value}
+	if len(path) > 1 {
+		child = &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
+		setValue(child, value, path[1:]...)
+	}
+	node.Content = append(node.Content, &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: path[0]}, child)
 }

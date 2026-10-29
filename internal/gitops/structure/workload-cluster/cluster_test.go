@@ -67,7 +67,6 @@ func Test_NewWorkloadCluster(t *testing.T) {
 			config: common.StructureConfig{
 				ClusterBase:       "bases/cluster/capa",
 				Release:           "0.13.0",
-				ClusterAppVersion: "2.3.0",
 				ManagementCluster: "demomc",
 				WorkloadCluster:   "demowc",
 				Organization:      "demoorg",
@@ -120,9 +119,8 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		{
 			name: "flawless with definition and configuration",
 			config: common.StructureConfig{
-				ClusterBase:       "bases/cluster/capa",
-				Release:           "0.13.0",
-				ClusterAppVersion: "2.3.0",
+				ClusterBase: "bases/cluster/capa",
+				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
@@ -178,9 +176,8 @@ topKey:
 		{
 			name: "flawless with definition and full configuration",
 			config: common.StructureConfig{
-				ClusterBase:       "bases/cluster/capa",
-				Release:           "0.13.0",
-				ClusterAppVersion: "2.3.0",
+				ClusterBase: "bases/cluster/capa",
+				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
@@ -236,9 +233,8 @@ topKey:
 		{
 			name: "flawless MAPI with definition and full configuration",
 			config: common.StructureConfig{
-				ClusterBase:       "bases/cluster/capa",
-				Release:           "0.13.0",
-				ClusterAppVersion: "2.3.0",
+				ClusterBase: "bases/cluster/capa",
+				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
@@ -296,9 +292,8 @@ topKey:
 		{
 			name: "flawless with definition and configuration with global values",
 			config: common.StructureConfig{
-				ClusterBase:       "bases/cluster/capa",
-				Release:           "0.13.0",
-				ClusterAppVersion: "2.3.0",
+				ClusterBase: "bases/cluster/capa",
+				Release:     "0.13.0",
 				ClusterUserConfig: string([]byte(`global:
   metadata:
     description: Demo cluster
@@ -384,6 +379,62 @@ testKey: testValue`)),
 				if !bytes.Equal(config.FsObjects[i].Data, expected) {
 					t.Fatalf("want matching files for '%s', got \n\n%s\n", e.RelativePath, cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
 				}
+			}
+		})
+	}
+}
+
+func Test_clusterUserConfigWithRelease(t *testing.T) {
+	testCases := []struct {
+		name       string
+		userConfig string
+		expected   string
+	}{
+		{
+			name:       "empty",
+			userConfig: "",
+			expected: `global:
+  release:
+    version: 0.13.0`,
+		},
+		{
+			name: "keeps comments and order",
+			userConfig: `# Cluster values
+zebra: 1 # last letter
+global:
+  metadata:
+    description: Demo cluster
+apple: 2`,
+			expected: `# Cluster values
+zebra: 1 # last letter
+global:
+  metadata:
+    description: Demo cluster
+  release:
+    version: 0.13.0
+apple: 2`,
+		},
+		{
+			name: "replaces existing version",
+			userConfig: `global:
+  release:
+    version: "0.1.0" # pinned
+`,
+			expected: `global:
+  release:
+    version: "0.13.0" # pinned`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := clusterUserConfigWithRelease(tc.userConfig, "0.13.0")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			if diff := cmp.Diff(tc.expected, got); diff != "" {
+				t.Fatalf("unexpected values (-want +got):\n%s", diff)
 			}
 		})
 	}

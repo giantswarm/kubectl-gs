@@ -7,17 +7,13 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Added
-
-- `gitops add workload-cluster`: with `--base`, the version of the cluster App is the version of the base's cluster chart that `--release` ships, for example `cluster-aws` in `capa/v36.1.1/release.yaml` of [giantswarm/releases](https://github.com/giantswarm/releases). It works for every provider there (`capa`, `azure`, `vsphere`, `cloud-director`, `eks` and `aks`), and for archived releases. The new `--cluster-app-version` flag sets another version and skips the lookup.
-
 ### Changed
 
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
 
 ### Fixed
 
-- `gitops add workload-cluster`: a cluster created with `--base` can now install. The cluster App gets its `spec.version` from the release, and `--release` is written to the cluster values as `global.release.version`, merged with the values from `--cluster-user-config` and taking precedence over them. The merged values are written with sorted keys and without comments. The values ConfigMap and its App patch are created for every `--base`, the Flux Kustomization sets `cluster_description`, which the CAPA base uses, and the `cluster` kustomization uses `patches` instead of the deprecated `patchesStrategicMerge`.
+- `gitops add workload-cluster`: a cluster created with `--base` can now install. `--release` is written to the cluster values as `global.release.version`, merged with the values from `--cluster-user-config` and taking precedence over them, so the management cluster sets the cluster App's version from the matching Release. The values ConfigMap and its App patch are created for every `--base`, the Flux Kustomization sets `cluster_description`, which the CAPA base uses, and the `cluster` kustomization uses `patches` instead of the deprecated `patchesStrategicMerge`.
 
 ## [5.10.0] - 2026-10-12
 
