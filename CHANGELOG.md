@@ -13,7 +13,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
-- `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It then skips the workload cluster's empty SOPS key Secret.
+- `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It no longer creates the workload cluster's empty SOPS key Secret. `gitops add encryption` creates it when needed.
 - `gitops add encryption` creates the `secrets` and `.sops.keys` directories and the Secret for the private key when they are missing.
 
 ### Changed

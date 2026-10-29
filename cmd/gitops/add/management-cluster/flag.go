@@ -23,7 +23,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.GenerateMasterKey, flagGenerateMasterKey, false, "Generate Management Cluster master GPG key for SOPS.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Codename of the Management Cluster.")
 	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "", "Name of the gitops repository.")
-	cmd.Flags().BoolVar(&f.SkipEncryption, flagSkipEncryption, false, "Skip the `secrets` and `.sops.keys` directories, for secrets that come from outside the repository, for example from External Secrets Operator.")
+	cmd.Flags().BoolVar(&f.SkipEncryption, flagSkipEncryption, false, "Skip the secrets and .sops.keys directories, for secrets that come from outside the repository, for example from External Secrets Operator.")
 }
 
 func (f *flag) Validate() error {

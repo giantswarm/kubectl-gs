@@ -20,12 +20,6 @@ import (
 func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	// Holds management-cluster/MC_NAME
-	mcDir := key.BaseDirPath(config.ManagementCluster, "", "")
-
-	// Holds management-cluster/MC_NAME/secrets
-	secretsDir := key.ResourcePath(mcDir, key.SecretsDirName())
-
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME
 	orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, "")
 
@@ -57,27 +51,7 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 
 	fsObjects := []*creator.FsObject{}
 
-	// Adding the `MC_NAME/secrets/WC_NAME.gpgkey.enc.yaml. We start here since it's the
-	// highest layer in the structure. We add an empty secret there, that serves
-	// as the SOPS private keys storage. It is empty by default and can be populated by the
-	// `add encryption` command.
-	// The need for this here may be questioned, but the rationale is: it is much easier and
-	// structured this way. If it is not added here, empty, then it would have to be created
-	// when encryption is requested later on. But when that happens, we do not have a way to
-	// tell whether something exist or not here in the `structure` package. We can only tell
-	// creator to create something or modify it, assuming it exists. So instead of tweaking
-	// the creator's logic, I decided to drop an empty Secret and edit it with creator's
-	// post modifiers.
-	// A management cluster without encryption has no `secrets` directory to put it in.
-	// `add encryption` creates the Secret when it is missing.
-	if !config.SkipEncryption {
-		err = common.AppendFromTemplate(&fsObjects, secretsDir, wctmpl.GetSecretsDirectoryTemplates, config)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	// We then continue at the `workload-clusters` directory. This should already
+	// We start at the `workload-clusters` directory. This should already
 	// exist at this point, as a result of Organization creation, but we
 	// need to point to this directory anyway in order to drop Kustomization
 	// there.
