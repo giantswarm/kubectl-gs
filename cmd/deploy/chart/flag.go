@@ -58,6 +58,9 @@ type flag struct {
 	ManagementCluster bool
 	DryRun            bool
 	Bundle            bool
+
+	// valuesFromRefs holds ValuesFrom as parsed by Validate.
+	valuesFromRefs []deploychart.ValuesFromReference
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -143,10 +146,13 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagRegistryProvider, flagRegistryUsername)
 	}
 
+	f.valuesFromRefs = nil
 	for _, vf := range f.ValuesFrom {
-		if _, err := parseValuesFrom(vf); err != nil {
+		ref, err := parseValuesFrom(vf)
+		if err != nil {
 			return microerror.Mask(err)
 		}
+		f.valuesFromRefs = append(f.valuesFromRefs, ref)
 	}
 
 	// Normalize OCI URL prefix.
@@ -192,6 +198,10 @@ func parseValuesFrom(vf string) (deploychart.ValuesFromReference, error) {
 		ref.Kind = "Secret"
 	default:
 		return deploychart.ValuesFromReference{}, microerror.Maskf(invalidFlagError, "--%s %q has invalid kind %q (must be ConfigMap or Secret)", flagValuesFrom, vf, kind)
+	}
+
+	if len(parts) == 2 && parts[1] == "optional" {
+		return deploychart.ValuesFromReference{}, microerror.Maskf(invalidFlagError, "--%s %q would use a key named \"optional\". To mark the source optional with the default key, use %s/%s::optional", flagValuesFrom, vf, kind, parts[0])
 	}
 
 	if len(parts) > 1 {

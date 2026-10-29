@@ -218,16 +218,6 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		Provider:    registryProvider,
 	}
 
-	// Parse --values-from references.
-	var valuesFrom []deploychart.ValuesFromReference
-	for _, vf := range r.flag.ValuesFrom {
-		ref, err := parseValuesFrom(vf)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		valuesFrom = append(valuesFrom, ref)
-	}
-
 	targetNS := r.flag.TargetNS
 	if r.flag.Bundle {
 		targetNS = namespace
@@ -241,7 +231,7 @@ func (r *runner) run(ctx context.Context, _ *cobra.Command, _ []string) error {
 		TargetNamespace:   targetNS,
 		Interval:          r.flag.Interval,
 		Values:            values,
-		ValuesFrom:        valuesFrom,
+		ValuesFrom:        r.flag.valuesFromRefs,
 		ManagementCluster: r.flag.ManagementCluster,
 		Bundle:            r.flag.Bundle,
 		APIVersion:        crdVersions.HelmReleaseAPIVersion,

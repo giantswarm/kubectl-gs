@@ -523,6 +523,8 @@ func TestParseValuesFrom(t *testing.T) {
 		{"ConfigMap/my-config:values", deploychart.ValuesFromReference{Kind: "ConfigMap", Name: "my-config", ValuesKey: "values"}},
 		{"Secret/my-secret:values:optional", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret", ValuesKey: "values", Optional: true}},
 		{"Secret/my-secret::optional", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret", Optional: true}},
+		{"ConfigMap/my-config:", deploychart.ValuesFromReference{Kind: "ConfigMap", Name: "my-config"}},
+		{"Secret/my-secret:optional:optional", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret", ValuesKey: "optional", Optional: true}},
 	}
 
 	for _, tc := range tests {
@@ -533,6 +535,30 @@ func TestParseValuesFrom(t *testing.T) {
 			}
 			if got != tc.expected {
 				t.Errorf("parseValuesFrom(%q) = %+v, want %+v", tc.input, got, tc.expected)
+			}
+		})
+	}
+}
+
+func TestParseValuesFromInvalid(t *testing.T) {
+	tests := []struct {
+		input  string
+		errMsg string
+	}{
+		{"ConfigMap/my-config::", "invalid suffix"},
+		{"Secret/my-secret:optional", "Secret/my-secret::optional"},
+		{"Secret/", "must be in the format"},
+		{"Secret/my-secret:a:optional:x", "must be in the format"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := parseValuesFrom(tc.input)
+			if err == nil {
+				t.Fatalf("parseValuesFrom(%q) returned no error", tc.input)
+			}
+			if got := err.Error(); !contains(got, tc.errMsg) {
+				t.Errorf("error %q should contain %q", got, tc.errMsg)
 			}
 		})
 	}
