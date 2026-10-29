@@ -24,6 +24,26 @@ func Test_NewManagementCluster(t *testing.T) {
 		expectedObjects []FsObjectExpected
 	}{
 		{
+			name: "flawless without encryption",
+			config: common.StructureConfig{
+				ManagementCluster: "demomc",
+				RepositoryName:    "gitops-demo",
+				SkipEncryption:    true,
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc",
+				},
+				{
+					RelativePath: "management-clusters/demomc/demomc.yaml",
+					GoldenFile:   "testdata/expected/0-demomc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations",
+				},
+			},
+		},
+		{
 			name: "flawless",
 			config: common.StructureConfig{
 				ManagementCluster: "demomc",

@@ -21,9 +21,6 @@ var patchClusterConfig string
 //go:embed patch_cluster_userconfig.yaml.tmpl
 var patchClusterUserconfig string
 
-//go:embed private-key.yaml.tmpl
-var privateKey string
-
 //go:embed workload-cluster.yaml.tmpl
 var workloadCluster string
 
@@ -39,12 +36,6 @@ func GetClusterDirectoryTemplates() []common.Template {
 		common.Template{Name: "kustomization.yaml", Data: kustomization},
 		common.Template{Name: "cluster_userconfig.yaml", Data: clusterUserConfig},
 		common.Template{Name: "patch_cluster_userconfig.yaml", Data: patchClusterUserconfig},
-	}
-}
-
-func GetSecretsDirectoryTemplates() []common.Template {
-	return []common.Template{
-		common.Template{Name: "{{ .WorkloadCluster }}.gpgkey.enc.yaml", Data: privateKey},
 	}
 }
 

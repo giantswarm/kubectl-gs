@@ -33,10 +33,6 @@ func Test_NewWorkloadCluster(t *testing.T) {
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
-					GoldenFile:   "testdata/expected/0-secret.golden",
-				},
-				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
 				{
@@ -74,10 +70,6 @@ func Test_NewWorkloadCluster(t *testing.T) {
 				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
-					GoldenFile:   "testdata/expected/0-secret.golden",
-				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
@@ -123,10 +115,6 @@ topKey:
 				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
-					GoldenFile:   "testdata/expected/0-secret.golden",
-				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
@@ -181,10 +169,6 @@ topKey:
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
-					GoldenFile:   "testdata/expected/0-secret.golden",
-				},
-				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},
 				{
@@ -236,10 +220,6 @@ topKey:
 				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
-					GoldenFile:   "testdata/expected/0-secret.golden",
-				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
 				},

@@ -42,16 +42,21 @@ func NewManagementCluster(config common.StructureConfig) (*creator.CreatorConfig
 		return nil, microerror.Mask(err)
 	}
 
-	fsObjects = append(fsObjects, creator.NewFsObject(secretsDir, nil, 0))
-	err = common.AppendFromTemplate(&fsObjects, secretsDir, mctmpl.GetManagementClusterSecretsTemplates, config)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	// Repositories whose secrets come from outside, for example from External
+	// Secrets Operator, have no use for the SOPS key storage. `add encryption`
+	// creates it later, if needed.
+	if !config.SkipEncryption {
+		fsObjects = append(fsObjects, creator.NewFsObject(secretsDir, nil, 0))
+		err = common.AppendFromTemplate(&fsObjects, secretsDir, mctmpl.GetManagementClusterSecretsTemplates, config)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 
-	fsObjects = append(fsObjects, creator.NewFsObject(sopsDir, nil, 0))
-	err = common.AppendFromTemplate(&fsObjects, sopsDir, mctmpl.GetManagementClusterSOPSTemplates, config)
-	if err != nil {
-		return nil, microerror.Mask(err)
+		fsObjects = append(fsObjects, creator.NewFsObject(sopsDir, nil, 0))
+		err = common.AppendFromTemplate(&fsObjects, sopsDir, mctmpl.GetManagementClusterSOPSTemplates, config)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	fsObjects = append(fsObjects, creator.NewFsObject(orgsDir, nil, 0))
