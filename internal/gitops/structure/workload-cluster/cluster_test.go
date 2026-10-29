@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
@@ -437,5 +438,17 @@ apple: 2`,
 				t.Fatalf("unexpected values (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+func Test_clusterUserConfigWithRelease_Alias(t *testing.T) {
+	userConfig := `defaults: &defaults
+  metadata:
+    description: Demo
+global: *defaults`
+
+	_, err := clusterUserConfigWithRelease(userConfig, "0.13.0")
+	if microerror.Cause(err) != invalidConfigError {
+		t.Fatalf("expected invalid config error, got: %v", err)
 	}
 }

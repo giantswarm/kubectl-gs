@@ -182,7 +182,10 @@ func clusterUserConfigWithRelease(userConfig, release string) (string, error) {
 		return "", microerror.Maskf(invalidConfigError, "cluster user config must be a mapping")
 	}
 
-	setValue(doc.Content[0], release, releaseVersionPath...)
+	err = setValue(doc.Content[0], release, releaseVersionPath...)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
 
 	var buf bytes.Buffer
 	encoder := yaml.NewEncoder(&buf)
@@ -201,7 +204,7 @@ func clusterUserConfigWithRelease(userConfig, release string) (string, error) {
 
 // setValue sets the string at the mapping path. Missing keys are appended,
 // and values on the way that aren't mappings are replaced by one.
-func setValue(node *yaml.Node, value string, path ...string) {
+func setValue(node *yaml.Node, value string, path ...string) error {
 	for i := 0; i+1 < len(node.Content); i += 2 {
 		if node.Content[i].Value != path[0] {
 			continue
@@ -210,19 +213,27 @@ func setValue(node *yaml.Node, value string, path ...string) {
 		child := node.Content[i+1]
 		if len(path) == 1 {
 			child.Kind, child.Tag, child.Value, child.Content = yaml.ScalarNode, "!!str", value, nil
-			return
+			return nil
+		}
+		// Replacing an alias would silently drop the values of its anchor.
+		if child.Kind == yaml.AliasNode {
+			return microerror.Maskf(invalidConfigError, "cluster user config uses an alias at %q, set %s there without an alias", path[0], strings.Join(releaseVersionPath, "."))
 		}
 		if child.Kind != yaml.MappingNode {
 			child.Kind, child.Tag, child.Value, child.Content, child.Style = yaml.MappingNode, "!!map", "", nil, 0
 		}
-		setValue(child, value, path[1:]...)
-		return
+		return setValue(child, value, path[1:]...)
 	}
 
 	child := &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: value}
 	if len(path) > 1 {
 		child = &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
-		setValue(child, value, path[1:]...)
+		err := setValue(child, value, path[1:]...)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 	node.Content = append(node.Content, &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: path[0]}, child)
+
+	return nil
 }
