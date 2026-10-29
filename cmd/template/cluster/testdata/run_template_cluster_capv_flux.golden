@@ -54,7 +54,7 @@ spec:
   interval: 10m0s
   provider: generic
   ref:
-    tag: 35.0.0
+    tag: 36.1.0
   timeout: 1m0s
   url: oci://gsoci.azurecr.io/charts/giantswarm/release-vsphere
 ---

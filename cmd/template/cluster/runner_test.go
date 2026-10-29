@@ -97,7 +97,7 @@ func Test_run(t *testing.T) {
 		},
 	}
 
-	// The release-<provider> chart tags published in gsoci for release v35.0.0.
+	// The release-<provider> chart tags published in gsoci for release v35.0.0 (v36.1.0 for vSphere).
 	// Release versions without such a tag, e.g. a hand-crafted Release CR used
 	// for testing, must fall back to the cluster-<provider> chart. This
 	// mirrors the real gsoci registry state: no release-eks chart is
@@ -107,7 +107,7 @@ func Test_run(t *testing.T) {
 			"charts/giantswarm/release-aws:35.0.0":            true,
 			"charts/giantswarm/release-aks:35.0.0":            true,
 			"charts/giantswarm/release-azure:35.0.0":          true,
-			"charts/giantswarm/release-vsphere:35.0.0":        true,
+			"charts/giantswarm/release-vsphere:36.1.0":        true,
 			"charts/giantswarm/release-cloud-director:35.0.0": true,
 		},
 	}
@@ -761,7 +761,7 @@ func Test_run(t *testing.T) {
 				Name:              "test-capv-flux",
 				Provider:          "vsphere",
 				Description:       "cluster using release version directly",
-				Release:           "35.0.0",
+				Release:           "36.1.0",
 				Organization:      "test",
 				KubernetesVersion: "v1.2.3",
 				App: common.AppConfig{
@@ -951,6 +951,13 @@ func Test_useReleaseChart(t *testing.T) {
 			release:      "35.0.0",
 			expected:     false,
 			expectedWarn: "no release-azure chart with version 35.0.0 found",
+		},
+		{
+			name:         "case 5: vsphere release before cluster-vsphere label fix falls back",
+			provider:     "vsphere",
+			release:      "36.0.0",
+			expected:     false,
+			expectedWarn: "cannot be installed as a HelmRelease before 36.1.0",
 		},
 	}
 
