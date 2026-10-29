@@ -2,6 +2,8 @@ package chart
 
 import (
 	"testing"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 )
 
 func TestFlagValidate(t *testing.T) {
@@ -336,6 +338,70 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "ConfigMap/name or Secret/name",
 		},
 		{
+			name: "values-from with key is valid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				ValuesFrom:   []string{"ConfigMap/my-config:values"},
+			},
+		},
+		{
+			name: "values-from with key and optional is valid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				ValuesFrom:   []string{"Secret/my-secret:values:optional"},
+			},
+		},
+		{
+			name: "values-from optional without key is valid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				ValuesFrom:   []string{"Secret/my-secret::optional"},
+			},
+		},
+		{
+			name: "values-from invalid suffix",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				ValuesFrom:   []string{"Secret/my-secret:values:required"},
+			},
+			wantErr: true,
+			errMsg:  "must be optional",
+		},
+		{
+			name: "values-from too many parts",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				ValuesFrom:   []string{"Secret/my-secret:values:optional:x"},
+			},
+			wantErr: true,
+			errMsg:  "ConfigMap/name or Secret/name",
+		},
+		{
 			name: "registry-provider aws is valid",
 			flag: flag{
 				ChartName:        "hello-world-app",
@@ -445,4 +511,55 @@ func searchString(s, substr string) bool {
 		}
 	}
 	return false
+}
+
+func TestParseValuesFrom(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected deploychart.ValuesFromReference
+	}{
+		{"ConfigMap/my-config", deploychart.ValuesFromReference{Kind: "ConfigMap", Name: "my-config"}},
+		{"secret/my-secret", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret"}},
+		{"ConfigMap/my-config:values", deploychart.ValuesFromReference{Kind: "ConfigMap", Name: "my-config", ValuesKey: "values"}},
+		{"Secret/my-secret:values:optional", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret", ValuesKey: "values", Optional: true}},
+		{"Secret/my-secret::optional", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret", Optional: true}},
+		{"ConfigMap/my-config:", deploychart.ValuesFromReference{Kind: "ConfigMap", Name: "my-config"}},
+		{"Secret/my-secret:optional:optional", deploychart.ValuesFromReference{Kind: "Secret", Name: "my-secret", ValuesKey: "optional", Optional: true}},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := parseValuesFrom(tc.input)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tc.expected {
+				t.Errorf("parseValuesFrom(%q) = %+v, want %+v", tc.input, got, tc.expected)
+			}
+		})
+	}
+}
+
+func TestParseValuesFromInvalid(t *testing.T) {
+	tests := []struct {
+		input  string
+		errMsg string
+	}{
+		{"ConfigMap/my-config::", "invalid suffix"},
+		{"Secret/my-secret:optional", "Secret/my-secret::optional"},
+		{"Secret/", "must be in the format"},
+		{"Secret/my-secret:a:optional:x", "must be in the format"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := parseValuesFrom(tc.input)
+			if err == nil {
+				t.Fatalf("parseValuesFrom(%q) returned no error", tc.input)
+			}
+			if got := err.Error(); !contains(got, tc.errMsg) {
+				t.Errorf("error %q should contain %q", got, tc.errMsg)
+			}
+		})
+	}
 }

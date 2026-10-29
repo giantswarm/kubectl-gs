@@ -28,8 +28,10 @@ type OCIRepositoryOptions struct {
 // ValuesFromReference describes a reference to a ConfigMap or Secret
 // containing values for the HelmRelease.
 type ValuesFromReference struct {
-	Kind string // "ConfigMap" or "Secret"
-	Name string
+	Kind      string // "ConfigMap" or "Secret"
+	Name      string
+	ValuesKey string // If empty, Flux reads the "values.yaml" key.
+	Optional  bool
 }
 
 type HelmReleaseOptions struct {
@@ -146,8 +148,10 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 
 	for _, vf := range opts.ValuesFrom {
 		hr.Spec.ValuesFrom = append(hr.Spec.ValuesFrom, meta.ValuesReference{
-			Kind: vf.Kind,
-			Name: vf.Name,
+			Kind:      vf.Kind,
+			Name:      vf.Name,
+			ValuesKey: vf.ValuesKey,
+			Optional:  vf.Optional,
 		})
 	}
 

@@ -7,6 +7,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 )
 
 // semverRe matches a basic semver string like "1.2.3" or "v1.2.3".
@@ -56,6 +58,9 @@ type flag struct {
 	ManagementCluster bool
 	DryRun            bool
 	Bundle            bool
+
+	// valuesFromRefs holds ValuesFrom as parsed by Validate.
+	valuesFromRefs []deploychart.ValuesFromReference
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -71,7 +76,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Interval, flagInterval, defaultInterval, "Reconciliation interval for OCIRepository and HelmRelease.")
 	cmd.Flags().StringVar(&f.RegistryUsername, flagRegistryUsername, "", "Username for private OCI registry authentication. Password is read from "+envRegistryPassword+" or prompted interactively.")
 	cmd.Flags().StringVar(&f.RegistryProvider, flagRegistryProvider, "", "Cloud provider for registry authentication via workload identity (aws, azure, gcp). When set, no registry Secret is created.")
-	cmd.Flags().StringSliceVar(&f.ValuesFrom, flagValuesFrom, nil, "Reference to a ConfigMap or Secret containing chart values (format: ConfigMap/name or Secret/name). Can be specified multiple times.")
+	cmd.Flags().StringSliceVar(&f.ValuesFrom, flagValuesFrom, nil, "Reference to a ConfigMap or Secret containing chart values (format: Kind/name[:key[:optional]], for example ConfigMap/my-values or Secret/my-secret:values:optional). The key defaults to values.yaml. Can be specified multiple times.")
 	cmd.Flags().BoolVar(&f.ManagementCluster, flagManagementCluster, false, "Deploy to the management cluster itself. Cluster name is derived from the current kubectl context.")
 	cmd.Flags().BoolVar(&f.DryRun, flagDryRun, false, "Perform server-side validation without applying. Prints manifests to stdout.")
 	cmd.Flags().BoolVar(&f.Bundle, flagBundle, false, "Deploy a bundle chart. It is installed on the management cluster in the organization namespace, using the 'automation' service account.")
@@ -141,21 +146,13 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s and --%s are mutually exclusive", flagRegistryProvider, flagRegistryUsername)
 	}
 
-	// Validate and normalize --values-from entries.
-	for i, vf := range f.ValuesFrom {
-		kind, name, ok := strings.Cut(vf, "/")
-		if !ok || name == "" {
-			return microerror.Maskf(invalidFlagError, "--%s %q must be in the format ConfigMap/name or Secret/name", flagValuesFrom, vf)
+	f.valuesFromRefs = nil
+	for _, vf := range f.ValuesFrom {
+		ref, err := parseValuesFrom(vf)
+		if err != nil {
+			return microerror.Mask(err)
 		}
-		switch strings.ToLower(kind) {
-		case "configmap":
-			kind = "ConfigMap"
-		case "secret":
-			kind = "Secret"
-		default:
-			return microerror.Maskf(invalidFlagError, "--%s %q has invalid kind %q (must be ConfigMap or Secret)", flagValuesFrom, vf, kind)
-		}
-		f.ValuesFrom[i] = kind + "/" + name
+		f.valuesFromRefs = append(f.valuesFromRefs, ref)
 	}
 
 	// Normalize OCI URL prefix.
@@ -181,4 +178,42 @@ func normalizeOCIURLPrefix(prefix string) string {
 		prefix = prefix + "/"
 	}
 	return prefix
+}
+
+// parseValuesFrom parses a --values-from entry in the format
+// Kind/name[:key[:optional]].
+func parseValuesFrom(vf string) (deploychart.ValuesFromReference, error) {
+	kind, rest, ok := strings.Cut(vf, "/")
+	parts := strings.Split(rest, ":")
+	if !ok || parts[0] == "" || len(parts) > 3 {
+		return deploychart.ValuesFromReference{}, microerror.Maskf(invalidFlagError, "--%s %q must be in the format ConfigMap/name or Secret/name, optionally followed by :key and :optional", flagValuesFrom, vf)
+	}
+
+	ref := deploychart.ValuesFromReference{Name: parts[0]}
+
+	switch strings.ToLower(kind) {
+	case "configmap":
+		ref.Kind = "ConfigMap"
+	case "secret":
+		ref.Kind = "Secret"
+	default:
+		return deploychart.ValuesFromReference{}, microerror.Maskf(invalidFlagError, "--%s %q has invalid kind %q (must be ConfigMap or Secret)", flagValuesFrom, vf, kind)
+	}
+
+	if len(parts) == 2 && parts[1] == "optional" {
+		return deploychart.ValuesFromReference{}, microerror.Maskf(invalidFlagError, "--%s %q would use a key named \"optional\". To mark the source optional with the default key, use %s/%s::optional", flagValuesFrom, vf, kind, parts[0])
+	}
+
+	if len(parts) > 1 {
+		ref.ValuesKey = parts[1]
+	}
+
+	if len(parts) > 2 {
+		if parts[2] != "optional" {
+			return deploychart.ValuesFromReference{}, microerror.Maskf(invalidFlagError, "--%s %q has invalid suffix %q (must be optional)", flagValuesFrom, vf, parts[2])
+		}
+		ref.Optional = true
+	}
+
+	return ref, nil
 }

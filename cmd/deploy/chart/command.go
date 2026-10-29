@@ -85,6 +85,15 @@ account, and is named <cluster>-<chart-name>.`
       --values-from ConfigMap/my-config \
       --values-from Secret/my-secret
 
+  # Read values from the "values" key, and skip the Secret if it doesn't exist
+  kubectl gs deploy chart \
+      --chart-name hello-world-app \
+      --organization acme \
+      --target-cluster mycluster01 \
+      --target-namespace hello \
+      --values-from ConfigMap/mycluster01-cluster-values:values \
+      --values-from Secret/my-secret:values:optional
+
   # Deploy to the management cluster itself
   kubectl gs deploy chart \
       --chart-name hello-world-app \
