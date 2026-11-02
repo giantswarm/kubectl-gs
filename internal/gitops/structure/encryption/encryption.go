@@ -49,10 +49,9 @@ func NewEncryption(config common.StructureConfig) (*creator.CreatorConfig, error
 	}
 
 	// Makes sure the management-clusters/MC_NAME/.sops.keys/PREFIX.FINGERPRINT.asc
-	// gets created. A repository added with `--skip-encryption` has neither the
-	// directories nor the Secret the post modifiers below edit, so they are
-	// created too. The creator never overwrites an existing file, so a Secret
-	// that already holds keys keeps them.
+	// gets created, together with the directories and the Secret the post
+	// modifiers below edit, which may not exist yet. The creator never
+	// overwrites an existing file, so a Secret that already holds keys keeps them.
 	fsObjects := []*creator.FsObject{
 		creator.NewFsObject(secretsDir, nil, 0),
 		creator.NewFsObject(sopsPrvKeyFile, []byte(emptySecret(secretName)), 0),

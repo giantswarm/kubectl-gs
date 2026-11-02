@@ -101,55 +101,87 @@ func Test_NewEncryption(t *testing.T) {
 	}
 }
 
-func Test_NewEncryption_KeepsExistingKeys(t *testing.T) {
+func Test_NewEncryption_Create(t *testing.T) {
 	const (
 		repoPath   = "/repo"
 		secretFile = "/repo/management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml"
+		wcKusFile  = "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml"
 	)
 
-	fs := afero.NewMemMapFs()
-	seed := map[string]string{
-		secretFile:         "apiVersion: v1\ndata:\n  demowc.OLDFINGERPRINT.asc: b2xkIGtleQ==\nkind: Secret\nmetadata:\n  name: sops-gpg-demowc\n  namespace: default\n",
-		"/repo/.sops.yaml": "creation_rules: []\n",
-		"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml": "apiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata:\n  name: demomc-clusters-demowc\n  namespace: default\nspec:\n  path: ./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc\n",
-	}
-	for path, data := range seed {
-		err := afero.WriteFile(fs, path, []byte(data), 0600)
-		if err != nil {
-			t.Fatalf("unexpected error: %s", err.Error())
-		}
-	}
-
-	config, err := NewEncryption(common.StructureConfig{
-		EncryptionKeyPair: gitopsenc.KeyPair{
-			Fingerprint: "NEWFINGERPRINT",
-			PrivateData: "new key",
-			PublicData:  "public key material",
+	testCases := []struct {
+		name         string
+		seed         map[string]string
+		expectedKeys []string
+	}{
+		{
+			name: "existing Secret keeps its keys",
+			seed: map[string]string{
+				secretFile: "apiVersion: v1\ndata:\n  demowc.OLDFINGERPRINT.asc: b2xkIGtleQ==\nkind: Secret\nmetadata:\n  name: sops-gpg-demowc\n  namespace: default\n",
+			},
+			expectedKeys: []string{"demowc.OLDFINGERPRINT.asc", "demowc.NEWFINGERPRINT.asc"},
 		},
-		EncryptionTarget:  "secrets/",
-		ManagementCluster: "demomc",
-		Organization:      "demoorg",
-		WorkloadCluster:   "demowc",
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err.Error())
-	}
-	config.Fs = fs
-	config.Path = repoPath
-
-	err = creator.NewCreator(*config).Create()
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err.Error())
+		{
+			name:         "repository without secrets directory",
+			expectedKeys: []string{"demowc.NEWFINGERPRINT.asc"},
+		},
 	}
 
-	got, err := afero.ReadFile(fs, secretFile)
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err.Error())
-	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			seed := map[string]string{
+				"/repo/.sops.yaml": "creation_rules: []\n",
+				wcKusFile:          "apiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata:\n  name: demomc-clusters-demowc\n  namespace: default\nspec:\n  path: ./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc\n",
+			}
+			for path, data := range tc.seed {
+				seed[path] = data
+			}
+			for path, data := range seed {
+				err := afero.WriteFile(fs, path, []byte(data), 0600)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err.Error())
+				}
+			}
 
-	for _, k := range []string{"demowc.OLDFINGERPRINT.asc", "demowc.NEWFINGERPRINT.asc"} {
-		if !strings.Contains(string(got), k) {
-			t.Errorf("expected key %q in the Secret, got:\n%s", k, got)
-		}
+			config, err := NewEncryption(common.StructureConfig{
+				EncryptionKeyPair: gitopsenc.KeyPair{
+					Fingerprint: "NEWFINGERPRINT",
+					PrivateData: "new key",
+					PublicData:  "public key material",
+				},
+				EncryptionTarget:  "secrets/",
+				ManagementCluster: "demomc",
+				Organization:      "demoorg",
+				WorkloadCluster:   "demowc",
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			config.Fs = fs
+			config.Path = repoPath
+
+			err = creator.NewCreator(*config).Create()
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			secret, err := afero.ReadFile(fs, secretFile)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			for _, k := range tc.expectedKeys {
+				if !strings.Contains(string(secret), k) {
+					t.Errorf("expected key %q in the Secret, got:\n%s", k, secret)
+				}
+			}
+
+			kus, err := afero.ReadFile(fs, wcKusFile)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			if !strings.Contains(string(kus), "name: sops-gpg-demowc") {
+				t.Errorf("expected decryption secretRef sops-gpg-demowc in the Kustomization, got:\n%s", kus)
+			}
+		})
 	}
 }
