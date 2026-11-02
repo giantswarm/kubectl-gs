@@ -9,6 +9,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Added
 
+- `deploy chart`: `--values-from` takes an optional key and an `optional` marker, as in `Secret/my-secret:values:optional`. Without a key, Flux reads `values.yaml`, so this is needed for ConfigMaps like `<cluster>-cluster-values` that store their values under `values`.
 - `gitops add management-cluster`: the `--skip-encryption` flag leaves out the `secrets` and `.sops.keys` directories, for repositories whose secrets come from outside, for example from External Secrets Operator.
 
 ### Fixed
