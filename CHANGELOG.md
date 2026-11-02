@@ -7,13 +7,25 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
-### Changed
+### Added
 
-- `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
+- `deploy chart`: `--values-from` takes an optional key and an `optional` marker, as in `Secret/my-secret:values:optional`. Without a key, Flux reads `values.yaml`, so this is needed for ConfigMaps like `<cluster>-cluster-values` that store their values under `values`.
+- `gitops add management-cluster`: the `--skip-encryption` flag leaves out the `secrets` and `.sops.keys` directories, for repositories whose secrets come from outside, for example from External Secrets Operator.
 
 ### Fixed
 
+- `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It no longer creates the workload cluster's empty SOPS key Secret. `gitops add encryption` creates it when needed.
+- `gitops add encryption` creates the `secrets` and `.sops.keys` directories and the Secret for the private key when they are missing.
 - `gitops add workload-cluster`: a cluster created with `--base` can now install. If the base's cluster App uses a `cluster-<provider>` chart, `--release` is written to the cluster values as `global.release.version`, merged with the values from `--cluster-user-config` and taking precedence over them, so the management cluster sets the App's version from the matching Release. If it uses a `release-<provider>` chart, the values are left as they are, since that chart carries the release version itself. The values ConfigMap and its App patch are created for every `--base`, the Flux Kustomization sets `cluster_description`, which the CAPA base uses, and the `cluster` kustomization uses `patches` instead of the deprecated `patchesStrategicMerge`.
+
+### Changed
+
+- The krew index update no longer names the shared `architectbot` account as `GITHUB_ACTOR` (giantswarm/giantswarm#38800).
+- `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
+
+### Security
+
+- Update `golang.org/x/net` to v0.62.0 for CVE-2026-78661 and CVE-2026-97045.
 
 ## [5.10.0] - 2026-10-12
 
