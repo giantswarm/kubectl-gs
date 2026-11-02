@@ -74,7 +74,7 @@ func BuildOCIRepository(opts OCIRepositoryOptions) *sourcev1.OCIRepository {
 			},
 		},
 		Spec: sourcev1.OCIRepositorySpec{
-			Interval: metav1.Duration{Duration: interval},
+			Interval: &metav1.Duration{Duration: interval},
 			URL:      opts.URL,
 			Provider: provider,
 		},

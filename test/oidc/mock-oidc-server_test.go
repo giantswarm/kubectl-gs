@@ -1,8 +1,10 @@
 package oidc
 
 import (
+	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"testing"
 )
 
@@ -11,7 +13,8 @@ import (
 // CI, so assert the redirect contract directly: it must point at the local
 // callback server and carry the state the callback handler matches against.
 func TestAuthRedirect(t *testing.T) {
-	s := NewServer(MockOidcServerConfig{ClientID: "client-id"})
+	const callbackPort = 18000
+	s := NewServer(MockOidcServerConfig{ClientID: "client-id", CallbackPort: callbackPort})
 	if err := s.Start(t); err != nil {
 		t.Fatal(err)
 	}
@@ -34,8 +37,9 @@ func TestAuthRedirect(t *testing.T) {
 			expectedState: "some-state",
 		},
 		{
-			// The redirect target is built from constants, so an attacker-supplied
-			// redirect_uri must not be able to steer the browser elsewhere.
+			// The redirect target is built from the server configuration, so an
+			// attacker-supplied redirect_uri must not be able to steer the
+			// browser elsewhere.
 			name:          "attacker controlled parameters are dropped",
 			query:         "state=some-state&redirect_uri=http://evil.example.com/",
 			expectedState: "some-state",
@@ -58,8 +62,9 @@ func TestAuthRedirect(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if location.Host != callbackHost {
-				t.Errorf("expected redirect to host %q, got %q", callbackHost, location.Host)
+			expectedHost := net.JoinHostPort(callbackHostname, strconv.Itoa(callbackPort))
+			if location.Host != expectedHost {
+				t.Errorf("expected redirect to host %q, got %q", expectedHost, location.Host)
 			}
 			if location.Path != callbackPath {
 				t.Errorf("expected redirect to path %q, got %q", callbackPath, location.Path)

@@ -1,6 +1,8 @@
 package encryption
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	fluxkusmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/flux-kustomization"
@@ -40,9 +42,20 @@ func NewEncryption(config common.StructureConfig) (*creator.CreatorConfig, error
 		key.SopsSecretFileName(keyPrefix),
 	)
 
+	// Either sops-gpg-master or sops-gpg-WC_NAME
+	secretName := key.SopsSecretName(masterPrefix)
+	if config.WorkloadCluster != "" {
+		secretName = key.SopsSecretName(keyPrefix)
+	}
+
 	// Makes sure the management-clusters/MC_NAME/.sops.keys/PREFIX.FINGERPRINT.asc
-	// gets created
+	// gets created, together with the directories and the Secret the post
+	// modifiers below edit, which may not exist yet. The creator never
+	// overwrites an existing file, so a Secret that already holds keys keeps them.
 	fsObjects := []*creator.FsObject{
+		creator.NewFsObject(secretsDir, nil, 0),
+		creator.NewFsObject(sopsPrvKeyFile, []byte(emptySecret(secretName)), 0),
+		creator.NewFsObject(sopsDir, nil, 0),
 		creator.NewFsObject(sopsPubKeyFile, []byte(config.EncryptionKeyPair.PublicData), 0),
 	}
 
@@ -97,4 +110,10 @@ func NewEncryption(config common.StructureConfig) (*creator.CreatorConfig, error
 	}
 
 	return &creatorConfig, nil
+}
+
+// emptySecret returns the Secret that stores the private SOPS keys, before
+// any key is added to it.
+func emptySecret(name string) string {
+	return fmt.Sprintf("apiVersion: v1\nkind: Secret\nmetadata:\n    name: %s\n    namespace: default\n", name)
 }

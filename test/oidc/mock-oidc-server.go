@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,11 +20,12 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
 )
 
-// The local callback server the login command starts listens on this address;
-// the mock identity provider redirects the browser there to complete the flow.
+// The local callback server the login command starts listens on this host and
+// path, on MockOidcServerConfig.CallbackPort; the mock identity provider
+// redirects the browser there to complete the flow.
 const (
-	callbackHost = "localhost:8080"
-	callbackPath = "/oauth/callback"
+	callbackHostname = "localhost"
+	callbackPath     = "/oauth/callback"
 )
 
 type MockOidcServerConfig struct {
@@ -30,6 +33,7 @@ type MockOidcServerConfig struct {
 	InstallationCodename     string
 	TokenRecoverableFailures int
 	TokenFatalFailures       int
+	CallbackPort             int
 }
 
 type MockOidcServer struct {
@@ -37,6 +41,7 @@ type MockOidcServer struct {
 	installationCodename     string
 	tokenRecoverableFailures int
 	tokenFatalFailures       int
+	callbackPort             int
 	server                   *httptest.Server
 	issuerURL                string
 }
@@ -47,6 +52,7 @@ func NewServer(config MockOidcServerConfig) *MockOidcServer {
 		installationCodename:     config.InstallationCodename,
 		tokenRecoverableFailures: config.TokenRecoverableFailures,
 		tokenFatalFailures:       config.TokenFatalFailures,
+		callbackPort:             config.CallbackPort,
 	}
 }
 
@@ -65,12 +71,13 @@ func (s *MockOidcServer) Start(t *testing.T) error {
 		case "/auth":
 			// Stand in for the identity provider bouncing the browser back to
 			// the local callback server. The redirect target is assembled from
-			// constants rather than from the incoming request, and only the
-			// parameters the callback handler actually reads are carried over,
-			// so a request to /auth cannot steer the redirect anywhere else.
+			// the server configuration rather than from the incoming request,
+			// and only the parameters the callback handler actually reads are
+			// carried over, so a request to /auth cannot steer the redirect
+			// anywhere else.
 			callback := url.URL{
 				Scheme: "http",
-				Host:   callbackHost,
+				Host:   net.JoinHostPort(callbackHostname, strconv.Itoa(s.callbackPort)),
 				Path:   callbackPath,
 				RawQuery: url.Values{
 					"state": {r.URL.Query().Get("state")},

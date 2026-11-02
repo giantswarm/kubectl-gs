@@ -14,7 +14,6 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/giantswarm/kubectl-gs/v6/cmd/login/template"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/callbackserver"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/installation"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/oidc"
@@ -176,26 +175,12 @@ func handleOIDCCallback(ctx context.Context, a *oidc.Authenticator) func(w http.
 		}
 
 		// Handle GET request with the token
-		res, err := a.HandleIssuerResponse(ctx, r.URL.Query().Get("state"), r.URL.Query().Get("code"))
-		if err != nil {
-			failureTemplate, tErr := template.GetFailedHTMLTemplateReader()
-			if tErr != nil {
-				return oidc.UserInfo{}, microerror.Mask(tErr)
-			}
-
-			w.Header().Set("Content-Type", "text/html")
-			http.ServeContent(w, r, "", time.Time{}, failureTemplate)
-
-			return oidc.UserInfo{}, microerror.Mask(err)
-		}
-
-		successTemplate, err := template.GetSuccessHTMLTemplateReader()
+		query := r.URL.Query()
+		res, err := a.HandleIssuerResponse(ctx, query.Get("state"), query.Get("code"))
+		writeLoginPage(w, query, err)
 		if err != nil {
 			return oidc.UserInfo{}, microerror.Mask(err)
 		}
-
-		w.Header().Set("Content-Type", "text/html")
-		http.ServeContent(w, r, "", time.Time{}, successTemplate)
 
 		return res, nil
 	}
