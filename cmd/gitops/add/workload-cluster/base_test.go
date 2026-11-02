@@ -8,11 +8,16 @@ import (
 )
 
 func app(chart string) string {
+	return appFromCatalog("cluster", chart)
+}
+
+func appFromCatalog(catalog, chart string) string {
 	return `apiVersion: application.giantswarm.io/v1alpha1
 kind: App
 metadata:
   name: ${cluster_name}
 spec:
+  catalog: ` + catalog + `
   name: ` + chart + `
 `
 }
@@ -46,6 +51,28 @@ func Test_clusterChartName(t *testing.T) {
 				"cluster.yaml": app("cluster-azure"),
 			},
 			expected: "cluster-azure",
+		},
+		{
+			name: "cluster chart from the test catalog",
+			files: map[string]string{
+				"cluster.yaml": appFromCatalog("cluster-test", "cluster-aws"),
+			},
+			expected: "cluster-aws",
+		},
+		{
+			name: "cluster-* chart from another catalog is ignored",
+			files: map[string]string{
+				"apps.yaml":    appFromCatalog("default", "cluster-autoscaler"),
+				"cluster.yaml": app("cluster-aws"),
+			},
+			expected: "cluster-aws",
+		},
+		{
+			name: "overlay without App",
+			files: map[string]string{
+				"kustomization.yaml": "resources:\n  - ../../../../cluster_templates/hello_app_cluster\n",
+			},
+			expected: "",
 		},
 		{
 			name: "no cluster App",

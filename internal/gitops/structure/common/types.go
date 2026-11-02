@@ -31,9 +31,10 @@ type StructureConfig struct {
 	ClusterUserConfig string
 	InCluster         string
 
-	// ReleaseChart tells whether the base's cluster App uses a
-	// release-<provider> chart, which carries the release version itself.
-	ReleaseChart bool
+	// ClusterChart is the chart of the base's cluster App, for example
+	// cluster-aws or release-aws. It is empty when the base holds no cluster
+	// App itself, for example an overlay of another base.
+	ClusterChart string
 
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string

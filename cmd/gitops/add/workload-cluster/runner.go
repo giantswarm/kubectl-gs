@@ -2,6 +2,7 @@ package wcluster
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"path/filepath"
 	"strconv"
@@ -62,11 +63,22 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.Base != "" {
-		chart, err := clusterChartName(r.fs, filepath.Join(localPath, r.flag.Base))
+		baseDir := filepath.Join(localPath, r.flag.Base)
+		exists, err := afero.DirExists(r.fs, baseDir)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		config.ReleaseChart = isReleaseChart(chart)
+		if !exists {
+			return microerror.Maskf(invalidFlagsError, "--%s %q not found under %q", flagBase, r.flag.Base, localPath)
+		}
+
+		config.ClusterChart, err = clusterChartName(r.fs, baseDir)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if config.ClusterChart == "" && r.flag.Release != "" {
+			fmt.Fprintf(r.stderr, "Base %q holds no cluster App, so --%s is only set as the `release` variable of the Flux Kustomization. Set the release in the base's values.\n", r.flag.Base, flagRelease)
+		}
 	}
 
 	if r.flag.ClusterUserConfig != "" {

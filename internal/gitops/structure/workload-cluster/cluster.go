@@ -23,9 +23,10 @@ import (
 func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
 
-	// A release-<provider> chart carries `global.release.version` in its
-	// default values, and its version in git is the release version.
-	if config.ClusterBase != "" && config.Release != "" && !config.ReleaseChart {
+	// Only a cluster-<provider> chart reads the release from the values. A
+	// release-<provider> chart carries it in its default values. An overlay
+	// base sets its own values, which the values written here would replace.
+	if config.ClusterBase != "" && config.Release != "" && strings.HasPrefix(config.ClusterChart, "cluster-") {
 		config.ClusterUserConfig, err = clusterUserConfigWithRelease(config.ClusterUserConfig, config.Release)
 		if err != nil {
 			return nil, microerror.Mask(err)

@@ -13,7 +13,8 @@ import (
 
 // clusterChartName returns the chart of the cluster App in the base directory,
 // for example `cluster-aws` or `release-aws`. Other Apps the base may ship are
-// ignored. It returns an empty string when the base has no cluster App.
+// ignored. It returns an empty string when the base has no cluster App, for
+// example when it is an overlay of another base.
 func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 	files, err := afero.ReadDir(fs, baseDir)
 	if err != nil {
@@ -39,7 +40,8 @@ func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 				APIVersion string `json:"apiVersion"`
 				Kind       string `json:"kind"`
 				Spec       struct {
-					Name string `json:"name"`
+					Catalog string `json:"catalog"`
+					Name    string `json:"name"`
 				} `json:"spec"`
 			}
 			err = decoder.Decode(&object)
@@ -52,7 +54,7 @@ func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 			if object.Kind != "App" || !strings.HasPrefix(object.APIVersion, "application.giantswarm.io/") {
 				continue
 			}
-			if isClusterChart(object.Spec.Name) {
+			if isClusterApp(object.Spec.Catalog, object.Spec.Name) {
 				charts = append(charts, object.Spec.Name)
 			}
 		}
@@ -68,13 +70,12 @@ func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 	return charts[0], nil
 }
 
-func isClusterChart(name string) bool {
-	return strings.HasPrefix(name, "cluster-") || isReleaseChart(name)
-}
-
-// isReleaseChart tells whether the chart is a release-<provider> chart. Its
-// version is the release version, and it carries `global.release.version` in
-// its default values.
-func isReleaseChart(name string) bool {
-	return strings.HasPrefix(name, "release-")
+// isClusterApp follows app-admission-controller, which only treats Apps from
+// the cluster catalogs as cluster Apps. A `cluster-autoscaler` App from
+// another catalog isn't one.
+func isClusterApp(catalog, chart string) bool {
+	if catalog != "cluster" && catalog != "cluster-test" {
+		return false
+	}
+	return strings.HasPrefix(chart, "cluster-") || strings.HasPrefix(chart, "release-")
 }

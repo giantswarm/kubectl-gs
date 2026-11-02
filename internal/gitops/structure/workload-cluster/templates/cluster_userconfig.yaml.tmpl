@@ -1,4 +1,4 @@
-{{- if .ClusterBase -}}
+{{- if and .ClusterBase .ClusterUserConfig -}}
 apiVersion: v1
 data:
   values: |
