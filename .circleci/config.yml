@@ -20,7 +20,8 @@ jobs:
       KREW_RELEASE_BOT_VERSION: v0.0.38
       GITHUB_ACTIONS: "true"
       GITHUB_REPOSITORY: giantswarm/kubectl-gs
-      GITHUB_ACTOR: architectbot
+      # krew-release-bot only needs it to be non-empty; it shows up in the krew-index PR text.
+      GITHUB_ACTOR: giantswarm
 
     steps:
       - checkout

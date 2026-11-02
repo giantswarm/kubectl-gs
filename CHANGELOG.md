@@ -16,6 +16,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   `--dry-run` lists the files it would change without writing anything. Structure version 1 is still the
   only one, so there is nothing to upgrade yet; every future structure bump ships with its migration.
   `gitops check` now points at it when the repository is behind.
+- `deploy chart`: `--values-from` takes an optional key and an `optional` marker, as in `Secret/my-secret:values:optional`. Without a key, Flux reads `values.yaml`, so this is needed for ConfigMaps like `<cluster>-cluster-values` that store their values under `values`.
 - `gitops add management-cluster`: the `--skip-encryption` flag leaves out the `secrets` and `.sops.keys` directories, for repositories whose secrets come from outside, for example from External Secrets Operator.
 
 ### Fixed
@@ -25,6 +26,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Changed
 
+- The krew index update no longer names the shared `architectbot` account as `GITHUB_ACTOR` (giantswarm/giantswarm#38800).
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
 
 ### Security

@@ -26,9 +26,9 @@ require (
 	github.com/giantswarm/microerror v0.4.1
 	github.com/giantswarm/micrologger v1.1.2
 	github.com/giantswarm/organization-operator v1.6.4
-	github.com/giantswarm/pagekit v0.3.2
+	github.com/giantswarm/pagekit v0.3.3
 	github.com/giantswarm/releases/sdk v0.13.0
-	github.com/giantswarm/telemetrydeck-go v0.3.12
+	github.com/giantswarm/telemetrydeck-go v0.3.13
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/pkg/errors v0.9.1
@@ -43,7 +43,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.yaml.in/yaml/v3 v3.0.5
+	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/term v0.47.0
 	gopkg.in/square/go-jose.v2 v2.6.0
