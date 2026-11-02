@@ -37,6 +37,7 @@ type StructureConfig struct {
 	ManagementCluster string
 	Organization      string
 	RepositoryName    string
+	SkipEncryption    bool
 	SkipMAPI          bool
 	WorkloadCluster   string
 

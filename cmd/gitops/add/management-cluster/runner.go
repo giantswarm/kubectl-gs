@@ -47,6 +47,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	config := common.StructureConfig{
 		ManagementCluster: r.flag.Name,
 		RepositoryName:    r.flag.RepositoryName,
+		SkipEncryption:    r.flag.SkipEncryption,
 	}
 
 	if r.flag.GenerateMasterKey {
