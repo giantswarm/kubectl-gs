@@ -149,6 +149,10 @@ var releaseVersionPath = []string{"global", "release", "version"}
 // clusterUserConfigWithRelease sets `global.release.version` in the cluster
 // app values. All other values the user gave are kept, with their comments
 // and order. Cluster charts read the release version from there.
+//
+// The values are written back in yaml.v3's style, which Helm reads the same:
+// indentation becomes two spaces, a `|` block becomes `|-`, a merge key
+// becomes `!!merge <<:` and only the first YAML document is kept.
 func clusterUserConfigWithRelease(userConfig, release string) (string, error) {
 	var doc yaml.Node
 	err := yaml.Unmarshal([]byte(userConfig), &doc)

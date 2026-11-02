@@ -16,7 +16,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It no longer creates the workload cluster's empty SOPS key Secret. `gitops add encryption` creates it when needed.
 - `gitops add encryption` creates the `secrets` and `.sops.keys` directories and the Secret for the private key when they are missing.
-- `gitops add workload-cluster`: a cluster created with `--base` can now install. If the base's cluster App uses a `cluster-<provider>` chart, `--release` is written to the cluster values as `global.release.version`, merged with the values from `--cluster-user-config` and taking precedence over them, so the management cluster sets the App's version from the matching Release. A `release-<provider>` chart carries the release version itself, and a base that is an overlay of another base keeps its own values, so for both the values are left as they are. The Flux Kustomization sets `cluster_description`, which the CAPA base uses, and the `cluster` kustomization uses `patches` instead of the deprecated `patchesStrategicMerge`. A `--base` directory that doesn't exist fails with a message naming the flag.
+- `gitops add workload-cluster`: a cluster created from a `cluster-<provider>` base can now install. `--release` is written to the cluster values as `global.release.version`, and the Flux Kustomization sets `cluster_description`.
 
 ### Changed
 
