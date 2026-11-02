@@ -77,13 +77,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 		if config.ClusterChart == "" && r.flag.Release != "" {
-			fmt.Fprintf(r.stderr, "Base %q holds no cluster App, so --%s is only set as the `release` variable of the Flux Kustomization. Set the release in the base's values.\n", r.flag.Base, flagRelease)
+			if r.flag.ClusterUserConfig != "" {
+				fmt.Fprintf(r.stderr, "Base %q holds no cluster App, so --%s is only set as the `release` variable of the Flux Kustomization. The values from --%s replace the base's user config, so they must set global.release.version themselves.\n", r.flag.Base, flagRelease, flagClusterUserConfig)
+			} else {
+				fmt.Fprintf(r.stderr, "Base %q holds no cluster App, so --%s is only set as the `release` variable of the Flux Kustomization. Set the release in the base's values.\n", r.flag.Base, flagRelease)
+			}
 		}
 	}
 
 	if r.flag.ClusterUserConfig != "" {
 		config.ClusterUserConfig, err = commonkey.ReadConfigMapYamlFromFile(
-			afero.NewOsFs(),
+			r.fs,
 			r.flag.ClusterUserConfig,
 		)
 		if err != nil {
@@ -98,6 +102,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
+	creatorConfig.Fs = r.fs
 	creatorConfig.Stdout = r.stdout
 
 	dryRunFlag := cmd.InheritedFlags().Lookup("dry-run")
