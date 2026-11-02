@@ -12,6 +12,10 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 - The krew index update no longer names the shared `architectbot` account as `GITHUB_ACTOR` (giantswarm/giantswarm#38800).
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
 
+### Security
+
+- Update `golang.org/x/net` to v0.62.0 for CVE-2026-78661 and CVE-2026-97045.
+
 ## [5.10.0] - 2026-10-12
 
 ### Added
