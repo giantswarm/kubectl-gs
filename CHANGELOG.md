@@ -7,9 +7,25 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+- `deploy chart`: `--values-from` takes an optional key and an `optional` marker, as in `Secret/my-secret:values:optional`. Without a key, Flux reads `values.yaml`, so this is needed for ConfigMaps like `<cluster>-cluster-values` that store their values under `values`.
+- `gitops add management-cluster`: the `--skip-encryption` flag leaves out the `secrets` and `.sops.keys` directories, for repositories whose secrets come from outside, for example from External Secrets Operator.
+
+### Fixed
+
+- `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It no longer creates the workload cluster's empty SOPS key Secret. `gitops add encryption` creates it when needed.
+- `gitops add encryption` creates the `secrets` and `.sops.keys` directories and the Secret for the private key when they are missing.
+- `gitops add workload-cluster`: a cluster created from a `cluster-<provider>` base can now install. `--release` is written to the cluster values as `global.release.version`, and the Flux Kustomization sets `cluster_description`.
+
 ### Changed
 
+- The krew index update no longer names the shared `architectbot` account as `GITHUB_ACTOR` (giantswarm/giantswarm#38800).
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
+
+### Security
+
+- Update `golang.org/x/net` to v0.62.0 for CVE-2026-78661 and CVE-2026-97045.
 
 ## [5.10.0] - 2026-10-12
 

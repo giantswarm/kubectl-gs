@@ -384,6 +384,7 @@ spec:
 				ValuesFrom: []ValuesFromReference{
 					{Kind: "ConfigMap", Name: "my-config"},
 					{Kind: "Secret", Name: "my-secret"},
+					{Kind: "Secret", Name: "my-user-secret", ValuesKey: "values", Optional: true},
 				},
 			},
 			expected: `apiVersion: helm.toolkit.fluxcd.io/v2
@@ -411,6 +412,10 @@ spec:
     name: my-config
   - kind: Secret
     name: my-secret
+  - kind: Secret
+    name: my-user-secret
+    optional: true
+    valuesKey: values
 `,
 		},
 	}
