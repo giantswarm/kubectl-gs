@@ -1,6 +1,7 @@
 package wcluster
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/giantswarm/microerror"
@@ -21,6 +22,25 @@ spec:
   name: ` + chart + `
 `
 }
+
+// releaseOverlay is the kustomization of gitops-template's
+// bases/clusters/capa/release.
+const releaseOverlay = `apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/name
+        value: release-aws
+      - op: replace
+        path: /spec/version
+        value: ${release}
+    target:
+      group: application.giantswarm.io
+      kind: App
+resources:
+  - ../template
+`
 
 func Test_clusterChartName(t *testing.T) {
 	testCases := []struct {
@@ -71,6 +91,35 @@ func Test_clusterChartName(t *testing.T) {
 			name: "overlay without App",
 			files: map[string]string{
 				"kustomization.yaml": "resources:\n  - ../../../../cluster_templates/hello_app_cluster\n",
+			},
+			expected: "",
+		},
+		{
+			name: "overlay patching in a release chart",
+			files: map[string]string{
+				"kustomization.yaml": releaseOverlay,
+			},
+			expected: "release-aws",
+		},
+		{
+			name: "overlay patching in a release chart from a patch file",
+			files: map[string]string{
+				"kustomization.yaml": "resources:\n  - ../template\npatches:\n  - path: patch_chart.yaml\n",
+				"patch_chart.yaml":   "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\nmetadata:\n  name: ${cluster_name}\nspec:\n  name: release-aws\n",
+			},
+			expected: "release-aws",
+		},
+		{
+			name: "overlay patching in a cluster chart",
+			files: map[string]string{
+				"kustomization.yaml": strings.ReplaceAll(releaseOverlay, "release-aws", "cluster-aws"),
+			},
+			expected: "",
+		},
+		{
+			name: "overlay patching another kind",
+			files: map[string]string{
+				"kustomization.yaml": strings.ReplaceAll(releaseOverlay, "kind: App", "kind: HelmRelease"),
 			},
 			expected: "",
 		},
