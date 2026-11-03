@@ -31,7 +31,8 @@ type OCIRepositoryOptions struct {
 type ValuesFromReference struct {
 	Kind      string // "ConfigMap" or "Secret"
 	Name      string
-	ValuesKey string // If set, overrides the default "values.yaml" data key.
+	ValuesKey string // If empty, Flux reads the "values.yaml" key.
+	Optional  bool
 }
 
 type HelmReleaseOptions struct {
@@ -205,6 +206,7 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 			Kind:      vf.Kind,
 			Name:      vf.Name,
 			ValuesKey: vf.ValuesKey,
+			Optional:  vf.Optional,
 		})
 	}
 

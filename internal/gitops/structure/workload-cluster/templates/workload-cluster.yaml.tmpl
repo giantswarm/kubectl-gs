@@ -13,6 +13,9 @@ spec:
   postBuild:
     substitute:
       cluster_name: {{ .WorkloadCluster }}
+      {{- if .ClusterBase }}
+      cluster_description: "{{ .WorkloadCluster }} managed by GitOps"
+      {{- end }}
       {{- if .Release }}
       release: {{ .Release }}
       {{- end }}

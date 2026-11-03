@@ -4,10 +4,8 @@ commonLabels:
   giantswarm.io/managed-by: flux
 kind: Kustomization
 {{- if .ClusterUserConfig }}
-patchesStrategicMerge:
-{{- if .ClusterUserConfig }}
-  - patch_cluster_userconfig.yaml
-{{- end }}
+patches:
+  - path: patch_cluster_userconfig.yaml
 {{- end }}
 resources:
 {{- if .SkipMAPI }}

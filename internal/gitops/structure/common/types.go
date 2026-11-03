@@ -31,12 +31,18 @@ type StructureConfig struct {
 	ClusterUserConfig string
 	InCluster         string
 
+	// ClusterChart is the chart of the base's cluster App, for example
+	// cluster-aws or release-aws. It is empty when the base holds no cluster
+	// App itself, for example an overlay of another base.
+	ClusterChart string
+
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
 
 	ManagementCluster string
 	Organization      string
 	RepositoryName    string
+	SkipEncryption    bool
 	SkipMAPI          bool
 	WorkloadCluster   string
 
