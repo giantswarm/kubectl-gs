@@ -73,32 +73,33 @@ func templateClusterCAPZ(ctx context.Context, k8sClient k8sclient.Interface, out
 		}
 	}
 
-	var appYAML []byte
-	{
-		// Use release-<provider> chart name for release versions (>= 35.0.0).
-		// These charts have the release version baked into values.yaml.
-		// For older chart versions, use cluster-<provider> and let the webhook handle version.
-		chartName := ClusterAzureRepoName
-		if config.UseReleaseChart {
-			chartName = ReleaseAzureRepoName
+	if config.UseReleaseChart {
+		ociRepoYAML, helmReleaseYAML, err := common.BuildClusterFluxResources(config, ReleaseAzureRepoName, configMapName)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 
+		t := template.Must(template.New("clusterFlux").Parse(key.ClusterFluxTemplate))
+		return microerror.Mask(t.Execute(output, templateapp.ClusterFluxOutput{
+			UserConfigConfigMap: string(configMapYAML),
+			OCIRepository:       string(ociRepoYAML),
+			HelmRelease:         string(helmReleaseYAML),
+		}))
+	}
+
+	var appYAML []byte
+	{
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    chartName,
+			Name:                    ClusterAzureRepoName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			UserConfigConfigMapName: configMapName,
 			ExtraLabels:             map[string]string{},
-		}
-		// Set version for release charts where the chart version equals the release version.
-		// For cluster-<provider> charts, only an explicitly requested version is set,
-		// otherwise the webhook handles version mutation.
-		if config.UseReleaseChart {
-			clusterAppConfig.Version = config.ReleaseVersion
-		} else {
-			clusterAppConfig.Version = config.App.ClusterVersion
+			// Only an explicitly requested version is set; otherwise the
+			// app-operator webhook resolves the version from the Release CR.
+			Version: config.App.ClusterVersion,
 		}
 		for k, v := range config.Labels {
 			clusterAppConfig.ExtraLabels[k] = v

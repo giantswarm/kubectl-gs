@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+data:
+  values: |
+    global:
+      connectivity:
+        baseDomain: test.gigantic.io
+        network:
+          loadBalancers:
+            vipSubnet: 10.0.0.0/24
+      controlPlane:
+        machineTemplate:
+          catalog: giantswarm
+        oidc:
+          clientId: dex-k8s-authenticator
+          groupsClaim: groups
+          issuerUrl: https://dex.my-mc.example.com
+          usernameClaim: email
+      metadata:
+        description: cluster using release version directly
+        name: test-capvcd-flux
+        organization: test
+      nodePools:
+        worker:
+          catalog: giantswarm
+      providerSpecific:
+        userContext:
+          secretRef: {}
+kind: ConfigMap
+metadata:
+  labels:
+    giantswarm.io/cluster: test-capvcd-flux
+  name: test-capvcd-flux-userconfig
+  namespace: org-test
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  labels:
+    giantswarm.io/cluster: test-capvcd-flux
+  name: test-capvcd-flux
+  namespace: org-test
+spec:
+  interval: 10m0s
+  provider: generic
+  ref:
+    tag: 35.0.0
+  timeout: 1m0s
+  url: oci://gsoci.azurecr.io/charts/giantswarm/release-cloud-director
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: test-capvcd-flux
+  name: test-capvcd-flux
+  namespace: org-test
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: test-capvcd-flux
+    namespace: org-test
+  install:
+    remediation:
+      remediateLastFailure: false
+      retries: 10
+  interval: 5m0s
+  releaseName: test-capvcd-flux
+  serviceAccountName: automation
+  storageNamespace: org-test
+  targetNamespace: org-test
+  timeout: 10m0s
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+      retries: 10
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: test-capvcd-flux-userconfig
+    valuesKey: values

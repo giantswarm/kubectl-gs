@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -19,6 +20,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/flags"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/ociregistry"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 	"github.com/giantswarm/kubectl-gs/v6/pkg/labels"
 )
@@ -29,6 +31,10 @@ type runner struct {
 	logger       micrologger.Logger
 	stdout       io.Writer
 	stderr       io.Writer
+	// ociClient is used to check for release-<provider> chart availability in
+	// gsoci. Left nil in production; a real client is created lazily in
+	// useReleaseChart. Tests inject a fake.
+	ociClient ociregistry.Client
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -74,7 +80,7 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 		return microerror.Mask(err)
 	}
 
-	config.UseReleaseChart = r.useReleaseChart(ctx, client, config)
+	config.UseReleaseChart = r.useReleaseChart(ctx, config)
 
 	config.OIDC, err = r.oidcValues(ctx, client)
 	if err != nil {
@@ -129,7 +135,9 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 // `aws-35.0.0` named `aws-35.0.0-andreas`). For those, no release-<provider>
 // chart exists and we have to fall back to the cluster-<provider> chart, which
 // resolves the Release CR at runtime.
-func (r *runner) useReleaseChart(ctx context.Context, client k8sclient.Interface, config common.ClusterConfig) bool {
+var minVsphereReleaseChartVersion = semver.MustParse("36.1.0")
+
+func (r *runner) useReleaseChart(ctx context.Context, config common.ClusterConfig) bool {
 	if !common.IsReleaseVersion(config.ReleaseVersion) {
 		return false
 	}
@@ -145,17 +153,36 @@ func (r *runner) useReleaseChart(ctx context.Context, client k8sclient.Interface
 		return false
 	}
 
-	available, err := common.ReleaseChartAvailable(ctx, client.CtrlClient(), releaseChart, config.App.ClusterCatalog, config.ReleaseVersion)
+	// Older vSphere releases bundle a cluster-vsphere chart that puts
+	// .Chart.Version into labels, which breaks as a HelmRelease
+	// (giantswarm/cluster-vsphere#556, first in v36.1.0).
+	if r.flag.Provider == key.ProviderVSphere && semver.MustParse(config.ReleaseVersion).LessThan(minVsphereReleaseChartVersion) {
+		r.warnf("Warning: the %s chart cannot be installed as a HelmRelease before %s, using the %s chart instead.\n", releaseChart, minVsphereReleaseChartVersion, clusterChart)
+		return false
+	}
+
+	ociClient := r.ociClient
+	if ociClient == nil {
+		var err error
+		ociClient, err = ociregistry.NewClient(ociregistry.ClientOptions{})
+		if err != nil {
+			r.warnf("Warning: could not create an OCI registry client to check for the %s chart: %s\n", releaseChart, err)
+			return true
+		}
+		defer ociClient.Close(ctx)
+	}
+
+	available, err := common.ReleaseChartAvailable(ctx, ociClient, releaseChart, config.ReleaseVersion)
 	if err != nil {
 		// We cannot tell, so we stick to the default flow for releases.
-		r.warnf("Warning: could not check whether the %s chart exists in the %s catalog: %s\n", releaseChart, config.App.ClusterCatalog, err)
+		r.warnf("Warning: could not check whether the %s chart exists in the %s registry: %s\n", releaseChart, common.GSOCIRegistry, err)
 		return true
 	}
 
 	if !available {
 		r.warnf(
-			"Warning: no %s chart with version %s found in the %s catalog, using the %s chart instead. Make sure the Release CR for %s exists in the management cluster.\n",
-			releaseChart, config.ReleaseVersion, config.App.ClusterCatalog, clusterChart, config.ReleaseVersion,
+			"Warning: no %s chart with version %s found in the %s registry, using the %s chart instead. Make sure the Release CR for %s exists in the management cluster.\n",
+			releaseChart, config.ReleaseVersion, common.GSOCIRegistry, clusterChart, config.ReleaseVersion,
 		)
 		return false
 	}
