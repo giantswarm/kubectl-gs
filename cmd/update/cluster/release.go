@@ -8,7 +8,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/microerror"
 	releasev1alpha1 "github.com/giantswarm/releases/sdk/api/v1alpha1"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
