@@ -43,6 +43,16 @@ func Test_runner_run(t *testing.T) {
 			expectUserConfig:  []string{"testKey: testValue"},
 		},
 		{
+			name: "release overlay base",
+			base: "bases/release",
+		},
+		{
+			name:              "release overlay base with user config",
+			base:              "bases/release",
+			clusterUserConfig: "/values.yaml",
+			expectUserConfig:  []string{"testKey: testValue"},
+		},
+		{
 			name:              "cluster chart base with user config",
 			base:              "bases/capa",
 			clusterUserConfig: "/values.yaml",
@@ -56,6 +66,7 @@ func Test_runner_run(t *testing.T) {
 			seed := map[string]string{
 				"/repo/bases/capa/cluster.yaml":          app("cluster-aws"),
 				"/repo/bases/overlay/kustomization.yaml": "resources:\n  - ../capa\n",
+				"/repo/bases/release/kustomization.yaml": releaseOverlay,
 				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources: []\n",
 				"/values.yaml": "testKey: testValue\n",
 			}
