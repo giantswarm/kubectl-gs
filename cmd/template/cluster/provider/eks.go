@@ -40,7 +40,7 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 
 		// For release versions, the release version is baked into the chart,
 		// so we don't need to include it in the user config.
-		if common.IsReleaseVersion(config.ReleaseVersion) {
+		if config.UseReleaseChart {
 			flagValues.Global.Release = nil
 		}
 
@@ -73,8 +73,24 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 		}
 	}
 
+	if config.UseReleaseChart {
+		ociRepoYAML, helmReleaseYAML, err := common.BuildClusterFluxResources(config, ReleaseEKSRepoName, configMapName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		t := template.Must(template.New("clusterFlux").Parse(key.ClusterFluxTemplate))
+		return microerror.Mask(t.Execute(output, templateapp.ClusterFluxOutput{
+			UserConfigConfigMap: string(configMapYAML),
+			OCIRepository:       string(ociRepoYAML),
+			HelmRelease:         string(helmReleaseYAML),
+		}))
+	}
+
 	var appYAML []byte
 	{
+		// Only an explicitly requested version is set; otherwise the
+		// app-operator webhook resolves the version from the Release CR.
 		appVersion := config.App.ClusterVersion
 		if appVersion == "" {
 			var err error
@@ -84,18 +100,11 @@ func templateClusterEKS(ctx context.Context, k8sClient k8sclient.Interface, outp
 			}
 		}
 
-		// Use release-<provider> chart name for release versions (>= 35.0.0).
-		// For older chart versions, use cluster-<provider>.
-		chartName := ClusterEKSRepoName
-		if common.IsReleaseVersion(appVersion) {
-			chartName = ReleaseEKSRepoName
-		}
-
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    chartName,
+			Name:                    ClusterEKSRepoName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,

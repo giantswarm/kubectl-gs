@@ -1,6 +1,79 @@
 package common
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+)
+
+func TestBuildClusterFluxResources(t *testing.T) {
+	config := ClusterConfig{
+		Name:           "e9sc4",
+		Organization:   "laszlo",
+		ReleaseVersion: "35.0.1",
+	}
+
+	ociRepoYAML, helmReleaseYAML, err := BuildClusterFluxResources(config, "release-aws", "e9sc4-userconfig")
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	expectedOCIRepo := `apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  labels:
+    giantswarm.io/cluster: e9sc4
+  name: e9sc4
+  namespace: org-laszlo
+spec:
+  interval: 10m0s
+  provider: generic
+  ref:
+    tag: 35.0.1
+  timeout: 1m0s
+  url: oci://gsoci.azurecr.io/charts/giantswarm/release-aws
+`
+	if diff := cmp.Diff(strings.Split(expectedOCIRepo, "\n"), strings.Split(string(ociRepoYAML), "\n")); diff != "" {
+		t.Errorf("unexpected OCIRepository (-want +got):\n%s", diff)
+	}
+
+	expectedHelmRelease := `apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: e9sc4
+  name: e9sc4
+  namespace: org-laszlo
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: e9sc4
+    namespace: org-laszlo
+  install:
+    remediation:
+      remediateLastFailure: false
+      retries: 10
+  interval: 5m0s
+  releaseName: e9sc4
+  serviceAccountName: automation
+  storageNamespace: org-laszlo
+  targetNamespace: org-laszlo
+  timeout: 10m0s
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+      retries: 10
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: e9sc4-userconfig
+    valuesKey: values
+`
+	if diff := cmp.Diff(strings.Split(expectedHelmRelease, "\n"), strings.Split(string(helmReleaseYAML), "\n")); diff != "" {
+		t.Errorf("unexpected HelmRelease (-want +got):\n%s", diff)
+	}
+}
 
 func TestIsReleaseVersion(t *testing.T) {
 	tests := []struct {

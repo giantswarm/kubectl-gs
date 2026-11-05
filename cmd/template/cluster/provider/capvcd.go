@@ -24,8 +24,11 @@ const (
 )
 
 func WriteCloudDirectorTemplate(ctx context.Context, client k8sclient.Interface, output io.Writer, config common.ClusterConfig) error {
+	// Only an explicitly requested version is set; otherwise the
+	// app-operator webhook resolves the version from the Release CR. Not
+	// needed at all on the release-<provider> chart path.
 	appVersion := config.App.ClusterVersion
-	if appVersion == "" {
+	if !config.UseReleaseChart && appVersion == "" {
 		var err error
 		appVersion, err = common.GetLatestVersion(ctx, client.CtrlClient(), ClusterCloudDirectorRepoName, config.App.ClusterCatalog)
 		if err != nil {
@@ -51,7 +54,7 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 
 		// For release versions, the release version is baked into the chart,
 		// so we don't need to include it in the user config.
-		if common.IsReleaseVersion(appVersion) {
+		if config.UseReleaseChart {
 			flagValues.Global.Release = nil
 		}
 
@@ -84,6 +87,20 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 		}
 	}
 
+	if config.UseReleaseChart {
+		ociRepoYAML, helmReleaseYAML, err := common.BuildClusterFluxResources(config, ReleaseCloudDirectorRepoName, configMapName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		t := template.Must(template.New("clusterFlux").Parse(key.ClusterFluxTemplate))
+		return microerror.Mask(t.Execute(output, templateapp.ClusterFluxOutput{
+			UserConfigConfigMap: string(configMapYAML),
+			OCIRepository:       string(ociRepoYAML),
+			HelmRelease:         string(helmReleaseYAML),
+		}))
+	}
+
 	var appYAML []byte
 	{
 		extraConfigs := []applicationv1alpha1.AppExtraConfig{
@@ -95,18 +112,11 @@ func templateClusterCloudDirector(output io.Writer, config common.ClusterConfig,
 			},
 		}
 
-		// Use release-<provider> chart name for release versions (>= 35.0.0).
-		// For older chart versions, use cluster-<provider>.
-		chartName := ClusterCloudDirectorRepoName
-		if common.IsReleaseVersion(appVersion) {
-			chartName = ReleaseCloudDirectorRepoName
-		}
-
 		clusterAppConfig := templateapp.Config{
 			AppName:                 config.Name,
 			Catalog:                 config.App.ClusterCatalog,
 			InCluster:               true,
-			Name:                    chartName,
+			Name:                    ClusterCloudDirectorRepoName,
 			Namespace:               common.OrganizationNamespace(config.Organization),
 			Version:                 appVersion,
 			UserConfigConfigMapName: configMapName,
