@@ -2,6 +2,7 @@ package wcluster
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -42,6 +43,20 @@ func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 
 		decoder := apiyaml.NewYAMLOrJSONDecoder(bytes.NewReader(data), 4096)
 		for {
+			var document json.RawMessage
+			err = decoder.Decode(&document)
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				return "", microerror.Maskf(invalidConfigError, "cannot parse %s: %s", path, err)
+			}
+
+			// A JSON 6902 patch file in the base is a list of operations, not
+			// a resource. releaseChartFromPatches reads it.
+			if bytes.HasPrefix(bytes.TrimSpace(document), []byte("[")) {
+				continue
+			}
+
 			var object struct {
 				APIVersion string `json:"apiVersion"`
 				Kind       string `json:"kind"`
@@ -50,10 +65,8 @@ func clusterChartName(fs afero.Fs, baseDir string) (string, error) {
 					Name    string `json:"name"`
 				} `json:"spec"`
 			}
-			err = decoder.Decode(&object)
-			if err == io.EOF {
-				break
-			} else if err != nil {
+			err = json.Unmarshal(document, &object)
+			if err != nil {
 				return "", microerror.Maskf(invalidConfigError, "cannot parse %s: %s", path, err)
 			}
 

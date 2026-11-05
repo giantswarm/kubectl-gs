@@ -110,6 +110,14 @@ func Test_clusterChartName(t *testing.T) {
 			expected: "release-aws",
 		},
 		{
+			name: "overlay patching in a release chart from a JSON 6902 patch file",
+			files: map[string]string{
+				"kustomization.yaml": "resources:\n  - ../template\npatches:\n  - path: ops.yaml\n    target:\n      kind: App\n",
+				"ops.yaml":           "- op: replace\n  path: /spec/name\n  value: release-aws\n",
+			},
+			expected: "release-aws",
+		},
+		{
 			name: "overlay patching in a cluster chart",
 			files: map[string]string{
 				"kustomization.yaml": strings.ReplaceAll(releaseOverlay, "release-aws", "cluster-aws"),
