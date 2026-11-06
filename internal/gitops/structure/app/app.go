@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/appcr"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	sigskusmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/sigs-kustomization"
@@ -19,7 +20,8 @@ import (
 )
 
 const (
-	appExists = "`%s` app is already configured for the cluster."
+	appExists        = "`%s` app is already configured for the cluster."
+	baseDeploysAppCR = "base %s deploys an App CR in %s, which kubectl-gs no longer supports. Move it to a HelmRelease first, see %s"
 )
 
 // NewApp creates a new App directory structure.
@@ -110,6 +112,27 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 				return microerror.Maskf(creator.ValidationError, appExists, config.AppName)
 			},
 		},
+	}
+
+	// The user values patch only targets a HelmRelease, so it would match
+	// nothing in a base deploying an App CR.
+	if config.AppBase != "" {
+		creatorConfig.PreValidators[config.AppBase] = func(fs *afero.Afero, path string) error {
+			ok, err := fs.DirExists(path)
+			if err != nil || !ok {
+				return microerror.Mask(err)
+			}
+
+			files, err := appcr.Files(fs, path)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if len(files) > 0 {
+				return microerror.Maskf(creator.ValidationError, baseDeploysAppCR, config.AppBase, files[0], appcr.MigrationDocs)
+			}
+
+			return nil
+		}
 	}
 
 	return &creatorConfig, nil

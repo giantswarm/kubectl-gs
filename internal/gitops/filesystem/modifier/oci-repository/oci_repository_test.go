@@ -11,9 +11,33 @@ func Test_SemverModifier(t *testing.T) {
 	testCases := []struct {
 		name      string
 		input     string
+		semver    string
 		expected  string
 		expectErr bool
 	}{
+		{
+			name:   "keeps the semver filter and quotes a numeric range",
+			semver: "1.2",
+			input: `apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+spec:
+  ref:
+    semver: '>=1.0.0'
+    semverFilter: '.*-rc.*'
+`,
+			expected: `apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+spec:
+  ref:
+    semver: "1.2"
+    semverFilter: '.*-rc.*'
+`,
+		},
+		{
+			name:      "more than one document",
+			input:     "apiVersion: source.toolkit.fluxcd.io/v1\nkind: OCIRepository\nspec: {}\n---\napiVersion: v1\nkind: ConfigMap\n",
+			expectErr: true,
+		},
 		{
 			name: "replaces the tag",
 			input: `apiVersion: source.toolkit.fluxcd.io/v1
@@ -61,7 +85,11 @@ spec:
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := SemverModifier{Range: ">=0.0.0"}.Execute([]byte(tc.input))
+			semver := tc.semver
+			if semver == "" {
+				semver = ">=0.0.0"
+			}
+			got, err := SemverModifier{Range: semver}.Execute([]byte(tc.input))
 			if tc.expectErr {
 				if microerror.Cause(err) != invalidConfigError {
 					t.Fatalf("expected invalid config error, got: %v", err)

@@ -4,13 +4,18 @@ import (
 	"bytes"
 	goflag "flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
+	"github.com/spf13/afero"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
 
@@ -408,6 +413,67 @@ topKey:
 				if !bytes.Equal(config.FsObjects[i].Data, expected) {
 					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
 				}
+			}
+		})
+	}
+}
+
+func Test_NewApp_RefusesAppCRBase(t *testing.T) {
+	testCases := []struct {
+		name      string
+		base      string
+		expectErr bool
+	}{
+		{
+			name:      "App CR base",
+			base:      "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n",
+			expectErr: true,
+		},
+		{
+			name: "HelmRelease base",
+			base: "apiVersion: helm.toolkit.fluxcd.io/v2\nkind: HelmRelease\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			files := map[string]string{
+				"/repo/bases/apps/hello-world/kustomization.yaml":                                                              "resources:\n  - hello.yaml\n",
+				"/repo/bases/apps/hello-world/hello.yaml":                                                                      tc.base,
+				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/kustomization.yaml": "resources: []\n",
+			}
+			for path, data := range files {
+				err := afero.WriteFile(fs, path, []byte(data), 0600)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+			}
+
+			config, err := NewApp(common.StructureConfig{
+				AppBase:                "bases/apps/hello-world",
+				AppName:                "hello-world",
+				AppUserValuesConfigMap: "replicaCount: 2",
+				ManagementCluster:      "demomc",
+				Organization:           "demoorg",
+				WorkloadCluster:        "demowc",
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			config.Fs = fs
+			config.Path = "/repo"
+			config.Stdout = io.Discard
+
+			err = creator.NewCreator(*config).Create()
+			if tc.expectErr {
+				if microerror.Cause(err) != creator.ValidationError || !strings.Contains(err.Error(), "no longer supports") {
+					t.Fatalf("expected a validation error, got: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
 			}
 		})
 	}

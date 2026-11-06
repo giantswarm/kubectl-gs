@@ -21,7 +21,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   - `--catalog` is replaced by `--oci-url-prefix`, the OCI repository holding the chart. It defaults to `oci://gsoci.azurecr.io/charts/giantswarm`.
   - The HelmRelease installs the app in the workload cluster through its kubeconfig, or in the management cluster with `--in-cluster`.
   - `--install-timeout`, `--upgrade-timeout`, `--rollback-timeout` and `--uninstall-timeout` set the timeout of that Helm action in the HelmRelease.
-  - With `--base`, the values from `--user-configmap` and `--user-secret` are added to the `valuesFrom` of the base's HelmRelease with a JSON 6902 patch. That HelmRelease must be named `${cluster_name}-<name>` and list `valuesFrom`.
+  - With `--base`, the values from `--user-configmap` and `--user-secret` are added to the `valuesFrom` of the base's HelmRelease with a JSON 6902 patch. That HelmRelease must be named `${cluster_name}-<name>` and list `valuesFrom`. A base deploying an App CR is refused.
 - `gitops add automatic-update` sets a semver range on the app's `OCIRepository`, so Flux pulls the newest chart version in it. `--version-range` sets the range and defaults to `>=0.0.0`. It no longer creates `ImageRepository`, `ImagePolicy` and `ImageUpdateAutomation` resources, and `--repository` and `--version-repository` are removed. Apps deployed with an App CR, and apps from a base, are refused.
 
 ### Added
