@@ -1,114 +1,107 @@
 package updates
 
 import (
-	"bytes"
-	"fmt"
-	"os"
+	"io"
+	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
+	"github.com/spf13/afero"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
 
-type FsObjectExpected struct {
-	RelativePath string
-	GoldenFile   string
-}
+const (
+	appDir        = "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world"
+	ociRepository = `apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: demowc-hello-world
+  namespace: org-demoorg
+spec:
+  interval: 10m0s
+  ref:
+    tag: 0.3.0
+  url: oci://gsoci.azurecr.io/charts/giantswarm/hello-world
+`
+)
 
 func Test_NewAutomaticUpdate(t *testing.T) {
 	testCases := []struct {
-		name            string
-		config          common.StructureConfig
-		expectedObjects []FsObjectExpected
+		name         string
+		files        map[string]string
+		expected     string
+		expectErrMsg string
 	}{
 		{
-			name: "flawless",
-			config: common.StructureConfig{
-				AppName:              "hello-world",
-				ManagementCluster:    "demomc",
-				Organization:         "demoorg",
-				RepositoryName:       "gitops-demo",
-				AppVersionRepository: "quay.io/giantswarm/hello-world",
-				SkipMAPI:             true,
-				WorkloadCluster:      "demowc",
-			},
-			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/automatic-updates",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/automatic-updates/imageupdate.yaml",
-					GoldenFile:   "testdata/expected/0-imageupdate.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/imagepolicy.yaml",
-					GoldenFile:   "testdata/expected/0-imagepolicy.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/imagerepository.yaml",
-					GoldenFile:   "testdata/expected/0-imagerepository.golden",
-				},
-			},
+			name:     "OCIRepository",
+			files:    map[string]string{"oci-repository.yaml": ociRepository},
+			expected: strings.Replace(ociRepository, "tag: 0.3.0", "semver: '>=1.0.0'", 1),
 		},
 		{
-			name: "flawless MAPI",
-			config: common.StructureConfig{
-				AppName:              "hello-world",
-				ManagementCluster:    "demomc",
-				Organization:         "demoorg",
-				RepositoryName:       "gitops-demo",
-				AppVersionRepository: "quay.io/giantswarm/hello-world",
-				WorkloadCluster:      "demowc",
-			},
-			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/automatic-updates",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/automatic-updates/imageupdate.yaml",
-					GoldenFile:   "testdata/expected/0-imageupdate.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/imagepolicy.yaml",
-					GoldenFile:   "testdata/expected/0-imagepolicy.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/imagerepository.yaml",
-					GoldenFile:   "testdata/expected/0-imagerepository.golden",
-				},
-			},
+			name:         "App CR",
+			files:        map[string]string{"appcr.yaml": "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n"},
+			expectErrMsg: "no longer supports",
+		},
+		{
+			name:         "app from a base",
+			files:        map[string]string{"kustomization.yaml": "resources:\n  - ../../../../../../../../../bases/apps/hello-world\n"},
+			expectErrMsg: "has no `oci-repository.yaml` file",
+		},
+		{
+			name:         "missing app",
+			expectErrMsg: "has no `oci-repository.yaml` file",
 		},
 	}
 
-	for i, tc := range testCases {
-		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
-			config, err := NewAutomaticUpdate(tc.config)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			err := fs.MkdirAll("/repo", 0755)
 			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
+				t.Fatalf("unexpected error: %s", err)
 			}
-
-			if len(config.FsObjects) != len(tc.expectedObjects) {
-				t.Fatalf("expected %d objects, got: %d", len(tc.expectedObjects), len(config.FsObjects))
-			}
-
-			for i, e := range tc.expectedObjects {
-				if e.RelativePath != config.FsObjects[i].RelativePath {
-					t.Fatalf("expected path %s, got %s", e.RelativePath, config.FsObjects[i].RelativePath)
-				}
-
-				if e.GoldenFile == "" {
-					continue
-				}
-
-				expected, err := os.ReadFile(e.GoldenFile)
+			for name, data := range tc.files {
+				err := afero.WriteFile(fs, filepath.Join("/repo", appDir, name), []byte(data), 0600)
 				if err != nil {
-					t.Fatalf("unexpected error: %s", err.Error())
+					t.Fatalf("unexpected error: %s", err)
 				}
+			}
 
-				if !bytes.Equal(config.FsObjects[i].Data, expected) {
-					t.Fatalf("want matching files \n%s\n", cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
+			config, err := NewAutomaticUpdate(common.StructureConfig{
+				AppName:           "hello-world",
+				AppVersionRange:   ">=1.0.0",
+				ManagementCluster: "demomc",
+				Organization:      "demoorg",
+				WorkloadCluster:   "demowc",
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			config.Fs = fs
+			config.Path = "/repo"
+			config.Stdout = io.Discard
+
+			err = creator.NewCreator(*config).Create()
+			if tc.expectErrMsg != "" {
+				if microerror.Cause(err) != creator.ValidationError || !strings.Contains(err.Error(), tc.expectErrMsg) {
+					t.Fatalf("expected a validation error containing %q, got: %v", tc.expectErrMsg, err)
 				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			got, err := afero.ReadFile(fs, filepath.Join("/repo", appDir, "oci-repository.yaml"))
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if diff := cmp.Diff(tc.expected, string(got)); diff != "" {
+				t.Fatalf("unexpected oci-repository.yaml (-want +got):\n%s", diff)
 			}
 		})
 	}

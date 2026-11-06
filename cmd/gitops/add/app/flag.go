@@ -2,10 +2,13 @@ package app
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+
+	clustercommon "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 )
 
 const (
@@ -15,13 +18,13 @@ const (
 	flagSkipMAPI          = "skip-mapi"
 	flagWorkloadCluster   = "workload-cluster"
 
-	// App CR part
+	// HelmRelease part
 	flagApp                 = "app"
 	flagBase                = "base"
-	flagCatalog             = "catalog"
 	flagInCluster           = "in-cluster"
 	flagInstallTimeout      = "install-timeout"
 	flagNamespace           = "namespace"
+	flagOCIURLPrefix        = "oci-url-prefix"
 	flagRollbackTimeout     = "rollback-timeout"
 	flagTargetNamespace     = "target-namespace"
 	flagUninstallTimeout    = "uninstall-timeout"
@@ -38,13 +41,13 @@ type flag struct {
 	SkipMAPI          bool
 	WorkloadCluster   string
 
-	// App CR part
+	// HelmRelease part
 	App                 string
 	Base                string
-	Catalog             string
 	InCluster           bool
 	InstallTimeout      time.Duration
 	Namespace           string
+	OCIURLPrefix        string
 	RollbackTimeout     time.Duration
 	TargetNamespace     string
 	UninstallTimeout    time.Duration
@@ -62,12 +65,12 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Name of the Workload Cluster to configure the app for.")
 
 	//CAPx only
-	cmd.Flags().StringVar(&f.App, flagApp, "", "App name in the catalog.")
+	cmd.Flags().StringVar(&f.App, flagApp, "", "Name of the app's chart.")
 	cmd.Flags().StringVar(&f.Base, flagBase, "", "Path to the base directory. It must be relative to the repository root.")
-	cmd.Flags().StringVar(&f.Catalog, flagCatalog, "", "Catalog to install the app from.")
-	cmd.Flags().BoolVar(&f.InCluster, flagInCluster, false, "Use in-cluster configuration.")
+	cmd.Flags().BoolVar(&f.InCluster, flagInCluster, false, "Install the app in the management cluster instead of the workload cluster.")
 	cmd.Flags().DurationVar(&f.InstallTimeout, flagInstallTimeout, 0, "Timeout for the Helm install.")
 	cmd.Flags().StringVar(&f.Namespace, flagNamespace, "", "Namespace to install app into.")
+	cmd.Flags().StringVar(&f.OCIURLPrefix, flagOCIURLPrefix, fmt.Sprintf("oci://%s/%s", clustercommon.GSOCIRegistry, strings.TrimSuffix(clustercommon.GSOCIChartsRepoPrefix, "/")), "OCI repository holding the chart. The chart URL is this prefix and --app.")
 	cmd.Flags().DurationVar(&f.RollbackTimeout, flagRollbackTimeout, 0, "Timeout for the Helm rollback.")
 	cmd.Flags().StringVar(&f.TargetNamespace, flagTargetNamespace, "", "Namespace to install app into.")
 	cmd.Flags().DurationVar(&f.UninstallTimeout, flagUninstallTimeout, 0, "Timeout for the Helm uninstall.")
@@ -96,8 +99,8 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagApp)
 	}
 
-	if f.Base == "" && f.Catalog == "" {
-		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagCatalog)
+	if f.Base == "" && !strings.HasPrefix(f.OCIURLPrefix, "oci://") {
+		return microerror.Maskf(invalidFlagsError, "--%s must start with oci://", flagOCIURLPrefix)
 	}
 
 	if f.Base == "" && f.TargetNamespace == "" && f.Namespace == "" {

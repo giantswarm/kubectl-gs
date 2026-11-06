@@ -6,8 +6,11 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
 
-//go:embed appcr.yaml.tmpl
-var appcr string
+//go:embed oci-repository.yaml.tmpl
+var ociRepository string
+
+//go:embed helm-release.yaml.tmpl
+var helmRelease string
 
 //go:embed kustomization.yaml.tmpl
 var kustomization string
@@ -24,7 +27,8 @@ var userValuesSecret string
 // GetOrganizationDirectoryTemplates returns organization directory layout.
 func GetAppDirectoryTemplates() []common.Template {
 	return []common.Template{
-		common.Template{Name: "appcr.yaml", Data: appcr},
+		common.Template{Name: "oci-repository.yaml", Data: ociRepository},
+		common.Template{Name: "helm-release.yaml", Data: helmRelease},
 		common.Template{Name: "configmap.yaml", Data: userValuesCm},
 		common.Template{Name: "secret.enc.yaml", Data: userValuesSecret},
 		common.Template{Name: "kustomization.yaml", Data: kustomization},

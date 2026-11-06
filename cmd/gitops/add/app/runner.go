@@ -52,9 +52,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	config := common.StructureConfig{
 		App:               r.flag.App,
 		AppBase:           r.flag.Base,
-		AppCatalog:        r.flag.Catalog,
 		AppName:           r.flag.Name,
 		AppNamespace:      targetNamespace,
+		AppOCIURLPrefix:   r.flag.OCIURLPrefix,
 		AppVersion:        r.flag.Version,
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
