@@ -33,7 +33,7 @@ type AdoptionResult struct {
 // Note what this cannot do: it has no way of knowing which structure version
 // the repository was actually generated with, so it otherwise assumes the
 // current one. Drift that already exists at the point of adoption stays
-// invisible; only drift introduced afterwards is detected.
+// invisible. Only drift introduced afterwards is detected.
 func Adopt(fs *afero.Afero, repoPath string) (*AdoptionResult, error) {
 	result := &AdoptionResult{
 		Metadata: New(),

@@ -25,10 +25,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
 
-// vsphereCredentialsSecretName is the Secret `kubectl gs template cluster`
-// takes the vCenter credentials from by default.
-const vsphereCredentialsSecretName = "vsphere-credentials"
-
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
 
@@ -166,7 +162,7 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	// HelmRelease has to pass the credentials Secret along.
 	clusterResources, err := generateClusterResources(
 		providers.ReleaseVsphereRepoName,
-		deploychart.ValuesFromReference{Kind: "Secret", Name: vsphereCredentialsSecretName},
+		deploychart.ValuesFromReference{Kind: "Secret", Name: clustercommon.DefaultVSphereCredentialsSecretName},
 	)
 	if err != nil {
 		return clusterBaseTemplates, err

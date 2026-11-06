@@ -188,6 +188,18 @@ func Test_helmReleases(t *testing.T) {
 			expectNChanges: 3,
 		},
 		{
+			name: "workload cluster with a user config patch targeting the App",
+			files: []map[string]string{migratedBase, v1WC, {
+				testWC + "/cluster/kustomization.yaml": strings.Replace(v1ClusterKustomization, "  - path: patch_cluster_userconfig.yaml\n", "  - path: patch_cluster_userconfig.yaml\n    target:\n      kind: App\n", 1),
+			}},
+			layer: wcLayer,
+			expectFiles: map[string]string{
+				testWC + "/cluster/kustomization.yaml":            v2ClusterKustomization,
+				testWC + "/cluster/patch_cluster_userconfig.yaml": v2ClusterUserConfigPatch,
+			},
+			expectNChanges: 3,
+		},
+		{
 			name: "workload cluster already migrated",
 			files: []map[string]string{migratedBase, {
 				testWC + "/cluster/kustomization.yaml":            v2ClusterKustomization,

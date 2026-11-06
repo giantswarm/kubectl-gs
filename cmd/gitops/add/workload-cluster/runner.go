@@ -83,7 +83,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Mask(err)
 		}
 		if chart == "" {
-			fmt.Fprintf(r.stderr, "Base %q holds no release chart, so --%s is not checked against the %s registry.\n", r.flag.Base, flagRelease, clustercommon.GSOCIRegistry)
+			_, _ = fmt.Fprintf(r.stderr, "Base %q holds no release chart, so --%s is not checked against the %s registry.\n", r.flag.Base, flagRelease, clustercommon.GSOCIRegistry)
 		} else {
 			err = r.checkReleaseChart(ctx, chart, config.Release)
 			if err != nil {

@@ -25,13 +25,35 @@ const MigrationDocs = "https://docs.giantswarm.io/overview/fleet-management/app-
 
 // Files returns the files holding an App CR that a Flux Kustomization
 // pointed at dir deploys, relative to fs.
+func Files(fs afero.Fs, dir string) ([]string, error) {
+	resources, err := Resources(fs, dir)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	files := []string{}
+	for _, r := range resources {
+		ok, err := holdsApp(fs, r)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if ok {
+			files = append(files, r)
+		}
+	}
+
+	return files, nil
+}
+
+// Resources returns the files a Flux Kustomization pointed at dir deploys,
+// sorted and relative to fs.
 //
 // When dir has a kustomization.yaml, only its resources are followed, files
 // and directories alike, as kustomize would. Patches are not resources, so a
 // patch targeting Apps does not count. Without one, every YAML file in dir and
 // its subdirectories counts, as Flux generates a kustomization listing them.
 // Resources outside fs, like remote bases, are skipped.
-func Files(fs afero.Fs, dir string) ([]string, error) {
+func Resources(fs afero.Fs, dir string) ([]string, error) {
 	found := map[string]bool{}
 	err := walk(fs, dir, found, map[string]bool{})
 	if err != nil {
@@ -86,13 +108,7 @@ func walk(fs afero.Fs, dir string, found, visited map[string]bool) error {
 			continue
 		}
 
-		ok, err := holdsApp(fs, path)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		if ok {
-			found[path] = true
-		}
+		found[path] = true
 	}
 
 	return nil
@@ -120,24 +136,12 @@ func holdsApp(fs afero.Fs, path string) (bool, error) {
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
+	documents, err := Documents(data, path)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
 
-	decoder := apiyaml.NewYAMLOrJSONDecoder(bytes.NewReader(data), 4096)
-	for {
-		var document json.RawMessage
-		err = decoder.Decode(&document)
-		if err == io.EOF {
-			return false, nil
-		} else if err != nil {
-			return false, microerror.Maskf(invalidConfigError, "cannot parse %s: %s", path, err)
-		}
-
-		// A JSON 6902 patch file is a list of operations, not a resource. Empty documents
-		// hold nothing either.
-		trimmed := bytes.TrimSpace(document)
-		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) || trimmed[0] == '[' {
-			continue
-		}
-
+	for _, document := range documents {
 		var object struct {
 			APIVersion string `json:"apiVersion"`
 			Kind       string `json:"kind"`
@@ -150,6 +154,32 @@ func holdsApp(fs afero.Fs, path string) (bool, error) {
 		if IsApp(object.APIVersion, object.Kind) {
 			return true, nil
 		}
+	}
+
+	return false, nil
+}
+
+// Documents returns the YAML or JSON documents in data that are objects. A
+// JSON 6902 patch file is a list of operations, not a resource, and empty
+// documents hold nothing, so both are left out. path only names the file in
+// errors.
+func Documents(data []byte, path string) ([]json.RawMessage, error) {
+	var documents []json.RawMessage
+	decoder := apiyaml.NewYAMLOrJSONDecoder(bytes.NewReader(data), 4096)
+	for {
+		var document json.RawMessage
+		err := decoder.Decode(&document)
+		if err == io.EOF {
+			return documents, nil
+		} else if err != nil {
+			return nil, microerror.Maskf(invalidConfigError, "cannot parse %s: %s", path, err)
+		}
+
+		trimmed := bytes.TrimSpace(document)
+		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) || trimmed[0] == '[' {
+			continue
+		}
+		documents = append(documents, document)
 	}
 }
 

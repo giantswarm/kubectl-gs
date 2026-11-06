@@ -163,18 +163,18 @@ func migrateClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir string)
 	if entry == nil {
 		return nil, microerror.Maskf(unexpectedFileError, "%s does not apply %s, add the patch by hand", rel(repoPath, kustomizationPath), clusterUserConfigPatchFile)
 	}
-	if mapValue(entry, "target") == nil {
-		nameKey := scalar("name")
-		nameKey.HeadComment = "A regular expression matching the name the base gives the HelmRelease\nbefore Flux substitutes the variables."
-		entry.Content = append(entry.Content, scalar("target"), &yaml.Node{
-			Kind: yaml.MappingNode,
-			Content: []*yaml.Node{
-				scalar("group"), scalar("helm.toolkit.fluxcd.io"),
-				scalar("kind"), scalar("HelmRelease"),
-				nameKey, scalar(`\$\{cluster_name\}`),
-			},
-		})
-	}
+	// A target the entry already has points at the App, so it is replaced.
+	nameKey := scalar("name")
+	nameKey.HeadComment = "A regular expression matching the name the base gives the HelmRelease\nbefore Flux substitutes the variables."
+	deleteKey(entry, "target")
+	entry.Content = append(entry.Content, scalar("target"), &yaml.Node{
+		Kind: yaml.MappingNode,
+		Content: []*yaml.Node{
+			scalar("group"), scalar("helm.toolkit.fluxcd.io"),
+			scalar("kind"), scalar("HelmRelease"),
+			nameKey, scalar(`\$\{cluster_name\}`),
+		},
+	})
 
 	err = writeYAML(fs, kustomizationPath, kustomization)
 	if err != nil {

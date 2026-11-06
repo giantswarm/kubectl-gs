@@ -35,8 +35,8 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md
 With --base, the base deploys the cluster as a Flux HelmRelease of the
 release-<provider> chart, and --release sets the chart version through the
 ${release} variable. The release has to be published as that chart in the
-gsoci.azurecr.io registry. A base deploying the cluster with an App CR is
-refused.`
+gsoci.azurecr.io registry. A base deploying an App CR, itself or through the
+base below an overlay, is refused.`
 
 	examples = `  # Add dummy workload cluster structure, without cluster definition
   kubectl gs gitops add wc \

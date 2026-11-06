@@ -67,12 +67,29 @@ func Test_clusterChartName(t *testing.T) {
 			expected: "release-aws",
 		},
 		{
-			name: "other OCIRepositories and Apps are ignored",
+			name: "other OCIRepositories are ignored",
 			files: map[string]string{
-				"apps.yaml":    ociRepository("hello-world") + "---\n" + appFromCatalog("default", "cluster-autoscaler"),
+				"apps.yaml":    ociRepository("hello-world"),
 				"cluster.yaml": ociRepository("release-azure"),
 			},
 			expected: "release-azure",
+		},
+		{
+			name: "overlay of a release chart base",
+			files: map[string]string{
+				"kustomization.yaml":             "resources:\n  - ../template\n",
+				"../template/kustomization.yaml": "resources:\n  - cluster.yaml\n",
+				"../template/cluster.yaml":       ociRepository("release-vsphere"),
+			},
+			expected: "release-vsphere",
+		},
+		{
+			name: "App CR besides the release chart",
+			files: map[string]string{
+				"apps.yaml":    appFromCatalog("default", "cluster-autoscaler"),
+				"cluster.yaml": ociRepository("release-azure"),
+			},
+			expectInvalid: true,
 		},
 		{
 			name: "overlay without release chart",

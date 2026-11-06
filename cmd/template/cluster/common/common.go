@@ -284,6 +284,10 @@ func IsReleaseVersion(version string) bool {
 // .Chart.Version into labels (giantswarm/cluster-vsphere#556).
 var MinVsphereReleaseChartVersion = semver.MustParse("36.1.0")
 
+// DefaultVSphereCredentialsSecretName is the Secret a vSphere cluster takes
+// the vCenter credentials from by default.
+const DefaultVSphereCredentialsSecretName = "vsphere-credentials" //nolint:gosec // Not a credential, just the Secret name.
+
 // GSOCIRegistry and GSOCIChartsRepoPrefix locate Giant Swarm's public Helm
 // chart OCI repository.
 const (
