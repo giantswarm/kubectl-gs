@@ -1,0 +1,12 @@
+global:
+  connectivity:
+    bastion:
+      enabled: true
+  controlPlane:
+    replicas: 3
+  metadata:
+    name: ${cluster_name}
+    organization: ${organization}
+  providerSpecific:
+    location: westeurope
+    subscriptionId: 00000000-0000-0000-0000-000000000000

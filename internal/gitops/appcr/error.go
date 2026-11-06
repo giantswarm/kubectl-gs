@@ -1,4 +1,4 @@
-package wcluster
+package appcr
 
 import "github.com/giantswarm/microerror"
 

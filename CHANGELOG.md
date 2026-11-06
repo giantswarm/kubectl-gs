@@ -7,15 +7,25 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ## [Unreleased]
 
+### Breaking changes
+
+- `gitops add base` and `gitops add workload-cluster` deploy the cluster as a Flux `OCIRepository` and `HelmRelease` of the `release-<provider>` chart instead of an App CR. This is repository structure version 2.
+  - `gitops add workload-cluster` checks that `--release` is published as a `release-<provider>` chart in gsoci, also for an overlay base, whose chart it reads from the base below. vSphere needs at least release v36.1.0.
+  - The vSphere base also passes the `vsphere-credentials` Secret to the HelmRelease, which the release chart reads the vCenter credentials from.
+  - The user config from `--cluster-user-config` is added to the HelmRelease's `valuesFrom` with a JSON 6902 patch.
+  - The `apps` directory no longer gets the `patch_cluster_config.yaml` patch pointing App CRs at the workload cluster.
+  - `--release` is no longer written to the cluster values as `global.release.version`. The release chart's version sets the release.
+  - `gitops add workload-cluster` refuses a base that deploys any App CR, including through the base below an overlay. That covers overlays that patch the cluster App to a `release-<provider>` chart.
+  - `gitops upgrade` brings a repository from version 1 to 2 once its App CRs are gone. Move clusters and apps from App CRs to HelmReleases first, as the [App Platform deprecation](https://docs.giantswarm.io/overview/fleet-management/app-management/app-platform-deprecation/) page explains. The upgrade fails on any layer still deploying an App CR, and `gitops check --adopt` records such layers at version 1.
+
 ### Added
 
 - `gitops upgrade`: new command bringing the parts of a GitOps repository generated with an older repository
   structure up to the one this kubectl-gs produces, one structure version at a time, and recording the new
   version in `.gitops-metadata.yaml`. A failed upgrade is undone with git, so the command refuses to run
   migrations on a repository with uncommitted changes, or one git does not track, unless `--force` is given.
-  `--dry-run` lists the files it would change without writing anything. Structure version 1 is still the
-  only one, so there is nothing to upgrade yet; every future structure bump ships with its migration.
-  `gitops check` now points at it when the repository is behind.
+  `--dry-run` lists the files it would change without writing anything. Every structure bump ships with its
+  migration. `gitops check` now points at it when the repository is behind.
 - `deploy chart`: `--values-from` takes an optional key and an `optional` marker, as in `Secret/my-secret:values:optional`. Without a key, Flux reads `values.yaml`, so this is needed for ConfigMaps like `<cluster>-cluster-values` that store their values under `values`.
 - `gitops add management-cluster`: the `--skip-encryption` flag leaves out the `secrets` and `.sops.keys` directories, for repositories whose secrets come from outside, for example from External Secrets Operator.
 

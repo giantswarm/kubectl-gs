@@ -1,0 +1,48 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  labels:
+    giantswarm.io/cluster: ${cluster_name}
+  name: ${cluster_name}
+  namespace: org-${organization}
+spec:
+  interval: 10m0s
+  provider: generic
+  ref:
+    tag: ${release}
+  timeout: 1m0s
+  url: oci://gsoci.azurecr.io/charts/giantswarm/release-vsphere
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: ${cluster_name}
+  name: ${cluster_name}
+  namespace: org-${organization}
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ${cluster_name}
+    namespace: org-${organization}
+  install:
+    remediation:
+      remediateLastFailure: false
+      retries: 10
+  interval: 5m0s
+  releaseName: ${cluster_name}
+  serviceAccountName: automation
+  storageNamespace: org-${organization}
+  targetNamespace: org-${organization}
+  timeout: 10m0s
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+      retries: 10
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: ${cluster_name}-config
+    valuesKey: values
+  - kind: Secret
+    name: vsphere-credentials

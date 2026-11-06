@@ -205,7 +205,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().IntVar(&f.VSphere.Worker.NumCPUs, flagVSphereWorkerNumCPUs, 6, "Number of CPUs for individual worker plane nodes")
 	cmd.Flags().IntVar(&f.VSphere.Worker.Replicas, flagVSphereWorkerReplicas, 3, "Number of worker plane replicas")
 	cmd.Flags().StringVar(&f.VSphere.ResourcePool, flagVSphereResourcePool, "*/Resources", "What resource pool in vsphere should be used")
-	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, "vsphere-credentials", "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
+	cmd.Flags().StringVar(&f.VSphere.CredentialsSecretName, flagVSphereCredentialsSecretName, common.DefaultVSphereCredentialsSecretName, "Name of the secret in K8s that should be associated to cluster app. It should exist in the organization's namesapce and should contain the credentials for vsphere.")
 
 	// Cloud Director only
 	cmd.Flags().IntVar(&f.CloudDirector.ControlPlane.Replicas, flagCloudDirectorControlPlaneReplicas, 3, "Number of control plane replicas (use odd number)")

@@ -15,9 +15,6 @@ var clusterUserConfig string
 //go:embed kustomization.yaml.tmpl
 var kustomization string
 
-//go:embed patch_cluster_config.yaml.tmpl
-var patchClusterConfig string
-
 //go:embed patch_cluster_userconfig.yaml.tmpl
 var patchClusterUserconfig string
 
@@ -27,7 +24,6 @@ var workloadCluster string
 func GetAppsDirectoryTemplates() []common.Template {
 	return []common.Template{
 		common.Template{Name: "kustomization.yaml", Data: appsKustomization},
-		common.Template{Name: "patch_cluster_config.yaml", Data: patchClusterConfig},
 	}
 }
 

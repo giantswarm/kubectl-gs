@@ -32,12 +32,11 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
 Steps it implements:
 https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md
 
-With --base, the base decides how the release is set. If its cluster App uses
-a release-<provider> chart, for example release-aws with version ${release},
-the release version is in the App and nothing else is needed. If it uses a
-cluster-<provider> chart, --release is written to the cluster values as
-global.release.version, and the management cluster sets the App's version
-from the matching Release.`
+With --base, the base deploys the cluster as a Flux HelmRelease of the
+release-<provider> chart, and --release sets the chart version through the
+${release} variable. The release has to be published as that chart in the
+gsoci.azurecr.io registry. A base deploying an App CR, itself or through the
+base below an overlay, is refused.`
 
 	examples = `  # Add dummy workload cluster structure, without cluster definition
   kubectl gs gitops add wc \
