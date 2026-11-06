@@ -13,9 +13,8 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   structure up to the one this kubectl-gs produces, one structure version at a time, and recording the new
   version in `.gitops-metadata.yaml`. A failed upgrade is undone with git, so the command refuses to run
   migrations on a repository with uncommitted changes, or one git does not track, unless `--force` is given.
-  `--dry-run` lists the files it would change without writing anything. Structure version 1 is still the
-  only one, so there is nothing to upgrade yet; every future structure bump ships with its migration.
-  `gitops check` now points at it when the repository is behind.
+  `--dry-run` lists the files it would change without writing anything. Every structure bump ships with its
+  migration. `gitops check` now points at it when the repository is behind.
 - `deploy chart`: `--values-from` takes an optional key and an `optional` marker, as in `Secret/my-secret:values:optional`. Without a key, Flux reads `values.yaml`, so this is needed for ConfigMaps like `<cluster>-cluster-values` that store their values under `values`.
 - `gitops add management-cluster`: the `--skip-encryption` flag leaves out the `secrets` and `.sops.keys` directories, for repositories whose secrets come from outside, for example from External Secrets Operator.
 
@@ -23,13 +22,19 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 - `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It no longer creates the workload cluster's empty SOPS key Secret. `gitops add encryption` creates it when needed.
 - `gitops add encryption` creates the `secrets` and `.sops.keys` directories and the Secret for the private key when they are missing.
-- `gitops add workload-cluster`: a cluster created from a `cluster-<provider>` base can now install. `--release` is written to the cluster values as `global.release.version`, and the Flux Kustomization sets `cluster_description`.
+- `gitops add workload-cluster`: the Flux Kustomization sets `cluster_description`.
 - `template cluster --provider vsphere`: the release chart's HelmRelease now also reads values from the `--vsphere-credentials-secret-name` secret, as the App CR did through its userConfig secret. Without it `global.providerSpecific.vcenter` was empty and the install failed in `provider-secret.yaml` with `invalid value; expected string`.
 - `template cluster --provider vsphere`: no longer renders `global.controlPlane.image`. The key was removed from the cluster-vsphere schema in v0.66.0, so installing the chart failed with `additional properties 'image' not allowed`. The value matched the chart's old default, so this changes nothing about the resulting cluster.
 
 
 ### Changed
 
+- **Breaking:** `gitops add base` and `gitops add workload-cluster` deploy the cluster as a Flux `OCIRepository` and `HelmRelease` of the `release-<provider>` chart instead of an App CR. This is repository structure version 2.
+  - `gitops add workload-cluster` checks that `--release` is published as a `release-<provider>` chart in gsoci, and refuses a base that deploys the cluster with an App CR. vSphere needs at least release v36.1.0.
+  - The vSphere base also passes the `vsphere-credentials` Secret to the HelmRelease, which the release chart reads the vCenter credentials from.
+  - The user config from `--cluster-user-config` is added to the HelmRelease's `valuesFrom` with a JSON 6902 patch.
+  - The `apps` directory no longer gets the `patch_cluster_config.yaml` patch pointing App CRs at the workload cluster.
+  - `gitops upgrade` brings a repository from version 1 to 2 once its App CRs are gone. Move clusters and apps from App CRs to HelmReleases first, as the [App Platform deprecation](https://docs.giantswarm.io/overview/fleet-management/app-management/app-platform-deprecation/) page explains. The upgrade fails on any layer still deploying an App CR, and `gitops check --adopt` records such layers at version 1.
 - The krew index update no longer names the shared `architectbot` account as `GITHUB_ACTOR` (giantswarm/giantswarm#38800).
 - `login`: the browser page after the SSO sign-in comes from [pagekit](https://github.com/giantswarm/pagekit), Giant Swarm's shared design for sign-in pages: the current logo, light and dark mode, and no request to Google Fonts. A failed sign-in says whether the identity provider refused it, with the OAuth error code when it is a registered one, or whether it could not be completed.
 

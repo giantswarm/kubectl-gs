@@ -2,14 +2,14 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"strconv"
-
-	templateapp "github.com/giantswarm/kubectl-gs/v6/pkg/template/app"
 
 	clustercommon "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/capv"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider/templates/capz"
+	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/base"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
@@ -24,6 +24,10 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
+
+// vsphereCredentialsSecretName is the Secret `kubectl gs template cluster`
+// takes the vCenter credentials from by default.
+const vsphereCredentialsSecretName = "vsphere-credentials"
 
 type runner struct {
 	commonConfig *commonconfig.CommonConfig
@@ -103,29 +107,31 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 	return common.ClusterBaseTemplates{}, invalidProviderError
 }
 
-func generateClusterAppCrTemplate(appName string) (string, error) {
-	template, err := templateapp.NewAppCR(templateapp.Config{
-		Name:                    appName,
-		AppName:                 "${cluster_name}",
-		Catalog:                 "cluster",
-		InCluster:               true,
-		Namespace:               "org-${organization}",
-		Version:                 "",
-		UserConfigConfigMapName: "${cluster_name}-config",
-	})
-
+// generateClusterResources returns the OCIRepository and HelmRelease that
+// deploy the release chart. The release chart has no version of its own, it
+// is published with the version of the release it holds.
+func generateClusterResources(releaseChart string, extraValuesFrom ...deploychart.ValuesFromReference) (string, error) {
+	ociRepo, helmRelease, err := clustercommon.BuildClusterFluxResources(
+		clustercommon.ClusterConfig{
+			Name:           "${cluster_name}",
+			Organization:   "${organization}",
+			ReleaseVersion: "${release}",
+		},
+		releaseChart,
+		"${cluster_name}-config",
+		extraValuesFrom...,
+	)
 	if err != nil {
-		return "", err
+		return "", microerror.Mask(err)
 	}
 
-	return string(template), nil
+	return fmt.Sprintf("%s---\n%s", ociRepo, helmRelease), nil
 }
 
 func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
-	clusterAppCr, err := generateClusterAppCrTemplate("cluster-aws")
-
+	clusterResources, err := generateClusterResources(providers.ReleaseAWSRepoName)
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
@@ -138,15 +144,16 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 				Name: "nodepool0",
 			},
 		},
-		ReleaseVersion: "${release}",
 	})
+	// The release chart carries the release version in its default values.
+	clusterConfig.Global.Release = nil
 	clusterValues, err := capa.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
 
-	clusterBaseTemplates.ClusterAppCr = clusterAppCr
+	clusterBaseTemplates.ClusterResources = clusterResources
 	clusterBaseTemplates.ClusterValues = clusterValues
 
 	return clusterBaseTemplates, nil
@@ -155,8 +162,12 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
-	clusterAppCr, err := generateClusterAppCrTemplate("cluster-vsphere")
-
+	// The release chart reads the vCenter credentials from the values, so the
+	// HelmRelease has to pass the credentials Secret along.
+	clusterResources, err := generateClusterResources(
+		providers.ReleaseVsphereRepoName,
+		deploychart.ValuesFromReference{Kind: "Secret", Name: vsphereCredentialsSecretName},
+	)
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
@@ -165,13 +176,14 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 		Name:         "${cluster_name}",
 		Organization: "${organization}",
 	})
+	clusterConfig.Global.Release = nil
 	clusterValues, err := capv.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
 
-	clusterBaseTemplates.ClusterAppCr = clusterAppCr
+	clusterBaseTemplates.ClusterResources = clusterResources
 	clusterBaseTemplates.ClusterValues = clusterValues
 
 	return clusterBaseTemplates, nil
@@ -180,8 +192,7 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 func generateCapZClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
-	clusterAppCr, err := generateClusterAppCrTemplate("cluster-azure")
-
+	clusterResources, err := generateClusterResources(providers.ReleaseAzureRepoName)
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
@@ -194,13 +205,14 @@ func generateCapZClusterBaseTemplates(structureConfig common.StructureConfig) (c
 			SubscriptionID: structureConfig.AzureSubscriptionID,
 		},
 	})
+	clusterConfig.Global.Release = nil
 	clusterValues, err := capz.GenerateClusterValues(clusterConfig)
 
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
 
-	clusterBaseTemplates.ClusterAppCr = clusterAppCr
+	clusterBaseTemplates.ClusterResources = clusterResources
 	clusterBaseTemplates.ClusterValues = clusterValues
 
 	return clusterBaseTemplates, nil

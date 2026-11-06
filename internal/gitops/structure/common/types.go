@@ -31,11 +31,6 @@ type StructureConfig struct {
 	ClusterUserConfig string
 	InCluster         string
 
-	// ClusterChart is the chart of the base's cluster App, for example
-	// cluster-aws or release-aws. It is empty when the base holds no cluster
-	// App itself, for example an overlay of another base.
-	ClusterChart string
-
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
 
@@ -53,8 +48,9 @@ type StructureConfig struct {
 }
 
 type ClusterBaseTemplates struct {
-	ClusterAppCr  string
-	ClusterValues string
+	// ClusterResources holds the OCIRepository and HelmRelease of the cluster.
+	ClusterResources string
+	ClusterValues    string
 }
 
 type Template struct {

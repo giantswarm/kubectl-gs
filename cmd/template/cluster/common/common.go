@@ -279,6 +279,11 @@ func IsReleaseVersion(version string) bool {
 	return v.Major() >= ReleaseVersionMajorThreshold
 }
 
+// MinVsphereReleaseChartVersion is the first vSphere release that installs as
+// a HelmRelease. Older ones bundle a cluster-vsphere chart that puts
+// .Chart.Version into labels (giantswarm/cluster-vsphere#556).
+var MinVsphereReleaseChartVersion = semver.MustParse("36.1.0")
+
 // GSOCIRegistry and GSOCIChartsRepoPrefix locate Giant Swarm's public Helm
 // chart OCI repository.
 const (

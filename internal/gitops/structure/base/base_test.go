@@ -27,8 +27,8 @@ func Test_NewManagementCluster(t *testing.T) {
 			config: common.StructureConfig{
 				Provider: "capa",
 				ClusterBaseTemplates: common.ClusterBaseTemplates{
-					ClusterAppCr:  "foo:bar",
-					ClusterValues: "foo:bar",
+					ClusterResources: "foo:bar",
+					ClusterValues:    "foo:bar",
 				},
 			},
 			expectedObjects: []FsObjectExpected{
