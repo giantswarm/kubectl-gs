@@ -132,25 +132,20 @@ func migrateClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir string)
 		return nil, microerror.Mask(err)
 	}
 
-	var patch struct {
-		APIVersion string `json:"apiVersion"`
-		Kind       string `json:"kind"`
-		Spec       struct {
-			UserConfig struct {
-				ConfigMap struct {
-					Name string `json:"name"`
-				} `json:"configMap"`
-			} `json:"userConfig"`
-		} `json:"spec"`
-	}
+	var patch map[string]any
 	err = apiyaml.Unmarshal(data, &patch)
-	if err != nil || !appcr.IsApp(patch.APIVersion, patch.Kind) {
+	if err != nil || !appcr.IsApp(stringField(patch, "apiVersion"), stringField(patch, "kind")) {
 		// A JSON 6902 patch is a list, so it does not unmarshal into an object:
 		// the patch has already been migrated.
 		return nil, nil
 	}
-	configMap := patch.Spec.UserConfig.ConfigMap.Name
-	if configMap == "" {
+	// Only the patch kubectl-gs generates is rewritten. Anything else it sets,
+	// like a user config Secret, would be lost.
+	spec, _ := patch["spec"].(map[string]any)
+	userConfig, _ := spec["userConfig"].(map[string]any)
+	configMapRef, _ := userConfig["configMap"].(map[string]any)
+	configMap := stringField(configMapRef, "name")
+	if configMap == "" || len(spec) != 1 || len(userConfig) != 1 {
 		return nil, microerror.Maskf(unexpectedFileError, "%s is not the user config patch kubectl-gs generates, rewrite it as a patch adding to the HelmRelease's spec.valuesFrom by hand", rel(repoPath, patchPath))
 	}
 
@@ -315,6 +310,11 @@ func deleteKey(node *yaml.Node, key string) {
 			return
 		}
 	}
+}
+
+func stringField(m map[string]any, key string) string {
+	s, _ := m[key].(string)
+	return s
 }
 
 func scalar(value string) *yaml.Node {

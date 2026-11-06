@@ -58,6 +58,18 @@ func Test_Files(t *testing.T) {
 			expected: []string{},
 		},
 		{
+			name: "follows bases and components",
+			files: map[string]string{
+				"wc/kustomization.yaml":        "bases:\n  - ../base\ncomponents:\n  - ../component\n",
+				"base/kustomization.yaml":      "resources:\n  - app.yaml\n",
+				"base/app.yaml":                app,
+				"component/kustomization.yaml": "resources:\n  - app.yaml\n",
+				"component/app.yaml":           app,
+			},
+			dir:      "wc",
+			expected: []string{"base/app.yaml", "component/app.yaml"},
+		},
+		{
 			name: "follows directories into bases",
 			files: map[string]string{
 				"wc/apps/kustomization.yaml":       "resources:\n  - hello\n  - github.com/example/remote\n",
@@ -89,5 +101,36 @@ func Test_Files(t *testing.T) {
 				t.Fatalf("unexpected files (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+func Test_Patches(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	files := map[string]string{
+		"apps/kustomization.yaml":        "patches:\n  - path: patch_cluster_config.yaml\n    target:\n      kind: App\n  - path: patch_userconfig.yaml\n  - path: patch_helmrelease.yaml\n  - patch: '{}'\n    target:\n      kind: App\npatchesStrategicMerge:\n  - missing.yaml\n",
+		"apps/patch_cluster_config.yaml": "",
+		"apps/patch_userconfig.yaml":     app,
+		"apps/patch_helmrelease.yaml":    helmRelease,
+	}
+	for name, data := range files {
+		err := afero.WriteFile(fs, name, []byte(data), 0600)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err.Error())
+		}
+	}
+
+	got, err := Patches(fs, "apps")
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	expected := []string{"apps/patch_cluster_config.yaml", "apps/kustomization.yaml", "apps/patch_userconfig.yaml"}
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatalf("unexpected patches (-want +got):\n%s", diff)
+	}
+
+	got, err = Patches(fs, "none")
+	if err != nil || len(got) != 0 {
+		t.Fatalf("expected no patches and no error, got %v, %v", got, err)
 	}
 }

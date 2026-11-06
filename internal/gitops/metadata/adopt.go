@@ -219,7 +219,9 @@ func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResu
 }
 
 // adoptedVersion returns the structure version to record a layer at, from
-// what the given directories deploy. Missing directories are skipped.
+// what the given directories deploy, or patch, as the workload cluster
+// kustomizations kubectl-gs generated before version 2 did. Missing
+// directories are skipped.
 func adoptedVersion(fs *afero.Afero, repoPath string, dirs ...string) (int, error) {
 	for _, dir := range dirs {
 		path := filepath.Join(repoPath, dir)
@@ -236,7 +238,11 @@ func adoptedVersion(fs *afero.Afero, repoPath string, dirs ...string) (int, erro
 		if err != nil {
 			return 0, microerror.Mask(err)
 		}
-		if len(files) > 0 {
+		patches, err := appcr.Patches(fs, path)
+		if err != nil {
+			return 0, microerror.Mask(err)
+		}
+		if len(files) > 0 || len(patches) > 0 {
 			return 1, nil
 		}
 	}

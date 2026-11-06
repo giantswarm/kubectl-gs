@@ -131,6 +131,10 @@ func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
 		"bases/clusters/capa/template/kustomization.yaml":                                                       "resources:\n  - cluster.yaml\n",
 		"bases/clusters/capa/template/cluster.yaml":                                                             app,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world/appcr.yaml": app,
+		// The user config patch kubectl-gs generated before version 2, left
+		// behind after the cluster App moved to a HelmRelease.
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc/cluster/kustomization.yaml":            "patches:\n  - path: patch_cluster_userconfig.yaml\nresources: []\n",
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc/cluster/patch_cluster_userconfig.yaml": app,
 	}
 	for path, data := range files {
 		err := fs.WriteFile(filepath.Join(testRepo, path), []byte(data), 0644)
@@ -157,6 +161,7 @@ func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/ingress-from-base": StructureVersion,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc":                             1,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world":            1,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc":                            1,
 		"management-clusters/demomc/organizations/otherorg":                                                     StructureVersion,
 		"management-clusters/demomc/organizations/otherorg/workload-clusters/otherwc":                           StructureVersion,
 	}

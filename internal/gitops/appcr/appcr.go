@@ -120,15 +120,76 @@ func kustomizationResources(fs afero.Fs, dir string) ([]string, error) {
 		return nil, err
 	}
 
+	// Kustomize loads manifests from the deprecated `bases` and from
+	// `components` too.
 	var kustomization struct {
-		Resources []string `json:"resources"`
+		Bases      []string `json:"bases"`
+		Components []string `json:"components"`
+		Resources  []string `json:"resources"`
 	}
 	err = apiyaml.Unmarshal(data, &kustomization)
 	if err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "cannot parse %s: %s", filepath.Join(dir, kustomizationFile), err)
 	}
 
-	return kustomization.Resources, nil
+	resources := append(kustomization.Resources, kustomization.Bases...)
+	return append(resources, kustomization.Components...), nil
+}
+
+// Patches returns the patch files the kustomization.yaml in dir applies to
+// App CRs, relative to fs. A patch counts when it targets the App kind or is
+// an App itself. An inline patch targeting Apps is reported as the
+// kustomization.yaml. Unlike Files, it doesn't follow resources.
+func Patches(fs afero.Fs, dir string) ([]string, error) {
+	kustomizationPath := filepath.Join(dir, kustomizationFile)
+	data, err := afero.ReadFile(fs, kustomizationPath)
+	if os.IsNotExist(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var kustomization struct {
+		Patches []struct {
+			Path   string `json:"path"`
+			Target struct {
+				Kind string `json:"kind"`
+			} `json:"target"`
+		} `json:"patches"`
+		PatchesStrategicMerge []string `json:"patchesStrategicMerge"`
+	}
+	err = apiyaml.Unmarshal(data, &kustomization)
+	if err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "cannot parse %s: %s", kustomizationPath, err)
+	}
+
+	paths := kustomization.PatchesStrategicMerge
+	found := []string{}
+	for _, p := range kustomization.Patches {
+		switch {
+		case p.Target.Kind == "App" && p.Path == "":
+			found = append(found, kustomizationPath)
+		case p.Target.Kind == "App":
+			found = append(found, filepath.Join(dir, p.Path))
+		case p.Path != "":
+			paths = append(paths, p.Path)
+		}
+	}
+
+	for _, p := range paths {
+		path := filepath.Join(dir, p)
+		ok, err := holdsApp(fs, path)
+		if os.IsNotExist(microerror.Cause(err)) {
+			continue
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if ok {
+			found = append(found, path)
+		}
+	}
+
+	return found, nil
 }
 
 func holdsApp(fs afero.Fs, path string) (bool, error) {

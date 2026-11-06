@@ -200,6 +200,15 @@ func Test_helmReleases(t *testing.T) {
 			expectNChanges: 3,
 		},
 		{
+			name: "workload cluster with a user config Secret in the patch",
+			files: []map[string]string{migratedBase, v1WC, {
+				testWC + "/cluster/patch_cluster_userconfig.yaml": v1ClusterUserConfigPatch + "    secret:\n      name: demowc-cluster-usersecret\n      namespace: org-demoorg\n",
+			}},
+			layer:        wcLayer,
+			expectErr:    unexpectedFileError,
+			expectErrMsg: "by hand",
+		},
+		{
 			name: "workload cluster already migrated",
 			files: []map[string]string{migratedBase, {
 				testWC + "/cluster/kustomization.yaml":            v2ClusterKustomization,
