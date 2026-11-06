@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	goflag "flag"
 	"fmt"
 	"os"
 	"testing"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
+
+var update = goflag.Bool("update", false, "update .golden reference test files")
 
 type FsObjectExpected struct {
 	RelativePath string
@@ -28,7 +31,7 @@ func Test_NewApp(t *testing.T) {
 			name: "flawless",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -45,8 +48,12 @@ func Test_NewApp(t *testing.T) {
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/0-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/0-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/0-helm_release.golden",
 				},
 			},
 		},
@@ -78,7 +85,7 @@ func Test_NewApp(t *testing.T) {
 			name: "flawless with cm configuration",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -98,8 +105,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/1-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/1-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/1-helm_release.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/configmap.yaml",
@@ -111,7 +122,7 @@ topKey:
 			name: "flawless with secret configuration",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -131,8 +142,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/2-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/2-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/2-helm_release.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.enc.yaml",
@@ -212,7 +227,7 @@ topKey:
 			name: "flawless MAPI",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -228,8 +243,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/0-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/0-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/0-helm_release.golden",
 				},
 			},
 		},
@@ -260,7 +279,7 @@ topKey:
 			name: "flawless with timeouts",
 			config: common.StructureConfig{
 				App:                 "hello-world",
-				AppCatalog:          "giantswarm",
+				AppOCIURLPrefix:     "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster:   "demomc",
 				AppName:             "hello-world",
 				AppNamespace:        "default",
@@ -281,8 +300,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/3-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/3-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/3-helm_release.golden",
 				},
 			},
 		},
@@ -290,7 +313,7 @@ topKey:
 			name: "flawless with in cluster",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -308,8 +331,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/4-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/4-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/4-helm_release.golden",
 				},
 			},
 		},
@@ -317,7 +344,7 @@ topKey:
 			name: "flawless with in cluster false",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -335,8 +362,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/5-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/5-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/5-helm_release.golden",
 				},
 			},
 		},
@@ -360,6 +391,13 @@ topKey:
 
 				if e.GoldenFile == "" {
 					continue
+				}
+
+				if *update {
+					err = os.WriteFile(e.GoldenFile, config.FsObjects[i].Data, 0600)
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err.Error())
+					}
 				}
 
 				expected, err := os.ReadFile(e.GoldenFile)

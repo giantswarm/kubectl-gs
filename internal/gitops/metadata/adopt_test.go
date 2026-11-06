@@ -128,9 +128,10 @@ func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
 
 	app := "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n"
 	files := map[string]string{
-		"bases/clusters/capa/template/kustomization.yaml":                                                       "resources:\n  - cluster.yaml\n",
-		"bases/clusters/capa/template/cluster.yaml":                                                             app,
-		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world/appcr.yaml": app,
+		"bases/clusters/capa/template/kustomization.yaml":                                                             "resources:\n  - cluster.yaml\n",
+		"bases/clusters/capa/template/cluster.yaml":                                                                   app,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world/appcr.yaml":       app,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-flux/helm-release.yaml": "apiVersion: helm.toolkit.fluxcd.io/v2\nkind: HelmRelease\n",
 		// The user config patch kubectl-gs generated before version 2, left
 		// behind after the cluster App moved to a HelmRelease.
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc/cluster/kustomization.yaml":            "patches:\n  - path: patch_cluster_userconfig.yaml\nresources: []\n",
@@ -160,6 +161,7 @@ func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world":       StructureVersion,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/ingress-from-base": StructureVersion,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc":                             1,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-flux":             StructureVersion,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world":            1,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc":                            1,
 		"management-clusters/demomc/organizations/otherorg":                                                     StructureVersion,

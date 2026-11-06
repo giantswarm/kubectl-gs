@@ -17,53 +17,59 @@ const (
 	longDescription  = `Adds a new Application to your GitOps directory structure.
 
 app \
---app <app_to_install> \
+--app <chart_name> \
 [--base <path_to_base>] \
---catalog <app_catalog> \
-[--name <app_cr_name>] \
+[--name <app_name>] \
+[--oci-url-prefix <oci_repository>] \
 --target-namespace <app_namespace> \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
 [--user-configmap <path_to_values_yaml>] \
 [--user-secret <path_to_values_yaml>] \
---version <app_version> \
+--version <chart_version> \
 --workload-cluster <wc_name>
 
-It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
+The app is deployed with a Flux OCIRepository, pulling the chart from
+--oci-url-prefix, and a HelmRelease installing it in the workload cluster.
+With --in-cluster, the HelmRelease installs it in the management cluster
+instead. Values from --user-configmap and --user-secret are added to the
+HelmRelease's valuesFrom.
 
-Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/apps/add_appcr.md`
+With --base, the app comes from the base, whose HelmRelease must be named
+${cluster_name}-<app_name> and list valuesFrom, as the user values are
+appended to it.
+
+It respects the Giantswarm's GitOps repository structure recommendation:
+https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
 
 	examples = `  # Add hello-world App to dummy Workload Cluster
   kubectl gs gitops add app \
-  --app hello-world-app \
-  --catalog giantswarm \
+  --app hello-world \
   --name hello-world \
   --target-namespace default \
-  --management-cluster demowc \
+  --management-cluster demomc \
   --organization demoorg \
   --version 0.3.0 \
   --workload-cluster demowc
 
   # Add hello-world App to dummy Workload Cluster, include user configuration
   kubectl gs gitops add app \
-  --app hello-world-app \
-  --catalog giantswarm \
+  --app hello-world \
   --name hello-world \
   --target-namespace default \
   --management-cluster demomc \
   --organization demoorg \
-  --user-configmap /tmp/hello-world-app-values.yaml \
+  --user-configmap /tmp/hello-world-values.yaml \
   --version 0.3.0 \
   --workload-cluster demowc
 
   # Add hello-world App from the base
   kubectl gs gitops add app \
   --base base/apps/hello-world \
+  --name hello-world \
   --management-cluster demomc \
   --organization demoorg \
-  --user-configmap /tmp/hello-world-app-values.yaml \
+  --user-configmap /tmp/hello-world-values.yaml \
   --workload-cluster demowc`
 )
 

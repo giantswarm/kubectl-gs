@@ -17,6 +17,12 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
   - `--release` is no longer written to the cluster values as `global.release.version`. The release chart's version sets the release.
   - `gitops add workload-cluster` refuses a base that deploys any App CR, including through the base below an overlay. That covers overlays that patch the cluster App to a `release-<provider>` chart.
   - `gitops upgrade` brings a repository from version 1 to 2 once its App CRs are gone. Move clusters and apps from App CRs to HelmReleases first, as the [App Platform deprecation](https://docs.giantswarm.io/overview/fleet-management/app-management/app-platform-deprecation/) page explains. The upgrade fails on any layer still deploying an App CR, and `gitops check --adopt` records such layers at version 1.
+- `gitops add app` deploys the app as a Flux `OCIRepository` and `HelmRelease`, in `oci-repository.yaml` and `helm-release.yaml`, instead of an App CR.
+  - `--catalog` is replaced by `--oci-url-prefix`, the OCI repository holding the chart. It defaults to `oci://gsoci.azurecr.io/charts/giantswarm`.
+  - The HelmRelease installs the app in the workload cluster through its kubeconfig, or in the management cluster with `--in-cluster`.
+  - `--install-timeout`, `--upgrade-timeout`, `--rollback-timeout` and `--uninstall-timeout` set the timeout of that Helm action in the HelmRelease.
+  - With `--base`, the values from `--user-configmap` and `--user-secret` are added to the `valuesFrom` of the base's HelmRelease with a JSON 6902 patch. That HelmRelease must be named `${cluster_name}-<name>` and list `valuesFrom`.
+- `gitops add automatic-update` sets a semver range on the app's `OCIRepository`, so Flux pulls the newest chart version in it. `--version-range` sets the range and defaults to `>=0.0.0`. It no longer creates `ImageRepository`, `ImagePolicy` and `ImageUpdateAutomation` resources, and `--repository` and `--version-repository` are removed. Apps deployed with an App CR, and apps from a base, are refused.
 
 ### Added
 

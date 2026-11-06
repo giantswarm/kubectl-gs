@@ -187,11 +187,12 @@ func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResu
 	for _, app := range apps {
 		appDir := key.ResourcePath(appsDir, app)
 
-		// `gitops add app` writes an App CR when no base is used, and a
-		// Kustomization referencing the base when one is. The two are mutually
-		// exclusive, so either marks the directory as a layer it created.
+		// `gitops add app` writes a HelmRelease, or an App CR before structure
+		// version 2, when no base is used, and a Kustomization referencing the
+		// base when one is. Any of them marks the directory as a layer it
+		// created.
 		isApp := false
-		for _, marker := range []string{key.AppCRFileName(), key.SigsKustomizationFileName()} {
+		for _, marker := range []string{key.HelmReleaseFileName(), key.AppCRFileName(), key.SigsKustomizationFileName()} {
 			exists, err := fs.Exists(filepath.Join(repoPath, appDir, marker))
 			if err != nil {
 				return microerror.Mask(err)

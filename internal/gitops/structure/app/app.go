@@ -2,10 +2,13 @@ package app
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	sigskusmod "github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier/sigs-kustomization"
@@ -46,6 +49,13 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 		creator.NewFsObject(appDir, nil, 0),
 	}
 
+	if config.AppBase == "" {
+		config.AppResources, err = appResources(config)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	err = common.AppendFromTemplate(&fsObjects, appDir, apptmpl.GetAppDirectoryTemplates, config)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -55,7 +65,10 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	// either one by one when no base is used, or as a whole directory when it is used.
 	resources := make([]string, 0)
 	if config.AppBase == "" {
-		resources = append(resources, fmt.Sprintf("%s/%s", config.AppName, key.AppCRFileName()))
+		resources = append(resources,
+			fmt.Sprintf("%s/%s", config.AppName, key.OCIRepositoryFileName()),
+			fmt.Sprintf("%s/%s", config.AppName, key.HelmReleaseFileName()),
+		)
 	} else {
 		resources = append(resources, config.AppName)
 	}
@@ -100,4 +113,84 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	}
 
 	return &creatorConfig, nil
+}
+
+// appResources returns the OCIRepository pulling the app's chart and the
+// HelmRelease installing it in the workload cluster, or in the management
+// cluster for an in-cluster app. Their defaults follow the resources the App
+// CR migration generates, so apps added here and migrated apps look alike.
+func appResources(config common.StructureConfig) (common.AppResources, error) {
+	name := fmt.Sprintf("%s-%s", config.WorkloadCluster, config.AppName)
+	namespace := fmt.Sprintf("org-%s", config.Organization)
+	inCluster := config.InCluster == "true"
+
+	ociRepository := deploychart.BuildOCIRepository(deploychart.OCIRepositoryOptions{
+		Name:        name,
+		Namespace:   namespace,
+		ClusterName: config.WorkloadCluster,
+		URL:         fmt.Sprintf("%s/%s", strings.TrimSuffix(config.AppOCIURLPrefix, "/"), config.App),
+		Version:     config.AppVersion,
+		Interval:    "10m",
+	})
+
+	var valuesFrom []deploychart.ValuesFromReference
+	if config.AppUserValuesConfigMap != "" {
+		valuesFrom = append(valuesFrom, deploychart.ValuesFromReference{Kind: "ConfigMap", Name: name + "-user-values", ValuesKey: "values"})
+	}
+	if config.AppUserValuesSecret != "" {
+		valuesFrom = append(valuesFrom, deploychart.ValuesFromReference{Kind: "Secret", Name: name + "-user-values", ValuesKey: "values"})
+	}
+
+	serviceAccountName := ""
+	if inCluster {
+		serviceAccountName = deploychart.BundleServiceAccountName
+	}
+
+	helmRelease := deploychart.BuildHelmRelease(deploychart.HelmReleaseOptions{
+		Name:               name,
+		Namespace:          namespace,
+		ClusterName:        config.WorkloadCluster,
+		ChartName:          config.AppName,
+		TargetNamespace:    config.AppNamespace,
+		StorageNamespace:   config.AppNamespace,
+		CreateNamespace:    true,
+		Interval:           "5m",
+		Timeout:            "10m",
+		ManagementCluster:  inCluster,
+		ServiceAccountName: serviceAccountName,
+		InstallRemediation: &deploychart.RemediationPolicy{
+			Retries: 10,
+		},
+		UpgradeRemediation: &deploychart.RemediationPolicy{
+			Retries:              10,
+			RemediateLastFailure: true,
+			Strategy:             "rollback",
+		},
+		ValuesFrom:       valuesFrom,
+		InstallTimeout:   duration(config.AppInstallTimeout),
+		RollbackTimeout:  duration(config.AppRollbackTimeout),
+		UninstallTimeout: duration(config.AppUninstallTimeout),
+		UpgradeTimeout:   duration(config.AppUpgradeTimeout),
+	})
+
+	ociRepositoryYAML, err := deploychart.MarshalManifest(ociRepository)
+	if err != nil {
+		return common.AppResources{}, microerror.Mask(err)
+	}
+	helmReleaseYAML, err := deploychart.MarshalManifest(helmRelease)
+	if err != nil {
+		return common.AppResources{}, microerror.Mask(err)
+	}
+
+	return common.AppResources{
+		HelmRelease:   string(helmReleaseYAML),
+		OCIRepository: string(ociRepositoryYAML),
+	}, nil
+}
+
+func duration(d *metav1.Duration) string {
+	if d == nil {
+		return ""
+	}
+	return d.Duration.String()
 }

@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: demowc
+  name: demowc-hello-world
+  namespace: org-demoorg
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: demowc-hello-world
+    namespace: org-demoorg
+  install:
+    createNamespace: true
+    remediation:
+      remediateLastFailure: false
+      retries: 10
+  interval: 5m0s
+  releaseName: hello-world
+  serviceAccountName: automation
+  storageNamespace: default
+  targetNamespace: default
+  timeout: 10m0s
+  upgrade:
+    remediation:
+      remediateLastFailure: true
+      retries: 10
+      strategy: rollback
+

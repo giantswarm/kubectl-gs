@@ -1,0 +1,14 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  labels:
+    giantswarm.io/cluster: demowc
+  name: demowc-hello-world
+  namespace: org-demoorg
+spec:
+  interval: 10m0s
+  provider: generic
+  ref:
+    tag: 0.3.0
+  url: oci://gsoci.azurecr.io/charts/giantswarm/hello-world
+

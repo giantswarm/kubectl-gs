@@ -1,6 +1,7 @@
 package autoupdate
 
 import (
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 )
@@ -11,10 +12,8 @@ const (
 	flagSkipMAPI          = "skip-mapi"
 	flagWorkloadCluster   = "workload-cluster"
 
-	// App CR part
-	flagApp               = "app"
-	flagRepository        = "repository"
-	flagVersionRepository = "version-repository"
+	flagApp          = "app"
+	flagVersionRange = "version-range"
 )
 
 type flag struct {
@@ -24,10 +23,8 @@ type flag struct {
 	SkipMAPI          bool
 	WorkloadCluster   string
 
-	// App CR part
-	App               string
-	Repository        string
-	VersionRepository string
+	App          string
+	VersionRange string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -36,10 +33,8 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.SkipMAPI, flagSkipMAPI, false, "Skip `mapi` directory when adding the app.")
 	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Name of the Workload Cluster the app belongs to.")
 
-	//App stuff
 	cmd.Flags().StringVar(&f.App, flagApp, "", "App in the repository to configure automatic updates for.")
-	cmd.Flags().StringVar(&f.Repository, flagRepository, "", "The gitops repository to update application in.")
-	cmd.Flags().StringVar(&f.VersionRepository, flagVersionRepository, "", "The OCI repository to update the version from.")
+	cmd.Flags().StringVar(&f.VersionRange, flagVersionRange, ">=0.0.0", "Semver range of the chart versions to update the app to.")
 }
 
 func (f *flag) Validate() error {
@@ -59,12 +54,13 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagApp)
 	}
 
-	if f.Repository == "" {
-		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagRepository)
+	if f.VersionRange == "" {
+		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagVersionRange)
 	}
 
-	if f.VersionRepository == "" {
-		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", flagVersionRepository)
+	_, err := semver.NewConstraint(f.VersionRange)
+	if err != nil {
+		return microerror.Maskf(invalidFlagsError, "--%s %q is not a semver range: %s", flagVersionRange, f.VersionRange, err)
 	}
 
 	return nil
