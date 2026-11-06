@@ -90,6 +90,11 @@ func Test_runner_run(t *testing.T) {
 			base:          "bases/app",
 			expectInvalid: "kubectl-gs no longer supports",
 		},
+		{
+			name:          "release overlay of a cluster App base",
+			base:          "bases/release",
+			expectInvalid: "kubectl-gs no longer supports",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -100,6 +105,7 @@ func Test_runner_run(t *testing.T) {
 				"/repo/bases/capa/cluster.yaml":          ociRepository("release-aws"),
 				"/repo/bases/vsphere/cluster.yaml":       ociRepository("release-vsphere"),
 				"/repo/bases/overlay/kustomization.yaml": "resources:\n  - ../capa\n",
+				"/repo/bases/release/kustomization.yaml": strings.Replace(releaseOverlay, "../template", "../app", 1),
 				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources: []\n",
 				"/values.yaml": "testKey: testValue\n",
 			}

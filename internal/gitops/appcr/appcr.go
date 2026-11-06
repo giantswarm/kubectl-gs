@@ -5,6 +5,7 @@ package appcr
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -122,14 +123,27 @@ func holdsApp(fs afero.Fs, path string) (bool, error) {
 
 	decoder := apiyaml.NewYAMLOrJSONDecoder(bytes.NewReader(data), 4096)
 	for {
+		var document json.RawMessage
+		err = decoder.Decode(&document)
+		if err == io.EOF {
+			return false, nil
+		} else if err != nil {
+			return false, microerror.Maskf(invalidConfigError, "cannot parse %s: %s", path, err)
+		}
+
+		// A JSON 6902 patch file is a list of operations, not a resource. Empty documents
+		// hold nothing either.
+		trimmed := bytes.TrimSpace(document)
+		if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) || trimmed[0] == '[' {
+			continue
+		}
+
 		var object struct {
 			APIVersion string `json:"apiVersion"`
 			Kind       string `json:"kind"`
 		}
-		err = decoder.Decode(&object)
-		if err == io.EOF {
-			return false, nil
-		} else if err != nil {
+		err = json.Unmarshal(document, &object)
+		if err != nil {
 			return false, microerror.Maskf(invalidConfigError, "cannot parse %s: %s", path, err)
 		}
 

@@ -22,6 +22,25 @@ spec:
 `
 }
 
+// releaseOverlay is the kustomization of gitops-template's
+// bases/clusters/capa/release.
+const releaseOverlay = `apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/name
+        value: release-aws
+      - op: replace
+        path: /spec/version
+        value: ${release}
+    target:
+      group: application.giantswarm.io
+      kind: App
+resources:
+  - ../template
+`
+
 func ociRepository(chart string) string {
 	return `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
@@ -61,6 +80,23 @@ func Test_clusterChartName(t *testing.T) {
 				"kustomization.yaml": "resources:\n  - ../../../../cluster_templates/hello_app_cluster\n",
 			},
 			expected: "",
+		},
+		{
+			name: "JSON 6902 patch file",
+			files: map[string]string{
+				"cluster.yaml": ociRepository("release-aws"),
+				"ops.yaml":     "- op: replace\n  path: /spec/name\n  value: release-aws\n",
+			},
+			expected: "release-aws",
+		},
+		{
+			name: "overlay of a cluster App patching in a release chart",
+			files: map[string]string{
+				"kustomization.yaml":             releaseOverlay,
+				"../template/kustomization.yaml": "resources:\n  - cluster.yaml\n",
+				"../template/cluster.yaml":       app("cluster-aws"),
+			},
+			expectInvalid: true,
 		},
 		{
 			name: "cluster App",
