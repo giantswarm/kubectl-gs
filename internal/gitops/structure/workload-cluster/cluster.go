@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/giantswarm/microerror"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
