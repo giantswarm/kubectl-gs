@@ -478,3 +478,64 @@ func Test_NewApp_RefusesAppCRBase(t *testing.T) {
 		})
 	}
 }
+
+// Test_NewApp_ResourcesExist runs the creator, as the golden tests only check
+// the generated files and not the resources the apps kustomization lists.
+func Test_NewApp_ResourcesExist(t *testing.T) {
+	appsDir := "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps"
+
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, appsDir+"/kustomization.yaml", []byte("resources: []\n"), 0600)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	config, err := NewApp(common.StructureConfig{
+		App:                    "hello-world",
+		AppName:                "hello-world",
+		AppNamespace:           "default",
+		AppOCIURLPrefix:        "oci://gsoci.azurecr.io/charts/giantswarm",
+		AppUserValuesConfigMap: "replicaCount: 2",
+		AppUserValuesSecret:    "password: secret",
+		AppVersion:             "0.3.0",
+		ManagementCluster:      "demomc",
+		Organization:           "demoorg",
+		WorkloadCluster:        "demowc",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	config.Fs = fs
+	config.Path = "/repo"
+	config.Stdout = io.Discard
+
+	err = creator.NewCreator(*config).Create()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	kustomization, err := afero.ReadFile(fs, appsDir+"/kustomization.yaml")
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	var resources int
+	for _, line := range strings.Split(string(kustomization), "\n") {
+		resource, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
+		if !ok {
+			continue
+		}
+		resources++
+
+		ok, err := afero.Exists(fs, appsDir+"/"+resource)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if !ok {
+			t.Errorf("apps kustomization lists %s, which was not generated", resource)
+		}
+	}
+	if resources != 4 {
+		t.Fatalf("expected 4 resources, got %d in:\n%s", resources, kustomization)
+	}
+}

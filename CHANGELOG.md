@@ -37,6 +37,7 @@ and this project's packages adheres to [Semantic Versioning](http://semver.org/s
 
 ### Fixed
 
+- `gitops add app --user-secret` lists `secret.enc.yaml`, the file it writes, in the apps kustomization instead of a missing `secret.yaml`.
 - `gitops add workload-cluster` no longer fails when the management cluster has no `secrets` directory. It no longer creates the workload cluster's empty SOPS key Secret. `gitops add encryption` creates it when needed.
 - `gitops add encryption` creates the `secrets` and `.sops.keys` directories and the Secret for the private key when they are missing.
 - `gitops add workload-cluster` recognizes an overlay base that patches its App to a `release-<provider>` chart, such as gitops-template's `bases/clusters/capa/release`. It no longer prints that the base holds no cluster App and that the values must set the release, which is wrong for that chart.

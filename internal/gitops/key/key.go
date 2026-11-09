@@ -17,7 +17,7 @@ const (
 	mapiDirectory              = "mapi"
 	ociRepositoryFile          = "oci-repository.yaml"
 	organizationsDirectory     = "organizations"
-	secretFile                 = "secret.yaml"
+	secretFile                 = "secret.enc.yaml"
 	secretsDirectory           = "secrets"
 	sigsKustomizationFile      = "kustomization.yaml"
 	sopsConfigFile             = ".sops.yaml"
