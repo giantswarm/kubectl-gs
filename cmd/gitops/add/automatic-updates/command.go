@@ -30,7 +30,10 @@ HelmRelease upgrades the app to it. Apps deployed with an App CR, and apps
 from a base, are refused.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
+
+Steps it implements:
+https://github.com/giantswarm/gitops-template/blob/main/docs/guides/automatic-updates.md`
 
 	examples = `  # Enable automatic updates for hello-world app
     kubectl gs gitops add automatic-update \

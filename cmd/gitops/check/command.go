@@ -31,7 +31,7 @@ that adoption assumes the existing layers are current, so it cannot recover
 drift that happened before it ran.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`
 
 	examples = `  # Check the repository at the current directory
   kubectl gs gitops check

@@ -16,10 +16,6 @@
 
 ### Do the docs need to be updated?
 
-### Should this change be mentioned in the release notes?
-
-- [ ] CHANGELOG.md has been updated
-
 ### Is this a breaking change?
 
 (Breaking changes are, for example, removal of commands/flags or substantial changes in the meaning of a flag. If yes, please add the `breaking-change` label to the PR.)

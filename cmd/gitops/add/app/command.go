@@ -40,7 +40,10 @@ ${cluster_name}-<app_name> and list valuesFrom, as the user values are
 appended to it.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
+
+Steps it implements:
+https://github.com/giantswarm/gitops-template/blob/main/docs/guides/add-app.md`
 
 	examples = `  # Add hello-world App to dummy Workload Cluster
   kubectl gs gitops add app \
