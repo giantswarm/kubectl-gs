@@ -17,7 +17,7 @@ const (
 	mapiDirectory              = "mapi"
 	ociRepositoryFile          = "oci-repository.yaml"
 	organizationsDirectory     = "organizations"
-	secretFile                 = "secret.enc.yaml"
+	secretFile                 = "secret.enc.yaml" //#nosec G101 -- false positive (no secret here)
 	secretsDirectory           = "secrets"
 	sigsKustomizationFile      = "kustomization.yaml"
 	sopsConfigFile             = ".sops.yaml"
