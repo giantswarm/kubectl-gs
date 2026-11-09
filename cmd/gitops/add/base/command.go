@@ -23,7 +23,7 @@ base \
 --provider <provider>
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`
 
 	examples = `  # Add a CAPA base to your GitOps directory structure
   kubectl gs gitops add base --provider capa
