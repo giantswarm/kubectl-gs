@@ -23,7 +23,7 @@ The command may be run more than once, basically each user who starts working wi
 the GitOps repository may run it against his cloned version.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`
 
 	examples = `  # Initialize repository at the current directory
   kubectl gs gitops init

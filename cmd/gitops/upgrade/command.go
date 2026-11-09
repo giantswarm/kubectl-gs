@@ -41,7 +41,7 @@ the migrations against an in-memory copy of the repository. Run
 file yet.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.`
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`
 
 	examples = `  # Upgrade the repository at the current directory
   kubectl gs gitops upgrade
