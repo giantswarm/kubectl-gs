@@ -25,10 +25,10 @@ automatic-update \
 --workload-cluster <wc_name>
 
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md.
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/apps/automatic_updates_appcr.md`
+https://github.com/giantswarm/gitops-template/blob/main/docs/guides/automatic-updates.md`
 
 	examples = `  # Enable automatic updates for hello-world app
     kubectl gs gitops add automatic-update \
