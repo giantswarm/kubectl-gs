@@ -138,7 +138,7 @@ func kustomizationResources(fs afero.Fs, dir string) ([]string, error) {
 
 // Patches returns the patch files the kustomization.yaml in dir applies to
 // App CRs, relative to fs. A patch counts when it targets the App kind or is
-// an App itself. An inline patch targeting Apps is reported as the
+// an App itself. An inline patch counting is reported as the
 // kustomization.yaml. Unlike Files, it doesn't follow resources.
 func Patches(fs afero.Fs, dir string) ([]string, error) {
 	kustomizationPath := filepath.Join(dir, kustomizationFile)
@@ -152,6 +152,7 @@ func Patches(fs afero.Fs, dir string) ([]string, error) {
 	var kustomization struct {
 		Patches []struct {
 			Path   string `json:"path"`
+			Patch  string `json:"patch"`
 			Target struct {
 				Kind string `json:"kind"`
 			} `json:"target"`
@@ -173,6 +174,14 @@ func Patches(fs afero.Fs, dir string) ([]string, error) {
 			found = append(found, filepath.Join(dir, p.Path))
 		case p.Path != "":
 			paths = append(paths, p.Path)
+		case p.Patch != "":
+			ok, err := containsApp([]byte(p.Patch), kustomizationPath)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+			if ok {
+				found = append(found, kustomizationPath)
+			}
 		}
 	}
 
@@ -197,6 +206,11 @@ func holdsApp(fs afero.Fs, path string) (bool, error) {
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
+
+	return containsApp(data, path)
+}
+
+func containsApp(data []byte, path string) (bool, error) {
 	documents, err := Documents(data, path)
 	if err != nil {
 		return false, microerror.Mask(err)

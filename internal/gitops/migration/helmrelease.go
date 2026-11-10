@@ -19,6 +19,8 @@ import (
 const (
 	clusterUserConfigPatchFile = "patch_cluster_userconfig.yaml"
 	clusterConfigPatchFile     = "patch_cluster_config.yaml"
+
+	appPatchHint = "Rewrite them for the HelmRelease, or remove them, see " + appcr.MigrationDocs
 )
 
 // helmReleases moves the layers from App CRs to Flux HelmReleases.
@@ -40,13 +42,17 @@ func applyHelmReleases(fs *afero.Afero, repoPath string, layer metadata.Layer) (
 
 	switch layer.Kind {
 	case metadata.LayerClusterBase:
-		return nil, refuseAppCRs(fs, repoPath, dir, "Move the cluster to a release-<provider> HelmRelease first, see "+appcr.MigrationDocs)
+		err := refuseAppCRs(fs, repoPath, dir, "Move the cluster to a release-<provider> HelmRelease first, see "+appcr.MigrationDocs)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		return nil, refuseAppPatches(fs, repoPath, dir, appPatchHint)
 	case metadata.LayerApp:
 		err := refuseAppCRs(fs, repoPath, dir, "Move the app to a HelmRelease first, see "+appcr.MigrationDocs)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		return nil, refuseAppPatches(fs, repoPath, dir)
+		return nil, refuseAppPatches(fs, repoPath, dir, "Rewrite them as JSON 6902 patches adding to the HelmRelease's spec.valuesFrom, see "+appcr.MigrationDocs)
 	case metadata.LayerWorkloadCluster:
 		return migrateWorkloadCluster(fs, repoPath, dir)
 	}
@@ -70,10 +76,10 @@ func refuseAppCRs(fs *afero.Afero, repoPath, dir, hint string) error {
 	return microerror.Maskf(appCRError, "%s still deploys App CRs:\n  %s\n%s", rel(repoPath, dir), strings.Join(files, "\n  "), hint)
 }
 
-// refuseAppPatches fails for an app from a base that still patches the App
-// CR, like the user values patch `gitops add app --base` generated. Once the
-// base deploys a HelmRelease, that patch matches nothing.
-func refuseAppPatches(fs *afero.Afero, repoPath, dir string) error {
+// refuseAppPatches fails for a layer that still patches App CRs, like the user
+// values patch `gitops add app --base` generated. Once the App is a
+// HelmRelease, Kustomize fails on a patch that matches nothing.
+func refuseAppPatches(fs *afero.Afero, repoPath, dir, hint string) error {
 	files, err := appcr.Patches(fs, dir)
 	if err != nil {
 		return microerror.Mask(err)
@@ -86,7 +92,7 @@ func refuseAppPatches(fs *afero.Afero, repoPath, dir string) error {
 		files[i] = rel(repoPath, f)
 	}
 
-	return microerror.Maskf(appCRError, "%s still patches App CRs:\n  %s\nRewrite them as JSON 6902 patches adding to the HelmRelease's spec.valuesFrom, see %s", rel(repoPath, dir), strings.Join(files, "\n  "), appcr.MigrationDocs)
+	return microerror.Maskf(appCRError, "%s still patches App CRs:\n  %s\n%s", rel(repoPath, dir), strings.Join(files, "\n  "), hint)
 }
 
 func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string) ([]string, error) {
@@ -118,6 +124,11 @@ func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string) ([]string, 
 			return nil, microerror.Mask(err)
 		}
 		changes = append(changes, c...)
+
+		err = refuseAppPatches(fs, repoPath, clusterDir, appPatchHint)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	appsDir := filepath.Join(dir, gitopskey.AppsDirName())
@@ -136,6 +147,11 @@ func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string) ([]string, 
 			return nil, microerror.Mask(err)
 		}
 		changes = append(changes, c...)
+
+		err = refuseAppPatches(fs, repoPath, appsDir, appPatchHint)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	return changes, nil

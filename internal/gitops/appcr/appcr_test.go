@@ -1,6 +1,7 @@
 package appcr
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -132,5 +133,46 @@ func Test_Patches(t *testing.T) {
 	got, err = Patches(fs, "none")
 	if err != nil || len(got) != 0 {
 		t.Fatalf("expected no patches and no error, got %v, %v", got, err)
+	}
+}
+
+func Test_Patches_Inline(t *testing.T) {
+	indent := func(s string) string {
+		return "      " + strings.ReplaceAll(strings.TrimSuffix(s, "\n"), "\n", "\n      ") + "\n"
+	}
+
+	testCases := []struct {
+		name     string
+		patch    string
+		expected []string
+	}{
+		{
+			name:     "App without a target",
+			patch:    app,
+			expected: []string{"apps/kustomization.yaml"},
+		},
+		{
+			name:     "HelmRelease without a target",
+			patch:    helmRelease,
+			expected: []string{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			err := afero.WriteFile(fs, "apps/kustomization.yaml", []byte("patches:\n  - patch: |\n"+indent(tc.patch)), 0600)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+
+			got, err := Patches(fs, "apps")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			if diff := cmp.Diff(tc.expected, got); diff != "" {
+				t.Fatalf("unexpected patches (-want +got):\n%s", diff)
+			}
+		})
 	}
 }

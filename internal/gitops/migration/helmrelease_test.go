@@ -185,6 +185,26 @@ func Test_helmReleases(t *testing.T) {
 			layer: baseLayer,
 		},
 		{
+			name: "cluster base with a HelmRelease and an App patch",
+			files: []map[string]string{migratedBase, {
+				testBase + "/kustomization.yaml": baseKustomization + "patchesStrategicMerge:\n  - patch.yaml\n",
+				testBase + "/patch.yaml":         appCR,
+			}},
+			layer:        baseLayer,
+			expectErr:    appCRError,
+			expectErrMsg: testBase + "/patch.yaml",
+		},
+		{
+			name: "workload cluster with another App patch in apps",
+			files: []map[string]string{migratedBase, v1WC, {
+				testWC + "/apps/kustomization.yaml": strings.Replace(v1AppsKustomization, "resources: []", "  - path: patch_extra.yaml\n    target:\n      kind: App\nresources: []", 1),
+				testWC + "/apps/patch_extra.yaml":   v1ClusterConfigPatch,
+			}},
+			layer:        wcLayer,
+			expectErr:    appCRError,
+			expectErrMsg: testWC + "/apps/patch_extra.yaml",
+		},
+		{
 			name:         "app with an App CR",
 			files:        []map[string]string{{testWC + "/apps/hello/appcr.yaml": appCR}},
 			layer:        appLayer,
