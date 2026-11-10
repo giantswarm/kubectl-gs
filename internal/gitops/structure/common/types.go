@@ -11,17 +11,20 @@ import (
 type StructureConfig struct {
 	App                    string
 	AppBase                string
-	AppCatalog             string
 	AppInstallTimeout      *metav1.Duration
 	AppName                string
 	AppNamespace           string
+	AppOCIURLPrefix        string
 	AppRollbackTimeout     *metav1.Duration
 	AppUninstallTimeout    *metav1.Duration
 	AppUpgradeTimeout      *metav1.Duration
 	AppUserValuesConfigMap string
 	AppUserValuesSecret    string
 	AppVersion             string
-	AppVersionRepository   string
+	AppVersionRange        string
+	// AppResources holds the OCIRepository and HelmRelease of the app, when
+	// it doesn't come from a base.
+	AppResources AppResources
 
 	Provider             string
 	ClusterBaseTemplates ClusterBaseTemplates
@@ -45,6 +48,11 @@ type StructureConfig struct {
 
 	// Azure only
 	AzureSubscriptionID string
+}
+
+type AppResources struct {
+	HelmRelease   string
+	OCIRepository string
 }
 
 type ClusterBaseTemplates struct {

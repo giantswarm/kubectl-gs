@@ -19,10 +19,15 @@ const (
 
 automatic-update \
 --app <app_to_configure_updates_for> \
---version-repository <repository_to_track_version_in> \
+[--version-range <semver_range>] \
 --management-cluster <mc_code_name> \
 --organization <org_name> \
 --workload-cluster <wc_name>
+
+It sets a semver range on the app's OCIRepository, replacing the version it
+pins. Flux then pulls the newest chart version in the range, and the
+HelmRelease upgrades the app to it. Apps deployed with an App CR, and apps
+from a base, are refused.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
@@ -33,11 +38,17 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/guides/automatic-up
 	examples = `  # Enable automatic updates for hello-world app
     kubectl gs gitops add automatic-update \
     --app hello-world \
-    --version-repository gsoci.azurecr.io/charts/giantswarm/hello-world \
     --management-cluster demomc \
     --organization demoorg \
-    --workload-cluster demowc \
-    --repository gitops-demo`
+    --workload-cluster demowc
+
+  # Only follow patch releases of hello-world 0.3
+    kubectl gs gitops add automatic-update \
+    --app hello-world \
+    --version-range '0.3.x' \
+    --management-cluster demomc \
+    --organization demoorg \
+    --workload-cluster demowc`
 )
 
 type Config struct {

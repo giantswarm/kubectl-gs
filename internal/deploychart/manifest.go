@@ -56,6 +56,11 @@ type HelmReleaseOptions struct {
 	CreateNamespace    bool
 	InstallRemediation *RemediationPolicy
 	UpgradeRemediation *RemediationPolicy
+	// If set, add a timeout to the given Helm action, overriding Timeout.
+	InstallTimeout   string
+	RollbackTimeout  string
+	UninstallTimeout string
+	UpgradeTimeout   string
 }
 
 // RemediationPolicy configures spec.install.remediation or spec.upgrade.remediation.
@@ -194,6 +199,25 @@ func BuildHelmRelease(opts HelmReleaseOptions) *helmv2.HelmRelease {
 			strategy := helmv2.RemediationStrategy(opts.UpgradeRemediation.Strategy)
 			hr.Spec.Upgrade.Remediation.Strategy = &strategy
 		}
+	}
+
+	if opts.InstallTimeout != "" {
+		if hr.Spec.Install == nil {
+			hr.Spec.Install = &helmv2.Install{}
+		}
+		hr.Spec.Install.Timeout = &metav1.Duration{Duration: parseDuration(opts.InstallTimeout)}
+	}
+	if opts.UpgradeTimeout != "" {
+		if hr.Spec.Upgrade == nil {
+			hr.Spec.Upgrade = &helmv2.Upgrade{}
+		}
+		hr.Spec.Upgrade.Timeout = &metav1.Duration{Duration: parseDuration(opts.UpgradeTimeout)}
+	}
+	if opts.RollbackTimeout != "" {
+		hr.Spec.Rollback = &helmv2.Rollback{Timeout: &metav1.Duration{Duration: parseDuration(opts.RollbackTimeout)}}
+	}
+	if opts.UninstallTimeout != "" {
+		hr.Spec.Uninstall = &helmv2.Uninstall{Timeout: &metav1.Duration{Duration: parseDuration(opts.UninstallTimeout)}}
 	}
 
 	if opts.Values != nil {
