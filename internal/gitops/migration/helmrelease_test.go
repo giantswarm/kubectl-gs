@@ -79,6 +79,27 @@ spec:
     inCluster: false
 `
 
+	// The shared apps patch, already rewritten by hand to point the
+	// HelmReleases at the workload cluster.
+	sharedHelmReleasePatchKustomization = `apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+patches:
+  - path: patch_cluster_config.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      kind: HelmRelease
+resources: []
+`
+	sharedHelmReleasePatch = `apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ignored
+spec:
+  kubeConfig:
+    secretRef:
+      name: ${cluster_name}-kubeconfig
+`
+
 	// The same files as kubectl-gs generates them at structure version 2.
 	v2ClusterKustomization = `apiVersion: kustomize.config.k8s.io/v1beta1
 commonLabels:
@@ -174,6 +195,39 @@ func Test_helmReleases(t *testing.T) {
 			name:  "app with a HelmRelease",
 			files: []map[string]string{{testWC + "/apps/hello/helm-release.yaml": clusterHelmRelease}},
 			layer: appLayer,
+		},
+		{
+			name: "app from a HelmRelease base with an App user config patch",
+			files: []map[string]string{{
+				testWC + "/apps/hello/kustomization.yaml":        "patchesStrategicMerge:\n  - patch_app_userconfig.yaml\nresources:\n  - helm-release.yaml\n",
+				testWC + "/apps/hello/helm-release.yaml":         clusterHelmRelease,
+				testWC + "/apps/hello/patch_app_userconfig.yaml": appCR,
+			}},
+			layer:        appLayer,
+			expectErr:    appCRError,
+			expectErrMsg: testWC + "/apps/hello/patch_app_userconfig.yaml",
+		},
+		{
+			name: "workload cluster with the shared patch converted to HelmReleases",
+			files: []map[string]string{migratedBase, v1WC, {
+				testWC + "/apps/kustomization.yaml":        sharedHelmReleasePatchKustomization,
+				testWC + "/apps/patch_cluster_config.yaml": sharedHelmReleasePatch,
+			}},
+			layer: wcLayer,
+			expectFiles: map[string]string{
+				testWC + "/apps/kustomization.yaml":        sharedHelmReleasePatchKustomization,
+				testWC + "/apps/patch_cluster_config.yaml": sharedHelmReleasePatch,
+			},
+			expectNChanges: 1,
+		},
+		{
+			name: "workload cluster with the shared patch targeting Apps but not an App",
+			files: []map[string]string{migratedBase, v1WC, {
+				testWC + "/apps/patch_cluster_config.yaml": sharedHelmReleasePatch,
+			}},
+			layer:        wcLayer,
+			expectErr:    unexpectedFileError,
+			expectErrMsg: "by hand",
 		},
 		{
 			name:  "workload cluster",
