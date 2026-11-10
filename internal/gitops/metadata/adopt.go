@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/appcr"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 )
 
@@ -25,12 +26,14 @@ type AdoptionResult struct {
 }
 
 // Adopt infers the layers of a repository that predates the metadata file, and
-// pins them at the current structure version.
+// pins them at the current structure version. Layers still deploying App CRs,
+// which kubectl-gs stopped generating in structure version 2, are pinned at
+// version 1, so that `gitops check` reports them.
 //
 // Note what this cannot do: it has no way of knowing which structure version
-// the repository was actually generated with, so it assumes the current one.
-// Drift that already exists at the point of adoption stays invisible; only
-// drift introduced afterwards is detected.
+// the repository was actually generated with, so it otherwise assumes the
+// current one. Drift that already exists at the point of adoption stays
+// invisible. Only drift introduced afterwards is detected.
 func Adopt(fs *afero.Afero, repoPath string) (*AdoptionResult, error) {
 	result := &AdoptionResult{
 		Metadata: New(),
@@ -73,7 +76,12 @@ func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult)
 			continue
 		}
 
-		result.Metadata.Upsert(Layer{Kind: LayerClusterBase, Path: basePath})
+		version, err := adoptedVersion(fs, repoPath, basePath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		result.Metadata.Upsert(Layer{Kind: LayerClusterBase, Path: basePath, StructureVersion: version})
 	}
 
 	return nil
@@ -134,13 +142,25 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 
 	for _, wc := range wcs {
 		wcDir := key.BaseDirPath(mc, org, wc)
-		result.Metadata.Upsert(Layer{Kind: LayerWorkloadCluster, Path: wcDir})
+		mapiDir := key.ResourcePath(wcDir, key.MapiDirName())
+
+		version, err := adoptedVersion(fs, repoPath,
+			key.ResourcePath(wcDir, key.ClusterDirName()),
+			key.ResourcePath(wcDir, key.AppsDirName()),
+			key.ResourcePath(mapiDir, key.ClusterDirName()),
+			key.ResourcePath(mapiDir, key.AppsDirName()),
+		)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		result.Metadata.Upsert(Layer{Kind: LayerWorkloadCluster, Path: wcDir, StructureVersion: version})
 
 		// Apps live under `WC_NAME/mapi/apps` when the mapi directory is in
 		// use, and under `WC_NAME/apps` when the cluster was added with
 		// `--skip-mapi`. Both are checked, so adoption does not depend on
 		// knowing which flag was used at creation time.
-		err = adoptApps(fs, repoPath, key.ResourcePath(wcDir, key.MapiDirName()), result)
+		err = adoptApps(fs, repoPath, mapiDir, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -167,11 +187,12 @@ func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResu
 	for _, app := range apps {
 		appDir := key.ResourcePath(appsDir, app)
 
-		// `gitops add app` writes an App CR when no base is used, and a
-		// Kustomization referencing the base when one is. The two are mutually
-		// exclusive, so either marks the directory as a layer it created.
+		// `gitops add app` writes a HelmRelease, or an App CR before structure
+		// version 2, when no base is used, and a Kustomization referencing the
+		// base when one is. Any of them marks the directory as a layer it
+		// created.
 		isApp := false
-		for _, marker := range []string{key.AppCRFileName(), key.SigsKustomizationFileName()} {
+		for _, marker := range []string{key.HelmReleaseFileName(), key.AppCRFileName(), key.SigsKustomizationFileName()} {
 			exists, err := fs.Exists(filepath.Join(repoPath, appDir, marker))
 			if err != nil {
 				return microerror.Mask(err)
@@ -187,10 +208,47 @@ func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResu
 			continue
 		}
 
-		result.Metadata.Upsert(Layer{Kind: LayerApp, Path: appDir})
+		version, err := adoptedVersion(fs, repoPath, appDir)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		result.Metadata.Upsert(Layer{Kind: LayerApp, Path: appDir, StructureVersion: version})
 	}
 
 	return nil
+}
+
+// adoptedVersion returns the structure version to record a layer at, from
+// what the given directories deploy, or patch, as the workload cluster
+// kustomizations kubectl-gs generated before version 2 did. Missing
+// directories are skipped.
+func adoptedVersion(fs *afero.Afero, repoPath string, dirs ...string) (int, error) {
+	for _, dir := range dirs {
+		path := filepath.Join(repoPath, dir)
+
+		exists, err := dirExists(fs, path)
+		if err != nil {
+			return 0, microerror.Mask(err)
+		}
+		if !exists {
+			continue
+		}
+
+		files, err := appcr.Files(fs, path)
+		if err != nil {
+			return 0, microerror.Mask(err)
+		}
+		patches, err := appcr.Patches(fs, path)
+		if err != nil {
+			return 0, microerror.Mask(err)
+		}
+		if len(files) > 0 || len(patches) > 0 {
+			return 1, nil
+		}
+	}
+
+	return StructureVersion, nil
 }
 
 // subDirs lists the names of the directories directly under dir, relative to

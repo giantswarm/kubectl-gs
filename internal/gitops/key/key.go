@@ -8,17 +8,16 @@ import (
 const (
 	appCRFile                  = "appcr.yaml"
 	appsDirectory              = "apps"
-	automaticUpdatesDirectory  = "automatic-updates"
 	clusterDirectory           = "cluster"
 	configMapFile              = "configmap.yaml"
 	encryptionRegex            = "%s/.*\\.enc\\.yaml"
 	fluxKustomizationFile      = "%s.yaml"
-	imagePolicyFile            = "imagepolicy.yaml"
-	imageRepositoryFile        = "imagerepository.yaml"
+	helmReleaseFile            = "helm-release.yaml"
 	managementClusterDirectory = "management-clusters"
 	mapiDirectory              = "mapi"
+	ociRepositoryFile          = "oci-repository.yaml"
 	organizationsDirectory     = "organizations"
-	secretFile                 = "secret.yaml"
+	secretFile                 = "secret.enc.yaml" //#nosec G101 -- false positive (no secret here)
 	secretsDirectory           = "secrets"
 	sigsKustomizationFile      = "kustomization.yaml"
 	sopsConfigFile             = ".sops.yaml"
@@ -44,10 +43,6 @@ func AppCRFileName() string {
 
 func AppsDirName() string {
 	return appsDirectory
-}
-
-func AutoUpdatesDirName() string {
-	return automaticUpdatesDirectory
 }
 
 func BaseTemplatesDirName() string {
@@ -130,16 +125,16 @@ func FluxKustomizationFileName(name string) string {
 	return fmt.Sprintf(fluxKustomizationFile, name)
 }
 
-func ImagePolicyFileName() string {
-	return imagePolicyFile
-}
-
-func ImageRepositoryFileName() string {
-	return imageRepositoryFile
+func HelmReleaseFileName() string {
+	return helmReleaseFile
 }
 
 func ManagementClustersDirName() string {
 	return managementClusterDirectory
+}
+
+func OCIRepositoryFileName() string {
+	return ociRepositoryFile
 }
 
 func MapiDirName() string {

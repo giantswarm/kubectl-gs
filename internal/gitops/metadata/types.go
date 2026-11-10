@@ -29,7 +29,7 @@ const (
 	// kubectl-gs generates. Bump it whenever the generated structure changes,
 	// and record what changed in the gitops-template CHANGELOG, so that
 	// `kubectl gs gitops check` can tell users their repository is behind.
-	StructureVersion = 1
+	StructureVersion = 2
 )
 
 // Layer kinds. These name the units `kubectl gs gitops add` creates, and are

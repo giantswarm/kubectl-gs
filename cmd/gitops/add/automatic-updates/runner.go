@@ -42,13 +42,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	config := common.StructureConfig{
-		AppName:              r.flag.App,
-		AppVersionRepository: r.flag.VersionRepository,
-		ManagementCluster:    r.flag.ManagementCluster,
-		Organization:         r.flag.Organization,
-		RepositoryName:       r.flag.Repository,
-		SkipMAPI:             r.flag.SkipMAPI,
-		WorkloadCluster:      r.flag.WorkloadCluster,
+		AppName:           r.flag.App,
+		AppVersionRange:   r.flag.VersionRange,
+		ManagementCluster: r.flag.ManagementCluster,
+		Organization:      r.flag.Organization,
+		SkipMAPI:          r.flag.SkipMAPI,
+		WorkloadCluster:   r.flag.WorkloadCluster,
 	}
 
 	creatorConfig, err := structure.NewAutomaticUpdate(config)

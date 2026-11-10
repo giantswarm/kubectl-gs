@@ -267,6 +267,46 @@ func TestBuildHelmRelease(t *testing.T) {
 		expected string
 	}{
 		{
+			name: "per-action timeouts",
+			opts: HelmReleaseOptions{
+				Name:              "hello",
+				Namespace:         "org-acme",
+				ClusterName:       "mycluster01",
+				ChartName:         "hello",
+				TargetNamespace:   "hello",
+				Interval:          "10m",
+				ManagementCluster: true,
+				InstallTimeout:    "3m",
+				RollbackTimeout:   "4m",
+				UninstallTimeout:  "5m",
+				UpgradeTimeout:    "6m",
+			},
+			expected: `apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  labels:
+    giantswarm.io/cluster: mycluster01
+  name: hello
+  namespace: org-acme
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: hello
+    namespace: org-acme
+  install:
+    timeout: 3m0s
+  interval: 10m0s
+  releaseName: hello
+  rollback:
+    timeout: 4m0s
+  targetNamespace: hello
+  uninstall:
+    timeout: 5m0s
+  upgrade:
+    timeout: 6m0s
+`,
+		},
+		{
 			name: "basic workload cluster",
 			opts: HelmReleaseOptions{
 				Name:            "mycluster01-hello-world-app",

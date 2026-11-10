@@ -196,7 +196,7 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 		// repository is still behind: say so, and where to read what changed.
 		return microerror.Maskf(
 			outOfSyncError,
-			"the repository was generated with an older repository structure than this kubectl-gs produces (version %d), and this kubectl-gs has no migration to bring it there. This is a bug in kubectl-gs, please report it.\nSee https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md for what changed.",
+			"the repository was generated with an older repository structure than this kubectl-gs produces (version %d), and this kubectl-gs has no migration to bring it there. This is a bug in kubectl-gs, please report it.\nSee https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md for what changed.",
 			metadata.StructureVersion,
 		)
 	} else if err != nil {
@@ -205,7 +205,7 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 
 	return microerror.Maskf(
 		outOfSyncError,
-		"the repository was generated with an older repository structure than this kubectl-gs produces (version %d).\nRun `kubectl gs gitops upgrade --dry-run` to see what upgrading it changes, and https://github.com/giantswarm/gitops-template/blob/main/docs/repo_structure.md for what changed.",
+		"the repository was generated with an older repository structure than this kubectl-gs produces (version %d).\nRun `kubectl gs gitops upgrade --dry-run` to see what upgrading it changes, and https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md for what changed.",
 		metadata.StructureVersion,
 	)
 }

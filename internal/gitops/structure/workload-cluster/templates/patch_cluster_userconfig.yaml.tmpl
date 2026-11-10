@@ -1,12 +1,8 @@
 {{- if and .ClusterBase .ClusterUserConfig -}}
-apiVersion: application.giantswarm.io/v1alpha1
-kind: App
-metadata:
-  name: ${cluster_name}
-  namespace: org-${organization}
-spec:
-  userConfig:
-    configMap:
-      name: {{ .WorkloadCluster }}-cluster-userconfig
-      namespace: org-{{ .Organization }}
+- op: add
+  path: /spec/valuesFrom/-
+  value:
+    kind: ConfigMap
+    name: {{ .WorkloadCluster }}-cluster-userconfig
+    valuesKey: values
 {{- end }}

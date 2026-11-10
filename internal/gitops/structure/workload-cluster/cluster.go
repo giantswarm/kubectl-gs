@@ -1,9 +1,7 @@
 package wcluster
 
 import (
-	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/giantswarm/microerror"
 	"go.yaml.in/yaml/v4"
@@ -22,16 +20,6 @@ import (
 // structure.
 func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	var err error
-
-	// Only a cluster-<provider> chart reads the release from the values. A
-	// release-<provider> chart carries it in its default values. An overlay
-	// base sets its own values, which the values written here would replace.
-	if config.ClusterBase != "" && config.Release != "" && strings.HasPrefix(config.ClusterChart, "cluster-") {
-		config.ClusterUserConfig, err = clusterUserConfigWithRelease(config.ClusterUserConfig, config.Release)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
 
 	// Holds management-cluster/MC_NAME/organizations/ORG_NAME
 	orgDir := key.BaseDirPath(config.ManagementCluster, config.Organization, "")
@@ -141,84 +129,4 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	}
 
 	return &creatorConfig, nil
-}
-
-// releaseVersionPath is where the cluster chart's values carry the release version.
-var releaseVersionPath = []string{"global", "release", "version"}
-
-// clusterUserConfigWithRelease sets `global.release.version` in the cluster
-// app values. All other values the user gave are kept, with their comments
-// and order. Cluster charts read the release version from there.
-//
-// The values are written back in yaml.v3's style, which Helm reads the same:
-// indentation becomes two spaces, a `|` block becomes `|-`, a merge key
-// becomes `!!merge <<:` and only the first YAML document is kept.
-func clusterUserConfigWithRelease(userConfig, release string) (string, error) {
-	var doc yaml.Node
-	err := yaml.Unmarshal([]byte(userConfig), &doc)
-	if err != nil {
-		return "", microerror.Maskf(invalidConfigError, "cluster user config is not valid YAML: %s", err)
-	}
-	// Empty user configuration unmarshals to a zero node.
-	if len(doc.Content) == 0 {
-		doc = yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{{Kind: yaml.MappingNode}}}
-	}
-	if doc.Content[0].Kind != yaml.MappingNode {
-		return "", microerror.Maskf(invalidConfigError, "cluster user config must be a mapping")
-	}
-
-	err = setValue(doc.Content[0], release, releaseVersionPath...)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	var buf bytes.Buffer
-	encoder := yaml.NewEncoder(&buf)
-	encoder.SetIndent(2)
-	err = encoder.Encode(&doc)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	err = encoder.Close()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return strings.TrimSpace(buf.String()), nil
-}
-
-// setValue sets the string at the mapping path. Missing keys are appended,
-// and values on the way that aren't mappings are replaced by one.
-func setValue(node *yaml.Node, value string, path ...string) error {
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		if node.Content[i].Value != path[0] {
-			continue
-		}
-
-		child := node.Content[i+1]
-		if len(path) == 1 {
-			child.Kind, child.Tag, child.Value, child.Content = yaml.ScalarNode, "!!str", value, nil
-			return nil
-		}
-		// Replacing an alias would silently drop the values of its anchor.
-		if child.Kind == yaml.AliasNode {
-			return microerror.Maskf(invalidConfigError, "cluster user config uses an alias at %q, set %s there without an alias", path[0], strings.Join(releaseVersionPath, "."))
-		}
-		if child.Kind != yaml.MappingNode {
-			child.Kind, child.Tag, child.Value, child.Content, child.Style = yaml.MappingNode, "!!map", "", nil, 0
-		}
-		return setValue(child, value, path[1:]...)
-	}
-
-	child := &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: value}
-	if len(path) > 1 {
-		child = &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
-		err := setValue(child, value, path[1:]...)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-	node.Content = append(node.Content, &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: path[0]}, child)
-
-	return nil
 }

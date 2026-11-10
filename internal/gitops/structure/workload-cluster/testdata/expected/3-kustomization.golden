@@ -4,6 +4,12 @@ commonLabels:
 kind: Kustomization
 patches:
   - path: patch_cluster_userconfig.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      kind: HelmRelease
+      # A regular expression matching the name the base gives the HelmRelease
+      # before Flux substitutes the variables.
+      name: \$\{cluster_name\}
 resources:
   - ../../../../../../../../bases/cluster/capa
   - cluster_userconfig.yaml

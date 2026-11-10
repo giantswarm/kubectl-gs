@@ -2,16 +2,24 @@ package app
 
 import (
 	"bytes"
+	goflag "flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
+	"github.com/spf13/afero"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
+
+var update = goflag.Bool("update", false, "update .golden reference test files")
 
 type FsObjectExpected struct {
 	RelativePath string
@@ -28,7 +36,7 @@ func Test_NewApp(t *testing.T) {
 			name: "flawless",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -45,8 +53,12 @@ func Test_NewApp(t *testing.T) {
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/0-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/0-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/0-helm_release.golden",
 				},
 			},
 		},
@@ -78,7 +90,7 @@ func Test_NewApp(t *testing.T) {
 			name: "flawless with cm configuration",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -98,8 +110,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/1-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/1-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/1-helm_release.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/configmap.yaml",
@@ -111,7 +127,7 @@ topKey:
 			name: "flawless with secret configuration",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -131,8 +147,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/2-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/2-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/2-helm_release.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/secret.enc.yaml",
@@ -212,7 +232,7 @@ topKey:
 			name: "flawless MAPI",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -228,8 +248,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/0-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/0-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/0-helm_release.golden",
 				},
 			},
 		},
@@ -260,7 +284,7 @@ topKey:
 			name: "flawless with timeouts",
 			config: common.StructureConfig{
 				App:                 "hello-world",
-				AppCatalog:          "giantswarm",
+				AppOCIURLPrefix:     "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster:   "demomc",
 				AppName:             "hello-world",
 				AppNamespace:        "default",
@@ -281,8 +305,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/3-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/3-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/3-helm_release.golden",
 				},
 			},
 		},
@@ -290,7 +318,7 @@ topKey:
 			name: "flawless with in cluster",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -308,8 +336,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/4-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/4-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/4-helm_release.golden",
 				},
 			},
 		},
@@ -317,7 +349,7 @@ topKey:
 			name: "flawless with in cluster false",
 			config: common.StructureConfig{
 				App:               "hello-world",
-				AppCatalog:        "giantswarm",
+				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
 				ManagementCluster: "demomc",
 				AppName:           "hello-world",
 				AppNamespace:      "default",
@@ -335,8 +367,12 @@ topKey:
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/appcr.yaml",
-					GoldenFile:   "testdata/expected/5-appcr.golden",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/oci-repository.yaml",
+					GoldenFile:   "testdata/expected/5-oci_repository.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world/helm-release.yaml",
+					GoldenFile:   "testdata/expected/5-helm_release.golden",
 				},
 			},
 		},
@@ -362,6 +398,13 @@ topKey:
 					continue
 				}
 
+				if *update {
+					err = os.WriteFile(e.GoldenFile, config.FsObjects[i].Data, 0600)
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err.Error())
+					}
+				}
+
 				expected, err := os.ReadFile(e.GoldenFile)
 				if err != nil {
 					t.Fatalf("unexpected error: %s", err.Error())
@@ -372,5 +415,127 @@ topKey:
 				}
 			}
 		})
+	}
+}
+
+func Test_NewApp_RefusesAppCRBase(t *testing.T) {
+	testCases := []struct {
+		name      string
+		base      string
+		expectErr bool
+	}{
+		{
+			name:      "App CR base",
+			base:      "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n",
+			expectErr: true,
+		},
+		{
+			name: "HelmRelease base",
+			base: "apiVersion: helm.toolkit.fluxcd.io/v2\nkind: HelmRelease\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := afero.NewMemMapFs()
+			files := map[string]string{
+				"/repo/bases/apps/hello-world/kustomization.yaml":                                                              "resources:\n  - hello.yaml\n",
+				"/repo/bases/apps/hello-world/hello.yaml":                                                                      tc.base,
+				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/kustomization.yaml": "resources: []\n",
+			}
+			for path, data := range files {
+				err := afero.WriteFile(fs, path, []byte(data), 0600)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+			}
+
+			config, err := NewApp(common.StructureConfig{
+				AppBase:                "bases/apps/hello-world",
+				AppName:                "hello-world",
+				AppUserValuesConfigMap: "replicaCount: 2",
+				ManagementCluster:      "demomc",
+				Organization:           "demoorg",
+				WorkloadCluster:        "demowc",
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			config.Fs = fs
+			config.Path = "/repo"
+			config.Stdout = io.Discard
+
+			err = creator.NewCreator(*config).Create()
+			if tc.expectErr {
+				if microerror.Cause(err) != creator.ValidationError || !strings.Contains(err.Error(), "no longer supports") {
+					t.Fatalf("expected a validation error, got: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+		})
+	}
+}
+
+// Test_NewApp_ResourcesExist runs the creator, as the golden tests only check
+// the generated files and not the resources the apps kustomization lists.
+func Test_NewApp_ResourcesExist(t *testing.T) {
+	appsDir := "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps"
+
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, appsDir+"/kustomization.yaml", []byte("resources: []\n"), 0600)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	config, err := NewApp(common.StructureConfig{
+		App:                    "hello-world",
+		AppName:                "hello-world",
+		AppNamespace:           "default",
+		AppOCIURLPrefix:        "oci://gsoci.azurecr.io/charts/giantswarm",
+		AppUserValuesConfigMap: "replicaCount: 2",
+		AppUserValuesSecret:    "password: secret",
+		AppVersion:             "0.3.0",
+		ManagementCluster:      "demomc",
+		Organization:           "demoorg",
+		WorkloadCluster:        "demowc",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	config.Fs = fs
+	config.Path = "/repo"
+	config.Stdout = io.Discard
+
+	err = creator.NewCreator(*config).Create()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	kustomization, err := afero.ReadFile(fs, appsDir+"/kustomization.yaml")
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	var resources int
+	for _, line := range strings.Split(string(kustomization), "\n") {
+		resource, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
+		if !ok {
+			continue
+		}
+		resources++
+
+		ok, err := afero.Exists(fs, appsDir+"/"+resource)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if !ok {
+			t.Errorf("apps kustomization lists %s, which was not generated", resource)
+		}
+	}
+	if resources != 4 {
+		t.Fatalf("expected 4 resources, got %d in:\n%s", resources, kustomization)
 	}
 }
