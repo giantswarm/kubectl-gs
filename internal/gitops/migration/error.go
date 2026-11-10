@@ -60,3 +60,15 @@ func IsMigrationFailed(err error) bool {
 var stagingError = &microerror.Error{
 	Kind: "stagingError",
 }
+
+// appCRError is returned by the migration to HelmReleases for a layer that
+// still deploys App CRs, which the user has to move first.
+var appCRError = &microerror.Error{
+	Kind: "appCRError",
+}
+
+// unexpectedFileError is returned when a migration finds a generated file
+// edited beyond what it can safely rewrite.
+var unexpectedFileError = &microerror.Error{
+	Kind: "unexpectedFileError",
+}

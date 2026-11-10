@@ -1,7 +1,6 @@
 package wcluster
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/giantswarm/microerror"
@@ -42,6 +41,16 @@ resources:
   - ../template
 `
 
+func ociRepository(chart string) string {
+	return `apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: ${cluster_name}
+spec:
+  url: oci://gsoci.azurecr.io/charts/giantswarm/` + chart + `
+`
+}
+
 func Test_clusterChartName(t *testing.T) {
 	testCases := []struct {
 		name          string
@@ -50,99 +59,81 @@ func Test_clusterChartName(t *testing.T) {
 		expectInvalid bool
 	}{
 		{
-			name: "cluster chart",
-			files: map[string]string{
-				"cluster.yaml":        app("cluster-aws"),
-				"cluster_config.yaml": "global:\n  metadata:\n    name: ${cluster_name}\n",
-			},
-			expected: "cluster-aws",
-		},
-		{
 			name: "release chart",
 			files: map[string]string{
-				"cluster.yaml": app("release-aws"),
+				"cluster.yaml":        ociRepository("release-aws"),
+				"cluster_config.yaml": "global:\n  metadata:\n    name: ${cluster_name}\n",
 			},
 			expected: "release-aws",
 		},
 		{
-			name: "other Apps are ignored",
+			name: "other OCIRepositories are ignored",
 			files: map[string]string{
-				"apps.yaml":    app("hello-world") + "---\n" + app("cert-manager-app"),
-				"cluster.yaml": app("cluster-azure"),
+				"apps.yaml":    ociRepository("hello-world"),
+				"cluster.yaml": ociRepository("release-azure"),
 			},
-			expected: "cluster-azure",
+			expected: "release-azure",
 		},
 		{
-			name: "cluster chart from the test catalog",
+			name: "overlay of a release chart base",
 			files: map[string]string{
-				"cluster.yaml": appFromCatalog("cluster-test", "cluster-aws"),
+				"kustomization.yaml":             "resources:\n  - ../template\n",
+				"../template/kustomization.yaml": "resources:\n  - cluster.yaml\n",
+				"../template/cluster.yaml":       ociRepository("release-vsphere"),
 			},
-			expected: "cluster-aws",
+			expected: "release-vsphere",
 		},
 		{
-			name: "cluster-* chart from another catalog is ignored",
+			name: "App CR besides the release chart",
 			files: map[string]string{
 				"apps.yaml":    appFromCatalog("default", "cluster-autoscaler"),
-				"cluster.yaml": app("cluster-aws"),
+				"cluster.yaml": ociRepository("release-azure"),
 			},
-			expected: "cluster-aws",
+			expectInvalid: true,
 		},
 		{
-			name: "overlay without App",
+			name: "overlay without release chart",
 			files: map[string]string{
 				"kustomization.yaml": "resources:\n  - ../../../../cluster_templates/hello_app_cluster\n",
 			},
 			expected: "",
 		},
 		{
-			name: "overlay patching in a release chart",
+			name: "JSON 6902 patch file",
 			files: map[string]string{
-				"kustomization.yaml": releaseOverlay,
+				"cluster.yaml": ociRepository("release-aws"),
+				"ops.yaml":     "- op: replace\n  path: /spec/name\n  value: release-aws\n",
 			},
 			expected: "release-aws",
 		},
 		{
-			name: "overlay patching in a release chart from a patch file",
+			name: "overlay of a cluster App patching in a release chart",
 			files: map[string]string{
-				"kustomization.yaml": "resources:\n  - ../template\npatches:\n  - path: patch_chart.yaml\n",
-				"patch_chart.yaml":   "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\nmetadata:\n  name: ${cluster_name}\nspec:\n  name: release-aws\n",
+				"kustomization.yaml":             releaseOverlay,
+				"../template/kustomization.yaml": "resources:\n  - cluster.yaml\n",
+				"../template/cluster.yaml":       app("cluster-aws"),
 			},
-			expected: "release-aws",
+			expectInvalid: true,
 		},
 		{
-			name: "overlay patching in a release chart from a JSON 6902 patch file",
+			name: "cluster App",
 			files: map[string]string{
-				"kustomization.yaml": "resources:\n  - ../template\npatches:\n  - path: ops.yaml\n    target:\n      kind: App\n",
-				"ops.yaml":           "- op: replace\n  path: /spec/name\n  value: release-aws\n",
+				"cluster.yaml": app("cluster-aws"),
 			},
-			expected: "release-aws",
+			expectInvalid: true,
 		},
 		{
-			name: "overlay patching in a cluster chart",
+			name: "release chart App from the test catalog",
 			files: map[string]string{
-				"kustomization.yaml": strings.ReplaceAll(releaseOverlay, "release-aws", "cluster-aws"),
+				"cluster.yaml": appFromCatalog("cluster-test", "release-aws"),
 			},
-			expected: "",
+			expectInvalid: true,
 		},
 		{
-			name: "overlay patching another kind",
+			name: "more than one release chart",
 			files: map[string]string{
-				"kustomization.yaml": strings.ReplaceAll(releaseOverlay, "kind: App", "kind: HelmRelease"),
-			},
-			expected: "",
-		},
-		{
-			name: "no cluster App",
-			files: map[string]string{
-				"apps.yaml": app("hello-world"),
-			},
-			expected: "",
-		},
-		{
-			name: "more than one cluster App",
-			files: map[string]string{
-				"a.yaml": app("cluster-aws"),
-				"b.yaml": app("release-aws"),
+				"a.yaml": ociRepository("release-aws"),
+				"b.yaml": ociRepository("release-azure"),
 			},
 			expectInvalid: true,
 		},

@@ -11,6 +11,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// fakeOCIClient is a minimal ociregistry.Client fake. tags holds the
+// "repository:tag" keys that exist.
+type fakeOCIClient struct {
+	tags map[string]bool
+}
+
+func (f *fakeOCIClient) ListTags(_ context.Context, _, _ string) ([]string, error) { return nil, nil }
+
+func (f *fakeOCIClient) TagExists(_ context.Context, _, repository, tag string) (bool, error) {
+	return f.tags[repository+":"+tag], nil
+}
+
+func (f *fakeOCIClient) GetManifestAnnotations(_ context.Context, _, _, _ string) (map[string]string, error) {
+	return nil, nil
+}
+
+func (f *fakeOCIClient) Close(_ context.Context) {}
+
 func Test_runner_run(t *testing.T) {
 	const (
 		clusterDir     = "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster"
@@ -18,45 +36,69 @@ func Test_runner_run(t *testing.T) {
 	)
 
 	testCases := []struct {
-		name              string
-		base              string
-		clusterUserConfig string
-		expectInvalid     string
-		expectStderr      string
-		expectUserConfig  []string
+		name               string
+		base               string
+		release            string
+		clusterUserConfig  string
+		expectInvalidFlags string
+		expectInvalid      string
+		expectStderr       string
+		expectUserConfig   bool
 	}{
 		{
-			name:          "missing base",
-			base:          "bases/nope",
-			expectInvalid: `--base "bases/nope" not found under "/repo"`,
+			name:               "missing base",
+			base:               "bases/nope",
+			expectInvalidFlags: `--base "bases/nope" not found under "/repo"`,
 		},
 		{
-			name:         "overlay base",
-			base:         "bases/overlay",
-			expectStderr: "Set the release in the base's values.",
+			name: "overlay base",
+			base: "bases/overlay",
 		},
 		{
-			name:              "overlay base with user config",
-			base:              "bases/overlay",
+			name:               "overlay base with a release that is not published",
+			base:               "bases/overlay",
+			release:            "36.0.0-test",
+			expectInvalidFlags: "--release 36.0.0-test is not published as a release-aws chart",
+		},
+		{
+			name:              "base without release chart with user config",
+			base:              "bases/remote",
 			clusterUserConfig: "/values.yaml",
-			expectStderr:      "they must set global.release.version themselves",
-			expectUserConfig:  []string{"testKey: testValue"},
+			expectStderr:      "is not checked against the gsoci.azurecr.io registry",
+			expectUserConfig:  true,
 		},
 		{
-			name: "release overlay base",
-			base: "bases/release",
-		},
-		{
-			name:              "release overlay base with user config",
-			base:              "bases/release",
-			clusterUserConfig: "/values.yaml",
-			expectUserConfig:  []string{"testKey: testValue"},
-		},
-		{
-			name:              "cluster chart base with user config",
+			name:              "release chart base with user config",
 			base:              "bases/capa",
 			clusterUserConfig: "/values.yaml",
-			expectUserConfig:  []string{"testKey: testValue", "version: 36.1.0"},
+			expectUserConfig:  true,
+		},
+		{
+			name:    "release with v prefix",
+			base:    "bases/capa",
+			release: "v36.1.0",
+		},
+		{
+			name:               "release not published",
+			base:               "bases/capa",
+			release:            "36.0.0-test",
+			expectInvalidFlags: "--release 36.0.0-test is not published as a release-aws chart",
+		},
+		{
+			name:               "vSphere release before the first HelmRelease one",
+			base:               "bases/vsphere",
+			release:            "36.0.0",
+			expectInvalidFlags: "the release-vsphere chart needs at least 36.1.0",
+		},
+		{
+			name:          "cluster App base",
+			base:          "bases/app",
+			expectInvalid: "kubectl-gs no longer supports",
+		},
+		{
+			name:          "release overlay of a cluster App base",
+			base:          "bases/release",
+			expectInvalid: "kubectl-gs no longer supports",
 		},
 	}
 
@@ -64,9 +106,12 @@ func Test_runner_run(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			seed := map[string]string{
-				"/repo/bases/capa/cluster.yaml":          app("cluster-aws"),
+				"/repo/bases/app/cluster.yaml":           app("cluster-aws"),
+				"/repo/bases/capa/cluster.yaml":          ociRepository("release-aws"),
+				"/repo/bases/vsphere/cluster.yaml":       ociRepository("release-vsphere"),
 				"/repo/bases/overlay/kustomization.yaml": "resources:\n  - ../capa\n",
-				"/repo/bases/release/kustomization.yaml": releaseOverlay,
+				"/repo/bases/remote/kustomization.yaml":  "resources:\n  - github.com/example/bases/capa\n",
+				"/repo/bases/release/kustomization.yaml": strings.Replace(releaseOverlay, "../template", "../app", 1),
 				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources: []\n",
 				"/values.yaml": "testKey: testValue\n",
 			}
@@ -77,6 +122,11 @@ func Test_runner_run(t *testing.T) {
 				}
 			}
 
+			release := tc.release
+			if release == "" {
+				release = "36.1.0"
+			}
+
 			var stderr bytes.Buffer
 			r := &runner{
 				flag: &flag{
@@ -85,11 +135,15 @@ func Test_runner_run(t *testing.T) {
 					ManagementCluster: "demomc",
 					Name:              "demowc",
 					Organization:      "demoorg",
-					Release:           "36.1.0",
+					Release:           release,
 					RepositoryName:    "gitops-demo",
 					SkipMAPI:          true,
 				},
-				fs:     fs,
+				fs: fs,
+				ociClient: &fakeOCIClient{tags: map[string]bool{
+					"charts/giantswarm/release-aws:36.1.0":     true,
+					"charts/giantswarm/release-vsphere:36.0.0": true,
+				}},
 				stderr: &stderr,
 				stdout: &bytes.Buffer{},
 			}
@@ -100,12 +154,16 @@ func Test_runner_run(t *testing.T) {
 			parent.AddCommand(cmd)
 
 			err := r.run(context.Background(), cmd, nil)
-			if tc.expectInvalid != "" {
-				if microerror.Cause(err) != invalidFlagsError {
-					t.Fatalf("expected invalid flags error, got: %v", err)
+			if tc.expectInvalidFlags != "" || tc.expectInvalid != "" {
+				expectedErr, expectedMsg := invalidFlagsError, tc.expectInvalidFlags
+				if tc.expectInvalid != "" {
+					expectedErr, expectedMsg = invalidConfigError, tc.expectInvalid
 				}
-				if !strings.Contains(err.Error(), tc.expectInvalid) {
-					t.Fatalf("expected error %q to contain %q", err.Error(), tc.expectInvalid)
+				if microerror.Cause(err) != expectedErr {
+					t.Fatalf("expected %s, got: %v", expectedErr.Kind, err)
+				}
+				if !strings.Contains(err.Error(), expectedMsg) {
+					t.Fatalf("expected error %q to contain %q", err.Error(), expectedMsg)
 				}
 				return
 			}
@@ -121,7 +179,7 @@ func Test_runner_run(t *testing.T) {
 			}
 
 			userConfig, err := afero.ReadFile(fs, userConfigFile)
-			if len(tc.expectUserConfig) == 0 {
+			if !tc.expectUserConfig {
 				if err == nil {
 					t.Fatalf("expected no %s, got:\n%s", userConfigFile, userConfig)
 				}
@@ -130,12 +188,10 @@ func Test_runner_run(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			for _, s := range tc.expectUserConfig {
-				if !strings.Contains(string(userConfig), s) {
-					t.Errorf("expected %q in the user config, got:\n%s", s, userConfig)
-				}
+			if !strings.Contains(string(userConfig), "testKey: testValue") {
+				t.Errorf("expected the user config, got:\n%s", userConfig)
 			}
-			if len(tc.expectUserConfig) == 1 && strings.Contains(string(userConfig), "release") {
+			if strings.Contains(string(userConfig), "release") {
 				t.Errorf("expected the user config without a release, got:\n%s", userConfig)
 			}
 		})

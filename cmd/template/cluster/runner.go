@@ -135,8 +135,6 @@ func (r *runner) run(ctx context.Context, client k8sclient.Interface) error {
 // `aws-35.0.0` named `aws-35.0.0-andreas`). For those, no release-<provider>
 // chart exists and we have to fall back to the cluster-<provider> chart, which
 // resolves the Release CR at runtime.
-var minVsphereReleaseChartVersion = semver.MustParse("36.1.0")
-
 func (r *runner) useReleaseChart(ctx context.Context, config common.ClusterConfig) bool {
 	if !common.IsReleaseVersion(config.ReleaseVersion) {
 		return false
@@ -156,8 +154,8 @@ func (r *runner) useReleaseChart(ctx context.Context, config common.ClusterConfi
 	// Older vSphere releases bundle a cluster-vsphere chart that puts
 	// .Chart.Version into labels, which breaks as a HelmRelease
 	// (giantswarm/cluster-vsphere#556, first in v36.1.0).
-	if r.flag.Provider == key.ProviderVSphere && semver.MustParse(config.ReleaseVersion).LessThan(minVsphereReleaseChartVersion) {
-		r.warnf("Warning: the %s chart cannot be installed as a HelmRelease before %s, using the %s chart instead.\n", releaseChart, minVsphereReleaseChartVersion, clusterChart)
+	if r.flag.Provider == key.ProviderVSphere && semver.MustParse(config.ReleaseVersion).LessThan(common.MinVsphereReleaseChartVersion) {
+		r.warnf("Warning: the %s chart cannot be installed as a HelmRelease before %s, using the %s chart instead.\n", releaseChart, common.MinVsphereReleaseChartVersion, clusterChart)
 		return false
 	}
 

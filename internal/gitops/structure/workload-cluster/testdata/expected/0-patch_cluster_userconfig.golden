@@ -1,10 +1,6 @@
-apiVersion: application.giantswarm.io/v1alpha1
-kind: App
-metadata:
-  name: ${cluster_name}
-  namespace: org-${organization}
-spec:
-  userConfig:
-    configMap:
-      name: demowc-cluster-userconfig
-      namespace: org-demoorg
+- op: add
+  path: /spec/valuesFrom/-
+  value:
+    kind: ConfigMap
+    name: demowc-cluster-userconfig
+    valuesKey: values

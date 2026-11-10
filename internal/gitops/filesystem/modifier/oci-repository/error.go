@@ -1,4 +1,4 @@
-package wcluster
+package ocirepo
 
 import "github.com/giantswarm/microerror"
 

@@ -8,23 +8,28 @@ import (
 	"strconv"
 	"strings"
 
+	semver "github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
+	clustercommon "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
+	clusterprovider "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	structure "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/workload-cluster"
 	commonkey "github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/ociregistry"
 )
 
 type runner struct {
-	flag   *flag
-	logger micrologger.Logger
-	fs     afero.Fs
-	stdout io.Writer
-	stderr io.Writer
+	flag      *flag
+	logger    micrologger.Logger
+	fs        afero.Fs
+	ociClient ociregistry.Client
+	stdout    io.Writer
+	stderr    io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -47,8 +52,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 
 	config := common.StructureConfig{
-		ClusterBase:       r.flag.Base,
-		Release:           r.flag.Release,
+		ClusterBase: r.flag.Base,
+		// Release charts are tagged without the `v` prefix.
+		Release:           strings.TrimPrefix(r.flag.Release, "v"),
 		ManagementCluster: r.flag.ManagementCluster,
 		WorkloadCluster:   r.flag.Name,
 		Organization:      r.flag.Organization,
@@ -72,15 +78,16 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			return microerror.Maskf(invalidFlagsError, "--%s %q not found under %q", flagBase, r.flag.Base, localPath)
 		}
 
-		config.ClusterChart, err = clusterChartName(r.fs, baseDir)
+		chart, err := clusterChartName(r.fs, baseDir)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		if config.ClusterChart == "" && r.flag.Release != "" {
-			if r.flag.ClusterUserConfig != "" {
-				fmt.Fprintf(r.stderr, "Base %q holds no cluster App, so --%s is only set as the `release` variable of the Flux Kustomization. The values from --%s replace the base's user config, so they must set global.release.version themselves.\n", r.flag.Base, flagRelease, flagClusterUserConfig)
-			} else {
-				fmt.Fprintf(r.stderr, "Base %q holds no cluster App, so --%s is only set as the `release` variable of the Flux Kustomization. Set the release in the base's values.\n", r.flag.Base, flagRelease)
+		if chart == "" {
+			_, _ = fmt.Fprintf(r.stderr, "Base %q holds no release chart, so --%s is not checked against the %s registry.\n", r.flag.Base, flagRelease, clustercommon.GSOCIRegistry)
+		} else {
+			err = r.checkReleaseChart(ctx, chart, config.Release)
+			if err != nil {
+				return microerror.Mask(err)
 			}
 		}
 	}
@@ -117,6 +124,37 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	err = creator.Create()
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+// checkReleaseChart fails when the release chart can't deploy the release,
+// because the chart isn't published for it or can't run as a HelmRelease.
+func (r *runner) checkReleaseChart(ctx context.Context, chart, release string) error {
+	version, err := semver.NewVersion(release)
+	if err != nil {
+		return microerror.Maskf(invalidFlagsError, "--%s %q is not a valid version: %s", flagRelease, release, err)
+	}
+	if chart == clusterprovider.ReleaseVsphereRepoName && version.LessThan(clustercommon.MinVsphereReleaseChartVersion) {
+		return microerror.Maskf(invalidFlagsError, "--%s %s can't be deployed as a HelmRelease, the %s chart needs at least %s", flagRelease, release, chart, clustercommon.MinVsphereReleaseChartVersion)
+	}
+
+	ociClient := r.ociClient
+	if ociClient == nil {
+		ociClient, err = ociregistry.NewClient(ociregistry.ClientOptions{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		defer ociClient.Close(ctx)
+	}
+
+	available, err := clustercommon.ReleaseChartAvailable(ctx, ociClient, chart, release)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if !available {
+		return microerror.Maskf(invalidFlagsError, "--%s %s is not published as a %s chart in the %s registry", flagRelease, release, chart, clustercommon.GSOCIRegistry)
 	}
 
 	return nil

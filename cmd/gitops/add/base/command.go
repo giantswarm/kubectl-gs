@@ -22,6 +22,9 @@ const (
 base \
 --provider <provider>
 
+The base deploys the cluster as a Flux HelmRelease of the release-<provider>
+chart. Its version is the ${release} variable, which ` + "`kubectl gs gitops add workload-cluster --release`" + ` sets.
+
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`
 

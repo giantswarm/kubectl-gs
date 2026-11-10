@@ -11,17 +11,20 @@ import (
 type StructureConfig struct {
 	App                    string
 	AppBase                string
-	AppCatalog             string
 	AppInstallTimeout      *metav1.Duration
 	AppName                string
 	AppNamespace           string
+	AppOCIURLPrefix        string
 	AppRollbackTimeout     *metav1.Duration
 	AppUninstallTimeout    *metav1.Duration
 	AppUpgradeTimeout      *metav1.Duration
 	AppUserValuesConfigMap string
 	AppUserValuesSecret    string
 	AppVersion             string
-	AppVersionRepository   string
+	AppVersionRange        string
+	// AppResources holds the OCIRepository and HelmRelease of the app, when
+	// it doesn't come from a base.
+	AppResources AppResources
 
 	Provider             string
 	ClusterBaseTemplates ClusterBaseTemplates
@@ -30,11 +33,6 @@ type StructureConfig struct {
 	Release           string
 	ClusterUserConfig string
 	InCluster         string
-
-	// ClusterChart is the chart of the base's cluster App, for example
-	// cluster-aws or release-aws. It is empty when the base holds no cluster
-	// App itself, for example an overlay of another base.
-	ClusterChart string
 
 	EncryptionKeyPair encryption.KeyPair
 	EncryptionTarget  string
@@ -52,9 +50,15 @@ type StructureConfig struct {
 	AzureSubscriptionID string
 }
 
+type AppResources struct {
+	HelmRelease   string
+	OCIRepository string
+}
+
 type ClusterBaseTemplates struct {
-	ClusterAppCr  string
-	ClusterValues string
+	// ClusterResources holds the OCIRepository and HelmRelease of the cluster.
+	ClusterResources string
+	ClusterValues    string
 }
 
 type Template struct {

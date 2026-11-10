@@ -123,6 +123,55 @@ func Test_Adopt_StampsCurrentVersion(t *testing.T) {
 	}
 }
 
+func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
+	fs := fixtureRepo(t)
+
+	app := "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n"
+	files := map[string]string{
+		"bases/clusters/capa/template/kustomization.yaml":                                                             "resources:\n  - cluster.yaml\n",
+		"bases/clusters/capa/template/cluster.yaml":                                                                   app,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world/appcr.yaml":       app,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-flux/helm-release.yaml": "apiVersion: helm.toolkit.fluxcd.io/v2\nkind: HelmRelease\n",
+		// The user config patch kubectl-gs generated before version 2, left
+		// behind after the cluster App moved to a HelmRelease.
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc/cluster/kustomization.yaml":            "patches:\n  - path: patch_cluster_userconfig.yaml\nresources: []\n",
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc/cluster/patch_cluster_userconfig.yaml": app,
+	}
+	for path, data := range files {
+		err := fs.WriteFile(filepath.Join(testRepo, path), []byte(data), 0644)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+	}
+
+	result, err := Adopt(fs, testRepo)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	got := map[string]int{}
+	for _, l := range result.Metadata.Layers {
+		got[l.Path] = l.StructureVersion
+	}
+	expected := map[string]int{
+		"bases/clusters/capa/template":                                                                          1,
+		"management-clusters/demomc":                                                                            StructureVersion,
+		"management-clusters/demomc/organizations/demoorg":                                                      StructureVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc":                             StructureVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world":       StructureVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/ingress-from-base": StructureVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc":                             1,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-flux":             StructureVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world":            1,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc":                            1,
+		"management-clusters/demomc/organizations/otherorg":                                                     StructureVersion,
+		"management-clusters/demomc/organizations/otherorg/workload-clusters/otherwc":                           StructureVersion,
+	}
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatalf("unexpected versions (-want +got):\n%s", diff)
+	}
+}
+
 func Test_Adopt_EmptyRepository(t *testing.T) {
 	fs := &afero.Afero{Fs: afero.NewMemMapFs()}
 

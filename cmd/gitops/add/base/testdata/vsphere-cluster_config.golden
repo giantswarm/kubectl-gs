@@ -1,0 +1,23 @@
+global:
+  connectivity:
+    baseDomain: test.gigantic.io
+    network:
+      controlPlaneEndpoint:
+        host: ""
+        port: 6443
+      loadBalancers: {}
+  controlPlane:
+    machineTemplate:
+      cloneMode: linkedClone
+      network:
+        devices:
+        - dhcp4: true
+  metadata:
+    name: ${cluster_name}
+    organization: ${organization}
+  nodePools:
+    worker:
+      cloneMode: linkedClone
+      network:
+        devices:
+        - dhcp4: true
