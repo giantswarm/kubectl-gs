@@ -8,7 +8,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 	apiyaml "k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/appcr"
