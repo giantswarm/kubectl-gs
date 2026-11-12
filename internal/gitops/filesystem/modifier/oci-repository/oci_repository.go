@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/giantswarm/microerror"
-	"go.yaml.in/yaml/v3"
+	"go.yaml.in/yaml/v4"
 )
 
 // SemverModifier makes an OCIRepository follow a semver range, so Flux
