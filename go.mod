@@ -28,7 +28,7 @@ require (
 	github.com/giantswarm/organization-operator v1.6.4
 	github.com/giantswarm/pagekit v0.3.8
 	github.com/giantswarm/releases/sdk v0.13.0
-	github.com/giantswarm/telemetrydeck-go v0.3.18
+	github.com/giantswarm/telemetrydeck-go v0.3.19
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/pkg/errors v0.9.1
@@ -43,9 +43,9 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.12.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.yaml.in/yaml/v3 v3.0.5
+	go.yaml.in/yaml/v3 v3.0.6
 	go.yaml.in/yaml/v4 v4.0.0
-	golang.org/x/oauth2 v0.37.0
+	golang.org/x/oauth2 v0.38.0
 	golang.org/x/term v0.48.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gotest.tools/v3 v3.5.2
@@ -228,11 +228,12 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.47.0 // indirect
 	go.opentelemetry.io/otel/trace v1.47.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/crypto v0.59.0 // indirect
+	golang.org/x/crypto/openpgp v0.1.0-deprecated // indirect
 	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/api v0.289.0 // indirect
 	google.golang.org/genproto v0.0.0-20260720171339-e059f2f05d78 // indirect
@@ -261,7 +262,7 @@ replace (
 	github.com/hashicorp/vault/api => github.com/hashicorp/vault/api v1.23.0
 	github.com/yuin/goldmark => github.com/yuin/goldmark v1.8.2 // Fix CVE: force fixed version of transitive dep
 	go.mozilla.org/sops/v3 => github.com/getsops/sops/v3 v3.13.3
-	golang.org/x/crypto => golang.org/x/crypto v0.58.0
+	golang.org/x/crypto => golang.org/x/crypto v0.59.0
 	golang.org/x/text => golang.org/x/text v0.44.0
 )
 
