@@ -63,7 +63,6 @@ spec:
   install:
     remediation:
       remediateLastFailure: false
-      retries: 10
   interval: 5m0s
   releaseName: test-capvcd-flux
   serviceAccountName: automation
