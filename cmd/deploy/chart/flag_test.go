@@ -152,6 +152,32 @@ func TestFlagValidate(t *testing.T) {
 			errMsg:  "valid semver",
 		},
 		{
+			name: "version without patch is invalid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Version:      "1.2",
+			},
+			wantErr: true,
+			errMsg:  "valid semver",
+		},
+		{
+			name: "pre-release version is valid",
+			flag: flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Version:      "6.1.1-ra1067419t20261116095528h3886429",
+			},
+		},
+		{
 			name: "version with v prefix is valid",
 			flag: flag{
 				ChartName:    "hello-world-app",

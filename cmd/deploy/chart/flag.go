@@ -2,17 +2,14 @@ package chart
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 )
-
-// semverRe matches a basic semver string like "1.2.3" or "v1.2.3".
-var semverRe = regexp.MustCompile(`^v?\d+\.\d+\.\d+$`)
 
 const (
 	flagChartName         = "chart-name"
@@ -112,8 +109,12 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNS)
 	}
 
-	if f.Version != "" && !semverRe.MatchString(f.Version) {
-		return microerror.Maskf(invalidFlagError, "--%s must be a valid semver version (e.g. 1.2.3), got %q", flagVersion, f.Version)
+	if f.Version != "" {
+		// Accept pre-release versions such as test catalog builds (`1.2.4-r<hash>t<timestamp>h<sha>`)
+		_, err := semver.StrictNewVersion(strings.TrimPrefix(f.Version, "v"))
+		if err != nil {
+			return microerror.Maskf(invalidFlagError, "--%s must be a valid semver version (e.g. 1.2.3), got %q", flagVersion, f.Version)
+		}
 	}
 
 	if f.AutoUpgrade != "" {
