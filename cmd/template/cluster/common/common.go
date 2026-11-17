@@ -222,8 +222,11 @@ func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMap
 		ManagementCluster:  true,
 		ServiceAccountName: "automation",
 		StorageNamespace:   namespace,
+		// Flux remediates a failed install by uninstalling it, which deletes the
+		// cluster. Keep a failed install failed instead.
 		InstallRemediation: &deploychart.RemediationPolicy{
-			Retries: 10,
+			Retries:              0,
+			RemediateLastFailure: false,
 		},
 		UpgradeRemediation: &deploychart.RemediationPolicy{
 			Retries:              10,
