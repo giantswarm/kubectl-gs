@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"strings"
 	"testing"
@@ -13,6 +14,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
+
+	"github.com/giantswarm/kubectl-gs/v6/pkg/structuredauth"
 )
 
 // newKubeadmControlPlane returns a KubeadmControlPlane whose API server
@@ -57,6 +60,101 @@ func dexArgs() []interface{} {
 	}
 }
 
+const testAuthConfigPath = structuredauth.ConfigPath
+
+// testDexIssuer is the management cluster's Dex as the cluster chart renders
+// it from global.controlPlane.oidc.
+const testDexIssuer = `  - issuer:
+      url: "https://dex.my-mc.example.com"
+      audiences:
+        - "dex-k8s-authenticator"
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: ""
+      groups:
+        claim: "groups"
+        prefix: ""
+`
+
+// testGitHubActionsIssuer is a structuredAuthentication.issuers entry the
+// workload cluster's OIDC values cannot express.
+const testGitHubActionsIssuer = `  - issuer:
+      url: "https://token.actions.githubusercontent.com"
+      audiences:
+        - "my-mc"
+      audienceMatchPolicy: "MatchAny"
+    claimValidationRules:
+      - 
+        
+        expression: "claims.repository == 'acme/repo'"
+        message: "not acme/repo"
+    claimMappings:
+
+      username:
+        expression: "'github.com/' + claims.actor"
+`
+
+// testOtherIssuer is a second issuer the workload cluster's OIDC values can
+// express.
+const testOtherIssuer = `  - issuer:
+      url: "https://login.example.com/tenant"
+      audiences:
+        - "first-client"
+        - "second-client"
+      certificateAuthority: |
+        -----BEGIN CERTIFICATE-----
+        test
+        -----END CERTIFICATE-----
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: ""
+`
+
+// authConfig returns an AuthenticationConfiguration with the given issuers,
+// in order.
+func authConfig(issuers ...string) string {
+	return "apiVersion: apiserver.config.k8s.io/v1\nkind: AuthenticationConfiguration\njwt:\n" + strings.Join(issuers, "")
+}
+
+// testAuthConfig is the AuthenticationConfiguration the cluster chart renders
+// with structured authentication: the legacy Dex issuer first, then the
+// structuredAuthentication.issuers.
+var testAuthConfig = authConfig(testDexIssuer, testGitHubActionsIssuer)
+
+// structuredKCP returns a management cluster KubeadmControlPlane with
+// structured authentication and the given AuthenticationConfiguration.
+func structuredKCP(config string) *unstructured.Unstructured {
+	return withFiles(newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs()), file(testAuthConfigPath, "", config))
+}
+
+// structuredAuthArgs are the API server extra arguments with structured
+// authentication: no oidc-* argument.
+func structuredAuthArgs() []interface{} {
+	return []interface{}{
+		arg("audit-log-maxage", "30"),
+		arg("authentication-config", testAuthConfigPath),
+	}
+}
+
+// withFiles sets the KubeadmControlPlane's kubeadmConfigSpec.files.
+func withFiles(kcp *unstructured.Unstructured, files ...interface{}) *unstructured.Unstructured {
+	spec := kcp.Object["spec"].(map[string]interface{})["kubeadmConfigSpec"].(map[string]interface{})
+	spec["files"] = files
+	return kcp
+}
+
+func file(path, encoding, content string) interface{} {
+	f := map[string]interface{}{"path": path, "content": content}
+	if encoding != "" {
+		f["encoding"] = encoding
+	}
+	return f
+}
+
 var dexValues = OIDCValues{
 	IssuerURL:     testIssuerURL,
 	ClientID:      testClientID,
@@ -77,6 +175,7 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 		objects        []client.Object
 		interceptor    interceptor.Funcs
 		mcName         string
+		clientID       string
 		expectedValues OIDCValues
 		expectedError  string
 		expectedCause  func(error) bool
@@ -154,13 +253,90 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 			// The no-match error stays in the chain for the login hint.
 			expectedCause: meta.IsNoMatchError,
 		},
+		{
+			name: "case 9: structured authentication, base64-encoded file",
+			objects: []client.Object{withFiles(
+				newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs()),
+				file("/etc/kubernetes/policies/audit-policy.yaml", "base64", base64.StdEncoding.EncodeToString([]byte("kind: Policy"))),
+				file(testAuthConfigPath, "base64", base64.StdEncoding.EncodeToString([]byte(testAuthConfig))),
+			)},
+			expectedValues: dexValues,
+		},
+		{
+			name:           "case 10: structured authentication, plain file",
+			objects:        []client.Object{structuredKCP(testAuthConfig)},
+			expectedValues: dexValues,
+		},
+		{
+			name:          "case 11: structured authentication without the file",
+			objects:       []client.Object{newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs())},
+			expectedError: "sets no JWT issuer in " + testAuthConfigPath,
+		},
+		{
+			name:          "case 12: structured authentication without a JWT issuer",
+			objects:       []client.Object{structuredKCP(authConfig())},
+			expectedError: "sets no JWT issuer in " + testAuthConfigPath,
+		},
+		{
+			name: "case 13: the client ID of an issuer that cannot be copied keeps the only one that can",
+			// The caller then overrides Dex's client ID with the flag, as
+			// with a management cluster that uses the oidc-* arguments.
+			objects:        []client.Object{structuredKCP(testAuthConfig)},
+			clientID:       "my-mc",
+			expectedValues: dexValues,
+		},
+		{
+			name:          "case 14: no issuer can be copied",
+			objects:       []client.Object{structuredKCP(authConfig(testGitHubActionsIssuer))},
+			expectedError: "no JWT issuer can be copied to the workload cluster's OIDC settings: https://token.actions.githubusercontent.com (claim validation rules, username CEL expression)",
+		},
+		{
+			name: "case 15: oidc-* arguments take precedence over the file",
+			objects: []client.Object{withFiles(
+				newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", dexArgs()),
+				file(testAuthConfigPath, "", authConfig(testOtherIssuer)),
+			)},
+			expectedValues: dexValues,
+		},
+		{
+			name: "case 16: the file without the authentication-config argument",
+			// The API server does not load it, e.g. structured authentication
+			// enabled below Kubernetes 1.34.
+			objects: []client.Object{withFiles(
+				newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", []interface{}{}),
+				file(testAuthConfigPath, "", testAuthConfig),
+			)},
+			expectedError: "sets no oidc-issuer-url or oidc-client-id",
+		},
+		{
+			name:          "case 17: several issuers can be copied and no client ID",
+			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testGitHubActionsIssuer, testOtherIssuer))},
+			expectedError: "2 JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: https://dex.my-mc.example.com (audiences dex-k8s-authenticator); https://login.example.com/tenant (audiences first-client, second-client)",
+		},
+		{
+			name:     "case 18: several issuers can be copied, selected by any audience, with its CA",
+			objects:  []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
+			clientID: "second-client",
+			expectedValues: OIDCValues{
+				IssuerURL:     "https://login.example.com/tenant",
+				CAPem:         "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----\n",
+				ClientID:      "first-client",
+				UsernameClaim: "email",
+			},
+		},
+		{
+			name:          "case 19: several issuers can be copied and no audience matches the client ID",
+			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
+			clientID:      "unknown",
+			expectedError: "select one by its audience with --oidc-client-id",
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrlClient := fake.NewClientBuilder().WithObjects(tc.objects...).WithInterceptorFuncs(tc.interceptor).Build()
 
-			values, err := ManagementClusterOIDC(context.Background(), ctrlClient, tc.mcName)
+			values, err := ManagementClusterOIDC(context.Background(), ctrlClient, tc.mcName, tc.clientID)
 			if tc.expectedError != "" {
 				if err == nil || !strings.Contains(err.Error(), tc.expectedError) {
 					t.Fatalf("expected error containing %q, got %v", tc.expectedError, err)
@@ -179,6 +355,46 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 
 			if diff := cmp.Diff(tc.expectedValues, values); diff != "" {
 				t.Fatalf("values differ (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_valuesGaps(t *testing.T) {
+	email := structuredauth.ClaimMapping{Claim: "email"}
+
+	testCases := []struct {
+		name         string
+		issuer       structuredauth.Issuer
+		expectedGaps []string
+	}{
+		{
+			name:   "case 0: Dex as the cluster chart renders it",
+			issuer: structuredauth.Issuer{ClientID: "dex-k8s-authenticator", Username: email, Groups: structuredauth.ClaimMapping{Claim: "groups"}},
+		},
+		{
+			name:         "case 1: username claim other than email",
+			issuer:       structuredauth.Issuer{ClientID: "c", Username: structuredauth.ClaimMapping{Claim: "sub"}},
+			expectedGaps: []string{`username claim "sub" instead of email`},
+		},
+		{
+			name: "case 2: everything the values cannot express",
+			issuer: structuredauth.Issuer{
+				DiscoveryURL:         "https://discovery.example.com",
+				Username:             structuredauth.ClaimMapping{Claim: "email", Prefix: "oidc:"},
+				Groups:               structuredauth.ClaimMapping{Expression: "claims.roles"},
+				MapsUIDOrExtra:       true,
+				ClaimValidationRules: 1,
+				UserValidationRules:  1,
+			},
+			expectedGaps: []string{"no audience", "discovery URL", "claim validation rules", "user validation rules", "username prefix", "groups CEL expression", "uid or extra mappings"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if diff := cmp.Diff(tc.expectedGaps, valuesGaps(tc.issuer)); diff != "" {
+				t.Fatalf("gaps differ (-want +got):\n%s", diff)
 			}
 		})
 	}

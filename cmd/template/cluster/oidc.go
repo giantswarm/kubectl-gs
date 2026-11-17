@@ -47,7 +47,7 @@ func (r *runner) oidcValues(ctx context.Context, client k8sclient.Interface) (*c
 	}
 
 	if given.IssuerURL == "" {
-		mc, err := common.ManagementClusterOIDC(ctx, client.CtrlClient(), r.flag.ManagementCluster)
+		mc, err := common.ManagementClusterOIDC(ctx, client.CtrlClient(), r.flag.ManagementCluster, given.ClientID)
 		if err != nil {
 			if r.noKubeContext() {
 				err = fmt.Errorf("no kubeconfig context is selected: %w", err)
@@ -58,6 +58,7 @@ func (r *runner) oidcValues(ctx context.Context, client k8sclient.Interface) (*c
 
 		values = common.OIDCValues{
 			IssuerURL:     mc.IssuerURL,
+			CAPem:         mc.CAPem,
 			ClientID:      common.DefaultTo(given.ClientID, mc.ClientID),
 			UsernameClaim: common.DefaultTo(given.UsernameClaim, mc.UsernameClaim),
 			GroupsClaim:   common.DefaultTo(given.GroupsClaim, mc.GroupsClaim),

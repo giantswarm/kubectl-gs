@@ -3,7 +3,6 @@ package login
 import (
 	"bufio"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -20,27 +19,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/v6/pkg/structuredauth"
 )
 
 // structuredAuthIssuer holds the selected issuer URL and client ID for the OIDC flow.
 type structuredAuthIssuer struct {
 	IssuerURL string
 	ClientID  string
-}
-
-// authenticationConfiguration mirrors the relevant parts of the Kubernetes
-// AuthenticationConfiguration API used in structured authentication.
-type authenticationConfiguration struct {
-	JWT []jwtAuthenticator `json:"jwt"`
-}
-
-type jwtAuthenticator struct {
-	Issuer jwtIssuer `json:"issuer"`
-}
-
-type jwtIssuer struct {
-	URL       string   `json:"url"`
-	Audiences []string `json:"audiences"`
 }
 
 // detectStructuredAuth determines whether a workload cluster uses Kubernetes
@@ -207,57 +193,19 @@ func fetchKubeadmControlPlane(ctx context.Context, k8sClient k8sclient.Interface
 // KubeadmControlPlane's files list. It looks for the auth-config.yaml file
 // and parses its content as an AuthenticationConfiguration.
 func parseAuthenticationConfig(kcp *unstructured.Unstructured) ([]structuredAuthIssuer, error) {
-	files, found, err := unstructured.NestedSlice(kcp.Object, "spec", "kubeadmConfigSpec", "files")
-	if err != nil || !found {
-		return nil, nil
+	found, err := structuredauth.Issuers(kcp)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	for _, f := range files {
-		fileMap, ok := f.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		path, ok := fileMap["path"].(string)
-		if !ok || path != "/etc/kubernetes/policies/auth-config.yaml" {
-			continue
-		}
-		content, ok := fileMap["content"].(string)
-		if !ok || content == "" {
-			continue
-		}
-
-		// Handle base64-encoded content (encoding field set to "base64").
-		if encoding, _ := fileMap["encoding"].(string); encoding == "base64" {
-			decoded, err := base64.StdEncoding.DecodeString(content)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-			content = string(decoded)
-		}
-
-		var authConfig authenticationConfiguration
-		if err := yaml.Unmarshal([]byte(content), &authConfig); err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		var issuers []structuredAuthIssuer
-		for _, jwt := range authConfig.JWT {
-			if jwt.Issuer.URL == "" {
-				continue
-			}
-			clientID := ""
-			if len(jwt.Issuer.Audiences) > 0 {
-				clientID = jwt.Issuer.Audiences[0]
-			}
-			issuers = append(issuers, structuredAuthIssuer{
-				IssuerURL: jwt.Issuer.URL,
-				ClientID:  clientID,
-			})
-		}
-		return issuers, nil
+	var issuers []structuredAuthIssuer
+	for _, iss := range found {
+		issuers = append(issuers, structuredAuthIssuer{
+			IssuerURL: iss.URL,
+			ClientID:  iss.ClientID,
+		})
 	}
-
-	return nil, nil
+	return issuers, nil
 }
 
 // readCAFile reads a PEM CA bundle from a path supplied by the user via the

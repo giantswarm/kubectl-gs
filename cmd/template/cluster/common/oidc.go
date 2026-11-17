@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -11,6 +13,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/kubectl-gs/v6/pkg/structuredauth"
 )
 
 // ManagementClusterNamespace holds the management cluster's own Cluster API
@@ -46,7 +50,12 @@ var kubeadmControlPlaneVersions = []string{"v1beta2", "v1beta1"}
 //
 // mcName names the management cluster. When it is empty, the only
 // KubeadmControlPlane in org-giantswarm is used.
-func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName string) (OIDCValues, error) {
+//
+// With structured authentication the issuers are in the
+// AuthenticationConfiguration file the authentication-config argument names,
+// instead of the oidc-* arguments; see selectIssuer for how clientID, when
+// given, selects one.
+func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName, clientID string) (OIDCValues, error) {
 	kcp, err := getManagementClusterControlPlane(ctx, ctrlClient, mcName)
 	if err != nil {
 		return OIDCValues{}, microerror.Mask(err)
@@ -63,12 +72,120 @@ func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName
 		UsernameClaim: args["oidc-username-claim"],
 		GroupsClaim:   args["oidc-groups-claim"],
 	}
-	if values.IssuerURL == "" || values.ClientID == "" {
+	if values.IssuerURL != "" && values.ClientID != "" {
+		return values, nil
+	}
+
+	path := args["authentication-config"]
+	if path == "" {
 		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q trusts no complete OIDC issuer: KubeadmControlPlane %s/%s sets no oidc-issuer-url or oidc-client-id",
 			ErrManagementClusterOIDC, kcp.GetName(), kcp.GetNamespace(), kcp.GetName())
 	}
 
-	return values, nil
+	issuers, err := structuredauth.IssuersAt(kcp, path)
+	if err != nil {
+		return OIDCValues{}, fmt.Errorf("%w: KubeadmControlPlane %s/%s: cannot read %s: %w",
+			ErrManagementClusterOIDC, kcp.GetNamespace(), kcp.GetName(), path, err)
+	}
+	if len(issuers) == 0 {
+		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q trusts no complete OIDC issuer: KubeadmControlPlane %s/%s sets no JWT issuer in %s",
+			ErrManagementClusterOIDC, kcp.GetName(), kcp.GetNamespace(), kcp.GetName(), path)
+	}
+
+	issuer, err := selectIssuer(issuers, clientID)
+	if err != nil {
+		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q: %s: %w", ErrManagementClusterOIDC, kcp.GetName(), path, err)
+	}
+
+	return OIDCValues{
+		IssuerURL:     issuer.URL,
+		CAPem:         issuer.CertificateAuthority,
+		ClientID:      issuer.ClientID,
+		UsernameClaim: issuer.Username.Claim,
+		GroupsClaim:   issuer.Groups.Claim,
+	}, nil
+}
+
+// selectIssuer picks the structured authentication issuer the workload
+// cluster trusts. Only issuers that the workload cluster's OIDC values express
+// exactly are eligible (see valuesGaps). With one eligible issuer, it is taken
+// whatever clientID is: clientID then only overrides its client ID, as with a
+// management cluster that uses the oidc-* arguments. With several, clientID
+// selects the one with that audience.
+func selectIssuer(issuers []structuredauth.Issuer, clientID string) (structuredauth.Issuer, error) {
+	var eligible []structuredauth.Issuer
+	var ineligible []string
+	for _, iss := range issuers {
+		if gaps := valuesGaps(iss); len(gaps) > 0 {
+			ineligible = append(ineligible, fmt.Sprintf("%s (%s)", iss.URL, strings.Join(gaps, ", ")))
+			continue
+		}
+		eligible = append(eligible, iss)
+	}
+
+	switch len(eligible) {
+	case 0:
+		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer can be copied to the workload cluster's OIDC settings: %s",
+			strings.Join(ineligible, "; "))
+	case 1:
+		return eligible[0], nil
+	}
+
+	var matching []structuredauth.Issuer
+	var available []string
+	for _, iss := range eligible {
+		if clientID != "" && slices.Contains(iss.Audiences, clientID) {
+			matching = append(matching, iss)
+		}
+		available = append(available, fmt.Sprintf("%s (audiences %s)", iss.URL, strings.Join(iss.Audiences, ", ")))
+	}
+	if len(matching) == 1 {
+		return matching[0], nil
+	}
+
+	return structuredauth.Issuer{}, fmt.Errorf("%d JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: %s",
+		len(eligible), strings.Join(available, "; "))
+}
+
+// valuesGaps lists what of the issuer the workload cluster's OIDC values
+// (global.controlPlane.oidc: issuer URL, CA, client ID, username and groups
+// claims, without prefixes) cannot express. Copying such an issuer would make
+// the workload cluster accept other tokens, or map them to other identities,
+// than the management cluster does.
+func valuesGaps(iss structuredauth.Issuer) []string {
+	var gaps []string
+	if iss.ClientID == "" {
+		gaps = append(gaps, "no audience")
+	}
+	if iss.DiscoveryURL != "" {
+		gaps = append(gaps, "discovery URL")
+	}
+	if iss.ClaimValidationRules > 0 {
+		gaps = append(gaps, "claim validation rules")
+	}
+	if iss.UserValidationRules > 0 {
+		gaps = append(gaps, "user validation rules")
+	}
+	if iss.Username.Expression != "" {
+		gaps = append(gaps, "username CEL expression")
+	} else if iss.Username.Claim != "email" {
+		// Without a prefix, the API server prefixes every username claim
+		// but email with the issuer URL.
+		gaps = append(gaps, fmt.Sprintf("username claim %q instead of email", iss.Username.Claim))
+	}
+	if iss.Username.Prefix != "" {
+		gaps = append(gaps, "username prefix")
+	}
+	if iss.Groups.Expression != "" {
+		gaps = append(gaps, "groups CEL expression")
+	}
+	if iss.Groups.Prefix != "" {
+		gaps = append(gaps, "groups prefix")
+	}
+	if iss.MapsUIDOrExtra {
+		gaps = append(gaps, "uid or extra mappings")
+	}
+	return gaps
 }
 
 func getManagementClusterControlPlane(ctx context.Context, ctrlClient client.Client, mcName string) (*unstructured.Unstructured, error) {
