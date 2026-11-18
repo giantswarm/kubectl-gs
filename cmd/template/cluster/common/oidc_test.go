@@ -296,12 +296,12 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 		{
 			name:          "case 11: structured authentication without the file",
 			objects:       []client.Object{newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs())},
-			expectedError: "sets no JWT issuer in " + testAuthConfigPath,
+			expectedError: "KubeadmControlPlane org-giantswarm/my-mc writes no JWT issuer inline to " + testAuthConfigPath,
 		},
 		{
 			name:          "case 12: structured authentication without a JWT issuer",
 			objects:       []client.Object{structuredKCP(authConfig())},
-			expectedError: "sets no JWT issuer in " + testAuthConfigPath,
+			expectedError: "KubeadmControlPlane org-giantswarm/my-mc writes no JWT issuer inline to " + testAuthConfigPath,
 		},
 		{
 			name:          "case 13: the client ID is the audience of an issuer that cannot be copied only",
@@ -338,13 +338,13 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 			expectedError: "2 JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: https://dex.my-mc.example.com (audiences dex-k8s-authenticator); https://login.example.com/tenant (audiences first-client, second-client)",
 		},
 		{
-			name:     "case 18: several issuers can be copied, selected by any audience, with its CA",
+			name:     "case 18: several issuers can be copied, selected by any audience, which becomes the client ID, with its CA",
 			objects:  []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
 			clientID: "second-client",
 			expectedValues: OIDCValues{
 				IssuerURL:     "https://login.example.com/tenant",
 				CAPem:         "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----\n",
-				ClientID:      "first-client",
+				ClientID:      "second-client",
 				UsernameClaim: "email",
 			},
 		},

@@ -88,8 +88,11 @@ func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName
 			ErrManagementClusterOIDC, kcp.GetNamespace(), kcp.GetName(), path, err)
 	}
 	if len(issuers) == 0 {
-		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q trusts no complete OIDC issuer: KubeadmControlPlane %s/%s sets no JWT issuer in %s",
-			ErrManagementClusterOIDC, kcp.GetName(), kcp.GetNamespace(), kcp.GetName(), path)
+		// Either the file is not written inline (e.g. it comes from a
+		// Secret) or it lists no issuer: the KubeadmControlPlane does not
+		// tell which issuers the API server trusts.
+		return OIDCValues{}, fmt.Errorf("%w: KubeadmControlPlane %s/%s writes no JWT issuer inline to %s, the file the API server's authentication-config argument names",
+			ErrManagementClusterOIDC, kcp.GetNamespace(), kcp.GetName(), path)
 	}
 
 	issuer, err := selectIssuer(issuers, clientID)
@@ -97,10 +100,16 @@ func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName
 		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q: %s: %w", ErrManagementClusterOIDC, kcp.GetName(), path, err)
 	}
 
+	// The client ID is the audience clientID selected the issuer by, or else
+	// the issuer's first audience.
+	if !slices.Contains(issuer.Audiences, clientID) {
+		clientID = issuer.Audiences[0]
+	}
+
 	return OIDCValues{
 		IssuerURL:     issuer.URL,
 		CAPem:         issuer.CertificateAuthority,
-		ClientID:      issuer.Audiences[0],
+		ClientID:      clientID,
 		UsernameClaim: issuer.Username.Claim,
 		GroupsClaim:   issuer.Groups.Claim,
 	}, nil
