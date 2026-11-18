@@ -54,7 +54,7 @@ var kubeadmControlPlaneVersions = []string{"v1beta2", "v1beta1"}
 // With structured authentication the issuers are in the
 // AuthenticationConfiguration file the authentication-config argument names,
 // instead of the oidc-* arguments; see selectIssuer for how clientID, when
-// given, selects one.
+// given, selects one or fails.
 func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName, clientID string) (OIDCValues, error) {
 	kcp, err := getManagementClusterControlPlane(ctx, ctrlClient, mcName)
 	if err != nil {
@@ -100,7 +100,7 @@ func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName
 	return OIDCValues{
 		IssuerURL:     issuer.URL,
 		CAPem:         issuer.CertificateAuthority,
-		ClientID:      issuer.ClientID,
+		ClientID:      issuer.Audiences[0],
 		UsernameClaim: issuer.Username.Claim,
 		GroupsClaim:   issuer.Groups.Claim,
 	}, nil
@@ -108,43 +108,62 @@ func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName
 
 // selectIssuer picks the structured authentication issuer the workload
 // cluster trusts. Only issuers that the workload cluster's OIDC values express
-// exactly are eligible (see valuesGaps). With one eligible issuer, it is taken
-// whatever clientID is: clientID then only overrides its client ID, as with a
-// management cluster that uses the oidc-* arguments. With several, clientID
-// selects the one with that audience.
+// exactly are eligible (see valuesGaps).
+//
+// A clientID that is an audience of issuers selects among them: it must name
+// exactly one eligible issuer, and naming only issuers that are not eligible
+// is an error. A clientID that is no issuer's audience only overrides the
+// client ID of the single eligible issuer, as with a management cluster that
+// uses the oidc-* arguments.
 func selectIssuer(issuers []structuredauth.Issuer, clientID string) (structuredauth.Issuer, error) {
-	var eligible []structuredauth.Issuer
-	var ineligible []string
+	var eligible, matching []structuredauth.Issuer
+	var ineligible, matchingIneligible []string
 	for _, iss := range issuers {
+		hasAudience := clientID != "" && slices.Contains(iss.Audiences, clientID)
 		if gaps := valuesGaps(iss); len(gaps) > 0 {
-			ineligible = append(ineligible, fmt.Sprintf("%s (%s)", iss.URL, strings.Join(gaps, ", ")))
+			gapsText := fmt.Sprintf("%s (%s)", iss.URL, strings.Join(gaps, ", "))
+			ineligible = append(ineligible, gapsText)
+			if hasAudience {
+				matchingIneligible = append(matchingIneligible, gapsText)
+			}
 			continue
 		}
 		eligible = append(eligible, iss)
-	}
-
-	switch len(eligible) {
-	case 0:
-		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer can be copied to the workload cluster's OIDC settings: %s",
-			strings.Join(ineligible, "; "))
-	case 1:
-		return eligible[0], nil
-	}
-
-	var matching []structuredauth.Issuer
-	var available []string
-	for _, iss := range eligible {
-		if clientID != "" && slices.Contains(iss.Audiences, clientID) {
+		if hasAudience {
 			matching = append(matching, iss)
 		}
-		available = append(available, fmt.Sprintf("%s (audiences %s)", iss.URL, strings.Join(iss.Audiences, ", ")))
-	}
-	if len(matching) == 1 {
-		return matching[0], nil
 	}
 
-	return structuredauth.Issuer{}, fmt.Errorf("%d JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: %s",
-		len(eligible), strings.Join(available, "; "))
+	switch {
+	case len(matching) == 1:
+		return matching[0], nil
+	case len(matching) > 1:
+		return structuredauth.Issuer{}, fmt.Errorf("%d JWT issuers that can be copied to the workload cluster's OIDC settings have audience %q: %s",
+			len(matching), clientID, audiencesText(matching))
+	case len(matchingIneligible) > 0:
+		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer with audience %q can be copied to the workload cluster's OIDC settings: %s",
+			clientID, strings.Join(matchingIneligible, "; "))
+	case len(eligible) == 0:
+		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer can be copied to the workload cluster's OIDC settings: %s",
+			strings.Join(ineligible, "; "))
+	case len(eligible) == 1:
+		return eligible[0], nil
+	case clientID != "":
+		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer has audience %q; %d can be copied to the workload cluster's OIDC settings, select one by its audience with --oidc-client-id: %s",
+			clientID, len(eligible), audiencesText(eligible))
+	default:
+		return structuredauth.Issuer{}, fmt.Errorf("%d JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: %s",
+			len(eligible), audiencesText(eligible))
+	}
+}
+
+// audiencesText lists the issuers with their audiences.
+func audiencesText(issuers []structuredauth.Issuer) string {
+	var texts []string
+	for _, iss := range issuers {
+		texts = append(texts, fmt.Sprintf("%s (audiences %s)", iss.URL, strings.Join(iss.Audiences, ", ")))
+	}
+	return strings.Join(texts, "; ")
 }
 
 // valuesGaps lists what of the issuer the workload cluster's OIDC values
@@ -154,11 +173,14 @@ func selectIssuer(issuers []structuredauth.Issuer, clientID string) (structureda
 // than the management cluster does.
 func valuesGaps(iss structuredauth.Issuer) []string {
 	var gaps []string
-	if iss.ClientID == "" {
+	if len(iss.Audiences) == 0 {
 		gaps = append(gaps, "no audience")
 	}
 	if iss.DiscoveryURL != "" {
 		gaps = append(gaps, "discovery URL")
+	}
+	if iss.EgressSelectorType != "" {
+		gaps = append(gaps, "egress selector type")
 	}
 	if iss.ClaimValidationRules > 0 {
 		gaps = append(gaps, "claim validation rules")
@@ -184,6 +206,11 @@ func valuesGaps(iss structuredauth.Issuer) []string {
 	}
 	if iss.MapsUIDOrExtra {
 		gaps = append(gaps, "uid or extra mappings")
+	}
+	if len(iss.UnknownFields) > 0 {
+		// A field kubectl-gs does not know may restrict which tokens the
+		// issuer accepts.
+		gaps = append(gaps, "unknown fields "+strings.Join(iss.UnknownFields, ", "))
 	}
 	return gaps
 }

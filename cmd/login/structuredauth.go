@@ -200,9 +200,14 @@ func parseAuthenticationConfig(kcp *unstructured.Unstructured) ([]structuredAuth
 
 	var issuers []structuredAuthIssuer
 	for _, iss := range found {
+		// Login uses the issuer's first audience as the client ID.
+		clientID := ""
+		if len(iss.Audiences) > 0 {
+			clientID = iss.Audiences[0]
+		}
 		issuers = append(issuers, structuredAuthIssuer{
 			IssuerURL: iss.URL,
-			ClientID:  iss.ClientID,
+			ClientID:  clientID,
 		})
 	}
 	return issuers, nil

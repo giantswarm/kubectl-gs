@@ -114,6 +114,32 @@ const testOtherIssuer = `  - issuer:
         prefix: ""
 `
 
+// testSharedAudienceIssuer is an issuer the workload cluster's OIDC values
+// can express, with an audience of testOtherIssuer.
+const testSharedAudienceIssuer = `  - issuer:
+      url: "https://login2.example.com/tenant"
+      audiences:
+        - "second-client"
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: ""
+`
+
+// testFutureIssuer is Dex-like, but with a field kubectl-gs does not know.
+const testFutureIssuer = `  - issuer:
+      url: "https://future.example.com"
+      audiences:
+        - "future-client"
+      requiredClaim: "x"
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: ""
+`
+
 // authConfig returns an AuthenticationConfiguration with the given issuers,
 // in order.
 func authConfig(issuers ...string) string {
@@ -278,12 +304,10 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 			expectedError: "sets no JWT issuer in " + testAuthConfigPath,
 		},
 		{
-			name: "case 13: the client ID of an issuer that cannot be copied keeps the only one that can",
-			// The caller then overrides Dex's client ID with the flag, as
-			// with a management cluster that uses the oidc-* arguments.
-			objects:        []client.Object{structuredKCP(testAuthConfig)},
-			clientID:       "my-mc",
-			expectedValues: dexValues,
+			name:          "case 13: the client ID is the audience of an issuer that cannot be copied only",
+			objects:       []client.Object{structuredKCP(testAuthConfig)},
+			clientID:      "my-mc",
+			expectedError: `no JWT issuer with audience "my-mc" can be copied to the workload cluster's OIDC settings: https://token.actions.githubusercontent.com (claim validation rules, username CEL expression)`,
 		},
 		{
 			name:          "case 14: no issuer can be copied",
@@ -328,7 +352,26 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 			name:          "case 19: several issuers can be copied and no audience matches the client ID",
 			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
 			clientID:      "unknown",
-			expectedError: "select one by its audience with --oidc-client-id",
+			expectedError: `no JWT issuer has audience "unknown"; 2 can be copied to the workload cluster's OIDC settings, select one by its audience with --oidc-client-id`,
+		},
+		{
+			name: "case 20: a client ID that is no issuer's audience keeps the only one that can be copied",
+			// The caller then overrides Dex's client ID with the flag, as
+			// with a management cluster that uses the oidc-* arguments.
+			objects:        []client.Object{structuredKCP(testAuthConfig)},
+			clientID:       "unknown",
+			expectedValues: dexValues,
+		},
+		{
+			name:          "case 21: the client ID is the audience of several issuers that can be copied",
+			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer, testSharedAudienceIssuer))},
+			clientID:      "second-client",
+			expectedError: `2 JWT issuers that can be copied to the workload cluster's OIDC settings have audience "second-client": https://login.example.com/tenant (audiences first-client, second-client); https://login2.example.com/tenant (audiences second-client)`,
+		},
+		{
+			name:          "case 22: an issuer with a field kubectl-gs does not know cannot be copied",
+			objects:       []client.Object{structuredKCP(authConfig(testFutureIssuer))},
+			expectedError: "no JWT issuer can be copied to the workload cluster's OIDC settings: https://future.example.com (unknown fields issuer.requiredClaim)",
 		},
 	}
 
@@ -370,24 +413,26 @@ func Test_valuesGaps(t *testing.T) {
 	}{
 		{
 			name:   "case 0: Dex as the cluster chart renders it",
-			issuer: structuredauth.Issuer{ClientID: "dex-k8s-authenticator", Username: email, Groups: structuredauth.ClaimMapping{Claim: "groups"}},
+			issuer: structuredauth.Issuer{Audiences: []string{"dex-k8s-authenticator"}, Username: email, Groups: structuredauth.ClaimMapping{Claim: "groups"}},
 		},
 		{
 			name:         "case 1: username claim other than email",
-			issuer:       structuredauth.Issuer{ClientID: "c", Username: structuredauth.ClaimMapping{Claim: "sub"}},
+			issuer:       structuredauth.Issuer{Audiences: []string{"c"}, Username: structuredauth.ClaimMapping{Claim: "sub"}},
 			expectedGaps: []string{`username claim "sub" instead of email`},
 		},
 		{
 			name: "case 2: everything the values cannot express",
 			issuer: structuredauth.Issuer{
 				DiscoveryURL:         "https://discovery.example.com",
+				EgressSelectorType:   "controlplane",
 				Username:             structuredauth.ClaimMapping{Claim: "email", Prefix: "oidc:"},
 				Groups:               structuredauth.ClaimMapping{Expression: "claims.roles"},
 				MapsUIDOrExtra:       true,
 				ClaimValidationRules: 1,
 				UserValidationRules:  1,
+				UnknownFields:        []string{"futureRules", "issuer.requiredClaim"},
 			},
-			expectedGaps: []string{"no audience", "discovery URL", "claim validation rules", "user validation rules", "username prefix", "groups CEL expression", "uid or extra mappings"},
+			expectedGaps: []string{"no audience", "discovery URL", "egress selector type", "claim validation rules", "user validation rules", "username prefix", "groups CEL expression", "uid or extra mappings", "unknown fields futureRules, issuer.requiredClaim"},
 		},
 	}
 

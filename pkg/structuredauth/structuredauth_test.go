@@ -61,19 +61,31 @@ jwt:
         - "skipped"
   - issuer:
       url: "https://no-audience.example.com"
+  - issuer:
+      url: "https://future.example.com"
+      audiences:
+        - "future"
+      egressSelectorType: "controlplane"
+      requiredClaim: "x"
+    claimMappings:
+      username:
+        claim: "email"
+        caseFold: true
+      roles:
+        claim: "roles"
+    futureRules:
+      - expression: "true"
 `
 
 var testIssuers = []Issuer{
 	{
 		URL:       "https://dex.my-mc.example.com",
-		ClientID:  "dex-k8s-authenticator",
 		Audiences: []string{"dex-k8s-authenticator"},
 		Username:  ClaimMapping{Claim: "email"},
 		Groups:    ClaimMapping{Claim: "groups"},
 	},
 	{
 		URL:                  "https://token.actions.githubusercontent.com",
-		ClientID:             "my-mc",
 		Audiences:            []string{"my-mc", "other"},
 		CertificateAuthority: "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----\n",
 		DiscoveryURL:         "https://discovery.example.com",
@@ -84,6 +96,13 @@ var testIssuers = []Issuer{
 		UserValidationRules:  1,
 	},
 	{URL: "https://no-audience.example.com"},
+	{
+		URL:                "https://future.example.com",
+		Audiences:          []string{"future"},
+		EgressSelectorType: "controlplane",
+		Username:           ClaimMapping{Claim: "email"},
+		UnknownFields:      []string{"futureRules", "claimMappings.roles", "claimMappings.username.caseFold", "issuer.requiredClaim"},
+	},
 }
 
 func file(path, encoding, content string) interface{} {
@@ -149,6 +168,11 @@ func Test_Issuers(t *testing.T) {
 		{
 			name:          "case 7: invalid YAML",
 			kcp:           kcpWithFiles(file(ConfigPath, "", "jwt: [")),
+			expectedError: true,
+		},
+		{
+			name:          "case 8: JWT authenticator that is not an object",
+			kcp:           kcpWithFiles(file(ConfigPath, "", "jwt:\n  - https://dex.my-mc.example.com\n")),
 			expectedError: true,
 		},
 	}

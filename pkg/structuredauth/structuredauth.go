@@ -5,6 +5,10 @@ package structuredauth
 
 import (
 	"encoding/base64"
+	"encoding/json"
+	"maps"
+	"slices"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -17,12 +21,11 @@ const ConfigPath = "/etc/kubernetes/policies/auth-config.yaml"
 
 // Issuer is one JWT authenticator of an AuthenticationConfiguration.
 type Issuer struct {
-	URL string
-	// ClientID is the issuer's first audience.
-	ClientID             string
+	URL                  string
 	Audiences            []string
 	CertificateAuthority string
 	DiscoveryURL         string
+	EgressSelectorType   string
 	Username             ClaimMapping
 	Groups               ClaimMapping
 	// MapsUIDOrExtra tells whether the issuer maps the user's UID or extra
@@ -30,6 +33,10 @@ type Issuer struct {
 	MapsUIDOrExtra       bool
 	ClaimValidationRules int
 	UserValidationRules  int
+	// UnknownFields lists, as dotted paths, the fields of the authenticator
+	// that knownFields does not list, e.g. ones a later Kubernetes version
+	// added.
+	UnknownFields []string
 }
 
 // ClaimMapping maps a token claim to a user attribute: either Claim with
@@ -43,7 +50,7 @@ type ClaimMapping struct {
 // authenticationConfiguration mirrors the relevant parts of the Kubernetes
 // AuthenticationConfiguration API.
 type authenticationConfiguration struct {
-	JWT []jwtAuthenticator `json:"jwt"`
+	JWT []json.RawMessage `json:"jwt"`
 }
 
 type jwtAuthenticator struct {
@@ -58,6 +65,7 @@ type jwtIssuer struct {
 	DiscoveryURL         string   `json:"discoveryURL"`
 	Audiences            []string `json:"audiences"`
 	CertificateAuthority string   `json:"certificateAuthority"`
+	EgressSelectorType   string   `json:"egressSelectorType"`
 }
 
 type claimMappings struct {
@@ -75,6 +83,18 @@ type claimMapping struct {
 
 // object is a JSON object whose content is not read.
 type object = map[string]interface{}
+
+// knownFields lists, per object of a JWT authenticator (as a dotted path from
+// the authenticator), the fields the AuthenticationConfiguration v1 API
+// defines. The content of the validation rules and of the uid and extra
+// mappings is not checked: Issuer only records whether they are set.
+var knownFields = map[string][]string{
+	"":                       {"issuer", "claimValidationRules", "claimMappings", "userValidationRules"},
+	"issuer":                 {"url", "discoveryURL", "certificateAuthority", "audiences", "audienceMatchPolicy", "egressSelectorType"},
+	"claimMappings":          {"username", "groups", "uid", "extra"},
+	"claimMappings.username": {"claim", "prefix", "expression"},
+	"claimMappings.groups":   {"claim", "prefix", "expression"},
+}
 
 // Issuers returns the JWT issuers of the AuthenticationConfiguration the
 // KubeadmControlPlane writes to ConfigPath. See IssuersAt.
@@ -124,29 +144,59 @@ func IssuersAt(kcp *unstructured.Unstructured, path string) ([]Issuer, error) {
 		}
 
 		var issuers []Issuer
-		for _, jwt := range authConfig.JWT {
+		for _, raw := range authConfig.JWT {
+			var jwt jwtAuthenticator
+			if err := json.Unmarshal(raw, &jwt); err != nil {
+				return nil, microerror.Mask(err)
+			}
 			if jwt.Issuer.URL == "" {
 				continue
 			}
-			clientID := ""
-			if len(jwt.Issuer.Audiences) > 0 {
-				clientID = jwt.Issuer.Audiences[0]
+			unknown, err := unknownFields(raw)
+			if err != nil {
+				return nil, microerror.Mask(err)
 			}
 			issuers = append(issuers, Issuer{
 				URL:                  jwt.Issuer.URL,
-				ClientID:             clientID,
 				Audiences:            jwt.Issuer.Audiences,
 				CertificateAuthority: jwt.Issuer.CertificateAuthority,
 				DiscoveryURL:         jwt.Issuer.DiscoveryURL,
+				EgressSelectorType:   jwt.Issuer.EgressSelectorType,
 				Username:             ClaimMapping(jwt.ClaimMappings.Username),
 				Groups:               ClaimMapping(jwt.ClaimMappings.Groups),
 				MapsUIDOrExtra:       jwt.ClaimMappings.UID != nil || len(jwt.ClaimMappings.Extra) > 0,
 				ClaimValidationRules: len(jwt.ClaimValidationRules),
 				UserValidationRules:  len(jwt.UserValidationRules),
+				UnknownFields:        unknown,
 			})
 		}
 		return issuers, nil
 	}
 
 	return nil, nil
+}
+
+// unknownFields returns the fields of the JWT authenticator that knownFields
+// does not list, as sorted dotted paths.
+func unknownFields(raw json.RawMessage) ([]string, error) {
+	var authenticator object
+	if err := json.Unmarshal(raw, &authenticator); err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var unknown []string
+	for _, path := range slices.Sorted(maps.Keys(knownFields)) {
+		obj := authenticator
+		if path != "" {
+			for _, key := range strings.Split(path, ".") {
+				obj, _ = obj[key].(object)
+			}
+		}
+		for _, field := range slices.Sorted(maps.Keys(obj)) {
+			if !slices.Contains(knownFields[path], field) {
+				unknown = append(unknown, strings.TrimPrefix(path+"."+field, "."))
+			}
+		}
+	}
+	return unknown, nil
 }
