@@ -507,11 +507,15 @@ func TestFlagValidateVersion(t *testing.T) {
 		{version: "1.2.3-rc.1", wantErr: "release version"},
 		{version: "1.2.3-alpha", wantErr: "release version"},
 		{version: "1.2.3-", wantErr: "release version"},
-		// Branch hash, time stamp and commit SHA each one character too short
+		// Branch hash one character too short
 		{version: "6.1.1-ra106741t20261116095528h3886429", wantErr: "release version"},
+		// Time stamp one character too short
 		{version: "6.1.1-ra1067419t2026111609552h3886429", wantErr: "release version"},
+		// Commit SHA one character too short
 		{version: "6.1.1-ra1067419t20261116095528h388642", wantErr: "release version"},
+		// Uppercase hex digit in branch hash
 		{version: "6.1.1-rA1067419t20261116095528h3886429", wantErr: "release version"},
+		// Non-hex character in commit SHA
 		{version: "6.1.1-ra1067419t20261116095528h388642g", wantErr: "release version"},
 
 		{version: devBuildVersion, autoUpgrade: "patch", wantErr: "auto-upgrade"},
