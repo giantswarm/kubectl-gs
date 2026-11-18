@@ -149,7 +149,7 @@ func TestFlagValidate(t *testing.T) {
 				Version:      "foo",
 			},
 			wantErr: true,
-			errMsg:  "valid semver",
+			errMsg:  "release version",
 		},
 		{
 			name: "version with v prefix is valid",
@@ -474,6 +474,79 @@ func TestFlagValidate(t *testing.T) {
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
+			}
+		})
+	}
+}
+
+func TestFlagValidateVersion(t *testing.T) {
+	const devBuildVersion = "6.1.1-ra1067419t20261116095528h3886429"
+
+	tests := []struct {
+		version     string
+		autoUpgrade string
+		wantErr     string
+	}{
+		{version: "0.0.0"},
+		{version: "1.2.3"},
+		{version: "v1.2.3"},
+		{version: "10.20.30"},
+		{version: "1.2.3", autoUpgrade: "patch"},
+		{version: devBuildVersion},
+		{version: "v" + devBuildVersion},
+
+		{version: "1.2", wantErr: "release version"},
+		{version: "1.2.3.4", wantErr: "release version"},
+		{version: "01.2.3", wantErr: "release version"},
+		{version: "1.02.3", wantErr: "release version"},
+		{version: "1.2.03", wantErr: "release version"},
+		{version: "V1.2.3", wantErr: "release version"},
+		{version: " 1.2.3", wantErr: "release version"},
+		{version: "1.2.3+meta", wantErr: "release version"},
+		{version: devBuildVersion + "+meta", wantErr: "release version"},
+		{version: "1.2.3-rc.1", wantErr: "release version"},
+		{version: "1.2.3-alpha", wantErr: "release version"},
+		{version: "1.2.3-", wantErr: "release version"},
+		// Branch hash one character too short
+		{version: "6.1.1-ra106741t20261116095528h3886429", wantErr: "release version"},
+		// Time stamp one character too short
+		{version: "6.1.1-ra1067419t2026111609552h3886429", wantErr: "release version"},
+		// Commit SHA one character too short
+		{version: "6.1.1-ra1067419t20261116095528h388642", wantErr: "release version"},
+		// Uppercase hex digit in branch hash
+		{version: "6.1.1-rA1067419t20261116095528h3886429", wantErr: "release version"},
+		// Non-hex character in commit SHA
+		{version: "6.1.1-ra1067419t20261116095528h388642g", wantErr: "release version"},
+
+		{version: devBuildVersion, autoUpgrade: "patch", wantErr: "auto-upgrade"},
+		{version: devBuildVersion, autoUpgrade: "minor", wantErr: "auto-upgrade"},
+		{version: devBuildVersion, autoUpgrade: "all", wantErr: "auto-upgrade"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.version+"/"+tc.autoUpgrade, func(t *testing.T) {
+			f := flag{
+				ChartName:    "hello-world-app",
+				Organization: "acme",
+				Cluster:      "mycluster01",
+				TargetNS:     "hello",
+				OCIURLPrefix: defaultOCIURLPrefix,
+				Interval:     defaultInterval,
+				Version:      tc.version,
+				AutoUpgrade:  tc.autoUpgrade,
+			}
+			err := f.Validate()
+			if tc.wantErr == "" {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if got := err.Error(); !contains(got, tc.wantErr) {
+				t.Errorf("error %q should contain %q", got, tc.wantErr)
 			}
 		})
 	}
