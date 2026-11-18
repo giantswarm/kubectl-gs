@@ -103,12 +103,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Maskf(notFoundError, "Cluster with name '%s' cannot be found in the '%s' namespace.\n", getOptions.Name, getOptions.Namespace)
 	}
 
-	// A Cluster API cluster's release lives in its values: check the edit
-	// before scheduling or applying it, so a typo never reaches the chart.
-	var userConfig *corev1.ConfigMap
+	// A Cluster API cluster's release lives in the tag of its release chart
+	// or in its values: check the edit before scheduling or applying it, so a
+	// typo never reaches the chart.
+	var update client.Object
 	capi := isCapiProvider(resource)
 	if capi {
-		userConfig, err = r.releaseUpdate(ctx, resource, targetRelease)
+		update, err = r.releaseUpdate(ctx, resource, targetRelease)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -143,7 +144,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		messageFormat := "An upgrade of cluster %s to release %s has been scheduled for\n\n    %v, (%v)"
 		msg = fmt.Sprintf(messageFormat, name, targetRelease, t.Format(time.RFC1123), t.Local().Format(time.RFC1123))
 	} else if capi {
-		err = r.client.Update(ctx, userConfig)
+		err = r.client.Update(ctx, update)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -173,21 +174,33 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-// releaseUpdate returns the cluster's user config with the release version
-// set to target. It fails when the values carry no release version, when
-// target is not higher than it, or when the management cluster has no
-// Release for target.
-func (r *runner) releaseUpdate(ctx context.Context, resource *cluster.Cluster, target string) (*corev1.ConfigMap, error) {
-	cm := &corev1.ConfigMap{}
-	key := types.NamespacedName{Name: fmt.Sprintf("%s-userconfig", resource.Cluster.GetName()), Namespace: resource.Cluster.GetNamespace()}
-	err := r.client.Get(ctx, key, cm)
+// releaseUpdate returns the resource that sets the cluster's release, with
+// the release version set to target: the OCIRepository of a cluster deployed
+// as a HelmRelease of a release-<provider> chart, else the user config. It
+// fails when it can't tell the current release version, when target is not
+// higher than it, or when the management cluster has no Release for target.
+func (r *runner) releaseUpdate(ctx context.Context, resource *cluster.Cluster, target string) (client.Object, error) {
+	hr, err := clusterHelmRelease(ctx, r.client, resource.Cluster)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	current, values, err := setReleaseVersion(cm.Data["values"], target)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var update client.Object
+	var current string
+	if hr != nil {
+		repo, repoCurrent, err := releaseChartUpdate(ctx, r.client, hr, target)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if repo != nil {
+			update, current = repo, repoCurrent
+		}
+	}
+	if update == nil {
+		update, current, err = r.userConfigUpdate(ctx, resource, target)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	err = ensureNewer(current, target)
@@ -205,8 +218,26 @@ func (r *runner) releaseUpdate(ctx context.Context, resource *cluster.Cluster, t
 		return nil, microerror.Mask(err)
 	}
 
+	return update, nil
+}
+
+// userConfigUpdate returns the release version of a cluster deployed as an
+// App CR, and its user config with global.release.version set to target.
+func (r *runner) userConfigUpdate(ctx context.Context, resource *cluster.Cluster, target string) (*corev1.ConfigMap, string, error) {
+	cm := &corev1.ConfigMap{}
+	key := types.NamespacedName{Name: fmt.Sprintf("%s-userconfig", resource.Cluster.GetName()), Namespace: resource.Cluster.GetNamespace()}
+	err := r.client.Get(ctx, key, cm)
+	if err != nil {
+		return nil, "", microerror.Mask(err)
+	}
+
+	current, values, err := setReleaseVersion(cm.Data["values"], target)
+	if err != nil {
+		return nil, "", microerror.Mask(err)
+	}
+
 	cm.Data["values"] = values
-	return cm, nil
+	return cm, current, nil
 }
 
 func replaceToEscape(from string) string {
