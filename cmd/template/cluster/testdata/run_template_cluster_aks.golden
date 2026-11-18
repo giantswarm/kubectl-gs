@@ -54,7 +54,6 @@ spec:
   install:
     remediation:
       remediateLastFailure: false
-      retries: 10
   interval: 5m0s
   releaseName: test-aks
   serviceAccountName: automation

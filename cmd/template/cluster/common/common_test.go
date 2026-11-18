@@ -53,7 +53,6 @@ spec:
   install:
     remediation:
       remediateLastFailure: false
-      retries: 10
   interval: 5m0s
   releaseName: e9sc4
   serviceAccountName: automation

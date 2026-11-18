@@ -11,9 +11,6 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/internal/deploychart"
 )
 
-// semverRe matches a basic semver string like "1.2.3" or "v1.2.3".
-var semverRe = regexp.MustCompile(`^v?\d+\.\d+\.\d+$`)
-
 const (
 	flagChartName         = "chart-name"
 	flagOrganization      = "organization"
@@ -40,6 +37,9 @@ const (
 
 var validAutoUpgradeValues = []string{"all", "minor", "patch"}
 var validRegistryProviders = []string{"aws", "azure", "gcp"}
+
+// versionRe matches a release version or a `gitsemver get` dev build version (`<release>-r<branch hash>t<timestamp>h<short commit SHA>`)
+var versionRe = regexp.MustCompile(`^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(-r[0-9a-f]{8}t\d{14}h[0-9a-f]{7})?$`)
 
 type flag struct {
 	ChartName         string
@@ -112,8 +112,15 @@ func (f *flag) Validate() error {
 		return microerror.Maskf(invalidFlagError, "--%s must not be empty", flagTargetNS)
 	}
 
-	if f.Version != "" && !semverRe.MatchString(f.Version) {
-		return microerror.Maskf(invalidFlagError, "--%s must be a valid semver version (e.g. 1.2.3), got %q", flagVersion, f.Version)
+	if f.Version != "" {
+		versionMatch := versionRe.FindStringSubmatch(f.Version)
+		if versionMatch == nil {
+			return microerror.Maskf(invalidFlagError, "--%s must be a release version (e.g. 1.2.3) or a dev build version (e.g. 1.2.4-ra1067419t20261116095528h3886429), got %q", flagVersion, f.Version)
+		}
+		// A semver range such as `1.2.x` never matches a pre-release, so Flux would deploy a release instead of the dev build
+		if versionMatch[1] != "" && f.AutoUpgrade != "" {
+			return microerror.Maskf(invalidFlagError, "--%s cannot be used with a dev build version, got %q", flagAutoUpgrade, f.Version)
+		}
 	}
 
 	if f.AutoUpgrade != "" {
