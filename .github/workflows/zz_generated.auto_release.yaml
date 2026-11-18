@@ -2,7 +2,7 @@
 #
 #    devctl
 #
-#    https://github.com/giantswarm/devctl/blob/d01d7de9700b8090d285e0ccbe4afb8cc277e20c/pkg/gen/input/workflows/internal/file/auto_release.yaml.template
+#    https://github.com/giantswarm/devctl/blob/da5d8fd9f12cdfa92311ee00197d78e6626e2523/pkg/gen/input/workflows/internal/file/auto_release.yaml.template
 #
 # yamllint disable rule:truthy
 # Push-based release tagger + release-page publisher.
@@ -28,7 +28,8 @@
 #
 # Tags and releases are created with the giantswarm-release GitHub App token,
 # so GitHub Actions workflows listening on push.tags or release can start.
-# Requires the App installed on this repository with Contents write and the
+# Requires the App installed on this repository with Contents write and
+# Workflows write (stable promotions, see the release token step), and the
 # RELEASE_BOT_CLIENT_ID / RELEASE_BOT_PRIVATE_KEY secrets available to this
 # workflow. Missing or unusable App credentials fail before creating a release;
 # there is no GITHUB_TOKEN fallback, whose events cannot start those workflows.
@@ -525,6 +526,10 @@ jobs:
 
       # Mint just before publishing, after the release guards have passed.
       # With owner/repositories unset, the token is scoped to this repository.
+      # A stable promotion tags the candidate's commit, which can be behind
+      # .github/workflows changes on the branch (an align-files commit). GitHub
+      # refuses an App that tag without `workflows`. Other runs tag the branch
+      # head; for them the empty input is left out of the token.
       - name: Generate the giantswarm-release token
         id: release-token
         if: steps.decide.outputs.tag != ''
@@ -533,6 +538,7 @@ jobs:
           client-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
           permission-contents: write
+          permission-workflows: ${{ inputs.release-type == 'stable' && 'write' || '' }}
 
       # Create the tag AND the GitHub Release in one atomic API call. GitHub's
       # release-create endpoint accepts a tag_name + target_commitish and, if
@@ -636,6 +642,7 @@ jobs:
           private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
           permission-contents: write
           permission-pull-requests: write
+          permission-workflows: write
       - name: Check out the catch-up head
         if: steps.catch-up.outputs.prepare == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -13,7 +13,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/fatih/color v1.19.0
 	github.com/fluxcd/helm-controller/api v1.7.1
-	github.com/fluxcd/pkg/apis/meta v1.38.0
+	github.com/fluxcd/pkg/apis/meta v1.39.0
 	github.com/fluxcd/source-controller/api v1.10.1
 	github.com/getsops/sops/v3 v3.13.3
 	github.com/giantswarm/apiextensions-application v0.6.2
@@ -54,7 +54,7 @@ require (
 	k8s.io/cli-runtime v0.37.2
 	k8s.io/client-go v0.37.2
 	k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab
-	sigs.k8s.io/controller-runtime v0.25.2
+	sigs.k8s.io/controller-runtime v0.25.3
 	sigs.k8s.io/yaml v1.6.0
 )
 
