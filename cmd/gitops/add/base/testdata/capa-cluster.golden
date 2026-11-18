@@ -3,6 +3,7 @@ kind: OCIRepository
 metadata:
   labels:
     giantswarm.io/cluster: ${cluster_name}
+    giantswarm.io/prevent-deletion: "true"
   name: ${cluster_name}
   namespace: org-${organization}
 spec:
@@ -18,6 +19,7 @@ kind: HelmRelease
 metadata:
   labels:
     giantswarm.io/cluster: ${cluster_name}
+    giantswarm.io/prevent-deletion: "true"
   name: ${cluster_name}
   namespace: org-${organization}
 spec:

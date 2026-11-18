@@ -105,13 +105,17 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 
 // generateClusterResources returns the OCIRepository and HelmRelease that
 // deploy the release chart. The release chart has no version of its own, it
-// is published with the version of the release it holds.
+// is published with the version of the release it holds. Both carry the
+// prevent-deletion label, like the Cluster the chart creates from the values
+// of the base, so a cluster isn't deleted by removing it from the repository
+// or deleting one of them by mistake.
 func generateClusterResources(releaseChart string, extraValuesFrom ...deploychart.ValuesFromReference) (string, error) {
 	ociRepo, helmRelease, err := clustercommon.BuildClusterFluxResources(
 		clustercommon.ClusterConfig{
-			Name:           "${cluster_name}",
-			Organization:   "${organization}",
-			ReleaseVersion: "${release}",
+			Name:            "${cluster_name}",
+			Organization:    "${organization}",
+			ReleaseVersion:  "${release}",
+			PreventDeletion: true,
 		},
 		releaseChart,
 		"${cluster_name}-config",
@@ -133,8 +137,9 @@ func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	}
 
 	clusterConfig := providers.BuildCapaClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
+		Name:            "${cluster_name}",
+		Organization:    "${organization}",
+		PreventDeletion: true,
 		AWS: clustercommon.AWSConfig{
 			MachinePool: clustercommon.AWSMachinePoolConfig{
 				Name: "nodepool0",
@@ -169,8 +174,9 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	}
 
 	clusterConfig := providers.BuildCapvClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
+		Name:            "${cluster_name}",
+		Organization:    "${organization}",
+		PreventDeletion: true,
 	})
 	clusterConfig.Global.Release = nil
 	clusterValues, err := capv.GenerateClusterValues(clusterConfig)
@@ -194,9 +200,10 @@ func generateCapZClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	}
 
 	clusterConfig := providers.BuildCapzClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
-		Region:       structureConfig.Region,
+		Name:            "${cluster_name}",
+		Organization:    "${organization}",
+		PreventDeletion: true,
+		Region:          structureConfig.Region,
 		Azure: clustercommon.AzureConfig{
 			SubscriptionID: structureConfig.AzureSubscriptionID,
 		},
