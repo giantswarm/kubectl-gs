@@ -140,6 +140,53 @@ const testFutureIssuer = `  - issuer:
         prefix: ""
 `
 
+// testDexMultiAudienceIssuer is the management cluster's Dex accepting two
+// client IDs.
+const testDexMultiAudienceIssuer = `  - issuer:
+      url: "https://dex.my-mc.example.com/"
+      audiences:
+        - "kubernetes"
+        - "dex-k8s-authenticator"
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: ""
+      groups:
+        claim: "groups"
+        prefix: ""
+`
+
+// testDexPrefixedIssuer is the management cluster's Dex with claim prefixes,
+// which the workload cluster's OIDC values do not copy.
+const testDexPrefixedIssuer = `  - issuer:
+      url: "https://dex.my-mc.example.com"
+      audiences:
+        - "dex-k8s-authenticator"
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: "dex:"
+      groups:
+        claim: "groups"
+        prefix: "dex:"
+`
+
+// testDexFutureIssuer is the management cluster's Dex with a field
+// kubectl-gs does not know.
+const testDexFutureIssuer = `  - issuer:
+      url: "https://dex.my-mc.example.com"
+      audiences:
+        - "dex-k8s-authenticator"
+      requiredClaim: "x"
+    claimMappings:
+
+      username:
+        claim: "email"
+        prefix: ""
+`
+
 // authConfig returns an AuthenticationConfiguration with the given issuers,
 // in order.
 func authConfig(issuers ...string) string {
@@ -154,7 +201,21 @@ var testAuthConfig = authConfig(testDexIssuer, testGitHubActionsIssuer)
 // structuredKCP returns a management cluster KubeadmControlPlane with
 // structured authentication and the given AuthenticationConfiguration.
 func structuredKCP(config string) *unstructured.Unstructured {
-	return withFiles(newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs()), file(testAuthConfigPath, "", config))
+	return withFiles(withCertSANs(newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs())), file(testAuthConfigPath, "", config))
+}
+
+// testCertSANs are the API server certificate SANs the cluster chart renders
+// for management cluster my-mc with base domain example.com.
+var testCertSANs = []interface{}{"localhost", "127.0.0.1", "api.my-mc.example.com", "apiserver.my-mc.example.com"}
+
+// withCertSANs sets the API server certificate SANs, by default testCertSANs.
+func withCertSANs(kcp *unstructured.Unstructured, sans ...interface{}) *unstructured.Unstructured {
+	if sans == nil {
+		sans = testCertSANs
+	}
+	apiServer := kcp.Object["spec"].(map[string]interface{})["kubeadmConfigSpec"].(map[string]interface{})["clusterConfiguration"].(map[string]interface{})["apiServer"].(map[string]interface{})
+	apiServer["certSANs"] = sans
+	return kcp
 }
 
 // structuredAuthArgs are the API server extra arguments with structured
@@ -197,14 +258,16 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name           string
-		objects        []client.Object
-		interceptor    interceptor.Funcs
-		mcName         string
-		clientID       string
-		expectedValues OIDCValues
-		expectedError  string
-		expectedCause  func(error) bool
+		name             string
+		objects          []client.Object
+		interceptor      interceptor.Funcs
+		mcName           string
+		clientID         string
+		expectedValues   OIDCValues
+		expectedOverride []string
+		expectedSkipped  []string
+		expectedError    string
+		expectedCause    func(error) bool
 	}{
 		{
 			name:           "case 0: the only control plane in org-giantswarm",
@@ -282,16 +345,18 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 		{
 			name: "case 9: structured authentication, base64-encoded file",
 			objects: []client.Object{withFiles(
-				newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs()),
+				withCertSANs(newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", structuredAuthArgs())),
 				file("/etc/kubernetes/policies/audit-policy.yaml", "base64", base64.StdEncoding.EncodeToString([]byte("kind: Policy"))),
 				file(testAuthConfigPath, "base64", base64.StdEncoding.EncodeToString([]byte(testAuthConfig))),
 			)},
-			expectedValues: dexValues,
+			expectedValues:  dexValues,
+			expectedSkipped: []string{"https://token.actions.githubusercontent.com"},
 		},
 		{
-			name:           "case 10: structured authentication, plain file",
-			objects:        []client.Object{structuredKCP(testAuthConfig)},
-			expectedValues: dexValues,
+			name:            "case 10: structured authentication, plain file",
+			objects:         []client.Object{structuredKCP(testAuthConfig)},
+			expectedValues:  dexValues,
+			expectedSkipped: []string{"https://token.actions.githubusercontent.com"},
 		},
 		{
 			name:          "case 11: structured authentication without the file",
@@ -304,15 +369,15 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 			expectedError: "KubeadmControlPlane org-giantswarm/my-mc writes no JWT issuer inline to " + testAuthConfigPath,
 		},
 		{
-			name:          "case 13: the client ID is the audience of an issuer that cannot be copied only",
+			name:          "case 13: the client ID belongs to another issuer, which is not copied",
 			objects:       []client.Object{structuredKCP(testAuthConfig)},
 			clientID:      "my-mc",
-			expectedError: `no JWT issuer with audience "my-mc" can be copied to the workload cluster's OIDC settings: https://token.actions.githubusercontent.com (claim validation rules, username CEL expression)`,
+			expectedError: `client ID "my-mc" belongs to https://token.actions.githubusercontent.com, not to the management cluster's Dex, https://dex.my-mc.example.com, whose client IDs are dex-k8s-authenticator`,
 		},
 		{
-			name:          "case 14: no issuer can be copied",
-			objects:       []client.Object{structuredKCP(authConfig(testGitHubActionsIssuer))},
-			expectedError: "no JWT issuer can be copied to the workload cluster's OIDC settings: https://token.actions.githubusercontent.com (claim validation rules, username CEL expression)",
+			name:          "case 14: no issuer is the management cluster's Dex",
+			objects:       []client.Object{structuredKCP(authConfig(testGitHubActionsIssuer, testOtherIssuer))},
+			expectedError: "no JWT issuer is the management cluster's Dex, https://dex.my-mc.example.com. The file lists:\n  - https://token.actions.githubusercontent.com\n  - https://login.example.com/tenant",
 		},
 		{
 			name: "case 15: oidc-* arguments take precedence over the file",
@@ -333,45 +398,70 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 			expectedError: "sets no oidc-issuer-url or oidc-client-id",
 		},
 		{
-			name:          "case 17: several issuers can be copied and no client ID",
-			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testGitHubActionsIssuer, testOtherIssuer))},
-			expectedError: "2 JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: https://dex.my-mc.example.com (audiences dex-k8s-authenticator); https://login.example.com/tenant (audiences first-client, second-client)",
+			name:            "case 17: Dex among other issuers that could be copied, without a client ID",
+			objects:         []client.Object{structuredKCP(authConfig(testGitHubActionsIssuer, testOtherIssuer, testDexIssuer))},
+			expectedValues:  dexValues,
+			expectedSkipped: []string{"https://token.actions.githubusercontent.com", "https://login.example.com/tenant"},
 		},
 		{
-			name:     "case 18: several issuers can be copied, selected by any audience, which becomes the client ID, with its CA",
-			objects:  []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
-			clientID: "second-client",
+			name:          "case 18: Dex cannot be copied, another issuer is never copied instead",
+			objects:       []client.Object{structuredKCP(authConfig(testDexPrefixedIssuer, testOtherIssuer))},
+			expectedError: "the management cluster's Dex, https://dex.my-mc.example.com, cannot be copied to the workload cluster's OIDC settings: it sets username prefix, groups prefix",
+		},
+		{
+			name:             "case 19: a client ID that is no issuer's audience replaces Dex's",
+			objects:          []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
+			clientID:         "unknown",
+			expectedValues:   OIDCValues{IssuerURL: testIssuerURL, ClientID: "unknown", UsernameClaim: "email", GroupsClaim: "groups"},
+			expectedOverride: []string{testClientID},
+			expectedSkipped:  []string{"https://login.example.com/tenant"},
+		},
+		{
+			name:          "case 20: Dex accepts several client IDs and none is given",
+			objects:       []client.Object{structuredKCP(authConfig(testDexMultiAudienceIssuer))},
+			expectedError: "the management cluster's Dex, https://dex.my-mc.example.com/, accepts several client IDs: kubernetes, dex-k8s-authenticator. Select one with --oidc-client-id",
+		},
+		{
+			name:     "case 21: the client ID selects one of the several Dex accepts",
+			objects:  []client.Object{structuredKCP(authConfig(testDexMultiAudienceIssuer))},
+			clientID: testClientID,
 			expectedValues: OIDCValues{
-				IssuerURL:     "https://login.example.com/tenant",
+				IssuerURL:     "https://dex.my-mc.example.com/",
+				ClientID:      testClientID,
+				UsernameClaim: "email",
+				GroupsClaim:   "groups",
+			},
+		},
+		{
+			name:          "case 22: Dex with a field kubectl-gs does not know cannot be copied",
+			objects:       []client.Object{structuredKCP(authConfig(testDexFutureIssuer))},
+			expectedError: "it sets unknown fields issuer.requiredClaim",
+		},
+		{
+			name:          "case 23: the certificate SANs do not tell the management cluster's domain",
+			objects:       []client.Object{withCertSANs(structuredKCP(testAuthConfig), "localhost", "api.other.example.com")},
+			expectedError: `cannot tell the URL of management cluster "my-mc"'s Dex`,
+		},
+		{
+			name: "case 24: Dex's CA is copied",
+			objects: []client.Object{withCertSANs(withFiles(
+				newKubeadmControlPlane("v1beta2", "org-giantswarm", "login", structuredAuthArgs()),
+				file(testAuthConfigPath, "", authConfig(strings.Replace(testOtherIssuer, "https://login.example.com/tenant", "https://dex.login.example.com", 1))),
+			), "api.login.example.com")},
+			clientID: "first-client",
+			expectedValues: OIDCValues{
+				IssuerURL:     "https://dex.login.example.com",
 				CAPem:         "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----\n",
-				ClientID:      "second-client",
+				ClientID:      "first-client",
 				UsernameClaim: "email",
 			},
 		},
 		{
-			name:          "case 19: several issuers can be copied and no audience matches the client ID",
-			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer))},
-			clientID:      "unknown",
-			expectedError: `no JWT issuer has audience "unknown"; 2 can be copied to the workload cluster's OIDC settings, select one by its audience with --oidc-client-id`,
-		},
-		{
-			name: "case 20: a client ID that is no issuer's audience keeps the only one that can be copied",
-			// The caller then overrides Dex's client ID with the flag, as
-			// with a management cluster that uses the oidc-* arguments.
-			objects:        []client.Object{structuredKCP(testAuthConfig)},
-			clientID:       "unknown",
-			expectedValues: dexValues,
-		},
-		{
-			name:          "case 21: the client ID is the audience of several issuers that can be copied",
-			objects:       []client.Object{structuredKCP(authConfig(testDexIssuer, testOtherIssuer, testSharedAudienceIssuer))},
-			clientID:      "second-client",
-			expectedError: `2 JWT issuers that can be copied to the workload cluster's OIDC settings have audience "second-client": https://login.example.com/tenant (audiences first-client, second-client); https://login2.example.com/tenant (audiences second-client)`,
-		},
-		{
-			name:          "case 22: an issuer with a field kubectl-gs does not know cannot be copied",
-			objects:       []client.Object{structuredKCP(authConfig(testFutureIssuer))},
-			expectedError: "no JWT issuer can be copied to the workload cluster's OIDC settings: https://future.example.com (unknown fields issuer.requiredClaim)",
+			name:             "case 25: with oidc-* arguments, a different client ID replaces the management cluster's",
+			objects:          []client.Object{newKubeadmControlPlane("v1beta2", "org-giantswarm", "my-mc", dexArgs())},
+			clientID:         "other",
+			expectedValues:   OIDCValues{IssuerURL: testIssuerURL, ClientID: "other", UsernameClaim: "email", GroupsClaim: "groups"},
+			expectedOverride: []string{testClientID},
 		},
 	}
 
@@ -379,7 +469,7 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrlClient := fake.NewClientBuilder().WithObjects(tc.objects...).WithInterceptorFuncs(tc.interceptor).Build()
 
-			values, err := ManagementClusterOIDC(context.Background(), ctrlClient, tc.mcName, tc.clientID)
+			result, err := ManagementClusterOIDC(context.Background(), ctrlClient, tc.mcName, tc.clientID)
 			if tc.expectedError != "" {
 				if err == nil || !strings.Contains(err.Error(), tc.expectedError) {
 					t.Fatalf("expected error containing %q, got %v", tc.expectedError, err)
@@ -396,8 +486,14 @@ func Test_ManagementClusterOIDC(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			if diff := cmp.Diff(tc.expectedValues, values); diff != "" {
+			if diff := cmp.Diff(tc.expectedValues, result.Values); diff != "" {
 				t.Fatalf("values differ (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.expectedOverride, result.ClientIDOverride); diff != "" {
+				t.Fatalf("client ID override differs (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.expectedSkipped, result.Skipped); diff != "" {
+				t.Fatalf("skipped issuers differ (-want +got):\n%s", diff)
 			}
 		})
 	}

@@ -44,8 +44,26 @@ type OIDCValues struct {
 // current Cluster API serves, v1beta1 the one older management clusters do.
 var kubeadmControlPlaneVersions = []string{"v1beta2", "v1beta1"}
 
+// ManagementClusterIssuer is the OIDC issuer read from the management
+// cluster, with what the user should be told about how it was chosen.
+type ManagementClusterIssuer struct {
+	Values OIDCValues
+	// ManagementCluster is the name of the management cluster's
+	// KubeadmControlPlane.
+	ManagementCluster string
+	// Source says where the issuer was read: the API server's oidc-*
+	// arguments, or the AuthenticationConfiguration file.
+	Source string
+	// ClientIDOverride is set when the client ID asked for is none the
+	// management cluster's issuer accepts: it lists those it accepts.
+	ClientIDOverride []string
+	// Skipped lists the other structured authentication issuers, which are
+	// not copied.
+	Skipped []string
+}
+
 // ManagementClusterOIDC reads the OIDC issuer the management cluster's own
-// API server trusts (its Dex) from the management cluster's
+// API server trusts for its Dex, from the management cluster's
 // KubeadmControlPlane in the org-giantswarm namespace.
 //
 // mcName names the management cluster. When it is empty, the only
@@ -53,126 +71,167 @@ var kubeadmControlPlaneVersions = []string{"v1beta2", "v1beta1"}
 //
 // With structured authentication the issuers are in the
 // AuthenticationConfiguration file the authentication-config argument names,
-// instead of the oidc-* arguments; see selectIssuer for how clientID, when
-// given, selects one or fails.
-func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName, clientID string) (OIDCValues, error) {
+// instead of the oidc-* arguments. Only the management cluster's Dex,
+// https://dex.<management cluster domain>, is copied; see dexIssuer.
+//
+// clientID, when given, is the client ID the workload cluster uses. It selects
+// one of the client IDs the management cluster's Dex accepts, or else
+// replaces them, which ClientIDOverride reports.
+func ManagementClusterOIDC(ctx context.Context, ctrlClient client.Client, mcName, clientID string) (ManagementClusterIssuer, error) {
 	kcp, err := getManagementClusterControlPlane(ctx, ctrlClient, mcName)
 	if err != nil {
-		return OIDCValues{}, microerror.Mask(err)
+		return ManagementClusterIssuer{}, microerror.Mask(err)
 	}
 
 	args, err := apiServerExtraArgs(kcp)
 	if err != nil {
-		return OIDCValues{}, microerror.Mask(err)
+		return ManagementClusterIssuer{}, microerror.Mask(err)
 	}
 
-	values := OIDCValues{
-		IssuerURL:     args["oidc-issuer-url"],
-		ClientID:      args["oidc-client-id"],
-		UsernameClaim: args["oidc-username-claim"],
-		GroupsClaim:   args["oidc-groups-claim"],
-	}
-	if values.IssuerURL != "" && values.ClientID != "" {
-		return values, nil
+	if args["oidc-issuer-url"] != "" && args["oidc-client-id"] != "" {
+		result := ManagementClusterIssuer{
+			Values: OIDCValues{
+				IssuerURL:     args["oidc-issuer-url"],
+				ClientID:      args["oidc-client-id"],
+				UsernameClaim: args["oidc-username-claim"],
+				GroupsClaim:   args["oidc-groups-claim"],
+			},
+			ManagementCluster: kcp.GetName(),
+			Source:            "the API server's oidc-* arguments",
+		}
+		if clientID != "" && clientID != result.Values.ClientID {
+			result.ClientIDOverride = []string{result.Values.ClientID}
+			result.Values.ClientID = clientID
+		}
+		return result, nil
 	}
 
 	path := args["authentication-config"]
 	if path == "" {
-		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q trusts no complete OIDC issuer: KubeadmControlPlane %s/%s sets no oidc-issuer-url or oidc-client-id",
+		return ManagementClusterIssuer{}, fmt.Errorf("%w: the API server of management cluster %q trusts no complete OIDC issuer: KubeadmControlPlane %s/%s sets no oidc-issuer-url or oidc-client-id",
 			ErrManagementClusterOIDC, kcp.GetName(), kcp.GetNamespace(), kcp.GetName())
 	}
 
 	issuers, err := structuredauth.IssuersAt(kcp, path)
 	if err != nil {
-		return OIDCValues{}, fmt.Errorf("%w: KubeadmControlPlane %s/%s: cannot read %s: %w",
+		return ManagementClusterIssuer{}, fmt.Errorf("%w: KubeadmControlPlane %s/%s: cannot read %s: %w",
 			ErrManagementClusterOIDC, kcp.GetNamespace(), kcp.GetName(), path, err)
 	}
 	if len(issuers) == 0 {
 		// Either the file is not written inline (e.g. it comes from a
 		// Secret) or it lists no issuer: the KubeadmControlPlane does not
 		// tell which issuers the API server trusts.
-		return OIDCValues{}, fmt.Errorf("%w: KubeadmControlPlane %s/%s writes no JWT issuer inline to %s, the file the API server's authentication-config argument names",
+		return ManagementClusterIssuer{}, fmt.Errorf("%w: KubeadmControlPlane %s/%s writes no JWT issuer inline to %s, the file the API server's authentication-config argument names",
 			ErrManagementClusterOIDC, kcp.GetNamespace(), kcp.GetName(), path)
 	}
 
-	issuer, err := selectIssuer(issuers, clientID)
+	dexURL, err := managementClusterDexURL(kcp)
 	if err != nil {
-		return OIDCValues{}, fmt.Errorf("%w: the API server of management cluster %q: %s: %w", ErrManagementClusterOIDC, kcp.GetName(), path, err)
+		return ManagementClusterIssuer{}, microerror.Mask(err)
 	}
 
-	// The client ID is the audience clientID selected the issuer by, or else
-	// the issuer's first audience.
-	if !slices.Contains(issuer.Audiences, clientID) {
-		clientID = issuer.Audiences[0]
+	result, err := dexIssuer(issuers, dexURL, clientID)
+	if err != nil {
+		return ManagementClusterIssuer{}, fmt.Errorf("%w: the API server of management cluster %q: %s: %w", ErrManagementClusterOIDC, kcp.GetName(), path, err)
 	}
-
-	return OIDCValues{
-		IssuerURL:     issuer.URL,
-		CAPem:         issuer.CertificateAuthority,
-		ClientID:      clientID,
-		UsernameClaim: issuer.Username.Claim,
-		GroupsClaim:   issuer.Groups.Claim,
-	}, nil
+	result.ManagementCluster = kcp.GetName()
+	result.Source = path
+	return result, nil
 }
 
-// selectIssuer picks the structured authentication issuer the workload
-// cluster trusts. Only issuers that the workload cluster's OIDC values express
-// exactly are eligible (see valuesGaps).
+// managementClusterDexURL returns the URL of the management cluster's Dex,
+// https://dex.<management cluster domain>. The cluster chart always lists
+// api.<management cluster domain> among the API server's certificate SANs,
+// where the management cluster domain is its name followed by its base
+// domain.
+func managementClusterDexURL(kcp *unstructured.Unstructured) (string, error) {
+	sans, _, err := unstructured.NestedStringSlice(kcp.Object, "spec", "kubeadmConfigSpec", "clusterConfiguration", "apiServer", "certSANs")
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	prefix := "api." + kcp.GetName() + "."
+	for _, san := range sans {
+		if strings.HasPrefix(san, prefix) && len(san) > len(prefix) {
+			return "https://dex." + strings.TrimPrefix(san, "api."), nil
+		}
+	}
+
+	return "", fmt.Errorf("%w: cannot tell the URL of management cluster %q's Dex: the API server certificate SANs of KubeadmControlPlane %s/%s list no %s<base domain>",
+		ErrManagementClusterOIDC, kcp.GetName(), kcp.GetNamespace(), kcp.GetName(), prefix)
+}
+
+// dexIssuer returns the structured authentication issuer of the management
+// cluster's Dex, at dexURL. It fails rather than copy any other issuer, and
+// fails when the workload cluster's OIDC values cannot express Dex exactly
+// (see valuesGaps).
 //
-// A clientID that is an audience of issuers selects among them: it must name
-// exactly one eligible issuer, and naming only issuers that are not eligible
-// is an error. A clientID that is no issuer's audience only overrides the
-// client ID of the single eligible issuer, as with a management cluster that
-// uses the oidc-* arguments.
-func selectIssuer(issuers []structuredauth.Issuer, clientID string) (structuredauth.Issuer, error) {
-	var eligible, matching []structuredauth.Issuer
-	var ineligible, matchingIneligible []string
-	for _, iss := range issuers {
-		hasAudience := clientID != "" && slices.Contains(iss.Audiences, clientID)
-		if gaps := valuesGaps(iss); len(gaps) > 0 {
-			gapsText := fmt.Sprintf("%s (%s)", iss.URL, strings.Join(gaps, ", "))
-			ineligible = append(ineligible, gapsText)
-			if hasAudience {
-				matchingIneligible = append(matchingIneligible, gapsText)
-			}
+// A clientID that is one of Dex's audiences selects it. Any other clientID
+// replaces them, unless another issuer has it as an audience: then the user
+// most likely meant that issuer, which is not copied. Without a clientID, Dex
+// must have a single audience.
+func dexIssuer(issuers []structuredauth.Issuer, dexURL, clientID string) (ManagementClusterIssuer, error) {
+	var dex *structuredauth.Issuer
+	var others []structuredauth.Issuer
+	for i, iss := range issuers {
+		if dex == nil && strings.TrimSuffix(iss.URL, "/") == dexURL {
+			dex = &issuers[i]
 			continue
 		}
-		eligible = append(eligible, iss)
-		if hasAudience {
-			matching = append(matching, iss)
-		}
+		others = append(others, iss)
+	}
+
+	if dex == nil {
+		return ManagementClusterIssuer{}, fmt.Errorf("no JWT issuer is the management cluster's Dex, %s. The file lists:\n%s",
+			dexURL, issuerList(issuers))
+	}
+
+	if gaps := valuesGaps(*dex); len(gaps) > 0 {
+		return ManagementClusterIssuer{}, fmt.Errorf("the management cluster's Dex, %s, cannot be copied to the workload cluster's OIDC settings: it sets %s",
+			dex.URL, strings.Join(gaps, ", "))
+	}
+
+	result := ManagementClusterIssuer{
+		Values: OIDCValues{
+			IssuerURL:     dex.URL,
+			CAPem:         dex.CertificateAuthority,
+			UsernameClaim: dex.Username.Claim,
+			GroupsClaim:   dex.Groups.Claim,
+		},
+	}
+	for _, iss := range others {
+		result.Skipped = append(result.Skipped, iss.URL)
 	}
 
 	switch {
-	case len(matching) == 1:
-		return matching[0], nil
-	case len(matching) > 1:
-		return structuredauth.Issuer{}, fmt.Errorf("%d JWT issuers that can be copied to the workload cluster's OIDC settings have audience %q: %s",
-			len(matching), clientID, audiencesText(matching))
-	case len(matchingIneligible) > 0:
-		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer with audience %q can be copied to the workload cluster's OIDC settings: %s",
-			clientID, strings.Join(matchingIneligible, "; "))
-	case len(eligible) == 0:
-		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer can be copied to the workload cluster's OIDC settings: %s",
-			strings.Join(ineligible, "; "))
-	case len(eligible) == 1:
-		return eligible[0], nil
+	case clientID != "" && slices.Contains(dex.Audiences, clientID):
+		result.Values.ClientID = clientID
 	case clientID != "":
-		return structuredauth.Issuer{}, fmt.Errorf("no JWT issuer has audience %q; %d can be copied to the workload cluster's OIDC settings, select one by its audience with --oidc-client-id: %s",
-			clientID, len(eligible), audiencesText(eligible))
+		for _, iss := range others {
+			if slices.Contains(iss.Audiences, clientID) {
+				return ManagementClusterIssuer{}, fmt.Errorf("client ID %q belongs to %s, not to the management cluster's Dex, %s, whose client IDs are %s. Only Dex is copied; to trust %s, name it with --oidc-issuer-url",
+					clientID, iss.URL, dex.URL, strings.Join(dex.Audiences, ", "), iss.URL)
+			}
+		}
+		result.Values.ClientID = clientID
+		result.ClientIDOverride = dex.Audiences
+	case len(dex.Audiences) == 1:
+		result.Values.ClientID = dex.Audiences[0]
 	default:
-		return structuredauth.Issuer{}, fmt.Errorf("%d JWT issuers can be copied to the workload cluster's OIDC settings; select one by its audience with --oidc-client-id: %s",
-			len(eligible), audiencesText(eligible))
+		return ManagementClusterIssuer{}, fmt.Errorf("the management cluster's Dex, %s, accepts several client IDs: %s. Select one with --oidc-client-id",
+			dex.URL, strings.Join(dex.Audiences, ", "))
 	}
+
+	return result, nil
 }
 
-// audiencesText lists the issuers with their audiences.
-func audiencesText(issuers []structuredauth.Issuer) string {
-	var texts []string
+// issuerList lists the issuers' URLs, one per line.
+func issuerList(issuers []structuredauth.Issuer) string {
+	var lines []string
 	for _, iss := range issuers {
-		texts = append(texts, fmt.Sprintf("%s (audiences %s)", iss.URL, strings.Join(iss.Audiences, ", ")))
+		lines = append(lines, "  - "+iss.URL)
 	}
-	return strings.Join(texts, "; ")
+	return strings.Join(lines, "\n")
 }
 
 // valuesGaps lists what of the issuer the workload cluster's OIDC values
