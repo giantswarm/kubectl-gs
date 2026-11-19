@@ -247,8 +247,9 @@ func (r *runner) userConfigUpdate(ctx context.Context, resource *cluster.Cluster
 
 // ensureApplicable fails when the update can't take effect the way it is
 // asked for. Nothing carries out a scheduled update of a release chart: the
-// schedule annotations were read by upgrade-schedule-operator, which knew App
-// CRs only. And an update applied now to values that a Flux controller
+// schedule annotations were read by upgrade-schedule-operator, archived before
+// clusters were deployed as HelmReleases. And an update applied now to values
+// that a Flux controller
 // applies would be reverted on its next reconciliation.
 func ensureApplicable(update client.Object, scheduled bool) error {
 	_, values := update.(*corev1.ConfigMap)
