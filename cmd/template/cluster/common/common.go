@@ -262,9 +262,15 @@ func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMap
 
 // clusterResourceLabels returns the labels of the resources that deploy the
 // cluster chart, besides the giantswarm.io/cluster label they always have.
+// The user's labels come first, so they can't replace the labels kubectl-gs
+// sets: a HelmRelease labelled with another cluster's name would be missed by
+// anything that selects it by giantswarm.io/cluster.
 func clusterResourceLabels(config ClusterConfig) map[string]string {
 	result := map[string]string{}
 	for k, v := range config.Labels {
+		if k == label.Cluster {
+			continue
+		}
 		result[k] = v
 	}
 	if config.PreventDeletion {

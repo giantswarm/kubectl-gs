@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	"github.com/giantswarm/kubectl-gs/v6/internal/key"
@@ -25,7 +26,7 @@ func Test_generateClusterBaseTemplates(t *testing.T) {
 	}{
 		{
 			name:     "capa",
-			config:   common.StructureConfig{Provider: key.ProviderCAPA},
+			config:   common.StructureConfig{Provider: key.ProviderCAPA, PreventDeletion: true},
 			resource: "capa-cluster.golden",
 			values:   "capa-cluster_config.golden",
 		},
@@ -35,15 +36,22 @@ func Test_generateClusterBaseTemplates(t *testing.T) {
 				Provider:            key.ProviderCAPZ,
 				Region:              "westeurope",
 				AzureSubscriptionID: "00000000-0000-0000-0000-000000000000",
+				PreventDeletion:     true,
 			},
 			resource: "capz-cluster.golden",
 			values:   "capz-cluster_config.golden",
 		},
 		{
 			name:     "vsphere",
-			config:   common.StructureConfig{Provider: key.ProviderVSphere},
+			config:   common.StructureConfig{Provider: key.ProviderVSphere, PreventDeletion: true},
 			resource: "vsphere-cluster.golden",
 			values:   "vsphere-cluster_config.golden",
+		},
+		{
+			name:     "capa without deletion prevention",
+			config:   common.StructureConfig{Provider: key.ProviderCAPA},
+			resource: "capa-cluster-no-prevent-deletion.golden",
+			values:   "capa-cluster_config-no-prevent-deletion.golden",
 		},
 	}
 
@@ -80,5 +88,25 @@ func compareGolden(t *testing.T, file, actual string) {
 	diff := cmp.Diff(string(expected), actual)
 	if diff != "" {
 		t.Fatalf("%s not expected, got:\n %s", file, diff)
+	}
+}
+
+// Test_flagDefaults checks that a base prevents deletion unless the user asks
+// otherwise.
+func Test_flagDefaults(t *testing.T) {
+	cmd := &cobra.Command{}
+	f := &flag{}
+	f.Init(cmd)
+
+	if !f.PreventDeletion {
+		t.Fatalf("--%s defaults to false, want true", flagPreventDeletion)
+	}
+
+	err := cmd.ParseFlags([]string{"--" + flagPreventDeletion + "=false"})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	if f.PreventDeletion {
+		t.Fatalf("--%s=false left it true", flagPreventDeletion)
 	}
 }
