@@ -249,8 +249,7 @@ func (r *runner) userConfigUpdate(ctx context.Context, resource *cluster.Cluster
 // asked for. Nothing carries out a scheduled update of a release chart: the
 // schedule annotations were read by upgrade-schedule-operator, archived before
 // clusters were deployed as HelmReleases. And an update applied now to values
-// that a Flux controller
-// applies would be reverted on its next reconciliation.
+// that a Flux controller applies would be reverted on its next reconciliation.
 func ensureApplicable(update client.Object, scheduled bool) error {
 	_, values := update.(*corev1.ConfigMap)
 	if scheduled && !values {
