@@ -48,6 +48,10 @@ type StructureConfig struct {
 
 	// Azure only
 	AzureSubscriptionID string
+
+	// PreventDeletion labels the resources of a cluster base and sets
+	// global.metadata.preventDeletion in its values.
+	PreventDeletion bool
 }
 
 type AppResources struct {

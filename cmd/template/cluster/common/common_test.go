@@ -131,3 +131,66 @@ func TestIsReleaseVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestClusterResourceLabels(t *testing.T) {
+	testCases := []struct {
+		name   string
+		config ClusterConfig
+		want   map[string]string
+	}{
+		{
+			name:   "no labels",
+			config: ClusterConfig{},
+			want:   map[string]string{},
+		},
+		{
+			name:   "deletion prevention",
+			config: ClusterConfig{PreventDeletion: true},
+			want:   map[string]string{"giantswarm.io/prevent-deletion": "true"},
+		},
+		{
+			name: "user labels, without the cluster label",
+			config: ClusterConfig{
+				PreventDeletion: true,
+				Labels: map[string]string{
+					"environment":           "testing",
+					"giantswarm.io/cluster": "another-cluster",
+				},
+			},
+			want: map[string]string{
+				"environment":                    "testing",
+				"giantswarm.io/prevent-deletion": "true",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if diff := cmp.Diff(tc.want, clusterResourceLabels(tc.config)); diff != "" {
+				t.Errorf("unexpected labels (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+// TestBuildClusterFluxResourcesKeepsClusterLabel checks that a user label
+// can't replace the giantswarm.io/cluster label of the Flux resources.
+func TestBuildClusterFluxResourcesKeepsClusterLabel(t *testing.T) {
+	config := ClusterConfig{
+		Name:           "e9sc4",
+		Organization:   "laszlo",
+		ReleaseVersion: "35.0.1",
+		Labels:         map[string]string{"giantswarm.io/cluster": "another-cluster"},
+	}
+
+	ociRepoYAML, helmReleaseYAML, err := BuildClusterFluxResources(config, "release-aws", "e9sc4-userconfig")
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	for kind, manifest := range map[string][]byte{"OCIRepository": ociRepoYAML, "HelmRelease": helmReleaseYAML} {
+		if !strings.Contains(string(manifest), "giantswarm.io/cluster: e9sc4\n") || strings.Contains(string(manifest), "another-cluster") {
+			t.Errorf("%s doesn't keep the cluster label:\n%s", kind, manifest)
+		}
+	}
+}
