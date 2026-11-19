@@ -142,14 +142,14 @@ func (r *runner) canSkipMCLogin(args []string) bool {
 	if !r.loginOptions.isWC {
 		return false
 	}
+	if r.installationContextExists(args) {
+		return false
+	}
 	// If at least issuer+client-id are provided, we know this is a direct
 	// OIDC WC login and the MC context only needs to be accessible (not
 	// necessarily a gs-managed OIDC context).
 	if r.flag.WCOIDCIssuer != "" && r.flag.WCOIDCClientID != "" {
 		return true
-	}
-	if r.installationContextExists(args) {
-		return false
 	}
 	// Also skip MC login when the current context is not a gs- context,
 	// since switchContext would fail anyway. The WC flow will still use

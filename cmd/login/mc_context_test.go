@@ -76,12 +76,27 @@ func TestCanSkipMCLogin(t *testing.T) {
 			expectSkipped: false,
 		},
 		{
-			name:          "issuer and client ID flags",
+			name:          "issuer and client ID flags without installation argument",
 			contexts:      []string{"gs-codename"},
 			current:       "gs-codename",
+			flags:         flag{WCName: "staging", WCOIDCIssuer: "https://dex.example.com", WCOIDCClientID: "id"},
+			expectSkipped: true,
+		},
+		{
+			name:          "issuer and client ID flags, no context for installation argument",
+			contexts:      []string{"teleport-codename"},
+			current:       "teleport-codename",
 			args:          []string{"codename"},
 			flags:         flag{WCName: "staging", WCOIDCIssuer: "https://dex.example.com", WCOIDCClientID: "id"},
 			expectSkipped: true,
+		},
+		{
+			name:          "issuer and client ID flags, installation context exists",
+			contexts:      []string{"teleport-codename-staging", "gs-codename"},
+			current:       "teleport-codename-staging",
+			args:          []string{"codename"},
+			flags:         flag{WCName: "staging", WCOIDCIssuer: "https://dex.example.com", WCOIDCClientID: "id"},
+			expectSkipped: false,
 		},
 		{
 			name:          "management cluster login",
