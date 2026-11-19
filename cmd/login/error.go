@@ -100,6 +100,10 @@ func IsClusterNotFound(err error) bool {
 	return microerror.Cause(err) == clusterNotFoundError
 }
 
+var organizationAPINotFoundError = &microerror.Error{
+	Kind: "organizationAPINotFoundError",
+}
+
 var noOrganizationsError = &microerror.Error{
 	Kind: "noOrganizationsError",
 }
