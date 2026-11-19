@@ -265,7 +265,7 @@ func (f *Flag) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&f.DisableOIDC, FlagDisableOIDC, false, "Leave global.controlPlane.oidc out, so that the workload cluster's API server trusts no OIDC issuer. By default the cluster trusts the OIDC issuer (Dex) of the management cluster the kubeconfig context points at. Cannot be combined with the --oidc-* flags. Supported for CAPA, CAPZ, vSphere and Cloud Director.")
 	cmd.Flags().StringVar(&f.OIDC.IssuerURL, flagOIDCIssuerURL, "", "OIDC issuer URL the cluster trusts instead of the management cluster's Dex. Requires --"+flagOIDCClientID+".")
 	cmd.Flags().StringVar(&f.OIDC.CAFile, flagOIDCCAFile, "", "Path to a PEM file with the CA certificate used to verify the OIDC issuer (optional).")
-	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID. Default: the management cluster's.")
+	cmd.Flags().StringVar(&f.OIDC.ClientID, flagOIDCClientID, "", "OIDC client ID. Default: the client ID of the management cluster's Dex. When Dex accepts several, selects one of them; any other value replaces Dex's client ID, with a warning. Fails when the value is the client ID of another issuer the management cluster trusts, which is not copied.")
 	cmd.Flags().StringVar(&f.OIDC.UsernameClaim, flagOIDCUsernameClaim, "", "OIDC username claim. Default: the management cluster's, or email with --"+flagOIDCIssuerURL+".")
 	cmd.Flags().StringVar(&f.OIDC.GroupsClaim, flagOIDCGroupsClaim, "", "OIDC groups claim. Default: the management cluster's, or groups with --"+flagOIDCIssuerURL+".")
 	cmd.Flags().StringVar(&f.Output, flagOutput, "", "File path for storing CRs.")

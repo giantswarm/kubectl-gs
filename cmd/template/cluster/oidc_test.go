@@ -107,3 +107,23 @@ func Test_oidcValues_noKubeContext(t *testing.T) {
 		}
 	}
 }
+
+func Test_reportManagementClusterOIDC(t *testing.T) {
+	var stderr strings.Builder
+	r := &runner{stderr: &stderr}
+
+	r.reportManagementClusterOIDC(common.ManagementClusterIssuer{
+		Values:            common.OIDCValues{IssuerURL: "https://dex.my-mc.example.com", ClientID: "typo"},
+		ManagementCluster: "my-mc",
+		Source:            "/etc/kubernetes/policies/structured-auth.yaml",
+		ClientIDOverride:  []string{"dex-k8s-authenticator"},
+		Skipped:           []string{"https://token.actions.githubusercontent.com"},
+	})
+
+	want := "OIDC: the workload cluster trusts https://dex.my-mc.example.com with client ID typo, the Dex of management cluster my-mc, read from /etc/kubernetes/policies/structured-auth.yaml.\n" +
+		"OIDC: --oidc-client-id typo is none of the client IDs the management cluster's Dex accepts (dex-k8s-authenticator); using it as given.\n" +
+		"OIDC: not copied, as only the management cluster's Dex is: https://token.actions.githubusercontent.com.\n"
+	if diff := cmp.Diff(want, stderr.String()); diff != "" {
+		t.Fatalf("report differs (-want +got):\n%s", diff)
+	}
+}
