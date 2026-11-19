@@ -113,6 +113,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
+		err = ensureApplicable(update, scheduledTime != "")
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	var patches cluster.PatchOptions
@@ -238,6 +243,22 @@ func (r *runner) userConfigUpdate(ctx context.Context, resource *cluster.Cluster
 
 	cm.Data["values"] = values
 	return cm, current, nil
+}
+
+// ensureApplicable fails when the update can't take effect the way it is
+// asked for. Nothing carries out a scheduled update of a release chart: the
+// schedule annotations were read by upgrade-schedule-operator, which knew App
+// CRs only. And an update applied now to values that a Flux controller
+// applies would be reverted on its next reconciliation.
+func ensureApplicable(update client.Object, scheduled bool) error {
+	_, values := update.(*corev1.ConfigMap)
+	if scheduled && !values {
+		return microerror.Maskf(notAllowedError, "The cluster is deployed as a HelmRelease of a release chart, whose update can't be scheduled. Update it at the time you want instead.")
+	}
+	if !scheduled && values {
+		return microerror.Mask(ensureNotManaged(update, "ConfigMap", "global.release.version"))
+	}
+	return nil
 }
 
 func replaceToEscape(from string) string {
