@@ -55,6 +55,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		Provider:            r.flag.Provider,
 		Region:              r.flag.Region,
 		AzureSubscriptionID: r.flag.AzureSubscriptionID,
+		PreventDeletion:     r.flag.PreventDeletion,
 	}
 
 	var err error
@@ -105,13 +106,19 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 
 // generateClusterResources returns the OCIRepository and HelmRelease that
 // deploy the release chart. The release chart has no version of its own, it
-// is published with the version of the release it holds.
-func generateClusterResources(releaseChart string, extraValuesFrom ...deploychart.ValuesFromReference) (string, error) {
+// is published with the version of the release it holds. With
+// preventDeletion, both carry the prevent-deletion label, like the Cluster the
+// chart creates from the values of the base, so deleting one of them by
+// mistake doesn't delete the cluster. That is a direct delete, or a prune by a
+// Kustomization changed to prune: the one gitops add workload-cluster
+// generates doesn't prune.
+func generateClusterResources(preventDeletion bool, releaseChart string, extraValuesFrom ...deploychart.ValuesFromReference) (string, error) {
 	ociRepo, helmRelease, err := clustercommon.BuildClusterFluxResources(
 		clustercommon.ClusterConfig{
-			Name:           "${cluster_name}",
-			Organization:   "${organization}",
-			ReleaseVersion: "${release}",
+			Name:            "${cluster_name}",
+			Organization:    "${organization}",
+			ReleaseVersion:  "${release}",
+			PreventDeletion: preventDeletion,
 		},
 		releaseChart,
 		"${cluster_name}-config",
@@ -127,14 +134,15 @@ func generateClusterResources(releaseChart string, extraValuesFrom ...deploychar
 func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
-	clusterResources, err := generateClusterResources(providers.ReleaseAWSRepoName)
+	clusterResources, err := generateClusterResources(structureConfig.PreventDeletion, providers.ReleaseAWSRepoName)
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
 
 	clusterConfig := providers.BuildCapaClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
+		Name:            "${cluster_name}",
+		Organization:    "${organization}",
+		PreventDeletion: structureConfig.PreventDeletion,
 		AWS: clustercommon.AWSConfig{
 			MachinePool: clustercommon.AWSMachinePoolConfig{
 				Name: "nodepool0",
@@ -161,6 +169,7 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	// The release chart reads the vCenter credentials from the values, so the
 	// HelmRelease has to pass the credentials Secret along.
 	clusterResources, err := generateClusterResources(
+		structureConfig.PreventDeletion,
 		providers.ReleaseVsphereRepoName,
 		deploychart.ValuesFromReference{Kind: "Secret", Name: clustercommon.DefaultVSphereCredentialsSecretName},
 	)
@@ -169,8 +178,9 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 	}
 
 	clusterConfig := providers.BuildCapvClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
+		Name:            "${cluster_name}",
+		Organization:    "${organization}",
+		PreventDeletion: structureConfig.PreventDeletion,
 	})
 	clusterConfig.Global.Release = nil
 	clusterValues, err := capv.GenerateClusterValues(clusterConfig)
@@ -188,15 +198,16 @@ func generateCapVClusterBaseTemplates(structureConfig common.StructureConfig) (c
 func generateCapZClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {
 	clusterBaseTemplates := common.ClusterBaseTemplates{}
 
-	clusterResources, err := generateClusterResources(providers.ReleaseAzureRepoName)
+	clusterResources, err := generateClusterResources(structureConfig.PreventDeletion, providers.ReleaseAzureRepoName)
 	if err != nil {
 		return clusterBaseTemplates, err
 	}
 
 	clusterConfig := providers.BuildCapzClusterConfig(clustercommon.ClusterConfig{
-		Name:         "${cluster_name}",
-		Organization: "${organization}",
-		Region:       structureConfig.Region,
+		Name:            "${cluster_name}",
+		Organization:    "${organization}",
+		PreventDeletion: structureConfig.PreventDeletion,
+		Region:          structureConfig.Region,
 		Azure: clustercommon.AzureConfig{
 			SubscriptionID: structureConfig.AzureSubscriptionID,
 		},

@@ -6,7 +6,7 @@ global:
   metadata:
     name: ${cluster_name}
     organization: ${organization}
-    preventDeletion: false
+    preventDeletion: true
   nodePools:
     nodepool0: {}
   providerSpecific: {}

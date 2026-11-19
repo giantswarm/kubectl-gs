@@ -15,6 +15,7 @@ global:
   metadata:
     name: ${cluster_name}
     organization: ${organization}
+    preventDeletion: true
   nodePools:
     worker:
       cloneMode: linkedClone

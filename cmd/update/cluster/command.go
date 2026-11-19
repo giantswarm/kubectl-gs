@@ -27,6 +27,10 @@ Options:
   --name <cluster-name>             	Name of the cluster to update.
   --namespace <cluster-namespace>   	Namespace of the cluster.
   --release-version <release-version>   Update the cluster to a release version. The release version must be higher than the current release version.
+                                        For a cluster deployed as a HelmRelease of a release-<provider> chart, this sets the tag of its OCIRepository.
+                                        If Flux applies the OCIRepository, change the tag in its source instead.
+                                        Such an update can't be scheduled with --scheduled-time.
+                                        Otherwise it sets global.release.version in the <cluster-name>-userconfig ConfigMap, and leaves the chart version as it is.
   --scheduled-time <scheduled-time>     Optionally: Scheduled time when cluster should be updated, time format 'YYYY-MM-DD HH:MM'.
   --provider <provider> 		Name of the provider.`
 
