@@ -1,0 +1,12 @@
+global:
+  connectivity:
+    network: {}
+    topology: {}
+  controlPlane: {}
+  metadata:
+    name: ${cluster_name}
+    organization: ${organization}
+    preventDeletion: false
+  nodePools:
+    nodepool0: {}
+  providerSpecific: {}

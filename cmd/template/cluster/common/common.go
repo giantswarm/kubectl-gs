@@ -7,6 +7,7 @@ import (
 
 	semver "github.com/Masterminds/semver/v3"
 	applicationv1alpha1 "github.com/giantswarm/apiextensions-application/api/v1alpha1"
+	"github.com/giantswarm/k8smetadata/pkg/label"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -238,6 +239,14 @@ func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMap
 		}, extraValuesFrom...),
 	})
 
+	// The labels the App CR carried go on both resources. The prevent-deletion
+	// label makes kyverno-policies-ux refuse to delete them: deleting the
+	// HelmRelease uninstalls the release, which deletes the cluster.
+	for k, v := range clusterResourceLabels(config) {
+		ociRepo.Labels[k] = v
+		helmRelease.Labels[k] = v
+	}
+
 	ociRepoYAML, err = deploychart.MarshalManifest(ociRepo)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
@@ -249,6 +258,26 @@ func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMap
 	}
 
 	return ociRepoYAML, helmReleaseYAML, nil
+}
+
+// clusterResourceLabels returns the labels of the resources that deploy the
+// cluster chart, besides the giantswarm.io/cluster label they always have.
+// The user's labels come first, so they can't replace the labels kubectl-gs
+// sets: a HelmRelease labelled with another cluster's name would be missed by
+// anything that selects it by giantswarm.io/cluster.
+func clusterResourceLabels(config ClusterConfig) map[string]string {
+	result := map[string]string{}
+	for k, v := range config.Labels {
+		if k == label.Cluster {
+			continue
+		}
+		result[k] = v
+	}
+	if config.PreventDeletion {
+		result[label.PreventDeletion] = "true"
+	}
+
+	return result
 }
 
 func UserConfigMapName(app string) string {

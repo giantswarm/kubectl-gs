@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
@@ -73,5 +75,26 @@ func Test_validateOIDC(t *testing.T) {
 				t.Fatalf("expected invalid flag error containing %q, got %v", tc.expectedError, err)
 			}
 		})
+	}
+}
+
+// Test_PreventDeletionDefault checks that a templated cluster prevents its
+// deletion unless the user asks otherwise. Test_run in the parent package
+// builds Flag structs directly, so it doesn't see the default.
+func Test_PreventDeletionDefault(t *testing.T) {
+	cmd := &cobra.Command{}
+	f := &Flag{}
+	f.Init(cmd)
+
+	if !f.PreventDeletion {
+		t.Fatalf("--%s defaults to false, want true", flagPreventDeletion)
+	}
+
+	err := cmd.ParseFlags([]string{"--" + flagPreventDeletion + "=false"})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	if f.PreventDeletion {
+		t.Fatalf("--%s=false left it true", flagPreventDeletion)
 	}
 }

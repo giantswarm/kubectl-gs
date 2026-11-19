@@ -798,6 +798,40 @@ func Test_run(t *testing.T) {
 			args:               nil,
 			expectedGoldenFile: "run_template_cluster_capvcd_flux.golden",
 		},
+		{
+			name: "case 22: template cluster capa with release version, deletion prevention and labels",
+			flags: &flags.Flag{
+				Name:                     "test-prevent",
+				Provider:                 "capa",
+				Description:              "cluster that can't be deleted by mistake",
+				Release:                  "35.0.0",
+				Region:                   "the-region",
+				Organization:             "test",
+				ControlPlaneInstanceType: "control-plane-instance-type",
+				PreventDeletion:          true,
+				Label:                    []string{"environment=testing"},
+				App: common.AppConfig{
+					ClusterCatalog: "cluster",
+				},
+				AWS: common.AWSConfig{
+					MachinePool: common.AWSMachinePoolConfig{
+						Name:             "worker1",
+						AZs:              []string{"eu-west-1a", "eu-west-1b"},
+						InstanceType:     "big-one",
+						MaxSize:          5,
+						MinSize:          2,
+						RootVolumeSizeGB: 200,
+					},
+					AWSClusterRoleIdentityName: "default",
+					NetworkVPCCIDR:             "10.123.0.0/16",
+					PublicSubnetMask:           20,
+					PrivateSubnetMask:          18,
+					NetworkAZUsageLimit:        3,
+				},
+			},
+			args:               nil,
+			expectedGoldenFile: "run_template_cluster_capa_prevent_deletion.golden",
+		},
 	}
 
 	for _, tc := range testCases {

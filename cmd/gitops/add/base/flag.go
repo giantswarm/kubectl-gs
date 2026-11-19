@@ -12,6 +12,7 @@ import (
 
 const (
 	flagAzureSubscriptionID = "azure-subscription-id"
+	flagPreventDeletion     = "prevent-deletion"
 	flagProvider            = "provider"
 	flagRegion              = "region"
 )
@@ -20,6 +21,7 @@ type flag struct {
 	Provider            string
 	Region              string
 	AzureSubscriptionID string
+	PreventDeletion     bool
 }
 
 func supportedProviders() []string {
@@ -33,6 +35,7 @@ func supportedProviders() []string {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Provider, flagProvider, "", fmt.Sprintf("Installation infrastructure provider, supported values: %s", strings.Join(supportedProviders(), ", ")))
 	cmd.Flags().StringVar(&f.Region, flagRegion, "", "AWS/Azure region where cluster will be created")
+	cmd.Flags().BoolVar(&f.PreventDeletion, flagPreventDeletion, true, "Prevent clusters built on the base from getting deleted, set to false to allow it (see https://docs.giantswarm.io/tutorials/fleet-management/deletion-prevention/)")
 
 	// Azure only
 	cmd.Flags().StringVar(&f.AzureSubscriptionID, flagAzureSubscriptionID, "", "Azure subscription ID")
