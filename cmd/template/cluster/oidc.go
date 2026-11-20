@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/giantswarm/k8sclient/v8/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -47,7 +48,7 @@ func (r *runner) oidcValues(ctx context.Context, client k8sclient.Interface) (*c
 	}
 
 	if given.IssuerURL == "" {
-		mc, err := common.ManagementClusterOIDC(ctx, client.CtrlClient(), r.flag.ManagementCluster)
+		mc, err := common.ManagementClusterOIDC(ctx, client.CtrlClient(), r.flag.ManagementCluster, given.ClientID)
 		if err != nil {
 			if r.noKubeContext() {
 				err = fmt.Errorf("no kubeconfig context is selected: %w", err)
@@ -57,11 +58,13 @@ func (r *runner) oidcValues(ctx context.Context, client k8sclient.Interface) (*c
 		}
 
 		values = common.OIDCValues{
-			IssuerURL:     mc.IssuerURL,
-			ClientID:      common.DefaultTo(given.ClientID, mc.ClientID),
-			UsernameClaim: common.DefaultTo(given.UsernameClaim, mc.UsernameClaim),
-			GroupsClaim:   common.DefaultTo(given.GroupsClaim, mc.GroupsClaim),
+			IssuerURL:     mc.Values.IssuerURL,
+			CAPem:         mc.Values.CAPem,
+			ClientID:      mc.Values.ClientID,
+			UsernameClaim: common.DefaultTo(given.UsernameClaim, mc.Values.UsernameClaim),
+			GroupsClaim:   common.DefaultTo(given.GroupsClaim, mc.Values.GroupsClaim),
 		}
+		r.reportManagementClusterOIDC(mc)
 	}
 
 	if given.CAFile != "" {
@@ -73,6 +76,21 @@ func (r *runner) oidcValues(ctx context.Context, client k8sclient.Interface) (*c
 	}
 
 	return &values, nil
+}
+
+// reportManagementClusterOIDC tells on stderr which of the management
+// cluster's OIDC issuers the workload cluster trusts, so that the user can
+// check the choice before the cluster exists.
+func (r *runner) reportManagementClusterOIDC(mc common.ManagementClusterIssuer) {
+	r.warnf("OIDC: the workload cluster trusts %s with client ID %s, the Dex of management cluster %s, read from %s.\n",
+		mc.Values.IssuerURL, mc.Values.ClientID, mc.ManagementCluster, mc.Source)
+	if len(mc.ClientIDOverride) > 0 {
+		r.warnf("OIDC: --oidc-client-id %s is none of the client IDs the management cluster's Dex accepts (%s); using it as given.\n",
+			mc.Values.ClientID, strings.Join(mc.ClientIDOverride, ", "))
+	}
+	if len(mc.Skipped) > 0 {
+		r.warnf("OIDC: not copied, as only the management cluster's Dex is: %s.\n", strings.Join(mc.Skipped, ", "))
+	}
 }
 
 // noKubeContext tells whether the kubeconfig selects no context, so that the
