@@ -67,8 +67,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	// managed context (e.g. teleport), skip the MC credential validation step.
 	// The current context already provides valid MC access; we only need
 	// to proceed to the WC kubeconfig creation.
-	if r.canSkipMCLogin() {
-		_, _ = fmt.Fprintf(r.stdout, "Using the current kubeconfig context to reach the management cluster.\n")
+	if r.canSkipMCLogin(args) {
+		_, _ = fmt.Fprintf(r.stdout, "Using the current kubeconfig context %q to reach the management cluster.\n", r.currentContext())
 	} else {
 		switch len(args) {
 		// No arguments given - we try to reuse the existing context.
@@ -136,9 +136,13 @@ func (r *runner) isDirectWCLogin() bool {
 
 // canSkipMCLogin returns true when the WC OIDC flags indicate we can skip
 // the MC context credential validation. This allows using non-gs contexts
-// (e.g. teleport) that already provide valid MC access.
-func (r *runner) canSkipMCLogin() bool {
+// (e.g. teleport) that already provide valid MC access. An installation named
+// on the command line takes precedence when a kubeconfig context exists for it.
+func (r *runner) canSkipMCLogin(args []string) bool {
 	if !r.loginOptions.isWC {
+		return false
+	}
+	if r.installationContextExists(args) {
 		return false
 	}
 	// If at least issuer+client-id are provided, we know this is a direct
@@ -150,12 +154,39 @@ func (r *runner) canSkipMCLogin() bool {
 	// Also skip MC login when the current context is not a gs- context,
 	// since switchContext would fail anyway. The WC flow will still use
 	// the current context's k8s client for cluster discovery.
-	currentContext := r.loginOptions.contextOverride
-	if currentContext == "" {
-		currentContext = r.loginOptions.originContext
-	}
-	if _, contextType := kubeconfig.IsKubeContext(currentContext); contextType == kubeconfig.ContextTypeNone {
+	if _, contextType := kubeconfig.IsKubeContext(r.currentContext()); contextType == kubeconfig.ContextTypeNone {
 		return true
+	}
+	return false
+}
+
+func (r *runner) currentContext() string {
+	if r.loginOptions.contextOverride != "" {
+		return r.loginOptions.contextOverride
+	}
+	return r.loginOptions.originContext
+}
+
+// installationContextExists reports whether the kubeconfig holds a context
+// for the installation given as positional arguments, under any of the names
+// the login flow resolves it to.
+func (r *runner) installationContextExists(args []string) bool {
+	if len(args) == 0 {
+		return false
+	}
+	config, err := r.commonConfig.GetConfigAccess().GetStartingConfig()
+	if err != nil {
+		return false
+	}
+	identifier := strings.ToLower(strings.Join(args, "-"))
+	candidates := []string{identifier, kubeconfig.GetClientCertContextName(identifier)}
+	if isContext, _ := kubeconfig.IsKubeContext(identifier); !isContext {
+		candidates = append(candidates, kubeconfig.GenerateKubeContextName(identifier))
+	}
+	for _, name := range candidates {
+		if _, ok := config.Contexts[name]; ok {
+			return true
+		}
 	}
 	return false
 }

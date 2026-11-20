@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"golang.org/x/term"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -90,7 +91,11 @@ func (r *runner) getCluster(ctx context.Context, services serviceSet, provider s
 	}
 
 	namespaces, err := getAllOrganizationNamespaces(ctx, services.organizationService)
-	if err != nil {
+	if meta.IsNoMatchError(err) {
+		return nil, microerror.Maskf(organizationAPINotFoundError,
+			"The cluster of kubeconfig context %q does not serve organizations.security.giantswarm.io, so it is not a Giant Swarm management cluster or your access hides that API. Select the management cluster context, or pass --%s to look up the workload cluster in that organization's namespace.",
+			r.currentContext(), flagWCOrganization)
+	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
