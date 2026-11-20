@@ -51,7 +51,7 @@ base below an overlay, is refused.`
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo \
-  --base bases/clusters/capa/template \
+  --base bases/clusters/capa \
   --release 36.1.1
 
   # Add dummy workload cluster structure with definition from base and extra configuration
@@ -60,7 +60,7 @@ base below an overlay, is refused.`
   --management-cluster mymc \
   --organization myorg \
   --repository-name gitops-demo \
-  --base bases/clusters/capa/template \
+  --base bases/clusters/capa \
   --release 36.1.1 \
   --cluster-user-config /tmp/cluster_user_config.yaml`
 )
