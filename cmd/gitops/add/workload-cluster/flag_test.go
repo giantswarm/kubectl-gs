@@ -24,7 +24,7 @@ func Test_flag_Validate(t *testing.T) {
 		{
 			name: "with base and release",
 			flag: flag{
-				Base:              "bases/clusters/capa/template",
+				Base:              "bases/clusters/capa",
 				ManagementCluster: "demomc",
 				Name:              "demowc",
 				Organization:      "demoorg",
@@ -35,7 +35,7 @@ func Test_flag_Validate(t *testing.T) {
 		{
 			name: "with base and without release",
 			flag: flag{
-				Base:              "bases/clusters/capa/template",
+				Base:              "bases/clusters/capa",
 				ManagementCluster: "demomc",
 				Name:              "demowc",
 				Organization:      "demoorg",

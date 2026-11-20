@@ -42,18 +42,15 @@ func Test_NewManagementCluster(t *testing.T) {
 					RelativePath: "bases/clusters/capa",
 				},
 				{
-					RelativePath: "bases/clusters/capa/template",
-				},
-				{
-					RelativePath: "bases/clusters/capa/template/kustomization.yaml",
+					RelativePath: "bases/clusters/capa/kustomization.yaml",
 					GoldenFile:   "testdata/expected/0-capa-kustomization.golden",
 				},
 				{
-					RelativePath: "bases/clusters/capa/template/cluster.yaml",
+					RelativePath: "bases/clusters/capa/cluster.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 				{
-					RelativePath: "bases/clusters/capa/template/cluster_config.yaml",
+					RelativePath: "bases/clusters/capa/cluster_config.yaml",
 					GoldenFile:   "testdata/expected/foo-bar.golden",
 				},
 			},
@@ -90,5 +87,16 @@ func Test_NewManagementCluster(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func Test_NewClusterBase_RecordsTheProviderDirectory(t *testing.T) {
+	config, err := NewClusterBase(common.StructureConfig{Provider: "capa"})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	if config.MetadataLayer.Path != "bases/clusters/capa" {
+		t.Errorf("expected the base recorded at bases/clusters/capa, got %s", config.MetadataLayer.Path)
 	}
 }
