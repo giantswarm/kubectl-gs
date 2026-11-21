@@ -30,7 +30,7 @@ spec:
       release: {{ .Release }}
       {{- end }}
       organization: {{ .Organization }}
-  prune: false
+  prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

@@ -27,9 +27,9 @@ workload-cluster \
 --repository-name <gitops_repo_name> \
 
 It writes the cluster's directory, workload-clusters/<wc_id>, and the Flux
-Kustomizations that apply it, next to it. The cluster's kustomization.yaml lists
-what they apply, and never out-of-band/, which goes straight into the workload
-cluster.
+Kustomizations that apply it, next to it. The cluster's kustomization.yaml
+lists what they apply, and never out-of-band/, which goes straight into the
+workload cluster.
 
 With --base, the cluster's definition goes into cluster/, and the cluster gets
 two Kustomizations: <wc_id>.yaml applies cluster/, and <wc_id>-apps.yaml applies

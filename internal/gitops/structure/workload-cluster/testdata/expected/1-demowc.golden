@@ -24,7 +24,7 @@ spec:
       cluster_description: "demowc managed by GitOps"
       release: 0.13.0
       organization: demoorg
-  prune: false
+  prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

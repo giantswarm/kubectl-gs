@@ -19,8 +19,8 @@ const (
 It does not only create a basic directory structure, but also configures cloned
 repository with git hooks.
 
-The command may be run more than once, basically each user who starts working with
-the GitOps repository may run it against his cloned version.
+The command may be run more than once, basically each user who starts working
+with the GitOps repository may run it against his cloned version.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`
