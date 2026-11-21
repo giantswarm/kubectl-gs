@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -130,5 +131,21 @@ func checkNamespaceKustomization(t *testing.T, fs *afero.Afero) {
 	}
 	if diff := cmp.Diff(expected, summary); diff != "" {
 		t.Errorf("namespace.yaml (-want +got):\n%s", diff)
+	}
+}
+
+// Test_Namespace_NamesTheKustomization checks the error for an organisation
+// directory the organisation's kustomization.yaml can't list.
+func Test_Namespace_NamesTheKustomization(t *testing.T) {
+	fs := layoutRepo(t, map[string]string{
+		testMC + "/demomc.yaml":              namespaceMCKustomization,
+		testOrg + "/demoorg.yaml":            organization,
+		testOrg + "/secrets/secret.enc.yaml": secret,
+	})
+	layer := metadata.Layer{Kind: metadata.LayerOrganization, Path: testOrg, StructureVersion: 2}
+
+	_, err := version3.Apply(fs, testRepo, layer, Env{})
+	if !IsUnexpectedFile(err) || !strings.Contains(err.Error(), "organisation's kustomization.yaml") {
+		t.Fatalf("expected the organisation's kustomization.yaml named, got: %v", err)
 	}
 }

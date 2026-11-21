@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -93,5 +94,85 @@ func Test_Upgrade_FailsWithoutIgnoredFiles(t *testing.T) {
 	err := r.run(context.Background(), newTestCommand(testRepo, false), nil)
 	if err == nil || !strings.Contains(err.Error(), "git ls-files failed") {
 		t.Fatalf("expected the upgrade to fail, got: %v", err)
+	}
+}
+
+// Test_Upgrade_RefusedStepWritesNothing checks that the upgrade says
+// nothing was written when a migration refuses, as it does so on the
+// in-memory copy, before the repository changes, rather than how to undo
+// changes that never happened.
+func Test_Upgrade_RefusedStepWritesNothing(t *testing.T) {
+	refusing := migration.Migration{
+		From:        1,
+		Description: "Refuses",
+		Kinds:       []string{metadata.LayerOrganization},
+		Apply: func(_ *afero.Afero, _ string, _ metadata.Layer, _ migration.Env) ([]string, error) {
+			return nil, errors.New("refused")
+		},
+	}
+
+	for _, tc := range []struct {
+		name   string
+		dryRun bool
+		force  bool
+	}{
+		{name: "real run"},
+		{name: "forced run", force: true},
+		{name: "dry run", dryRun: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			clearRepositoryVars(t)
+
+			r := newTestRunner(versionOneRepo(t).Fs, 2, new(bytes.Buffer))
+			r.migrations = []migration.Migration{refusing}
+			r.flag.Force = tc.force
+
+			err := r.run(context.Background(), newTestCommand(testRepo, tc.dryRun), nil)
+			if err == nil || !strings.Contains(err.Error(), "Nothing was written") || strings.Contains(err.Error(), "git -C") {
+				t.Errorf("expected the error to say nothing was written, got: %v", err)
+			}
+		})
+	}
+}
+
+// failsOnDisk returns a migration that fails on the file system *onDisk
+// points at, and succeeds on any other, such as the in-memory copy a real
+// upgrade runs on first.
+func failsOnDisk(onDisk **afero.Afero) migration.Migration {
+	return migration.Migration{
+		From:        1,
+		Description: "Fails on disk",
+		Kinds:       []string{metadata.LayerOrganization},
+		Apply: func(fs *afero.Afero, _ string, _ metadata.Layer, _ migration.Env) ([]string, error) {
+			if fs != *onDisk {
+				return nil, nil
+			}
+			return nil, fmt.Errorf("boom")
+		},
+	}
+}
+
+// failsHalfwayOnDisk returns a migration that goes through on the in-memory
+// copy, and fails half way on the repository, after changing a file and
+// adding another.
+func failsHalfwayOnDisk() migration.Migration {
+	return migration.Migration{
+		From:        1,
+		Description: "Fails half way",
+		Kinds:       []string{metadata.LayerOrganization},
+		Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer, _ migration.Env) ([]string, error) {
+			if _, ok := fs.Fs.(*afero.OsFs); !ok {
+				return nil, nil
+			}
+			err := fs.WriteFile(filepath.Join(repoPath, layer.Path, "kustomization.yaml"), []byte("changed\n"), 0600)
+			if err != nil {
+				return nil, err
+			}
+			err = fs.WriteFile(filepath.Join(repoPath, layer.Path, "new.yaml"), []byte("new\n"), 0600)
+			if err != nil {
+				return nil, err
+			}
+			return nil, errors.New("boom")
+		},
 	}
 }

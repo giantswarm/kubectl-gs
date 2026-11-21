@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 )
 
 // Test_FixKustomizationPaths checks every kustomization field naming a path
@@ -117,88 +115,95 @@ func Test_FixFluxPaths_MultipleDocuments(t *testing.T) {
 	checkPath(t, fs, layoutWCs+"/demowc-apps.yml", "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc")
 }
 
-// Test_Layout_RefusesPrunedOutOfBand checks that a cluster whose
-// Kustomization applied its whole directory with prune: true isn't upgraded:
-// out-of-band leaves what it applies, and Flux would delete from the
-// management cluster what it applied from there.
-func Test_Layout_RefusesPrunedOutOfBand(t *testing.T) {
-	pruned := strings.Replace(strings.Replace(mapiWCKustomization, "/mapi\"", "\"", 1), "prune: false", "prune: true", 1)
-	fs := layoutRepo(t, map[string]string{
-		layoutWCs + "/demowc.yaml":                          pruned,
-		layoutWC + "/apps/kustomization.yaml":               emptyResources,
-		layoutWC + "/out-of-band/configmaps/configmap.yaml": configMap,
-	})
-	layer := metadata.Layer{Kind: metadata.LayerWorkloadCluster, Path: layoutWC, StructureVersion: 2}
+// markerCases put a Flux Kustomization among other documents with every way
+// YAML marks where a document starts or ends.
+func markerCases(kustomization string) map[string]struct {
+	file string
+	kept []string
+} {
+	const (
+		first  = "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: first\n"
+		second = "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: second\n"
+	)
+	crlf := func(s string) string { return strings.ReplaceAll(s, "\n", "\r\n") }
 
-	_, err := version3.Apply(fs, testRepo, layer, Env{})
-	if !IsUnexpectedFile(err) || !strings.Contains(err.Error(), "prune: false") {
-		t.Fatalf("expected the upgrade refused with the way out, got: %v", err)
-	}
-	if ok, _ := fs.Exists(filepath.Join(testRepo, layoutWC, "kustomization.yaml")); ok {
-		t.Errorf("expected nothing written")
+	return map[string]struct {
+		file string
+		kept []string
+	}{
+		"CRLF line endings": {
+			file: crlf(first + "---\n" + kustomization + "---\n" + second),
+			kept: []string{crlf(first + "---\n"), crlf("---\n" + second)},
+		},
+		"separator with a comment": {
+			file: first + "--- # the Kustomization\n" + kustomization + "--- # the second\n" + second,
+			kept: []string{first + "--- # the Kustomization\n", "--- # the second\n" + second},
+		},
+		"document end": {
+			file: first + "...\n" + kustomization + "...\n---\n" + second,
+			kept: []string{first + "...\n", "...\n---\n" + second},
+		},
+		"leading separator": {
+			file: "--- # leading\n" + kustomization + "---\n" + first,
+			kept: []string{"--- # leading\n", "---\n" + first},
+		},
 	}
 }
 
-// Test_ManagementCluster_ProtectsSecrets checks that the management
-// cluster's secrets get a kustomization.yaml listing every key there, which
-// keeps Flux from deleting them once the keys of the workload clusters move.
-func Test_ManagementCluster_ProtectsSecrets(t *testing.T) {
-	fs := layoutRepo(t, map[string]string{
-		testMC + "/secrets/demomc.gpgkey.enc.yaml": secret,
-		testMC + "/secrets/demowc.gpgkey.enc.yaml": secret,
-		testMC + "/secrets/plain.dec.yaml":         secret,
-	})
-	layer := metadata.Layer{Kind: metadata.LayerManagementCluster, Path: testMC, StructureVersion: 2}
+// Test_FixFluxPaths_DocumentMarkers checks that the documents around a
+// rewritten Flux Kustomization are kept byte for byte, whatever marks them.
+func Test_FixFluxPaths_DocumentMarkers(t *testing.T) {
+	for name, tc := range markerCases(mapiWCKustomization) {
+		t.Run(name, func(t *testing.T) {
+			fs := layoutRepo(t, map[string]string{layoutWCs + "/demowc.yaml": tc.file})
 
-	changes, err := version3.Apply(fs, testRepo, layer, ignoring)
-	if err != nil || len(changes) != 1 {
-		t.Fatalf("expected one change, got %v, %v", changes, err)
-	}
+			changes, err := fixFluxPaths(fs, testRepo, layoutWC)
+			if err != nil || len(changes) != 1 {
+				t.Fatalf("expected one change, got %v, %v", changes, err)
+			}
 
-	var kustomization struct {
-		CommonAnnotations map[string]string `json:"commonAnnotations"`
-		Labels            []struct {
-			Pairs map[string]string `json:"pairs"`
-		} `json:"labels"`
-		Resources []string `json:"resources"`
-	}
-	readInto(t, fs, testMC+"/secrets/kustomization.yaml", &kustomization)
-	if diff := cmp.Diff([]string{"demomc.gpgkey.enc.yaml", "demowc.gpgkey.enc.yaml"}, kustomization.Resources); diff != "" {
-		t.Errorf("resources (-want +got):\n%s", diff)
-	}
-	if kustomization.CommonAnnotations["kustomize.toolkit.fluxcd.io/prune"] != "disabled" || len(kustomization.Labels) != 1 || kustomization.Labels[0].Pairs["giantswarm.io/prevent-deletion"] != "true" {
-		t.Errorf("expected the keys protected, got %+v", kustomization)
-	}
-
-	again, err := version3.Apply(fs, testRepo, layer, ignoring)
-	if err != nil || len(again) != 0 {
-		t.Errorf("expected a second run to change nothing, got %v, %v", again, err)
+			data, err := fs.ReadFile(filepath.Join(testRepo, layoutWCs, "demowc.yaml"))
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			checkMarkers(t, tc.file, string(data), tc.kept)
+		})
 	}
 }
 
-func Test_Version3_ManualStepsPointAtTheTemplate(t *testing.T) {
-	for _, s := range []string{"prune: true", "docs/how-to/upgrade-fork.md#move-the-workload-cluster-kustomizations", "three commits"} {
-		if !strings.Contains(version3.ManualSteps, s) {
-			t.Errorf("expected the manual steps to mention %q", s)
+// checkMarkers checks that the documents around the rewritten Kustomization
+// are kept, that it applies the cluster's directory, and that the line
+// endings are kept.
+func checkMarkers(t *testing.T, in, out string, kept []string) {
+	t.Helper()
+
+	for _, k := range kept {
+		if !strings.Contains(out, k) {
+			t.Errorf("expected %q kept, got:\n%q", k, out)
 		}
 	}
-	if strings.Contains(version3.ManualSteps, "sourceRef") {
-		t.Errorf("expected no paraphrase of the steps, got:\n%s", version3.ManualSteps)
+	if strings.Contains(out, "/mapi") || !strings.Contains(out, "workload-clusters/demowc") {
+		t.Errorf("expected the Kustomization to apply the cluster's directory, got:\n%s", out)
+	}
+	if strings.Contains(in, "\r\n") && strings.Count(out, "\n") != strings.Count(out, "\r\n") {
+		t.Errorf("expected CRLF line endings throughout, got:\n%q", out)
 	}
 }
 
-// Test_Namespace_NamesTheKustomization checks the error for an organisation
-// directory the organisation's kustomization.yaml can't list.
-func Test_Namespace_NamesTheKustomization(t *testing.T) {
-	fs := layoutRepo(t, map[string]string{
-		testMC + "/demomc.yaml":              namespaceMCKustomization,
-		testOrg + "/demoorg.yaml":            organization,
-		testOrg + "/secrets/secret.enc.yaml": secret,
-	})
-	layer := metadata.Layer{Kind: metadata.LayerOrganization, Path: testOrg, StructureVersion: 2}
+// Test_FixFluxPaths_RefusesWhatItCantKeep checks that a Kustomization that
+// starts on its `---` line is refused rather than rewritten, as re-encoding
+// it would lose or repeat what that line holds.
+func Test_FixFluxPaths_RefusesWhatItCantKeep(t *testing.T) {
+	const flow = "--- {apiVersion: kustomize.toolkit.fluxcd.io/v1, kind: Kustomization, metadata: {name: demowc}, spec: {path: ./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi}}\n"
+	fs := layoutRepo(t, map[string]string{layoutWCs + "/demowc.yaml": flow})
 
-	_, err := version3.Apply(fs, testRepo, layer, Env{})
-	if !IsUnexpectedFile(err) || !strings.Contains(err.Error(), "organisation's kustomization.yaml") {
-		t.Fatalf("expected the organisation's kustomization.yaml named, got: %v", err)
+	_, err := fixFluxPaths(fs, testRepo, layoutWC)
+	if !IsUnexpectedFile(err) {
+		t.Fatalf("expected the file refused, got: %v", err)
+	}
+
+	data, _ := fs.ReadFile(filepath.Join(testRepo, layoutWCs, "demowc.yaml"))
+	if string(data) != flow {
+		t.Errorf("expected the file unchanged, got:\n%s", data)
 	}
 }

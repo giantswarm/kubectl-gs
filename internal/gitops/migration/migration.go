@@ -1,6 +1,7 @@
 package migration
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"sort"
@@ -190,7 +191,13 @@ func (p *Plan) run(fs *afero.Afero, repoPath string) (*Result, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	return p.apply(fs, repoPath)
+	result, err := p.apply(fs, repoPath)
+	var se *StepError
+	if errors.As(err, &se) {
+		se.OnDisk = true
+	}
+
+	return result, microerror.Mask(err)
 }
 
 // dryRun applies the steps to an in-memory copy of the repository, and lists

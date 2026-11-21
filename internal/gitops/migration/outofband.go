@@ -74,19 +74,20 @@ func prunesDirectory(fs *afero.Afero, file, dir string) (bool, error) {
 		return false, microerror.Mask(err)
 	}
 
-	for _, document := range documentSeparator.Split(string(data), -1) {
-		if !strings.Contains(document, dir) {
+	documents, err := splitDocuments(data, file)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	for _, d := range documents {
+		if d.node == nil {
 			continue
 		}
-		object, err := decodeMapping([]byte(document), file)
-		if err != nil {
-			return false, microerror.Mask(err)
-		}
-		path := fluxPath(object)
+		path := fluxPath(d.node)
 		if path == nil {
 			continue
 		}
-		prune := mapValue(mapValue(object, "spec"), "prune")
+		prune := mapValue(mapValue(d.node, "spec"), "prune")
 		if strings.TrimSuffix(strings.TrimPrefix(path.Value, "./"), "/") == dir && prune != nil && prune.Value == "true" {
 			return true, nil
 		}

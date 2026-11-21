@@ -3,7 +3,6 @@ package migration
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -142,36 +141,35 @@ func fixFluxPaths(fs *afero.Afero, repoPath, wcPath string) ([]string, error) {
 	return changes, nil
 }
 
-// documentSeparator splits a YAML stream into its documents.
-var documentSeparator = regexp.MustCompile(`(?m)^---[ \t]*\n`)
-
 // fixFluxPath rewrites the Flux Kustomizations in the file that apply
-// `mapi`, document by document, and keeps every other document as it is.
+// `mapi`, document by document, and keeps every other document byte for
+// byte.
 func fixFluxPath(fs *afero.Afero, repoPath, file, mapi, wcPath string) ([]string, error) {
 	data, err := fs.ReadFile(file)
 	if err != nil || !strings.Contains(string(data), mapi) {
 		return nil, microerror.Mask(err)
 	}
 
-	bounds := documentSeparator.FindAllIndex(data, -1)
+	documents, err := splitDocuments(data, rel(repoPath, file))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	var out []byte
 	var changes []string
-	start := 0
-	for i := 0; i <= len(bounds); i++ {
-		end, next := len(data), len(data)
-		if i < len(bounds) {
-			end, next = bounds[i][0], bounds[i][1]
+	for _, d := range documents {
+		path := fixFluxDocument(d.node, mapi, wcPath)
+		if path == "" {
+			out = append(out, d.bytes()...)
+			continue
 		}
 
-		document, path, err := fixFluxDocument(data[start:end], file, mapi, wcPath)
+		rewritten, err := d.rewrite(rel(repoPath, file))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		if path != "" {
-			changes = append(changes, fmt.Sprintf("%s: applies %s", rel(repoPath, file), path))
-		}
-		out = append(append(out, document...), data[end:next]...)
-		start = next
+		out = append(out, rewritten...)
+		changes = append(changes, fmt.Sprintf("%s: applies %s", rel(repoPath, file), path))
 	}
 
 	if len(changes) == 0 {
@@ -181,35 +179,25 @@ func fixFluxPath(fs *afero.Afero, repoPath, file, mapi, wcPath string) ([]string
 	return changes, microerror.Mask(fs.WriteFile(file, out, 0644))
 }
 
-// fixFluxDocument returns the document with the path of a Flux
-// Kustomization applying `mapi` pointed at the cluster's directory, and that
-// path, or the document as it is and an empty string.
-func fixFluxDocument(document []byte, file, mapi, wcPath string) ([]byte, string, error) {
-	if !strings.Contains(string(document), mapi) {
-		return document, "", nil
+// fixFluxDocument points the path of a Flux Kustomization applying `mapi`
+// at the cluster's directory, and returns the new path, or an empty string
+// for any other document.
+func fixFluxDocument(object *yaml.Node, mapi, wcPath string) string {
+	if object == nil {
+		return ""
 	}
 
-	kustomization, err := decodeMapping(document, file)
-	if err != nil {
-		return nil, "", microerror.Mask(err)
-	}
-
-	path := fluxPath(kustomization)
+	path := fluxPath(object)
 	if path == nil {
-		return document, "", nil
+		return ""
 	}
 	current := strings.TrimPrefix(path.Value, "./")
 	if current != mapi && !strings.HasPrefix(current, mapi+"/") {
-		return document, "", nil
+		return ""
 	}
 	path.Value = "./" + wcPath + strings.TrimPrefix(current, mapi)
 
-	encoded, err := encodeYAML(kustomization)
-	if err != nil {
-		return nil, "", microerror.Mask(err)
-	}
-
-	return encoded, path.Value, nil
+	return path.Value
 }
 
 // fluxPath returns the `spec.path` of a Flux Kustomization, or nil for any

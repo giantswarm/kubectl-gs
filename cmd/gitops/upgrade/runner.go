@@ -141,10 +141,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	result, err := plan.Run(r.fs, repoPath, md, dryRun)
 	if migration.IsMigrationFailed(err) {
-		if !guarded {
-			return microerror.Maskf(upgradeFailedError, "%s\nNothing was written to the repository.", err)
-		}
-		return microerror.Maskf(upgradeFailedError, "%s\n%s", err, r.undoHint(repoPath))
+		return microerror.Maskf(upgradeFailedError, "%s\n%s", err, r.failureHint(repoPath, guarded, err))
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
@@ -279,6 +276,16 @@ func (r *runner) ensureClean(repoPath string) error {
 		more,
 		flagForce,
 	)
+}
+
+// failureHint says what a failed migration left behind: nothing, unless it
+// failed on the repository itself, after the in-memory copy went through.
+func (r *runner) failureHint(repoPath string, guarded bool, err error) string {
+	if !guarded || !migration.FailedOnDisk(err) {
+		return "Nothing was written to the repository."
+	}
+
+	return r.undoHint(repoPath)
 }
 
 // undoHint tells the user how to get back to where the upgrade started. With

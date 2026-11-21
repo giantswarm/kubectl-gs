@@ -132,18 +132,31 @@ func adoptManagementClusters(fs *afero.Afero, repoPath string, result *AdoptionR
 	}
 
 	for _, mc := range mcs {
-		result.Metadata.Upsert(Layer{Kind: LayerManagementCluster, Path: key.BaseDirPath(mc, "", "")})
-
-		// Apps are only walked under workload clusters: `gitops add app`
-		// requires both --organization and --workload-cluster, so an `apps`
-		// directory anywhere else was not created by it.
-		err = adoptOrganizations(fs, repoPath, mc, result)
+		err = adoptManagementCluster(fs, repoPath, mc, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	return nil
+}
+
+// adoptManagementCluster records the management cluster and its
+// organisations.
+func adoptManagementCluster(fs *afero.Afero, repoPath, mc string, result *AdoptionResult) error {
+	mcDir := key.BaseDirPath(mc, "", "")
+
+	version, err := managementClusterVersion(fs, repoPath, mcDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	result.Metadata.Upsert(Layer{Kind: LayerManagementCluster, Path: mcDir, StructureVersion: version})
+
+	// Apps are only walked under workload clusters: `gitops add app`
+	// requires both --organization and --workload-cluster, so an `apps`
+	// directory anywhere else was not created by it.
+	return microerror.Mask(adoptOrganizations(fs, repoPath, mc, result))
 }
 
 // adoptOrganizations walks `management-clusters/MC/organizations/*`.
@@ -177,21 +190,6 @@ func adoptOrganization(fs *afero.Afero, repoPath, mc, org string, result *Adopti
 	result.Metadata.Upsert(Layer{Kind: LayerOrganization, Path: orgDir, StructureVersion: version})
 
 	return microerror.Mask(adoptWorkloadClusters(fs, repoPath, mc, org, result))
-}
-
-// organizationVersion returns lastMapiVersion for an organisation without
-// its namespace Kustomization, which structure version 3 brought, and the
-// current version otherwise.
-func organizationVersion(fs *afero.Afero, repoPath, orgDir string) (int, error) {
-	exists, err := fs.Exists(filepath.Join(repoPath, orgDir, key.NamespaceFileName()))
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-	if !exists {
-		return lastMapiVersion, nil
-	}
-
-	return StructureVersion, nil
 }
 
 // adoptWorkloadClusters walks
@@ -233,62 +231,6 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 	}
 
 	return nil
-}
-
-// lastMapiVersion is the last structure version whose workload clusters had
-// a `mapi` directory, or no `kustomization.yaml` of their own, so that Flux
-// applied all of the cluster's directory, `out-of-band` included.
-const lastMapiVersion = 2
-
-// workloadClusterVersion returns the structure version to record a workload
-// cluster at, from its layout and from what it deploys.
-func workloadClusterVersion(fs *afero.Afero, repoPath, wcDir string) (int, error) {
-	mapiDir := key.ResourcePath(wcDir, key.MapiDirName())
-
-	version, err := adoptedVersion(fs, repoPath,
-		key.ResourcePath(wcDir, key.ClusterDirName()),
-		key.ResourcePath(wcDir, key.AppsDirName()),
-		key.ResourcePath(mapiDir, key.ClusterDirName()),
-		key.ResourcePath(mapiDir, key.AppsDirName()),
-	)
-	if err != nil || version < lastMapiVersion {
-		return version, microerror.Mask(err)
-	}
-
-	layout, err := layoutVersion(fs, filepath.Join(repoPath, wcDir))
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-
-	return min(version, layout), nil
-}
-
-// layoutVersion returns lastMapiVersion for a workload cluster directory
-// with a `mapi` directory, or with `cluster` or `apps` but no
-// `kustomization.yaml`, and the current version otherwise.
-func layoutVersion(fs *afero.Afero, dir string) (int, error) {
-	for _, d := range []string{key.MapiDirName(), key.ClusterDirName(), key.AppsDirName()} {
-		exists, err := dirExists(fs, filepath.Join(dir, d))
-		if err != nil {
-			return 0, microerror.Mask(err)
-		}
-		if !exists {
-			continue
-		}
-		if d == key.MapiDirName() {
-			return lastMapiVersion, nil
-		}
-
-		exists, err = fs.Exists(filepath.Join(dir, key.SigsKustomizationFileName()))
-		if err != nil {
-			return 0, microerror.Mask(err)
-		}
-		if !exists {
-			return lastMapiVersion, nil
-		}
-	}
-
-	return StructureVersion, nil
 }
 
 // adoptApps records the `apps/*` directories holding an App CR under the given

@@ -253,14 +253,10 @@ func Test_Upgrade_RefusesMissingPath(t *testing.T) {
 }
 
 func Test_Upgrade_FailureHints(t *testing.T) {
-	failing := migration.Migration{
-		From:        1,
-		Description: "Always fails",
-		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(_ *afero.Afero, _ string, _ metadata.Layer, _ migration.Env) ([]string, error) {
-			return nil, fmt.Errorf("boom")
-		},
-	}
+	// The migration fails on the repository, after the in-memory copy
+	// went through: only then can files already have changed.
+	var onDisk *afero.Afero
+	failing := failsOnDisk(&onDisk)
 
 	for _, tc := range []struct {
 		name      string
@@ -272,7 +268,6 @@ func Test_Upgrade_FailureHints(t *testing.T) {
 		{name: "real run", want: "git -C /repo checkout -- . && git -C /repo clean -fd"},
 		{name: "forced run", force: true, want: "git -C /repo status"},
 		{name: "forced run outside git", force: true, untracked: true, want: "cannot be restored automatically"},
-		{name: "dry run", dryRun: true, want: "Nothing was written"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			clearRepositoryVars(t)
@@ -281,6 +276,7 @@ func Test_Upgrade_FailureHints(t *testing.T) {
 			out := new(bytes.Buffer)
 
 			r := newTestRunner(fs.Fs, 2, out)
+			onDisk = r.fs
 			r.migrations = []migration.Migration{failing}
 			r.flag.Force = tc.force
 			if tc.untracked {
@@ -385,14 +381,8 @@ func Test_Upgrade_ForcedHintNamesGitFailure(t *testing.T) {
 
 	r := newTestRunner(fs.Fs, 2, out)
 	r.flag.Force = true
-	r.migrations = []migration.Migration{{
-		From:        1,
-		Description: "Always fails",
-		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(*afero.Afero, string, metadata.Layer, migration.Env) ([]string, error) {
-			return nil, fmt.Errorf("boom")
-		},
-	}}
+	onDisk := r.fs
+	r.migrations = []migration.Migration{failsOnDisk(&onDisk)}
 	r.dirtyPaths = func(string) ([]string, error) { return nil, errGitNotFound }
 
 	err := r.run(context.Background(), newTestCommand(testRepo, false), nil)

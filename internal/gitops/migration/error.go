@@ -55,6 +55,13 @@ func IsMigrationFailed(err error) bool {
 	return errors.As(err, &se)
 }
 
+// FailedOnDisk reports whether a migration failed on the repository, after
+// it went through on the in-memory copy, so files may already have changed.
+func FailedOnDisk(err error) bool {
+	var se *StepError
+	return errors.As(err, &se) && se.OnDisk
+}
+
 // stagingError is returned when the repository cannot be read into the
 // in-memory copy a dry run works on.
 var stagingError = &microerror.Error{

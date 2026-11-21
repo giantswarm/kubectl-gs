@@ -134,6 +134,11 @@ type StepChanges struct {
 type StepError struct {
 	Step Step
 	Err  error
+
+	// OnDisk is whether the step failed on the repository, after it went
+	// through on the in-memory copy, so files may have changed. A step that
+	// fails on the copy fails before anything is written.
+	OnDisk bool
 }
 
 func (e *StepError) Error() string {
