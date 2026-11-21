@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# What the cluster's Kustomizations apply. Never list out-of-band/ here: what
+# it holds goes straight into the workload cluster, never into the management
+# cluster.
+resources:
+  - apps/

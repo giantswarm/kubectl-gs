@@ -26,11 +26,25 @@ workload-cluster \
 --organization <org_name> \
 --repository-name <gitops_repo_name> \
 
+It writes the cluster's directory, workload-clusters/<wc_id>, and the Flux
+Kustomizations that apply it, next to it. The cluster's kustomization.yaml lists
+what they apply, and never out-of-band/, which goes straight into the workload
+cluster.
+
+With --base, the cluster's definition goes into cluster/, and the cluster gets
+two Kustomizations: <wc_id>.yaml applies cluster/, and <wc_id>-apps.yaml applies
+the apps in apps/ once the cluster is ready. Without --base, a single
+Kustomization, <wc_id>.yaml, applies the apps. Running the command again with
+--base adds the definition to that single Kustomization.
+
 It respects the Giantswarm's GitOps repository structure recommendation:
-https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
+https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md#flux-kustomizations.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc.md
+https://github.com/giantswarm/gitops-template/blob/main/docs/tutorials/basic/getting-started.md#3-create-a-workload-cluster
+
+What it writes:
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#workload-cluster
 
 With --base, the base deploys the cluster as a Flux HelmRelease of the
 release-<provider> chart, and --release sets the chart version through the

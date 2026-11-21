@@ -4,12 +4,22 @@ metadata:
   name: {{ .ManagementCluster }}-clusters-{{ .WorkloadCluster }}
   namespace: default
 spec:
-  interval: 1m
-  {{- if .SkipMAPI }}
-  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}"
-  {{- else }}
-  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}/mapi"
+  {{- if .AppsKustomization }}
+  # Applies the cluster and its base apps, in cluster/. Ready once Cluster API
+  # reports the cluster Available. The Kustomization in {{ .WorkloadCluster }}-apps.yaml
+  # depends on this one, so the secondary apps install once the cluster is up.
+  healthCheckExprs:
+    - apiVersion: cluster.x-k8s.io/v1beta2
+      kind: Cluster
+      current: status.conditions.exists(c, c.type == 'Available' && c.status == 'True')
+  healthChecks:
+    - apiVersion: cluster.x-k8s.io/v1beta2
+      kind: Cluster
+      name: {{ .WorkloadCluster }}
+      namespace: org-{{ .Organization }}
   {{- end }}
+  interval: 1m
+  path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}{{ if .AppsKustomization }}/cluster{{ end }}"
   postBuild:
     substitute:
       cluster_name: {{ .WorkloadCluster }}
@@ -25,4 +35,9 @@ spec:
   sourceRef:
     kind: GitRepository
     name: {{ .RepositoryName }}
+  {{- if .AppsKustomization }}
+  # long enough for a new cluster to come up
+  timeout: 30m
+  {{- else }}
   timeout: 2m
+  {{- end }}

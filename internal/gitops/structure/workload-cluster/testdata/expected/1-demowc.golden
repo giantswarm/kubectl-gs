@@ -4,8 +4,20 @@ metadata:
   name: demomc-clusters-demowc
   namespace: default
 spec:
+  # Applies the cluster and its base apps, in cluster/. Ready once Cluster API
+  # reports the cluster Available. The Kustomization in demowc-apps.yaml
+  # depends on this one, so the secondary apps install once the cluster is up.
+  healthCheckExprs:
+    - apiVersion: cluster.x-k8s.io/v1beta2
+      kind: Cluster
+      current: status.conditions.exists(c, c.type == 'Available' && c.status == 'True')
+  healthChecks:
+    - apiVersion: cluster.x-k8s.io/v1beta2
+      kind: Cluster
+      name: demowc
+      namespace: org-demoorg
   interval: 1m
-  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
+  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster"
   postBuild:
     substitute:
       cluster_name: demowc
@@ -17,4 +29,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: gitops-demo
-  timeout: 2m
+  # long enough for a new cluster to come up
+  timeout: 30m

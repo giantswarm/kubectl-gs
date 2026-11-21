@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	appDir        = "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world"
+	appDir        = "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/hello-world"
 	ociRepository = `apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:

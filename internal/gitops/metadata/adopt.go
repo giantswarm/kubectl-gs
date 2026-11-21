@@ -193,10 +193,11 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 
 		result.Metadata.Upsert(Layer{Kind: LayerWorkloadCluster, Path: wcDir, StructureVersion: version})
 
-		// Apps live under `WC_NAME/mapi/apps` when the mapi directory is in
-		// use, and under `WC_NAME/apps` when the cluster was added with
-		// `--skip-mapi`. Both are checked, so adoption does not depend on
-		// knowing which flag was used at creation time.
+		// Apps live under `WC_NAME/apps`, or under `WC_NAME/mapi/apps` in
+		// clusters added before the mapi directory was dropped. Both are
+		// checked. Nothing is read from `WC_NAME/out-of-band`: it goes straight
+		// into the workload cluster, so it holds no layer of the management
+		// cluster.
 		err = adoptApps(fs, repoPath, mapiDir, result)
 		if err != nil {
 			return microerror.Mask(err)

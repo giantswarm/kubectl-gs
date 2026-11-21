@@ -32,8 +32,8 @@ from a base, are refused.
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
-Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/guides/automatic-updates.md`
+What it changes:
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#automatic-updates`
 
 	examples = `  # Enable automatic updates for hello-world app
     kubectl gs gitops add automatic-update \

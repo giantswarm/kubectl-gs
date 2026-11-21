@@ -30,17 +30,14 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
-	if !config.SkipMAPI {
-		wcDir = key.ResourcePath(wcDir, key.MapiDirName())
-	}
 
-	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps
 	appsDir := key.ResourcePath(wcDir, key.AppsDirName())
 
-	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps/APP_NAME
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME
 	appDir := key.ResourcePath(appsDir, config.AppName)
 
-	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps/kustomization.yaml
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/kustomization.yaml
 	appsKusFile := key.ResourcePath(appsDir, key.SigsKustomizationFileName())
 
 	// We start from the `apps` directory despite the fact this directory

@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   interval: 1m
-  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi"
+  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
   postBuild:
     substitute:
       cluster_name: demowc

@@ -17,6 +17,7 @@ import (
 	clustercommon "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 	clusterprovider "github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/provider"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 	structure "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/workload-cluster"
 	commonkey "github.com/giantswarm/kubectl-gs/v6/internal/key"
@@ -58,7 +59,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		ManagementCluster: r.flag.ManagementCluster,
 		WorkloadCluster:   r.flag.Name,
 		Organization:      r.flag.Organization,
-		SkipMAPI:          r.flag.SkipMAPI,
 		RepositoryName:    r.flag.RepositoryName,
 	}
 
@@ -69,26 +69,9 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	if r.flag.Base != "" {
-		baseDir := filepath.Join(localPath, r.flag.Base)
-		exists, err := afero.DirExists(r.fs, baseDir)
+		err = r.checkBase(ctx, localPath, &config)
 		if err != nil {
 			return microerror.Mask(err)
-		}
-		if !exists {
-			return microerror.Maskf(invalidFlagsError, "--%s %q not found under %q", flagBase, r.flag.Base, localPath)
-		}
-
-		chart, err := clusterChartName(r.fs, baseDir)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		if chart == "" {
-			_, _ = fmt.Fprintf(r.stderr, "Base %q holds no release chart, so --%s is not checked against the %s registry.\n", r.flag.Base, flagRelease, clustercommon.GSOCIRegistry)
-		} else {
-			err = r.checkReleaseChart(ctx, chart, config.Release)
-			if err != nil {
-				return microerror.Mask(err)
-			}
 		}
 	}
 
@@ -127,6 +110,56 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+// checkBase checks the base and the release it deploys, and finds out
+// whether the cluster keeps a single Kustomization.
+func (r *runner) checkBase(ctx context.Context, localPath string, config *common.StructureConfig) error {
+	baseDir := filepath.Join(localPath, r.flag.Base)
+	exists, err := afero.DirExists(r.fs, baseDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if !exists {
+		return microerror.Maskf(invalidFlagsError, "--%s %q not found under %q", flagBase, r.flag.Base, localPath)
+	}
+
+	config.KeepSingleKustomization, err = r.hasSingleKustomization(localPath)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	chart, err := clusterChartName(r.fs, baseDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if chart == "" {
+		_, _ = fmt.Fprintf(r.stderr, "Base %q holds no release chart, so --%s is not checked against the %s registry.\n", r.flag.Base, flagRelease, clustercommon.GSOCIRegistry)
+		return nil
+	}
+
+	return microerror.Mask(r.checkReleaseChart(ctx, chart, config.Release))
+}
+
+// hasSingleKustomization reports whether the cluster already has a single
+// Kustomization applying its whole directory, as clusters added without a base
+// do. Adding the base then adds the cluster definition to that Kustomization,
+// rather than moving the apps to a Kustomization of their own, which would make
+// Flux uninstall them.
+func (r *runner) hasSingleKustomization(localPath string) (bool, error) {
+	wcsDir := filepath.Join(localPath, key.BaseDirPath(r.flag.ManagementCluster, r.flag.Organization, ""), key.WorkloadClustersDirName())
+
+	exists, err := afero.Exists(r.fs, filepath.Join(wcsDir, key.FluxKustomizationFileName(r.flag.Name)))
+	if err != nil || !exists {
+		return false, microerror.Mask(err)
+	}
+
+	exists, err = afero.Exists(r.fs, filepath.Join(wcsDir, key.FluxKustomizationFileName(r.flag.Name+"-apps")))
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return !exists, nil
 }
 
 // checkReleaseChart fails when the release chart can't deploy the release,

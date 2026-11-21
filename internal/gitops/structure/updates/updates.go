@@ -22,14 +22,11 @@ const (
 func NewAutomaticUpdate(config common.StructureConfig) (*creator.CreatorConfig, error) {
 	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME
 	wcDir := key.BaseDirPath(config.ManagementCluster, config.Organization, config.WorkloadCluster)
-	if !config.SkipMAPI {
-		wcDir = key.ResourcePath(wcDir, key.MapiDirName())
-	}
 
-	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps/APP_NAME
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME
 	appDir := key.ResourcePath(key.ResourcePath(wcDir, key.AppsDirName()), config.AppName)
 
-	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/[mapi]/apps/APP_NAME/oci-repository.yaml
+	// Holds management-clusters/MC_NAME/organizations/ORG_NAME/workload-clusters/WC_NAME/apps/APP_NAME/oci-repository.yaml
 	ociRepoFile := key.ResourcePath(appDir, key.OCIRepositoryFileName())
 
 	// No MetadataLayer here on purpose: automatic updates configure an app

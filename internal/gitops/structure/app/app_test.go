@@ -42,7 +42,6 @@ func Test_NewApp(t *testing.T) {
 				AppNamespace:      "default",
 				Organization:      "demoorg",
 				AppVersion:        "0.3.0",
-				SkipMAPI:          true,
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -70,7 +69,6 @@ func Test_NewApp(t *testing.T) {
 				AppName:           "hello-world",
 				Organization:      "demoorg",
 				AppVersion:        "0.3.0",
-				SkipMAPI:          true,
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -99,7 +97,6 @@ func Test_NewApp(t *testing.T) {
 topKey:
   netedKey: nestedValue`)),
 				AppVersion:      "0.3.0",
-				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -136,7 +133,6 @@ topKey:
 topKey:
   netedKey: nestedValue`)),
 				AppVersion:      "0.3.0",
-				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -170,7 +166,6 @@ topKey:
 				AppUserValuesConfigMap: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
-				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -204,7 +199,6 @@ topKey:
 				AppUserValuesSecret: string([]byte(`testKey: testValue
 topKey:
   netedKey: nestedValue`)),
-				SkipMAPI:        true,
 				WorkloadCluster: "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
@@ -229,58 +223,6 @@ topKey:
 			},
 		},
 		{
-			name: "flawless MAPI",
-			config: common.StructureConfig{
-				App:               "hello-world",
-				AppOCIURLPrefix:   "oci://gsoci.azurecr.io/charts/giantswarm",
-				ManagementCluster: "demomc",
-				AppName:           "hello-world",
-				AppNamespace:      "default",
-				Organization:      "demoorg",
-				AppVersion:        "0.3.0",
-				WorkloadCluster:   "demowc",
-			},
-			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/oci-repository.yaml",
-					GoldenFile:   "testdata/expected/0-oci_repository.golden",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/helm-release.yaml",
-					GoldenFile:   "testdata/expected/0-helm_release.golden",
-				},
-			},
-		},
-		{
-			name: "flawless MAPI from base",
-			config: common.StructureConfig{
-				AppBase:           "base/apps/hello-world",
-				ManagementCluster: "demomc",
-				AppName:           "hello-world",
-				Organization:      "demoorg",
-				AppVersion:        "0.3.0",
-				WorkloadCluster:   "demowc",
-			},
-			expectedObjects: []FsObjectExpected{
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world",
-				},
-				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world/kustomization.yaml",
-					GoldenFile:   "testdata/expected/3-hello_world_kustomization.golden",
-				},
-			},
-		},
-		{
 			name: "flawless with timeouts",
 			config: common.StructureConfig{
 				App:                 "hello-world",
@@ -290,7 +232,6 @@ topKey:
 				AppNamespace:        "default",
 				Organization:        "demoorg",
 				AppVersion:          "0.3.0",
-				SkipMAPI:            true,
 				WorkloadCluster:     "demowc",
 				AppInstallTimeout:   &metav1.Duration{Duration: 6 * time.Minute},
 				AppRollbackTimeout:  &metav1.Duration{Duration: 7 * time.Minute},
@@ -324,7 +265,6 @@ topKey:
 				AppNamespace:      "default",
 				Organization:      "demoorg",
 				AppVersion:        "0.3.0",
-				SkipMAPI:          true,
 				WorkloadCluster:   "demowc",
 				InCluster:         "true",
 			},
@@ -355,7 +295,6 @@ topKey:
 				AppNamespace:      "default",
 				Organization:      "demoorg",
 				AppVersion:        "0.3.0",
-				SkipMAPI:          true,
 				WorkloadCluster:   "demowc",
 				InCluster:         "false",
 			},
@@ -439,9 +378,9 @@ func Test_NewApp_RefusesAppCRBase(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fs := afero.NewMemMapFs()
 			files := map[string]string{
-				"/repo/bases/apps/hello-world/kustomization.yaml":                                                              "resources:\n  - hello.yaml\n",
-				"/repo/bases/apps/hello-world/hello.yaml":                                                                      tc.base,
-				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/kustomization.yaml": "resources: []\n",
+				"/repo/bases/apps/hello-world/kustomization.yaml":                                                         "resources:\n  - hello.yaml\n",
+				"/repo/bases/apps/hello-world/hello.yaml":                                                                 tc.base,
+				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml": "resources: []\n",
 			}
 			for path, data := range files {
 				err := afero.WriteFile(fs, path, []byte(data), 0600)
@@ -482,7 +421,7 @@ func Test_NewApp_RefusesAppCRBase(t *testing.T) {
 // Test_NewApp_ResourcesExist runs the creator, as the golden tests only check
 // the generated files and not the resources the apps kustomization lists.
 func Test_NewApp_ResourcesExist(t *testing.T) {
-	appsDir := "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps"
+	appsDir := "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps"
 
 	fs := afero.NewMemMapFs()
 	err := afero.WriteFile(fs, appsDir+"/kustomization.yaml", []byte("resources: []\n"), 0600)

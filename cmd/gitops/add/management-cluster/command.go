@@ -26,7 +26,10 @@ It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/add_mc.md`
+https://github.com/giantswarm/gitops-template/blob/main/docs/tutorials/basic/getting-started.md#1-connect-the-management-cluster
+
+What it writes:
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#management-cluster`
 
 	examples = `  # Add dummy Management Cluster
   kubectl gs gitops add mc \
@@ -36,7 +39,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/add_mc.md`
   # Add dummy Management Cluster with master GPG key
   kubectl gs gitops add mc \
   --name dummy \
-  --repository-name gitops-demo
+  --repository-name gitops-demo \
   --gen-master-key`
 )
 
