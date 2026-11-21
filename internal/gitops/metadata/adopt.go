@@ -181,12 +181,7 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 		wcDir := key.BaseDirPath(mc, org, wc)
 		mapiDir := key.ResourcePath(wcDir, key.MapiDirName())
 
-		version, err := adoptedVersion(fs, repoPath,
-			key.ResourcePath(wcDir, key.ClusterDirName()),
-			key.ResourcePath(wcDir, key.AppsDirName()),
-			key.ResourcePath(mapiDir, key.ClusterDirName()),
-			key.ResourcePath(mapiDir, key.AppsDirName()),
-		)
+		version, err := workloadClusterVersion(fs, repoPath, wcDir)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -197,13 +192,14 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 		// clusters added before the mapi directory was dropped. Both are
 		// checked. Nothing is read from `WC_NAME/out-of-band`: it goes straight
 		// into the workload cluster, so it holds no layer of the management
-		// cluster.
-		err = adoptApps(fs, repoPath, mapiDir, result)
+		// cluster. The apps in `mapi` move with it, so they are recorded at
+		// the cluster's version.
+		err = adoptApps(fs, repoPath, mapiDir, min(version, lastMapiVersion), result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = adoptApps(fs, repoPath, wcDir, result)
+		err = adoptApps(fs, repoPath, wcDir, StructureVersion, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -212,9 +208,65 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 	return nil
 }
 
+// lastMapiVersion is the last structure version whose workload clusters had
+// a `mapi` directory, or no `kustomization.yaml` of their own, so that Flux
+// applied all of the cluster's directory, `out-of-band` included.
+const lastMapiVersion = 2
+
+// workloadClusterVersion returns the structure version to record a workload
+// cluster at, from its layout and from what it deploys.
+func workloadClusterVersion(fs *afero.Afero, repoPath, wcDir string) (int, error) {
+	mapiDir := key.ResourcePath(wcDir, key.MapiDirName())
+
+	version, err := adoptedVersion(fs, repoPath,
+		key.ResourcePath(wcDir, key.ClusterDirName()),
+		key.ResourcePath(wcDir, key.AppsDirName()),
+		key.ResourcePath(mapiDir, key.ClusterDirName()),
+		key.ResourcePath(mapiDir, key.AppsDirName()),
+	)
+	if err != nil || version < lastMapiVersion {
+		return version, microerror.Mask(err)
+	}
+
+	layout, err := layoutVersion(fs, filepath.Join(repoPath, wcDir))
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+
+	return min(version, layout), nil
+}
+
+// layoutVersion returns lastMapiVersion for a workload cluster directory
+// with a `mapi` directory, or with `cluster` or `apps` but no
+// `kustomization.yaml`, and the current version otherwise.
+func layoutVersion(fs *afero.Afero, dir string) (int, error) {
+	for _, d := range []string{key.MapiDirName(), key.ClusterDirName(), key.AppsDirName()} {
+		exists, err := dirExists(fs, filepath.Join(dir, d))
+		if err != nil {
+			return 0, microerror.Mask(err)
+		}
+		if !exists {
+			continue
+		}
+		if d == key.MapiDirName() {
+			return lastMapiVersion, nil
+		}
+
+		exists, err = fs.Exists(filepath.Join(dir, key.SigsKustomizationFileName()))
+		if err != nil {
+			return 0, microerror.Mask(err)
+		}
+		if !exists {
+			return lastMapiVersion, nil
+		}
+	}
+
+	return StructureVersion, nil
+}
+
 // adoptApps records the `apps/*` directories holding an App CR under the given
-// parent directory.
-func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResult) error {
+// parent directory, at no more than the given version.
+func adoptApps(fs *afero.Afero, repoPath, parentDir string, maxVersion int, result *AdoptionResult) error {
 	appsDir := key.ResourcePath(parentDir, key.AppsDirName())
 
 	apps, err := subDirs(fs, repoPath, appsDir)
@@ -251,7 +303,7 @@ func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResu
 			return microerror.Mask(err)
 		}
 
-		result.Metadata.Upsert(Layer{Kind: LayerApp, Path: appDir, StructureVersion: version})
+		result.Metadata.Upsert(Layer{Kind: LayerApp, Path: appDir, StructureVersion: min(version, maxVersion)})
 	}
 
 	return nil

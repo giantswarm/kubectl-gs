@@ -49,15 +49,39 @@ type Migration struct {
 	//   - not change, move or delete files git ignores, such as decrypted
 	//     secrets: a failed upgrade is undone with git, which cannot restore
 	//     those,
-	//   - not move the layer's own directory: steps are planned, and the
-	//     upgraded layers recorded, by the paths the layers had before the
-	//     upgrade. A structure change that moves layers needs the planner
-	//     taught to follow them first.
+	//   - not move the layer's own directory: steps are planned by the paths
+	//     the layers had before the upgrade. A layer it moves inside its own
+	//     directory, such as an app in a workload cluster, is followed with
+	//     Relocate.
 	//
 	// Only layers are migrated. Files outside every layer, such as those
 	// `gitops init` creates at the repository root, have no migration of
 	// their own, so a structure change must not require changing them.
 	Apply func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error)
+
+	// Relocate returns where a layer at the given path is after the
+	// migration, for the layers it moves, of any kind. Nil when it moves
+	// none.
+	Relocate func(path string) string
+
+	// ManualSteps says what the user has to do by hand once the migration
+	// has run, for changes files alone can't make safely, such as those
+	// Flux has to apply in a given order. Printed by `kubectl gs gitops
+	// upgrade` when the migration ran, so write it for the user.
+	ManualSteps string
+}
+
+// Env is what a migration knows about the repository besides its files. A
+// migration gets it with EnvOf from the file system it runs against.
+type Env struct {
+	// Ignored reports whether git ignores the file at the path, relative to
+	// the repository root. Nil when that is not known, as outside git.
+	Ignored func(path string) bool
+}
+
+// IsIgnored reports whether git ignores the file at the path.
+func (e Env) IsIgnored(path string) bool {
+	return e.Ignored != nil && e.Ignored(path)
 }
 
 // Step is one migration to run against one layer.
@@ -79,6 +103,14 @@ type Plan struct {
 	// Layers are the layers the plan moves to Target, including those whose
 	// kind no migration on the way affects.
 	Layers []metadata.Layer
+
+	// Moves maps the path of a layer a migration on the way relocates to
+	// its path at Target.
+	Moves map[string]string
+
+	// Env is what the migrations get from EnvOf. The caller sets it before
+	// Run.
+	Env Env
 }
 
 // Result is what running a plan did.

@@ -52,6 +52,25 @@ func dirtyPaths(repoPath string) ([]string, error) {
 	return paths, nil
 }
 
+// ignoredPaths returns the files git ignores under repoPath, relative to it.
+// Migrations leave them alone: a failed upgrade is undone with git, which
+// can't restore them.
+func ignoredPaths(repoPath string) ([]string, error) {
+	out, err := git(repoPath, "ls-files", "--others", "--ignored", "--exclude-standard", "-z", "--", ".")
+	if err != nil {
+		return nil, err
+	}
+
+	var paths []string
+	for _, p := range strings.Split(out, "\x00") {
+		if p != "" {
+			paths = append(paths, p)
+		}
+	}
+
+	return paths, nil
+}
+
 func git(repoPath string, args ...string) (string, error) {
 	// nosec is applied here, the binary is a fixed `git` run without a shell,
 	// args are fixed strings from this package, and repoPath, the only user

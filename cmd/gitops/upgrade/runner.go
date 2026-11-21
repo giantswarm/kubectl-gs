@@ -33,7 +33,11 @@ type runner struct {
 	// structure version 1.
 	dirtyPaths func(repoPath string) ([]string, error)
 	migrations []migration.Migration
-	target     int
+
+	// ignoredPaths lists the files git ignores, which migrations leave
+	// alone. Nil, or failing, when that is not known.
+	ignoredPaths func(repoPath string) ([]string, error)
+	target       int
 
 	// gitErr is why git could not vouch for the repository, nil when it
 	// tracks it. Found by ensureClean, or before a version only bump.
@@ -135,6 +139,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		r.tracked = r.gitErr == nil
 	}
 
+	plan.Env = r.env(repoPath)
+
 	result, err := plan.Run(r.fs, repoPath, md, dryRun)
 	if migration.IsMigrationFailed(err) {
 		if !guarded {
@@ -147,6 +153,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 	if dryRun {
 		r.printResult(plan, result, true)
+		r.printManualSteps(result)
 
 		body, err := metadata.Render(md)
 		if err != nil {
@@ -172,6 +179,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	r.printResult(plan, result, false)
+	r.printManualSteps(result)
 
 	_, _ = fmt.Fprintf(r.stdout, "\nWrote %s\n", metadata.FilePath(repoPath))
 	if r.tracked {
@@ -181,6 +189,26 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+// env tells the migrations which files git ignores. Outside git, nothing is
+// known to be ignored.
+func (r *runner) env(repoPath string) migration.Env {
+	if r.ignoredPaths == nil {
+		return migration.Env{}
+	}
+
+	paths, err := r.ignoredPaths(repoPath)
+	if err != nil {
+		return migration.Env{}
+	}
+
+	ignored := map[string]bool{}
+	for _, p := range paths {
+		ignored[filepath.ToSlash(filepath.Clean(p))] = true
+	}
+
+	return migration.Env{Ignored: func(path string) bool { return ignored[path] }}
 }
 
 // ensureClean refuses to upgrade a repository with uncommitted changes, or one
@@ -307,4 +335,19 @@ func (r *runner) printResult(plan *migration.Plan, result *migration.Result, dry
 		_, _ = fmt.Fprintf(w, "  %s\t%s\n", f.Op, f.Path)
 	}
 	_ = w.Flush()
+}
+
+// printManualSteps prints what the migrations that ran leave to the user,
+// once per migration.
+func (r *runner) printManualSteps(result *migration.Result) {
+	printed := map[int]bool{}
+	for _, sc := range result.Changes {
+		m := sc.Step.Migration
+		if m.ManualSteps == "" || printed[m.From] {
+			continue
+		}
+		printed[m.From] = true
+
+		_, _ = fmt.Fprintf(r.stdout, "\nTo finish the upgrade from %d to %d, by hand:\n\n%s\n", m.From, m.From+1, m.ManualSteps)
+	}
 }

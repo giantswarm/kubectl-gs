@@ -51,11 +51,14 @@ func generatedRepo(t *testing.T) afero.Fs {
 
 	fs := &afero.Afero{Fs: afero.NewMemMapFs()}
 
-	dirs := []string{
-		testWC + "/mapi/apps",
+	// The cluster's kustomization.yaml, without which its layout is the one
+	// of structure version 2.
+	files := map[string]string{
+		testWC + "/kustomization.yaml":      "resources:\n  - apps/\n",
+		testWC + "/apps/kustomization.yaml": "resources: []\n",
 	}
-	for _, d := range dirs {
-		err := fs.MkdirAll(testRepo+"/"+d, 0755)
+	for path, data := range files {
+		err := fs.WriteFile(testRepo+"/"+path, []byte(data), 0644)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}

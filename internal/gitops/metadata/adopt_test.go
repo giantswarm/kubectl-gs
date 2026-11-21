@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -117,11 +118,26 @@ func Test_Adopt_StampsCurrentVersion(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
+	// The fixture's workload clusters have the layout of version 2, with
+	// `mapi` or without a kustomization.yaml of their own, and so do the apps
+	// in `mapi`.
 	for _, l := range result.Metadata.Layers {
-		if l.StructureVersion != StructureVersion {
-			t.Errorf("layer %s recorded at version %d, expected %d", l.Path, l.StructureVersion, StructureVersion)
+		expected := fixtureVersion(l)
+		if l.StructureVersion != expected {
+			t.Errorf("layer %s recorded at version %d, expected %d", l.Path, l.StructureVersion, expected)
 		}
 	}
+}
+
+// fixtureVersion is the version fixtureRepo's layers are adopted at: its
+// workload clusters, and the apps in their `mapi` directories, have the
+// layout of version 2.
+func fixtureVersion(l Layer) int {
+	if l.Kind == LayerWorkloadCluster || strings.Contains(l.Path, "/mapi/") {
+		return lastMapiVersion
+	}
+
+	return StructureVersion
 }
 
 func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
@@ -158,15 +174,15 @@ func Test_Adopt_PinsAppCRLayersAtVersion1(t *testing.T) {
 		"bases/clusters/capa/template":                                                                          1,
 		"management-clusters/demomc":                                                                            StructureVersion,
 		"management-clusters/demomc/organizations/demoorg":                                                      StructureVersion,
-		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc":                             StructureVersion,
-		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world":       StructureVersion,
-		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/ingress-from-base": StructureVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc":                             lastMapiVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/hello-world":       lastMapiVersion,
+		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/ingress-from-base": lastMapiVersion,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc":                             1,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-flux":             StructureVersion,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/flatwc/apps/hello-world":            1,
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/patchwc":                            1,
 		"management-clusters/demomc/organizations/otherorg":                                                     StructureVersion,
-		"management-clusters/demomc/organizations/otherorg/workload-clusters/otherwc":                           StructureVersion,
+		"management-clusters/demomc/organizations/otherorg/workload-clusters/otherwc":                           lastMapiVersion,
 	}
 	if diff := cmp.Diff(expected, got); diff != "" {
 		t.Fatalf("unexpected versions (-want +got):\n%s", diff)
@@ -186,6 +202,9 @@ func Test_Adopt_EmptyRepository(t *testing.T) {
 	}
 }
 
+// emptyResources is a kustomization.yaml that lists nothing.
+const emptyResources = "resources: []\n"
+
 // Test_Adopt_IgnoresOutOfBand checks that what a cluster keeps in
 // `out-of-band`, which goes straight into the workload cluster, is never taken
 // for management cluster resources: an App CR there doesn't pin the cluster
@@ -197,8 +216,8 @@ func Test_Adopt_IgnoresOutOfBand(t *testing.T) {
 	app := "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n"
 	files := map[string]string{
 		wcDir + "/kustomization.yaml":                      "resources:\n  - apps/\n  - cluster/\n",
-		wcDir + "/cluster/kustomization.yaml":              "resources: []\n",
-		wcDir + "/apps/kustomization.yaml":                 "resources: []\n",
+		wcDir + "/cluster/kustomization.yaml":              emptyResources,
+		wcDir + "/apps/kustomization.yaml":                 emptyResources,
 		wcDir + "/out-of-band/appcr.yaml":                  app,
 		wcDir + "/out-of-band/apps/hello-world/appcr.yaml": app,
 		wcDir + "/out-of-band/cluster/kustomization.yaml":  "resources:\n  - appcr.yaml\n",
@@ -230,5 +249,55 @@ func Test_Adopt_IgnoresOutOfBand(t *testing.T) {
 	}
 	if len(result.Skipped) != 0 {
 		t.Errorf("expected nothing skipped, got %v", result.Skipped)
+	}
+}
+
+// Test_Adopt_RecordsTheLayoutVersion checks that a workload cluster is
+// recorded at the structure version its layout has: one with the `mapi`
+// directory, or without the `kustomization.yaml` that keeps `out-of-band` from
+// the management cluster, is at version 2, with its apps, so that
+// `gitops upgrade` moves it.
+func Test_Adopt_RecordsTheLayoutVersion(t *testing.T) {
+	fs := &afero.Afero{Fs: afero.NewMemMapFs()}
+
+	const wcsDir = "management-clusters/demomc/organizations/demoorg/workload-clusters"
+	helmRelease := "apiVersion: helm.toolkit.fluxcd.io/v2\nkind: HelmRelease\n"
+	files := map[string]string{
+		wcsDir + "/mapiwc/mapi/cluster/kustomization.yaml":          emptyResources,
+		wcsDir + "/mapiwc/mapi/apps/hello-world/helm-release.yaml":  helmRelease,
+		wcsDir + "/flatwc/cluster/kustomization.yaml":               emptyResources,
+		wcsDir + "/flatwc/apps/hello-world/helm-release.yaml":       helmRelease,
+		wcsDir + "/currentwc/kustomization.yaml":                    "resources:\n  - apps/\n",
+		wcsDir + "/currentwc/apps/hello-world/helm-release.yaml":    helmRelease,
+		wcsDir + "/currentwc/out-of-band/configmaps/configmap.yaml": "kind: ConfigMap\n",
+	}
+	for path, data := range files {
+		err := fs.WriteFile(filepath.Join(testRepo, path), []byte(data), 0644)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+	}
+
+	result, err := Adopt(fs, testRepo)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	got := map[string]int{}
+	for _, l := range result.Metadata.Layers {
+		got[l.Path] = l.StructureVersion
+	}
+	expected := map[string]int{
+		"management-clusters/demomc":                       StructureVersion,
+		"management-clusters/demomc/organizations/demoorg": StructureVersion,
+		wcsDir + "/mapiwc":                                 2,
+		wcsDir + "/mapiwc/mapi/apps/hello-world":           2,
+		wcsDir + "/flatwc":                                 2,
+		wcsDir + "/flatwc/apps/hello-world":                StructureVersion,
+		wcsDir + "/currentwc":                              StructureVersion,
+		wcsDir + "/currentwc/apps/hello-world":             StructureVersion,
+	}
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatalf("unexpected versions (-want +got):\n%s", diff)
 	}
 }

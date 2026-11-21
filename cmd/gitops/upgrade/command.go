@@ -34,6 +34,16 @@ that only moves the recorded versions, touching no file but the metadata file,
 is not held up by uncommitted changes. Review the result, e.g. with ` + "`git diff`" + `,
 before committing it.
 
+Some structure changes can't be made safely in files alone, as Flux has to
+apply them in a given order, over more than one commit. The upgrade makes the
+part that is safe to push at once, and prints the steps left to do by hand.
+The upgrade to version 3 moves the workload clusters' mapi directories and
+adds the organisations' namespace Kustomizations, but leaves moving the
+clusters' Kustomizations into the organisations' namespaces to you.
+
+Files git ignores, such as decrypted secrets, are left where they are: move
+them yourself.
+
 Use --dry-run to see which files would change without writing anything. It runs
 the migrations against an in-memory copy of the repository. Run
 ` + "`kubectl gs gitops check`" + ` first to see which parts are behind, and
@@ -79,14 +89,15 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		dirtyPaths: dirtyPaths,
-		flag:       f,
-		fs:         &afero.Afero{Fs: config.FileSystem},
-		logger:     config.Logger,
-		migrations: migration.Migrations,
-		stderr:     config.Stderr,
-		stdout:     config.Stdout,
-		target:     metadata.StructureVersion,
+		dirtyPaths:   dirtyPaths,
+		ignoredPaths: ignoredPaths,
+		flag:         f,
+		fs:           &afero.Afero{Fs: config.FileSystem},
+		logger:       config.Logger,
+		migrations:   migration.Migrations,
+		stderr:       config.Stderr,
+		stdout:       config.Stdout,
+		target:       metadata.StructureVersion,
 	}
 
 	c := &cobra.Command{

@@ -72,3 +72,8 @@ var appCRError = &microerror.Error{
 var unexpectedFileError = &microerror.Error{
 	Kind: "unexpectedFileError",
 }
+
+// IsUnexpectedFile asserts unexpectedFileError.
+func IsUnexpectedFile(err error) bool {
+	return errors.Is(err, unexpectedFileError)
+}

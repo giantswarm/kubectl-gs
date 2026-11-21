@@ -81,29 +81,22 @@ func NewPlan(md *metadata.RepositoryMetadata, migrations []Migration, target int
 
 	layers := dedupe(md.Layers)
 
-	plan := &Plan{Target: target}
+	plan := &Plan{Target: target, Moves: map[string]string{}}
 
 	for _, l := range layers {
 		if l.StructureVersion == target {
 			continue
 		}
 
-		for v := l.StructureVersion; v < target; v++ {
-			m, ok := byFrom[v]
-			if !ok {
-				return nil, microerror.Maskf(missingMigrationError, "no migration registered from repository structure version %d to %d.", v, v+1)
-			}
-
-			if appliesTo(m, l.Kind) {
-				// The layer as the migration finds it: already at the version
-				// the migration starts from.
-				sl := l
-				sl.StructureVersion = v
-				plan.Steps = append(plan.Steps, Step{Layer: sl, Migration: m})
-			}
+		steps, path, err := layerSteps(l, byFrom, target)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
-
+		plan.Steps = append(plan.Steps, steps...)
 		plan.Layers = append(plan.Layers, l)
+		if path != l.Path {
+			plan.Moves[l.Path] = path
+		}
 	}
 
 	sort.SliceStable(plan.Steps, func(i, j int) bool {
@@ -114,6 +107,34 @@ func NewPlan(md *metadata.RepositoryMetadata, migrations []Migration, target int
 	})
 
 	return plan, nil
+}
+
+// layerSteps returns the steps that bring the layer to target, and the path
+// the layer ends up at. Each step finds the layer as the migrations before it
+// left it: at the version the step starts from, and where they moved it.
+func layerSteps(l metadata.Layer, byFrom map[int]Migration, target int) ([]Step, string, error) {
+	var steps []Step
+
+	path := l.Path
+	for v := l.StructureVersion; v < target; v++ {
+		m, ok := byFrom[v]
+		if !ok {
+			return nil, "", microerror.Maskf(missingMigrationError, "no migration registered from repository structure version %d to %d.", v, v+1)
+		}
+
+		if appliesTo(m, l.Kind) {
+			sl := l
+			sl.Path = path
+			sl.StructureVersion = v
+			steps = append(steps, Step{Layer: sl, Migration: m})
+		}
+
+		if m.Relocate != nil {
+			path = m.Relocate(path)
+		}
+	}
+
+	return steps, path, nil
 }
 
 // Empty reports whether no layer needs upgrading. The repository level record
@@ -156,7 +177,7 @@ func (p *Plan) Run(fs *afero.Afero, repoPath string, md *metadata.RepositoryMeta
 		}
 
 		for _, s := range p.Steps {
-			changes, err := s.Migration.Apply(target, repoPath, s.Layer)
+			changes, err := s.Migration.Apply(withEnv(target, p.Env), repoPath, s.Layer)
 			if err != nil {
 				return nil, microerror.Mask(&StepError{Step: s, Err: err})
 			}
@@ -190,11 +211,10 @@ func record(md *metadata.RepositoryMetadata, p *Plan) {
 	layers := dedupe(md.Layers)
 	for i, l := range layers {
 		if upgraded[key(l)] {
-			layers[i].StructureVersion = p.Target
-			layers[i].GeneratedWith = metadata.GeneratedWith()
+			layers[i] = p.upgraded(l)
 		}
 	}
-	md.Layers = layers
+	md.Layers = dedupe(layers)
 	md.Sort()
 
 	// Not md.Stamp(): that moves the repository to the version this build
@@ -205,6 +225,18 @@ func record(md *metadata.RepositoryMetadata, p *Plan) {
 	if md.StructureVersion < p.Target {
 		md.StructureVersion = p.Target
 	}
+}
+
+// upgraded returns the layer as the plan leaves it: at the target version,
+// and where the migrations on the way moved it.
+func (p *Plan) upgraded(l metadata.Layer) metadata.Layer {
+	l.StructureVersion = p.Target
+	l.GeneratedWith = metadata.GeneratedWith()
+	if path, ok := p.Moves[l.Path]; ok {
+		l.Path = path
+	}
+
+	return l
 }
 
 type layerKey struct {
@@ -264,4 +296,25 @@ func uniq(paths []string) []string {
 // String renders a step for the upgrade report.
 func (s Step) String() string {
 	return fmt.Sprintf("%s %s: %d -> %d", s.Layer.Kind, s.Layer.Path, s.Migration.From, s.Migration.From+1)
+}
+
+// envFs is the file system the migrations run against, carrying the plan's
+// Env, so that Apply keeps the signature every migration has.
+type envFs struct {
+	afero.Fs
+	env Env
+}
+
+func withEnv(fs *afero.Afero, env Env) *afero.Afero {
+	return &afero.Afero{Fs: envFs{Fs: fs.Fs, env: env}}
+}
+
+// EnvOf returns the Env of the plan running a migration against fs, or an
+// empty one outside a plan.
+func EnvOf(fs *afero.Afero) Env {
+	if e, ok := fs.Fs.(envFs); ok {
+		return e.env
+	}
+
+	return Env{}
 }
