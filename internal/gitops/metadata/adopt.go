@@ -11,7 +11,6 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/appcr"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
-	commonkey "github.com/giantswarm/kubectl-gs/v6/internal/key"
 )
 
 // AdoptionResult reports what walking an existing repository turned up.
@@ -88,11 +87,6 @@ func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult)
 	return nil
 }
 
-// baseProviders are the providers `gitops add base` writes a base for. Any
-// other directory in `bases/clusters`, such as a base built on a provider's
-// base, wasn't written by it.
-var baseProviders = []string{commonkey.ProviderCAPA, commonkey.ProviderCAPZ, commonkey.ProviderVSphere}
-
 // clusterBasePath returns where the cluster base of a provider lives, or an
 // empty string when the provider directory holds none.
 //
@@ -113,7 +107,7 @@ func clusterBasePath(fs *afero.Afero, repoPath, provider string) (string, error)
 		return legacyPath, nil
 	}
 
-	if !slices.Contains(baseProviders, provider) {
+	if !slices.Contains(key.ClusterBaseProviders(), provider) {
 		return "", nil
 	}
 

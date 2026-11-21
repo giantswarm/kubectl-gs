@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	gitopskey "github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 )
 
 const (
@@ -25,11 +25,7 @@ type flag struct {
 }
 
 func supportedProviders() []string {
-	return []string{
-		key.ProviderCAPA,
-		key.ProviderCAPZ,
-		key.ProviderVSphere,
-	}
+	return gitopskey.ClusterBaseProviders()
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
