@@ -68,6 +68,18 @@ var clusterBaseLayoutCases = []clusterBaseLayoutCase{
 		expectedSkipped: []string{},
 	},
 	{
+		// gitops-template keeps bases built on a provider's base, such as
+		// BASE_NAME, next to it. `gitops add base` doesn't write them.
+		name: "base built on a provider's base",
+		files: map[string]string{
+			capaBase + "/kustomization.yaml":                baseResources,
+			capaBase + "/cluster.yaml":                      helmRelease,
+			"bases/clusters/my-defaults/kustomization.yaml": "resources:\n  - ../capa\n",
+		},
+		expectedLayers:  map[string]int{capaBase: StructureVersion},
+		expectedSkipped: []string{"bases/clusters/my-defaults"},
+	},
+	{
 		name: "App CR in the provider directory",
 		files: map[string]string{
 			capaBase + "/kustomization.yaml": baseResources,

@@ -41,5 +41,8 @@ spec:
       strategy: rollback
   valuesFrom:
   - kind: ConfigMap
+    name: cluster-app-installation-values
+    valuesKey: values.yaml
+  - kind: ConfigMap
     name: ${cluster_name}-config
     valuesKey: values

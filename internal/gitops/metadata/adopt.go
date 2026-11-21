@@ -3,6 +3,7 @@ package metadata
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 
 	"github.com/giantswarm/microerror"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/appcr"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
+	commonkey "github.com/giantswarm/kubectl-gs/v6/internal/key"
 )
 
 // AdoptionResult reports what walking an existing repository turned up.
@@ -86,6 +88,11 @@ func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult)
 	return nil
 }
 
+// baseProviders are the providers `gitops add base` writes a base for. Any
+// other directory in `bases/clusters`, such as a base built on a provider's
+// base, wasn't written by it.
+var baseProviders = []string{commonkey.ProviderCAPA, commonkey.ProviderCAPZ, commonkey.ProviderVSphere}
+
 // clusterBasePath returns where the cluster base of a provider lives, or an
 // empty string when the provider directory holds none.
 //
@@ -93,7 +100,8 @@ func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult)
 // presence alone marks a base, which is how adoption recognised it before. A
 // provider directory is a base in its own right only when it holds a
 // Kustomization, so that one holding something else is reported as skipped
-// rather than recorded.
+// rather than recorded, and so is one that isn't named after a provider
+// `gitops add base` supports.
 func clusterBasePath(fs *afero.Afero, repoPath, provider string) (string, error) {
 	legacyPath := key.LegacyClusterBasePath(provider)
 
@@ -103,6 +111,10 @@ func clusterBasePath(fs *afero.Afero, repoPath, provider string) (string, error)
 	}
 	if exists {
 		return legacyPath, nil
+	}
+
+	if !slices.Contains(baseProviders, provider) {
+		return "", nil
 	}
 
 	basePath := key.ClusterBasePath(provider)

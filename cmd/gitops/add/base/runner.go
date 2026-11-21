@@ -21,6 +21,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/pkg/commonconfig"
 )
@@ -109,9 +110,9 @@ func generateClusterBaseTemplates(config common.StructureConfig) (common.Cluster
 // is published with the version of the release it holds. With
 // preventDeletion, both carry the prevent-deletion label, like the Cluster the
 // chart creates from the values of the base, so deleting one of them by
-// mistake doesn't delete the cluster. That is a direct delete, or a prune by a
-// Kustomization changed to prune: the one gitops add workload-cluster
-// generates doesn't prune.
+// mistake doesn't delete the cluster, and the
+// `kustomize.toolkit.fluxcd.io/prune: disabled` annotation, so Flux doesn't
+// delete them when their file is deleted from Git.
 func generateClusterResources(preventDeletion bool, releaseChart string, extraValuesFrom ...deploychart.ValuesFromReference) (string, error) {
 	ociRepo, helmRelease, err := clustercommon.BuildClusterFluxResources(
 		clustercommon.ClusterConfig{
@@ -128,7 +129,85 @@ func generateClusterResources(preventDeletion bool, releaseChart string, extraVa
 		return "", microerror.Mask(err)
 	}
 
+	return baseResources(ociRepo, helmRelease, preventDeletion)
+}
+
+// baseResources protects the resources, and gives the HelmRelease the
+// management cluster's values.
+func baseResources(ociRepo, helmRelease []byte, preventDeletion bool) (string, error) {
+	ociRepo, err := protectFromPrune(ociRepo, preventDeletion)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	helmRelease, err = protectFromPrune(helmRelease, preventDeletion)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	helmRelease, err = withInstallationValues(helmRelease)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
 	return fmt.Sprintf("%s---\n%s", ociRepo, helmRelease), nil
+}
+
+// installationValues is the ConfigMap of the management cluster's values,
+// such as its name and base domain, which a Kyverno policy copies into every
+// organisation's namespace. It comes first in the cluster's valuesFrom, so
+// the base and the cluster can override it.
+var installationValues = map[string]interface{}{
+	"kind":      "ConfigMap",
+	"name":      "cluster-app-installation-values",
+	"valuesKey": "values.yaml",
+}
+
+// protectFromPrune gives a resource deploying the cluster the
+// `kustomize.toolkit.fluxcd.io/prune: disabled` annotation, with
+// preventDeletion, so Flux doesn't delete it, and the cluster with it, when
+// its file is deleted from Git.
+func protectFromPrune(manifest []byte, preventDeletion bool) ([]byte, error) {
+	if !preventDeletion {
+		return manifest, nil
+	}
+
+	return editManifest(manifest, func(object map[string]interface{}) {
+		metadata, _ := object["metadata"].(map[string]interface{})
+		annotations, _ := metadata["annotations"].(map[string]interface{})
+		if annotations == nil {
+			annotations = map[string]interface{}{}
+		}
+		annotations["kustomize.toolkit.fluxcd.io/prune"] = "disabled"
+		metadata["annotations"] = annotations
+	})
+}
+
+// withInstallationValues puts installationValues first in the HelmRelease's
+// valuesFrom.
+func withInstallationValues(manifest []byte) ([]byte, error) {
+	return editManifest(manifest, func(object map[string]interface{}) {
+		spec, _ := object["spec"].(map[string]interface{})
+		valuesFrom, _ := spec["valuesFrom"].([]interface{})
+		spec["valuesFrom"] = append([]interface{}{installationValues}, valuesFrom...)
+	})
+}
+
+func editManifest(manifest []byte, edit func(map[string]interface{})) ([]byte, error) {
+	var object map[string]interface{}
+	err := yaml.Unmarshal(manifest, &object)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	edit(object)
+
+	out, err := yaml.Marshal(object)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return out, nil
 }
 
 func generateCapAClusterBaseTemplates(structureConfig common.StructureConfig) (common.ClusterBaseTemplates, error) {

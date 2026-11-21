@@ -1,6 +1,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
   labels:
     giantswarm.io/cluster: ${cluster_name}
     giantswarm.io/prevent-deletion: "true"
@@ -17,6 +19,8 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
   labels:
     giantswarm.io/cluster: ${cluster_name}
     giantswarm.io/prevent-deletion: "true"
@@ -42,6 +46,9 @@ spec:
       retries: 10
       strategy: rollback
   valuesFrom:
+  - kind: ConfigMap
+    name: cluster-app-installation-values
+    valuesKey: values.yaml
   - kind: ConfigMap
     name: ${cluster_name}-config
     valuesKey: values
