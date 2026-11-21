@@ -115,7 +115,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		return microerror.Mask(err)
 	}
 
-	plan, err := migration.NewPlan(md, r.migrations, r.target)
+	plan, err := r.newPlan(md, repoPath)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -138,8 +138,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		_, r.gitErr = r.dirtyPaths(repoPath)
 		r.tracked = r.gitErr == nil
 	}
-
-	plan.Env = r.env(repoPath)
 
 	result, err := plan.Run(r.fs, repoPath, md, dryRun)
 	if migration.IsMigrationFailed(err) {
@@ -191,16 +189,35 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-// env tells the migrations which files git ignores. Outside git, nothing is
-// known to be ignored.
-func (r *runner) env(repoPath string) migration.Env {
+// newPlan plans the upgrade of the repository, with the files git ignores,
+// which the migrations leave alone.
+func (r *runner) newPlan(md *metadata.RepositoryMetadata, repoPath string) (*migration.Plan, error) {
+	plan, err := migration.NewPlan(md, r.migrations, r.target)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	plan.Env, err = r.env(repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return plan, nil
+}
+
+// env tells the migrations which files git ignores. Outside git, which
+// --force allows, nothing is ignored. Any other failure stops the upgrade, as
+// the migrations would move the ignored files otherwise.
+func (r *runner) env(repoPath string) (migration.Env, error) {
 	if r.ignoredPaths == nil {
-		return migration.Env{}
+		return migration.Env{}, nil
 	}
 
 	paths, err := r.ignoredPaths(repoPath)
-	if err != nil {
-		return migration.Env{}
+	if errors.Is(err, errNotTracked) || errors.Is(err, errGitNotFound) {
+		return migration.Env{}, nil
+	} else if err != nil {
+		return migration.Env{}, microerror.Maskf(gitError, "listing the files git ignores, which the upgrade leaves alone: %s", err)
 	}
 
 	ignored := map[string]bool{}
@@ -208,7 +225,7 @@ func (r *runner) env(repoPath string) migration.Env {
 		ignored[filepath.ToSlash(filepath.Clean(p))] = true
 	}
 
-	return migration.Env{Ignored: func(path string) bool { return ignored[path] }}
+	return migration.Env{Ignored: func(path string) bool { return ignored[path] }}, nil
 }
 
 // ensureClean refuses to upgrade a repository with uncommitted changes, or one

@@ -36,9 +36,10 @@ type Migration struct {
 	// returns a human readable line per change made, which is printed to the
 	// user. layer.StructureVersion is From.
 	//
-	// It runs against the repository on disk, or, for a dry run, against an
-	// in-memory copy holding only its directories and regular files, `.git`
-	// excluded. It must:
+	// It runs against an in-memory copy of the repository, holding only its
+	// directories and regular files, `.git` excluded, and then, unless it is
+	// a dry run and when every step has succeeded there, against the
+	// repository on disk. It must:
 	//
 	//   - work on the files as they are, as users edit generated files by
 	//     hand, and fail rather than guess when a file is not as expected,
@@ -57,7 +58,7 @@ type Migration struct {
 	// Only layers are migrated. Files outside every layer, such as those
 	// `gitops init` creates at the repository root, have no migration of
 	// their own, so a structure change must not require changing them.
-	Apply func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error)
+	Apply func(fs *afero.Afero, repoPath string, layer metadata.Layer, env Env) ([]string, error)
 
 	// Relocate returns where a layer at the given path is after the
 	// migration, for the layers it moves, of any kind. Nil when it moves
@@ -71,8 +72,7 @@ type Migration struct {
 	ManualSteps string
 }
 
-// Env is what a migration knows about the repository besides its files. A
-// migration gets it with EnvOf from the file system it runs against.
+// Env is what a migration knows about the repository besides its files.
 type Env struct {
 	// Ignored reports whether git ignores the file at the path, relative to
 	// the repository root. Nil when that is not known, as outside git.
@@ -108,8 +108,7 @@ type Plan struct {
 	// its path at Target.
 	Moves map[string]string
 
-	// Env is what the migrations get from EnvOf. The caller sets it before
-	// Run.
+	// Env is passed to every migration. The caller sets it before Run.
 	Env Env
 }
 

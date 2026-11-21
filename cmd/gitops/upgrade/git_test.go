@@ -181,7 +181,7 @@ func Test_Upgrade_RestoreHintUndoesAFailedRun(t *testing.T) {
 		From:        1,
 		Description: "Fails half way",
 		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error) {
+		Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer, _ migration.Env) ([]string, error) {
 			err := fs.WriteFile(filepath.Join(repoPath, layer.Path, "kustomization.yaml"), []byte("changed\n"), 0600)
 			if err != nil {
 				return nil, err

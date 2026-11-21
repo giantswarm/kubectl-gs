@@ -160,42 +160,76 @@ func (p *Plan) Run(fs *afero.Afero, repoPath string, md *metadata.RepositoryMeta
 	result := &Result{}
 
 	if len(p.Steps) > 0 {
-		target := fs
-		var before map[string]file
-
+		var err error
 		if dryRun {
-			var err error
-			target, err = stage(fs, repoPath)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-			before, err = snapshot(target, repoPath)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
+			result, err = p.dryRun(fs, repoPath)
+		} else {
+			result, err = p.run(fs, repoPath)
 		}
-
-		for _, s := range p.Steps {
-			changes, err := s.Migration.Apply(withEnv(target, p.Env), repoPath, s.Layer)
-			if err != nil {
-				return nil, microerror.Mask(&StepError{Step: s, Err: err})
-			}
-
-			result.Changes = append(result.Changes, StepChanges{Step: s, Changes: changes})
-		}
-
-		if dryRun {
-			after, err := snapshot(target, repoPath)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-			result.Files = changes(before, after)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
 	record(md, p)
+
+	return result, nil
+}
+
+// run applies the steps to an in-memory copy of the repository first, so
+// that a step that fails leaves every file as it was, and then to the
+// repository.
+func (p *Plan) run(fs *afero.Afero, repoPath string) (*Result, error) {
+	staged, err := stage(fs, repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	_, err = p.apply(staged, repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return p.apply(fs, repoPath)
+}
+
+// dryRun applies the steps to an in-memory copy of the repository, and lists
+// the files they change.
+func (p *Plan) dryRun(fs *afero.Afero, repoPath string) (*Result, error) {
+	staged, err := stage(fs, repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	before, err := snapshot(staged, repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	result, err := p.apply(staged, repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	after, err := snapshot(staged, repoPath)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	result.Files = changes(before, after)
+
+	return result, nil
+}
+
+func (p *Plan) apply(target *afero.Afero, repoPath string) (*Result, error) {
+	result := &Result{}
+	for _, s := range p.Steps {
+		changes, err := s.Migration.Apply(target, repoPath, s.Layer, p.Env)
+		if err != nil {
+			return nil, microerror.Mask(&StepError{Step: s, Err: err})
+		}
+
+		result.Changes = append(result.Changes, StepChanges{Step: s, Changes: changes})
+	}
 
 	return result, nil
 }
@@ -296,25 +330,4 @@ func uniq(paths []string) []string {
 // String renders a step for the upgrade report.
 func (s Step) String() string {
 	return fmt.Sprintf("%s %s: %d -> %d", s.Layer.Kind, s.Layer.Path, s.Migration.From, s.Migration.From+1)
-}
-
-// envFs is the file system the migrations run against, carrying the plan's
-// Env, so that Apply keeps the signature every migration has.
-type envFs struct {
-	afero.Fs
-	env Env
-}
-
-func withEnv(fs *afero.Afero, env Env) *afero.Afero {
-	return &afero.Afero{Fs: envFs{Fs: fs.Fs, env: env}}
-}
-
-// EnvOf returns the Env of the plan running a migration against fs, or an
-// empty one outside a plan.
-func EnvOf(fs *afero.Afero) Env {
-	if e, ok := fs.Fs.(envFs); ok {
-		return e.env
-	}
-
-	return Env{}
 }

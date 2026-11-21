@@ -29,7 +29,7 @@ var addNotesMigration = migration.Migration{
 	From:        1,
 	Description: "Organizations get a NOTES.md",
 	Kinds:       []string{metadata.LayerOrganization},
-	Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error) {
+	Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer, _ migration.Env) ([]string, error) {
 		err := fs.WriteFile(filepath.Join(repoPath, layer.Path, "NOTES.md"), []byte("notes"), 0600)
 		if err != nil {
 			return nil, err
@@ -257,7 +257,7 @@ func Test_Upgrade_FailureHints(t *testing.T) {
 		From:        1,
 		Description: "Always fails",
 		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error) {
+		Apply: func(_ *afero.Afero, _ string, _ metadata.Layer, _ migration.Env) ([]string, error) {
 			return nil, fmt.Errorf("boom")
 		},
 	}
@@ -341,7 +341,7 @@ func Test_Upgrade_VersionOnlyOutsideGit(t *testing.T) {
 		From:        1,
 		Description: "Affects no recorded layer",
 		Kinds:       []string{metadata.LayerClusterBase},
-		Apply: func(*afero.Afero, string, metadata.Layer) ([]string, error) {
+		Apply: func(*afero.Afero, string, metadata.Layer, migration.Env) ([]string, error) {
 			return nil, fmt.Errorf("must not run")
 		},
 	}}
@@ -389,7 +389,7 @@ func Test_Upgrade_ForcedHintNamesGitFailure(t *testing.T) {
 		From:        1,
 		Description: "Always fails",
 		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(*afero.Afero, string, metadata.Layer) ([]string, error) {
+		Apply: func(*afero.Afero, string, metadata.Layer, migration.Env) ([]string, error) {
 			return nil, fmt.Errorf("boom")
 		},
 	}}

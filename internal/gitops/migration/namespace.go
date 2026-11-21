@@ -70,7 +70,7 @@ func addNamespaceKustomization(fs *afero.Afero, repoPath, orgDir string, _ Env) 
 		err = apiyaml.Unmarshal(data, &mc)
 	}
 	if err != nil || mc.Metadata.Name == "" || mc.Spec.SourceRef.Name == "" {
-		return nil, microerror.Maskf(unexpectedFileError, "can't read the name and the GitRepository of the management cluster's Kustomization from %s, add %s by hand, see %s", rel(repoPath, mcFile), rel(repoPath, path), namespaceDocs)
+		return nil, microerror.Maskf(unexpectedFileError, "can't read the name and the GitRepository of the management cluster's Kustomization from %s, add %s by hand, see %s", rel(repoPath, mcFile), rel(repoPath, path), moveDocs)
 	}
 
 	err = fs.WriteFile(path, []byte(namespaceKustomization(rel(repoPath, orgDir), filepath.Base(mcDir), mc)), 0644)
@@ -172,7 +172,7 @@ func listNamespaceKustomization(fs *afero.Afero, repoPath, orgDir string, env En
 		}
 	}
 
-	resources, err := resourcesOf(fs, repoPath, orgDir, kept, env)
+	resources, err := resourcesOf(fs, repoPath, orgDir, kept, env, "the organisation's kustomization.yaml")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

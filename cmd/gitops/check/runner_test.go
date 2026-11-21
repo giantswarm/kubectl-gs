@@ -56,6 +56,7 @@ func generatedRepo(t *testing.T) afero.Fs {
 	files := map[string]string{
 		testWC + "/kustomization.yaml":      "resources:\n  - apps/\n",
 		testWC + "/apps/kustomization.yaml": "resources: []\n",
+		testOrg + "/namespace.yaml":         "kind: Kustomization\n",
 	}
 	for path, data := range files {
 		err := fs.WriteFile(testRepo+"/"+path, []byte(data), 0644)

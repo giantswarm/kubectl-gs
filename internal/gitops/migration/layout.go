@@ -56,7 +56,11 @@ func moveMapiUp(fs *afero.Afero, repoPath, wcDir string, env Env) ([]string, []s
 
 	for _, f := range files {
 		to := filepath.Join(wcDir, f)
-		if exists, _ := fs.Exists(to); exists {
+		exists, err := fs.Exists(to)
+		if err != nil {
+			return nil, nil, microerror.Mask(err)
+		}
+		if exists {
 			return nil, nil, microerror.Maskf(unexpectedFileError, "both %s and %s exist, merge them by hand first", rel(repoPath, to), rel(repoPath, filepath.Join(mapiDir, f)))
 		}
 	}
@@ -197,14 +201,15 @@ func addClusterKustomization(fs *afero.Afero, repoPath, wcDir string, moved []st
 	}
 
 	names := moved
+	outOfBand := false
 	if len(names) == 0 {
-		names, err = listDir(fs, wcDir)
+		names, outOfBand, err = wholeDirectory(fs, repoPath, wcDir)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	resources, err := resourcesOf(fs, repoPath, wcDir, names, env)
+	resources, err := resourcesOf(fs, repoPath, wcDir, names, env, "the cluster's kustomization.yaml")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -215,8 +220,8 @@ func addClusterKustomization(fs *afero.Afero, repoPath, wcDir string, moved []st
 	}
 
 	changes := []string{fmt.Sprintf("%s: added, lists %s", rel(repoPath, path), strings.Join(resources, ", "))}
-	if exists, _ := fs.DirExists(filepath.Join(wcDir, outOfBandDir)); exists && len(moved) == 0 {
-		changes = append(changes, fmt.Sprintf("%s: no longer applied to the management cluster. With prune: true, Flux deletes what it applied from there", rel(repoPath, filepath.Join(wcDir, outOfBandDir))))
+	if outOfBand {
+		changes = append(changes, fmt.Sprintf("%s: no longer applied to the management cluster. The cluster's Kustomization doesn't prune, so what it applied from there stays: delete it by hand if nothing needs it", rel(repoPath, filepath.Join(wcDir, outOfBandDir))))
 	}
 
 	return changes, nil
@@ -262,12 +267,12 @@ func listDir(fs *afero.Afero, dir string) ([]string, error) {
 // directory with a kustomization.yaml as `name/`, and a YAML file as it is.
 // It fails on a directory with files but no kustomization.yaml, which only
 // Flux's generated kustomization could apply.
-func resourcesOf(fs *afero.Afero, repoPath, dir string, names []string, env Env) ([]string, error) {
+func resourcesOf(fs *afero.Afero, repoPath, dir string, names []string, env Env, owner string) ([]string, error) {
 	var resources []string
 	for _, name := range names {
 		path := filepath.Join(dir, name)
 
-		resource, err := resourceOf(fs, repoPath, path, env)
+		resource, err := resourceOf(fs, repoPath, path, env, owner)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -280,20 +285,24 @@ func resourcesOf(fs *afero.Afero, repoPath, dir string, names []string, env Env)
 	return resources, nil
 }
 
-func resourceOf(fs *afero.Afero, repoPath, path string, env Env) (string, error) {
+func resourceOf(fs *afero.Afero, repoPath, path string, env Env, owner string) (string, error) {
 	isDir, err := fs.DirExists(path)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 	if !isDir {
 		ext := filepath.Ext(path)
-		if (ext == ".yaml" || ext == ".yml") && !env.IsIgnored(rel(repoPath, path)) {
+		if isYAML(ext) && !env.IsIgnored(rel(repoPath, path)) {
 			return filepath.Base(path), nil
 		}
 		return "", nil
 	}
 
-	if exists, _ := fs.Exists(filepath.Join(path, gitopskey.SigsKustomizationFileName())); exists {
+	exists, err := fs.Exists(filepath.Join(path, gitopskey.SigsKustomizationFileName()))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	if exists {
 		return filepath.Base(path) + "/", nil
 	}
 
@@ -302,7 +311,7 @@ func resourceOf(fs *afero.Afero, repoPath, path string, env Env) (string, error)
 		return "", microerror.Mask(err)
 	}
 
-	return "", microerror.Maskf(unexpectedFileError, "%s has no kustomization.yaml, so the cluster's kustomization.yaml can't list it. Add one first", rel(repoPath, path))
+	return "", microerror.Maskf(unexpectedFileError, "%s has no kustomization.yaml, so %s can't list it. Add one first", rel(repoPath, path), owner)
 }
 
 // refuseOutOfBand fails for a cluster's kustomization.yaml that lists

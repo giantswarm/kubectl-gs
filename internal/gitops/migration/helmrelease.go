@@ -1,7 +1,6 @@
 package migration
 
 import (
-	"bytes"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -37,7 +36,7 @@ var helmReleases = Migration{
 	Apply:       applyHelmReleases,
 }
 
-func applyHelmReleases(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error) {
+func applyHelmReleases(fs *afero.Afero, repoPath string, layer metadata.Layer, _ Env) ([]string, error) {
 	dir := filepath.Join(repoPath, layer.Path)
 
 	switch layer.Kind {
@@ -303,41 +302,6 @@ func removeClusterConfigPatch(fs *afero.Afero, repoPath, appsDir string) ([]stri
 	return changes, nil
 }
 
-// readYAML returns the top level mapping of the file.
-func readYAML(fs *afero.Afero, path string) (*yaml.Node, error) {
-	data, err := fs.ReadFile(path)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var doc yaml.Node
-	err = yaml.Unmarshal(data, &doc)
-	if err != nil {
-		return nil, microerror.Maskf(unexpectedFileError, "cannot parse %s: %s", path, err)
-	}
-	if len(doc.Content) == 0 || doc.Content[0].Kind != yaml.MappingNode {
-		return nil, microerror.Maskf(unexpectedFileError, "%s is not a mapping", path)
-	}
-
-	return doc.Content[0], nil
-}
-
-func writeYAML(fs *afero.Afero, path string, node *yaml.Node) error {
-	var buf bytes.Buffer
-	encoder := yaml.NewEncoder(&buf)
-	encoder.SetIndent(2)
-	err := encoder.Encode(node)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	err = encoder.Close()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return microerror.Mask(fs.WriteFile(path, buf.Bytes(), 0644))
-}
-
 // findPatch returns the `patches` entry applying the given file.
 func findPatch(kustomization *yaml.Node, file string) *yaml.Node {
 	patches := mapValue(kustomization, "patches")
@@ -368,33 +332,7 @@ func patchTargetKind(entry *yaml.Node) string {
 	return kind.Value
 }
 
-func mapValue(node *yaml.Node, key string) *yaml.Node {
-	if node.Kind != yaml.MappingNode {
-		return nil
-	}
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		if node.Content[i].Value == key {
-			return node.Content[i+1]
-		}
-	}
-
-	return nil
-}
-
-func deleteKey(node *yaml.Node, key string) {
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		if node.Content[i].Value == key {
-			node.Content = append(node.Content[:i], node.Content[i+2:]...)
-			return
-		}
-	}
-}
-
 func stringField(m map[string]any, key string) string {
 	s, _ := m[key].(string)
 	return s
-}
-
-func scalar(value string) *yaml.Node {
-	return &yaml.Node{Kind: yaml.ScalarNode, Value: value}
 }

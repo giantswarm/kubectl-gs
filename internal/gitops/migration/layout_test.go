@@ -16,6 +16,7 @@ import (
 const (
 	emptyResources = "resources: []\n"
 	configMap      = "kind: ConfigMap\n"
+	secret         = "kind: Secret\n"
 	organization   = "kind: Organization\n"
 
 	layoutWCs = testOrg + "/workload-clusters"
@@ -70,7 +71,7 @@ func v2MapiCluster() map[string]string {
 		layoutWC + "/mapi/apps/kustomization.yaml":               "resources:\n  - hello-world\n",
 		layoutWC + "/mapi/apps/hello-world/kustomization.yaml":   mapiAppKustomization,
 		layoutWC + "/mapi/apps/shared/values.yaml":               configMap,
-		layoutWC + "/mapi/apps/hello-world/secret.dec.yaml":      "kind: Secret\n",
+		layoutWC + "/mapi/apps/hello-world/secret.dec.yaml":      secret,
 		layoutWC + "/out-of-band/configmaps/configmap.yaml":      configMap,
 	}
 }
@@ -82,7 +83,7 @@ func Test_Layout_MovesMapiUp(t *testing.T) {
 	fs := layoutRepo(t, v2MapiCluster())
 	layer := metadata.Layer{Kind: metadata.LayerWorkloadCluster, Path: layoutWC, StructureVersion: 2}
 
-	changes, err := version3.Apply(withEnv(fs, ignoring), testRepo, layer)
+	changes, err := version3.Apply(fs, testRepo, layer, ignoring)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -107,7 +108,7 @@ func Test_Layout_MovesMapiUp(t *testing.T) {
 		t.Errorf("expected the ignored file left behind to be reported, got:\n%s", strings.Join(changes, "\n"))
 	}
 
-	again, err := version3.Apply(withEnv(fs, ignoring), testRepo, layer)
+	again, err := version3.Apply(fs, testRepo, layer, ignoring)
 	if err != nil || len(again) != 0 {
 		t.Errorf("expected a second run to change nothing, got %v, %v", again, err)
 	}
@@ -124,7 +125,7 @@ func Test_Layout_AddsKustomization(t *testing.T) {
 	})
 	layer := metadata.Layer{Kind: metadata.LayerWorkloadCluster, Path: layoutWC, StructureVersion: 2}
 
-	changes, err := version3.Apply(fs, testRepo, layer)
+	changes, err := version3.Apply(fs, testRepo, layer, Env{})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -158,7 +159,7 @@ func Test_Layout_Refuses(t *testing.T) {
 			name: "directory without a kustomization.yaml",
 			files: map[string]string{
 				layoutWC + "/apps/kustomization.yaml": emptyResources,
-				layoutWC + "/secrets/secret.enc.yaml": "kind: Secret\n",
+				layoutWC + "/secrets/secret.enc.yaml": secret,
 			},
 		},
 	}
@@ -168,7 +169,7 @@ func Test_Layout_Refuses(t *testing.T) {
 			fs := layoutRepo(t, tc.files)
 			layer := metadata.Layer{Kind: metadata.LayerWorkloadCluster, Path: layoutWC, StructureVersion: 2}
 
-			_, err := version3.Apply(fs, testRepo, layer)
+			_, err := version3.Apply(fs, testRepo, layer, Env{})
 			if !IsUnexpectedFile(err) {
 				t.Fatalf("expected an unexpected file error, got: %v", err)
 			}

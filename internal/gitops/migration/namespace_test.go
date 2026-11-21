@@ -1,7 +1,6 @@
 package migration
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -60,7 +59,7 @@ func Test_Namespace_AddsNamespaceKustomization(t *testing.T) {
 			fs := layoutRepo(t, files)
 			layer := metadata.Layer{Kind: metadata.LayerOrganization, Path: testOrg, StructureVersion: 2}
 
-			changes, err := version3.Apply(fs, testRepo, layer)
+			changes, err := version3.Apply(fs, testRepo, layer, Env{})
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -72,7 +71,7 @@ func Test_Namespace_AddsNamespaceKustomization(t *testing.T) {
 			checkResources(t, fs, testOrg+"/namespace/kustomization.yaml", []string{})
 			checkNamespaceKustomization(t, fs)
 
-			again, err := version3.Apply(fs, testRepo, layer)
+			again, err := version3.Apply(fs, testRepo, layer, Env{})
 			if err != nil || len(again) != 0 {
 				t.Errorf("expected a second run to change nothing, got %v, %v", again, err)
 			}
@@ -84,17 +83,9 @@ func Test_Namespace_RefusesWithoutManagementCluster(t *testing.T) {
 	fs := layoutRepo(t, map[string]string{testOrg + "/demoorg.yaml": organization})
 	layer := metadata.Layer{Kind: metadata.LayerOrganization, Path: testOrg, StructureVersion: 2}
 
-	_, err := version3.Apply(fs, testRepo, layer)
+	_, err := version3.Apply(fs, testRepo, layer, Env{})
 	if !IsUnexpectedFile(err) {
 		t.Fatalf("expected an unexpected file error, got: %v", err)
-	}
-}
-
-func Test_Version3_ManualSteps(t *testing.T) {
-	for _, s := range []string{"deletionPolicy: Orphan", "namespace/secrets", "repo-structure.md#move-the-workload-cluster-kustomizations"} {
-		if !strings.Contains(version3.ManualSteps, s) {
-			t.Errorf("expected the manual steps to mention %q", s)
-		}
 	}
 }
 

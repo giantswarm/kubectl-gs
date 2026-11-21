@@ -156,15 +156,42 @@ func adoptOrganizations(fs *afero.Afero, repoPath, mc string, result *AdoptionRe
 	}
 
 	for _, org := range orgs {
-		result.Metadata.Upsert(Layer{Kind: LayerOrganization, Path: key.BaseDirPath(mc, org, "")})
-
-		err = adoptWorkloadClusters(fs, repoPath, mc, org, result)
+		err = adoptOrganization(fs, repoPath, mc, org, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	return nil
+}
+
+// adoptOrganization records the organisation and its workload clusters.
+func adoptOrganization(fs *afero.Afero, repoPath, mc, org string, result *AdoptionResult) error {
+	orgDir := key.BaseDirPath(mc, org, "")
+
+	version, err := organizationVersion(fs, repoPath, orgDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	result.Metadata.Upsert(Layer{Kind: LayerOrganization, Path: orgDir, StructureVersion: version})
+
+	return microerror.Mask(adoptWorkloadClusters(fs, repoPath, mc, org, result))
+}
+
+// organizationVersion returns lastMapiVersion for an organisation without
+// its namespace Kustomization, which structure version 3 brought, and the
+// current version otherwise.
+func organizationVersion(fs *afero.Afero, repoPath, orgDir string) (int, error) {
+	exists, err := fs.Exists(filepath.Join(repoPath, orgDir, key.NamespaceFileName()))
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+	if !exists {
+		return lastMapiVersion, nil
+	}
+
+	return StructureVersion, nil
 }
 
 // adoptWorkloadClusters walks

@@ -3,6 +3,7 @@ package upgrade
 import (
 	"bytes"
 	"context"
+	"errors"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -22,8 +23,8 @@ func manualMigration(sawIgnored *bool) migration.Migration {
 		From:        1,
 		Description: "Organizations get a namespace",
 		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(fs *afero.Afero, _ string, _ metadata.Layer) ([]string, error) {
-			*sawIgnored = migration.EnvOf(fs).IsIgnored(testOrg + "/secret.dec.yaml")
+		Apply: func(_ *afero.Afero, _ string, _ metadata.Layer, env migration.Env) ([]string, error) {
+			*sawIgnored = env.IsIgnored(testOrg + "/secret.dec.yaml")
 			return []string{"added namespace.yaml"}, nil
 		},
 		ManualSteps: manualSteps,
@@ -73,5 +74,24 @@ func Test_IgnoredPaths(t *testing.T) {
 	}
 	if len(paths) != 1 || paths[0] != "mapi/secret.dec.yaml" {
 		t.Errorf("expected mapi/secret.dec.yaml, got %v", paths)
+	}
+}
+
+// Test_Upgrade_FailsWithoutIgnoredFiles checks that the upgrade stops when
+// git can't say which files it ignores, rather than moving them.
+func Test_Upgrade_FailsWithoutIgnoredFiles(t *testing.T) {
+	fs := versionOneRepo(t)
+	out := new(bytes.Buffer)
+
+	sawIgnored := false
+	r := newTestRunner(fs, 2, out)
+	r.migrations = []migration.Migration{manualMigration(&sawIgnored)}
+	r.ignoredPaths = func(string) ([]string, error) {
+		return nil, errors.New("git ls-files failed")
+	}
+
+	err := r.run(context.Background(), newTestCommand(testRepo, false), nil)
+	if err == nil || !strings.Contains(err.Error(), "git ls-files failed") {
+		t.Fatalf("expected the upgrade to fail, got: %v", err)
 	}
 }

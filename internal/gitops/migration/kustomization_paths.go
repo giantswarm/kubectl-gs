@@ -3,6 +3,7 @@ package migration
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -13,8 +14,8 @@ import (
 // pathLists are the kustomization fields listing paths, and pathFields the
 // list entries with a `path`.
 var (
-	pathLists  = []string{"resources", "components", "bases", "crds", "patchesStrategicMerge"}
-	pathFields = []string{"patches", "patchesJson6902"}
+	pathLists  = []string{"resources", "components", "bases", "crds", "patchesStrategicMerge", "transformers", "generators", "validators"}
+	pathFields = []string{"patches", "patchesJson6902", "replacements"}
 	generators = []string{"configMapGenerator", "secretGenerator"}
 )
 
@@ -126,7 +127,8 @@ func fixFluxPaths(fs *afero.Afero, repoPath, wcPath string) ([]string, error) {
 
 	var changes []string
 	for _, e := range entries {
-		if e.IsDir() || filepath.Ext(e.Name()) != ".yaml" || isKustomizationFile(e.Name()) {
+		ext := filepath.Ext(e.Name())
+		if e.IsDir() || !isYAML(ext) || isKustomizationFile(e.Name()) {
 			continue
 		}
 
@@ -140,39 +142,92 @@ func fixFluxPaths(fs *afero.Afero, repoPath, wcPath string) ([]string, error) {
 	return changes, nil
 }
 
+// documentSeparator splits a YAML stream into its documents.
+var documentSeparator = regexp.MustCompile(`(?m)^---[ \t]*\n`)
+
+// fixFluxPath rewrites the Flux Kustomizations in the file that apply
+// `mapi`, document by document, and keeps every other document as it is.
 func fixFluxPath(fs *afero.Afero, repoPath, file, mapi, wcPath string) ([]string, error) {
 	data, err := fs.ReadFile(file)
 	if err != nil || !strings.Contains(string(data), mapi) {
 		return nil, microerror.Mask(err)
 	}
 
-	kustomization, err := readYAML(fs, file)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	bounds := documentSeparator.FindAllIndex(data, -1)
+	var out []byte
+	var changes []string
+	start := 0
+	for i := 0; i <= len(bounds); i++ {
+		end, next := len(data), len(data)
+		if i < len(bounds) {
+			end, next = bounds[i][0], bounds[i][1]
+		}
+
+		document, path, err := fixFluxDocument(data[start:end], file, mapi, wcPath)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if path != "" {
+			changes = append(changes, fmt.Sprintf("%s: applies %s", rel(repoPath, file), path))
+		}
+		out = append(append(out, document...), data[end:next]...)
+		start = next
 	}
-	apiVersion, kind := mapValue(kustomization, "apiVersion"), mapValue(kustomization, "kind")
-	if apiVersion == nil || kind == nil || kind.Value != "Kustomization" || !strings.HasPrefix(apiVersion.Value, "kustomize.toolkit.fluxcd.io/") {
+
+	if len(changes) == 0 {
 		return nil, nil
 	}
 
-	spec := mapValue(kustomization, "spec")
-	if spec == nil {
-		return nil, nil
+	return changes, microerror.Mask(fs.WriteFile(file, out, 0644))
+}
+
+// fixFluxDocument returns the document with the path of a Flux
+// Kustomization applying `mapi` pointed at the cluster's directory, and that
+// path, or the document as it is and an empty string.
+func fixFluxDocument(document []byte, file, mapi, wcPath string) ([]byte, string, error) {
+	if !strings.Contains(string(document), mapi) {
+		return document, "", nil
 	}
-	path := mapValue(spec, "path")
+
+	kustomization, err := decodeMapping(document, file)
+	if err != nil {
+		return nil, "", microerror.Mask(err)
+	}
+
+	path := fluxPath(kustomization)
 	if path == nil {
-		return nil, nil
+		return document, "", nil
 	}
 	current := strings.TrimPrefix(path.Value, "./")
 	if current != mapi && !strings.HasPrefix(current, mapi+"/") {
-		return nil, nil
+		return document, "", nil
 	}
 	path.Value = "./" + wcPath + strings.TrimPrefix(current, mapi)
 
-	err = writeYAML(fs, file, kustomization)
+	encoded, err := encodeYAML(kustomization)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, "", microerror.Mask(err)
 	}
 
-	return []string{fmt.Sprintf("%s: applies %s", rel(repoPath, file), path.Value)}, nil
+	return encoded, path.Value, nil
+}
+
+// fluxPath returns the `spec.path` of a Flux Kustomization, or nil for any
+// other object.
+func fluxPath(object *yaml.Node) *yaml.Node {
+	apiVersion, kind := mapValue(object, "apiVersion"), mapValue(object, "kind")
+	if apiVersion == nil || kind == nil || kind.Value != "Kustomization" || !strings.HasPrefix(apiVersion.Value, "kustomize.toolkit.fluxcd.io/") {
+		return nil
+	}
+
+	spec := mapValue(object, "spec")
+	if spec == nil {
+		return nil
+	}
+
+	return mapValue(spec, "path")
+}
+
+func isYAML(ext string) bool {
+	return ext == ".yaml" || ext == ".yml"
 }

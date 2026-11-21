@@ -32,6 +32,9 @@ var templateDocs = map[string][]string{
 		"app",
 		"automatic-updates",
 	},
+	"docs/how-to/upgrade-fork.md": {
+		"move-the-workload-cluster-kustomizations",
+	},
 	"docs/how-to/sops.md": {
 		"add-a-workload-cluster-key-gpg",
 	},

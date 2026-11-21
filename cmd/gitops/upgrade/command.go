@@ -37,9 +37,12 @@ before committing it.
 Some structure changes can't be made safely in files alone, as Flux has to
 apply them in a given order, over more than one commit. The upgrade makes the
 part that is safe to push at once, and prints the steps left to do by hand.
-The upgrade to version 3 moves the workload clusters' mapi directories and
-adds the organisations' namespace Kustomizations, but leaves moving the
-clusters' Kustomizations into the organisations' namespaces to you.
+The upgrade to version 3 moves the workload clusters' mapi directories, adds
+the organisations' namespace Kustomizations, and protects the management
+cluster's keys with a kustomization.yaml, but leaves moving the clusters'
+Kustomizations into the organisations' namespaces to you. It refuses a
+cluster whose Kustomization prunes what out-of-band/ holds, as Flux would
+delete it from the management cluster.
 
 Files git ignores, such as decrypted secrets, are left where they are: move
 them yourself.
