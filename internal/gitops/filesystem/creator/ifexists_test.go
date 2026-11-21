@@ -30,7 +30,7 @@ func Test_Creator_IfExists(t *testing.T) {
 		err = NewCreator(CreatorConfig{
 			DryRun: dryRun,
 			Fs:     fs,
-			Path:   "/repo",
+			Path:   repoPath,
 			PostModifiers: map[string]modifier.Modifier{
 				"present.yaml": modifier.IfExists{Modifier: appendModifier{}},
 				"missing.yaml": modifier.IfExists{Modifier: appendModifier{}},
@@ -63,7 +63,7 @@ func Test_Creator_MissingModifierTarget(t *testing.T) {
 
 	err := NewCreator(CreatorConfig{
 		Fs:   fs,
-		Path: "/repo",
+		Path: repoPath,
 		FsObjects: []*FsObject{
 			NewFsObject("new.yaml", []byte("kind: B\n"), 0),
 		},
@@ -77,5 +77,51 @@ func Test_Creator_MissingModifierTarget(t *testing.T) {
 	}
 	if ok, _ := afero.Exists(fs, "/repo/new.yaml"); ok {
 		t.Errorf("expected nothing written")
+	}
+}
+
+type failingModifier struct{}
+
+func (failingModifier) Execute([]byte) ([]byte, error) {
+	return nil, errors.New("can't decrypt")
+}
+
+// Test_Creator_FailingModifierWritesNothing checks that a run whose post
+// modifier fails, such as one that can't read an encrypted file, writes
+// neither its new files nor the other modifiers' changes.
+func Test_Creator_FailingModifierWritesNothing(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	for path, data := range map[string]string{"/repo/a.yaml": "kind: A\n", "/repo/m.yaml": "kind: M\n", "/repo/z.yaml": "kind: Z\n"} {
+		err := afero.WriteFile(fs, path, []byte(data), 0600)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+	}
+
+	err := NewCreator(CreatorConfig{
+		Fs:   fs,
+		Path: repoPath,
+		FsObjects: []*FsObject{
+			NewFsObject("new.asc", []byte("public key"), 0),
+		},
+		PostModifiers: map[string]modifier.Modifier{
+			"a.yaml": appendModifier{},
+			"m.yaml": failingModifier{},
+			"z.yaml": appendModifier{},
+		},
+		Stdout: &bytes.Buffer{},
+	}).Create()
+	if err == nil {
+		t.Fatalf("expected the modifier's error")
+	}
+
+	if ok, _ := afero.Exists(fs, "/repo/new.asc"); ok {
+		t.Errorf("expected no new file")
+	}
+	for _, path := range []string{"/repo/a.yaml", "/repo/z.yaml"} {
+		data, _ := afero.ReadFile(fs, path)
+		if bytes.Contains(data, []byte("changed")) {
+			t.Errorf("expected %s unchanged, got:\n%s", path, data)
+		}
 	}
 }

@@ -322,46 +322,21 @@ func (c *Creator) write() error {
 		return microerror.Mask(err)
 	}
 
-	for _, o := range c.fsObjects {
-		path := fmt.Sprintf("%s/%s", c.path, o.RelativePath)
-
-		if o.isDir() {
-			err := c.createDirectory(path, o.Permission)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			continue
-		}
-
-		if len(o.Data) <= 1 {
-			continue
-		}
-
-		err := c.createFileWithoutOverride(path, o.Data, o.Permission)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	// Every post modifier runs before anything is written, so a run whose
+	// modifier fails, such as one that can't read an encrypted file, leaves
+	// the repository as it was.
+	edits, err := c.edits()
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	for n, m := range c.modifiers() {
-		file := fmt.Sprintf("%s/%s", c.path, n)
+	err = c.writeObjects()
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
-		rawYaml, err := c.fs.ReadFile(file)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		stat, err := c.fs.Stat(file)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		edited, err := m.Execute(rawYaml)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = c.createFileWithOverride(file, edited, stat.Mode())
+	for _, e := range edits {
+		err = c.createFileWithOverride(e.path, e.data, e.perm)
 		if err != nil {
 			return microerror.Mask(err)
 		}
