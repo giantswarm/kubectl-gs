@@ -2,16 +2,33 @@ package encryption
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/spf13/afero"
 
 	gitopsenc "github.com/giantswarm/kubectl-gs/v6/internal/gitops/encryption"
-	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
+
+// sopsKeysDir holds the public keys.
+const sopsKeysDir = "management-clusters/demomc/.sops.keys"
+
+// expectedKeysKustomization is the kustomization.yaml of a directory of SOPS keys,
+// before any is listed.
+const expectedKeysKustomization = `apiVersion: kustomize.config.k8s.io/v1beta1
+buildMetadata: [originAnnotations]
+kind: Kustomization
+# Flux decrypts with the keys here: deleting one stops GitOps for what it
+# decrypts.
+commonAnnotations:
+  kustomize.toolkit.fluxcd.io/prune: disabled
+labels:
+  - pairs:
+      giantswarm.io/managed-by: flux
+      # nobody can delete them, Flux included, until this label is removed
+      giantswarm.io/prevent-deletion: "true"
+resources: []
+`
 
 type FsObjectExpected struct {
 	RelativePath string
@@ -46,7 +63,47 @@ func Test_NewEncryption(t *testing.T) {
 					Data:         "apiVersion: v1\nkind: Secret\nmetadata:\n    name: sops-gpg-master\n    namespace: default\n",
 				},
 				{
-					RelativePath: "management-clusters/demomc/.sops.keys",
+					RelativePath: "management-clusters/demomc/secrets/kustomization.yaml",
+					Data:         expectedKeysKustomization,
+				},
+				{
+					RelativePath: sopsKeysDir,
+				},
+				{
+					RelativePath: "management-clusters/demomc/.sops.keys/demomc.12345689ABCDEF.asc",
+					Data:         "public key material",
+				},
+			},
+		},
+		{
+			name: "organization",
+			config: common.StructureConfig{
+				EncryptionKeyPair: keyPair,
+				EncryptionTarget:  "namespace/secrets/",
+				ManagementCluster: "demomc",
+				Organization:      testOrg,
+			},
+			expectedObjects: []FsObjectExpected{
+				{
+					RelativePath: "management-clusters/demomc/secrets",
+				},
+				{
+					RelativePath: "management-clusters/demomc/secrets/demomc.gpgkey.enc.yaml",
+					Data:         "apiVersion: v1\nkind: Secret\nmetadata:\n    name: sops-gpg-master\n    namespace: default\n",
+				},
+				{
+					RelativePath: "management-clusters/demomc/secrets/kustomization.yaml",
+					Data:         expectedKeysKustomization,
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace/secrets",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace/secrets/kustomization.yaml",
+					Data:         expectedKeysKustomization,
+				},
+				{
+					RelativePath: sopsKeysDir,
 				},
 				{
 					RelativePath: "management-clusters/demomc/.sops.keys/demomc.12345689ABCDEF.asc",
@@ -60,19 +117,23 @@ func Test_NewEncryption(t *testing.T) {
 				EncryptionKeyPair: keyPair,
 				EncryptionTarget:  "secrets/",
 				ManagementCluster: "demomc",
-				Organization:      "demoorg",
+				Organization:      testOrg,
 				WorkloadCluster:   "demowc",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/secrets",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace/secrets",
 				},
 				{
-					RelativePath: "management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml",
-					Data:         "apiVersion: v1\nkind: Secret\nmetadata:\n    name: sops-gpg-demowc\n    namespace: default\n",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace/secrets/demowc.gpgkey.enc.yaml",
+					Data:         "apiVersion: v1\nkind: Secret\nmetadata:\n    name: sops-gpg-demowc\n    namespace: org-demoorg\n",
 				},
 				{
-					RelativePath: "management-clusters/demomc/.sops.keys",
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace/secrets/kustomization.yaml",
+					Data:         expectedKeysKustomization,
+				},
+				{
+					RelativePath: sopsKeysDir,
 				},
 				{
 					RelativePath: "management-clusters/demomc/.sops.keys/demowc.12345689ABCDEF.asc",
@@ -96,91 +157,6 @@ func Test_NewEncryption(t *testing.T) {
 
 			if diff := cmp.Diff(tc.expectedObjects, got); diff != "" {
 				t.Fatalf("unexpected file system objects (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-func Test_NewEncryption_Create(t *testing.T) {
-	const (
-		repoPath   = "/repo"
-		secretFile = "/repo/management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml"
-		wcKusFile  = "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml"
-	)
-
-	testCases := []struct {
-		name         string
-		seed         map[string]string
-		expectedKeys []string
-	}{
-		{
-			name: "existing Secret keeps its keys",
-			seed: map[string]string{
-				secretFile: "apiVersion: v1\ndata:\n  demowc.OLDFINGERPRINT.asc: b2xkIGtleQ==\nkind: Secret\nmetadata:\n  name: sops-gpg-demowc\n  namespace: default\n",
-			},
-			expectedKeys: []string{"demowc.OLDFINGERPRINT.asc", "demowc.NEWFINGERPRINT.asc"},
-		},
-		{
-			name:         "repository without secrets directory",
-			expectedKeys: []string{"demowc.NEWFINGERPRINT.asc"},
-		},
-	}
-
-	for i, tc := range testCases {
-		t.Run(fmt.Sprintf("case %d: %s", i, tc.name), func(t *testing.T) {
-			fs := afero.NewMemMapFs()
-			seed := map[string]string{
-				"/repo/.sops.yaml": "creation_rules: []\n",
-				wcKusFile:          "apiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata:\n  name: demomc-clusters-demowc\n  namespace: default\nspec:\n  path: ./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc\n",
-			}
-			for path, data := range tc.seed {
-				seed[path] = data
-			}
-			for path, data := range seed {
-				err := afero.WriteFile(fs, path, []byte(data), 0600)
-				if err != nil {
-					t.Fatalf("unexpected error: %s", err.Error())
-				}
-			}
-
-			config, err := NewEncryption(common.StructureConfig{
-				EncryptionKeyPair: gitopsenc.KeyPair{
-					Fingerprint: "NEWFINGERPRINT",
-					PrivateData: "new key",
-					PublicData:  "public key material",
-				},
-				EncryptionTarget:  "secrets/",
-				ManagementCluster: "demomc",
-				Organization:      "demoorg",
-				WorkloadCluster:   "demowc",
-			})
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-			config.Fs = fs
-			config.Path = repoPath
-
-			err = creator.NewCreator(*config).Create()
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-
-			secret, err := afero.ReadFile(fs, secretFile)
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-			for _, k := range tc.expectedKeys {
-				if !strings.Contains(string(secret), k) {
-					t.Errorf("expected key %q in the Secret, got:\n%s", k, secret)
-				}
-			}
-
-			kus, err := afero.ReadFile(fs, wcKusFile)
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-			if !strings.Contains(string(kus), "name: sops-gpg-demowc") {
-				t.Errorf("expected decryption secretRef sops-gpg-demowc in the Kustomization, got:\n%s", kus)
 			}
 		})
 	}

@@ -41,6 +41,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	config := common.StructureConfig{
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Name,
+		RepositoryName:    r.flag.RepositoryName,
 	}
 
 	creatorConfig, err := structure.NewOrganization(config)

@@ -15,6 +15,9 @@ var privateKey string
 //go:embed public-key.yaml.tmpl
 var publicKey string
 
+//go:embed secrets_kustomization.yaml.tmpl
+var secretsKustomization string
+
 // GetManagementClusterTemplates merges .tmpl files for management cluster layer.
 func GetManagementClusterTemplates() []common.Template {
 	return []common.Template{
@@ -25,6 +28,7 @@ func GetManagementClusterTemplates() []common.Template {
 func GetManagementClusterSecretsTemplates() []common.Template {
 	return []common.Template{
 		common.Template{Name: "{{ .ManagementCluster }}.gpgkey.enc.yaml", Data: privateKey},
+		common.Template{Name: "kustomization.yaml", Data: secretsKustomization},
 	}
 }
 

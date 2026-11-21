@@ -16,6 +16,10 @@ import (
 	wctmpl "github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/workload-cluster/templates"
 )
 
+const missingNamespace = "%s does not exist. The workload clusters' Kustomizations are applied into the organisation's namespace by the Kustomization it holds, which `kubectl gs gitops add organization` writes. An organisation created with an older kubectl-gs needs it added first, see " + namespaceDocs
+
+const namespaceDocs = "https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md#move-the-workload-cluster-kustomizations"
+
 // templateConfig is what the workload cluster templates are rendered from.
 type templateConfig struct {
 	common.StructureConfig
@@ -111,6 +115,9 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: postModifiers(tc, wcsDir, wcDir),
+		PreValidators: map[string]func(*afero.Afero, string) error{
+			key.ResourcePath(orgDir, key.NamespaceFileName()): requireNamespaceKustomization,
+		},
 		MetadataLayer: &metadata.Layer{
 			Kind: metadata.LayerWorkloadCluster,
 			Path: wcDir,
@@ -121,6 +128,21 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	}
 
 	return &creatorConfig, nil
+}
+
+// requireNamespaceKustomization refuses a cluster in an organisation without
+// its namespace Kustomization, which applies the cluster's Kustomizations into
+// the organisation's namespace, and which they depend on.
+func requireNamespaceKustomization(fs *afero.Afero, path string) error {
+	ok, err := fs.Exists(path)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if ok {
+		return nil
+	}
+
+	return microerror.Maskf(creator.ValidationError, missingNamespace, path)
 }
 
 // postModifiers returns the changes to files that may exist already: the

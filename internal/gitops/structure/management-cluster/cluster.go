@@ -75,6 +75,10 @@ func NewManagementCluster(config common.StructureConfig) (*creator.CreatorConfig
 			key.SopsConfigFileName(): sopsmod.SopsModifier{
 				RulesToAdd: []map[string]interface{}{
 					sopsmod.NewRule("", encPath, config.EncryptionKeyPair.Fingerprint),
+					// The workload clusters' keys in the organisations'
+					// namespace/secrets, which the organisations' namespace
+					// Kustomizations decrypt with the master key.
+					sopsmod.NewRule("", key.WorkloadClusterKeysRegex(mcDir), config.EncryptionKeyPair.Fingerprint),
 				},
 			},
 		}

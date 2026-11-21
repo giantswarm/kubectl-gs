@@ -3,12 +3,16 @@ package wcluster
 import (
 	"bytes"
 	"context"
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 )
 
 const (
@@ -21,6 +25,10 @@ const (
 
 	layoutWCsDir = "/repo/management-clusters/demomc/organizations/demoorg/workload-clusters"
 	layoutWCDir  = layoutWCsDir + "/demowc"
+
+	layoutEmpty = "resources: []\n"
+
+	layoutNamespaceFile = "/repo/management-clusters/demomc/organizations/demoorg/namespace.yaml"
 
 	layoutSingleKustomization = `apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -52,7 +60,7 @@ var layoutCases = []layoutCase{
 	{
 		name: "new cluster",
 		seed: map[string]string{
-			layoutWCsDir + "/kustomization.yaml": "resources: []\n",
+			layoutWCsDir + "/kustomization.yaml": layoutEmpty,
 		},
 		expectKustomizations: []string{"demowc.yaml", "demowc-apps.yaml"},
 		expectApplied:        []string{"apps/"},
@@ -65,7 +73,7 @@ var layoutCases = []layoutCase{
 			layoutWCsDir + "/kustomization.yaml":     "resources:\n  - demowc.yaml\n",
 			layoutWCsDir + "/demowc.yaml":            layoutSingleKustomization,
 			layoutWCDir + "/kustomization.yaml":      "resources:\n  - apps/\n",
-			layoutWCDir + "/apps/kustomization.yaml": "resources: []\n",
+			layoutWCDir + "/apps/kustomization.yaml": layoutEmpty,
 		},
 		expectKustomizations: []string{"demowc.yaml"},
 		expectApplied:        []string{"apps/", "cluster/"},
@@ -95,6 +103,9 @@ func seedLayout(t *testing.T, seed map[string]string) afero.Fs {
 
 	fs := afero.NewMemMapFs()
 	seed["/repo/bases/capa/cluster.yaml"] = ociRepository("release-aws")
+	if _, ok := seed[layoutNamespaceFile]; !ok {
+		seed[layoutNamespaceFile] = "kind: Kustomization\n"
+	}
 	for path, data := range seed {
 		err := afero.WriteFile(fs, path, []byte(data), 0600)
 		if err != nil {
@@ -189,5 +200,30 @@ func readYAML(t *testing.T, fs afero.Fs, path string, into any) {
 	err = yaml.Unmarshal(data, into)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())
+	}
+}
+
+// Test_runner_run_withoutNamespace checks that a cluster is refused in an
+// organisation without a namespace Kustomization, which its Kustomizations
+// depend on and which applies them.
+func Test_runner_run_withoutNamespace(t *testing.T) {
+	fs := seedLayout(t, map[string]string{
+		layoutWCsDir + "/kustomization.yaml": layoutEmpty,
+		layoutNamespaceFile:                  "",
+	})
+	err := fs.Remove(layoutNamespaceFile)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	err = runLayout(fs)
+	if !errors.Is(err, creator.ValidationError) {
+		t.Fatalf("expected a validation error, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "namespace.yaml") {
+		t.Errorf("expected the error to name namespace.yaml, got: %s", err.Error())
+	}
+	if exists(t, fs, layoutWCsDir+"/demowc.yaml") {
+		t.Errorf("expected no cluster to be written")
 	}
 }

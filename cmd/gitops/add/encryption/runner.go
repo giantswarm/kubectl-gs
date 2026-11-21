@@ -54,7 +54,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	config := common.StructureConfig{
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
-		EncryptionTarget:  r.flag.Target,
+		EncryptionTarget:  r.flag.EncryptionTarget(cmd.Flags().Changed(flagTarget)),
 		WorkloadCluster:   r.flag.WorkloadCluster,
 	}
 

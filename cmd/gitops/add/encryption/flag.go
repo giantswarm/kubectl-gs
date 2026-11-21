@@ -48,3 +48,18 @@ func (f *flag) Validate() error {
 
 	return nil
 }
+
+// organizationTarget is where an organisation keeps its encrypted Secrets: in
+// its namespace, which its namespace Kustomization applies.
+const organizationTarget = "namespace/secrets/"
+
+// EncryptionTarget returns the directory to encrypt. An organisation's
+// defaults to namespace/secrets, unless --target was set: the organisation's
+// own kustomization.yaml applies only what goes into `default`.
+func (f *flag) EncryptionTarget(changed bool) string {
+	if f.Organization != "" && f.WorkloadCluster == "" && !changed {
+		return organizationTarget
+	}
+
+	return f.Target
+}

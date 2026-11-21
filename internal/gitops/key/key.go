@@ -15,17 +15,18 @@ const (
 	helmReleaseFile            = "helm-release.yaml"
 	managementClusterDirectory = "management-clusters"
 	mapiDirectory              = "mapi"
-	ociRepositoryFile          = "oci-repository.yaml"
-	organizationsDirectory     = "organizations"
-	secretFile                 = "secret.enc.yaml" //#nosec G101 -- false positive (no secret here)
-	secretsDirectory           = "secrets"
-	sigsKustomizationFile      = "kustomization.yaml"
-	sopsConfigFile             = ".sops.yaml"
-	sopsKeysDirectory          = ".sops.keys"
-	sopsKeyName                = "%s.%s.asc"
-	sopsSecret                 = "sops-gpg-%s"        //#nosec G101 -- false positive (no secret here)
-	sopsSecretFile             = "%s.gpgkey.enc.yaml" //#nosec G101 -- false positive (no secret here)
-	workloadClusterDirectory   = "workload-clusters"
+
+	ociRepositoryFile        = "oci-repository.yaml"
+	organizationsDirectory   = "organizations"
+	secretFile               = "secret.enc.yaml" //#nosec G101 -- false positive (no secret here)
+	secretsDirectory         = "secrets"
+	sigsKustomizationFile    = "kustomization.yaml"
+	sopsConfigFile           = ".sops.yaml"
+	sopsKeysDirectory        = ".sops.keys"
+	sopsKeyName              = "%s.%s.asc"
+	sopsSecret               = "sops-gpg-%s"        //#nosec G101 -- false positive (no secret here)
+	sopsSecretFile           = "%s.gpgkey.enc.yaml" //#nosec G101 -- false positive (no secret here)
+	workloadClusterDirectory = "workload-clusters"
 
 	baseTemplatesDirectory        = "bases"
 	clusterBaseTemplatesDirectory = "clusters"

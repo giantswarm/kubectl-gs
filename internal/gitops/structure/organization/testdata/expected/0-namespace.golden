@@ -1,0 +1,29 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  labels:
+    giantswarm.io/organization-namespace: "true"
+  name: demomc-organization-demoorg
+  namespace: default
+spec:
+  # Applies namespace/: everything the organisation keeps in its namespace, the
+  # workload clusters' Kustomizations among them. It fails until
+  # organization-operator has created the namespace, then succeeds on its next
+  # retry. The management cluster's Kustomization reads the same GitRepository,
+  # so Flux applies a commit here only once that one is Ready at it.
+  dependsOn:
+    - name: demomc-gitops
+  interval: 10m
+  path: "./management-clusters/demomc/organizations/demoorg/namespace"
+  postBuild:
+    substitute:
+      organization: "demoorg"
+  prune: true
+  retryInterval: 1m
+  serviceAccountName: automation
+  sourceRef:
+    kind: GitRepository
+    name: gitops-demo
+  # Every object in namespace/ goes into the organisation's namespace.
+  targetNamespace: org-demoorg
+  timeout: 2m

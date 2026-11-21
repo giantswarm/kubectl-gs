@@ -1,0 +1,56 @@
+package creator
+
+import (
+	"bytes"
+	"testing"
+
+	"github.com/spf13/afero"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
+)
+
+type appendModifier struct{}
+
+func (appendModifier) Execute(data []byte) ([]byte, error) {
+	return append(data, []byte("changed\n")...), nil
+}
+
+// Test_Creator_IfExists checks that a modifier wrapped in IfExists changes a
+// file that exists, and leaves out one that doesn't, without failing.
+func Test_Creator_IfExists(t *testing.T) {
+	for _, dryRun := range []bool{false, true} {
+		fs := afero.NewMemMapFs()
+		err := afero.WriteFile(fs, "/repo/present.yaml", []byte("kind: A\n"), 0600)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		var out bytes.Buffer
+		err = NewCreator(CreatorConfig{
+			DryRun: dryRun,
+			Fs:     fs,
+			Path:   "/repo",
+			PostModifiers: map[string]modifier.Modifier{
+				"present.yaml": modifier.IfExists{Modifier: appendModifier{}},
+				"missing.yaml": modifier.IfExists{Modifier: appendModifier{}},
+			},
+			Stdout: &out,
+		}).Create()
+		if err != nil {
+			t.Fatalf("dry run %t: unexpected error: %s", dryRun, err)
+		}
+
+		if ok, _ := afero.Exists(fs, "/repo/missing.yaml"); ok {
+			t.Errorf("dry run %t: expected no missing.yaml", dryRun)
+		}
+		if bytes.Contains(out.Bytes(), []byte("missing.yaml")) {
+			t.Errorf("dry run %t: expected no mention of missing.yaml, got:\n%s", dryRun, out.String())
+		}
+
+		data, _ := afero.ReadFile(fs, "/repo/present.yaml")
+		changed := bytes.Contains(data, []byte("changed")) || bytes.Contains(out.Bytes(), []byte("changed"))
+		if !changed {
+			t.Errorf("dry run %t: expected present.yaml to be changed", dryRun)
+		}
+	}
+}

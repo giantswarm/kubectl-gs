@@ -11,6 +11,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 )
 
@@ -129,6 +130,35 @@ func (c *Creator) createFileWithoutOverride(path string, data []byte, perm os.Fi
 	return c.createFile(path, data, perm, false)
 }
 
+// modifiers returns the post modifiers to run: all of them but those
+// skipModifier leaves out.
+func (c *Creator) modifiers() map[string]modifier.Modifier {
+	out := map[string]modifier.Modifier{}
+	for n, m := range c.postModifiers {
+		if !c.skipModifier(n, m) {
+			out[n] = m
+		}
+	}
+
+	return out
+}
+
+// skipModifier reports whether the modifier for the file n is left out: one
+// wrapped in modifier.IfExists, for a file that neither exists nor is
+// created by this run.
+func (c *Creator) skipModifier(n string, m modifier.Modifier) bool {
+	if _, ok := m.(modifier.IfExists); !ok {
+		return false
+	}
+
+	exists, err := c.fs.Exists(fmt.Sprintf("%s/%s", c.path, n))
+	if err != nil || exists {
+		return false
+	}
+
+	return c.findObject(n) == nil
+}
+
 // ensurePermissions sets default permissions if the one provided
 // are empty.
 func (fo *FsObject) ensurePermissions() {
@@ -194,11 +224,11 @@ func (c *Creator) print() {
 		lines = "\n"
 	}
 
-	if len(c.postModifiers) != 0 {
+	if len(c.modifiers()) != 0 {
 		_, _ = fmt.Fprintf(c.stdout, "%s## MODIFY ##\n", lines)
 	}
 
-	for n, m := range c.postModifiers {
+	for n, m := range c.modifiers() {
 		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
 		if err != nil {
 			// Very simple way to inform user what is going to happen when
@@ -291,7 +321,7 @@ func (c *Creator) write() error {
 		}
 	}
 
-	for n, m := range c.postModifiers {
+	for n, m := range c.modifiers() {
 		file := fmt.Sprintf("%s/%s", c.path, n)
 
 		rawYaml, err := c.fs.ReadFile(file)

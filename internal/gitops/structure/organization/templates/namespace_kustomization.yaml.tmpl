@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Everything the organisation keeps in its namespace, which the Kustomization
+# in ../namespace.yaml applies into that namespace: the files it lists name no
+# namespace. ../workload-clusters holds the workload clusters' Kustomizations,
+# next to the cluster directories they apply.
+resources:
+  - ../workload-clusters

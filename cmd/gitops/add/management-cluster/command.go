@@ -22,6 +22,12 @@ mc \
 --repository-name <gitops_repo_name> \
 [--gen-master-key]
 
+It writes the management cluster's Flux Kustomization, which prunes what you
+delete from Git. With --gen-master-key, it generates the master key, which
+encrypts MC_NAME/secrets and the workload clusters' keys in the
+organisations' namespace/secrets. secrets/kustomization.yaml protects the key
+Secret from deletion.
+
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
