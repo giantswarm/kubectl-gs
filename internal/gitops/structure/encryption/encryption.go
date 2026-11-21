@@ -122,7 +122,14 @@ func masterKey(config common.StructureConfig, p paths) *creator.CreatorConfig {
 		fsObjects = append(fsObjects, namespaceSecrets(fsModifiers, p, nil)...)
 	}
 
-	return &creator.CreatorConfig{FsObjects: fsObjects, PostModifiers: fsModifiers}
+	preValidators := map[string]func(*afero.Afero, string) error{
+		key.ResourcePath(secretsDir, key.SigsKustomizationFileName()): common.RequireCompleteKustomization(secretFile),
+	}
+	if config.Organization != "" && isNamespaceTarget(config.EncryptionTarget) {
+		preValidators[key.ResourcePath(p.orgDir, key.NamespaceFileName())] = common.RequireNamespace
+	}
+
+	return &creator.CreatorConfig{FsObjects: fsObjects, PostModifiers: fsModifiers, PreValidators: preValidators}
 }
 
 // workloadClusterKey adds the key of a workload cluster to its own Secret, in
@@ -164,6 +171,7 @@ func workloadClusterKey(config common.StructureConfig, p paths) *creator.Creator
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
 		PreValidators: map[string]func(*afero.Afero, string) error{
+			key.ResourcePath(p.orgDir, key.NamespaceFileName()): common.RequireNamespace,
 			key.SopsConfigFileName(): func(fs *afero.Afero, path string) error {
 				data, err := fs.ReadFile(path)
 				if err != nil {

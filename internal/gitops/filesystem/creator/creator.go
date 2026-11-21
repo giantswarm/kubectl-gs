@@ -130,6 +130,28 @@ func (c *Creator) createFileWithoutOverride(path string, data []byte, perm os.Fi
 	return c.createFile(path, data, perm, false)
 }
 
+// validate runs the pre-validators, and checks that every file a post
+// modifier changes exists or is created by this run, so that a run fails
+// before it writes anything.
+func (c *Creator) validate() error {
+	err := c.preValidate()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for n := range c.modifiers() {
+		exists, err := c.fs.Exists(fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if !exists && c.findObject(n) == nil {
+			return microerror.Maskf(ValidationError, "%s/%s does not exist", c.path, n)
+		}
+	}
+
+	return nil
+}
+
 // modifiers returns the post modifiers to run: all of them but those
 // skipModifier leaves out.
 func (c *Creator) modifiers() map[string]modifier.Modifier {
@@ -294,7 +316,7 @@ func (c *Creator) preValidate() error {
 // 2. objects creation
 // 3. objects post-modifications
 func (c *Creator) write() error {
-	err := c.preValidate()
+	err := c.validate()
 	if err != nil {
 		_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
 		return microerror.Mask(err)

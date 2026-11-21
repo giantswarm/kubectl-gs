@@ -1,12 +1,16 @@
 package mcluster
 
 import (
+	"errors"
+	"io"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/encryption"
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
@@ -64,5 +68,33 @@ func Test_NewManagementCluster_SopsRules(t *testing.T) {
 	}
 	if diff := cmp.Diff(expected, got); diff != "" {
 		t.Errorf("rules (-want +got):\n%s", diff)
+	}
+}
+
+// Test_NewManagementCluster_RefusesIncompleteSecrets checks that running the
+// command again on a management cluster whose secrets/ has no
+// kustomization.yaml, but other keys, doesn't take them out of what Flux
+// applies.
+func Test_NewManagementCluster_RefusesIncompleteSecrets(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	err := afero.WriteFile(fs, "/repo/management-clusters/demomc/secrets/demowc.gpgkey.enc.yaml", []byte("kind: Secret\n"), 0600)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	config, err := NewManagementCluster(common.StructureConfig{ManagementCluster: sopsMC, RepositoryName: sopsRepository})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	config.Fs = fs
+	config.Path = "/repo"
+	config.Stdout = io.Discard
+
+	err = creator.NewCreator(*config).Create()
+	if !errors.Is(err, creator.ValidationError) {
+		t.Fatalf("expected a validation error, got: %v", err)
+	}
+	if ok, _ := afero.Exists(fs, "/repo/management-clusters/demomc/demomc.yaml"); ok {
+		t.Errorf("expected nothing written")
 	}
 }

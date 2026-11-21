@@ -29,6 +29,7 @@ const (
 	layoutEmpty = "resources: []\n"
 
 	layoutNamespaceFile = "/repo/management-clusters/demomc/organizations/demoorg/namespace.yaml"
+	layoutNamespaceDir  = "/repo/management-clusters/demomc/organizations/demoorg/namespace"
 
 	layoutSingleKustomization = `apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -105,6 +106,7 @@ func seedLayout(t *testing.T, seed map[string]string) afero.Fs {
 	seed["/repo/bases/capa/cluster.yaml"] = ociRepository("release-aws")
 	if _, ok := seed[layoutNamespaceFile]; !ok {
 		seed[layoutNamespaceFile] = "kind: Kustomization\n"
+		seed[layoutNamespaceDir+"/kustomization.yaml"] = "resources:\n  - ../workload-clusters\n"
 	}
 	for path, data := range seed {
 		err := afero.WriteFile(fs, path, []byte(data), 0600)

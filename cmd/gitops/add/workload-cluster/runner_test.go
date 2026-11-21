@@ -114,6 +114,7 @@ func Test_runner_run(t *testing.T) {
 				"/repo/bases/release/kustomization.yaml": strings.Replace(releaseOverlay, "../template", "../app", 1),
 				"/repo/management-clusters/demomc/organizations/demoorg/workload-clusters/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources: []\n",
 				"/repo/management-clusters/demomc/organizations/demoorg/namespace.yaml":                       "kind: Kustomization\n",
+				"/repo/management-clusters/demomc/organizations/demoorg/namespace/kustomization.yaml":         "resources:\n  - ../workload-clusters\n",
 				"/values.yaml": "testKey: testValue\n",
 			}
 			for path, data := range seed {

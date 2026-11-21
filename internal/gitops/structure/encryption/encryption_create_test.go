@@ -22,6 +22,8 @@ const (
 	testPublicKey = "public key material"
 	testTarget    = "secrets/"
 
+	testNamespaceTarget = "namespace/secrets/"
+
 	createRepo     = "/repo"
 	createOrgDir   = createRepo + "/management-clusters/demomc/organizations/demoorg"
 	createKeysDir  = createOrgDir + "/namespace/secrets"
@@ -256,7 +258,7 @@ func Test_NewEncryption_CreateOrganization(t *testing.T) {
 
 	config, err := NewEncryption(common.StructureConfig{
 		EncryptionKeyPair: gitopsenc.KeyPair{Fingerprint: "ORGFINGERPRINT", PrivateData: "org key", PublicData: "public"},
-		EncryptionTarget:  "namespace/secrets/",
+		EncryptionTarget:  testNamespaceTarget,
 		ManagementCluster: testMC,
 		Organization:      testOrg,
 	})

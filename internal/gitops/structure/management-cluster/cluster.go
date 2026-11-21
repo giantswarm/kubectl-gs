@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/encryption"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
@@ -62,7 +63,8 @@ func NewManagementCluster(config common.StructureConfig) (*creator.CreatorConfig
 	fsObjects = append(fsObjects, creator.NewFsObject(orgsDir, nil, 0))
 
 	creatorConfig := creator.CreatorConfig{
-		FsObjects: fsObjects,
+		FsObjects:     fsObjects,
+		PreValidators: preValidators(config, secretsDir),
 		MetadataLayer: &metadata.Layer{
 			Kind: metadata.LayerManagementCluster,
 			Path: mcDir,
@@ -87,4 +89,18 @@ func NewManagementCluster(config common.StructureConfig) (*creator.CreatorConfig
 	}
 
 	return &creatorConfig, nil
+}
+
+// preValidators refuse to write a secrets/kustomization.yaml that would take
+// the files already in secrets/ out of what Flux applies.
+func preValidators(config common.StructureConfig, secretsDir string) map[string]func(*afero.Afero, string) error {
+	if config.SkipEncryption {
+		return nil
+	}
+
+	return map[string]func(*afero.Afero, string) error{
+		key.ResourcePath(secretsDir, key.SigsKustomizationFileName()): common.RequireCompleteKustomization(
+			key.SopsSecretFileName(config.ManagementCluster),
+		),
+	}
 }

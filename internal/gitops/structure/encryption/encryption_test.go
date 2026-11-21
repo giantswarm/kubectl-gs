@@ -79,7 +79,7 @@ func Test_NewEncryption(t *testing.T) {
 			name: "organization",
 			config: common.StructureConfig{
 				EncryptionKeyPair: keyPair,
-				EncryptionTarget:  "namespace/secrets/",
+				EncryptionTarget:  testNamespaceTarget,
 				ManagementCluster: "demomc",
 				Organization:      testOrg,
 			},

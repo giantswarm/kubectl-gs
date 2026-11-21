@@ -22,10 +22,9 @@ func Test_flag_Validate(t *testing.T) {
 			flag: flag{ManagementCluster: testMC, Name: testOrg, RepositoryName: testRepository},
 		},
 		{
-			// The organisation's namespace Kustomization reads the repository.
-			name:          "without repository",
-			flag:          flag{ManagementCluster: testMC, Name: testOrg},
-			expectInvalid: true,
+			// The repository defaults to the management cluster's.
+			name: "without repository",
+			flag: flag{ManagementCluster: testMC, Name: testOrg},
 		},
 		{
 			name:          "without management cluster",

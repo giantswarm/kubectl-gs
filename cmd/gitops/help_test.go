@@ -39,6 +39,7 @@ var templateDocs = map[string][]string{
 		"",
 		"structure-version",
 		"flux-kustomizations",
+		"move-the-workload-cluster-kustomizations",
 	},
 }
 

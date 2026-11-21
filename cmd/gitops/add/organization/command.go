@@ -20,7 +20,7 @@ const (
 org \
 --name <org_name> \
 --management-cluster <mc_name> \
---repository-name <gitops_repo_name>
+[--repository-name <gitops_repo_name>]
 
 It writes the Organization in <org_name>.yaml, protected from deletion, and the
 organization's namespace Kustomization in namespace.yaml. The organisation's
@@ -42,8 +42,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.m
 	examples = `  # Add dummy Organization to dummy Management Cluster
   kubectl gs gitops add org \
   --name dummy \
-  --management-cluster dummy \
-  --repository-name gitops-demo`
+  --management-cluster dummy`
 )
 
 type Config struct {
@@ -72,6 +71,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	r := &runner{
 		flag:   f,
+		fs:     config.FileSystem,
 		logger: config.Logger,
 		stderr: config.Stderr,
 		stdout: config.Stdout,

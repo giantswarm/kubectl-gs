@@ -20,14 +20,13 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Management Cluster the Organization belongs to.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Organization name.")
-	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "", "Name of the GitOps repository, the GitRepository the organisation's namespace Kustomization reads.")
+	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "", "Name of the GitRepository the organization's namespace Kustomization reads. Defaults to the one the management cluster's Kustomization reads.")
 }
 
 func (f *flag) Validate() error {
 	missing := firstEmpty([]requiredFlag{
 		{name: flagManagementCluster, value: f.ManagementCluster},
 		{name: flagName, value: f.Name},
-		{name: flagRepositoryName, value: f.RepositoryName},
 	})
 	if missing != "" {
 		return microerror.Maskf(invalidFlagsError, "--%s must not be empty", missing)

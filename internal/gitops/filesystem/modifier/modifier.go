@@ -1,5 +1,7 @@
 package modifier
 
+import "github.com/giantswarm/microerror"
+
 // My idea for now was to create some sort of modifiers
 // that consume []byte input, modify it accordingly to the
 // provided configuration, and return []byte that Creator can
@@ -25,7 +27,7 @@ func (c Chain) Execute(data []byte) ([]byte, error) {
 	for _, m := range c {
 		data, err = m.Execute(data)
 		if err != nil {
-			return nil, err
+			return nil, microerror.Mask(err)
 		}
 	}
 

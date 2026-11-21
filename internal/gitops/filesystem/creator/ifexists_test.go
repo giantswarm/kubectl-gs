@@ -2,6 +2,7 @@ package creator
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -52,5 +53,29 @@ func Test_Creator_IfExists(t *testing.T) {
 		if !changed {
 			t.Errorf("dry run %t: expected present.yaml to be changed", dryRun)
 		}
+	}
+}
+
+// Test_Creator_MissingModifierTarget checks that a run whose modifier would
+// change a file that doesn't exist fails before it writes anything.
+func Test_Creator_MissingModifierTarget(t *testing.T) {
+	fs := afero.NewMemMapFs()
+
+	err := NewCreator(CreatorConfig{
+		Fs:   fs,
+		Path: "/repo",
+		FsObjects: []*FsObject{
+			NewFsObject("new.yaml", []byte("kind: B\n"), 0),
+		},
+		PostModifiers: map[string]modifier.Modifier{
+			"missing.yaml": appendModifier{},
+		},
+		Stdout: &bytes.Buffer{},
+	}).Create()
+	if !errors.Is(err, ValidationError) {
+		t.Fatalf("expected a validation error, got: %v", err)
+	}
+	if ok, _ := afero.Exists(fs, "/repo/new.yaml"); ok {
+		t.Errorf("expected nothing written")
 	}
 }
