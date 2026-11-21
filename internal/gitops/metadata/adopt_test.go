@@ -30,7 +30,8 @@ func fixtureRepo(t *testing.T) *afero.Afero {
 		// Not a layer: an app directory holding neither an App CR nor a
 		// Kustomization.
 		"management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/leftovers",
-		// Not a layer: a provider directory without the `template` subdir.
+		// Not a layer: a provider directory holding neither a base nor the
+		// `template` subdirectory of the earlier layout.
 		"bases/clusters/capz",
 	}
 	for _, d := range dirs {
