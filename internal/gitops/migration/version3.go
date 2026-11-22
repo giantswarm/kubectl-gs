@@ -15,6 +15,11 @@ const moveDocs = "https://github.com/giantswarm/gitops-template/blob/main/docs/h
 // version3 drops the `mapi` directory of workload clusters, and gives each
 // organisation a Kustomization of its own for its namespace.
 //
+// It gates the clusters' Kustomizations on their control plane, where they
+// still have the health check kubectl-gs wrote before, and gives the
+// management cluster's Kustomization the prune: disabled annotation, so an
+// upgraded repository is as protected as a newly generated one.
+//
 // It also gives the management cluster's secrets a kustomization.yaml that
 // lists and protects every key there, which the move of the keys of the
 // workload clusters needs, as the management cluster's Kustomization prunes
@@ -30,7 +35,7 @@ const moveDocs = "https://github.com/giantswarm/gitops-template/blob/main/docs/h
 // that is left to the user, as ManualSteps says.
 var version3 = Migration{
 	From:        2,
-	Description: "Workload clusters drop the mapi directory and list what their Kustomizations apply, and each organisation gets a Kustomization for its namespace.",
+	Description: "Workload clusters drop the mapi directory, list what their Kustomizations apply and gate them on the control plane, each organisation gets a Kustomization for its namespace, and the management cluster's Kustomization is never pruned.",
 	Kinds:       []string{metadata.LayerManagementCluster, metadata.LayerOrganization, metadata.LayerWorkloadCluster},
 	Apply:       applyVersion3,
 	Relocate:    relocateMapi,
@@ -57,17 +62,41 @@ organisations.`
 func applyVersion3(fs *afero.Afero, repoPath string, layer metadata.Layer, env Env) ([]string, error) {
 	switch layer.Kind {
 	case metadata.LayerWorkloadCluster:
-		changes, err := migrateLayout(fs, repoPath, layer.Path, env)
-		return changes, microerror.Mask(err)
+		return upgradeWorkloadCluster(fs, repoPath, layer.Path, env)
 	case metadata.LayerOrganization:
 		changes, err := addNamespace(fs, repoPath, layer.Path, env)
 		return changes, microerror.Mask(err)
 	case metadata.LayerManagementCluster:
-		changes, err := protectSecrets(fs, repoPath, layer.Path, env)
-		return changes, microerror.Mask(err)
+		return upgradeManagementCluster(fs, repoPath, layer.Path, env)
 	}
 
 	return nil, nil
+}
+
+// upgradeWorkloadCluster moves the cluster out of `mapi`, and gates its
+// Kustomization on its control plane, as a newly generated one is.
+func upgradeWorkloadCluster(fs *afero.Afero, repoPath, wcPath string, env Env) ([]string, error) {
+	changes, err := migrateLayout(fs, repoPath, wcPath, env)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	gated, err := gateControlPlane(fs, repoPath, wcPath)
+
+	return append(changes, gated...), microerror.Mask(err)
+}
+
+// upgradeManagementCluster protects the management cluster's keys and its
+// own Kustomization, as a newly generated management cluster is.
+func upgradeManagementCluster(fs *afero.Afero, repoPath, mcPath string, env Env) ([]string, error) {
+	changes, err := protectSecrets(fs, repoPath, mcPath, env)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	protected, err := protectManagementCluster(fs, repoPath, mcPath)
+
+	return append(changes, protected...), microerror.Mask(err)
 }
 
 var mapiPath = regexp.MustCompile(`^(.*/workload-clusters/[^/]+)/mapi(/.*)?$`)
