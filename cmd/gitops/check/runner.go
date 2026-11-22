@@ -95,7 +95,7 @@ func (r *runner) adopt(repoPath string, md *metadata.RepositoryMetadata, dryRun 
 		return nil
 	}
 
-	_, _ = fmt.Fprintf(r.stdout, "Detected %d layer(s) to record at structure version %d:\n\n", len(added), metadata.StructureVersion)
+	_, _ = fmt.Fprintf(r.stdout, "Detected %d layer(s) to record, at the structure version their layout matches:\n\n", len(added))
 	printKindCounts(r.stdout, added)
 
 	if len(result.Skipped) > 0 {
@@ -225,21 +225,23 @@ func newerThanThisKubectlGs(md *metadata.RepositoryMetadata) bool {
 	return false
 }
 
-// printKindCounts prints how many layers of each kind were found.
+// printKindCounts prints how many layers of each kind were found at each
+// structure version, which is the version they are recorded at.
 func printKindCounts(out io.Writer, layers []metadata.Layer) {
 	counts := map[string]int{}
 	for _, l := range layers {
-		counts[l.Kind]++
+		counts[fmt.Sprintf("%s\t%d", l.Kind, l.StructureVersion)]++
 	}
 
-	kinds := make([]string, 0, len(counts))
+	rows := make([]string, 0, len(counts))
 	for k := range counts {
-		kinds = append(kinds, k)
+		rows = append(rows, k)
 	}
-	sort.Strings(kinds)
+	sort.Strings(rows)
 
 	w := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
-	for _, k := range kinds {
+	_, _ = fmt.Fprintf(w, "  KIND\tVERSION\tLAYERS\n")
+	for _, k := range rows {
 		_, _ = fmt.Fprintf(w, "  %s\t%d\n", k, counts[k])
 	}
 	_ = w.Flush()
