@@ -88,3 +88,30 @@ func Test_Check_AdoptPrintsRecordedVersions(t *testing.T) {
 		}
 	}
 }
+
+// Test_Check_NotUpToDateWithLayersBehind checks that the repository's summary
+// line does not call it up to date while a recorded layer is behind, as
+// after adopting a repository laid out as structure version 2: the
+// repository level version records the newest kubectl-gs that wrote to it,
+// not the oldest layer.
+func Test_Check_NotUpToDateWithLayersBehind(t *testing.T) {
+	fs := generatedRepo(t)
+
+	md := metadata.New()
+	md.Layers = []metadata.Layer{
+		{Kind: metadata.LayerWorkloadCluster, Path: testWC, StructureVersion: 2},
+	}
+	err := metadata.Save(&afero.Afero{Fs: fs}, testRepo, md)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	out := new(bytes.Buffer)
+	err = newTestRunner(fs, false, out).run(context.Background(), newTestCommand(testRepo, false), nil)
+	if err == nil {
+		t.Fatal("expected a layer behind to fail the check")
+	}
+	if strings.Contains(out.String(), "(up to date)") {
+		t.Errorf("expected no up to date summary while a layer is behind, got:\n%s", out.String())
+	}
+}

@@ -130,16 +130,9 @@ func (r *runner) adopt(repoPath string, md *metadata.RepositoryMetadata, dryRun 
 // kubectl-gs generates, and fails when anything is behind.
 func (r *runner) report(md *metadata.RepositoryMetadata) error {
 	repoOutdated := md.StructureVersion < metadata.StructureVersion
+	outdated := md.OutdatedLayers()
 
-	if repoOutdated {
-		_, _ = fmt.Fprintf(r.stdout, "repository structure version: %d (current: %d)\n", md.StructureVersion, metadata.StructureVersion)
-	} else {
-		status := "up to date"
-		if md.StructureVersion > metadata.StructureVersion {
-			status = fmt.Sprintf("newer than this kubectl-gs, which knows version %d", metadata.StructureVersion)
-		}
-		_, _ = fmt.Fprintf(r.stdout, "repository structure version: %d (%s)\n", md.StructureVersion, status)
-	}
+	_, _ = fmt.Fprintf(r.stdout, "repository structure version: %d (%s)\n", md.StructureVersion, repositoryStatus(md, len(outdated)))
 
 	if len(md.Layers) == 0 {
 		_, _ = fmt.Fprintf(r.stdout, "\nNo layers recorded yet.\n")
@@ -163,8 +156,6 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 		}
 		_ = w.Flush()
 	}
-
-	outdated := md.OutdatedLayers()
 
 	_, _ = fmt.Fprintln(r.stdout)
 	switch {
@@ -208,6 +199,23 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 		"the repository was generated with an older repository structure than this kubectl-gs produces (version %d).\nRun `kubectl gs gitops upgrade --dry-run` to see what upgrading it changes, and https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md#structure-version for what changed.",
 		metadata.StructureVersion,
 	)
+}
+
+// repositoryStatus describes the repository level structure version. That
+// version is the newest any kubectl-gs that wrote to the repository
+// generated, so it can be current while layers recorded earlier, or adopted
+// from an older layout, are behind: then the repository isn't up to date.
+func repositoryStatus(md *metadata.RepositoryMetadata, outdatedLayers int) string {
+	switch {
+	case md.StructureVersion < metadata.StructureVersion:
+		return fmt.Sprintf("current: %d", metadata.StructureVersion)
+	case md.StructureVersion > metadata.StructureVersion:
+		return fmt.Sprintf("newer than this kubectl-gs, which knows version %d", metadata.StructureVersion)
+	case outdatedLayers > 0:
+		return fmt.Sprintf("%d layer(s) behind", outdatedLayers)
+	}
+
+	return "up to date"
 }
 
 // newerThanThisKubectlGs reports whether the repository, or any of its layers,
