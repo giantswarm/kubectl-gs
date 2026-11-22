@@ -27,7 +27,7 @@ spec:
       name: demowc
       # the organisation's namespace, from its namespace Kustomization
       namespace: org-${organization}
-  interval: 1m
+  interval: 10m
   path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster"
   postBuild:
     substitute:
@@ -36,6 +36,7 @@ spec:
       release: 0.13.0
       organization: "${organization}"
   prune: true
+  retryInterval: 1m
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

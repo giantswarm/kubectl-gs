@@ -29,7 +29,7 @@ spec:
       # the organisation's namespace, from its namespace Kustomization
       namespace: org-${organization}
   {{- end }}
-  interval: 1m
+  interval: 10m
   path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}{{ if .AppsKustomization }}/cluster{{ end }}"
   postBuild:
     substitute:
@@ -42,6 +42,7 @@ spec:
       {{- end }}
       organization: "${organization}"
   prune: true
+  retryInterval: 1m
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

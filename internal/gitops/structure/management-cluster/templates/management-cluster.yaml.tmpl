@@ -15,7 +15,7 @@ spec:
     secretRef:
       name: sops-gpg-master
   {{- end }}
-  interval: 1m
+  interval: 10m0s
   path: ./management-clusters/{{ .ManagementCluster }}
   # Flux deletes what you delete from Git. The objects whose deletion would
   # delete a cluster, or stop Flux from decrypting, have the
@@ -23,6 +23,7 @@ spec:
   # them, and the `giantswarm.io/prevent-deletion` label, so nobody can delete
   # them until it's removed.
   prune: true
+  retryInterval: 1m0s
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository
