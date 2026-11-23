@@ -61,9 +61,7 @@ spec:
   timeout: 10m0s
   upgrade:
     remediation:
-      remediateLastFailure: true
-      retries: 10
-      strategy: rollback
+      remediateLastFailure: false
   valuesFrom:
   - kind: ConfigMap
     name: e9sc4-userconfig
