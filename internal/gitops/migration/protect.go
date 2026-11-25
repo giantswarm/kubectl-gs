@@ -14,9 +14,6 @@ import (
 )
 
 const (
-	pruneAnnotationKey = "kustomize.toolkit.fluxcd.io/prune"
-	pruneDisabled      = "disabled"
-
 	pruneComment = `It applies itself, so renaming it would make it prune itself, and its
 finalizer would delete everything it applied. The annotation leaves it, as
 it does each organisation's namespace Kustomization.`
@@ -151,13 +148,13 @@ func disablePruning(object *yaml.Node) (string, bool) {
 		return "left, its metadata.annotations is not a mapping", false
 	}
 
-	value := mapValue(annotations, pruneAnnotationKey)
+	value := mapValue(annotations, pruneAnnotation)
 	switch {
 	case value == nil:
-		annotations.Content = append(annotations.Content, scalar(pruneAnnotationKey), scalar(pruneDisabled))
-		return fmt.Sprintf("annotated %s: %s, so Flux never prunes the management cluster's Kustomization", pruneAnnotationKey, pruneDisabled), true
+		annotations.Content = append(annotations.Content, scalar(pruneAnnotation), scalar(pruneDisabled))
+		return fmt.Sprintf("annotated %s: %s, so Flux never prunes the management cluster's Kustomization", pruneAnnotation, pruneDisabled), true
 	case value.Value != pruneDisabled:
-		return fmt.Sprintf("left, its %s annotation is %q, not %q", pruneAnnotationKey, value.Value, pruneDisabled), false
+		return fmt.Sprintf("left, its %s annotation is %q, not %q", pruneAnnotation, value.Value, pruneDisabled), false
 	}
 
 	return "", false

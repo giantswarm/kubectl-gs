@@ -8,7 +8,9 @@ import (
 )
 
 const (
-	pruneAnnotation = "kustomize.toolkit.fluxcd.io/prune"
+	// wantPruneAnnotation is the prune annotation the tests expect, spelled
+	// out for the same reason as wantPruneDisabled.
+	wantPruneAnnotation = "kustomize.toolkit.fluxcd.io/prune"
 
 	// wantPruneDisabled is the value of the prune annotation the tests expect.
 	// It is spelled out rather than taken from pruneDisabled, so a change to
@@ -74,7 +76,7 @@ func Test_ManagementCluster_DisablesPruning(t *testing.T) {
 
 	var got fluxKustomization
 	readInto(t, fs, testMC+"/demomc.yaml", &got)
-	if got.Metadata.Annotations[pruneAnnotation] != wantPruneDisabled || got.Metadata.Name != "demomc-gitops" || got.Spec.Path != "./management-clusters/demomc" {
+	if got.Metadata.Annotations[wantPruneAnnotation] != wantPruneDisabled || got.Metadata.Name != "demomc-gitops" || got.Spec.Path != "./management-clusters/demomc" {
 		t.Errorf("expected the annotation added and the rest kept, got %+v", got)
 	}
 	data, _ := fs.ReadFile(testRepo + "/" + testMC + "/demomc.yaml")
@@ -91,7 +93,7 @@ func Test_ManagementCluster_DisablesPruning(t *testing.T) {
 // Test_ManagementCluster_KeepsPruneAnnotation checks that a prune annotation
 // the user set is never overwritten, and that the upgrade says so.
 func Test_ManagementCluster_KeepsPruneAnnotation(t *testing.T) {
-	annotated := strings.Replace(namespaceMCKustomization, "  name: demomc-gitops\n", "  annotations:\n    "+pruneAnnotation+": enabled\n  name: demomc-gitops\n", 1)
+	annotated := strings.Replace(namespaceMCKustomization, "  name: demomc-gitops\n", "  annotations:\n    "+wantPruneAnnotation+": enabled\n  name: demomc-gitops\n", 1)
 	fs := layoutRepo(t, map[string]string{testMC + "/demomc.yaml": annotated})
 	layer := metadata.Layer{Kind: metadata.LayerManagementCluster, Path: testMC, StructureVersion: 2}
 
@@ -216,7 +218,7 @@ func Test_ManagementCluster_ProtectsOnlyItsRoot(t *testing.T) {
 			if !found || "---\n"+appsOut != apps {
 				t.Errorf("expected the apps Kustomization kept byte for byte, got:\n%s", data)
 			}
-			if !strings.Contains(rootOut, pruneAnnotation+": "+wantPruneDisabled) {
+			if !strings.Contains(rootOut, wantPruneAnnotation+": "+wantPruneDisabled) {
 				t.Errorf("expected the root Kustomization annotated, got:\n%s", rootOut)
 			}
 		})
@@ -270,7 +272,7 @@ func checkAnnotations(t *testing.T, annotations string, protected bool) {
 
 	var got fluxKustomization
 	readInto(t, fs, testMC+"/demomc.yaml", &got)
-	if got.Metadata.Annotations[pruneAnnotation] != wantPruneDisabled || !strings.Contains(changes[0], "annotated") {
+	if got.Metadata.Annotations[wantPruneAnnotation] != wantPruneDisabled || !strings.Contains(changes[0], "annotated") {
 		t.Errorf("expected the annotation added and reported, got %v:\n%s", changes, data)
 	}
 	if !strings.Contains(string(data), "# the annotations' own comment") {
