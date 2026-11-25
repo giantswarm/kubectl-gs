@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	gitopskey "github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 )
 
@@ -116,7 +117,7 @@ func Test_Namespace_KeepsKustomizationYml(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	checkResources(t, fs, testOrg+"/kustomization.yml", []string{orgFile, "workload-clusters", "namespace.yaml"})
+	checkResources(t, fs, testOrg+"/kustomization.yml", []string{orgFile, gitopskey.WorkloadClustersDirName(), gitopskey.NamespaceFileName()})
 	for _, f := range []string{testOrg + "/kustomization.yaml", testOrg + "/namespace/kustomization.yaml"} {
 		if ok, _ := fs.Exists(filepath.Join(testRepo, f)); ok {
 			t.Errorf("expected no %s next to a kustomization.yml", f)

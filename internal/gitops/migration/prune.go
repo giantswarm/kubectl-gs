@@ -47,24 +47,36 @@ func refusePrunedMapi(fs *afero.Afero, repoPath, wcDir string, env Env) error {
 		if e.IsDir() || !isYAML(filepath.Ext(e.Name())) || isKustomizationFile(e.Name()) {
 			continue
 		}
-		file := filepath.Join(dir, e.Name())
 
-		paths, err := prunedPaths(fs, file)
+		err = refusePrunedFile(fs, repoPath, filepath.Join(dir, e.Name()), mapi, env)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		for _, p := range paths {
-			if p != mapi && !strings.HasPrefix(p, mapi+"/") {
-				continue
-			}
+	}
 
-			unprotected, err := unprotectedIn(fs, repoPath, filepath.Join(repoPath, p), env, map[string]bool{})
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			if unprotected != "" {
-				return microerror.Maskf(unexpectedFileError, prunedMapi, rel(repoPath, file), p, unprotected)
-			}
+	return nil
+}
+
+// refusePrunedFile fails when a Flux Kustomization in the file applies mapi,
+// or a directory in it, with prune: true, and builds an object there
+// without the prune annotation.
+func refusePrunedFile(fs *afero.Afero, repoPath, file, mapi string, env Env) error {
+	paths, err := prunedPaths(fs, file)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, p := range paths {
+		if p != mapi && !strings.HasPrefix(p, mapi+"/") {
+			continue
+		}
+
+		unprotected, err := unprotectedIn(fs, repoPath, filepath.Join(repoPath, p), env, map[string]bool{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if unprotected != "" {
+			return microerror.Maskf(unexpectedFileError, prunedMapi, rel(repoPath, file), p, unprotected)
 		}
 	}
 
@@ -152,32 +164,37 @@ func unprotectedKustomization(fs *afero.Afero, repoPath, path string, env Env, s
 		return "", microerror.Mask(err)
 	}
 
-	annotations := mapValue(kustomization, "commonAnnotations")
-	if annotations != nil {
-		if v := mapValue(annotations, pruneAnnotation); v != nil && v.Value == pruneDisabled {
-			return "", nil
-		}
+	if disablesPrune(mapValue(kustomization, "commonAnnotations")) {
+		return "", nil
 	}
 
+	protected, err := resourcesProtected(fs, repoPath, path, kustomization, env, seen)
+	if err != nil || protected {
+		return "", microerror.Mask(err)
+	}
+
+	return rel(repoPath, path), nil
+}
+
+// resourcesProtected reports whether every resource the kustomization at
+// path lists is annotated, and it generates nothing.
+func resourcesProtected(fs *afero.Afero, repoPath, path string, kustomization *yaml.Node, env Env, seen map[string]bool) (bool, error) {
 	for _, field := range kustomizationGenerators {
 		if mapValue(kustomization, field) != nil {
-			return rel(repoPath, path), nil
+			return false, nil
 		}
 	}
 
 	for _, field := range []string{"resources", "bases", "crds"} {
 		for _, r := range sequence(mapValue(kustomization, field)) {
 			protected, err := resourceProtected(fs, repoPath, filepath.Join(filepath.Dir(path), r.Value), r.Value, env, seen)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
-			if !protected {
-				return rel(repoPath, path), nil
+			if err != nil || !protected {
+				return false, microerror.Mask(err)
 			}
 		}
 	}
 
-	return "", nil
+	return true, nil
 }
 
 // resourceProtected reports whether every object the kustomization resource
@@ -236,7 +253,12 @@ func annotated(object *yaml.Node) bool {
 	if metadata == nil {
 		return false
 	}
-	annotations := mapValue(metadata, "annotations")
+
+	return disablesPrune(mapValue(metadata, "annotations"))
+}
+
+// disablesPrune reports whether the annotations disable pruning.
+func disablesPrune(annotations *yaml.Node) bool {
 	if annotations == nil {
 		return false
 	}
