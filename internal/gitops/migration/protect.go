@@ -2,6 +2,7 @@ package migration
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -40,12 +41,35 @@ minimum would hold back every change to the apps.`
 // whether it changed it. An empty report says nothing.
 type editDocument func(object *yaml.Node) (string, bool)
 
-// editFluxKustomizations applies edit to every Flux Kustomization of the file
-// that applies dir or a directory under it, document by document, keeping
-// every other document byte for byte, as fixFluxPath does.
-func editFluxKustomizations(fs *afero.Afero, repoPath, file, dir string, edit editDocument) ([]string, error) {
+// appliedDir selects the Flux Kustomizations that apply a directory.
+type appliedDir struct {
+	// dir is the directory, relative to the repository root.
+	dir string
+	// under selects those applying a directory under it too.
+	under bool
+}
+
+// selects reports whether the object is a Flux Kustomization applying the
+// directory, or one under it if under is set.
+func (a appliedDir) selects(object *yaml.Node) bool {
+	if object == nil {
+		return false
+	}
+	p := fluxPath(object)
+	if p == nil {
+		return false
+	}
+	current := path.Clean(p.Value)
+
+	return current == a.dir || a.under && strings.HasPrefix(current, a.dir+"/")
+}
+
+// editFluxKustomizations applies edit to the Flux Kustomizations of the file
+// that `applied` picks, document by document, keeping every other document
+// byte for byte, as fixFluxPath does.
+func editFluxKustomizations(fs *afero.Afero, repoPath, file string, applied appliedDir, edit editDocument) ([]string, error) {
 	data, err := fs.ReadFile(file)
-	if err != nil || !strings.Contains(string(data), dir) {
+	if err != nil || !strings.Contains(string(data), applied.dir) {
 		return nil, microerror.Mask(err)
 	}
 
@@ -59,7 +83,7 @@ func editFluxKustomizations(fs *afero.Afero, repoPath, file, dir string, edit ed
 	changed := false
 	for _, d := range documents {
 		report, edited := "", false
-		if appliesDir(d.node, dir) {
+		if applied.selects(d.node) {
 			report, edited = edit(d.node)
 		}
 		if report != "" {
@@ -85,33 +109,23 @@ func editFluxKustomizations(fs *afero.Afero, repoPath, file, dir string, edit ed
 	return changes, microerror.Mask(fs.WriteFile(file, out, 0644))
 }
 
-// appliesDir reports whether the object is a Flux Kustomization applying dir
-// or a directory under it.
-func appliesDir(object *yaml.Node, dir string) bool {
-	if object == nil {
-		return false
-	}
-	path := fluxPath(object)
-	if path == nil {
-		return false
-	}
-	current := strings.TrimPrefix(path.Value, "./")
-
-	return current == dir || strings.HasPrefix(current, dir+"/")
-}
-
 // protectManagementCluster gives the management cluster's Kustomization the
 // prune: disabled annotation a newly generated one has, unless it has a
-// prune annotation already.
-func protectManagementCluster(fs *afero.Afero, repoPath, mcPath string) ([]string, error) {
+// prune annotation already. Only the Kustomization applying the management
+// cluster's directory itself is: one applying a directory under it stays
+// prunable, as a generated one is. A file git ignores is left alone.
+func protectManagementCluster(fs *afero.Afero, repoPath, mcPath string, env Env) ([]string, error) {
 	file := filepath.Join(repoPath, mcPath, gitopskey.FluxKustomizationFileName(filepath.Base(mcPath)))
+	if env.IsIgnored(rel(repoPath, file)) {
+		return nil, nil
+	}
 
 	exists, err := fs.Exists(file)
 	if err != nil || !exists {
 		return nil, microerror.Mask(err)
 	}
 
-	changes, err := editFluxKustomizations(fs, repoPath, file, filepath.ToSlash(mcPath), disablePruning)
+	changes, err := editFluxKustomizations(fs, repoPath, file, appliedDir{dir: filepath.ToSlash(mcPath)}, disablePruning)
 
 	return changes, microerror.Mask(err)
 }
@@ -123,11 +137,18 @@ func disablePruning(object *yaml.Node) (string, bool) {
 	}
 
 	annotations := mapValue(metadata, "annotations")
-	if annotations == nil {
+	switch {
+	case annotations == nil:
 		key := scalar("annotations")
 		key.HeadComment = pruneComment
 		annotations = &yaml.Node{Kind: yaml.MappingNode}
 		metadata.Content = append([]*yaml.Node{key, annotations}, metadata.Content...)
+	case annotations.Kind == yaml.ScalarNode && annotations.ShortTag() == "!!null":
+		// `annotations: null`, or nothing: no annotations yet. The node
+		// becomes an empty mapping, keeping its comments.
+		annotations.Kind, annotations.Tag, annotations.Value, annotations.Style = yaml.MappingNode, "", "", 0
+	case annotations.Kind != yaml.MappingNode:
+		return "left, its metadata.annotations is not a mapping", false
 	}
 
 	value := mapValue(annotations, pruneAnnotationKey)
@@ -145,8 +166,8 @@ func disablePruning(object *yaml.Node) (string, bool) {
 // gateControlPlane replaces the health check kubectl-gs used to write in the
 // cluster's Kustomizations, on the Cluster being Available, with the one on
 // its control plane. A health check on the Cluster that differs is the
-// user's, and is left.
-func gateControlPlane(fs *afero.Afero, repoPath, wcPath string) ([]string, error) {
+// user's, and is left, as is a file git ignores.
+func gateControlPlane(fs *afero.Afero, repoPath, wcPath string, env Env) ([]string, error) {
 	dir := filepath.Dir(filepath.Join(repoPath, wcPath))
 
 	entries, err := fs.ReadDir(dir)
@@ -160,11 +181,12 @@ func gateControlPlane(fs *afero.Afero, repoPath, wcPath string) ([]string, error
 
 	var changes []string
 	for _, e := range entries {
-		if e.IsDir() || !isYAML(filepath.Ext(e.Name())) || isKustomizationFile(e.Name()) {
+		file := filepath.Join(dir, e.Name())
+		if e.IsDir() || !isYAML(filepath.Ext(e.Name())) || isKustomizationFile(e.Name()) || env.IsIgnored(rel(repoPath, file)) {
 			continue
 		}
 
-		c, err := editFluxKustomizations(fs, repoPath, filepath.Join(dir, e.Name()), filepath.ToSlash(wcPath), edit)
+		c, err := editFluxKustomizations(fs, repoPath, file, appliedDir{dir: filepath.ToSlash(wcPath), under: true}, edit)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -186,13 +208,13 @@ func replaceGate(object *yaml.Node, wc string) (string, bool) {
 			continue
 		}
 
-		switch current.Value {
-		case availableGate:
+		switch {
+		case current.Value == availableGate && isGeneratedGate(expr):
 			current.Value = controlPlaneGate
 			current.Style = yaml.FoldedStyle
 			updateGateComment(spec, wc)
 			return "waits for the cluster's control plane, rather than for the Cluster to be Available", true
-		case controlPlaneGate:
+		case current.Value == controlPlaneGate:
 			continue
 		}
 
@@ -200,6 +222,14 @@ func replaceGate(object *yaml.Node, wc string) (string, bool) {
 	}
 
 	return "", false
+}
+
+// isGeneratedGate reports whether a health check on the Cluster is the entry
+// kubectl-gs wrote, which has apiVersion, kind and current alone. One with
+// expressions of its own, such as failed or inProgress, is the user's as a
+// whole: its current is kept with them.
+func isGeneratedGate(expr *yaml.Node) bool {
+	return len(expr.Content) == 6
 }
 
 func isClusterCheck(expr *yaml.Node) bool {

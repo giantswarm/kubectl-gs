@@ -127,7 +127,7 @@ func checkNamespaceKustomization(t *testing.T, fs *afero.Afero) {
 		summary = append(summary, d.Name)
 	}
 	expected := []string{
-		"demomc-organization-demoorg", "default", "true", "disabled",
+		"demomc-organization-demoorg", "default", "true", wantPruneDisabled,
 		"sops-gpg-master", "./management-clusters/demomc/organizations/demoorg/namespace", "gitops-demo", "org-demoorg",
 		"demomc-gitops",
 	}

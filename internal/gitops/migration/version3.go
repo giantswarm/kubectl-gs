@@ -81,7 +81,7 @@ func upgradeWorkloadCluster(fs *afero.Afero, repoPath, wcPath string, env Env) (
 		return nil, microerror.Mask(err)
 	}
 
-	gated, err := gateControlPlane(fs, repoPath, wcPath)
+	gated, err := gateControlPlane(fs, repoPath, wcPath, env)
 
 	return append(changes, gated...), microerror.Mask(err)
 }
@@ -94,7 +94,7 @@ func upgradeManagementCluster(fs *afero.Afero, repoPath, mcPath string, env Env)
 		return nil, microerror.Mask(err)
 	}
 
-	protected, err := protectManagementCluster(fs, repoPath, mcPath)
+	protected, err := protectManagementCluster(fs, repoPath, mcPath, env)
 
 	return append(changes, protected...), microerror.Mask(err)
 }
