@@ -27,8 +27,9 @@ enc \
 A management cluster's key, and an organisation's, go into the master key
 Secret, sops-gpg-master, in MC_NAME/secrets, which secrets/kustomization.yaml
 protects from deletion. An organisation's key encrypts its namespace/secrets
-unless --target says otherwise: the organisation's namespace Kustomization,
-namespace.yaml, applies and decrypts what it keeps there.
+unless --target says otherwise. For any target in namespace/, the
+organisation's namespace Kustomization, namespace.yaml, which applies it,
+decrypts with the master key.
 
 A workload cluster's key goes into its own Secret, sops-gpg-<wc_name>, in the
 organization's namespace/secrets and namespace, where the cluster's

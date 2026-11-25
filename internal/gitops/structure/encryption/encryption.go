@@ -114,12 +114,15 @@ func masterKey(config common.StructureConfig, p paths) *creator.CreatorConfig {
 	}
 
 	// What the organisation keeps in its namespace, namespace.yaml applies
-	// and decrypts.
+	// and decrypts. namespace/secrets, the default, is set up here; any other
+	// directory in namespace/ is the user's to create and list.
 	if config.Organization != "" && isNamespaceTarget(config.EncryptionTarget) {
 		fsModifiers[key.ResourcePath(p.orgDir, key.NamespaceFileName())] = fluxkusmod.KustomizationModifier{
 			DecryptionToAdd: key.SopsSecretName(masterPrefix),
 		}
-		fsObjects = append(fsObjects, namespaceSecrets(fsModifiers, p, nil)...)
+		if cleanTarget(config.EncryptionTarget) == path.Join(key.NamespaceDirName(), key.SecretsDirName()) {
+			fsObjects = append(fsObjects, namespaceSecrets(fsModifiers, p, nil)...)
+		}
 	}
 
 	preValidators := map[string]func(*afero.Afero, string) error{
@@ -231,10 +234,17 @@ func targetRule(config common.StructureConfig) map[string]interface{} {
 	return sopsmod.NewRule("", encPath, config.EncryptionKeyPair.Fingerprint)
 }
 
-// isNamespaceTarget reports whether the target is the organisation's
-// namespace/secrets, which namespace.yaml applies.
+// isNamespaceTarget reports whether the target is in the organisation's
+// namespace/, which namespace.yaml applies.
 func isNamespaceTarget(target string) bool {
-	return strings.Trim(target, "/") == key.NamespaceDirName()+"/"+key.SecretsDirName()
+	t := cleanTarget(target)
+	return t == key.NamespaceDirName() || strings.HasPrefix(t, key.NamespaceDirName()+"/")
+}
+
+// cleanTarget is the target as a clean path relative to the organisation's
+// directory.
+func cleanTarget(target string) string {
+	return strings.TrimPrefix(path.Clean("/"+target), "/")
 }
 
 // emptySecret returns the Secret that stores the private SOPS keys, before
