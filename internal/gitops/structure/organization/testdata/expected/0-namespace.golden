@@ -25,5 +25,7 @@ spec:
     kind: GitRepository
     name: gitops-demo
   # Every object in namespace/ goes into the organisation's namespace.
-  targetNamespace: org-demoorg
+  # `org-ORG_NAME` is a fixed placeholder: ./kustomization.yaml keeps `org-`
+  # and puts the Organization's name after it. Leave it as it is.
+  targetNamespace: org-ORG_NAME
   timeout: 2m

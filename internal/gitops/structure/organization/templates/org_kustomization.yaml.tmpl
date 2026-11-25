@@ -10,7 +10,7 @@ resources:
 # The replacements copy the Organization's name into what Flux applies from
 # this directory: into `organization` in the `spec.postBuild.substitute` of
 # every Flux Kustomization, and into the `targetNamespace` of the one in
-# namespace.yaml.
+# namespace.yaml, after the `org-` of its fixed placeholder `org-ORG_NAME`.
 replacements:
   - source:
       group: security.giantswarm.io
