@@ -3,7 +3,9 @@ package creator
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 
 	"github.com/spf13/afero"
 
@@ -163,12 +165,10 @@ func (fo *FsObject) isDir() bool {
 // 2. objects creation
 // 3. objects post-modifications
 func (c *Creator) print() {
-	for n, v := range c.preValidators {
-		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
-		if err != nil {
-			_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
-			return
-		}
+	err := c.preValidate()
+	if err != nil {
+		_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
+		return
 	}
 
 	_, _ = fmt.Fprintf(c.stdout, "\n## CREATE ##\n")
@@ -244,18 +244,30 @@ func (c *Creator) print() {
 	_, _ = fmt.Fprintf(c.stdout, "%s\n", string(bytes.TrimSpace(body)))
 }
 
+// preValidate runs the pre-validators in path order, so the check on a
+// directory runs before the checks on what it holds, and returns the first
+// error.
+func (c *Creator) preValidate() error {
+	for _, n := range slices.Sorted(maps.Keys(c.preValidators)) {
+		err := c.preValidators[n](c.fs, fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
 // write writes the creator's file system objects into the disk.
 // Order of execution:
 // 1. pre-validations
 // 2. objects creation
 // 3. objects post-modifications
 func (c *Creator) write() error {
-	for n, v := range c.preValidators {
-		err := v(c.fs, fmt.Sprintf("%s/%s", c.path, n))
-		if err != nil {
-			_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
-			return microerror.Mask(err)
-		}
+	err := c.preValidate()
+	if err != nil {
+		_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
+		return microerror.Mask(err)
 	}
 
 	for _, o := range c.fsObjects {
