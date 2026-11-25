@@ -42,7 +42,14 @@ the organisations' namespace Kustomizations, and protects the management
 cluster's keys with a kustomization.yaml, but leaves moving the clusters'
 Kustomizations into the organisations' namespaces to you. It refuses a
 cluster whose Kustomization prunes what out-of-band/ holds, as Flux would
-delete it from the management cluster.
+delete it from the management cluster, and a cluster with a kustomization
+file of its own next to mapi/, which doesn't list what moves up. It also
+refuses a cluster whose Kustomization applies mapi/ with prune: true until
+every object there has the kustomize.toolkit.fluxcd.io/prune: disabled
+annotation, as objects that change path can be deleted and created again
+while they move: add it, let Flux apply it, then upgrade in the next commit.
+See
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/upgrade-fork.md#check-and-upgrade-the-structure-version
 
 Files git ignores, such as decrypted secrets, are left where they are: move
 them yourself.

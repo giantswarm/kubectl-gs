@@ -2,6 +2,7 @@ package migration
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -69,29 +70,10 @@ func pruningKustomizations(fs *afero.Afero, repoPath, wcDir string) ([]string, e
 // prunesDirectory reports whether a document of the file is a Flux
 // Kustomization that applies dir with prune: true.
 func prunesDirectory(fs *afero.Afero, file, dir string) (bool, error) {
-	data, err := fs.ReadFile(file)
+	paths, err := prunedPaths(fs, file)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	documents, err := splitDocuments(data, file)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	for _, d := range documents {
-		if d.node == nil {
-			continue
-		}
-		path := fluxPath(d.node)
-		if path == nil {
-			continue
-		}
-		prune := mapValue(mapValue(d.node, "spec"), "prune")
-		if strings.TrimSuffix(strings.TrimPrefix(path.Value, "./"), "/") == dir && prune != nil && prune.Value == "true" {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return slices.Contains(paths, dir), nil
 }
