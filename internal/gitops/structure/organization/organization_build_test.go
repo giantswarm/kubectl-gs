@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"sigs.k8s.io/kustomize/api/krusty"
+	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/key"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/structure/common"
 )
@@ -35,50 +37,58 @@ func Test_NewOrganization_Build(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 
-			fs := filesys.MakeFsInMemory()
-			for _, o := range config.FsObjects {
-				if o.Data == nil {
-					err = fs.MkdirAll(o.RelativePath)
-				} else {
-					err = fs.WriteFile(o.RelativePath, o.Data)
-				}
-				if err != nil {
-					t.Fatalf("unexpected error: %s", err.Error())
-				}
-			}
-
-			orgDir := key.BaseDirPath("demomc", tc.organization, "")
-			resMap, err := krusty.MakeKustomizer(krusty.MakeDefaultOptions()).Run(fs, orgDir)
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-
-			found := false
-			for _, r := range resMap.Resources() {
-				if r.GetKind() != "Kustomization" {
-					continue
-				}
-				found = true
-
-				got, err := r.GetString("spec.targetNamespace")
-				if err != nil {
-					t.Fatalf("unexpected error: %s", err.Error())
-				}
-				if got != tc.namespace {
-					t.Errorf("expected targetNamespace %q, got %q", tc.namespace, got)
-				}
-
-				got, err = r.GetString("spec.postBuild.substitute.organization")
-				if err != nil {
-					t.Fatalf("unexpected error: %s", err.Error())
-				}
-				if got != tc.organization {
-					t.Errorf("expected organization %q, got %q", tc.organization, got)
-				}
-			}
-			if !found {
-				t.Fatal("expected the organisation's namespace Kustomization")
-			}
+			r := buildNamespaceKustomization(t, config.FsObjects, key.BaseDirPath("demomc", tc.organization, ""))
+			checkField(t, r, "spec.targetNamespace", tc.namespace)
+			checkField(t, r, "spec.postBuild.substitute.organization", tc.organization)
 		})
+	}
+}
+
+// buildNamespaceKustomization writes the objects to a filesystem, builds dir
+// with kustomize, and returns the one Flux Kustomization it holds.
+func buildNamespaceKustomization(t *testing.T, objects []*creator.FsObject, dir string) *resource.Resource {
+	t.Helper()
+
+	fs := filesys.MakeFsInMemory()
+	for _, o := range objects {
+		var err error
+		if o.Data == nil {
+			err = fs.MkdirAll(o.RelativePath)
+		} else {
+			err = fs.WriteFile(o.RelativePath, o.Data)
+		}
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err.Error())
+		}
+	}
+
+	resMap, err := krusty.MakeKustomizer(krusty.MakeDefaultOptions()).Run(fs, dir)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	var found []*resource.Resource
+	for _, r := range resMap.Resources() {
+		if r.GetKind() == "Kustomization" {
+			found = append(found, r)
+		}
+	}
+	if len(found) != 1 {
+		t.Fatalf("expected one Flux Kustomization, got %d", len(found))
+	}
+
+	return found[0]
+}
+
+// checkField checks the string at the field path of the resource.
+func checkField(t *testing.T, r *resource.Resource, fieldPath, want string) {
+	t.Helper()
+
+	got, err := r.GetString(fieldPath)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	if got != want {
+		t.Errorf("expected %s %q, got %q", fieldPath, want, got)
 	}
 }
