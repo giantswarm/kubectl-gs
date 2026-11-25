@@ -48,6 +48,9 @@ refuses a cluster whose Kustomization applies mapi/ with prune: true until
 every object there has the kustomize.toolkit.fluxcd.io/prune: disabled
 annotation, as objects that change path can be deleted and created again
 while they move: add it, let Flux apply it, then upgrade in the next commit.
+It refuses a cluster, too, while a .sops.yaml rule picks the key for files
+under mapi/ that it doesn't pick once they have moved up: change the rule to
+match both places first. It never changes .sops.yaml.
 See
 https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/upgrade-fork.md#check-and-upgrade-the-structure-version
 

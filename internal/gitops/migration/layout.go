@@ -63,7 +63,12 @@ func checkMapiMove(fs *afero.Afero, repoPath, wcDir string, env Env) error {
 		return microerror.Mask(err)
 	}
 
-	return microerror.Mask(refusePrunedMapi(fs, repoPath, wcDir, env))
+	err = refusePrunedMapi(fs, repoPath, wcDir, env)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return microerror.Mask(refuseSopsRules(fs, repoPath, wcDir, files))
 }
 
 // refuseClusterKustomization fails for a cluster with a kustomization file
