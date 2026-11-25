@@ -121,7 +121,7 @@ func (r *runner) adopt(repoPath string, md *metadata.RepositoryMetadata, dryRun 
 	}
 
 	_, _ = fmt.Fprintf(r.stdout, "\nWrote %s\n", metadata.FilePath(repoPath))
-	_, _ = fmt.Fprintf(r.stdout, "\nNote: adoption assumes these layers are current. Drift from before this\npoint is not detectable.\n")
+	_, _ = fmt.Fprintf(r.stdout, "\nNote: adoption infers each layer's structure version from its layout.\nDrift from before this point is not detectable.\n")
 
 	return nil
 }

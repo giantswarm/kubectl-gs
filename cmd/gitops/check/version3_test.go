@@ -78,6 +78,9 @@ func Test_Check_AdoptPrintsRecordedVersions(t *testing.T) {
 	if strings.Contains(printed, fmt.Sprintf("structure version %d", metadata.StructureVersion)) {
 		t.Errorf("expected no claim of version %d, got:\n%s", metadata.StructureVersion, printed)
 	}
+	if strings.Contains(printed, "assumes these layers are current") || !strings.Contains(printed, "from its layout") || !strings.Contains(printed, "not detectable") {
+		t.Errorf("expected the note to describe the inferred version and warn of earlier drift, got:\n%s", printed)
+	}
 	for _, l := range md.Layers {
 		if l.StructureVersion != 2 {
 			t.Errorf("expected %s to be recorded at version 2, got %d", l.Kind, l.StructureVersion)

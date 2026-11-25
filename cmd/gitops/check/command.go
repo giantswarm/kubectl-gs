@@ -27,8 +27,8 @@ the repository's own CI.
 
 Repositories created before kubectl-gs started recording this hold no metadata
 file. Run the command with --adopt once to record what is already there. Note
-that adoption assumes the existing layers are current, so it cannot recover
-drift that happened before it ran.
+that adoption infers each layer's structure version from its layout, so it
+cannot recover drift that happened before it ran.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md#structure-version.`
