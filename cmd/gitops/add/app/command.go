@@ -45,6 +45,10 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-stru
 The app goes into the workload cluster's apps/ directory, which the cluster's
 apps Kustomization applies.
 
+A workload cluster still laid out as before structure version 3 is refused,
+as Flux would not apply what the command writes there. Run
+` + "`kubectl gs gitops upgrade`" + ` first.
+
 What it writes:
 https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#app`
 

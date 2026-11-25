@@ -68,5 +68,8 @@ func NewAutomaticUpdate(config common.StructureConfig) (*creator.CreatorConfig, 
 		},
 	}
 
+	refuseMapiPath, refuseMapi := common.RefuseMapiCluster(config)
+	creatorConfig.PreValidators[refuseMapiPath] = refuseMapi
+
 	return &creatorConfig, nil
 }

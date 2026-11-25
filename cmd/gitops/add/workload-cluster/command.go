@@ -37,6 +37,10 @@ the apps in apps/ once the cluster is ready. Without --base, a single
 Kustomization, <wc_id>.yaml, applies the apps. Running the command again with
 --base adds the definition to that single Kustomization.
 
+A workload cluster still laid out as before structure version 3 is refused,
+as Flux would not apply what the command writes there. Run
+` + "`kubectl gs gitops upgrade`" + ` first.
+
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md#flux-kustomizations.
 

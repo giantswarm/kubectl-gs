@@ -111,6 +111,9 @@ func NewApp(config common.StructureConfig) (*creator.CreatorConfig, error) {
 		},
 	}
 
+	refuseMapiPath, refuseMapi := common.RefuseMapiCluster(config)
+	creatorConfig.PreValidators[refuseMapiPath] = refuseMapi
+
 	// The user values patch only targets a HelmRelease, so it would match
 	// nothing in a base deploying an App CR.
 	if config.AppBase != "" {

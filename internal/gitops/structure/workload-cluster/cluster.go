@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"github.com/spf13/afero"
 
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/creator"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
@@ -105,12 +106,17 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 		return nil, microerror.Mask(err)
 	}
 
+	refuseMapiPath, refuseMapi := common.RefuseMapiCluster(config)
+
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: postModifiers(tc, wcsDir, wcDir),
 		MetadataLayer: &metadata.Layer{
 			Kind: metadata.LayerWorkloadCluster,
 			Path: wcDir,
+		},
+		PreValidators: map[string]func(*afero.Afero, string) error{
+			refuseMapiPath: refuseMapi,
 		},
 	}
 
