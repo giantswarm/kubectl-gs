@@ -123,7 +123,7 @@ spec:
 
 func addNamespaceDirectory(fs *afero.Afero, repoPath, orgDir string, _ Env) ([]string, error) {
 	path := filepath.Join(orgDir, gitopskey.NamespaceDirName(), gitopskey.SigsKustomizationFileName())
-	if exists, err := fs.Exists(path); err != nil || exists {
+	if existing, err := findKustomization(fs, filepath.Dir(path)); err != nil || existing != "" {
 		return nil, microerror.Mask(err)
 	}
 
@@ -148,18 +148,18 @@ resources: []
 }
 
 // listNamespaceKustomization lists namespace.yaml in the organisation's
-// kustomization.yaml, and writes one that lists what the management cluster's
-// Kustomization applied from the directory, when there is none.
+// kustomization file, by any name kustomize reads, and writes a
+// kustomization.yaml that lists what the management cluster's Kustomization
+// applied from the directory, when there is none.
 func listNamespaceKustomization(fs *afero.Afero, repoPath, orgDir string, env Env) ([]string, error) {
-	path := filepath.Join(orgDir, gitopskey.SigsKustomizationFileName())
-
-	exists, err := fs.Exists(path)
+	existing, err := findKustomization(fs, orgDir)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	if exists {
-		return addResource(fs, repoPath, path, gitopskey.NamespaceFileName())
+	if existing != "" {
+		return addResource(fs, repoPath, existing, gitopskey.NamespaceFileName())
 	}
+	path := filepath.Join(orgDir, gitopskey.SigsKustomizationFileName())
 
 	names, err := listDir(fs, orgDir)
 	if err != nil {

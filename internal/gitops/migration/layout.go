@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -21,6 +22,11 @@ const outOfBandDir = "out-of-band"
 // cluster's Kustomization applies, never `out-of-band`.
 func migrateLayout(fs *afero.Afero, repoPath, wcPath string, env Env) ([]string, error) {
 	wcDir := filepath.Join(repoPath, wcPath)
+
+	err := checkMapiMove(fs, repoPath, wcDir, env)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	moved, changes, err := moveMapiUp(fs, repoPath, wcDir, env)
 	if err != nil {
@@ -42,6 +48,30 @@ func migrateLayout(fs *afero.Afero, repoPath, wcPath string, env Env) ([]string,
 	}
 
 	return changes, nil
+}
+
+// checkMapiMove refuses, before anything moves, a cluster whose `mapi` can't
+// move up safely.
+func checkMapiMove(fs *afero.Afero, repoPath, wcDir string, env Env) error {
+	files, _, err := mapiFiles(fs, repoPath, filepath.Join(wcDir, gitopskey.MapiDirName()), env)
+	if err != nil || len(files) == 0 {
+		return microerror.Mask(err)
+	}
+
+	return microerror.Mask(refuseClusterKustomization(fs, repoPath, wcDir, topLevel(files)))
+}
+
+// refuseClusterKustomization fails for a cluster with a kustomization file
+// of its own next to `mapi`: it doesn't list what moves up from there, so
+// the cluster's Kustomization would stop applying it, and, pruning, delete
+// it.
+func refuseClusterKustomization(fs *afero.Afero, repoPath, wcDir string, moving []string) error {
+	path, err := findKustomization(fs, wcDir)
+	if err != nil || path == "" {
+		return microerror.Mask(err)
+	}
+
+	return microerror.Maskf(unexpectedFileError, "%s exists next to mapi/, and doesn't list %s, which the upgrade moves up from mapi/: the cluster's Kustomization would stop applying them, and delete them if it prunes. Move what mapi/ holds up and list it there by hand, or remove %s, then run the upgrade again", rel(repoPath, path), strings.Join(moving, ", "), filepath.Base(path))
 }
 
 // moveMapiUp moves what `mapi` holds into the cluster's directory, but for
@@ -135,13 +165,29 @@ func moveFile(fs *afero.Afero, repoPath, from, to, f string) ([]string, error) {
 	return fixKustomizationPaths(fs, repoPath, from, filepath.Dir(src), dst)
 }
 
+// kustomizationFileNames are the names kustomize reads a kustomization from,
+// in the order it looks for them.
+var kustomizationFileNames = []string{"kustomization.yaml", "kustomization.yml", "Kustomization"}
+
 func isKustomizationFile(path string) bool {
-	switch filepath.Base(path) {
-	case "kustomization.yaml", "kustomization.yml", "Kustomization":
-		return true
+	return slices.Contains(kustomizationFileNames, filepath.Base(path))
+}
+
+// findKustomization returns the path of the kustomization file in dir, by
+// any name kustomize reads, or an empty string when it has none.
+func findKustomization(fs *afero.Afero, dir string) (string, error) {
+	for _, name := range kustomizationFileNames {
+		path := filepath.Join(dir, name)
+		exists, err := fs.Exists(path)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		if exists {
+			return path, nil
+		}
 	}
 
-	return false
+	return "", nil
 }
 
 // removeEmptyDirs removes dir and the directories below it that hold no
@@ -186,19 +232,18 @@ func topLevel(files []string) []string {
 }
 
 // addClusterKustomization writes the cluster's `kustomization.yaml`, when it
-// has none. It lists what moved up from `mapi`, which the cluster's
+// has no kustomization file, by any name kustomize reads. It lists what moved up from `mapi`, which the cluster's
 // Kustomization applied, or else what the cluster's directory holds, which
 // it applied all of, but `out-of-band`.
 func addClusterKustomization(fs *afero.Afero, repoPath, wcDir string, moved []string, env Env) ([]string, error) {
-	path := filepath.Join(wcDir, gitopskey.SigsKustomizationFileName())
-
-	exists, err := fs.Exists(path)
+	existing, err := findKustomization(fs, wcDir)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	if exists {
-		return nil, refuseOutOfBand(fs, repoPath, path)
+	if existing != "" {
+		return nil, refuseOutOfBand(fs, repoPath, existing)
 	}
+	path := filepath.Join(wcDir, gitopskey.SigsKustomizationFileName())
 
 	names := moved
 	outOfBand := false
@@ -298,11 +343,11 @@ func resourceOf(fs *afero.Afero, repoPath, path string, env Env, owner string) (
 		return "", nil
 	}
 
-	exists, err := fs.Exists(filepath.Join(path, gitopskey.SigsKustomizationFileName()))
+	kustomization, err := findKustomization(fs, path)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	if exists {
+	if kustomization != "" {
 		return filepath.Base(path) + "/", nil
 	}
 

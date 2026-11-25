@@ -24,8 +24,8 @@ func protectSecrets(fs *afero.Afero, repoPath, mcPath string, env Env) ([]string
 	if err != nil || !exists {
 		return nil, microerror.Mask(err)
 	}
-	exists, err = fs.Exists(path)
-	if err != nil || exists {
+	existing, err := findKustomization(fs, dir)
+	if err != nil || existing != "" {
 		return nil, microerror.Mask(err)
 	}
 
