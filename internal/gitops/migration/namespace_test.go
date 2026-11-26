@@ -149,3 +149,46 @@ func Test_Namespace_NamesTheKustomization(t *testing.T) {
 		t.Fatalf("expected the organisation's kustomization.yaml named, got: %v", err)
 	}
 }
+
+// Test_Namespace_LeavesIgnoredKustomization checks that an organisation's
+// kustomization.yaml that git ignores, which git cannot restore, is never
+// edited: the upgrade refuses until it lists namespace.yaml, and then goes
+// on, leaving it byte for byte.
+func Test_Namespace_LeavesIgnoredKustomization(t *testing.T) {
+	testCases := []struct {
+		name      string
+		existing  string
+		expectErr bool
+	}{
+		{name: "without namespace.yaml", existing: "resources:\n  - demoorg.yaml\n  - workload-clusters\n", expectErr: true},
+		{name: "listing namespace.yaml", existing: "resources:\n  - demoorg.yaml\n  - namespace.yaml\n  - workload-clusters\n"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := layoutRepo(t, map[string]string{
+				testMC + "/demomc.yaml":                           namespaceMCKustomization,
+				testOrg + "/demoorg.yaml":                         organization,
+				testOrg + "/kustomization.yaml":                   tc.existing,
+				testOrg + "/workload-clusters/kustomization.yaml": emptyResources,
+			})
+			layer := metadata.Layer{Kind: metadata.LayerOrganization, Path: testOrg, StructureVersion: 2}
+			env := Env{Ignored: func(path string) bool { return path == testOrg+"/kustomization.yaml" }}
+
+			changes, err := version3.Apply(fs, testRepo, layer, env)
+			switch {
+			case tc.expectErr && !IsUnexpectedFile(err):
+				t.Fatalf("expected the ignored kustomization.yaml refused, got %v, %v", changes, err)
+			case tc.expectErr && !strings.Contains(err.Error(), "git ignores"):
+				t.Errorf("expected the error to say git ignores it, got: %s", err)
+			case !tc.expectErr && err != nil:
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			data, _ := fs.ReadFile(testRepo + "/" + testOrg + "/kustomization.yaml")
+			if diff := cmp.Diff(tc.existing, string(data)); diff != "" {
+				t.Errorf("expected the ignored kustomization.yaml kept byte for byte (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

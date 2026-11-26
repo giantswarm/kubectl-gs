@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 )
 
 // Test_FixKustomizationPaths checks every kustomization field naming a path
@@ -90,7 +92,7 @@ func Test_FixFluxPaths_MultipleDocuments(t *testing.T) {
 		layoutWCs + "/demowc-apps.yml": mapiWCKustomization,
 	})
 
-	changes, err := fixFluxPaths(fs, testRepo, layoutWC)
+	changes, err := fixFluxPaths(fs, testRepo, layoutWC, Env{})
 	if err != nil || len(changes) != 2 {
 		t.Fatalf("expected two changes, got %v, %v", changes, err)
 	}
@@ -157,7 +159,7 @@ func Test_FixFluxPaths_DocumentMarkers(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			fs := layoutRepo(t, map[string]string{layoutWCs + "/demowc.yaml": tc.file})
 
-			changes, err := fixFluxPaths(fs, testRepo, layoutWC)
+			changes, err := fixFluxPaths(fs, testRepo, layoutWC, Env{})
 			if err != nil || len(changes) != 1 {
 				t.Fatalf("expected one change, got %v, %v", changes, err)
 			}
@@ -197,7 +199,7 @@ func Test_FixFluxPaths_RefusesWhatItCantKeep(t *testing.T) {
 	const flow = "--- {apiVersion: kustomize.toolkit.fluxcd.io/v1, kind: Kustomization, metadata: {name: demowc}, spec: {path: ./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi}}\n"
 	fs := layoutRepo(t, map[string]string{layoutWCs + "/demowc.yaml": flow})
 
-	_, err := fixFluxPaths(fs, testRepo, layoutWC)
+	_, err := fixFluxPaths(fs, testRepo, layoutWC, Env{})
 	if !IsUnexpectedFile(err) {
 		t.Fatalf("expected the file refused, got: %v", err)
 	}
@@ -206,4 +208,37 @@ func Test_FixFluxPaths_RefusesWhatItCantKeep(t *testing.T) {
 	if string(data) != flow {
 		t.Errorf("expected the file unchanged, got:\n%s", data)
 	}
+}
+
+// Test_FixFluxPaths_LeavesIgnoredFiles checks, through a plan, that a Flux
+// Kustomization applying `mapi` in a file git ignores, such as a backup next
+// to the cluster's, is kept byte for byte, as git cannot restore it, while
+// the cluster's own Kustomization next to it is still pointed at the
+// cluster's directory.
+func Test_FixFluxPaths_LeavesIgnoredFiles(t *testing.T) {
+	files := v2MapiCluster()
+	files[layoutWCs+"/backup.yaml"] = mapiWCKustomization
+	fs := layoutRepo(t, files)
+
+	md := metadata.New()
+	md.StructureVersion = 2
+	md.Layers = []metadata.Layer{{Kind: metadata.LayerWorkloadCluster, Path: layoutWC, StructureVersion: 2}}
+
+	plan, err := NewPlan(md, Migrations, 3)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	plan.Env = Env{Ignored: func(path string) bool {
+		return path == layoutWCs+"/backup.yaml" || ignoring.IsIgnored(path)
+	}}
+	_, err = plan.Run(fs, testRepo, md, false)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	data, _ := fs.ReadFile(filepath.Join(testRepo, layoutWCs, "backup.yaml"))
+	if diff := cmp.Diff(mapiWCKustomization, string(data)); diff != "" {
+		t.Errorf("expected the ignored backup.yaml kept byte for byte (-want +got):\n%s", diff)
+	}
+	checkPath(t, fs, layoutWCs+"/demowc.yaml", "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc")
 }

@@ -40,7 +40,7 @@ func migrateLayout(fs *afero.Afero, repoPath, wcPath string, env Env) ([]string,
 	changes = append(changes, c...)
 
 	if len(moved) > 0 {
-		c, err = fixFluxPaths(fs, repoPath, wcPath)
+		c, err = fixFluxPaths(fs, repoPath, wcPath, env)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -114,8 +114,9 @@ func sequence(n *yaml.Node) []*yaml.Node {
 }
 
 // fixFluxPaths points the Flux Kustomizations next to the cluster's
-// directory that applied its `mapi` directory at the cluster's directory.
-func fixFluxPaths(fs *afero.Afero, repoPath, wcPath string) ([]string, error) {
+// directory that applied its `mapi` directory at the cluster's directory. A
+// file git ignores is left alone, as git cannot restore it.
+func fixFluxPaths(fs *afero.Afero, repoPath, wcPath string, env Env) ([]string, error) {
 	dir := filepath.Dir(filepath.Join(repoPath, wcPath))
 	mapi := filepath.ToSlash(filepath.Join(wcPath, "mapi"))
 
@@ -126,12 +127,12 @@ func fixFluxPaths(fs *afero.Afero, repoPath, wcPath string) ([]string, error) {
 
 	var changes []string
 	for _, e := range entries {
-		ext := filepath.Ext(e.Name())
-		if e.IsDir() || !isYAML(ext) || isKustomizationFile(e.Name()) {
+		file := filepath.Join(dir, e.Name())
+		if e.IsDir() || !isYAML(filepath.Ext(e.Name())) || isKustomizationFile(e.Name()) || env.IsIgnored(rel(repoPath, file)) {
 			continue
 		}
 
-		c, err := fixFluxPath(fs, repoPath, filepath.Join(dir, e.Name()), mapi, wcPath)
+		c, err := fixFluxPath(fs, repoPath, file, mapi, wcPath)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

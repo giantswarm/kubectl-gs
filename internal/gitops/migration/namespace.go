@@ -157,7 +157,7 @@ func listNamespaceKustomization(fs *afero.Afero, repoPath, orgDir string, env En
 		return nil, microerror.Mask(err)
 	}
 	if existing != "" {
-		return addResource(fs, repoPath, existing, gitopskey.NamespaceFileName())
+		return addResource(fs, repoPath, existing, gitopskey.NamespaceFileName(), env)
 	}
 	path := filepath.Join(orgDir, gitopskey.SigsKustomizationFileName())
 
@@ -201,8 +201,9 @@ func organizationKustomization(resources []string) string {
 }
 
 // addResource adds the resource to the kustomization.yaml at path, unless it
-// lists it already.
-func addResource(fs *afero.Afero, repoPath, path, resource string) ([]string, error) {
+// lists it already. One git ignores is refused rather than edited, as git
+// cannot restore it.
+func addResource(fs *afero.Afero, repoPath, path, resource string, env Env) ([]string, error) {
 	kustomization, err := readYAML(fs, path)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -217,6 +218,9 @@ func addResource(fs *afero.Afero, repoPath, path, resource string) ([]string, er
 		if strings.TrimPrefix(r.Value, "./") == resource {
 			return nil, nil
 		}
+	}
+	if env.IsIgnored(rel(repoPath, path)) {
+		return nil, microerror.Maskf(unexpectedFileError, "%s has to list %s, but git ignores it, so the upgrade leaves it: list %s there by hand, then run the upgrade again", rel(repoPath, path), resource, resource)
 	}
 	resources.Style = 0
 	resources.Content = append(resources.Content, scalar(resource))

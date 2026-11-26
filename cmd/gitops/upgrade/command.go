@@ -54,8 +54,9 @@ match both places first. It never changes .sops.yaml.
 See
 https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/upgrade-fork.md#check-and-upgrade-the-structure-version
 
-Files git ignores, such as decrypted secrets, are left where they are: move
-them yourself.
+Files git ignores, such as decrypted secrets, are never changed, as git
+cannot restore them: they are left where they are, so move them yourself. The
+upgrade refuses when one has to change, until you have changed it by hand.
 
 Use --dry-run to see which files would change without writing anything. It runs
 the migrations against an in-memory copy of the repository. Run
