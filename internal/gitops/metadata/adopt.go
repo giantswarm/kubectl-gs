@@ -26,15 +26,24 @@ type AdoptionResult struct {
 	Skipped []string
 }
 
-// Adopt infers the layers of a repository that predates the metadata file, and
-// pins them at the current structure version. Layers still deploying App CRs,
-// which kubectl-gs stopped generating in structure version 2, are pinned at
-// version 1, so that `gitops check` reports them.
+// Adopt infers the layers of a repository that predates the metadata file,
+// and the structure version of each from its layout, so that `gitops check`
+// reports the layers that are behind:
 //
-// Note what this cannot do: it has no way of knowing which structure version
-// the repository was actually generated with, so it otherwise assumes the
-// current one. Drift that already exists at the point of adoption stays
-// invisible. Only drift introduced afterwards is detected.
+//   - a layer still deploying or patching App CRs, which kubectl-gs stopped
+//     generating in structure version 2, is recorded at version 1;
+//   - a workload cluster with a `mapi` directory, or with `cluster` or `apps`
+//     but no kustomization.yaml of its own, is recorded at version 2, and so
+//     are the apps in its `mapi`, which move with it; so is a management
+//     cluster whose `secrets` holds files but no kustomization.yaml, and an
+//     organisation without its namespace Kustomization;
+//   - any other layer is recorded at the current structure version.
+//
+// Note what this cannot do: a layout only tells apart the versions that lay
+// files out differently, so each layer is recorded at the newest version its
+// layout fits. Drift that already exists at the point of adoption, and leaves
+// the layout as it is, stays invisible. Only drift introduced afterwards is
+// detected.
 func Adopt(fs *afero.Afero, repoPath string) (*AdoptionResult, error) {
 	result := &AdoptionResult{
 		Metadata: New(),
