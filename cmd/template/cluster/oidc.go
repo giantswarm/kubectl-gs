@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/flags"
 	"github.com/giantswarm/kubectl-gs/v6/internal/key"
+	"github.com/giantswarm/kubectl-gs/v6/internal/managementcluster"
 )
 
 const (
@@ -48,8 +49,24 @@ func (r *runner) oidcValues(ctx context.Context, client k8sclient.Interface) (*c
 	}
 
 	if given.IssuerURL == "" {
-		mc, err := common.ManagementClusterOIDC(ctx, client.CtrlClient(), r.flag.ManagementCluster, given.ClientID)
+		// org-giantswarm can hold workload clusters next to the management
+		// cluster, so the management cluster is looked up by name.
+		mcName := r.flag.ManagementCluster
+		if mcName == "" {
+			var err error
+			mcName, err = managementcluster.Name(ctx, client.CtrlClient())
+			if err != nil {
+				return nil, fmt.Errorf("%w: cannot read %s: %w", common.ErrManagementClusterOIDC, managementcluster.MetadataConfigMap, err)
+			}
+		}
+
+		mc, err := common.ManagementClusterOIDC(ctx, client.CtrlClient(), mcName, given.ClientID)
 		if err != nil {
+			if r.flag.ManagementCluster == "" && mcName != "" {
+				err = fmt.Errorf("%w (%s names management cluster %q)", err, managementcluster.MetadataConfigMap, mcName)
+			} else if mcName == "" {
+				err = fmt.Errorf("%w (no management cluster name could be read from %s)", err, managementcluster.MetadataConfigMap)
+			}
 			if r.noKubeContext() {
 				err = fmt.Errorf("no kubeconfig context is selected: %w", err)
 			}

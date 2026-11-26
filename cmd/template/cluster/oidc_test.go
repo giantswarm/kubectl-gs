@@ -2,12 +2,17 @@ package cluster
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/giantswarm/kubectl-gs/v6/cmd/template/cluster/common"
@@ -69,6 +74,108 @@ func Test_oidcValues(t *testing.T) {
 			if tc.expectedError {
 				if err == nil {
 					t.Fatal("expected an error, got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if diff := cmp.Diff(tc.expectedValues, values); diff != "" {
+				t.Fatalf("values differ (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+// controlPlane returns a KubeadmControlPlane in org-giantswarm whose API
+// server carries the given extra arguments.
+func controlPlane(name string, extraArgs ...interface{}) *unstructured.Unstructured {
+	kcp := &unstructured.Unstructured{Object: map[string]interface{}{
+		"spec": map[string]interface{}{
+			"kubeadmConfigSpec": map[string]interface{}{
+				"clusterConfiguration": map[string]interface{}{
+					"apiServer": map[string]interface{}{
+						"extraArgs": extraArgs,
+					},
+				},
+			},
+		},
+	}}
+	kcp.SetAPIVersion("controlplane.cluster.x-k8s.io/v1beta2")
+	kcp.SetKind("KubeadmControlPlane")
+	kcp.SetNamespace("org-giantswarm")
+	kcp.SetName(name)
+	return kcp
+}
+
+func Test_oidcValues_managementClusterName(t *testing.T) {
+	// The management cluster's API server trusts its Dex. The workload
+	// cluster's trusts no OIDC issuer, so picking it fails.
+	mc := controlPlane("my-mc",
+		apiServerArg("oidc-issuer-url", "https://dex.my-mc.example.com"),
+		apiServerArg("oidc-client-id", "dex-k8s-authenticator"),
+		apiServerArg("oidc-username-claim", "email"),
+		apiServerArg("oidc-groups-claim", "groups"),
+	)
+	wc := controlPlane("my-wc", apiServerArg("audit-log-maxage", "30"))
+	metadata := func(name string) *corev1.ConfigMap {
+		return &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{Namespace: "flux-giantswarm", Name: "management-cluster-metadata"},
+			Data:       map[string]string{"NAME": name},
+		}
+	}
+	mcValues := &common.OIDCValues{
+		IssuerURL:     "https://dex.my-mc.example.com",
+		ClientID:      "dex-k8s-authenticator",
+		UsernameClaim: "email",
+		GroupsClaim:   "groups",
+	}
+
+	testCases := []struct {
+		name           string
+		objects        []runtime.Object
+		expectedValues *common.OIDCValues
+		expectedError  []string
+	}{
+		{
+			name:           "case 0: the metadata ConfigMap picks the management cluster among workload clusters",
+			objects:        []runtime.Object{mc, wc, metadata("my-mc")},
+			expectedValues: mcValues,
+		},
+		{
+			name:           "case 1: without the metadata ConfigMap, the only control plane is the management cluster's",
+			objects:        []runtime.Object{mc},
+			expectedValues: mcValues,
+		},
+		{
+			name:          "case 2: without the metadata ConfigMap, several control planes are ambiguous",
+			objects:       []runtime.Object{mc, wc},
+			expectedError: []string{"flux-giantswarm/management-cluster-metadata", "2 KubeadmControlPlanes found", "--management-cluster"},
+		},
+		{
+			name:          "case 3: the metadata ConfigMap names a cluster without a control plane",
+			objects:       []runtime.Object{mc, wc, metadata("other")},
+			expectedError: []string{`flux-giantswarm/management-cluster-metadata names management cluster "other"`, "no KubeadmControlPlane org-giantswarm/other found"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := &runner{
+				flag:   &flags.Flag{Provider: key.ProviderCAPA},
+				stderr: io.Discard,
+			}
+
+			values, err := r.oidcValues(context.Background(), kubeclient.FakeK8sClient(tc.objects...))
+			if tc.expectedError != nil {
+				if !common.IsManagementClusterOIDC(err) {
+					t.Fatalf("expected a management cluster OIDC error, got %v", err)
+				}
+				for _, want := range tc.expectedError {
+					if !strings.Contains(err.Error(), want) {
+						t.Fatalf("expected error to contain %q, got %q", want, err)
+					}
 				}
 				return
 			}
