@@ -14,10 +14,11 @@ import (
 
 // mapiSeed is a cluster added before structure version 3, whose
 // Kustomization applies its `mapi` directory. Its organisation has the
-// namespace Kustomization, so the refusal is down to `mapi` alone.
+// namespace Kustomization, which applies its workload clusters, so the
+// refusal is down to `mapi` alone.
 var mapiSeed = map[string]string{
 	"/repo/management-clusters/demomc/organizations/demoorg/namespace.yaml":               "kind: Kustomization\n",
-	"/repo/management-clusters/demomc/organizations/demoorg/namespace/kustomization.yaml": "resources: []\n",
+	"/repo/management-clusters/demomc/organizations/demoorg/namespace/kustomization.yaml": "resources:\n  - ../workload-clusters\n",
 	"/repo/" + wcsKustomizationFile:                    "resources:\n  - demowc.yaml\n",
 	"/repo/" + wcFile:                                  "spec:\n  path: ./" + wcDir + "/mapi\n",
 	"/repo/" + wcDir + "/mapi/apps/kustomization.yaml": "resources: []\n",
