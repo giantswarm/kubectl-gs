@@ -92,6 +92,11 @@ func namespaceKustomization(orgPath, mcName string, mc managementCluster) string
 	return fmt.Sprintf(`apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  # Flux leaves it when its file goes or it's renamed. Without the annotation,
+  # Flux would delete it, and its finalizer every app of the organisation's
+  # clusters.
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
   labels:
     giantswarm.io/organization-namespace: "true"
   name: %[1]s-organization-%[2]s

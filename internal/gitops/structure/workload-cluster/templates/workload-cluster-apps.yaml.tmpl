@@ -7,7 +7,7 @@ spec:
   # the secondary apps, in apps/, install once the cluster is up, see {{ .WorkloadCluster }}.yaml
   dependsOn:
     - name: {{ .ManagementCluster }}-clusters-{{ .WorkloadCluster }}
-  interval: 1m
+  interval: 10m
   path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}"
   postBuild:
     substitute:
@@ -18,6 +18,7 @@ spec:
       {{- end }}
       organization: "${organization}"
   prune: true
+  retryInterval: 1m
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

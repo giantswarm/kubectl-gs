@@ -95,9 +95,10 @@ func checkNamespaceKustomization(t *testing.T, fs *afero.Afero) {
 
 	var got struct {
 		Metadata struct {
-			Labels    map[string]string `json:"labels"`
-			Name      string            `json:"name"`
-			Namespace string            `json:"namespace"`
+			Annotations map[string]string `json:"annotations"`
+			Labels      map[string]string `json:"labels"`
+			Name        string            `json:"name"`
+			Namespace   string            `json:"namespace"`
 		} `json:"metadata"`
 		Spec struct {
 			Decryption struct {
@@ -119,13 +120,14 @@ func checkNamespaceKustomization(t *testing.T, fs *afero.Afero) {
 
 	summary := []string{
 		got.Metadata.Name, got.Metadata.Namespace, got.Metadata.Labels["giantswarm.io/organization-namespace"],
+		got.Metadata.Annotations["kustomize.toolkit.fluxcd.io/prune"],
 		got.Spec.Decryption.SecretRef.Name, got.Spec.Path, got.Spec.SourceRef.Name, got.Spec.TargetNamespace,
 	}
 	for _, d := range got.Spec.DependsOn {
 		summary = append(summary, d.Name)
 	}
 	expected := []string{
-		"demomc-organization-demoorg", "default", "true",
+		"demomc-organization-demoorg", "default", "true", wantPruneDisabled,
 		"sops-gpg-master", "./management-clusters/demomc/organizations/demoorg/namespace", "gitops-demo", "org-demoorg",
 		"demomc-gitops",
 	}

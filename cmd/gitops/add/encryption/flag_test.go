@@ -15,7 +15,9 @@ const (
 
 // Test_flag_EncryptionTarget checks the directory each kind of key encrypts
 // without --target: an organisation's is namespace/secrets, as the
-// organisation's kustomization.yaml applies only what goes into `default`.
+// organisation's kustomization.yaml applies only what goes into `default`,
+// and a workload cluster's are cluster and apps, the directories its
+// Kustomizations apply.
 func Test_flag_EncryptionTarget(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -25,7 +27,7 @@ func Test_flag_EncryptionTarget(t *testing.T) {
 		{name: "management cluster", flag: flag{ManagementCluster: testMC}, expected: defaultTarget},
 		{name: "organization", flag: flag{ManagementCluster: testMC, Organization: testOrg}, expected: "namespace/secrets/"},
 		{name: "organization with --target", flag: flag{ManagementCluster: testMC, Organization: testOrg, Target: defaultTarget}, expected: defaultTarget},
-		{name: "workload cluster", flag: flag{ManagementCluster: testMC, Organization: testOrg, WorkloadCluster: testWC}, expected: defaultTarget},
+		{name: "workload cluster", flag: flag{ManagementCluster: testMC, Organization: testOrg, WorkloadCluster: testWC}, expected: "(cluster|apps)/"},
 	}
 
 	for _, tc := range testCases {
@@ -50,5 +52,8 @@ func Test_flag_TargetHelp(t *testing.T) {
 	}
 	if !strings.Contains(usage, "namespace/secrets/") {
 		t.Errorf("expected the organization's default for --target, got:\n%s", usage)
+	}
+	if !strings.Contains(usage, "(cluster|apps)/") {
+		t.Errorf("expected the workload cluster's default for --target, got:\n%s", usage)
 	}
 }

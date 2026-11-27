@@ -95,7 +95,7 @@ func (r *runner) adopt(repoPath string, md *metadata.RepositoryMetadata, dryRun 
 		return nil
 	}
 
-	_, _ = fmt.Fprintf(r.stdout, "Detected %d layer(s) to record at structure version %d:\n\n", len(added), metadata.StructureVersion)
+	_, _ = fmt.Fprintf(r.stdout, "Detected %d layer(s) to record, at the structure version their layout matches:\n\n", len(added))
 	printKindCounts(r.stdout, added)
 
 	if len(result.Skipped) > 0 {
@@ -121,7 +121,7 @@ func (r *runner) adopt(repoPath string, md *metadata.RepositoryMetadata, dryRun 
 	}
 
 	_, _ = fmt.Fprintf(r.stdout, "\nWrote %s\n", metadata.FilePath(repoPath))
-	_, _ = fmt.Fprintf(r.stdout, "\nNote: adoption assumes these layers are current. Drift from before this\npoint is not detectable.\n")
+	_, _ = fmt.Fprintf(r.stdout, "\nNote: adoption infers each layer's structure version from its layout.\nDrift from before this point is not detectable.\n")
 
 	return nil
 }
@@ -130,16 +130,9 @@ func (r *runner) adopt(repoPath string, md *metadata.RepositoryMetadata, dryRun 
 // kubectl-gs generates, and fails when anything is behind.
 func (r *runner) report(md *metadata.RepositoryMetadata) error {
 	repoOutdated := md.StructureVersion < metadata.StructureVersion
+	outdated := md.OutdatedLayers()
 
-	if repoOutdated {
-		_, _ = fmt.Fprintf(r.stdout, "repository structure version: %d (current: %d)\n", md.StructureVersion, metadata.StructureVersion)
-	} else {
-		status := "up to date"
-		if md.StructureVersion > metadata.StructureVersion {
-			status = fmt.Sprintf("newer than this kubectl-gs, which knows version %d", metadata.StructureVersion)
-		}
-		_, _ = fmt.Fprintf(r.stdout, "repository structure version: %d (%s)\n", md.StructureVersion, status)
-	}
+	_, _ = fmt.Fprintf(r.stdout, "repository structure version: %d (%s)\n", md.StructureVersion, repositoryStatus(md, len(outdated)))
 
 	if len(md.Layers) == 0 {
 		_, _ = fmt.Fprintf(r.stdout, "\nNo layers recorded yet.\n")
@@ -163,8 +156,6 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 		}
 		_ = w.Flush()
 	}
-
-	outdated := md.OutdatedLayers()
 
 	_, _ = fmt.Fprintln(r.stdout)
 	switch {
@@ -210,6 +201,23 @@ func (r *runner) report(md *metadata.RepositoryMetadata) error {
 	)
 }
 
+// repositoryStatus describes the repository level structure version. That
+// version is the newest any kubectl-gs that wrote to the repository
+// generated, so it can be current while layers recorded earlier, or adopted
+// from an older layout, are behind: then the repository isn't up to date.
+func repositoryStatus(md *metadata.RepositoryMetadata, outdatedLayers int) string {
+	switch {
+	case md.StructureVersion < metadata.StructureVersion:
+		return fmt.Sprintf("current: %d", metadata.StructureVersion)
+	case md.StructureVersion > metadata.StructureVersion:
+		return fmt.Sprintf("newer than this kubectl-gs, which knows version %d", metadata.StructureVersion)
+	case outdatedLayers > 0:
+		return fmt.Sprintf("%d layer(s) behind", outdatedLayers)
+	}
+
+	return "up to date"
+}
+
 // newerThanThisKubectlGs reports whether the repository, or any of its layers,
 // is recorded at a newer structure version than this kubectl-gs produces.
 func newerThanThisKubectlGs(md *metadata.RepositoryMetadata) bool {
@@ -225,21 +233,23 @@ func newerThanThisKubectlGs(md *metadata.RepositoryMetadata) bool {
 	return false
 }
 
-// printKindCounts prints how many layers of each kind were found.
+// printKindCounts prints how many layers of each kind were found at each
+// structure version, which is the version they are recorded at.
 func printKindCounts(out io.Writer, layers []metadata.Layer) {
 	counts := map[string]int{}
 	for _, l := range layers {
-		counts[l.Kind]++
+		counts[fmt.Sprintf("%s\t%d", l.Kind, l.StructureVersion)]++
 	}
 
-	kinds := make([]string, 0, len(counts))
+	rows := make([]string, 0, len(counts))
 	for k := range counts {
-		kinds = append(kinds, k)
+		rows = append(rows, k)
 	}
-	sort.Strings(kinds)
+	sort.Strings(rows)
 
 	w := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
-	for _, k := range kinds {
+	_, _ = fmt.Fprintf(w, "  KIND\tVERSION\tLAYERS\n")
+	for _, k := range rows {
 		_, _ = fmt.Fprintf(w, "  %s\t%d\n", k, counts[k])
 	}
 	_ = w.Flush()

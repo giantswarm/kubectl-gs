@@ -6,7 +6,7 @@ spec:
   # the secondary apps, in apps/, install once the cluster is up, see demowc.yaml
   dependsOn:
     - name: demomc-clusters-demowc
-  interval: 1m
+  interval: 10m
   path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
   postBuild:
     substitute:
@@ -15,6 +15,7 @@ spec:
       release: 0.13.0
       organization: "${organization}"
   prune: true
+  retryInterval: 1m
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

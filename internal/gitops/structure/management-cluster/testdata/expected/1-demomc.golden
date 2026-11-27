@@ -1,6 +1,11 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  # It applies itself, so renaming it would make it prune itself, and its
+  # finalizer would delete everything it applied. The annotation leaves it, as
+  # it does each organisation's namespace Kustomization.
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
   name: demomc-gitops
   namespace: default
 spec:
@@ -8,7 +13,7 @@ spec:
     provider: sops
     secretRef:
       name: sops-gpg-master
-  interval: 1m
+  interval: 10m0s
   path: ./management-clusters/demomc
   # Flux deletes what you delete from Git. The objects whose deletion would
   # delete a cluster, or stop Flux from decrypting, have the
@@ -16,6 +21,7 @@ spec:
   # them, and the `giantswarm.io/prevent-deletion` label, so nobody can delete
   # them until it's removed.
   prune: true
+  retryInterval: 1m0s
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository
