@@ -11,6 +11,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/filesystem/modifier"
 	"github.com/giantswarm/kubectl-gs/v6/internal/gitops/metadata"
 )
 
@@ -129,6 +130,57 @@ func (c *Creator) createFileWithoutOverride(path string, data []byte, perm os.Fi
 	return c.createFile(path, data, perm, false)
 }
 
+// validate runs the pre-validators, and checks that every file a post
+// modifier changes exists or is created by this run, so that a run fails
+// before it writes anything.
+func (c *Creator) validate() error {
+	err := c.preValidate()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for n := range c.modifiers() {
+		exists, err := c.fs.Exists(fmt.Sprintf("%s/%s", c.path, n))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if !exists && c.findObject(n) == nil {
+			return microerror.Maskf(ValidationError, "%s/%s does not exist", c.path, n)
+		}
+	}
+
+	return nil
+}
+
+// modifiers returns the post modifiers to run: all of them but those
+// skipModifier leaves out.
+func (c *Creator) modifiers() map[string]modifier.Modifier {
+	out := map[string]modifier.Modifier{}
+	for n, m := range c.postModifiers {
+		if !c.skipModifier(n, m) {
+			out[n] = m
+		}
+	}
+
+	return out
+}
+
+// skipModifier reports whether the modifier for the file n is left out: one
+// wrapped in modifier.IfExists, for a file that neither exists nor is
+// created by this run.
+func (c *Creator) skipModifier(n string, m modifier.Modifier) bool {
+	if _, ok := m.(modifier.IfExists); !ok {
+		return false
+	}
+
+	exists, err := c.fs.Exists(fmt.Sprintf("%s/%s", c.path, n))
+	if err != nil || exists {
+		return false
+	}
+
+	return c.findObject(n) == nil
+}
+
 // ensurePermissions sets default permissions if the one provided
 // are empty.
 func (fo *FsObject) ensurePermissions() {
@@ -194,11 +246,11 @@ func (c *Creator) print() {
 		lines = "\n"
 	}
 
-	if len(c.postModifiers) != 0 {
+	if len(c.modifiers()) != 0 {
 		_, _ = fmt.Fprintf(c.stdout, "%s## MODIFY ##\n", lines)
 	}
 
-	for n, m := range c.postModifiers {
+	for n, m := range c.modifiers() {
 		rawYaml, err := c.fs.ReadFile(fmt.Sprintf("%s/%s", c.path, n))
 		if err != nil {
 			// Very simple way to inform user what is going to happen when
@@ -264,52 +316,27 @@ func (c *Creator) preValidate() error {
 // 2. objects creation
 // 3. objects post-modifications
 func (c *Creator) write() error {
-	err := c.preValidate()
+	err := c.validate()
 	if err != nil {
 		_, _ = fmt.Fprintf(c.stdout, "\n%s", err)
 		return microerror.Mask(err)
 	}
 
-	for _, o := range c.fsObjects {
-		path := fmt.Sprintf("%s/%s", c.path, o.RelativePath)
-
-		if o.isDir() {
-			err := c.createDirectory(path, o.Permission)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			continue
-		}
-
-		if len(o.Data) <= 1 {
-			continue
-		}
-
-		err := c.createFileWithoutOverride(path, o.Data, o.Permission)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	// Every post modifier runs before anything is written, so a run whose
+	// modifier fails, such as one that can't read an encrypted file, leaves
+	// the repository as it was.
+	edits, err := c.edits()
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	for n, m := range c.postModifiers {
-		file := fmt.Sprintf("%s/%s", c.path, n)
+	err = c.writeObjects()
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
-		rawYaml, err := c.fs.ReadFile(file)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		stat, err := c.fs.Stat(file)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		edited, err := m.Execute(rawYaml)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = c.createFileWithOverride(file, edited, stat.Mode())
+	for _, e := range edits {
+		err = c.createFileWithOverride(e.path, e.data, e.perm)
 		if err != nil {
 			return microerror.Mask(err)
 		}

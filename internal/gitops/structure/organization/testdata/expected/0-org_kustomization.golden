@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# The management cluster's Kustomization applies these: only the Organization
+# and objects in `default`. What goes into the organisation's namespace is what
+# namespace/kustomization.yaml lists, which the Kustomization in namespace.yaml
+# applies once organization-operator has created the namespace.
+resources:
+  - demoorg.yaml
+  - namespace.yaml
+# The replacements copy the Organization's name into what Flux applies from
+# this directory: into `organization` in the `spec.postBuild.substitute` of
+# every Flux Kustomization, and into the `targetNamespace` of the one in
+# namespace.yaml, after the `org-` of its fixed placeholder `org-ORG_NAME`.
+replacements:
+  - source:
+      group: security.giantswarm.io
+      kind: Organization
+      fieldPath: metadata.name
+    targets:
+      - select:
+          group: kustomize.toolkit.fluxcd.io
+          kind: Kustomization
+        fieldPaths:
+          - spec.postBuild.substitute.organization
+  - source:
+      group: security.giantswarm.io
+      kind: Organization
+      fieldPath: metadata.name
+    targets:
+      - select:
+          group: kustomize.toolkit.fluxcd.io
+          kind: Kustomization
+          labelSelector: giantswarm.io/organization-namespace=true
+        fieldPaths:
+          - spec.targetNamespace
+        options:
+          delimiter: "-"
+          index: 1

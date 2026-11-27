@@ -39,6 +39,7 @@ var templateDocs = map[string][]string{
 		"",
 		"structure-version",
 		"flux-kustomizations",
+		"move-the-workload-cluster-kustomizations",
 	},
 }
 
@@ -46,10 +47,11 @@ var templateDocsURL = regexp.MustCompile("https://github\\.com/giantswarm/gitops
 
 // stale are what the help must no longer mention: the `mapi` directory and
 // the cluster base's `template` directory are gone from the repository
-// structure.
+// structure, and an organisation keeps its Secrets in its namespace.
 var stale = []string{
 	"mapi",
 	"bases/clusters/capa/template",
+	"organizations/demoorg/secrets/",
 }
 
 func Test_help(t *testing.T) {

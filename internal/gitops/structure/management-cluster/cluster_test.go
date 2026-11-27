@@ -65,6 +65,10 @@ func Test_NewManagementCluster(t *testing.T) {
 					GoldenFile:   "testdata/expected/0-demomc.gpgkey.enc.golden",
 				},
 				{
+					RelativePath: "management-clusters/demomc/secrets/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-secrets_kustomization.golden",
+				},
+				{
 					RelativePath: "management-clusters/demomc/.sops.keys",
 				},
 				{
@@ -97,6 +101,10 @@ func Test_NewManagementCluster(t *testing.T) {
 				{
 					RelativePath: "management-clusters/demomc/secrets/demomc.gpgkey.enc.yaml",
 					GoldenFile:   "testdata/expected/1-demomc.gpgkey.enc.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/secrets/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-secrets_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/.sops.keys",

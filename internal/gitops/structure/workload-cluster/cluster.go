@@ -111,12 +111,13 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 	creatorConfig := creator.CreatorConfig{
 		FsObjects:     fsObjects,
 		PostModifiers: postModifiers(tc, wcsDir, wcDir),
+		PreValidators: map[string]func(*afero.Afero, string) error{
+			key.ResourcePath(orgDir, key.NamespaceFileName()): common.RequireNamespace,
+			refuseMapiPath: refuseMapi,
+		},
 		MetadataLayer: &metadata.Layer{
 			Kind: metadata.LayerWorkloadCluster,
 			Path: wcDir,
-		},
-		PreValidators: map[string]func(*afero.Afero, string) error{
-			refuseMapiPath: refuseMapi,
 		},
 	}
 

@@ -1,5 +1,12 @@
 apiVersion: security.giantswarm.io/v1alpha1
 kind: Organization
 metadata:
+  annotations:
+    # Deleting the Organization deletes its namespace, with every cluster in it.
+    # Flux doesn't delete it when this file is deleted from Git.
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  labels:
+    # nobody can delete it, Flux included, until this label is removed
+    giantswarm.io/prevent-deletion: "true"
   name: {{ .Organization }}
 spec: {}

@@ -2,7 +2,6 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-clusters-demowc-apps
-  namespace: default
 spec:
   # the secondary apps, in apps/, install once the cluster is up, see demowc.yaml
   dependsOn:
@@ -14,10 +13,11 @@ spec:
       cluster_name: demowc
       cluster_description: "demowc managed by GitOps"
       release: 0.13.0
-      organization: demoorg
+      organization: "${organization}"
   prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository
     name: gitops-demo
+    namespace: default
   timeout: 2m

@@ -2,8 +2,13 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: demomc-clusters-demowc
-  namespace: default
 spec:
+  # Flux applies a commit here only once the organisation's namespace
+  # Kustomization, which applies this one, is Ready at it, so this one's spec
+  # is up to date.
+  dependsOn:
+    - name: demomc-organization-demoorg
+      namespace: default
   interval: 1m
   path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
   postBuild:
@@ -11,10 +16,11 @@ spec:
       cluster_name: demowc
       cluster_description: "demowc managed by GitOps"
       release: 0.13.0
-      organization: demoorg
+      organization: "${organization}"
   prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository
     name: gitops-demo
+    namespace: default
   timeout: 2m

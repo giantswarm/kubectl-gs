@@ -10,7 +10,12 @@ spec:
       name: sops-gpg-master
   interval: 1m
   path: ./management-clusters/demomc
-  prune: false
+  # Flux deletes what you delete from Git. The objects whose deletion would
+  # delete a cluster, or stop Flux from decrypting, have the
+  # `kustomize.toolkit.fluxcd.io/prune: disabled` annotation, so Flux leaves
+  # them, and the `giantswarm.io/prevent-deletion` label, so nobody can delete
+  # them until it's removed.
+  prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

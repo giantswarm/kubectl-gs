@@ -19,7 +19,16 @@ const (
 
 org \
 --name <org_name> \
---management-cluster <mc_name>
+--management-cluster <mc_name> \
+[--repository-name <gitops_repo_name>]
+
+It writes the Organization in <org_name>.yaml, protected from deletion, and the
+organization's namespace Kustomization in namespace.yaml. The organisation's
+kustomization.yaml lists only these two for the management cluster's
+Kustomization. The namespace Kustomization applies namespace/ into the
+organization's namespace, org-<org_name>, once organization-operator has
+created it: namespace/kustomization.yaml lists ../workload-clusters, so the
+workload clusters' Kustomizations go into the organisation's namespace.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
@@ -62,6 +71,7 @@ func New(config Config) (*cobra.Command, error) {
 
 	r := &runner{
 		flag:   f,
+		fs:     config.FileSystem,
 		logger: config.Logger,
 		stderr: config.Stderr,
 		stdout: config.Stdout,

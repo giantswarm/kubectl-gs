@@ -27,6 +27,7 @@ func Test_NewOrganization(t *testing.T) {
 			config: common.StructureConfig{
 				ManagementCluster: "demomc",
 				Organization:      "demoorg",
+				RepositoryName:    "gitops-demo",
 			},
 			expectedObjects: []FsObjectExpected{
 				{
@@ -35,6 +36,21 @@ func Test_NewOrganization(t *testing.T) {
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/demoorg.yaml",
 					GoldenFile:   "testdata/expected/0-demoorg.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-org_kustomization.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace.yaml",
+					GoldenFile:   "testdata/expected/0-namespace.golden",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace",
+				},
+				{
+					RelativePath: "management-clusters/demomc/organizations/demoorg/namespace/kustomization.yaml",
+					GoldenFile:   "testdata/expected/0-namespace_kustomization.golden",
 				},
 				{
 					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",

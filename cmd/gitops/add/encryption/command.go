@@ -24,6 +24,22 @@ enc \
 [--workload-cluster <wc_name>]
 [--target <sub_path>]
 
+A management cluster's key, and an organisation's, go into the master key
+Secret, sops-gpg-master, in MC_NAME/secrets, which secrets/kustomization.yaml
+protects from deletion. An organisation's key encrypts its namespace/secrets
+unless --target says otherwise. For any target in namespace/, the
+organisation's namespace Kustomization, namespace.yaml, which applies it,
+decrypts with the master key.
+
+A workload cluster's key goes into its own Secret, sops-gpg-<wc_name>, in the
+organization's namespace/secrets and namespace, where the cluster's
+Kustomizations run. namespace/secrets/kustomization.yaml protects it from
+deletion. It is encrypted with the master key, which the organisation's
+namespace Kustomization decrypts it with, so the management cluster needs its
+master key first: .sops.yaml gets a rule for the workload clusters' keys,
+ahead of the other rules. Both of the cluster's Kustomizations decrypt with
+the key.
+
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
@@ -44,7 +60,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/sops.md#add-
   --target mydir/
 
   # Configure Organization encryption with a new key pair.
-  # Configures SOPS for handling the "management-clusters/demomc/organizations/demoorg/secrets/*.enc.yaml" files.
+  # Configures SOPS for handling the "management-clusters/demomc/organizations/demoorg/namespace/secrets/*.enc.yaml" files.
   kubectl gs gitops add encryption \
   --generate \
   --management-cluster demomc \

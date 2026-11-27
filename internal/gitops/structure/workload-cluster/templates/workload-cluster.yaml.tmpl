@@ -2,8 +2,13 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: {{ .ManagementCluster }}-clusters-{{ .WorkloadCluster }}
-  namespace: default
 spec:
+  # Flux applies a commit here only once the organisation's namespace
+  # Kustomization, which applies this one, is Ready at it, so this one's spec
+  # is up to date.
+  dependsOn:
+    - name: {{ .ManagementCluster }}-organization-{{ .Organization }}
+      namespace: default
   {{- if .AppsKustomization }}
   # Applies the cluster and its base apps, in cluster/. Ready once Cluster API
   # reports the cluster's control plane available and reachable, which is all
@@ -21,7 +26,8 @@ spec:
     - apiVersion: cluster.x-k8s.io/v1beta2
       kind: Cluster
       name: {{ .WorkloadCluster }}
-      namespace: org-{{ .Organization }}
+      # the organisation's namespace, from its namespace Kustomization
+      namespace: org-${organization}
   {{- end }}
   interval: 1m
   path: "./management-clusters/{{ .ManagementCluster }}/organizations/{{ .Organization }}/workload-clusters/{{ .WorkloadCluster }}{{ if .AppsKustomization }}/cluster{{ end }}"
@@ -34,12 +40,13 @@ spec:
       {{- if .Release }}
       release: {{ .Release }}
       {{- end }}
-      organization: {{ .Organization }}
+      organization: "${organization}"
   prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository
     name: {{ .RepositoryName }}
+    namespace: default
   {{- if .AppsKustomization }}
   # long enough for a new cluster to come up
   timeout: 30m
