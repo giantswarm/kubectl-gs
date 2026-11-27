@@ -13,7 +13,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/fatih/color v1.19.0
 	github.com/fluxcd/helm-controller/api v1.7.2
-	github.com/fluxcd/pkg/apis/meta v1.39.0
+	github.com/fluxcd/pkg/apis/meta v1.40.0
 	github.com/fluxcd/source-controller/api v1.10.2
 	github.com/getsops/sops/v3 v3.13.3
 	github.com/giantswarm/apiextensions-application v0.6.2
@@ -230,7 +230,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.59.0 // indirect
 	golang.org/x/crypto/openpgp v0.1.0-deprecated // indirect
-	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/net v0.63.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
