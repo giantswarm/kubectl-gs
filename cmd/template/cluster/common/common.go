@@ -229,10 +229,11 @@ func BuildClusterFluxResources(config ClusterConfig, releaseChart, userConfigMap
 			Retries:              0,
 			RemediateLastFailure: false,
 		},
+		// A rollback goes back to the release the cluster had, which rolls its
+		// nodes a second time. Keep a failed upgrade failed, for a person to look at.
 		UpgradeRemediation: &deploychart.RemediationPolicy{
-			Retries:              10,
-			RemediateLastFailure: true,
-			Strategy:             "rollback",
+			Retries:              0,
+			RemediateLastFailure: false,
 		},
 		ValuesFrom: append([]deploychart.ValuesFromReference{
 			{Kind: "ConfigMap", Name: userConfigMapName, ValuesKey: "values"},

@@ -3,6 +3,7 @@ package metadata
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 
 	"github.com/giantswarm/microerror"
@@ -56,8 +57,9 @@ func Adopt(fs *afero.Afero, repoPath string) (*AdoptionResult, error) {
 	return result, nil
 }
 
-// adoptClusterBases records `bases/clusters/PROVIDER/template` directories,
-// as created by `gitops add base`.
+// adoptClusterBases records the cluster bases created by `gitops add base`:
+// `bases/clusters/PROVIDER`, or `bases/clusters/PROVIDER/template` in
+// repositories created before the base moved up to the provider directory.
 func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult) error {
 	providers, err := subDirs(fs, repoPath, key.ClusterBaseTemplatesPath())
 	if err != nil {
@@ -65,14 +67,12 @@ func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult)
 	}
 
 	for _, provider := range providers {
-		basePath := key.ClusterBasePath(provider)
-
-		exists, err := dirExists(fs, filepath.Join(repoPath, basePath))
+		basePath, err := clusterBasePath(fs, repoPath, provider)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		if !exists {
-			result.Skipped = append(result.Skipped, key.ClusterBaseProviderPath(provider))
+		if basePath == "" {
+			result.Skipped = append(result.Skipped, key.ClusterBasePath(provider))
 			continue
 		}
 
@@ -85,6 +85,43 @@ func adoptClusterBases(fs *afero.Afero, repoPath string, result *AdoptionResult)
 	}
 
 	return nil
+}
+
+// clusterBasePath returns where the cluster base of a provider lives, or an
+// empty string when the provider directory holds none.
+//
+// The `template` directory of the earlier layout is checked first, as its
+// presence alone marks a base, which is how adoption recognised it before. A
+// provider directory is a base in its own right only when it holds a
+// Kustomization, so that one holding something else is reported as skipped
+// rather than recorded, and so is one that isn't named after a provider
+// `gitops add base` supports.
+func clusterBasePath(fs *afero.Afero, repoPath, provider string) (string, error) {
+	legacyPath := key.LegacyClusterBasePath(provider)
+
+	exists, err := dirExists(fs, filepath.Join(repoPath, legacyPath))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	if exists {
+		return legacyPath, nil
+	}
+
+	if !slices.Contains(key.ClusterBaseProviders(), provider) {
+		return "", nil
+	}
+
+	basePath := key.ClusterBasePath(provider)
+
+	exists, err = fs.Exists(filepath.Join(repoPath, basePath, key.SigsKustomizationFileName()))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	if exists {
+		return basePath, nil
+	}
+
+	return "", nil
 }
 
 // adoptManagementClusters walks `management-clusters/*` and everything below it.

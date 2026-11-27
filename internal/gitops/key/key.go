@@ -29,8 +29,8 @@ const (
 
 	baseTemplatesDirectory        = "bases"
 	clusterBaseTemplatesDirectory = "clusters"
-	clusterBaseProviderDirectory  = baseTemplatesDirectory + "/" + clusterBaseTemplatesDirectory + "/%s"
-	clusterBaseTemplate           = clusterBaseProviderDirectory + "/template"
+	clusterBaseDirectory          = baseTemplatesDirectory + "/" + clusterBaseTemplatesDirectory + "/%s"
+	legacyClusterBaseDirectory    = clusterBaseDirectory + "/template"
 
 	mcDirectoryTemplate  = "management-clusters/%s"
 	orgDirectoryTemplate = "%s/organizations/%s"
@@ -57,12 +57,17 @@ func ClusterBaseTemplatesPath() string {
 	return fmt.Sprintf("%s/%s", BaseTemplatesDirName(), ClusterBaseTemplatesDirName())
 }
 
-func ClusterBaseProviderPath(provider string) string {
-	return fmt.Sprintf(clusterBaseProviderDirectory, provider)
+// ClusterBasePath is where `gitops add base` writes the cluster base of a
+// provider: `bases/clusters/PROVIDER`.
+func ClusterBasePath(provider string) string {
+	return fmt.Sprintf(clusterBaseDirectory, provider)
 }
 
-func ClusterBasePath(provider string) string {
-	return fmt.Sprintf(clusterBaseTemplate, provider)
+// LegacyClusterBasePath is where `gitops add base` wrote the cluster base of a
+// provider before it moved up to ClusterBasePath:
+// `bases/clusters/PROVIDER/template`. Repositories created then still use it.
+func LegacyClusterBasePath(provider string) string {
+	return fmt.Sprintf(legacyClusterBaseDirectory, provider)
 }
 
 // BaseDirPath is one of the most important functions that
