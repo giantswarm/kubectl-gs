@@ -40,13 +40,10 @@ part that is safe to push at once, and prints the steps left to do by hand.
 The upgrade to version 3 moves the workload clusters' mapi directories, adds
 the organisations' namespace Kustomizations, protects the management
 cluster's keys with a kustomization.yaml and its own Kustomization with the
-kustomize.toolkit.fluxcd.io/prune: disabled annotation, and gates the
-clusters' Kustomizations on their control plane where they still wait for
-the Cluster to be Available, as kubectl-gs used to write. It leaves a prune
-annotation or a health check you changed as it is, and says so. Moving
-the clusters' Kustomizations into the organisations' namespaces is left to
-you. It refuses a
-cluster whose Kustomization prunes what out-of-band/ holds, as Flux would
+kustomize.toolkit.fluxcd.io/prune: disabled annotation. It leaves a prune
+annotation you changed as it is, and says so. Moving the clusters'
+Kustomizations into the organisations' namespaces is left to you. It refuses
+a cluster whose Kustomization prunes what out-of-band/ holds, as Flux would
 delete it from the management cluster, and a cluster with a kustomization
 file of its own next to mapi/, which doesn't list what moves up. It also
 refuses a cluster whose Kustomization applies mapi/ with prune: true until
