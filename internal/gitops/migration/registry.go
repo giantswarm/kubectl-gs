@@ -7,4 +7,5 @@ package migration
 // version here, and record what changed in the gitops-template CHANGELOG.
 var Migrations = []Migration{
 	helmReleases,
+	version3,
 }

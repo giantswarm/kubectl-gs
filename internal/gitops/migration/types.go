@@ -36,9 +36,10 @@ type Migration struct {
 	// returns a human readable line per change made, which is printed to the
 	// user. layer.StructureVersion is From.
 	//
-	// It runs against the repository on disk, or, for a dry run, against an
-	// in-memory copy holding only its directories and regular files, `.git`
-	// excluded. It must:
+	// It runs against an in-memory copy of the repository, holding only its
+	// directories and regular files, `.git` excluded, and then, unless it is
+	// a dry run and when every step has succeeded there, against the
+	// repository on disk. It must:
 	//
 	//   - work on the files as they are, as users edit generated files by
 	//     hand, and fail rather than guess when a file is not as expected,
@@ -49,15 +50,38 @@ type Migration struct {
 	//   - not change, move or delete files git ignores, such as decrypted
 	//     secrets: a failed upgrade is undone with git, which cannot restore
 	//     those,
-	//   - not move the layer's own directory: steps are planned, and the
-	//     upgraded layers recorded, by the paths the layers had before the
-	//     upgrade. A structure change that moves layers needs the planner
-	//     taught to follow them first.
+	//   - not move the layer's own directory: steps are planned by the paths
+	//     the layers had before the upgrade. A layer it moves inside its own
+	//     directory, such as an app in a workload cluster, is followed with
+	//     Relocate.
 	//
 	// Only layers are migrated. Files outside every layer, such as those
 	// `gitops init` creates at the repository root, have no migration of
 	// their own, so a structure change must not require changing them.
-	Apply func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error)
+	Apply func(fs *afero.Afero, repoPath string, layer metadata.Layer, env Env) ([]string, error)
+
+	// Relocate returns where a layer at the given path is after the
+	// migration, for the layers it moves, of any kind. Nil when it moves
+	// none.
+	Relocate func(path string) string
+
+	// ManualSteps says what the user has to do by hand once the migration
+	// has run, for changes files alone can't make safely, such as those
+	// Flux has to apply in a given order. Printed by `kubectl gs gitops
+	// upgrade` when the migration ran, so write it for the user.
+	ManualSteps string
+}
+
+// Env is what a migration knows about the repository besides its files.
+type Env struct {
+	// Ignored reports whether git ignores the file at the path, relative to
+	// the repository root. Nil when that is not known, as outside git.
+	Ignored func(path string) bool
+}
+
+// IsIgnored reports whether git ignores the file at the path.
+func (e Env) IsIgnored(path string) bool {
+	return e.Ignored != nil && e.Ignored(path)
 }
 
 // Step is one migration to run against one layer.
@@ -79,6 +103,13 @@ type Plan struct {
 	// Layers are the layers the plan moves to Target, including those whose
 	// kind no migration on the way affects.
 	Layers []metadata.Layer
+
+	// Moves maps the path of a layer a migration on the way relocates to
+	// its path at Target.
+	Moves map[string]string
+
+	// Env is passed to every migration. The caller sets it before Run.
+	Env Env
 }
 
 // Result is what running a plan did.
@@ -103,6 +134,11 @@ type StepChanges struct {
 type StepError struct {
 	Step Step
 	Err  error
+
+	// OnDisk is whether the step failed on the repository, after it went
+	// through on the in-memory copy, so files may have changed. A step that
+	// fails on the copy fails before anything is written.
+	OnDisk bool
 }
 
 func (e *StepError) Error() string {

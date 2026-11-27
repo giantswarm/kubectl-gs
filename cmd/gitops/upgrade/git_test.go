@@ -177,22 +177,7 @@ func Test_Upgrade_RestoreHintUndoesAFailedRun(t *testing.T) {
 	runGit(t, repo, "add", ".")
 	runGit(t, repo, "commit", "-q", "-m", "init")
 
-	halfway := migration.Migration{
-		From:        1,
-		Description: "Fails half way",
-		Kinds:       []string{metadata.LayerOrganization},
-		Apply: func(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error) {
-			err := fs.WriteFile(filepath.Join(repoPath, layer.Path, "kustomization.yaml"), []byte("changed\n"), 0600)
-			if err != nil {
-				return nil, err
-			}
-			err = fs.WriteFile(filepath.Join(repoPath, layer.Path, "new.yaml"), []byte("new\n"), 0600)
-			if err != nil {
-				return nil, err
-			}
-			return nil, errors.New("boom")
-		},
-	}
+	halfway := failsHalfwayOnDisk()
 
 	out := new(bytes.Buffer)
 	r := &runner{

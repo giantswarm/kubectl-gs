@@ -112,7 +112,7 @@ func NewWorkloadCluster(config common.StructureConfig) (*creator.CreatorConfig, 
 		FsObjects:     fsObjects,
 		PostModifiers: postModifiers(tc, wcsDir, wcDir),
 		PreValidators: map[string]func(*afero.Afero, string) error{
-			key.ResourcePath(orgDir, key.NamespaceFileName()): common.RequireNamespace,
+			key.ResourcePath(orgDir, key.NamespaceFileName()): common.RequireMovedClusters,
 			refuseMapiPath: refuseMapi,
 		},
 		MetadataLayer: &metadata.Layer{

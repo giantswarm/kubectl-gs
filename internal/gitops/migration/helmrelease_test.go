@@ -346,7 +346,7 @@ func Test_helmReleases(t *testing.T) {
 				writeFiles(t, fs, files)
 			}
 
-			changes, err := helmReleases.Apply(fs, testRepo, tc.layer)
+			changes, err := helmReleases.Apply(fs, testRepo, tc.layer, Env{})
 			if tc.expectErr != nil {
 				if microerror.Cause(err) != tc.expectErr {
 					t.Fatalf("expected %s, got: %v", tc.expectErr.Kind, err)
@@ -379,7 +379,7 @@ func Test_helmReleases(t *testing.T) {
 			}
 
 			// Running it again changes nothing.
-			changes, err = helmReleases.Apply(fs, testRepo, tc.layer)
+			changes, err = helmReleases.Apply(fs, testRepo, tc.layer, Env{})
 			if err != nil {
 				t.Fatalf("unexpected error on the second run: %s", err)
 			}

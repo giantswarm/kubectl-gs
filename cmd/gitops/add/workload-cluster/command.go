@@ -30,8 +30,9 @@ It writes the cluster's directory, workload-clusters/<wc_id>, and the Flux
 Kustomizations that apply it, next to it. The organisation's namespace
 Kustomization applies them into the organisation's namespace, where they run
 as its automation ServiceAccount, and they depend on it. The organisation
-needs its namespace.yaml first, which
-` + "`kubectl gs gitops add organization`" + ` writes. The cluster's
+needs its namespace.yaml, which ` + "`kubectl gs gitops add organization`" + `
+writes, and its clusters' Kustomizations moved into its namespace, which
+` + "`kubectl gs gitops upgrade`" + ` prints the steps for. The cluster's
 kustomization.yaml lists what they apply, and never out-of-band/, which goes
 straight into the workload cluster.
 

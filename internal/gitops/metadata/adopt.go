@@ -132,18 +132,31 @@ func adoptManagementClusters(fs *afero.Afero, repoPath string, result *AdoptionR
 	}
 
 	for _, mc := range mcs {
-		result.Metadata.Upsert(Layer{Kind: LayerManagementCluster, Path: key.BaseDirPath(mc, "", "")})
-
-		// Apps are only walked under workload clusters: `gitops add app`
-		// requires both --organization and --workload-cluster, so an `apps`
-		// directory anywhere else was not created by it.
-		err = adoptOrganizations(fs, repoPath, mc, result)
+		err = adoptManagementCluster(fs, repoPath, mc, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	return nil
+}
+
+// adoptManagementCluster records the management cluster and its
+// organisations.
+func adoptManagementCluster(fs *afero.Afero, repoPath, mc string, result *AdoptionResult) error {
+	mcDir := key.BaseDirPath(mc, "", "")
+
+	version, err := managementClusterVersion(fs, repoPath, mcDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	result.Metadata.Upsert(Layer{Kind: LayerManagementCluster, Path: mcDir, StructureVersion: version})
+
+	// Apps are only walked under workload clusters: `gitops add app`
+	// requires both --organization and --workload-cluster, so an `apps`
+	// directory anywhere else was not created by it.
+	return microerror.Mask(adoptOrganizations(fs, repoPath, mc, result))
 }
 
 // adoptOrganizations walks `management-clusters/MC/organizations/*`.
@@ -156,15 +169,27 @@ func adoptOrganizations(fs *afero.Afero, repoPath, mc string, result *AdoptionRe
 	}
 
 	for _, org := range orgs {
-		result.Metadata.Upsert(Layer{Kind: LayerOrganization, Path: key.BaseDirPath(mc, org, "")})
-
-		err = adoptWorkloadClusters(fs, repoPath, mc, org, result)
+		err = adoptOrganization(fs, repoPath, mc, org, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	return nil
+}
+
+// adoptOrganization records the organisation and its workload clusters.
+func adoptOrganization(fs *afero.Afero, repoPath, mc, org string, result *AdoptionResult) error {
+	orgDir := key.BaseDirPath(mc, org, "")
+
+	version, err := organizationVersion(fs, repoPath, orgDir)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	result.Metadata.Upsert(Layer{Kind: LayerOrganization, Path: orgDir, StructureVersion: version})
+
+	return microerror.Mask(adoptWorkloadClusters(fs, repoPath, mc, org, result))
 }
 
 // adoptWorkloadClusters walks
@@ -181,12 +206,7 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 		wcDir := key.BaseDirPath(mc, org, wc)
 		mapiDir := key.ResourcePath(wcDir, key.MapiDirName())
 
-		version, err := adoptedVersion(fs, repoPath,
-			key.ResourcePath(wcDir, key.ClusterDirName()),
-			key.ResourcePath(wcDir, key.AppsDirName()),
-			key.ResourcePath(mapiDir, key.ClusterDirName()),
-			key.ResourcePath(mapiDir, key.AppsDirName()),
-		)
+		version, err := workloadClusterVersion(fs, repoPath, wcDir)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -197,13 +217,14 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 		// clusters added before the mapi directory was dropped. Both are
 		// checked. Nothing is read from `WC_NAME/out-of-band`: it goes straight
 		// into the workload cluster, so it holds no layer of the management
-		// cluster.
-		err = adoptApps(fs, repoPath, mapiDir, result)
+		// cluster. The apps in `mapi` move with it, so they are recorded at
+		// the cluster's version.
+		err = adoptApps(fs, repoPath, mapiDir, min(version, lastMapiVersion), result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = adoptApps(fs, repoPath, wcDir, result)
+		err = adoptApps(fs, repoPath, wcDir, StructureVersion, result)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -213,8 +234,8 @@ func adoptWorkloadClusters(fs *afero.Afero, repoPath, mc, org string, result *Ad
 }
 
 // adoptApps records the `apps/*` directories holding an App CR under the given
-// parent directory.
-func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResult) error {
+// parent directory, at no more than the given version.
+func adoptApps(fs *afero.Afero, repoPath, parentDir string, maxVersion int, result *AdoptionResult) error {
 	appsDir := key.ResourcePath(parentDir, key.AppsDirName())
 
 	apps, err := subDirs(fs, repoPath, appsDir)
@@ -251,7 +272,7 @@ func adoptApps(fs *afero.Afero, repoPath, parentDir string, result *AdoptionResu
 			return microerror.Mask(err)
 		}
 
-		result.Metadata.Upsert(Layer{Kind: LayerApp, Path: appDir, StructureVersion: version})
+		result.Metadata.Upsert(Layer{Kind: LayerApp, Path: appDir, StructureVersion: min(version, maxVersion)})
 	}
 
 	return nil

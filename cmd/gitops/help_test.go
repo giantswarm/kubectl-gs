@@ -32,6 +32,10 @@ var templateDocs = map[string][]string{
 		"app",
 		"automatic-updates",
 	},
+	"docs/how-to/upgrade-fork.md": {
+		"move-the-workload-cluster-kustomizations",
+		"check-and-upgrade-the-structure-version",
+	},
 	"docs/how-to/sops.md": {
 		"add-a-workload-cluster-key-gpg",
 	},
@@ -77,7 +81,7 @@ func Test_help(t *testing.T) {
 		t.Run(c.CommandPath(), func(t *testing.T) {
 			help := c.Long + "\n" + c.Example
 
-			checkStale(t, help)
+			checkStale(t, c.CommandPath(), help)
 			checkFlags(t, c)
 			checkLinks(t, help)
 			checkWrap(t, c)
@@ -85,11 +89,17 @@ func Test_help(t *testing.T) {
 	})
 }
 
-func checkStale(t *testing.T, help string) {
+// staleAllowed are the stale words a command may still use: the upgrade
+// explains what it does to the `mapi` directory.
+var staleAllowed = map[string]string{
+	"gitops upgrade": "mapi",
+}
+
+func checkStale(t *testing.T, command, help string) {
 	t.Helper()
 
 	for _, s := range stale {
-		if strings.Contains(help, s) {
+		if strings.Contains(help, s) && staleAllowed[command] != s {
 			t.Errorf("help mentions %q", s)
 		}
 	}

@@ -34,6 +34,30 @@ that only moves the recorded versions, touching no file but the metadata file,
 is not held up by uncommitted changes. Review the result, e.g. with ` + "`git diff`" + `,
 before committing it.
 
+Some structure changes can't be made safely in files alone, as Flux has to
+apply them in a given order, over more than one commit. The upgrade makes the
+part that is safe to push at once, and prints the steps left to do by hand.
+The upgrade to version 3 moves the workload clusters' mapi directories, adds
+the organisations' namespace Kustomizations, and protects the management
+cluster's keys with a kustomization.yaml, but leaves moving the clusters'
+Kustomizations into the organisations' namespaces to you. It refuses a
+cluster whose Kustomization prunes what out-of-band/ holds, as Flux would
+delete it from the management cluster, and a cluster with a kustomization
+file of its own next to mapi/, which doesn't list what moves up. It also
+refuses a cluster whose Kustomization applies mapi/ with prune: true until
+every object there has the kustomize.toolkit.fluxcd.io/prune: disabled
+annotation, as objects that change path can be deleted and created again
+while they move: add it, let Flux apply it, then upgrade in the next commit.
+It refuses a cluster, too, while a .sops.yaml rule picks the key for files
+under mapi/ that it doesn't pick once they have moved up: change the rule to
+match both places first. It never changes .sops.yaml.
+See
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/upgrade-fork.md#check-and-upgrade-the-structure-version
+
+Files git ignores, such as decrypted secrets, are never changed, as git
+cannot restore them: they are left where they are, so move them yourself. The
+upgrade refuses when one has to change, until you have changed it by hand.
+
 Use --dry-run to see which files would change without writing anything. It runs
 the migrations against an in-memory copy of the repository. Run
 ` + "`kubectl gs gitops check`" + ` first to see which parts are behind, and
@@ -79,14 +103,15 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		dirtyPaths: dirtyPaths,
-		flag:       f,
-		fs:         &afero.Afero{Fs: config.FileSystem},
-		logger:     config.Logger,
-		migrations: migration.Migrations,
-		stderr:     config.Stderr,
-		stdout:     config.Stdout,
-		target:     metadata.StructureVersion,
+		dirtyPaths:   dirtyPaths,
+		ignoredPaths: ignoredPaths,
+		flag:         f,
+		fs:           &afero.Afero{Fs: config.FileSystem},
+		logger:       config.Logger,
+		migrations:   migration.Migrations,
+		stderr:       config.Stderr,
+		stdout:       config.Stdout,
+		target:       metadata.StructureVersion,
 	}
 
 	c := &cobra.Command{

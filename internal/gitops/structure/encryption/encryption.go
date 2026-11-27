@@ -174,7 +174,7 @@ func workloadClusterKey(config common.StructureConfig, p paths) *creator.Creator
 		FsObjects:     fsObjects,
 		PostModifiers: fsModifiers,
 		PreValidators: map[string]func(*afero.Afero, string) error{
-			key.ResourcePath(p.orgDir, key.NamespaceFileName()): common.RequireNamespace,
+			key.ResourcePath(p.orgDir, key.NamespaceFileName()): common.RequireMovedClusters,
 			key.SopsConfigFileName(): func(fs *afero.Afero, path string) error {
 				data, err := fs.ReadFile(path)
 				if err != nil {

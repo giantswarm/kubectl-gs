@@ -1,7 +1,6 @@
 package migration
 
 import (
-	"bytes"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -37,7 +36,7 @@ var helmReleases = Migration{
 	Apply:       applyHelmReleases,
 }
 
-func applyHelmReleases(fs *afero.Afero, repoPath string, layer metadata.Layer) ([]string, error) {
+func applyHelmReleases(fs *afero.Afero, repoPath string, layer metadata.Layer, env Env) ([]string, error) {
 	dir := filepath.Join(repoPath, layer.Path)
 
 	switch layer.Kind {
@@ -54,7 +53,7 @@ func applyHelmReleases(fs *afero.Afero, repoPath string, layer metadata.Layer) (
 		}
 		return nil, refuseAppPatches(fs, repoPath, dir, "Rewrite them as JSON 6902 patches adding to the HelmRelease's spec.valuesFrom, see "+appcr.MigrationDocs)
 	case metadata.LayerWorkloadCluster:
-		return migrateWorkloadCluster(fs, repoPath, dir)
+		return migrateWorkloadCluster(fs, repoPath, dir, env)
 	}
 
 	return nil, nil
@@ -95,7 +94,7 @@ func refuseAppPatches(fs *afero.Afero, repoPath, dir, hint string) error {
 	return microerror.Maskf(appCRError, "%s still patches App CRs:\n  %s\n%s", rel(repoPath, dir), strings.Join(files, "\n  "), hint)
 }
 
-func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string) ([]string, error) {
+func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string, env Env) ([]string, error) {
 	// Clusters added before structure version 3 without `--skip-mapi` keep
 	// their manifests in `mapi`.
 	dir := filepath.Join(wcDir, gitopskey.MapiDirName())
@@ -107,62 +106,47 @@ func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string) ([]string, 
 		dir = wcDir
 	}
 
-	var changes []string
-
-	clusterDir := filepath.Join(dir, gitopskey.ClusterDirName())
-	exists, err = fs.DirExists(clusterDir)
+	changes, err := migrateDir(fs, repoPath, filepath.Join(dir, gitopskey.ClusterDirName()), env, "Move the cluster to a release-<provider> HelmRelease first, see "+appcr.MigrationDocs, migrateClusterUserConfigPatch)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	if exists {
-		err = refuseAppCRs(fs, repoPath, clusterDir, "Move the cluster to a release-<provider> HelmRelease first, see "+appcr.MigrationDocs)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
 
-		c, err := migrateClusterUserConfigPatch(fs, repoPath, clusterDir)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		changes = append(changes, c...)
-
-		err = refuseAppPatches(fs, repoPath, clusterDir, appPatchHint)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	appsDir := filepath.Join(dir, gitopskey.AppsDirName())
-	exists, err = fs.DirExists(appsDir)
+	c, err := migrateDir(fs, repoPath, filepath.Join(dir, gitopskey.AppsDirName()), env, "Move the apps to HelmReleases first, see "+appcr.MigrationDocs, removeClusterConfigPatch)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	if exists {
-		err = refuseAppCRs(fs, repoPath, appsDir, "Move the apps to HelmReleases first, see "+appcr.MigrationDocs)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
 
-		c, err := removeClusterConfigPatch(fs, repoPath, appsDir)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		changes = append(changes, c...)
+	return append(changes, c...), nil
+}
 
-		err = refuseAppPatches(fs, repoPath, appsDir, appPatchHint)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+// migrateDir migrates a directory of a workload cluster, when it exists: it
+// refuses App CRs there, with the hint, rewrites what kubectl-gs generated
+// around them with migrate, and refuses the App patches left.
+func migrateDir(fs *afero.Afero, repoPath, dir string, env Env, hint string, migrate func(*afero.Afero, string, string, Env) ([]string, error)) ([]string, error) {
+	exists, err := fs.DirExists(dir)
+	if err != nil || !exists {
+		return nil, microerror.Mask(err)
 	}
 
-	return changes, nil
+	err = refuseAppCRs(fs, repoPath, dir, hint)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	changes, err := migrate(fs, repoPath, dir, env)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return changes, microerror.Mask(refuseAppPatches(fs, repoPath, dir, appPatchHint))
 }
 
 // migrateClusterUserConfigPatch turns the patch adding the user config to the
 // cluster App into one adding it to the HelmRelease's valuesFrom. A merge
 // patch would replace the base's valuesFrom list, so it becomes a JSON 6902
-// patch, which needs a target.
-func migrateClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir string) ([]string, error) {
+// patch, which needs a target. Neither file is changed when git ignores
+// either: git cannot restore it, so the user rewrites the patch by hand.
+func migrateClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir string, env Env) ([]string, error) {
 	patchPath := filepath.Join(clusterDir, clusterUserConfigPatchFile)
 	data, err := fs.ReadFile(patchPath)
 	if err != nil {
@@ -189,7 +173,21 @@ func migrateClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir string)
 		return nil, microerror.Maskf(unexpectedFileError, "%s is not the user config patch kubectl-gs generates, rewrite it as a patch adding to the HelmRelease's spec.valuesFrom by hand", rel(repoPath, patchPath))
 	}
 
+	return retargetClusterUserConfigPatch(fs, repoPath, clusterDir, configMap, env)
+}
+
+// retargetClusterUserConfigPatch rewrites the user config patch as a JSON
+// 6902 patch adding the ConfigMap to the HelmRelease's valuesFrom, and gives
+// its entry in the cluster's kustomization.yaml the HelmRelease as target. It
+// refuses when git ignores either file.
+func retargetClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir, configMap string, env Env) ([]string, error) {
+	patchPath := filepath.Join(clusterDir, clusterUserConfigPatchFile)
 	kustomizationPath := filepath.Join(clusterDir, gitopskey.SigsKustomizationFileName())
+	for _, p := range []string{patchPath, kustomizationPath} {
+		if env.IsIgnored(rel(repoPath, p)) {
+			return nil, microerror.Maskf(unexpectedFileError, "%s has to become a patch adding to the HelmRelease's spec.valuesFrom, but git ignores %s, so the upgrade leaves it: rewrite the patch by hand, see %s", rel(repoPath, patchPath), rel(repoPath, p), appcr.MigrationDocs)
+		}
+	}
 	kustomization, err := readYAML(fs, kustomizationPath)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -230,8 +228,10 @@ func migrateClusterUserConfigPatch(fs *afero.Afero, repoPath, clusterDir string)
 // removeClusterConfigPatch removes the patch pointing the Apps at the
 // workload cluster's kubeconfig. HelmReleases name the kubeconfig themselves.
 // A patch already rewritten to target HelmReleases is kept, as the
-// HelmReleases may rely on it to reach the workload cluster.
-func removeClusterConfigPatch(fs *afero.Afero, repoPath, appsDir string) ([]string, error) {
+// HelmReleases may rely on it to reach the workload cluster. A
+// kustomization.yaml git ignores is never edited, as git cannot restore it,
+// and a patch git ignores is left where it is.
+func removeClusterConfigPatch(fs *afero.Afero, repoPath, appsDir string, env Env) ([]string, error) {
 	kustomizationPath := filepath.Join(appsDir, gitopskey.SigsKustomizationFileName())
 	exists, err := fs.Exists(kustomizationPath)
 	if err != nil || !exists {
@@ -244,18 +244,9 @@ func removeClusterConfigPatch(fs *afero.Afero, repoPath, appsDir string) ([]stri
 	}
 
 	patchPath := filepath.Join(appsDir, clusterConfigPatchFile)
-	patchExists, err := fs.Exists(patchPath)
+	patchExists, patchIsApp, err := readAppPatch(fs, patchPath)
 	if err != nil {
 		return nil, microerror.Mask(err)
-	}
-	patchIsApp := false
-	if patchExists {
-		data, err := fs.ReadFile(patchPath)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		var patch map[string]any
-		patchIsApp = apiyaml.Unmarshal(data, &patch) == nil && appcr.IsApp(stringField(patch, "apiVersion"), stringField(patch, "kind"))
 	}
 
 	entry := findPatch(kustomization, clusterConfigPatchFile)
@@ -270,72 +261,78 @@ func removeClusterConfigPatch(fs *afero.Afero, repoPath, appsDir string) ([]stri
 		return nil, microerror.Maskf(unexpectedFileError, "%s is not the patch kubectl-gs generates to point App CRs at the workload cluster, remove it or rewrite it for HelmReleases by hand", rel(repoPath, patchPath))
 	}
 
-	var changes []string
-
-	patches := mapValue(kustomization, "patches")
-	if entry != nil {
-		var kept []*yaml.Node
-		for _, p := range patches.Content {
-			if p != entry {
-				kept = append(kept, p)
-			}
-		}
-		patches.Content = kept
-		if len(kept) == 0 {
-			deleteKey(kustomization, "patches")
-		}
-
-		err = writeYAML(fs, kustomizationPath, kustomization)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		changes = append(changes, fmt.Sprintf("%s: removes the %s patch", rel(repoPath, kustomizationPath), clusterConfigPatchFile))
+	changes, err := dropPatchEntry(fs, repoPath, kustomizationPath, kustomization, entry, env)
+	if err != nil || !patchExists {
+		return changes, microerror.Mask(err)
 	}
 
-	if patchExists {
-		err = fs.Remove(patchPath)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		changes = append(changes, fmt.Sprintf("%s: removed, there are no App CRs left to patch", rel(repoPath, patchPath)))
-	}
+	c, err := removePatchFile(fs, repoPath, patchPath, env)
 
-	return changes, nil
+	return append(changes, c...), microerror.Mask(err)
 }
 
-// readYAML returns the top level mapping of the file.
-func readYAML(fs *afero.Afero, path string) (*yaml.Node, error) {
+// readAppPatch reports whether the patch at path exists, and whether it
+// patches an App CR.
+func readAppPatch(fs *afero.Afero, path string) (bool, bool, error) {
+	exists, err := fs.Exists(path)
+	if err != nil || !exists {
+		return false, false, microerror.Mask(err)
+	}
+
 	data, err := fs.ReadFile(path)
+	if err != nil {
+		return false, false, microerror.Mask(err)
+	}
+	var patch map[string]any
+	isApp := apiyaml.Unmarshal(data, &patch) == nil && appcr.IsApp(stringField(patch, "apiVersion"), stringField(patch, "kind"))
+
+	return true, isApp, nil
+}
+
+// dropPatchEntry removes the entry from the patches of the kustomization.yaml
+// at path, unless it is nil. It refuses when git ignores the file, as git
+// cannot restore it.
+func dropPatchEntry(fs *afero.Afero, repoPath, path string, kustomization, entry *yaml.Node, env Env) ([]string, error) {
+	if entry == nil {
+		return nil, nil
+	}
+	if env.IsIgnored(rel(repoPath, path)) {
+		return nil, microerror.Maskf(unexpectedFileError, "%s applies %s, which patches App CRs, but git ignores it, so the upgrade leaves it: remove the patch from it by hand", rel(repoPath, path), clusterConfigPatchFile)
+	}
+
+	patches := mapValue(kustomization, "patches")
+	var kept []*yaml.Node
+	for _, p := range patches.Content {
+		if p != entry {
+			kept = append(kept, p)
+		}
+	}
+	patches.Content = kept
+	if len(kept) == 0 {
+		deleteKey(kustomization, "patches")
+	}
+
+	err := writeYAML(fs, path, kustomization)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var doc yaml.Node
-	err = yaml.Unmarshal(data, &doc)
-	if err != nil {
-		return nil, microerror.Maskf(unexpectedFileError, "cannot parse %s: %s", path, err)
-	}
-	if len(doc.Content) == 0 || doc.Content[0].Kind != yaml.MappingNode {
-		return nil, microerror.Maskf(unexpectedFileError, "%s is not a mapping", path)
-	}
-
-	return doc.Content[0], nil
+	return []string{fmt.Sprintf("%s: removes the %s patch", rel(repoPath, path), clusterConfigPatchFile)}, nil
 }
 
-func writeYAML(fs *afero.Afero, path string, node *yaml.Node) error {
-	var buf bytes.Buffer
-	encoder := yaml.NewEncoder(&buf)
-	encoder.SetIndent(2)
-	err := encoder.Encode(node)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	err = encoder.Close()
-	if err != nil {
-		return microerror.Mask(err)
+// removePatchFile removes the patch at path, which patches nothing any more,
+// unless git ignores it: git cannot restore it, so it is left where it is.
+func removePatchFile(fs *afero.Afero, repoPath, path string, env Env) ([]string, error) {
+	if env.IsIgnored(rel(repoPath, path)) {
+		return []string{fmt.Sprintf("%s: left where it is, as git ignores it. Remove it yourself", rel(repoPath, path))}, nil
 	}
 
-	return microerror.Mask(fs.WriteFile(path, buf.Bytes(), 0644))
+	err := fs.Remove(path)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return []string{fmt.Sprintf("%s: removed, there are no App CRs left to patch", rel(repoPath, path))}, nil
 }
 
 // findPatch returns the `patches` entry applying the given file.
@@ -368,33 +365,7 @@ func patchTargetKind(entry *yaml.Node) string {
 	return kind.Value
 }
 
-func mapValue(node *yaml.Node, key string) *yaml.Node {
-	if node.Kind != yaml.MappingNode {
-		return nil
-	}
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		if node.Content[i].Value == key {
-			return node.Content[i+1]
-		}
-	}
-
-	return nil
-}
-
-func deleteKey(node *yaml.Node, key string) {
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		if node.Content[i].Value == key {
-			node.Content = append(node.Content[:i], node.Content[i+2:]...)
-			return
-		}
-	}
-}
-
 func stringField(m map[string]any, key string) string {
 	s, _ := m[key].(string)
 	return s
-}
-
-func scalar(value string) *yaml.Node {
-	return &yaml.Node{Kind: yaml.ScalarNode, Value: value}
 }
