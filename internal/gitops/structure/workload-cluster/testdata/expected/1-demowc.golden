@@ -4,17 +4,35 @@ metadata:
   name: demomc-clusters-demowc
   namespace: default
 spec:
+  # Applies the cluster and its base apps, in cluster/. Ready once Cluster API
+  # reports the cluster's control plane available and reachable, which is all
+  # the apps need. The Kustomization in demowc-apps.yaml depends on this one, so
+  # the secondary apps install once the cluster is up. It doesn't wait for
+  # `Available`, which counts every node pool: one node pool short of its
+  # minimum would hold back every change to the apps.
+  healthCheckExprs:
+    - apiVersion: cluster.x-k8s.io/v1beta2
+      kind: Cluster
+      current: >-
+        status.conditions.exists(c, c.type == 'ControlPlaneAvailable' && c.status == 'True')
+        && status.conditions.exists(c, c.type == 'RemoteConnectionProbe' && c.status == 'True')
+  healthChecks:
+    - apiVersion: cluster.x-k8s.io/v1beta2
+      kind: Cluster
+      name: demowc
+      namespace: org-demoorg
   interval: 1m
-  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
+  path: "./management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster"
   postBuild:
     substitute:
       cluster_name: demowc
       cluster_description: "demowc managed by GitOps"
       release: 0.13.0
       organization: demoorg
-  prune: false
+  prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository
     name: gitops-demo
-  timeout: 2m
+  # long enough for a new cluster to come up
+  timeout: 30m

@@ -96,7 +96,8 @@ func refuseAppPatches(fs *afero.Afero, repoPath, dir, hint string) error {
 }
 
 func migrateWorkloadCluster(fs *afero.Afero, repoPath, wcDir string) ([]string, error) {
-	// Clusters added without `--skip-mapi` keep their manifests in `mapi`.
+	// Clusters added before structure version 3 without `--skip-mapi` keep
+	// their manifests in `mapi`.
 	dir := filepath.Join(wcDir, gitopskey.MapiDirName())
 	exists, err := fs.DirExists(dir)
 	if err != nil {

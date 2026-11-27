@@ -25,7 +25,10 @@ It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/add_org.md`
+https://github.com/giantswarm/gitops-template/blob/main/docs/tutorials/basic/getting-started.md#2-add-an-organisation
+
+What it writes:
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#organisation`
 
 	examples = `  # Add dummy Organization to dummy Management Cluster
   kubectl gs gitops add org \

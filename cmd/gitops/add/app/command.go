@@ -42,8 +42,15 @@ appended to it.
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
-Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/guides/add-app.md`
+The app goes into the workload cluster's apps/ directory, which the cluster's
+apps Kustomization applies.
+
+A workload cluster still laid out as before structure version 3 is refused,
+as Flux would not apply what the command writes there. Run
+` + "`kubectl gs gitops upgrade`" + ` first.
+
+What it writes:
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#app`
 
 	examples = `  # Add hello-world App to dummy Workload Cluster
   kubectl gs gitops add app \
@@ -68,7 +75,7 @@ https://github.com/giantswarm/gitops-template/blob/main/docs/guides/add-app.md`
 
   # Add hello-world App from the base
   kubectl gs gitops add app \
-  --base base/apps/hello-world \
+  --base bases/apps/hello-world \
   --name hello-world \
   --management-cluster demomc \
   --organization demoorg \

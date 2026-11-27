@@ -15,7 +15,6 @@ const (
 	flagManagementCluster = "management-cluster"
 	flagName              = "name"
 	flagOrganization      = "organization"
-	flagSkipMAPI          = "skip-mapi"
 	flagWorkloadCluster   = "workload-cluster"
 
 	// HelmRelease part
@@ -38,7 +37,6 @@ type flag struct {
 	ManagementCluster string
 	Name              string
 	Organization      string
-	SkipMAPI          bool
 	WorkloadCluster   string
 
 	// HelmRelease part
@@ -61,7 +59,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Codename of the Management Cluster the Workload Cluster belongs to.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the app to use for creating the repository directory structure.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Name of the Organization the Workload Cluster belongs to.")
-	cmd.Flags().BoolVar(&f.SkipMAPI, flagSkipMAPI, false, "Skip `mapi` directory when adding the app.")
 	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Name of the Workload Cluster to configure the app for.")
 
 	//CAPx only

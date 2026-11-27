@@ -25,69 +25,79 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		{
 			name: "flawless",
 			config: common.StructureConfig{
-				ManagementCluster: "demomc",
-				WorkloadCluster:   "demowc",
-				Organization:      "demoorg",
-				SkipMAPI:          true,
-				RepositoryName:    "gitops-demo",
+				ManagementCluster: testMC,
+				WorkloadCluster:   testWC,
+				Organization:      testOrg,
+				RepositoryName:    testRepository,
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+					RelativePath: wcsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
+					RelativePath: wcFile,
 					GoldenFile:   "testdata/expected/0-demowc.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
+					RelativePath: wcDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+					RelativePath: wcKustomizationFile,
+					GoldenFile:   wcKustomizationGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster",
+					RelativePath: appsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					RelativePath: clusterDir,
+				},
+				{
+					RelativePath: appsKustomizationFile,
+					GoldenFile:   appsKustomizationGolden,
 				},
 			},
 		},
 		{
 			name: "flawless with definition",
 			config: common.StructureConfig{
-				ClusterBase:       "bases/cluster/capa",
-				Release:           "0.13.0",
-				ManagementCluster: "demomc",
-				WorkloadCluster:   "demowc",
-				Organization:      "demoorg",
-				SkipMAPI:          true,
-				RepositoryName:    "gitops-demo",
+				ClusterBase:       testBase,
+				Release:           testRelease,
+				ManagementCluster: testMC,
+				WorkloadCluster:   testWC,
+				Organization:      testOrg,
+				RepositoryName:    testRepository,
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+					RelativePath: wcsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/1-demowc.golden",
+					RelativePath: wcFile,
+					GoldenFile:   splitGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
+					RelativePath: appsFile,
+					GoldenFile:   appsGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+					RelativePath: wcDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster",
+					RelativePath: wcKustomizationFile,
+					GoldenFile:   wcKustomizationGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					RelativePath: appsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/kustomization.yaml",
+					RelativePath: clusterDir,
+				},
+				{
+					RelativePath: appsKustomizationFile,
+					GoldenFile:   appsKustomizationGolden,
+				},
+				{
+					RelativePath: clusterKustomizationFile,
 					GoldenFile:   "testdata/expected/4-kustomization.golden",
 				},
 			},
@@ -95,149 +105,165 @@ func Test_NewWorkloadCluster(t *testing.T) {
 		{
 			name: "flawless with definition and configuration",
 			config: common.StructureConfig{
-				ClusterBase: "bases/cluster/capa",
-				Release:     "0.13.0",
+				ClusterBase: testBase,
+				Release:     testRelease,
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				ManagementCluster: "demomc",
-				WorkloadCluster:   "demowc",
-				Organization:      "demoorg",
-				SkipMAPI:          true,
-				RepositoryName:    "gitops-demo",
+				ManagementCluster: testMC,
+				WorkloadCluster:   testWC,
+				Organization:      testOrg,
+				RepositoryName:    testRepository,
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+					RelativePath: wcsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/1-demowc.golden",
+					RelativePath: wcFile,
+					GoldenFile:   splitGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
+					RelativePath: appsFile,
+					GoldenFile:   appsGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+					RelativePath: wcDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster",
+					RelativePath: wcKustomizationFile,
+					GoldenFile:   wcKustomizationGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					RelativePath: appsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/kustomization.yaml",
+					RelativePath: clusterDir,
+				},
+				{
+					RelativePath: appsKustomizationFile,
+					GoldenFile:   appsKustomizationGolden,
+				},
+				{
+					RelativePath: clusterKustomizationFile,
 					GoldenFile:   "testdata/expected/1-kustomization.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-cluster_userconfig.golden",
+					RelativePath: userConfigFile,
+					GoldenFile:   userConfigGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-patch_cluster_userconfig.golden",
+					RelativePath: patchFile,
+					GoldenFile:   patchGolden,
 				},
 			},
 		},
 		{
 			name: "flawless with definition and full configuration",
 			config: common.StructureConfig{
-				ClusterBase: "bases/cluster/capa",
-				Release:     "0.13.0",
+				ClusterBase: testBase,
+				Release:     testRelease,
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				ManagementCluster: "demomc",
-				WorkloadCluster:   "demowc",
-				Organization:      "demoorg",
-				SkipMAPI:          true,
-				RepositoryName:    "gitops-demo",
+				ManagementCluster: testMC,
+				WorkloadCluster:   testWC,
+				Organization:      testOrg,
+				RepositoryName:    testRepository,
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+					RelativePath: wcsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
-					GoldenFile:   "testdata/expected/1-demowc.golden",
+					RelativePath: wcFile,
+					GoldenFile:   splitGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
+					RelativePath: appsFile,
+					GoldenFile:   appsGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps",
+					RelativePath: wcDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster",
+					RelativePath: wcKustomizationFile,
+					GoldenFile:   wcKustomizationGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					RelativePath: appsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/kustomization.yaml",
+					RelativePath: clusterDir,
+				},
+				{
+					RelativePath: appsKustomizationFile,
+					GoldenFile:   appsKustomizationGolden,
+				},
+				{
+					RelativePath: clusterKustomizationFile,
 					GoldenFile:   "testdata/expected/2-kustomization.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-cluster_userconfig.golden",
+					RelativePath: userConfigFile,
+					GoldenFile:   userConfigGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/cluster/patch_cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-patch_cluster_userconfig.golden",
+					RelativePath: patchFile,
+					GoldenFile:   patchGolden,
 				},
 			},
 		},
 		{
-			name: "flawless MAPI with definition and full configuration",
+			name: "definition added to a cluster with a single Kustomization",
 			config: common.StructureConfig{
-				ClusterBase: "bases/cluster/capa",
-				Release:     "0.13.0",
+				ClusterBase: testBase,
+				Release:     testRelease,
 				ClusterUserConfig: string([]byte(`testKey: testValue
 topKey:
   nestedKey: nestedValue`)),
-				ManagementCluster: "demomc",
-				WorkloadCluster:   "demowc",
-				Organization:      "demoorg",
-				RepositoryName:    "gitops-demo",
+				KeepSingleKustomization: true,
+				ManagementCluster:       testMC,
+				WorkloadCluster:         testWC,
+				Organization:            testOrg,
+				RepositoryName:          testRepository,
 			},
 			expectedObjects: []FsObjectExpected{
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters",
+					RelativePath: wcsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc.yaml",
+					RelativePath: wcFile,
 					GoldenFile:   "testdata/expected/2-demowc.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc",
+					RelativePath: wcDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi",
+					RelativePath: wcKustomizationFile,
+					GoldenFile:   wcKustomizationGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps",
+					RelativePath: appsDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster",
+					RelativePath: clusterDir,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/apps/kustomization.yaml",
-					GoldenFile:   "testdata/expected/0-apps_kustomization.golden",
+					RelativePath: appsKustomizationFile,
+					GoldenFile:   appsKustomizationGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/kustomization.yaml",
-					GoldenFile:   "testdata/expected/3-kustomization.golden",
+					RelativePath: clusterKustomizationFile,
+					GoldenFile:   "testdata/expected/2-kustomization.golden",
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-cluster_userconfig.golden",
+					RelativePath: userConfigFile,
+					GoldenFile:   userConfigGolden,
 				},
 				{
-					RelativePath: "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc/mapi/cluster/patch_cluster_userconfig.yaml",
-					GoldenFile:   "testdata/expected/0-patch_cluster_userconfig.golden",
+					RelativePath: patchFile,
+					GoldenFile:   patchGolden,
 				},
 			},
 		},
@@ -272,6 +298,7 @@ topKey:
 					t.Fatalf("want matching files for '%s', got \n\n%s\n", e.RelativePath, cmp.Diff(string(expected), string(config.FsObjects[i].Data)))
 				}
 			}
+
 		})
 	}
 }

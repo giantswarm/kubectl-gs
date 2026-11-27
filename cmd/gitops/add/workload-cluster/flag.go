@@ -10,7 +10,6 @@ const (
 	flagManagementCluster = "management-cluster"
 	flagName              = "name"
 	flagOrganization      = "organization"
-	flagSkipMAPI          = "skip-mapi"
 	flagRepositoryName    = "repository-name"
 
 	// CAPI only
@@ -23,7 +22,6 @@ type flag struct {
 	ManagementCluster string
 	Name              string
 	Organization      string
-	SkipMAPI          bool
 	RepositoryName    string
 
 	Release           string
@@ -35,7 +33,6 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Codename of the management cluster the workload cluster belongs to.")
 	cmd.Flags().StringVar(&f.Name, flagName, "", "Name of the Workload Cluster.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Name of the Organization the workload cluster belongs to.")
-	cmd.Flags().BoolVar(&f.SkipMAPI, flagSkipMAPI, false, "Skip `mapi` directory when adding the app.")
 	cmd.Flags().StringVar(&f.RepositoryName, flagRepositoryName, "", "Name of the GitOps repository.")
 	cmd.Flags().StringVar(&f.Release, flagRelease, "", "Workload cluster release version.")
 	cmd.Flags().StringVar(&f.ClusterUserConfig, flagClusterUserConfig, "", "Cluster app user configuration to patch the base with.")

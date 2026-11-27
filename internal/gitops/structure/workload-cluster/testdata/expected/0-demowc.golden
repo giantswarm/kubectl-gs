@@ -10,7 +10,7 @@ spec:
     substitute:
       cluster_name: demowc
       organization: demoorg
-  prune: false
+  prune: true
   serviceAccountName: automation
   sourceRef:
     kind: GitRepository

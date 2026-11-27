@@ -14,11 +14,7 @@ patches:
       name: \$\{cluster_name\}
 {{- end }}
 resources:
-{{- if .SkipMAPI }}
   - ../../../../../../../{{ .ClusterBase }}
-{{- else }}
-  - ../../../../../../../../{{ .ClusterBase }}
-{{- end }}
 {{- if .ClusterUserConfig }}
   - cluster_userconfig.yaml
 {{- end }}

@@ -29,11 +29,15 @@ pins. Flux then pulls the newest chart version in the range, and the
 HelmRelease upgrades the app to it. Apps deployed with an App CR, and apps
 from a base, are refused.
 
+A workload cluster still laid out as before structure version 3 is refused,
+as Flux would not apply what the command writes there. Run
+` + "`kubectl gs gitops upgrade`" + ` first.
+
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
-Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/guides/automatic-updates.md`
+What it changes:
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/kubectl-gs.md#automatic-updates`
 
 	examples = `  # Enable automatic updates for hello-world app
     kubectl gs gitops add automatic-update \

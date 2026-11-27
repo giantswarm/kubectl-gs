@@ -185,3 +185,50 @@ func Test_Adopt_EmptyRepository(t *testing.T) {
 		t.Errorf("expected no layers, got %d", len(result.Metadata.Layers))
 	}
 }
+
+// Test_Adopt_IgnoresOutOfBand checks that what a cluster keeps in
+// `out-of-band`, which goes straight into the workload cluster, is never taken
+// for management cluster resources: an App CR there doesn't pin the cluster
+// at version 1, and an `apps` directory there holds no app layers.
+func Test_Adopt_IgnoresOutOfBand(t *testing.T) {
+	fs := &afero.Afero{Fs: afero.NewMemMapFs()}
+
+	const wcDir = "management-clusters/demomc/organizations/demoorg/workload-clusters/demowc"
+	app := "apiVersion: application.giantswarm.io/v1alpha1\nkind: App\n"
+	files := map[string]string{
+		wcDir + "/kustomization.yaml":                      "resources:\n  - apps/\n  - cluster/\n",
+		wcDir + "/cluster/kustomization.yaml":              "resources: []\n",
+		wcDir + "/apps/kustomization.yaml":                 "resources: []\n",
+		wcDir + "/out-of-band/appcr.yaml":                  app,
+		wcDir + "/out-of-band/apps/hello-world/appcr.yaml": app,
+		wcDir + "/out-of-band/cluster/kustomization.yaml":  "resources:\n  - appcr.yaml\n",
+		wcDir + "/out-of-band/cluster/appcr.yaml":          app,
+	}
+	for path, data := range files {
+		err := fs.WriteFile(filepath.Join(testRepo, path), []byte(data), 0644)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+	}
+
+	result, err := Adopt(fs, testRepo)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	got := map[string]int{}
+	for _, l := range result.Metadata.Layers {
+		got[l.Path] = l.StructureVersion
+	}
+	expected := map[string]int{
+		"management-clusters/demomc":                       StructureVersion,
+		"management-clusters/demomc/organizations/demoorg": StructureVersion,
+		wcDir: StructureVersion,
+	}
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatalf("unexpected layers (-want +got):\n%s", diff)
+	}
+	if len(result.Skipped) != 0 {
+		t.Errorf("expected nothing skipped, got %v", result.Skipped)
+	}
+}

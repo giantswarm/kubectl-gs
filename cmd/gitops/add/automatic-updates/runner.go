@@ -46,7 +46,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		AppVersionRange:   r.flag.VersionRange,
 		ManagementCluster: r.flag.ManagementCluster,
 		Organization:      r.flag.Organization,
-		SkipMAPI:          r.flag.SkipMAPI,
 		WorkloadCluster:   r.flag.WorkloadCluster,
 	}
 

@@ -23,12 +23,14 @@ base \
 --provider <provider>
 
 It writes the base to bases/clusters/<provider>, the path to pass to
-` + "`kubectl gs gitops add workload-cluster --base`" + `. It refuses to add a base for a
-provider whose base is still at bases/clusters/<provider>/template, where earlier
-versions of kubectl-gs wrote it: keep using that one instead.
+` + "`kubectl gs gitops add workload-cluster --base`" + `. It refuses to add a
+base for a provider whose base is still at
+bases/clusters/<provider>/template, where earlier versions of kubectl-gs
+wrote it: keep using that one instead.
 
 The base deploys the cluster as a Flux HelmRelease of the release-<provider>
-chart. Its version is the ${release} variable, which ` + "`kubectl gs gitops add workload-cluster --release`" + ` sets.
+chart. Its version is the ${release} variable, which
+` + "`kubectl gs gitops add workload-cluster --release`" + ` sets.
 
 It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.`

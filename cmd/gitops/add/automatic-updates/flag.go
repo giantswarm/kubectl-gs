@@ -9,7 +9,6 @@ import (
 const (
 	flagManagementCluster = "management-cluster"
 	flagOrganization      = "organization"
-	flagSkipMAPI          = "skip-mapi"
 	flagWorkloadCluster   = "workload-cluster"
 
 	flagApp          = "app"
@@ -20,7 +19,6 @@ type flag struct {
 	ManagementCluster string
 	Name              string
 	Organization      string
-	SkipMAPI          bool
 	WorkloadCluster   string
 
 	App          string
@@ -30,7 +28,6 @@ type flag struct {
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ManagementCluster, flagManagementCluster, "", "Codename of the Management Cluster the Workload Cluster belongs to.")
 	cmd.Flags().StringVar(&f.Organization, flagOrganization, "", "Name of the Organization the Workload Cluster belongs to.")
-	cmd.Flags().BoolVar(&f.SkipMAPI, flagSkipMAPI, false, "Skip `mapi` directory when adding the app.")
 	cmd.Flags().StringVar(&f.WorkloadCluster, flagWorkloadCluster, "", "Name of the Workload Cluster the app belongs to.")
 
 	cmd.Flags().StringVar(&f.App, flagApp, "", "App in the repository to configure automatic updates for.")

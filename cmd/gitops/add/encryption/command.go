@@ -28,7 +28,7 @@ It respects the Giantswarm's GitOps repository structure recommendation:
 https://github.com/giantswarm/gitops-template/blob/main/docs/reference/repo-structure.md.
 
 Steps it implements:
-https://github.com/giantswarm/gitops-template/blob/main/docs/add_wc_structure.md#create-flux-gpg-regular-key-pair-optional-step`
+https://github.com/giantswarm/gitops-template/blob/main/docs/how-to/sops.md#add-a-workload-cluster-key-gpg`
 
 	examples = `  # Configure Management Cluster encryption with a new key pair.
   # Configures SOPS for handling the "management-clusters/demomc/secrets/*.enc.yaml" files. # master key

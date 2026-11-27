@@ -137,7 +137,6 @@ func Test_runner_run(t *testing.T) {
 					Organization:      "demoorg",
 					Release:           release,
 					RepositoryName:    "gitops-demo",
-					SkipMAPI:          true,
 				},
 				fs: fs,
 				ociClient: &fakeOCIClient{tags: map[string]bool{

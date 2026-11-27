@@ -41,8 +41,14 @@ type StructureConfig struct {
 	Organization      string
 	RepositoryName    string
 	SkipEncryption    bool
-	SkipMAPI          bool
 	WorkloadCluster   string
+
+	// KeepSingleKustomization adds the cluster definition to a workload
+	// cluster that already has a single Kustomization applying its whole
+	// directory, instead of giving the cluster a Kustomization of its own.
+	// Moving the apps to a second Kustomization would make Flux uninstall them
+	// before the new one installs them again.
+	KeepSingleKustomization bool
 
 	Region string
 
