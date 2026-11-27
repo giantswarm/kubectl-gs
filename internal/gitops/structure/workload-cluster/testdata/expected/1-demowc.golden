@@ -5,12 +5,17 @@ metadata:
   namespace: default
 spec:
   # Applies the cluster and its base apps, in cluster/. Ready once Cluster API
-  # reports the cluster Available. The Kustomization in demowc-apps.yaml
-  # depends on this one, so the secondary apps install once the cluster is up.
+  # reports the cluster's control plane available and reachable, which is all
+  # the apps need. The Kustomization in demowc-apps.yaml depends on this one, so
+  # the secondary apps install once the cluster is up. It doesn't wait for
+  # `Available`, which counts every node pool: one node pool short of its
+  # minimum would hold back every change to the apps.
   healthCheckExprs:
     - apiVersion: cluster.x-k8s.io/v1beta2
       kind: Cluster
-      current: status.conditions.exists(c, c.type == 'Available' && c.status == 'True')
+      current: >-
+        status.conditions.exists(c, c.type == 'ControlPlaneAvailable' && c.status == 'True')
+        && status.conditions.exists(c, c.type == 'RemoteConnectionProbe' && c.status == 'True')
   healthChecks:
     - apiVersion: cluster.x-k8s.io/v1beta2
       kind: Cluster
